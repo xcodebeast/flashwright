@@ -64,8 +64,9 @@ async function finish(token, status = 'matched') {
 
 async function clean(label) {
   const state = await evaluate('testConditions.inspect()');
-  for (const name of ['activeConditions', 'observedRoots', 'queuedDiscovery']) assert.equal(state[name], 0, `${label}: ${name}`);
-  for (const name of ['animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled']) assert.equal(state[name], false, `${label}: ${name}`);
+  for (const name of ['activeConditions', 'observedRoots', 'queuedDiscovery', 'queuedConditions']) assert.equal(state[name], 0, `${label}: ${name}`);
+  for (const name of ['animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'flushChannelOpen']) assert.equal(state[name], false, `${label}: ${name}`);
+  assert.ok(state.maximumChecksBeforeYield <= 8, `${label}: unbounded predicate batch`);
   await new Promise(resolve => setTimeout(resolve, 30));
   assert.deepEqual(await evaluate('testConditions.inspect()'), state, `${label}: work continued after the last condition`);
   cases.push({ name: label, counters: state });
@@ -185,6 +186,108 @@ try {
   await page.evaluate(() => { for (const element of document.querySelectorAll('section > div')) element.textContent = 'after'; });
   for (const token of concurrent) await finish(token);
   await clean('concurrent conditions share one bounded discovery pass');
+
+  await reset('<section>' + '<p class="item">before</p>'.repeat(4000) + '</section>');
+  const fairness = await evaluate(`(async () => {
+    const request = JSON.stringify({selector:'css=.item >> nth=3999',expectedText:[{string:'after',normalizeWhiteSpace:true}]});
+    const units = Array.from(request, character => character.charCodeAt(0));
+    const checks = Array(128).fill(0);
+    for (let index = 0; index < checks.length; index++) {
+      testPromises.set(String(index), testConditions.wait({token:String(index),check:() => {
+        checks[index]++;
+        return testLocator.assertion(units, null, 'to.have.text', false);
+      }}));
+    }
+    await Promise.resolve();
+    const initialChecks = checks.reduce((total, count) => total + count, 0);
+    const startedAt = performance.now();
+    const progress = await new Promise(resolve => {
+      setTimeout(() => {
+        resolve({elapsedMilliseconds:performance.now() - startedAt,
+          checks:checks.reduce((total, count) => total + count, 0) - initialChecks});
+        document.querySelector('section').lastElementChild.textContent = 'after';
+      }, 0);
+      document.querySelector('section').setAttribute('data-invalidate', 'true');
+    });
+    const results = await Promise.all(testPromises.values());
+    return {progress,initialChecks,checks,statuses:results.map(result => result.status)};
+  })()`);
+  assert.equal(fairness.initialChecks, 128);
+  assert.ok(fairness.progress.checks < 128, JSON.stringify(fairness.progress));
+  assert.deepEqual(fairness.statuses, Array(128).fill('matched'));
+  assert.ok(fairness.checks.every(count => count >= 2));
+  await clean('128 expensive pending predicates yield to a browser timer and all complete');
+  cases.at(-1).progress = fairness.progress;
+  cases.at(-1).checksPerCondition = fairness.checks;
+
+  await reset('<p>before</p>');
+  const cascade = await evaluate(`(async () => {
+    let checks = 0;
+    const timer = new Promise(resolve => setTimeout(() => resolve(checks), 0));
+    const result = await testConditions.wait({token:'microtask-cascade',check:() => {
+      checks++;
+      document.querySelector('p').setAttribute('data-check', String(checks));
+      return {status:'observation',matches:checks === 64};
+    }});
+    return {result,checks,checksBeforeTimer:await timer};
+  })()`);
+  assert.equal(cascade.result.status, 'matched');
+  assert.equal(cascade.checks, 64);
+  assert.ok(cascade.checksBeforeTimer < 64, JSON.stringify(cascade));
+  await clean('repeated microtask invalidations also yield to browser tasks');
+  cases.at(-1).checksBeforeTimer = cascade.checksBeforeTimer;
+
+  await reset('<p>before</p>');
+  const continuousInvalidation = await evaluate(`(async () => {
+    const checks = Array(128).fill(0);
+    for (let index = 0; index < checks.length; index++) {
+      testPromises.set(String(index), testConditions.wait({token:String(index),timeoutMilliseconds:2000,check:() => {
+        checks[index]++;
+        return {status:'observation',matches:index === 127 && document.querySelector('p').textContent === 'after'};
+      }}));
+    }
+    await Promise.resolve();
+    let mutations = 0;
+    const interval = setInterval(() => { document.querySelector('p').setAttribute('data-change', String(++mutations)); }, 0);
+    document.querySelector('p').textContent = 'after';
+    const result = await testPromises.get('127');
+    clearInterval(interval);
+    testConditions.dispose();
+    await Promise.all(testPromises.values());
+    return {result,checks,mutations};
+  })()`);
+  assert.equal(continuousInvalidation.result.status, 'matched');
+  assert.ok(continuousInvalidation.mutations > 0);
+  assert.ok(continuousInvalidation.checks.every(count => count >= 2 && count <= 3), JSON.stringify(continuousInvalidation));
+  await clean('continuous invalidation preserves the last condition place in the queue');
+  cases.at(-1).checksPerCondition = continuousInvalidation.checks;
+  cases.at(-1).mutationTasks = continuousInvalidation.mutations;
+
+  await reset('<p>before</p>');
+  const retiredQueue = await evaluate(`(async () => {
+    let checks = 0;
+    for (let index = 0; index < 128; index++) {
+      testPromises.set(String(index), testConditions.wait({token:String(index),check:() => {
+        checks++; return {status:'observation',matches:false};
+      }}));
+    }
+    await Promise.resolve();
+    document.querySelector('p').textContent = 'changed';
+    for (let index = 0; index < 4; index++) await Promise.resolve();
+    const pending = testConditions.inspect();
+    testConditions.dispose();
+    const checksAtDisposal = checks;
+    const successor = await testConditions.wait({token:'successor',check:() => ({status:'observation',matches:true})});
+    const results = await Promise.all(testPromises.values());
+    await new Promise(resolve => setTimeout(resolve, 20));
+    return {pending,checksAtDisposal,checksAfterRestart:checks,successor,statuses:results.map(result => result.status)};
+  })()`);
+  assert.ok(retiredQueue.pending.queuedConditions > 0);
+  assert.equal(retiredQueue.pending.flushTaskScheduled, true);
+  assert.deepEqual(retiredQueue.statuses, Array(128).fill('cancelled'));
+  assert.equal(retiredQueue.successor.status, 'matched');
+  assert.equal(retiredQueue.checksAfterRestart, retiredQueue.checksAtDisposal);
+  await clean('cancellation closes a queued flush before a new condition group starts');
 
   await reset('<div id="host"></div><p>before</p>');
   await page.evaluate(() => { document.querySelector('#host').attachShadow({ mode: 'open' }).innerHTML = '<i>shadow</i>'; });

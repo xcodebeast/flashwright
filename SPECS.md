@@ -293,6 +293,7 @@ g. Choose coalescing and fallback cadence by predicate requirements, responsiven
 h. Cancel stale work on ownership changes and release registry references when operations/documents end. Bound retained nodes, callbacks, subscriptions and invalidation queues
 i. Return terminal outcomes and bounded relevant diagnostics; emit intermediate details only for requested instrumentation. Instrumentation policy is matched under S6
 j. Test already-true, delayed, transient, negated, property-only, CSS-only, replacement, shadow creation, document transition and blocked-renderer cases. Earlier valid detection follows S4.b
+k. Bound batches of pending reevaluations across observer and microtask cascades, and yield to browser tasks between batches. Coalescing must preserve progress for conditions at the end of the queue under continuous invalidation. An asynchronous check cannot block unrelated conditions. Dispose queued work and scheduling resources on cancellation or document retirement. A batch budget cannot preempt an individual synchronous predicate; retain host deadline and blocked-renderer ownership for that case
 
 When optimizing traversal, count discovery passes and visited nodes separately from predicate evaluations. Repeating whole-document discovery for every step can dominate long sequences; prove that shared state removes that work without omitting membership or predicate checks
 

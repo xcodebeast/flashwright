@@ -27,7 +27,8 @@
         "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T20-50-30.310Z/report.json",
         "compatibility/evidence/cleanup-attribution-checkpoint-2026-10-07.json",
         "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
-        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json"
+        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
+        "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -122,7 +123,8 @@
         "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T21-36-54.776Z/report.json",
         "compatibility/evidence/resident-integrated-checkpoint-2026-10-07.json",
         "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
-        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json"
+        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
+        "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -150,7 +152,7 @@
         "Retrying native DOM assertions through pinned predicates, with negation, text/list/state matching, bounded failure observations and explicit no-observation diagnostics",
         "Native fixtures and browser matchers use the pinned test scheduler through the isolated runner dependency; no upstream browser-command fallback",
         "Fresh packed library/runner consumers preserve ESM/CommonJS runtime and type identities, extended fixtures, options and reporter declarations",
-        "Current slice passes 25 checks at 142 identical sources in four environments/modes: macOS Node24 headless-shell residency on/off, macOS Node24 full Chrome on, and emulated Linux Node24 full Chrome on. Current macOS Node22 assertion/lifecycle/registry checks also pass.",
+        "Current 142 identical source hashes pass 25 checks each on macOS Node24 headless-shell on/off, macOS Node24 full-Chrome on, and emulated Linux Node24 full-Chrome on. All 100 log hashes and archived driver hashes independently checked. Current macOS Node22 assertion, 25 lifecycle and 31 registry cases pass with residency on.",
         "Native page.keyboard.press preserves current focus and selection without locator timeout/navigation waiting; all 212 page-level key descriptions match the reference and context closure cancels delayed input",
         "All three preserved TodoMVC tests and their extended fixture execute through freshly packed packages with only package imports/configuration changed; upstream browser/request methods are disabled in the Flashwright CLI and worker",
         "Matched pinned Chromium launch policy verified against actual browser launch logs; seven shared benchmark flows pass trusted-input, real-request and watchdog-free cleanup contracts",
@@ -217,7 +219,8 @@
         "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T21-36-54.776Z/report.json",
         "compatibility/evidence/resident-integrated-checkpoint-2026-10-07.json",
         "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
-        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json"
+        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
+        "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -233,11 +236,12 @@
       "id": "M3",
       "status": "in_progress_opt_in_experiment",
       "completed": [
-        "Document registry passes 27 real Chromium cases on macOS Node22/24 and emulated Linux Node24. Mutation admission is bounded; hidden-frame property fallback and explicit registry-frame withholding cover timer fallback.",
-        "Integrated exact-context host deadline/cancellation/diagnostic ownership behind FLASHWRIGHT_RESIDENT_ASSERTIONS=1, default off. Three current 25-step core suites and focused Node22 checks pass.",
+        "Document registry passes 31 real Chromium cases on macOS Node22/24 and emulated Linux Node24, including bounded reevaluation batches, continuous invalidation fairness, microtask cascades and queue cancellation/restart.",
+        "Integrated exact-context host deadline/cancellation/diagnostic ownership behind FLASHWRIGHT_RESIDENT_ASSERTIONS=1, default off. Four current 25-step core suites and focused Node22 checks pass.",
         "Eight independent alternating off/on launch pairs and eight Playwright/Flashwright pairs retain all work, preparation, resources and source/binary identities; independent verifiers pass. Delayed assertions improve 2.35x off/on and 2.37x against Playwright; complete-flow material benefit remains unproven.",
         "Headless-shell on/off and matched Playwright profiles pass at the same verified browser identity: about 7.0% and 3.5% less complete-run time respectively, below the declared 10% target. Separate instrumented attribution retains renderer initialization and runtime installation costs.",
-        "Isolated a literal-Unicode source installation regression with 360 verified fresh-document component cases; escaped the diagnostic character without changing its value and enforced ASCII resident source at build time. Current paired profile no longer shows the navigation median regression; complete-flow material target remains open."
+        "Isolated a literal-Unicode source installation regression with 360 verified fresh-document component cases; escaped the diagnostic character without changing its value and enforced ASCII resident source at build time. Current paired profile no longer shows the navigation median regression; complete-flow material target remains open.",
+        "Reproduced timer starvation from 128 pending complete predicates, replaced the unbounded microtask sweep with a fair bounded queue, and verified all message ports and queued work are released. Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547–1.1719) and 1.0515 (1.0090–1.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open."
       ],
       "evidence": [
         "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
@@ -250,10 +254,11 @@
         "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T21-36-54.776Z/report.json",
         "compatibility/evidence/resident-integrated-checkpoint-2026-10-07.json",
         "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
-        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json"
+        "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
+        "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json"
       ],
       "remaining": [
-        "Measure fallback-heavy and mutation-heavy CPU/fairness with exact discovery/predicate counters, including real suspended-frame scheduling, CSS animation and font changes.",
+        "Measure sustained fallback-heavy and mutation-heavy CPU/resource behavior with exact counters; broaden real suspended-frame scheduling, CSS animation and font-change conformance.",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
         "Improve complete flows and setup using measured critical paths; native Linux, contention, consumer installation and release gates remain open."
@@ -272,6 +277,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Harden mutation-batch admission and integrate the disabled assertion registry with Rust operation ownership, authoritative host deadlines/cancellation and last-observation diagnostics. Retain blocked-renderer/page-recovery behavior and stale-context isolation before measuring complete off/on flows. Continue remaining M2 APIs and the full M3/CBOR, native-platform and release gates.",
+  "nextImplementation": "Complete sustained resident CPU/resource and CSS/font/suspended-scheduling evidence, then continue the unfinished M2 API, runner, artifact and installation surfaces. Reduce small-call/failure overhead without shortening deadlines. Keep the full M3/CBOR, native-platform, contention and release gates visible.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or Flashwright speed claim."
 }
