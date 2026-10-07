@@ -154,7 +154,7 @@
     "pageFocusPolicy": "Main page sessions enable Emulation.setFocusEmulationEnabled, matching pinned Playwright initialization. Two-page visibility/focus and fresh pointer-frame checks conform; a blocked handler in one page leaves another page usable.",
     "testFailureCleanup": "Unittest cleanup registered immediately after owner creation; only the worker/driver is terminated, and guardian completion is awaited before diagnostic streams close. Four intentionally failed setup/body cases cover both owner paths.",
     "protocolAttribution": "Opt-in external byte-preserving Chromium pipe proxy records bounded command metadata and script hashes without argument/result payloads. Two clock calibrations bound Node/Python epoch offset, and an independent verifier recomputes correlated phase accounting. Instrumented timing is diagnostic only.",
-    "residentRegistryExperiment": "Default-off integrated registry with bounded discovery and mutation admission, fair coalesced reevaluation batches, and full-predicate frame/timer fallback. Current correctness and matched performance evidence: compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
+    "residentRegistryExperiment": "Default-off integrated registry with fair bounded reevaluations and complete frame/timer fallback. Current 39-case correctness includes CSS animation, gated font loads/failures and actual suspension/recovery: compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json; performance snapshots remain in compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json.",
     "ordinaryResourceClose": "Ordinary page/context closure waits for its actual Chromium acknowledgement. The bounded operation-cancellation disposal budget no longer causes a slow ordinary close to shut down the entire browser. Unit test withholds close acknowledgement for 750ms; full emulated Linux suite passes.",
     "benchmarkBrowserBinding": "Core reports bind exact browser path, SHA-256, version and distribution; new benchmark admission and independent verification require that identity. compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
     "runtimeSourceEncoding": "Resident source files remain ASCII, enforced by the Rust build. Unicode runtime values use JavaScript escapes without changing diagnostics or supported application text. A literal U+2026 caused a verified installation regression; compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json"
@@ -190,7 +190,9 @@
     "compatibility/m2/condition-registry.mjs",
     "tools/run-condition-tests.mjs",
     "tools/verify-residency.mjs",
-    "tools/verify-runtime-installation.mjs"
+    "tools/verify-runtime-installation.mjs",
+    "compatibility/m2/lifecycle-target.mjs",
+    "compatibility/m2/fixtures/zero-advance.json"
   ],
   "limitations": [
     "No platform runtime publication or automatic driver acquisition; npm consumers provide an explicit compiled driver path",
@@ -205,6 +207,6 @@
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
     "Popup/dialog/console/pageerror coverage remains unfinished",
     "TodoMVC migration verification uses the public demo URL retained by the original fixture; asset hashes are checked before and after but offline application reproduction is not yet available",
-    "Resident assertions remain opt-in. Bounded fairness passes 31 registry cases; mutation/fallback-heavy CPU measurements, real suspended-frame scheduling, CSS animation/font cases and remaining S12 gates are open."
+    "Resident assertions remain opt-in. CSS/font and real suspension cases pass for the current slice; sustained mutation/fallback CPU/resource measurements and remaining S12 gates remain open."
   ]
 }
