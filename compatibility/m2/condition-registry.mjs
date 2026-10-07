@@ -1,0 +1,335 @@
+import assert from 'node:assert/strict';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { chromium } from 'playwright';
+import { sourceManifest } from '../../tools/source-manifest.mjs';
+
+const sources = await sourceManifest();
+const sourceNames = ['playwright-injected.js', 'serialization.cjs', 'locator-runtime.js', 'condition-registry.js'];
+const [injectedSource, codecSource, locatorSource, registrySource] = await Promise.all(sourceNames.map(name => readFile(`packages/resident-runtime/${name}`, 'utf8')));
+const browserPath = process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath();
+const browser = await chromium.launch({ executablePath: browserPath });
+const page = await browser.newPage();
+const session = await page.context().newCDPSession(page);
+const cases = [];
+let executionContextId;
+
+async function evaluate(expression) {
+  const result = await session.send('Runtime.evaluate', { expression, contextId: executionContextId, returnByValue: true, awaitPromise: true });
+  if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
+  return result.result.value;
+}
+
+async function reset(html, observeMutations = true, hiddenChildFrame = false, withholdRegistryFrames = false) {
+  if (executionContextId) await evaluate('globalThis.testConditions?.dispose()');
+  if (hiddenChildFrame) {
+    await page.setContent('<iframe name="hidden" style="display:none"></iframe>');
+    await page.frame('hidden').setContent(html);
+  } else await page.setContent(html);
+  const { frameTree } = await session.send('Page.getFrameTree');
+  const frameId = hiddenChildFrame ? frameTree.childFrames[0].frame.id : frameTree.frame.id;
+  ({ executionContextId } = await session.send('Page.createIsolatedWorld', { frameId, worldName: '__flashwright_condition_test__' }));
+  await evaluate(`(() => {
+    const requestAnimationFrame = ${withholdRegistryFrames ? '() => 1' : 'globalThis.requestAnimationFrame.bind(globalThis)'};
+    const cancelAnimationFrame = ${withholdRegistryFrames ? '() => {}' : 'globalThis.cancelAnimationFrame.bind(globalThis)'};
+    const module = {}; ${injectedSource}; const exports = {}; ${codecSource}; ${locatorSource}; ${registrySource};
+    const injected = new (module.exports.InjectedScript())(globalThis, {isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]});
+    globalThis.testLocator = createLocatorRuntime(injected, exports.createValueCodec());
+    globalThis.testConditions = createConditionRegistry({instrumentation:true,observeMutations:${observeMutations}});
+    globalThis.testPromises = new Map();
+    globalThis.startCondition = (token, options) => {
+      const request = JSON.stringify({selector:options.selector, ...options.request});
+      const units = Array.from({length:request.length}, (_, index) => request.charCodeAt(index));
+      const promise = testConditions.wait({token,timeoutMilliseconds:options.timeoutMilliseconds ?? 2000,isNot:options.isNot ?? false,
+        check:() => testLocator.assertion(units, null, options.expression, options.isNot ?? false)});
+      testPromises.set(token, promise); return true;
+    };
+    return true;
+  })()`);
+}
+
+async function start(options) {
+  const token = randomUUID();
+  await evaluate(`startCondition(${JSON.stringify(token)}, ${JSON.stringify(options)})`);
+  return token;
+}
+
+async function finish(token, status = 'matched') {
+  const result = await evaluate(`testPromises.get(${JSON.stringify(token)})`);
+  await evaluate(`testPromises.delete(${JSON.stringify(token)})`);
+  assert.equal(result.status, status, JSON.stringify(result));
+  return result;
+}
+
+async function clean(label) {
+  const state = await evaluate('testConditions.inspect()');
+  for (const name of ['activeConditions', 'observedRoots', 'queuedDiscovery']) assert.equal(state[name], 0, `${label}: ${name}`);
+  for (const name of ['animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled']) assert.equal(state[name], false, `${label}: ${name}`);
+  await new Promise(resolve => setTimeout(resolve, 30));
+  assert.deepEqual(await evaluate('testConditions.inspect()'), state, `${label}: work continued after the last condition`);
+  cases.push({ name: label, counters: state });
+  console.log(`Resident registry: ${label}`);
+  return state;
+}
+
+const text = (selector, value, extra = {}) => ({ selector, expression: 'to.have.text', request: { expectedText: [{ string: value, normalizeWhiteSpace: true }] }, ...extra });
+const state = (selector, expression, extra = {}) => ({ selector, expression, ...extra });
+
+try {
+  await reset('<p>already true</p>');
+  await finish(await start(text('css=p', 'already true')));
+  const immediate = await clean('already true skips discovery');
+  assert.equal(immediate.discoveryPasses, 0);
+  assert.equal(immediate.discoveryVisits, 0);
+  assert.equal(immediate.predicateEvaluations, 1);
+
+  await reset('<p>before</p>');
+  const delayed = await start(text('css=p', 'after'));
+  await page.evaluate(() => { document.querySelector('p').textContent = 'after'; });
+  await finish(delayed);
+  const mutation = await clean('mutation wakeup runs the complete text predicate');
+  assert.ok(mutation.mutationBatches > 0);
+
+  await reset('<p>before</p>');
+  const transient = await start(text('css=p', 'brief'));
+  await page.evaluate(() => {
+    document.querySelector('p').textContent = 'brief';
+    setTimeout(() => { document.querySelector('p').textContent = 'after'; }, 0);
+  });
+  const transientResult = await finish(transient);
+  assert.equal(transientResult.observation.received.units.map(unit => String.fromCharCode(unit)).join(''), 'brief');
+  await clean('valid transient state can be observed before the next task');
+
+  await reset('<p>before</p>');
+  const negated = await start(text('css=p', 'before', { isNot: true }));
+  await page.evaluate(() => { document.querySelector('p').textContent = 'different'; });
+  await finish(negated);
+  await clean('negation checks the new value');
+
+  await reset('<input value="before"><input id="checked" type="checkbox">');
+  const property = await start({ selector: 'css=input:not(#checked)', expression: 'to.have.value', request: { expectedText: [{ string: 'after' }] } });
+  const checked = await start(state('css=#checked', 'to.be.checked', { request: { expectedValue: { checked: true } } }));
+  await page.evaluate(() => { document.querySelector('input').value = 'after'; document.querySelector('#checked').checked = true; });
+  await finish(property); await finish(checked);
+  const propertyState = await clean('property-only values and checkbox state use fallback');
+  assert.equal(propertyState.mutationBatches, 0);
+  assert.ok(propertyState.fallbackChecks > 0);
+
+  await reset('<style>p { visibility:hidden }</style><p>target</p>');
+  const stylesheet = await start(state('css=p', 'to.be.visible'));
+  await page.evaluate(() => { document.styleSheets[0].cssRules[0].style.visibility = 'visible'; });
+  await finish(stylesheet);
+  const stylesheetState = await clean('CSSOM-only changes use fallback');
+  assert.equal(stylesheetState.mutationBatches, 0);
+  assert.ok(stylesheetState.fallbackChecks > 0);
+
+  await reset('<style>@media (min-width:800px) { p { display:none } }</style><p>target</p>');
+  const viewport = await start(state('css=p', 'to.be.visible'));
+  await page.setViewportSize({ width: 640, height: 480 });
+  await finish(viewport);
+  await clean('viewport media-query changes invalidate visibility');
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  await reset('<input>');
+  const focused = await start(state('css=input', 'to.be.focused'));
+  await page.locator('input').focus();
+  await finish(focused);
+  await clean('focus changes are observed without DOM mutations');
+
+  await reset('<p id="target">before</p>');
+  const replacement = await start(text('css=#target', 'replacement'));
+  await page.evaluate(() => { document.querySelector('p').outerHTML = '<p id="target">replacement</p>'; });
+  await finish(replacement);
+  await clean('replacement re-resolves membership');
+
+  await reset('<div id="host"></div>');
+  const shadow = await start(text('css=#target', 'shadow'));
+  await page.evaluate(() => { document.querySelector('#host').attachShadow({ mode: 'open' }).innerHTML = '<p id="target">shadow</p>'; });
+  await finish(shadow);
+  await clean('new shadow on an existing host uses fallback');
+
+  await reset('<div id="host"></div>');
+  await page.evaluate(() => { document.querySelector('#host').attachShadow({ mode: 'open' }).innerHTML = '<p>before</p>'; });
+  const nestedShadow = await start(text('css=p', 'after'));
+  await page.waitForTimeout(40);
+  assert.equal((await evaluate('testConditions.inspect()')).observedRoots, 2);
+  await page.evaluate(() => { document.querySelector('#host').shadowRoot.querySelector('p').textContent = 'after'; });
+  await finish(nestedShadow);
+  assert.ok((await clean('existing shadow roots are observed')).mutationBatches > 0);
+
+  await reset('<section></section>');
+  await page.evaluate(() => {
+    for (let index = 0; index < 600; index++) {
+      const host = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).innerHTML = '<p>before</p>';
+      document.querySelector('section').append(host);
+    }
+  });
+  const boundedRoots = await start(text('css=section > div >> nth=599 >> css=p', 'after'));
+  await page.waitForTimeout(100);
+  const boundedState = await evaluate('testConditions.inspect()');
+  assert.equal(boundedState.observedRoots, 512);
+  assert.ok(boundedState.discoveryOverflows > 0);
+  await page.evaluate(() => { document.querySelector('section').lastElementChild.shadowRoot.querySelector('p').textContent = 'after'; });
+  await finish(boundedRoots);
+  await clean('root and discovery bounds retain fallback correctness');
+
+  await reset('<section>' + '<div><span>before</span></div>'.repeat(3000) + '</section>');
+  const concurrent = [];
+  for (let index = 0; index < 12; index++) concurrent.push(await start(text('css=section > div >> nth=' + index, 'after')));
+  await page.waitForTimeout(80);
+  const shared = await evaluate('testConditions.inspect()');
+  assert.equal(shared.discoveryPasses, 1);
+  assert.ok(shared.discoveryVisits > 100 && shared.discoveryVisits < 6100);
+  await page.evaluate(() => { for (const element of document.querySelectorAll('section > div')) element.textContent = 'after'; });
+  for (const token of concurrent) await finish(token);
+  await clean('concurrent conditions share one bounded discovery pass');
+
+  await reset('<div id="host"></div><p>before</p>');
+  await page.evaluate(() => { document.querySelector('#host').attachShadow({ mode: 'open' }).innerHTML = '<i>shadow</i>'; });
+  const pruning = await start(text('css=p', 'after'));
+  await page.waitForTimeout(30);
+  assert.equal((await evaluate('testConditions.inspect()')).observedRoots, 2);
+  await page.evaluate(() => { document.querySelector('#host').remove(); });
+  await page.waitForTimeout(20);
+  assert.equal((await evaluate('testConditions.inspect()')).observedRoots, 1);
+  await page.evaluate(() => { document.querySelector('p').textContent = 'after'; });
+  await finish(pruning);
+  await clean('detached shadow roots release observer references');
+
+  await reset('<p>before</p>');
+  const expires = await start(text('css=p', 'never', { timeoutMilliseconds: 35 }));
+  const expired = await finish(expires, 'expired');
+  assert.equal(expired.observation.matches, false);
+  await clean('deadline keeps the last full observation');
+
+  await reset('<p>before</p>');
+  const cancelled = await start(text('css=p', 'never'));
+  assert.equal((await evaluate(`testConditions.cancel(${JSON.stringify(cancelled)})`)).status, 'cancelled');
+  await finish(cancelled, 'cancelled');
+  await page.evaluate(() => { document.querySelector('p').textContent = 'never'; });
+  await clean('cancellation cannot turn into a later success');
+
+  await reset('<p>before</p>');
+  const noGap = await evaluate(`(async () => {
+    let checks = 0;
+    const result = await testConditions.wait({token:'check-subscribe-gap',timeoutMilliseconds:500,check:async () => {
+      checks++; const matches = document.querySelector('p').textContent === 'after';
+      if (checks === 1) document.querySelector('p').textContent = 'after';
+      return {status:'observation',matches};
+    }}); return {result,checks};
+  })()`);
+  assert.equal(noGap.result.status, 'matched');
+  assert.ok(noGap.checks >= 2);
+  await clean('change during an asynchronous check is not lost');
+
+  await reset('<p>before</p>');
+  await evaluate(`(() => {
+    testPromises.set('late-check', testConditions.wait({token:'late-check',timeoutMilliseconds:2000,
+      check:() => new Promise(resolve => { globalThis.releaseTestCheck = resolve; })})); return true;
+  })()`);
+  await evaluate('testConditions.cancel("late-check")');
+  await finish('late-check', 'cancelled');
+  await evaluate('releaseTestCheck({status:"observation",matches:true})');
+  await clean('late asynchronous predicate cannot resurrect cancelled work');
+
+  await reset('<p>one</p><p>two</p>');
+  await finish(await start(text('css=p', 'one')), 'error');
+  await clean('strictness failure is terminal and releases subscriptions');
+
+  await reset('<p>before</p>');
+  const expiredCheck = await evaluate(`(async () => {
+    return await testConditions.wait({token:'late-success',timeoutMilliseconds:10,check:() => {
+      const until=performance.now()+30; while(performance.now()<until) {}
+      return {status:'observation',matches:true};
+    }});
+  })()`);
+  assert.equal(expiredCheck.status, 'expired');
+  assert.equal(expiredCheck.observation.matches, true);
+  await clean('a predicate finishing after its budget cannot report success');
+
+  await reset('<p>before</p>', false);
+  const fallback = await start(text('css=p', 'after'));
+  await page.evaluate(() => { document.querySelector('p').textContent = 'after'; });
+  await finish(fallback);
+  const fallbackState = await clean('observer-off path preserves full predicate behavior');
+  assert.equal(fallbackState.discoveryVisits, 0);
+  assert.ok(fallbackState.fallbackChecks > 0);
+
+  await reset('<input value="before">', false, true);
+  const hiddenFrame = await start({ selector: 'css=input', expression: 'to.have.value', request: { expectedText: [{ string: 'after' }] } });
+  await page.frame('hidden').evaluate(() => { document.querySelector('input').value = 'after'; });
+  await finish(hiddenFrame);
+  await clean('property fallback works in a real hidden child frame');
+
+  // Suppress only this isolated registry's frame callbacks; the real DOM, app realm
+  // and browser timers remain unchanged. A hidden frame alone does not stop RAFs.
+  await reset('<input value="before">', false, false, true);
+  const withheldFrames = await start({ selector: 'css=input', expression: 'to.have.value', request: { expectedText: [{ string: 'after' }] } });
+  await page.waitForTimeout(130);
+  const beforeTimerChange = await evaluate('testConditions.inspect()');
+  await page.evaluate(() => { document.querySelector('input').value = 'after'; });
+  await finish(withheldFrames);
+  const afterTimerChange = await clean('timer fallback works when registry frame callbacks are withheld');
+  assert.equal(afterTimerChange.animationFrameChecks, 0);
+  assert.ok(afterTimerChange.timerFallbackChecks > beforeTimerChange.timerFallbackChecks);
+
+  await reset('<p>before</p><section></section>');
+  const mutationStorm = await start(text('css=p', 'after'));
+  await page.evaluate(() => {
+    const fragment = document.createDocumentFragment();
+    for (let index = 0; index < 2000; index++) fragment.append(document.createElement('div'));
+    document.querySelector('section').append(fragment);
+    const paragraph = document.querySelector('p');
+    for (let index = 0; index < 2000; index++) paragraph.dataset.sequence = String(index);
+    paragraph.textContent = 'after';
+  });
+  await finish(mutationStorm);
+  const stormState = await clean('mutation storms cap discovery admission and still check the final predicate');
+  assert.ok(stormState.discoveryOverflows > 0);
+  assert.ok(stormState.mutationRecordsVisited <= stormState.mutationBatches * 512);
+  assert.ok(stormState.addedNodesVisited <= stormState.mutationBatches * 512);
+
+  await reset('<p>before</p>');
+  const limit = await evaluate(`(async () => {
+    for (let index=0; index<128; index++) testPromises.set(String(index),testConditions.wait({token:String(index),check:() => ({status:'observation',matches:false})}));
+    const overflow = await testConditions.wait({token:'overflow',check:() => ({status:'observation',matches:true})});
+    let duplicateRejected = false;
+    try { testConditions.wait({token:'0',check:() => ({status:'observation',matches:true})}); } catch { duplicateRejected=true; }
+    testConditions.dispose(); const results=await Promise.all(testPromises.values());
+    return {overflow,duplicateRejected,statuses:results.map(result=>result.status)};
+  })()`);
+  assert.equal(limit.overflow.status, 'limit');
+  assert.equal(limit.duplicateRejected, true);
+  assert.deepEqual(limit.statuses, Array(128).fill('cancelled'));
+  await clean('registration bound and bulk disposal release all work');
+
+  await reset('<p>before</p>');
+  await page.evaluate(() => { globalThis.testConditions = { wait: () => ({status:'matched'}) }; });
+  await finish(await start(text('css=p', 'never', { timeoutMilliseconds: 30 })), 'expired');
+  await clean('application realm cannot forge an isolated condition outcome');
+
+  await reset('<p>before</p>');
+  const navigation = await start(text('css=p', 'never'));
+  const oldResult = evaluate(`testPromises.get(${JSON.stringify(navigation)})`).then(result => result.status, error => error.message);
+  await page.goto('data:text/html,<p>successor</p>');
+  const oldOutcome = await oldResult;
+  assert.ok(oldOutcome === 'cancelled' || /context|navigat|collected/i.test(oldOutcome), oldOutcome);
+  executionContextId = undefined;
+  await reset('<p>successor</p>');
+  await finish(await start(text('css=p', 'successor')));
+  await clean('document transition retires the old registry');
+
+  const finalSources = await sourceManifest();
+  assert.deepEqual(finalSources, sources, 'sources changed during the registry experiment');
+  const destinationDirectory = process.env.FLASHWRIGHT_CONDITION_EVIDENCE_DIRECTORY ?? 'compatibility/evidence';
+  await mkdir(destinationDirectory, { recursive: true });
+  const destination = join(destinationDirectory, `resident-registry-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}.json`);
+  await writeFile(destination, JSON.stringify({ status:'passed',node:process.version,platform:process.platform,architecture:process.arch,browserVersion:browser.version(),browserPath,
+    browserSha256:createHash('sha256').update(await readFile(browserPath)).digest('hex'),
+    environmentClass:process.env.FLASHWRIGHT_ENVIRONMENT_CLASS ?? 'local-development-host',containerImage:process.env.FLASHWRIGHT_CONTAINER_IMAGE ?? null,sources,cases,
+    sourceHashes:Object.fromEntries(sourceNames.map((name,index)=>[name,createHash('sha256').update([injectedSource,codecSource,locatorSource,registrySource][index]).digest('hex')])),
+    scope:'Disabled renderer-registry experiment using the existing complete isolated assertion predicate. Production engine integration, independent host deadlines/cancellation, blocked-renderer handling and net performance benefit remain unverified.' }, null, 2)+'\n');
+  console.log(`Resident registry evidence: ${destination}`);
+} finally { await browser.close(); }

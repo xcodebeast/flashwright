@@ -1,0 +1,263 @@
+use flashwright_browser::Connection;
+use flashwright_protocol::ErrorCode;
+use serde_json::{Value, json};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, duplex, split};
+use tokio::time::{Duration, timeout};
+
+#[tokio::test]
+async fn interleaved_events_and_out_of_order_replies_preserve_request_identity() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut events = connection.subscribe();
+    let first_connection = connection.clone();
+    let first = tokio::spawn(async move { first_connection.call("first", json!({}), None).await });
+    let second_connection = connection.clone();
+    let second = tokio::spawn(async move {
+        second_connection
+            .call("second", json!({}), Some("session"))
+            .await
+    });
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut commands = Vec::new();
+    for _ in 0..2 {
+        let mut bytes = Vec::new();
+        reader.read_until(0, &mut bytes).await.unwrap();
+        commands.push(serde_json::from_slice::<Value>(&bytes[..bytes.len() - 1]).unwrap());
+    }
+    writer
+        .write_all(b"{\"method\":\"Runtime.consoleAPICalled\",\"params\":{\"text\":\"\\ud800\"}}\0")
+        .await
+        .unwrap();
+    for command in commands.iter().rev() {
+        let reply = json!({ "id": command["id"], "result": { "method": command["method"] } });
+        let mut bytes = serde_json::to_vec(&reply).unwrap();
+        bytes.push(0);
+        writer.write_all(&bytes).await.unwrap();
+    }
+    assert_eq!(first.await.unwrap().unwrap()["method"], "first");
+    assert_eq!(second.await.unwrap().unwrap()["method"], "second");
+    let event = events.recv().await.unwrap();
+    let synchronization = connection.synchronize_events();
+    tokio::pin!(synchronization);
+    assert!(
+        timeout(Duration::from_millis(10), &mut synchronization)
+            .await
+            .is_err()
+    );
+    connection.acknowledge_event(event.sequence);
+    timeout(Duration::from_secs(1), synchronization)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(event.method, "Runtime.consoleAPICalled");
+    assert_eq!(event.parameters.unwrap().get(), r#"{"text":"\ud800"}"#);
+}
+
+#[tokio::test]
+async fn eof_settles_all_pending_requests_and_future_calls() {
+    let (host, peer) = duplex(1024);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    drop(peer);
+    let error = timeout(
+        Duration::from_secs(1),
+        connection.call("blocked", json!({}), None),
+    )
+    .await
+    .unwrap()
+    .unwrap_err();
+    assert!(matches!(
+        error.code,
+        ErrorCode::Protocol | ErrorCode::BrowserDisconnected
+    ));
+    assert!(connection.call("afterEOF", json!({}), None).await.is_err());
+}
+
+#[tokio::test]
+async fn late_reply_after_cancellation_cannot_settle_another_request() {
+    let (host, peer) = duplex(1024);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let pending_connection = connection.clone();
+    let pending =
+        tokio::spawn(async move { pending_connection.call("cancelled", json!({}), None).await });
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut bytes = Vec::new();
+    reader.read_until(0, &mut bytes).await.unwrap();
+    pending.abort();
+    assert!(pending.await.unwrap_err().is_cancelled());
+    writer
+        .write_all(b"{\"id\":1,\"result\":{\"stale\":true}}\0")
+        .await
+        .unwrap();
+    let next_connection = connection.clone();
+    let next = tokio::spawn(async move { next_connection.call("next", json!({}), None).await });
+    bytes.clear();
+    reader.read_until(0, &mut bytes).await.unwrap();
+    assert_eq!(
+        serde_json::from_slice::<Value>(&bytes[..bytes.len() - 1]).unwrap()["id"],
+        2
+    );
+    writer
+        .write_all(b"{\"id\":2,\"result\":{\"fresh\":true}}\0")
+        .await
+        .unwrap();
+    assert_eq!(next.await.unwrap().unwrap(), json!({ "fresh": true }));
+}
+
+#[tokio::test]
+async fn sequence_dispatches_all_commands_before_any_reply_and_matches_reversed_replies() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut commands = connection
+        .start_commands(
+            "input",
+            (0..201).map(|index| json!({ "index": index })).collect(),
+            Some("page"),
+        )
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut received = Vec::new();
+    for index in 0..201 {
+        let command = read_command(&mut reader).await;
+        assert_eq!(command["params"]["index"], index);
+        assert_eq!(command["sessionId"], "page");
+        received.push(command);
+    }
+    for command in received.into_iter().rev() {
+        let mut bytes =
+            serde_json::to_vec(&json!({ "id": command["id"], "result": command["params"] }))
+                .unwrap();
+        bytes.push(0);
+        writer.write_all(&bytes).await.unwrap();
+    }
+    for (index, command) in commands.iter_mut().enumerate() {
+        let result = timeout(Duration::from_secs(1), command.response())
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(result["index"], index);
+    }
+}
+
+#[tokio::test]
+async fn cancellation_withdraws_unsent_suffix_after_partial_first_write() {
+    let (host, peer) = duplex(1);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let commands = connection
+        .start_commands("input", vec![json!(0), json!(1), json!(2)], None)
+        .unwrap();
+    // One byte fits, so the first command starts but cannot finish until the peer reads.
+    tokio::task::yield_now().await;
+    assert!(!commands[0].prevent_dispatch());
+    assert!(commands[1].prevent_dispatch());
+    assert!(commands[2].prevent_dispatch());
+    drop(commands);
+    let _following = connection
+        .start_command("following", json!({}), None)
+        .unwrap();
+    let mut reader = BufReader::new(peer);
+    assert_eq!(read_command(&mut reader).await["params"], 0);
+    assert_eq!(read_command(&mut reader).await["method"], "following");
+}
+
+#[tokio::test]
+async fn rejected_sequences_have_no_wire_effects_and_release_pending_capacity() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let occupied = connection
+        .start_commands("occupied", vec![Value::Null; 1024], None)
+        .unwrap();
+    assert!(
+        matches!(connection.start_commands("overCapacity", vec![Value::Null; 2], None), Err(error) if error.code == ErrorCode::ResourceLimit)
+    );
+    drop(occupied);
+    let oversized = vec![json!("x".repeat(4 * 1024 * 1024)); 2];
+    assert!(
+        matches!(connection.start_commands("oversized", oversized, None), Err(error) if error.code == ErrorCode::ResourceLimit)
+    );
+    let _following = connection
+        .start_command("following", Value::Null, None)
+        .unwrap();
+    let mut reader = BufReader::new(peer);
+    assert_eq!(read_command(&mut reader).await["method"], "following");
+}
+
+#[tokio::test]
+async fn full_queue_rejects_entire_sequence_and_rolls_back_registrations() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let occupied: Vec<_> = (0..128)
+        .map(|_| {
+            connection
+                .start_command("occupied", Value::Null, None)
+                .unwrap()
+        })
+        .collect();
+    assert!(
+        matches!(connection.start_commands("rejected", vec![Value::Null; 3], None), Err(error) if error.code == ErrorCode::ResourceLimit)
+    );
+    drop(occupied);
+    tokio::task::yield_now().await;
+    let _following = connection
+        .start_commands("following", vec![Value::Null; 1024], None)
+        .unwrap();
+    let mut reader = BufReader::new(peer);
+    assert_eq!(read_command(&mut reader).await["method"], "following");
+}
+
+#[tokio::test]
+async fn eof_settles_entire_sequence_and_received_replies_can_be_recovered_without_waiting() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut commands = connection
+        .start_commands("input", vec![Value::Null; 3], None)
+        .unwrap();
+    let mut peer = BufReader::new(peer);
+    let first = read_command(&mut peer).await;
+    let mut bytes =
+        serde_json::to_vec(&json!({ "id": first["id"], "result": { "acknowledged": true } }))
+            .unwrap();
+    bytes.push(0);
+    peer.get_mut().write_all(&bytes).await.unwrap();
+    drop(peer);
+    timeout(Duration::from_secs(1), async {
+        loop {
+            if let Some(reply) = commands[0].try_response() {
+                assert_eq!(reply.unwrap()["acknowledged"], true);
+                break;
+            }
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    assert!(!commands[0].prevent_dispatch());
+    for command in &mut commands[1..] {
+        assert!(
+            timeout(Duration::from_secs(1), command.response())
+                .await
+                .unwrap()
+                .is_err()
+        );
+    }
+}
+
+async fn read_command<Reader: tokio::io::AsyncBufRead + Unpin>(reader: &mut Reader) -> Value {
+    let mut bytes = Vec::new();
+    timeout(Duration::from_secs(1), reader.read_until(0, &mut bytes))
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(bytes.last(), Some(&0));
+    serde_json::from_slice(&bytes[..bytes.len() - 1]).unwrap()
+}

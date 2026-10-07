@@ -1,0 +1,61 @@
+name: Verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: [ubuntu-24.04, macos-14]
+        node-version: [22.22.0, 24.15.0]
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: python3 tools/watchdog.py --timeout 60 -- npm run test:runner-boundary
+      - run: python3 -m unittest discover -s tools -p 'test_*.py'
+      - run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
+      - run: npx playwright install --with-deps chromium
+      - run: npm run verify:core
+        env:
+          FLASHWRIGHT_ENVIRONMENT_CLASS: native-ci
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: contracts-${{ matrix.operating-system }}-node-${{ matrix.node-version }}
+          path: compatibility/evidence
+
+  native-baseline:
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.15.0
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - run: npm run baseline
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: baseline-${{ matrix.operating-system }}
+          path: benchmarks/results

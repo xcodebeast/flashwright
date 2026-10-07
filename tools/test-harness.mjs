@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { requireVerifiedBrowser } from './browser-identity.mjs';
+import { quantile, summarize, comparePaired } from '../benchmarks/statistics.mjs';
+import { launchArguments } from '../benchmarks/paired-contract.mjs';
+
+test('statistics preserve independent-launch units and do not invent tail estimates', () => {
+  const policy = { seed: 1, bootstrapReplicates: 1000, confidenceLevel: 0.95, minimumSamplesForP95: 200, minimumSamplesForP99: 1000 };
+  const result = summarize([[1, 2, 3], [7, 8, 9]], policy);
+  assert.deepEqual(result.launchMedians, [2, 8]);
+  assert.equal(result.medianMilliseconds, 5);
+  assert.equal(result.observedMaximumMilliseconds, 9);
+  assert.equal(result.p95Milliseconds, null);
+  assert.equal(result.p99Milliseconds, null);
+  assert.deepEqual(result.launchMedianConfidenceInterval, [2, 8]);
+  assert.equal(quantile([], 0.5), null);
+});
+
+test('paired comparisons retain launch correspondence and reject incomplete pairs', () => {
+  const policy = { seed: 1, bootstrapReplicates: 1000, confidenceLevel: 0.95, minimumSamplesForP95: 200, minimumSamplesForP99: 1000 };
+  const result = comparePaired([[10, 10, 10], [100, 100, 100]], [[5, 5, 5], [50, 50, 50]], policy);
+  assert.deepEqual(result.speedupRatios, [2, 2]);
+  assert.equal(result.medianPairedSpeedup, 2);
+  assert.deepEqual(result.pairedSpeedupConfidenceInterval, [2, 2]);
+  assert.throws(() => comparePaired([[1]], [], policy), /complete positive samples/);
+  assert.throws(() => comparePaired([[1], []], [[1], [1]], policy), /complete positive samples/);
+});
+
+test('actual launch comparison normalizes only owned profile paths', () => {
+  const browser = '/browser path/Chrome';
+  const reference = '2026 pw:browser <launching> /browser path/Chrome --headless --user-data-dir=/tmp/reference --remote-debugging-pipe\n';
+  const native = 'flashwright:browser <launching> ' + JSON.stringify({ executable: browser, arguments: ['--headless', '--user-data-dir=/tmp/native', '--remote-debugging-pipe'] });
+  assert.deepEqual(launchArguments(reference, 'playwright', browser), launchArguments(native, 'flashwright', browser));
+  assert.throws(() => launchArguments(reference + reference, 'playwright', browser), /exactly one/);
+  assert.throws(() => launchArguments(reference, 'playwright', '/another/browser'), /path differs/);
+});
+
+
+test('benchmark admission binds core verification to the exact browser executable', () => {
+  const browser = { executablePath: '/pinned/chrome', sha256: 'full-browser-hash', version: '148.0.7778.96', distribution: 'full-chromium' };
+  const report = { browser, browserChangedDuringVerification: false };
+  requireVerifiedBrowser(report, browser);
+  requireVerifiedBrowser(report, { ...browser, executablePath: undefined, path: browser.executablePath });
+  assert.throws(() => requireVerifiedBrowser({}, browser), /no executable identity/);
+  assert.throws(() => requireVerifiedBrowser({ ...report, browserChangedDuringVerification: true }, browser), /changed during/);
+  assert.throws(() => requireVerifiedBrowser(report, { ...browser, executablePath: '/pinned/chrome-headless-shell' }), /browser path/);
+  assert.throws(() => requireVerifiedBrowser(report, { ...browser, sha256: 'replacement-with-same-version' }), /browser executable/);
+  assert.throws(() => requireVerifiedBrowser(report, { ...browser, version: '148.0.7778.97' }), /browser version/);
+  assert.throws(() => requireVerifiedBrowser(report, { ...browser, distribution: 'chromium-headless-shell' }), /browser distribution/);
+});
