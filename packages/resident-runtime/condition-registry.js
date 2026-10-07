@@ -1,6 +1,7 @@
 // Document-owned conditions. The engine keeps this path behind its experiment switch.
 function createConditionRegistry({ instrumentation = false, observeMutations = true } = {}) {
   const conditions = new Map();
+  const dirtyConditions = new Set();
   const roots = new Set();
   const discoveryQueue = [];
   const maximumConditions = 128;
@@ -10,11 +11,17 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   const discoveryVisitsPerTask = 512;
   const mutationVisitsPerBatch = 512;
   const fallbackMilliseconds = 100;
+  const maximumChecksPerTask = 8;
+  const maximumCheckMillisecondsPerTask = 4;
   const events = ['input', 'change', 'focusin', 'focusout', 'resize', 'scroll', 'hashchange', 'popstate', 'visibilitychange', 'transitionrun', 'transitionend', 'animationstart', 'animationend'];
-  const counters = { predicateEvaluations: 0, discoveryPasses: 0, discoveryVisits: 0, mutationBatches: 0, mutationRecordsVisited: 0, addedNodesVisited: 0, fallbackChecks: 0, animationFrameChecks: 0, timerFallbackChecks: 0, discoveryOverflows: 0 };
+  const counters = { predicateEvaluations: 0, discoveryPasses: 0, discoveryVisits: 0, mutationBatches: 0, mutationRecordsVisited: 0, addedNodesVisited: 0, fallbackChecks: 0, animationFrameChecks: 0, timerFallbackChecks: 0, discoveryOverflows: 0, flushTasks: 0, maximumChecksBeforeYield: 0 };
   let observer;
   let generation = 0;
   let flushQueued = false;
+  let flushChannel;
+  let flushTaskQueued = false;
+  let checksBeforeYield = 0;
+  let flushStartedAt;
   let animationFrame;
   let fallbackTimer;
   let deadlineTimer;
@@ -110,7 +117,17 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     observer?.disconnect();
     observer = undefined;
     roots.clear();
+    dirtyConditions.clear();
     discoveryQueue.length = 0;
+    if (flushChannel) {
+      flushChannel.port1.onmessage = null;
+      flushChannel.port1.close();
+      flushChannel.port2.close();
+      flushChannel = undefined;
+    }
+    flushTaskQueued = false;
+    checksBeforeYield = 0;
+    flushStartedAt = undefined;
     for (const event of events) globalThis.removeEventListener(event, invalidate, true);
     globalThis.removeEventListener('pagehide', dispose);
     document.fonts?.removeEventListener('loadingdone', invalidate);
@@ -127,6 +144,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   function finish(condition, result) {
     if (conditions.get(condition.token) !== condition) return;
     conditions.delete(condition.token);
+    dirtyConditions.delete(condition);
     condition.check = undefined;
     condition.resolve(result);
     if (!conditions.size) stop();
@@ -176,22 +194,64 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     }
   }
 
+  function hasFlushBudget() {
+    // Even a slow root-pruning pass must leave room for one predicate to progress.
+    return checksBeforeYield === 0 || checksBeforeYield < maximumChecksPerTask &&
+      (flushStartedAt === undefined || performance.now() - flushStartedAt < maximumCheckMillisecondsPerTask);
+  }
+
+  /** The task boundary also resets the budget when a check or an observer queues
+   * another microtask. Otherwise repeated small flushes could starve the app too.
+   * MessageChannel avoids the nested-timer clamp during a long pending group. */
+  function scheduleFlushTask() {
+    if (flushTaskQueued) return;
+    if (!flushChannel) {
+      const queuedGeneration = generation;
+      flushChannel = new MessageChannel();
+      flushChannel.port1.onmessage = () => {
+        if (queuedGeneration !== generation) return;
+        flushTaskQueued = false;
+        checksBeforeYield = 0;
+        flushStartedAt = undefined;
+        count('flushTasks');
+        flush();
+      };
+    }
+    flushTaskQueued = true;
+    flushChannel.port2.postMessage(null);
+  }
+
+  function flush() {
+    if (!dirtyConditions.size) return;
+    if (flushStartedAt === undefined) flushStartedAt = performance.now();
+    scheduleFlushTask();
+    pruneRoots();
+    while (dirtyConditions.size && hasFlushBudget()) {
+      const condition = dirtyConditions.values().next().value;
+      dirtyConditions.delete(condition);
+      checksBeforeYield++;
+      if (instrumentation) counters.maximumChecksBeforeYield = Math.max(counters.maximumChecksBeforeYield, checksBeforeYield);
+      void evaluate(condition);
+    }
+  }
+
   function queueFlush() {
-    if (flushQueued || !conditions.size) return;
+    if (flushQueued || !dirtyConditions.size) return;
+    if (!hasFlushBudget()) { scheduleFlushTask(); return; }
     flushQueued = true;
     const queuedGeneration = generation;
     queueMicrotask(() => {
       if (queuedGeneration !== generation) return;
       flushQueued = false;
-      pruneRoots();
-      for (const condition of conditions.values()) {
-        if (condition.dirty && !condition.running) void evaluate(condition);
-      }
+      flush();
     });
   }
 
   function invalidate() {
-    for (const condition of conditions.values()) condition.dirty = true;
+    for (const condition of conditions.values()) {
+      condition.dirty = true;
+      if (!condition.running) dirtyConditions.add(condition);
+    }
     queueFlush();
   }
 
@@ -218,7 +278,10 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
       finish(condition, { status: 'error', message: String(error?.stack ?? error).slice(0, 16384) });
     } finally {
       condition.running = false;
-      if (conditions.get(condition.token) === condition && condition.dirty) queueFlush();
+      if (conditions.get(condition.token) === condition && condition.dirty) {
+        dirtyConditions.add(condition);
+        queueFlush();
+      }
     }
   }
 
@@ -254,6 +317,8 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     if (!instrumentation) throw new Error('Condition instrumentation is disabled');
     return {
       ...counters, activeConditions: conditions.size, observedRoots: roots.size,
+      queuedConditions: dirtyConditions.size, flushMicrotaskScheduled: flushQueued,
+      flushTaskScheduled: flushTaskQueued, flushChannelOpen: flushChannel !== undefined,
       queuedDiscovery: discoveryQueue.length, animationFrameScheduled: animationFrame !== undefined,
       fallbackTimerScheduled: fallbackTimer !== undefined, deadlineTimerScheduled: deadlineTimer !== undefined,
       discoveryTimerScheduled: discoveryTimer !== undefined,
