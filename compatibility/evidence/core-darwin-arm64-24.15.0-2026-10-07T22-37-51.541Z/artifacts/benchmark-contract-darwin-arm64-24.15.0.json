@@ -1,0 +1,1573 @@
+{
+  "node": "v24.15.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "driverSha256": "fa160cc5d5495795fd6a26f480d77fcc9d414034026ea4ba0f8049e529ed2019",
+  "scope": "Functional harness validation for the seven shared benchmark flows and actual matched launch arguments. This single pair is not performance evidence.",
+  "checks": [
+    "matched actual launch arguments",
+    "native trusted input and application outcomes",
+    "real backend and document request counts",
+    "owned process cleanup",
+    "reject omitted trusted input",
+    "reject omitted backend request",
+    "reject unmatched browser policy"
+  ],
+  "results": {
+    "playwright": {
+      "launchIndex": 0,
+      "engine": "playwright",
+      "engineConfiguration": {
+        "residentAssertions": true,
+        "conditionInstrumentation": false
+      },
+      "workloads": [
+        {
+          "name": "noop",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 0.4499169999999708
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 0.5069589999999948
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 0.438459000000023
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 0.4012910000000147
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 0.41295800000000327
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 0.3930000000000291
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 0.3484170000000404
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 0.29362500000002
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 0.3052500000000009
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 0.3790840000000344
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 0.33429100000000744
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 0.3028749999999718
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 3.586999999999989
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 0.5909580000000005
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 0.46375000000000455
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 68.72420799999998,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 4.151042000000018,
+          "completeMilliseconds": 83.00129099999998
+        },
+        {
+          "name": "interaction",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 16.32854199999997
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 16.883624999999938
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 15.90874999999994
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 16.454791999999998
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 16.89016700000002
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 16.36570800000004
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 16.912625000000048
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 17.296749999999975
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 16.252250000000004
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 16.11870900000008
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 15.268750000000068
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 17.809374999999932
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 69.70712499999996
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 18.970500000000015
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 16.143417
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 54.71945800000003,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 15
+          },
+          "cleanupMilliseconds": 1.6910839999999325,
+          "completeMilliseconds": 360.340417
+        },
+        {
+          "name": "assertion",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 24.335000000000036,
+              "detectionLagUpperBoundMilliseconds": 15.5
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 22.87737500000003,
+              "detectionLagUpperBoundMilliseconds": 13.199999988079071
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 24.25470800000005,
+              "detectionLagUpperBoundMilliseconds": 14.100000023841858
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 24.716542000000004,
+              "detectionLagUpperBoundMilliseconds": 14
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 24.90579099999991,
+              "detectionLagUpperBoundMilliseconds": 14.900000035762787
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 24.695208999999977,
+              "detectionLagUpperBoundMilliseconds": 14.800000011920929
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 23.702791999999818,
+              "detectionLagUpperBoundMilliseconds": 13.300000011920929
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 24.435375000000022,
+              "detectionLagUpperBoundMilliseconds": 14.300000011920929
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 24.53345800000011,
+              "detectionLagUpperBoundMilliseconds": 15
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 24.90975000000003,
+              "detectionLagUpperBoundMilliseconds": 15
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 25.477540999999974,
+              "detectionLagUpperBoundMilliseconds": 16.399999976158142
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 24.730583000000024,
+              "detectionLagUpperBoundMilliseconds": 15
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 17.324791000000005,
+              "detectionLagUpperBoundMilliseconds": 4.800000011920929
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 24.619207999999958,
+              "detectionLagUpperBoundMilliseconds": 15.899999976158142
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 24.836125000000038,
+              "detectionLagUpperBoundMilliseconds": 15.900000035762787
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 54.04345799999999,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.6796669999998812,
+          "completeMilliseconds": 416.64866700000005
+        },
+        {
+          "name": "navigation",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 11.298209000000043
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 11.690374999999904
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 11.392749999999978
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 11.671875
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 12.0775000000001
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 11.640707999999904
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 11.249957999999879
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 11.119416999999885
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 11.017624999999953
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 12.263707999999951
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 11.961916999999858
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 11.4837500000001
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 20.188916999999947
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 12.10916700000007
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 11.917083999999932
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 63.71287500000017,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.6796670000001086,
+          "completeMilliseconds": 249.42779100000007
+        },
+        {
+          "name": "setup",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 68.24395800000002
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 67.11520799999994
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 70.64829200000008
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 70.73008300000015
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 70.76679099999978
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 72.74262500000009
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 66.33591700000034
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 69.17408400000022
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 70.08249999999998
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 67.69441700000016
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 68.7641249999997
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 71.83758399999988
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 73.16370800000004
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 69.62116700000001
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 67.02079200000003
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 0.015957999999955064,
+          "accounting": {
+            "description": "Fresh context + page + navigation + assertion + disposal per iteration",
+            "publicCallsPerIteration": 5
+          },
+          "observations": {
+            "freshContexts": 15
+          },
+          "cleanupMilliseconds": 0.01662499999974898,
+          "completeMilliseconds": 1044.121708
+        },
+        {
+          "name": "backend",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 42.22495800000024
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 38.504457999999886
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 43.91529199999968
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 41.41200000000026
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 41.40004200000021
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 41.03670800000009
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 43.95245799999975
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 40.82295900000008
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 39.98770800000011
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 44.87695799999983
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 41.98720800000001
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 50.04408400000011
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 64.14400000000023
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 71.95404099999996
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 39.3576250000001
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 52.507040999999845,
+          "accounting": {
+            "publicCallsPerIteration": 5,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 15,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.9864999999999782,
+          "completeMilliseconds": 740.8599159999999
+        },
+        {
+          "name": "failure",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 24.859541999999692
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 25.013124999999945
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 24.757665999999972
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 24.210417000000234
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 24.68308399999978
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 24.185875000000124
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 23.936709000000064
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 24.006624999999985
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 23.781124999999975
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 24.080540999999812
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 23.962167000000136
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 24.11595800000032
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 25.267041000000063
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 24.60124999999971
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 25.130290999999943
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 59.03462500000023,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.5341669999997976,
+          "completeMilliseconds": 428.15408400000024
+        }
+      ],
+      "failures": [],
+      "launchMilliseconds": 117.20345800000001,
+      "browserVersion": "148.0.7778.96",
+      "cleanupMilliseconds": 25.452291999999943,
+      "completeMilliseconds": 3468.935083,
+      "backend": {
+        "documents": 36,
+        "backendRequests": 15,
+        "otherRequests": 0
+      },
+      "processExit": {
+        "code": 0,
+        "signal": null
+      },
+      "processWallMilliseconds": 3901.2100419999997,
+      "diagnostics": "2026-10-07T22:39:38.395Z pw:browser <launching> /Users/P/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/var/folders/c4/tbsf2ms10fd3ykfp2m4lsk3w0000gp/T/playwright_chromiumdev_profile-rmhABc --remote-debugging-pipe --no-startup-window\n2026-10-07T22:39:38.401Z pw:browser <launched> pid=34683\n2026-10-07T22:39:41.828Z pw:browser [pid=34683] <gracefully close start>\n2026-10-07T22:39:41.841Z pw:browser [pid=34683] <process did exit: exitCode=0, signal=null>\n2026-10-07T22:39:41.841Z pw:browser [pid=34683] starting temporary directories cleanup\n2026-10-07T22:39:41.853Z pw:browser [pid=34683] finished temporary directories cleanup\n2026-10-07T22:39:41.853Z pw:browser [pid=34683] <gracefully close end>\n",
+      "resources": {
+        "command": [
+          "/Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node",
+          "benchmarks/sample.mjs",
+          "0",
+          "playwright"
+        ],
+        "timeoutSeconds": 90,
+        "timedOut": false,
+        "interrupted": false,
+        "exitCode": 0,
+        "elapsedSeconds": 3.8294301659916528,
+        "samplingIntervalSeconds": 0.1,
+        "maximumSampledConcurrentRssBytes": 506167296,
+        "observedCpuSeconds": 3.03,
+        "observedProcessCount": 17,
+        "remainingObservedProcesses": [],
+        "cleanupSignals": [],
+        "linuxChildSubreaper": false,
+        "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU is accumulated last-observed process time, not an exact kernel tree accounting. RSS is a concurrent sum, not summed per-process maxima.",
+        "samples": [
+          {
+            "elapsedSeconds": 0.03406433301279321,
+            "concurrentRssBytes": 966656,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.16992987500270829,
+            "concurrentRssBytes": 96813056,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.31532479100860655,
+            "concurrentRssBytes": 184500224,
+            "liveOwnedProcesses": 2
+          },
+          {
+            "elapsedSeconds": 0.47163658298086375,
+            "concurrentRssBytes": 424017920,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 0.6178554159705527,
+            "concurrentRssBytes": 466255872,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 0.7623897499870509,
+            "concurrentRssBytes": 470433792,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 0.8973922500154004,
+            "concurrentRssBytes": 461799424,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.0428967910120264,
+            "concurrentRssBytes": 471547904,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.1840305830119178,
+            "concurrentRssBytes": 478150656,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.3298606660100631,
+            "concurrentRssBytes": 470663168,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.4756254579988308,
+            "concurrentRssBytes": 503775232,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.6236710409866646,
+            "concurrentRssBytes": 472104960,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.7621504159760661,
+            "concurrentRssBytes": 481427456,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 1.9001976659637876,
+            "concurrentRssBytes": 485638144,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.0428384999977425,
+            "concurrentRssBytes": 490389504,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.180119291006122,
+            "concurrentRssBytes": 470499328,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.322368583001662,
+            "concurrentRssBytes": 474759168,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.4596714999643154,
+            "concurrentRssBytes": 476282880,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.5981961250072345,
+            "concurrentRssBytes": 477282304,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.7404521660064347,
+            "concurrentRssBytes": 500744192,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 2.881077624973841,
+            "concurrentRssBytes": 502317056,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 3.028068874962628,
+            "concurrentRssBytes": 505266176,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 3.1799282080028206,
+            "concurrentRssBytes": 506167296,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 3.3253193330019712,
+            "concurrentRssBytes": 419954688,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 3.4722896249732003,
+            "concurrentRssBytes": 498253824,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 3.618145915970672,
+            "concurrentRssBytes": 504578048,
+            "liveOwnedProcesses": 5
+          },
+          {
+            "elapsedSeconds": 3.7616957499994896,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 3.7954788749921136,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 3.8293585409992374,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          }
+        ]
+      },
+      "contractFailures": []
+    },
+    "flashwright": {
+      "launchIndex": 0,
+      "engine": "flashwright",
+      "engineConfiguration": {
+        "residentAssertions": true,
+        "conditionInstrumentation": false
+      },
+      "workloads": [
+        {
+          "name": "noop",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 0.46399999999999864
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 0.42845800000003464
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 0.3673329999999737
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 0.38741599999997334
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 0.3709999999999809
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 0.42979199999996354
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 0.42650000000003274
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 0.36266699999998764
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 0.33412500000002865
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 0.36658299999999144
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 0.33804200000002993
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 0.32954200000000355
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1.5031249999999545
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 0.4969159999999988
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 0.4070419999999899
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 65.45804199999998,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 2.1450829999999996,
+          "completeMilliseconds": 75.77295800000002
+        },
+        {
+          "name": "interaction",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 18.47791600000005
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 16.14183300000002
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 16.12074999999993
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 17.182457999999997
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 16.46983399999999
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 17.317250000000058
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 16.398833999999965
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 16.029916999999955
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 15.472750000000019
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 17.510708999999906
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 16.987874999999917
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 16.800000000000068
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 75.544375
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 13.637583000000063
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 14.770875000000046
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 51.46387500000003,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 15
+          },
+          "cleanupMilliseconds": 1.2894999999999754,
+          "completeMilliseconds": 358.61370800000003
+        },
+        {
+          "name": "assertion",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 11.482082999999989,
+              "detectionLagUpperBoundMilliseconds": 0.699999988079071
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 10.667167000000063,
+              "detectionLagUpperBoundMilliseconds": 0.7999999523162842
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 10.716249999999945,
+              "detectionLagUpperBoundMilliseconds": 0.7000000476837158
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 11.112707999999998,
+              "detectionLagUpperBoundMilliseconds": 0.699999988079071
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 9.93504100000007,
+              "detectionLagUpperBoundMilliseconds": 0.5
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 10.436667000000057,
+              "detectionLagUpperBoundMilliseconds": 0.5
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 10.090832999999975,
+              "detectionLagUpperBoundMilliseconds": 0.5999999642372131
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 10.671790999999985,
+              "detectionLagUpperBoundMilliseconds": 0.5999999642372131
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 9.734833000000094,
+              "detectionLagUpperBoundMilliseconds": 0.800000011920929
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 10.418874999999957,
+              "detectionLagUpperBoundMilliseconds": 0.699999988079071
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 10.039874999999938,
+              "detectionLagUpperBoundMilliseconds": 0.7000000476837158
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 10.746416000000067,
+              "detectionLagUpperBoundMilliseconds": 0.699999988079071
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 15.836083999999914,
+              "detectionLagUpperBoundMilliseconds": 3.5
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 10.5,
+              "detectionLagUpperBoundMilliseconds": 0.7000000476837158
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 11.06737499999997,
+              "detectionLagUpperBoundMilliseconds": 0.5999999642372131
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 55.424667,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.2272500000000264,
+          "completeMilliseconds": 221.16587500000003
+        },
+        {
+          "name": "navigation",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 11.239958999999999
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 11.069333000000142
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 10.844666000000188
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 10.986582999999882
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 10.80820800000015
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 10.796540999999934
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 10.773666999999932
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 10.851875000000064
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 10.391624999999976
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 10.368541999999934
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 10.235666000000037
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 10.442166999999927
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 18.770250000000033
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 10.942457999999988
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 10.642875000000004
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 53.40516700000012,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.3386669999999867,
+          "completeMilliseconds": 225.25595799999996
+        },
+        {
+          "name": "setup",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 67.37874999999985
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 67.80429200000003
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 73.050792
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 69.83825000000002
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 69.30308299999979
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 73.74012500000003
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 69.17825000000016
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 69.21612499999992
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 70.07337499999994
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 72.31779200000028
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 69.71420799999987
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 72.86904200000026
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 70.96662500000002
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 74.82637499999987
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 73.32391699999994
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 0.033707999999933236,
+          "accounting": {
+            "description": "Fresh context + page + navigation + assertion + disposal per iteration",
+            "publicCallsPerIteration": 5
+          },
+          "observations": {
+            "freshContexts": 15
+          },
+          "cleanupMilliseconds": 0.008166999999957625,
+          "completeMilliseconds": 1063.7901249999998
+        },
+        {
+          "name": "backend",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 41.620542000000114
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 41.227416000000176
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 40.683958000000075
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 41.69037500000013
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 42.175874999999905
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 42.818333000000166
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 41.7322079999999
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 41.6848329999998
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 40.57441599999993
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 41.69054099999994
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 41.50416600000017
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 41.74366599999985
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 56.553042000000005
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 66.22820899999988
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 40.23266599999988
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 56.48120800000015,
+          "accounting": {
+            "publicCallsPerIteration": 5,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 15,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.3722920000000158,
+          "completeMilliseconds": 721.0424579999999
+        },
+        {
+          "name": "failure",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 27.197833000000173
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 25.140249999999924
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 25.1081250000002
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 26.171792000000096
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 26.000375000000076
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 25.344624999999724
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 24.79712500000005
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 25.10199999999986
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 26.578166999999667
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 25.405917000000045
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 26.069708999999875
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 26.460125000000062
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 26.812416000000212
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 26.986541000000216
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 25.65429099999983
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 63.231874999999945,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 1.6078750000001492,
+          "completeMilliseconds": 455.1156249999999
+        }
+      ],
+      "failures": [],
+      "launchMilliseconds": 115.433041,
+      "browserVersion": "148.0.7778.96",
+      "cleanupMilliseconds": 23.205207999999857,
+      "completeMilliseconds": 3263.083792,
+      "backend": {
+        "documents": 36,
+        "backendRequests": 15,
+        "otherRequests": 0
+      },
+      "processExit": {
+        "code": 0,
+        "signal": null
+      },
+      "processWallMilliseconds": 3788.56625,
+      "diagnostics": "flashwright:browser <launching> {\"arguments\":[\"--disable-field-trial-config\",\"--disable-background-networking\",\"--disable-background-timer-throttling\",\"--disable-backgrounding-occluded-windows\",\"--disable-back-forward-cache\",\"--disable-breakpad\",\"--disable-client-side-phishing-detection\",\"--disable-component-extensions-with-background-pages\",\"--disable-component-update\",\"--no-default-browser-check\",\"--disable-default-apps\",\"--disable-dev-shm-usage\",\"--disable-edgeupdater\",\"--disable-extensions\",\"--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion\",\"--enable-features=CDPScreenshotNewSurface\",\"--allow-pre-commit-input\",\"--disable-hang-monitor\",\"--disable-ipc-flooding-protection\",\"--disable-popup-blocking\",\"--disable-prompt-on-repost\",\"--disable-renderer-backgrounding\",\"--force-color-profile=srgb\",\"--metrics-recording-only\",\"--no-first-run\",\"--password-store=basic\",\"--use-mock-keychain\",\"--no-service-autorun\",\"--export-tagged-pdf\",\"--disable-search-engine-choice-screen\",\"--unsafely-disable-devtools-self-xss-warnings\",\"--edge-skip-compat-layer-relaunch\",\"--disable-infobars\",\"--disable-search-engine-choice-screen\",\"--disable-sync\",\"--enable-unsafe-swiftshader\",\"--headless\",\"--hide-scrollbars\",\"--mute-audio\",\"--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4\",\"--no-sandbox\",\"--user-data-dir=/var/folders/c4/tbsf2ms10fd3ykfp2m4lsk3w0000gp/T/flashwright-chromium-5g0De3\",\"--remote-debugging-pipe\",\"--no-startup-window\"],\"executable\":\"/Users/P/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell\"}\n[1008/003945.561239:ERROR:content/browser/devtools/devtools_pipe_handler.cc:188] Connection terminated while reading from pipe\n",
+      "resources": {
+        "command": [
+          "/Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node",
+          "benchmarks/sample.mjs",
+          "0",
+          "flashwright"
+        ],
+        "timeoutSeconds": 90,
+        "timedOut": false,
+        "interrupted": false,
+        "exitCode": 0,
+        "elapsedSeconds": 3.719054791959934,
+        "samplingIntervalSeconds": 0.1,
+        "maximumSampledConcurrentRssBytes": 485621760,
+        "observedCpuSeconds": 2.44,
+        "observedProcessCount": 20,
+        "remainingObservedProcesses": [],
+        "cleanupSignals": [],
+        "linuxChildSubreaper": false,
+        "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU is accumulated last-observed process time, not an exact kernel tree accounting. RSS is a concurrent sum, not summed per-process maxima.",
+        "samples": [
+          {
+            "elapsedSeconds": 0.0334629169665277,
+            "concurrentRssBytes": 933888,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.17539112496888265,
+            "concurrentRssBytes": 97992704,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.3085284580010921,
+            "concurrentRssBytes": 164069376,
+            "liveOwnedProcesses": 3
+          },
+          {
+            "elapsedSeconds": 0.4620165830128826,
+            "concurrentRssBytes": 376864768,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 0.6026729579898529,
+            "concurrentRssBytes": 469843968,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 0.7417781249969266,
+            "concurrentRssBytes": 473939968,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 0.8903127079829574,
+            "concurrentRssBytes": 434978816,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.0323487499845214,
+            "concurrentRssBytes": 471777280,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.180265832983423,
+            "concurrentRssBytes": 475430912,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.3289602500153705,
+            "concurrentRssBytes": 415776768,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.485993749985937,
+            "concurrentRssBytes": 446005248,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.6256863749586046,
+            "concurrentRssBytes": 452067328,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.7663970830035396,
+            "concurrentRssBytes": 447807488,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.9079372080159374,
+            "concurrentRssBytes": 439894016,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.055123707978055,
+            "concurrentRssBytes": 460783616,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.1943275830126368,
+            "concurrentRssBytes": 454082560,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.3364524169592187,
+            "concurrentRssBytes": 452968448,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.4816482499591075,
+            "concurrentRssBytes": 477921280,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.6273802499636076,
+            "concurrentRssBytes": 480067584,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.772341082978528,
+            "concurrentRssBytes": 481656832,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 2.9194031250081025,
+            "concurrentRssBytes": 484245504,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 3.0684410000103526,
+            "concurrentRssBytes": 485621760,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 3.2110212079714984,
+            "concurrentRssBytes": 472416256,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 3.3574723330093548,
+            "concurrentRssBytes": 474202112,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 3.5069616669788957,
+            "concurrentRssBytes": 475578368,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 3.650479624979198,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 3.6849793329602107,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 3.7189798330073245,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          }
+        ]
+      },
+      "contractFailures": []
+    }
+  }
+}

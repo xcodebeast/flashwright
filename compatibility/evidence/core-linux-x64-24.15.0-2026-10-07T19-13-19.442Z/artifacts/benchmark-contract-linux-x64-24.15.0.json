@@ -1,0 +1,3480 @@
+{
+  "node": "v24.15.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "driverSha256": "ef79d741a16800ab3098c4cc7916a04b5e8190ea817fbd92f333d5124f7fcaba",
+  "scope": "Functional harness validation for the seven shared benchmark flows and actual matched launch arguments. This single pair is not performance evidence.",
+  "checks": [
+    "matched actual launch arguments",
+    "native trusted input and application outcomes",
+    "real backend and document request counts",
+    "owned process cleanup",
+    "reject omitted trusted input",
+    "reject omitted backend request",
+    "reject unmatched browser policy"
+  ],
+  "results": {
+    "playwright": {
+      "launchIndex": 0,
+      "engine": "playwright",
+      "workloads": [
+        {
+          "name": "noop",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1.3079999999999927
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 0.9015840000001845
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 2.3143749999999272
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 0.9959579999999733
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 2.2813750000000255
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 2.184541000000081
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 2.5146249999997963
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 1.3850830000001224
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 1.316707999999835
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 0.6563750000000255
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 0.9083330000003116
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 3.493999999999687
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 73.42266599999994
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 8.554875000000266
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1.2351670000002741
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 1429.990501,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 74.79929200000015,
+          "completeMilliseconds": 1615.968834
+        },
+        {
+          "name": "interaction",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 45.71629200000007
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 51.374416999999994
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 48.34970799999974
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 32.43345800000043
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 52.31858299999931
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 34.203583000000435
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 53.39433300000019
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 42.26104200000009
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 31.720374999999876
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 35.035791000000245
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 33.41729099999975
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 33.43937499999993
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 228.46041700000023
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 20.06316700000025
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 37.88837499999954
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 974.0950840000005,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 15
+          },
+          "cleanupMilliseconds": 7.494458000000122,
+          "completeMilliseconds": 1763.3934600000002
+        },
+        {
+          "name": "assertion",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 35.449125000000095,
+              "detectionLagUpperBoundMilliseconds": 24
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 28.9990829999997,
+              "detectionLagUpperBoundMilliseconds": 18.899999998509884
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 27.557958999999755,
+              "detectionLagUpperBoundMilliseconds": 18.099999994039536
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 47.231667000000016,
+              "detectionLagUpperBoundMilliseconds": 25.80000000447035
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 24.743999999999687,
+              "detectionLagUpperBoundMilliseconds": 14.699999995529652
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 31.43433399999958,
+              "detectionLagUpperBoundMilliseconds": 20.700000002980232
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 28.778457999999773,
+              "detectionLagUpperBoundMilliseconds": 16.799999997019768
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 30.169082999999773,
+              "detectionLagUpperBoundMilliseconds": 20.600000001490116
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 28.936375000000226,
+              "detectionLagUpperBoundMilliseconds": 18
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 30.457875000000058,
+              "detectionLagUpperBoundMilliseconds": 20.5
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 36.010041999999885,
+              "detectionLagUpperBoundMilliseconds": 26.30000000447035
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 26.485000000000582,
+              "detectionLagUpperBoundMilliseconds": 16.5
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 150.91183300000012,
+              "detectionLagUpperBoundMilliseconds": 59.5
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 35.496083,
+              "detectionLagUpperBoundMilliseconds": 24.200000002980232
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 35.02141699999993,
+              "detectionLagUpperBoundMilliseconds": 25.600000001490116
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 927.3715010000005,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 5.652333999999428,
+          "completeMilliseconds": 1532.4284590000007
+        },
+        {
+          "name": "navigation",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 27.46295900000041
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 22.022084000000177
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 24.457625000000007
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 21.802166999999827
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 20.78479100000004
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 23.1431249999996
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 21.067000000000007
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 22.37883299999976
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 21.112957999999708
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 21.728500000000167
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 20.94812499999989
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 20.511124999999993
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 172.81079099999988
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 28.25683400000071
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 38.64429100000052
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 925.19625,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 5.073916000000281,
+          "completeMilliseconds": 1441.5773749999998
+        },
+        {
+          "name": "setup",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1070.8712919999998
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 1059.7312089999996
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1077.4534170000006
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 1063.5138339999994
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 1066.5688760000012
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 1070.122625
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 1117.1334169999973
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 1127.8242089999985
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 1104.9089170000007
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 1082.8110839999972
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 1083.5636259999992
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 1053.3321669999968
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1103.1957510000002
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 1064.9507090000006
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1054.0910009999989
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 0.14545799999996234,
+          "accounting": {
+            "description": "Fresh context + page + navigation + assertion + disposal per iteration",
+            "publicCallsPerIteration": 5
+          },
+          "observations": {
+            "freshContexts": 15
+          },
+          "cleanupMilliseconds": 0.019833999998809304,
+          "completeMilliseconds": 16200.546924
+        },
+        {
+          "name": "backend",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 61.719333999997616
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 71.3770829999994
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 80.07387499999822
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 71.28295900000012
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 64.99291699999958
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 66.04883300000074
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 69.66795799999818
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 62.561499999999796
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 68.44166699999914
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 64.57424999999785
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 63.51537499999904
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 68.82945800000016
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 357.16629199999807
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 69.91875000000073
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 65.3260420000006
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 916.448209000002,
+          "accounting": {
+            "publicCallsPerIteration": 5,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 15,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 7.626625000000786,
+          "completeMilliseconds": 2231.3914589999986
+        },
+        {
+          "name": "failure",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 25.35583300000144
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 25.781582999999955
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 24.740249999998923
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 24.831625000002532
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 25.41166599999997
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 25.297708000001876
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 26.319415999998455
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 24.1395420000008
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 24.03491700000086
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 24.015082999998413
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 24.04704099999799
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 24.675583000000188
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 145.6402909999997
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 25.541166999999405
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 25.985791999999492
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 932.5482090000005,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 5.078042000001005,
+          "completeMilliseconds": 1437.486251000002
+        }
+      ],
+      "failures": [],
+      "launchMilliseconds": 923.901876,
+      "browserVersion": "148.0.7778.96",
+      "cleanupMilliseconds": 144.65658299999996,
+      "completeMilliseconds": 27298.025512,
+      "backend": {
+        "documents": 36,
+        "backendRequests": 15,
+        "otherRequests": 1
+      },
+      "processExit": {
+        "code": 0,
+        "signal": null
+      },
+      "processWallMilliseconds": 28426.328846,
+      "diagnostics": "2026-10-07T19:20:26.446Z pw:browser <launching> /ms-playwright/chromium-1223/chrome-linux64/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-IfIUHt --remote-debugging-pipe --no-startup-window\n2026-10-07T19:20:26.460Z pw:browser <launched> pid=12391\n2026-10-07T19:20:26.696Z pw:browser [pid=12391][err] [12391:12407:1007/192026.690360:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n2026-10-07T19:20:26.742Z pw:browser [pid=12391][err] [12391:12407:1007/192026.742341:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:26.747Z pw:browser [pid=12391][err] [12391:12407:1007/192026.747017:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n2026-10-07T19:20:26.748Z pw:browser [pid=12391][err] [12391:12407:1007/192026.748460:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n2026-10-07T19:20:27.003Z pw:browser [pid=12391][err] [12391:12407:1007/192027.003216:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.219Z pw:browser [pid=12391][err] [12391:12407:1007/192027.219011:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.250Z pw:browser [pid=12391][err] [12391:12391:1007/192027.250046:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.251Z pw:browser [pid=12391][err] [12391:12407:1007/192027.250332:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.270Z pw:browser [pid=12391][err] [12391:12391:1007/192027.270440:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.311Z pw:browser [pid=12391][err] [12391:12391:1007/192027.310867:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.312Z pw:browser [pid=12391][err] [12391:12407:1007/192027.311196:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.320Z pw:browser [pid=12391][err] [12391:12407:1007/192027.320124:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n2026-10-07T19:20:27.320Z pw:browser [pid=12391][err] [12391:12407:1007/192027.320174:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n2026-10-07T19:20:27.320Z pw:browser [pid=12391][err] [12391:12391:1007/192027.320654:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.333Z pw:browser [pid=12391][err] [12391:12391:1007/192027.333313:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.333Z pw:browser [pid=12391][err] [12391:12407:1007/192027.333419:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.338Z pw:browser [pid=12391][err] [12391:12391:1007/192027.336334:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: \n2026-10-07T19:20:27.362Z pw:browser [pid=12391][err] [12391:12391:1007/192027.362035:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.362Z pw:browser [pid=12391][err] [12391:12407:1007/192027.362157:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.373Z pw:browser [pid=12391][err] [12391:12391:1007/192027.373363:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:27.373Z pw:browser [pid=12391][err] [12391:12407:1007/192027.373451:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n2026-10-07T19:20:27.377Z pw:browser [pid=12391][err] [12391:12391:1007/192027.376754:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n2026-10-07T19:20:53.563Z pw:browser [pid=12391] <gracefully close start>\n2026-10-07T19:20:53.695Z pw:browser [pid=12391] <process did exit: exitCode=0, signal=null>\n2026-10-07T19:20:53.696Z pw:browser [pid=12391] starting temporary directories cleanup\n2026-10-07T19:20:53.705Z pw:browser [pid=12391] finished temporary directories cleanup\n2026-10-07T19:20:53.706Z pw:browser [pid=12391] <gracefully close end>\n",
+      "resources": {
+        "command": [
+          "/usr/bin/node",
+          "benchmarks/sample.mjs",
+          "0",
+          "playwright"
+        ],
+        "timeoutSeconds": 90,
+        "timedOut": false,
+        "interrupted": false,
+        "exitCode": 0,
+        "elapsedSeconds": 28.280032930000743,
+        "samplingIntervalSeconds": 0.1,
+        "maximumSampledConcurrentRssBytes": 1331093504,
+        "observedCpuSeconds": 30,
+        "observedProcessCount": 51,
+        "remainingObservedProcesses": [],
+        "cleanupSignals": [],
+        "linuxChildSubreaper": true,
+        "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU is accumulated last-observed process time, not an exact kernel tree accounting. RSS is a concurrent sum, not summed per-process maxima.",
+        "samples": [
+          {
+            "elapsedSeconds": 0.028482374997111037,
+            "concurrentRssBytes": 12759040,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.15836220899655018,
+            "concurrentRssBytes": 50548736,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.29071345899865264,
+            "concurrentRssBytes": 66015232,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.42385879199719056,
+            "concurrentRssBytes": 80318464,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.5536858339983155,
+            "concurrentRssBytes": 111300608,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.6833145009950385,
+            "concurrentRssBytes": 138432512,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.8137280430019018,
+            "concurrentRssBytes": 182464512,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.9430145430014818,
+            "concurrentRssBytes": 384184320,
+            "liveOwnedProcesses": 6
+          },
+          {
+            "elapsedSeconds": 1.0756824589989264,
+            "concurrentRssBytes": 449482752,
+            "liveOwnedProcesses": 6
+          },
+          {
+            "elapsedSeconds": 1.209211625995522,
+            "concurrentRssBytes": 506683392,
+            "liveOwnedProcesses": 7
+          },
+          {
+            "elapsedSeconds": 1.3395426679999218,
+            "concurrentRssBytes": 642486272,
+            "liveOwnedProcesses": 8
+          },
+          {
+            "elapsedSeconds": 1.4707419600017602,
+            "concurrentRssBytes": 740200448,
+            "liveOwnedProcesses": 9
+          },
+          {
+            "elapsedSeconds": 1.6019705849976162,
+            "concurrentRssBytes": 760905728,
+            "liveOwnedProcesses": 9
+          },
+          {
+            "elapsedSeconds": 1.7339150010011508,
+            "concurrentRssBytes": 792133632,
+            "liveOwnedProcesses": 9
+          },
+          {
+            "elapsedSeconds": 1.8653946260019438,
+            "concurrentRssBytes": 821170176,
+            "liveOwnedProcesses": 9
+          },
+          {
+            "elapsedSeconds": 1.9958455849991878,
+            "concurrentRssBytes": 839917568,
+            "liveOwnedProcesses": 9
+          },
+          {
+            "elapsedSeconds": 2.125180625997018,
+            "concurrentRssBytes": 854990848,
+            "liveOwnedProcesses": 9
+          },
+          {
+            "elapsedSeconds": 2.260852501996851,
+            "concurrentRssBytes": 971411456,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.3931913349952083,
+            "concurrentRssBytes": 1053528064,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.523716627001704,
+            "concurrentRssBytes": 1119465472,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.658310626997263,
+            "concurrentRssBytes": 1147408384,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.7894302099957713,
+            "concurrentRssBytes": 1171775488,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.919416459997592,
+            "concurrentRssBytes": 1192607744,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.05100300200138,
+            "concurrentRssBytes": 1208606720,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.182028960000025,
+            "concurrentRssBytes": 1222651904,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.311925752001116,
+            "concurrentRssBytes": 1055715328,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 3.443196544001694,
+            "concurrentRssBytes": 1051463680,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.5734568769985344,
+            "concurrentRssBytes": 1118019584,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.7032905439991737,
+            "concurrentRssBytes": 1164386304,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.831724502000725,
+            "concurrentRssBytes": 1184571392,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 3.9611458770013996,
+            "concurrentRssBytes": 1201881088,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.091867335999268,
+            "concurrentRssBytes": 1218506752,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.223171043995535,
+            "concurrentRssBytes": 1230110720,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.352540127998509,
+            "concurrentRssBytes": 1248108544,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.484036543995899,
+            "concurrentRssBytes": 1258262528,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.6140049189998535,
+            "concurrentRssBytes": 1265393664,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.74715741899854,
+            "concurrentRssBytes": 1267359744,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 4.879259085995727,
+            "concurrentRssBytes": 1277583360,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.0105555859991,
+            "concurrentRssBytes": 1280475136,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.1423691699965275,
+            "concurrentRssBytes": 1048248320,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.275550377999025,
+            "concurrentRssBytes": 1122873344,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.405684295001265,
+            "concurrentRssBytes": 1174151168,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.5371124199955375,
+            "concurrentRssBytes": 1194729472,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.6707920449989615,
+            "concurrentRssBytes": 1212039168,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.803564337002172,
+            "concurrentRssBytes": 1231290368,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 5.936532669998996,
+            "concurrentRssBytes": 1241903104,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.067250211999635,
+            "concurrentRssBytes": 1255264256,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.196272212000622,
+            "concurrentRssBytes": 1270054912,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.327145169998403,
+            "concurrentRssBytes": 1274515456,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.459227879000537,
+            "concurrentRssBytes": 1282379776,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.588159794999228,
+            "concurrentRssBytes": 1290047488,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.718813045001298,
+            "concurrentRssBytes": 1087893504,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.849457837000955,
+            "concurrentRssBytes": 1154904064,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 6.978920087000006,
+            "concurrentRssBytes": 1192771584,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.107980879001843,
+            "concurrentRssBytes": 1210990592,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.23864483700163,
+            "concurrentRssBytes": 1229459456,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.367953754001064,
+            "concurrentRssBytes": 1244434432,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.499781503996928,
+            "concurrentRssBytes": 1255948288,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.633196253998904,
+            "concurrentRssBytes": 1273696256,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.763976627997181,
+            "concurrentRssBytes": 1283272704,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 7.894903503001842,
+            "concurrentRssBytes": 1296019456,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.025446211999224,
+            "concurrentRssBytes": 1310109696,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.159788878001564,
+            "concurrentRssBytes": 1103249408,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.290622544998769,
+            "concurrentRssBytes": 1163706368,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.422491586999968,
+            "concurrentRssBytes": 1207816192,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.556241794998641,
+            "concurrentRssBytes": 1225641984,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.686294294995605,
+            "concurrentRssBytes": 1242419200,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.817179878999013,
+            "concurrentRssBytes": 1259212800,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 8.949764753997442,
+            "concurrentRssBytes": 1270038528,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.078878294996684,
+            "concurrentRssBytes": 1288224768,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.208929086998978,
+            "concurrentRssBytes": 1060835328,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.33959779599536,
+            "concurrentRssBytes": 1149878272,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.471112170998822,
+            "concurrentRssBytes": 1202241536,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.600885836996895,
+            "concurrentRssBytes": 1222819840,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.731254336998973,
+            "concurrentRssBytes": 1238867968,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.860092962997442,
+            "concurrentRssBytes": 1257259008,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 9.99117450400081,
+            "concurrentRssBytes": 1269891072,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 10.121554503995867,
+            "concurrentRssBytes": 1287241728,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 10.252798420995532,
+            "concurrentRssBytes": 1019904000,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 10.382661463001568,
+            "concurrentRssBytes": 1142812672,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 10.515212337995763,
+            "concurrentRssBytes": 1195712512,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 10.64345804599725,
+            "concurrentRssBytes": 1221500928,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 10.775197005001246,
+            "concurrentRssBytes": 1238347776,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 10.904404879998765,
+            "concurrentRssBytes": 1257852928,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.033934254999622,
+            "concurrentRssBytes": 1269665792,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.163464545999886,
+            "concurrentRssBytes": 1286189056,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.295306504995096,
+            "concurrentRssBytes": 1297436672,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.424858213002153,
+            "concurrentRssBytes": 1138978816,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.557310463002068,
+            "concurrentRssBytes": 1191329792,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.68862575499952,
+            "concurrentRssBytes": 1219727360,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.81909263000125,
+            "concurrentRssBytes": 1236951040,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 11.950054296998132,
+            "concurrentRssBytes": 1257775104,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.080922089000524,
+            "concurrentRssBytes": 1270878208,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.214775296997686,
+            "concurrentRssBytes": 1282379776,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.34368575499684,
+            "concurrentRssBytes": 1297719296,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.475766921998002,
+            "concurrentRssBytes": 1127759872,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.60620963099791,
+            "concurrentRssBytes": 1184980992,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.737140256002021,
+            "concurrentRssBytes": 1221214208,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.866557338995335,
+            "concurrentRssBytes": 1238384640,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 12.996731671999441,
+            "concurrentRssBytes": 1258184704,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.128659171998152,
+            "concurrentRssBytes": 1272143872,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.259044922000612,
+            "concurrentRssBytes": 1282465792,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.389896463995683,
+            "concurrentRssBytes": 1298649088,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.521600797997962,
+            "concurrentRssBytes": 1114759168,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.651278380995791,
+            "concurrentRssBytes": 1181069312,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.779544213997724,
+            "concurrentRssBytes": 1219448832,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 13.911961213998438,
+            "concurrentRssBytes": 1238192128,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.04275159000099,
+            "concurrentRssBytes": 1257201664,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.172996590001276,
+            "concurrentRssBytes": 1272254464,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.304903005999222,
+            "concurrentRssBytes": 1283354624,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.43496679799864,
+            "concurrentRssBytes": 1298026496,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.565617130996543,
+            "concurrentRssBytes": 1106354176,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.6964227569988,
+            "concurrentRssBytes": 1171480576,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.826353964999726,
+            "concurrentRssBytes": 1217966080,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 14.956164672999876,
+            "concurrentRssBytes": 1238020096,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.090617672998633,
+            "concurrentRssBytes": 1256431616,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.219942464995256,
+            "concurrentRssBytes": 1272979456,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.352577965000819,
+            "concurrentRssBytes": 1285001216,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.48140946499916,
+            "concurrentRssBytes": 1300099072,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.612888757001201,
+            "concurrentRssBytes": 1095950336,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.745776006995584,
+            "concurrentRssBytes": 1169149952,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 15.877446589998726,
+            "concurrentRssBytes": 1217384448,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.007597506999446,
+            "concurrentRssBytes": 1237569536,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.136963673998252,
+            "concurrentRssBytes": 1254739968,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.267030882001563,
+            "concurrentRssBytes": 1272565760,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.397906341000635,
+            "concurrentRssBytes": 1283493888,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.5266209659967,
+            "concurrentRssBytes": 1300348928,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.660095799001283,
+            "concurrentRssBytes": 1028038656,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 16.7893312160013,
+            "concurrentRssBytes": 1162330112,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 16.921268132995465,
+            "concurrentRssBytes": 1216708608,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.05600850799965,
+            "concurrentRssBytes": 1238335488,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.191753257997334,
+            "concurrentRssBytes": 1255145472,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.321077590997447,
+            "concurrentRssBytes": 1272295424,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.451384508000046,
+            "concurrentRssBytes": 1285283840,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.581548549998843,
+            "concurrentRssBytes": 1301999616,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.711441300001752,
+            "concurrentRssBytes": 1021440000,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 17.842449800002214,
+            "concurrentRssBytes": 1141907456,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 17.973629882995738,
+            "concurrentRssBytes": 1194827776,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.10697542499838,
+            "concurrentRssBytes": 1221521408,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.238818425001227,
+            "concurrentRssBytes": 1236594688,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.370562632997462,
+            "concurrentRssBytes": 1254871040,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.501580632997502,
+            "concurrentRssBytes": 1267335168,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.631785382996895,
+            "concurrentRssBytes": 1277341696,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.764350842000567,
+            "concurrentRssBytes": 1291251712,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 18.897224674998142,
+            "concurrentRssBytes": 1103302656,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.026571841997793,
+            "concurrentRssBytes": 1164251136,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.155568049995054,
+            "concurrentRssBytes": 1210376192,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.286419550000574,
+            "concurrentRssBytes": 1230430208,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.415756383998087,
+            "concurrentRssBytes": 1245937664,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.54501521700149,
+            "concurrentRssBytes": 1262866432,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.69775346700044,
+            "concurrentRssBytes": 1272352768,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.828190009000537,
+            "concurrentRssBytes": 1288073216,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 19.962204966999707,
+            "concurrentRssBytes": 1014943744,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 20.09151588399982,
+            "concurrentRssBytes": 1144311808,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 20.239891633995285,
+            "concurrentRssBytes": 1198223360,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 20.371507342999394,
+            "concurrentRssBytes": 1221902336,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 20.50165067600028,
+            "concurrentRssBytes": 1238327296,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 20.632934925997688,
+            "concurrentRssBytes": 1255079936,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 20.761547633999726,
+            "concurrentRssBytes": 1269293056,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 20.892085050996684,
+            "concurrentRssBytes": 1279819776,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.022016967996024,
+            "concurrentRssBytes": 1294061568,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.15189846800058,
+            "concurrentRssBytes": 1113513984,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.281711509996967,
+            "concurrentRssBytes": 1178042368,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.41071513499628,
+            "concurrentRssBytes": 1214935040,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.546291259997815,
+            "concurrentRssBytes": 1231843328,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.677128967996396,
+            "concurrentRssBytes": 1251147776,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.8099876769993,
+            "concurrentRssBytes": 1264746496,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.941844134998973,
+            "concurrentRssBytes": 1275695104,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.07323567700223,
+            "concurrentRssBytes": 1289158656,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.203624927002238,
+            "concurrentRssBytes": 1100980224,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.338203510000312,
+            "concurrentRssBytes": 1162194944,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.467794718999357,
+            "concurrentRssBytes": 1207881728,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.597789093997562,
+            "concurrentRssBytes": 1228197888,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.727537760001724,
+            "concurrentRssBytes": 1245499392,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.857742718995723,
+            "concurrentRssBytes": 1262419968,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 22.990295969000726,
+            "concurrentRssBytes": 1273126912,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 23.119008385998313,
+            "concurrentRssBytes": 1289412608,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 23.249916718996246,
+            "concurrentRssBytes": 1015951360,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 23.37952921899705,
+            "concurrentRssBytes": 1151115264,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 23.509348843996122,
+            "concurrentRssBytes": 1204686848,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 23.643929343998025,
+            "concurrentRssBytes": 1226051584,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 23.77769646899833,
+            "concurrentRssBytes": 1243222016,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 23.907838469000126,
+            "concurrentRssBytes": 1261047808,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.038810427999124,
+            "concurrentRssBytes": 1272369152,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.167972260998795,
+            "concurrentRssBytes": 1288667136,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.29956234400015,
+            "concurrentRssBytes": 1015238656,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 24.42952138599503,
+            "concurrentRssBytes": 1148518400,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.55924576099642,
+            "concurrentRssBytes": 1203130368,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.68808880299912,
+            "concurrentRssBytes": 1223970816,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.8188116359961,
+            "concurrentRssBytes": 1240268800,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 24.94855963599548,
+            "concurrentRssBytes": 1259393024,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.078080469997076,
+            "concurrentRssBytes": 1271595008,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.20875463700213,
+            "concurrentRssBytes": 1288253440,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.340819052995357,
+            "concurrentRssBytes": 1298309120,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.470992053000373,
+            "concurrentRssBytes": 1310769152,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.599681970001257,
+            "concurrentRssBytes": 1318785024,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.72909396999603,
+            "concurrentRssBytes": 1320226816,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.858422220000648,
+            "concurrentRssBytes": 1322323968,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 25.990719804001856,
+            "concurrentRssBytes": 1328394240,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 26.122599386995716,
+            "concurrentRssBytes": 1328996352,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 26.25499955399573,
+            "concurrentRssBytes": 1330044928,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 26.388172512000892,
+            "concurrentRssBytes": 1331093504,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 26.52355459499813,
+            "concurrentRssBytes": 1018941440,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 26.65320238700224,
+            "concurrentRssBytes": 1149140992,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 26.782687054001144,
+            "concurrentRssBytes": 1201790976,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 26.911845096001343,
+            "concurrentRssBytes": 1226649600,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.041647928999737,
+            "concurrentRssBytes": 1243570176,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.171649095995235,
+            "concurrentRssBytes": 1262903296,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.30174672100111,
+            "concurrentRssBytes": 1274318848,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.432545803996618,
+            "concurrentRssBytes": 1284808704,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.56618284599972,
+            "concurrentRssBytes": 1301319680,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.696921971000847,
+            "concurrentRssBytes": 1312014336,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.827696303997072,
+            "concurrentRssBytes": 1329508352,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 27.958506262999435,
+            "concurrentRssBytes": 1019420672,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 28.090397720996407,
+            "concurrentRssBytes": 228970496,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 28.227007096000307,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 28.25352084599581,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 28.2799611800001,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          }
+        ]
+      },
+      "contractFailures": []
+    },
+    "flashwright": {
+      "launchIndex": 0,
+      "engine": "flashwright",
+      "workloads": [
+        {
+          "name": "noop",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1.6737499999999272
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 1.6870829999998023
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1.7746250000000146
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 8.825874999999996
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 1.2840830000000096
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 1.1484999999997854
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 1.2820000000001528
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 1.2248749999998836
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 1.0548330000001442
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 1.0826250000000073
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 1.177625000000262
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 1.3225000000002183
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 36.161125000000084
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 19.21337500000027
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1.4679580000001806
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 1437.5897089999999,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 76.46437500000002,
+          "completeMilliseconds": 1601.2931669999998
+        },
+        {
+          "name": "interaction",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 52.272540999999364
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 50.59925000000021
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 52.39649999999983
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 46.91479200000049
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 51.856957999999395
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 49.79991700000028
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 52.86387500000001
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 44.33866699999999
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 50.19962499999929
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 51.528166999999485
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 48.01525000000038
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 50.98675000000003
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 242.85375000000022
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 51.62841599999956
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 63.36729199999991
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 952.8353750000001,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 15
+          },
+          "cleanupMilliseconds": 7.3897500000002765,
+          "completeMilliseconds": 1922.9225840000004
+        },
+        {
+          "name": "assertion",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 33.31408300000021,
+              "detectionLagUpperBoundMilliseconds": 23
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 29.520375000000058,
+              "detectionLagUpperBoundMilliseconds": 19.399999998509884
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 31.060292000000118,
+              "detectionLagUpperBoundMilliseconds": 19.799999997019768
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 31.63550000000032,
+              "detectionLagUpperBoundMilliseconds": 19.80000000447035
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 27.449999999999818,
+              "detectionLagUpperBoundMilliseconds": 16.299999997019768
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 28.028583000000253,
+              "detectionLagUpperBoundMilliseconds": 17.799999997019768
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 32.19708300000002,
+              "detectionLagUpperBoundMilliseconds": 20.599999994039536
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 27.606542000000445,
+              "detectionLagUpperBoundMilliseconds": 17.400000005960464
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 28.409582999999657,
+              "detectionLagUpperBoundMilliseconds": 16.400000005960464
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 27.842541999999412,
+              "detectionLagUpperBoundMilliseconds": 17.700000002980232
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 45.54333400000087,
+              "detectionLagUpperBoundMilliseconds": 24.600000001490116
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 27.04370800000015,
+              "detectionLagUpperBoundMilliseconds": 16
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 159.1447079999998,
+              "detectionLagUpperBoundMilliseconds": 114.10000000149012
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 36.06483399999979,
+              "detectionLagUpperBoundMilliseconds": 23.700000002980232
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 35.59375,
+              "detectionLagUpperBoundMilliseconds": 25.299999997019768
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 908.3574589999998,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 6.268000000000029,
+          "completeMilliseconds": 1518.6892509999998
+        },
+        {
+          "name": "navigation",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 40.16112500000054
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 39.931249999999636
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 44.69220800000039
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 38.64604200000031
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 37.121625000001586
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 37.55566699999872
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 38.65799999999945
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 37.62662499999897
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 38.06629199999952
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 37.96362599999884
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 38.6959169999991
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 40.2895410000001
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 156.37445799999932
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 59.35362499999974
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 46.21174999999948
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 925.0819170000004,
+          "accounting": {
+            "publicCallsPerIteration": 3,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 6.224374999999782,
+          "completeMilliseconds": 1669.1179590000002
+        },
+        {
+          "name": "setup",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1041.4308760000004
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 1052.6655419999988
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1048.4547089999996
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 1055.1517089999998
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 1057.2867920000008
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 1056.8053340000006
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 1063.596292000002
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 1054.680124999999
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 1092.1003339999988
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 1053.5032079999983
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 1058.3176249999997
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 1104.0390420000003
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 1074.457457999999
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 1061.3324589999993
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 1061.1677919999984
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 0.17545799999970768,
+          "accounting": {
+            "description": "Fresh context + page + navigation + assertion + disposal per iteration",
+            "publicCallsPerIteration": 5
+          },
+          "observations": {
+            "freshContexts": 15
+          },
+          "cleanupMilliseconds": 0.014209000000846572,
+          "completeMilliseconds": 15935.504090999999
+        },
+        {
+          "name": "backend",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 82.63262500000201
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 85.90812499999811
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 82.90104199999769
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 85.57645799999955
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 79.32095800000025
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 83.92662500000006
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 95.57379199999923
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 71.38316699999996
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 84.06495799999902
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 79.96283300000141
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 66.79316699999981
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 66.70666599999822
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 330.55912499999977
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 87.02320900000268
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 72.44879199999923
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 915.3259169999983,
+          "accounting": {
+            "publicCallsPerIteration": 5,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 15,
+            "untrustedClicks": 0,
+            "trustedChanges": 15,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 6.626541000001453,
+          "completeMilliseconds": 2379.6750839999986
+        },
+        {
+          "name": "failure",
+          "samples": [
+            {
+              "iteration": 0,
+              "milliseconds": 26.36975000000166
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 30.260707999997976
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 29.832626000003074
+            },
+            {
+              "iteration": 3,
+              "milliseconds": 27.264208000000508
+            },
+            {
+              "iteration": 4,
+              "milliseconds": 26.392917000001034
+            },
+            {
+              "iteration": 5,
+              "milliseconds": 26.752874999998312
+            },
+            {
+              "iteration": 6,
+              "milliseconds": 28.410542000001442
+            },
+            {
+              "iteration": 7,
+              "milliseconds": 26.837083999998868
+            },
+            {
+              "iteration": 8,
+              "milliseconds": 25.458834000000934
+            },
+            {
+              "iteration": 9,
+              "milliseconds": 27.071583000000828
+            },
+            {
+              "iteration": 10,
+              "milliseconds": 25.646499999998923
+            },
+            {
+              "iteration": 11,
+              "milliseconds": 27.11645800000042
+            }
+          ],
+          "warmupSamples": [
+            {
+              "iteration": 0,
+              "milliseconds": 32.45837499999834
+            },
+            {
+              "iteration": 1,
+              "milliseconds": 29.46245799999815
+            },
+            {
+              "iteration": 2,
+              "milliseconds": 26.74170800000138
+            }
+          ],
+          "failures": [],
+          "preparationMilliseconds": 945.8451669999995,
+          "accounting": {
+            "publicCallsPerIteration": 1,
+            "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+          },
+          "observations": {
+            "trustedClicks": 0,
+            "untrustedClicks": 0,
+            "trustedChanges": 0,
+            "untrustedChanges": 0,
+            "applicationCount": 0
+          },
+          "cleanupMilliseconds": 4.81695899999977,
+          "completeMilliseconds": 1373.7959589999991
+        }
+      ],
+      "failures": [],
+      "launchMilliseconds": 1146.744251,
+      "browserVersion": "148.0.7778.96",
+      "cleanupMilliseconds": 70.93395900000178,
+      "completeMilliseconds": 27627.871097,
+      "backend": {
+        "documents": 36,
+        "backendRequests": 15,
+        "otherRequests": 1
+      },
+      "processExit": {
+        "code": 0,
+        "signal": null
+      },
+      "processWallMilliseconds": 28878.060222,
+      "diagnostics": "flashwright:browser <launching> {\"arguments\":[\"--disable-field-trial-config\",\"--disable-background-networking\",\"--disable-background-timer-throttling\",\"--disable-backgrounding-occluded-windows\",\"--disable-back-forward-cache\",\"--disable-breakpad\",\"--disable-client-side-phishing-detection\",\"--disable-component-extensions-with-background-pages\",\"--disable-component-update\",\"--no-default-browser-check\",\"--disable-default-apps\",\"--disable-dev-shm-usage\",\"--disable-edgeupdater\",\"--disable-extensions\",\"--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion\",\"--enable-features=CDPScreenshotNewSurface\",\"--allow-pre-commit-input\",\"--disable-hang-monitor\",\"--disable-ipc-flooding-protection\",\"--disable-popup-blocking\",\"--disable-prompt-on-repost\",\"--disable-renderer-backgrounding\",\"--force-color-profile=srgb\",\"--metrics-recording-only\",\"--no-first-run\",\"--password-store=basic\",\"--use-mock-keychain\",\"--no-service-autorun\",\"--export-tagged-pdf\",\"--disable-search-engine-choice-screen\",\"--unsafely-disable-devtools-self-xss-warnings\",\"--edge-skip-compat-layer-relaunch\",\"--disable-infobars\",\"--disable-search-engine-choice-screen\",\"--disable-sync\",\"--enable-unsafe-swiftshader\",\"--headless\",\"--hide-scrollbars\",\"--mute-audio\",\"--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4\",\"--no-sandbox\",\"--user-data-dir=/tmp/flashwright-chromium-rfuS7l\",\"--remote-debugging-pipe\",\"--no-startup-window\"],\"executable\":\"/ms-playwright/chromium-1223/chrome-linux64/chrome\"}\n[13151:13169:1007/192055.415261:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[13151:13169:1007/192055.465992:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13169:1007/192055.470368:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[13151:13169:1007/192055.471990:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[13151:13169:1007/192055.728153:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13169:1007/192055.940728:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13151:1007/192055.970114:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13169:1007/192055.970397:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13151:1007/192055.994683:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13151:1007/192056.031417:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13169:1007/192056.031777:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13169:1007/192056.040656:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[13151:13169:1007/192056.040714:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory\n[13151:13151:1007/192056.040837:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13151:1007/192056.053063:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13169:1007/192056.053152:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13151:1007/192056.053606:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: \n[13151:13151:1007/192056.079222:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13169:1007/192056.079362:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13151:1007/192056.089479:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[13151:13169:1007/192056.089575:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[13151:13151:1007/192056.583630:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n",
+      "resources": {
+        "command": [
+          "/usr/bin/node",
+          "benchmarks/sample.mjs",
+          "0",
+          "flashwright"
+        ],
+        "timeoutSeconds": 90,
+        "timedOut": false,
+        "interrupted": false,
+        "exitCode": 0,
+        "elapsedSeconds": 28.731736305002414,
+        "samplingIntervalSeconds": 0.1,
+        "maximumSampledConcurrentRssBytes": 1321398272,
+        "observedCpuSeconds": 30,
+        "observedProcessCount": 53,
+        "remainingObservedProcesses": [],
+        "cleanupSignals": [],
+        "linuxChildSubreaper": true,
+        "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU is accumulated last-observed process time, not an exact kernel tree accounting. RSS is a concurrent sum, not summed per-process maxima.",
+        "samples": [
+          {
+            "elapsedSeconds": 0.036115082999458537,
+            "concurrentRssBytes": 14532608,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.16688087500369875,
+            "concurrentRssBytes": 50761728,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.2972684170017601,
+            "concurrentRssBytes": 66097152,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.42914266700245207,
+            "concurrentRssBytes": 80302080,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.5604699169998639,
+            "concurrentRssBytes": 110014464,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.6915255420026369,
+            "concurrentRssBytes": 130330624,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.8210553340031765,
+            "concurrentRssBytes": 172535808,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 0.9552002510026796,
+            "concurrentRssBytes": 195833856,
+            "liveOwnedProcesses": 2
+          },
+          {
+            "elapsedSeconds": 1.0883399590020417,
+            "concurrentRssBytes": 209072128,
+            "liveOwnedProcesses": 3
+          },
+          {
+            "elapsedSeconds": 1.2182584590045735,
+            "concurrentRssBytes": 392077312,
+            "liveOwnedProcesses": 8
+          },
+          {
+            "elapsedSeconds": 1.3486110420053592,
+            "concurrentRssBytes": 475025408,
+            "liveOwnedProcesses": 8
+          },
+          {
+            "elapsedSeconds": 1.4789235420030309,
+            "concurrentRssBytes": 499249152,
+            "liveOwnedProcesses": 8
+          },
+          {
+            "elapsedSeconds": 1.608713876004913,
+            "concurrentRssBytes": 657797120,
+            "liveOwnedProcesses": 10
+          },
+          {
+            "elapsedSeconds": 1.7391404180016252,
+            "concurrentRssBytes": 766373888,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 1.8688165429994115,
+            "concurrentRssBytes": 786231296,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.000049376001698,
+            "concurrentRssBytes": 816672768,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.131487251004728,
+            "concurrentRssBytes": 847151104,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.2599173760027043,
+            "concurrentRssBytes": 867078144,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.3929388760006987,
+            "concurrentRssBytes": 883007488,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 2.5233004600013373,
+            "concurrentRssBytes": 1008734208,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 2.6547804180008825,
+            "concurrentRssBytes": 1089323008,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 2.786861710002995,
+            "concurrentRssBytes": 1144262656,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 2.9178093759983312,
+            "concurrentRssBytes": 1172750336,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.0474890430050436,
+            "concurrentRssBytes": 1194819584,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.17701420999947,
+            "concurrentRssBytes": 1210445824,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.306019292998826,
+            "concurrentRssBytes": 1227853824,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.43677571000444,
+            "concurrentRssBytes": 1240784896,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.5694467930006795,
+            "concurrentRssBytes": 1079595008,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 3.70110304300033,
+            "concurrentRssBytes": 1071714304,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.8319854190049227,
+            "concurrentRssBytes": 1139269632,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 3.961625919000653,
+            "concurrentRssBytes": 1186594816,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.09146404400235,
+            "concurrentRssBytes": 1208090624,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.221202419001202,
+            "concurrentRssBytes": 1225871360,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.350745376999839,
+            "concurrentRssBytes": 1240719360,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.479889460999402,
+            "concurrentRssBytes": 1254195200,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.609548002001247,
+            "concurrentRssBytes": 1271566336,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.741784085999825,
+            "concurrentRssBytes": 1281368064,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 4.873140877003607,
+            "concurrentRssBytes": 1288781824,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.004188876999251,
+            "concurrentRssBytes": 1292451840,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.133823294003378,
+            "concurrentRssBytes": 1293893632,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.266678252999554,
+            "concurrentRssBytes": 1294680064,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.398458086005121,
+            "concurrentRssBytes": 1295597568,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.528377961003571,
+            "concurrentRssBytes": 1298776064,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.6594170030002715,
+            "concurrentRssBytes": 1127223296,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.789159252999525,
+            "concurrentRssBytes": 1179672576,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 5.918851961003384,
+            "concurrentRssBytes": 1207676928,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.049607503002335,
+            "concurrentRssBytes": 1225326592,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.178309335999074,
+            "concurrentRssBytes": 1241206784,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.306839545002731,
+            "concurrentRssBytes": 1255538688,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.437956045003375,
+            "concurrentRssBytes": 1267838976,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.575705212002504,
+            "concurrentRssBytes": 1281896448,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.706199337000726,
+            "concurrentRssBytes": 1287053312,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.838311003004492,
+            "concurrentRssBytes": 1288237056,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 6.969393211998977,
+            "concurrentRssBytes": 1288761344,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.100510711999959,
+            "concurrentRssBytes": 1082056704,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.23225296199962,
+            "concurrentRssBytes": 1148784640,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.363093462001416,
+            "concurrentRssBytes": 1195675648,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.493157169999904,
+            "concurrentRssBytes": 1216516096,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.62343850400066,
+            "concurrentRssBytes": 1234427904,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.755678086999978,
+            "concurrentRssBytes": 1249005568,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 7.88499096200394,
+            "concurrentRssBytes": 1261957120,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.015333004004788,
+            "concurrentRssBytes": 1274621952,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.145362171002489,
+            "concurrentRssBytes": 1285816320,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.274651837004058,
+            "concurrentRssBytes": 1297723392,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.404329629003769,
+            "concurrentRssBytes": 1298886656,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.534593087002577,
+            "concurrentRssBytes": 1303179264,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.664033296001435,
+            "concurrentRssBytes": 1308643328,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.799083963000157,
+            "concurrentRssBytes": 1103310848,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 8.92935237900383,
+            "concurrentRssBytes": 1158090752,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.058002837999084,
+            "concurrentRssBytes": 1202122752,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.191148629004601,
+            "concurrentRssBytes": 1223356416,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.322126338003727,
+            "concurrentRssBytes": 1240784896,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.451628296003037,
+            "concurrentRssBytes": 1255419904,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.584259879004094,
+            "concurrentRssBytes": 1268305920,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.714186463002989,
+            "concurrentRssBytes": 1285349376,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.845452254005068,
+            "concurrentRssBytes": 1090506752,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 9.974715838005068,
+            "concurrentRssBytes": 1154248704,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.103741796003305,
+            "concurrentRssBytes": 1200558080,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.232862171003944,
+            "concurrentRssBytes": 1221922816,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.363616754999384,
+            "concurrentRssBytes": 1239703552,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.492430088001129,
+            "concurrentRssBytes": 1254178816,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.622671088000061,
+            "concurrentRssBytes": 1268101120,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.75429946299846,
+            "concurrentRssBytes": 1283604480,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 10.88731963000464,
+            "concurrentRssBytes": 1037058048,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 11.019929463000153,
+            "concurrentRssBytes": 1139294208,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.150226088000636,
+            "concurrentRssBytes": 1194422272,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.279940255000838,
+            "concurrentRssBytes": 1216180224,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.414280130004045,
+            "concurrentRssBytes": 1234399232,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.544323005000479,
+            "concurrentRssBytes": 1250590720,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.67345604699949,
+            "concurrentRssBytes": 1265401856,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.803297630001907,
+            "concurrentRssBytes": 1277976576,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 11.935116630003904,
+            "concurrentRssBytes": 1012047872,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 12.065448421999463,
+            "concurrentRssBytes": 1140785152,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.195692756002245,
+            "concurrentRssBytes": 1195847680,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.326570589000767,
+            "concurrentRssBytes": 1217474560,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.456315588999132,
+            "concurrentRssBytes": 1234808832,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.585920172001352,
+            "concurrentRssBytes": 1250074624,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.717166881004232,
+            "concurrentRssBytes": 1264726016,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.846485506001045,
+            "concurrentRssBytes": 1278152704,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 12.976064130998566,
+            "concurrentRssBytes": 1011650560,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 13.106608131005487,
+            "concurrentRssBytes": 1140269056,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 13.236642339004902,
+            "concurrentRssBytes": 1194946560,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 13.366090256000462,
+            "concurrentRssBytes": 1216573440,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 13.495052630998543,
+            "concurrentRssBytes": 1233743872,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 13.625147506005305,
+            "concurrentRssBytes": 1249742848,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 13.759308590000728,
+            "concurrentRssBytes": 1264226304,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 13.889065465002204,
+            "concurrentRssBytes": 1276821504,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.019284715002868,
+            "concurrentRssBytes": 1011073024,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 14.14923229800479,
+            "concurrentRssBytes": 1136218112,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.279930673001218,
+            "concurrentRssBytes": 1189769216,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.410108215000946,
+            "concurrentRssBytes": 1214816256,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.54139521500474,
+            "concurrentRssBytes": 1232703488,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.67098071500368,
+            "concurrentRssBytes": 1248833536,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.801492548001988,
+            "concurrentRssBytes": 1262641152,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 14.931706299001235,
+            "concurrentRssBytes": 1275260928,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.061716923999484,
+            "concurrentRssBytes": 1107861504,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.191503007001302,
+            "concurrentRssBytes": 1134469120,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.323142799003108,
+            "concurrentRssBytes": 1187946496,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.452196007005114,
+            "concurrentRssBytes": 1214640128,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.581624924001517,
+            "concurrentRssBytes": 1232510976,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.711390798998764,
+            "concurrentRssBytes": 1247854592,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.839797674001602,
+            "concurrentRssBytes": 1262317568,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 15.970674923999468,
+            "concurrentRssBytes": 1273704448,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.099622841000382,
+            "concurrentRssBytes": 1286885376,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.229691674001515,
+            "concurrentRssBytes": 1123917824,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.3590877989991,
+            "concurrentRssBytes": 1178234880,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.491055424005026,
+            "concurrentRssBytes": 1212145664,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.62342154900398,
+            "concurrentRssBytes": 1229565952,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.75590279899916,
+            "concurrentRssBytes": 1246347264,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 16.885615216000588,
+            "concurrentRssBytes": 1261506560,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.017371091002133,
+            "concurrentRssBytes": 1273073664,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.14599763300066,
+            "concurrentRssBytes": 1286352896,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.276584800005367,
+            "concurrentRssBytes": 1119571968,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.408716841004207,
+            "concurrentRssBytes": 1175629824,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.54148780000105,
+            "concurrentRssBytes": 1212301312,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.672171800004435,
+            "concurrentRssBytes": 1229402112,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.803731300002255,
+            "concurrentRssBytes": 1246281728,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 17.93552100800298,
+            "concurrentRssBytes": 1261330432,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.067168257999583,
+            "concurrentRssBytes": 1273147392,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.197378342003503,
+            "concurrentRssBytes": 1286717440,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.332212175002496,
+            "concurrentRssBytes": 1117933568,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.46282025900291,
+            "concurrentRssBytes": 1174048768,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.59443200899841,
+            "concurrentRssBytes": 1210654720,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.728639674998703,
+            "concurrentRssBytes": 1229254656,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.861493175005307,
+            "concurrentRssBytes": 1245122560,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 18.98997913399944,
+            "concurrentRssBytes": 1260228608,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.122235842005466,
+            "concurrentRssBytes": 1271037952,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.251431592005247,
+            "concurrentRssBytes": 1284554752,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.381276134001382,
+            "concurrentRssBytes": 1110061056,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.510908759002632,
+            "concurrentRssBytes": 1171714048,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.640568426002574,
+            "concurrentRssBytes": 1208823808,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.77300646799995,
+            "concurrentRssBytes": 1227161600,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 19.90211246800027,
+            "concurrentRssBytes": 1244262400,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.03108388400142,
+            "concurrentRssBytes": 1259044864,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.163593301003857,
+            "concurrentRssBytes": 1271156736,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.292283259004762,
+            "concurrentRssBytes": 1287925760,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.42259955099871,
+            "concurrentRssBytes": 1104953344,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.552549717998772,
+            "concurrentRssBytes": 1167003648,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.682325510002556,
+            "concurrentRssBytes": 1206194176,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.811785218000296,
+            "concurrentRssBytes": 1225592832,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 20.941478218002885,
+            "concurrentRssBytes": 1241481216,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.071884801000124,
+            "concurrentRssBytes": 1255514112,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.20585209300043,
+            "concurrentRssBytes": 1267679232,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.3352841349988,
+            "concurrentRssBytes": 1283526656,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.4649443849994,
+            "concurrentRssBytes": 1013145600,
+            "liveOwnedProcesses": 11
+          },
+          {
+            "elapsedSeconds": 21.5949699269986,
+            "concurrentRssBytes": 1145704448,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.724524634999398,
+            "concurrentRssBytes": 1198247936,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.853823802004626,
+            "concurrentRssBytes": 1218564096,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 21.98556767700211,
+            "concurrentRssBytes": 1235927040,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 22.115756218998285,
+            "concurrentRssBytes": 1251508224,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 22.251290427004278,
+            "concurrentRssBytes": 1266130944,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 22.380781510000816,
+            "concurrentRssBytes": 1278791680,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 22.511269719005213,
+            "concurrentRssBytes": 1013182464,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 22.640605969005264,
+            "concurrentRssBytes": 1141166080,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 22.771221927003353,
+            "concurrentRssBytes": 1195216896,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 22.900914344005287,
+            "concurrentRssBytes": 1217761280,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.035078594002698,
+            "concurrentRssBytes": 1235341312,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.16590413600352,
+            "concurrentRssBytes": 1250738176,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.29944826100109,
+            "concurrentRssBytes": 1265557504,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.43174780299887,
+            "concurrentRssBytes": 1278038016,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.56270021900127,
+            "concurrentRssBytes": 1012207616,
+            "liveOwnedProcesses": 12
+          },
+          {
+            "elapsedSeconds": 23.693854719000228,
+            "concurrentRssBytes": 1136283648,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.82599188599852,
+            "concurrentRssBytes": 1186430976,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 23.958219760999782,
+            "concurrentRssBytes": 1213255680,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.089274178004416,
+            "concurrentRssBytes": 1229508608,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.219862511003157,
+            "concurrentRssBytes": 1246093312,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.35120809500222,
+            "concurrentRssBytes": 1260937216,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.483007511000324,
+            "concurrentRssBytes": 1272193024,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.613736302999314,
+            "concurrentRssBytes": 1285877760,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.74612526200508,
+            "concurrentRssBytes": 1110544384,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 24.875526178002474,
+            "concurrentRssBytes": 1171968000,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.006664345004538,
+            "concurrentRssBytes": 1209057280,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.138577137004177,
+            "concurrentRssBytes": 1227395072,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.26714755300054,
+            "concurrentRssBytes": 1244348416,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.397161262000736,
+            "concurrentRssBytes": 1258262528,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.52897376200417,
+            "concurrentRssBytes": 1271046144,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.65916880399891,
+            "concurrentRssBytes": 1283796992,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.788873429002706,
+            "concurrentRssBytes": 1300402176,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 25.91869784500159,
+            "concurrentRssBytes": 1311436800,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.047398637005244,
+            "concurrentRssBytes": 1315500032,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.177142721004202,
+            "concurrentRssBytes": 1316155392,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.30915963699954,
+            "concurrentRssBytes": 1316679680,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.440686679001374,
+            "concurrentRssBytes": 1317990400,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.574347011999635,
+            "concurrentRssBytes": 1318776832,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.704664762000903,
+            "concurrentRssBytes": 1320611840,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.836388888004876,
+            "concurrentRssBytes": 1320873984,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 26.967533888004255,
+            "concurrentRssBytes": 1321398272,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.097710513000493,
+            "concurrentRssBytes": 1105379328,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.22752922100335,
+            "concurrentRssBytes": 1160228864,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.358222178998403,
+            "concurrentRssBytes": 1206218752,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.48805422100122,
+            "concurrentRssBytes": 1226272768,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.62042934600322,
+            "concurrentRssBytes": 1243910144,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.749902471005043,
+            "concurrentRssBytes": 1257627648,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 27.880981845999486,
+            "concurrentRssBytes": 1271390208,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 28.01149880500452,
+            "concurrentRssBytes": 1285480448,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 28.140526013005,
+            "concurrentRssBytes": 1297125376,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 28.27049730499857,
+            "concurrentRssBytes": 1299030016,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 28.401463430003787,
+            "concurrentRssBytes": 1301258240,
+            "liveOwnedProcesses": 13
+          },
+          {
+            "elapsedSeconds": 28.5297721800016,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 1
+          },
+          {
+            "elapsedSeconds": 28.67075059700437,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 28.701280222005153,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          },
+          {
+            "elapsedSeconds": 28.731613847005065,
+            "concurrentRssBytes": 0,
+            "liveOwnedProcesses": 0
+          }
+        ]
+      },
+      "contractFailures": []
+    }
+  }
+}

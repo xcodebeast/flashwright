@@ -1,0 +1,45 @@
+{
+  "name": "flashwright-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": "22.x || 24.x"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "cargo build --workspace --locked && node tools/build-packages.mjs",
+    "verify:core": "node tools/verify-core.mjs",
+    "test:navigation": "node tools/run-navigation-tests.mjs",
+    "test:locators": "node tools/run-locator-tests.mjs",
+    "test:native-runner": "node tools/run-native-runner-tests.mjs",
+    "test:assertions": "node tools/run-assertion-tests.mjs",
+    "test:conditions": "node tools/run-condition-tests.mjs",
+    "test:keyboard": "node tools/run-keyboard-tests.mjs",
+    "test:pointer": "node tools/run-pointer-tests.mjs",
+    "test:library": "node tools/run-library-smoke.mjs",
+    "test:lifecycle": "node tools/run-lifecycle-tests.mjs",
+    "test:packed": "node tools/test-packed-package.mjs",
+    "inventory": "node tools/generate-inventory.mjs",
+    "inventory:check": "node tools/generate-inventory.mjs --check",
+    "baseline": "python3 tools/watchdog.py --timeout 600 --report-directory benchmarks/results/resources -- node benchmarks/run.mjs",
+    "test:runner-boundary": "node tools/run-runner-boundary.mjs",
+    "test:harness": "node --test tools/test-harness.mjs tools/test-protocol-profile.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit --project compatibility/migration-projects/tsconfig.json",
+    "test:packed-runner": "node tools/test-packed-runner.mjs",
+    "test:migration": "node tools/test-packed-migration.mjs",
+    "benchmark:paired": "node benchmarks/paired.mjs",
+    "test:benchmark-contract": "node tools/test-benchmark-contract.mjs",
+    "benchmark:attribution": "node benchmarks/attribution.mjs",
+    "benchmark:residency": "node benchmarks/residency.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@types/node": "24.10.1",
+    "flashwright-upstream-runner": "npm:playwright@1.60.0",
+    "typescript": "5.9.3"
+  }
+}

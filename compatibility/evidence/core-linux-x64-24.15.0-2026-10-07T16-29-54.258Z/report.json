@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "started": "2026-10-07T16:29:54.258Z",
+  "node": "v24.15.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "environmentClass": "linux-amd64-container-on-arm64-host",
+  "containerImage": "mcr.microsoft.com/playwright@sha256:9bd26ad900bb5e0f4dee75839e957a89ae89c2b7ab1e76050e559790e946b948",
+  "sources": {
+    "Cargo.toml": "866e59f071d90c9a29521c405f8c39c45814a2f2c403b86b1c9b26754c38c07c",
+    "Cargo.lock": "5ee68fc36886c746cd7e56287563aeabb52c005c22b74b1b2c8e0a84b9272d35",
+    "rust-toolchain.toml": "e879701472a698533f43f54989bbf5f3101eb0503472159d32633f3bb8a13fdf",
+    "package.json": "a9fe919973ca6d3a0cd2f9a66a36fd81bca286a7818cca913cc3152766f9fcb7",
+    "package-lock.json": "4f60f04465656fbbe617a2d01e418d0fb89879e09b8132b8cf73f67cdd432ca0",
+    "tsconfig.json": "890990be3fe1e8e06902eba6045c8185e143564aeb6d13727417c9213bfec4a9",
+    "crates/flashwright-browser/Cargo.toml": "03bb413052cd536ba24faa5017a0705bcfe2d4cb558b529c0289e5e16e9a1219",
+    "crates/flashwright-browser/src/chromium.rs": "d2220536bb4e91fead70b364f9857321c30cec0c0516b2172e8b281941820ce5",
+    "crates/flashwright-browser/src/connection.rs": "e34ea1604d6d5d5dc591b4a562121fdc21b01a157a0cea0dbdb0376dcc325904",
+    "crates/flashwright-browser/src/lib.rs": "32a169ff4450df62f362d1eab5667d7ba4dbdea0959d4d5a4e8730034c52cb56",
+    "crates/flashwright-browser/src/supervision.rs": "7c35b1472fdb37fdb19d5065ccceb593bdf410a7fd85896bf0c5387495bb172e",
+    "crates/flashwright-browser/tests/connection.rs": "6626baf577d230d857d2044e83b44fbbe06a0096f572208b8d7789f836b1ba6b",
+    "crates/flashwright-driver/Cargo.toml": "1a21edd808d74d12dd1d942b3e18c5aecf7c818d33bd2848ab7faec8d7faf37a",
+    "crates/flashwright-driver/src/main.rs": "5adfbdb36f124955c2efebc2eb10a2abfeb1d6872748b273bd75fc0d32f14ae1",
+    "crates/flashwright-driver/src/pipe.rs": "f7424922ca939fd9795f06d927bb911c9b78638ad33515cb6d08c66233fb43d6",
+    "crates/flashwright-engine/Cargo.toml": "139f58e8498ade8714e096d5aa79f656d76b0a0257a6c5d919bcca6f2804248a",
+    "crates/flashwright-engine/build.rs": "7486e035f070d9c9fb479a86613b4dd00bd4c3d221226d772df92917731c090c",
+    "crates/flashwright-engine/src/events.rs": "2f168d5c1eed09092d119fa466fccf3d04916cedeef8eff85c2838759fb7d300",
+    "crates/flashwright-engine/src/lib.rs": "8c5cdd064dd92aaa02e86603477e827555095c28b66b32a601cdffb7c1a410c1",
+    "crates/flashwright-engine/src/locators.rs": "a7186b9ff285e28964db6386783464f6b57f75525ce8eac8cd8e65ced680f1e6",
+    "crates/flashwright-engine/src/navigation.rs": "7f76c167949e264c3bc8cb9fceda5cc66874d5ac2364ad56fffdd1095a326c1b",
+    "crates/flashwright-engine/src/operation.rs": "ee77cc3a5aca746b0f813e8ae03f2d71b8f4fa811fb37aed6464f549318e2ccc",
+    "crates/flashwright-engine/src/page_state.rs": "f7adea873e996099ea213b3b9767b5ec78d55590e7595ed0ab0f661b255a003d",
+    "crates/flashwright-engine/src/pointer.rs": "5c49f6de1215d9b335a7ea20467804c0cc943e6c0a0bf19b98c21679b7f06c7f",
+    "crates/flashwright-protocol/Cargo.toml": "6d92cfd0cd988ca2bdd8eff835c8a54d15cac92c306de31d29b279a3cbeb6c60",
+    "crates/flashwright-protocol/src/framing.rs": "e0812417bfd8ac56cc650c88cd71fdb3538aec2b611165cac2ee65975ae306d4",
+    "crates/flashwright-protocol/src/lib.rs": "7b8464e4c4d56a4d539b4dbb4136a082090cb21d49a164c9ff9a02803df29945",
+    "crates/flashwright-protocol/src/messages.rs": "13ab34f3609b4996fd4ffb3386927b3fcb38c75b0a41a2cec56b753ef7b33018",
+    "crates/flashwright-protocol/tests/framing.rs": "2da6a379d408271020c7a9b5b68f1111e57d8dfd9bb2cf9416cb9bf5048d0934",
+    "packages/flashwright/package.json": "87e857fea9d7ee0fdd09c7450a824eaa9bcc7416e449ac204e6f3c13c58273c9",
+    "packages/flashwright/src/client.ts": "32773f07c755df94fed66cc981bc2eb3a90dc901394d5663efc662fe2b626f37",
+    "packages/flashwright/src/errors.ts": "55d82d729b1499e3ebbca1883c9ff1177807551eab546926ef4c1eec1c1da6da",
+    "packages/flashwright/src/frame.ts": "3bdc97fac6eb91b2c11ccf3506281cd7f78b25d67d4b7c5cac575271967327ea",
+    "packages/flashwright/src/index.ts": "37c3e35c68e78ecc64e55f762c1d158bfe556930feb5be88d6728be66a97cd7f",
+    "packages/flashwright/src/locator.ts": "9ddd87f2008a4847336e2cc7c3642bf12c0838576957bd12541e524eae23057b",
+    "packages/flashwright/src/network.ts": "3fbf0edc1e5ba1f7b0a09d10ec93bd97b8c78cca38438a1337f1c4aaf090c824",
+    "packages/flashwright/src/runtime-version.d.cts": "3f88b96aca69fa9ca934fe40127cdb22d30ea70c64a6e46ecee49defeda87e6c",
+    "packages/flashwright/src/serialization.d.cts": "0fc449c3865a67b0058ce67ea81404d7397f711445c568ee861f1b7869100141",
+    "packages/flashwright/src/url-match.cjs": "6dcd59d0d62941418f176b37d04a2c97f51028d218c73538735487fcc9b94189",
+    "packages/flashwright/src/url-match.d.cts": "85bda4231cc9beb6025bd5b419aadadde980efd5c6b9c9b7783731d03bc7b348",
+    "packages/flashwright/src/validation.ts": "2becadd16511e901ad058e1a09617dd43401e40b5c05a295edc67840409bcd0a",
+    "packages/flashwright/src/waits.ts": "110bf92601f1777488abde00e265719f57224fa7dd510795b3990dea97a2c97f",
+    "packages/flashwright/tsconfig.json": "2cd740915dace6a0b8acbdce0cfc8eebee552d8399387a7abfcb62398ff8b208",
+    "packages/resident-runtime/locator-runtime.js": "a0ae5a3b9e3d47ea7c4fbf9688e1d4028655816e1cb51ea2b1e487c218315074",
+    "packages/resident-runtime/playwright-injected.js": "7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a",
+    "packages/resident-runtime/serialization.cjs": "d3f9e82546ada2a1cfe60d7b73d6f10361d15fca0fa616275a3acd5d94d284f7",
+    "tools/bootstrap.py": "0cdc3480230b1f773033265885128041e5a57bae9b6db697d7638980f86ed218",
+    "tools/build-packages.mjs": "ccdfe4820629d44ebe50627a8a94e300168264b6651417c05730db97a5539630",
+    "tools/extract-selector-runtime.mjs": "cdb2ff73a26bf1b22cb79792e5428bf0bdb344a9bb412e28c2840d404be2b1d5",
+    "tools/generate-inventory.mjs": "1e3d1812fd45f3f72c4db692ae5caf683486cee9b6b667de6592adb6d399f079",
+    "tools/linux-baseline.sh": "5c328c2fefc74dd286c1e6605a8f655f5e73e0d7710bf8cd14493de8f79695eb",
+    "tools/linux-core.sh": "409d56e1afc8983d229d80aa79832b6659f26bfbfe6b9761197c79f7ca71e379",
+    "tools/run-library-smoke.mjs": "3df3c9f0047db6cc7ed30a56f0fe6a81d844adf788cb9195af5633a901aa32bf",
+    "tools/run-lifecycle-tests.mjs": "fc5f79cf629e5222153951f979f4ebaa61efe5a52b0b55447837d149cffe9346",
+    "tools/run-locator-tests.mjs": "b1f49289128dd6bf3aa25b107a45353d6d29c0490e304dba35363ab1a39bc155",
+    "tools/run-navigation-tests.mjs": "1f135ef4b0d232f1709df140be8c19c579f43a69ff40f3ffde5e12b0f73317ca",
+    "tools/run-pointer-tests.mjs": "543707b9cfccfb6edd66bc91a8396a1de48e3da61bce5b3d6cf46eca9083c575",
+    "tools/run-runner-boundary.mjs": "1c3811b8cb2b541fe571ead67d5687b253c2be44d20d167fedd08c7703badc65",
+    "tools/test-harness.mjs": "b5accd912497436e26d891d51713b21deaf7e2cfbb67285b42d669128b50e23f",
+    "tools/test-packed-package.mjs": "92ef9e746b0e8857ec0fb312cf276e631a90147c67cb352a1dcb300c3d95e802",
+    "tools/test_watchdog.py": "4649f290953c8d6ee8e1140384a822dde7cb128a27bd73d893efc12908cebf00",
+    "tools/verify-baseline.mjs": "48ab556fe6539c77f509fa44d1dcc6ecaad9768330b049eb5f84efd2a0a57b36",
+    "tools/verify-core.mjs": "9162bf4d531215fc1c645881f27560bebca7de4902485ff7ad295d01ffbc58fc",
+    "tools/verify-runner-boundary.mjs": "6a2d84cf4867e5a5ea3eaabb3206242ec7a6b2d94db5324de06c5d987a059553",
+    "tools/watchdog.py": "1986a5dd68710859e3e09085b16fc1eb7f38471938b6ce72dcd368bab97cbed4",
+    "compatibility/m1/client-deadline.mjs": "f6ab3592f8e4ec16aa7e69e848eab6e5d0dd31143e5adb703799cf9e06e83f80",
+    "compatibility/m1/library-smoke.mjs": "7810d846ba367311661eb75dccb352e2d228b7fc14418bcc7fbc09fd1418b827",
+    "compatibility/m1/lifecycle-worker.mjs": "70b1bd2ce36e760442da01baddcfd118bf590826ace6e78df29ba684db289c96",
+    "compatibility/m1/public-lifecycle-worker.mjs": "d6056ac0e56c8175e989f1e98636471ab59058270116978d4091ba50a0d979ad",
+    "compatibility/m1/reply-race-driver.mjs": "df1e6b5b1c6388141c05ea9328758a0222c8dcd365d207e31de7d2cd4a3b9668",
+    "compatibility/m1/test_driver_protocol.py": "ad772ea65aae0d665ef21407aab583c12a3c047eff455053375c68af53052b62",
+    "compatibility/m1/test_lifecycle.py": "7aa8fc4f7b4acdd3813a9e2c645036cad1d78cfe6174a7e9aa74ab7b84b7d1ec",
+    "compatibility/m1/test_public_lifecycle.py": "422ddffa8555b509e20cc17d669139dfdce28965adff6f6a0f2819166d347bda",
+    "compatibility/m2/locators.mjs": "dcb4260a79b14026f1aea19fea4f7ac9580c0b312ccf7fe8af0e49a124c35db3",
+    "compatibility/m2/navigation.mjs": "50ed005a63b2e6f33d0ac4b66f982d8b602c56ce23ef467d49a08c59d924ce48",
+    "compatibility/m2/pointer.mjs": "f5cd0e8f4c1f840caedf640eafe5aafe2dd0a618e427a2e8a3b90a7153db3485"
+  },
+  "checks": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 704.007042,
+      "log": "1-cargo.txt",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 32634.35639,
+      "log": "2-cargo.txt",
+      "logSha256": "296f5bd65bf9028d14e7ae5f378d350693b7800eb01dbc600e355a5e8cf5fdfc"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--locked"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 31459.069056,
+      "log": "3-cargo.txt",
+      "logSha256": "f4334fef87aafb448442b67cc5bc977ba9c8dbf9f5bbfe0f4dc0b5b087646a98"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--workspace",
+        "--locked"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 5122.519376999997,
+      "log": "4-cargo.txt",
+      "logSha256": "413ac67ed4623851cfa681ff806f4396fd7a707b80013f49d561e6f62938b894"
+    },
+    {
+      "command": [
+        "/usr/bin/node",
+        "tools/build-packages.mjs"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 13252.869298000005,
+      "log": "5-node.txt",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/usr/bin/node",
+        "tools/extract-selector-runtime.mjs",
+        "--check"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 925.1677920000075,
+      "log": "6-node.txt",
+      "logSha256": "bbb3997d802cf4b5f516c2796dfd2e8a8e7053a9500b2d1f77be03a0990edb68"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "inventory:check"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 2089.818293000004,
+      "log": "7-npm.txt",
+      "logSha256": "a88605d60b18cb5ca49b5aae708f48817f124566e960e929371431a17e95c262"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 12386.220673000003,
+      "log": "8-npm.txt",
+      "logSha256": "c4960007ba2e700df478a1990ce06715deba263ea0227d6c57e9868a8a96673e"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:harness"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 1916.8995009999926,
+      "log": "9-npm.txt",
+      "logSha256": "1970af615e4fb317070fd221f6eecd3db520c2b98025660ae2166d39c84493df"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:library"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 12518.539172999997,
+      "log": "10-npm.txt",
+      "logSha256": "126ea5a07ca5d5919ef4e7efed18ecdf32c8723e44c5131bae2d0e6902e337fe"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:lifecycle"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 68781.429532,
+      "log": "11-npm.txt",
+      "logSha256": "5f30785dbcaba04f446bea2416bd926b08d884911f7d9cbdc45665d964d5ab8f"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:navigation"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 12132.718962999992,
+      "log": "12-npm.txt",
+      "logSha256": "dc3f0e4f08e3d2fe1c9cc189e3c0843f7742563ff09a352e3bbc62e4ac4e9109"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:locators"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 11562.788755999994,
+      "log": "13-npm.txt",
+      "logSha256": "e31903e563dc926a84ad71f99c41c8f6471a97f5f67b65bb660bb710ca90b37d"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:pointer"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 14954.890048000001,
+      "log": "14-npm.txt",
+      "logSha256": "774bc6213c3cfdbf0d8c7f5a8019f567428884820ac9f3bd8037700d6dd2cbbd"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:packed"
+      ],
+      "code": 0,
+      "signal": null,
+      "elapsedMilliseconds": 17920.839508000005,
+      "log": "15-npm.txt",
+      "logSha256": "c8f6a532955615f6485c054ae1a2321267a9f16a097d9b978d27aaf22ab83a01"
+    }
+  ],
+  "status": "passed",
+  "scope": "M1/M2 development core, navigation and locator/input slice; npm consumers use an explicit driver path. No release or performance claim.",
+  "sourceChangedDuringVerification": false,
+  "driverSha256": "ebfc991d2c990a5a11bbbe5d870aaff32e07a942c60c0aada51026c673f29dc8",
+  "finished": "2026-10-07T16:33:52.830Z"
+}

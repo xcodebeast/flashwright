@@ -1,0 +1,101 @@
+   Compiling cfg-if v1.0.5
+   Compiling itoa v1.0.18
+   Compiling ryu v1.0.23
+   Compiling bytes v1.12.1
+   Compiling libc v0.2.190
+   Compiling serde_core v1.0.228
+   Compiling memchr v2.8.3
+   Compiling pin-project-lite v0.2.17
+   Compiling bitflags v2.13.2
+   Compiling thiserror v2.0.17
+   Compiling linux-raw-sys v0.12.1
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling sha2 v0.10.9
+   Compiling rustix v1.1.5
+   Compiling flashwright-engine v0.0.0 (/workspace/crates/flashwright-engine)
+   Compiling errno v0.3.14
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling nix v0.30.1
+   Compiling getrandom v0.3.4
+   Compiling signal-hook-registry v1.4.8
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.145
+   Compiling tempfile v3.23.0
+   Compiling tokio v1.48.0
+   Compiling command-fds v0.3.2
+   Compiling flashwright-protocol v0.0.0 (/workspace/crates/flashwright-protocol)
+   Compiling flashwright-browser v0.0.0 (/workspace/crates/flashwright-browser)
+   Compiling flashwright-driver v0.0.0 (/workspace/crates/flashwright-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.02s
+     Running unittests src/lib.rs (target/debug/deps/flashwright_browser-c193eb406f29e3e3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/connection.rs (target/debug/deps/connection-2af6077dbd4c7577)
+
+running 3 tests
+test late_reply_after_cancellation_cannot_settle_another_request ... ok
+test eof_settles_all_pending_requests_and_future_calls ... ok
+test interleaved_events_and_out_of_order_replies_preserve_request_identity ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running unittests src/main.rs (target/debug/deps/flashwright_driver-8ed767658a05ccab)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/flashwright_engine-81ef8164d91bcf4a)
+
+running 4 tests
+test operation::tests::already_cancelled_creation_dispatches_nothing ... ok
+test operation::tests::cancellation_recovers_late_allocation_then_waits_for_disposal ... ok
+test operation::tests::queued_creation_is_withdrawn_without_waiting_for_a_reply ... ok
+test operation::tests::cancellation_with_unknown_allocation_closes_only_its_owner ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s
+
+     Running unittests src/lib.rs (target/debug/deps/flashwright_protocol-6fba28f50a4d0dd3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/framing.rs (target/debug/deps/framing-df13d69dfe7b6034)
+
+running 9 tests
+test handshake_rejects_incompatible_versions_and_invalid_limits ... ok
+test protocol_rejects_unknown_fields_and_limits_nested_value_work ... ok
+test handshake_envelopes_round_trip_and_reject_nested_unknown_options ... ok
+test oversized_outgoing_frame_does_not_write_or_poison_the_stream ... ok
+test cancellation_of_a_blocked_partial_write_invalidates_the_stream ... ok
+test malformed_json_cannot_be_followed_by_an_apparently_valid_frame ... ok
+test cancellation_of_a_fragmented_read_invalidates_the_stream ... ok
+test truncation_and_oversized_lengths_invalidate_without_allocating_the_payload ... ok
+test fragmented_and_concatenated_frames_preserve_unicode_and_nul ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+   Doc-tests flashwright_browser
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_protocol
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

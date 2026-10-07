@@ -1,0 +1,4 @@
+{
+  "reason": "The probe generator accidentally decoded the intended Unicode escape before writing its JavaScript source. Its escaped variant was identical to combined and is excluded from the escaping hypothesis.",
+  "repair": "Assert that the generated variant differs and contains only ASCII source; check the actual truncated diagnostic value."
+}

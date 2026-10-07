@@ -1,0 +1,26 @@
+{
+  "status": "verified repaired",
+  "originalReproduction": "compatibility/evidence/evaluation-error-classification-2026-10-07.json",
+  "coreEvidence": [
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-00-58.501Z/report.json",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-13-19.442Z/report.json"
+  ],
+  "node22Evidence": "compatibility/evidence/evaluation-policy-node22-2026-10-07.txt",
+  "regressionSource": "compatibility/m1/library-smoke.mjs",
+  "regressionSourceSha256": "efcca6f846d643b5b6b29ea4f7a680d7becb879c88520b4099d91867c77082fc",
+  "implementation": [
+    "packages/resident-runtime/serialization.cjs",
+    "packages/resident-runtime/evaluation.cjs",
+    "crates/flashwright-engine/src/evaluation.rs",
+    "packages/flashwright/src/index.ts"
+  ],
+  "checks": [
+    "User exception text cannot select codec error categories",
+    "Throwing argument and result getters preserve the evaluation category even with spoofed name/code fields",
+    "Oversized and unprintable user errors have bounded diagnostics",
+    "Actual argument and result resource limits remain ResourceLimitError",
+    "Unsupported value classes remain UnsupportedFeatureError",
+    "Argument serialization failures dispatch no browser mutation"
+  ],
+  "runtimeIdentity": "One ordered packages/resident-runtime/sources.txt manifest drives Rust, package and protocol-test hashes."
+}

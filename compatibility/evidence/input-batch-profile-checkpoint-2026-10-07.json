@@ -1,0 +1,89 @@
+{
+  "status": "macOS and emulated Linux functional verification passed; click-flow regression removed; overall performance objective not achieved",
+  "changes": [
+    "Undelayed native click input is admitted atomically as a bounded ordered sequence and written before waiting for replies.",
+    "Cancellation withdraws unsent commands and tracks individual acknowledgements; uncertain input disposes the owned page without replaying releases, holding native input ownership through disposal.",
+    "Main page sessions enable the pinned reference focus/visibility emulation, fixing fresh-frame stability waits after another tab opens."
+  ],
+  "coreEvidence": [
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/report.json",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/report.json"
+  ],
+  "sourceCount": 126,
+  "verifiedCommandLogHashes": 48,
+  "driverHashes": {
+    "darwin-arm64-release": "0f8c5a4a0187c9e02153f42ee576b124cae77d7fdee518ce532e27e08894181b",
+    "linux-x64-debug": "95e138ba4023611814b2b660ba818d5b2c1beccf0bb8d9c42ef04ec5dca11f8b"
+  },
+  "semanticArtifactHashes": {
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/assertions-darwin-arm64-24.15.0.json": "64e0c54821064dbf0c8d210631a279f7be1e42a52d11ae0d97b0d23a9295b86b",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/benchmark-contract-darwin-arm64-24.15.0.json": "92ebfb89b78b7568c7a0893084ca9d68185b57cb460380e7a863241b2814f36a",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/keyboard-darwin-arm64-24.15.0.json": "5af4454495e0b47a2822de469b74181679e74cba4844e34bf89d90a6c4eec0f4",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/locators-darwin-arm64-24.15.0.json": "e7bd3885d011214e26388cfc12ab23a2292a56c749ee3dba8f8a22e00c599b0b",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/migration-todomvc-darwin-arm64-24.15.0.json": "9363742ce07a2cd997e82580fba7f604602f903bd86038715c145a93f6df8434",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/native-runner-darwin-arm64-24.15.0.json": "a17c755d203aedf446ef33cad35e5f203f0f3d74618af32b2dcca54170e117ea",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/packed-library-darwin-arm64-24.15.0.json": "213f78ef5561d8be3fae24caf5647f026e82f648f2f0643473d04760f7e2881e",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/packed-runner-darwin-arm64-24.15.0.json": "5c2549bc9ddfd4d63872b87914bf4d4f37b4b05efe36e9fe6190b591722a10c5",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-47-58.609Z/artifacts/pointer-darwin-arm64-24.15.0.json": "50b5da89a6703e0bccb7224b3c0cdef6e6a20b0cdcd291fd347c6779a2fd4328",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/assertions-linux-x64-24.15.0.json": "2b941e33dbe818724db85ff21fea7909a5479ae94097dd2843a0496b85eefc1d",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/benchmark-contract-linux-x64-24.15.0.json": "4e7fed50982fe0c3c8187d9ba77f8fbf6ac1d5ef3faf629664d18a3adb4cdec2",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/keyboard-linux-x64-24.15.0.json": "530279ddcde3716194170ce4fd1e65e7dde2ed941ed7e4be9ac3f284711df29a",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/locators-linux-x64-24.15.0.json": "7dce2fc1add4573691d1d8f8c0b9c99a73a17c2d631ec628d99658f655987f24",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/migration-todomvc-linux-x64-24.15.0.json": "82672dd3bafc3bcfd13d0139343945df4e0bc4f60930a27ded6dce1ff8d0e4f9",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/native-runner-linux-x64-24.15.0.json": "03fd2efc91dabad0f86006c3eea2074067bb3b0fc91e8fb48f1fd1b3144b8c55",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/packed-library-linux-x64-24.15.0.json": "1f617de9e46da6d65534d4907c3ac39fd19c0ef08ecbc5dafa0aa705a8adea50",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/packed-runner-linux-x64-24.15.0.json": "93f4657b7ededc9f7487b6eb1be5c494bb0ab9c239ea9801ef07669b996ff45e",
+    "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T19-56-51.325Z/artifacts/pointer-linux-x64-24.15.0.json": "52c723ab718ca973ab6fc8af8ab6468fd53204907cf33f9fe2a455328f8588de"
+  },
+  "node22Evidence": "compatibility/evidence/input-batch-node22-2026-10-07.txt",
+  "pairedProfile": "benchmarks/results/2026-10-07T19-50-41.891Z-darwin-arm64-paired-a4803183",
+  "pairedSummarySha256": "586e4ed1dd496f259dfada72f3bcbccfe8158cb773dc84206e83ae8b8fcf4bb7",
+  "driverArchive": ".cache/paired-input-batch-002/flashwright-driver-darwin-arm64",
+  "profileValidation": "tools/verify-paired.mjs independently passes all 16 launches, source/binary/log hashes, native outcomes, resources and paired statistics.",
+  "failedVerificationRetained": {
+    "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T19-42-49.238Z/report.json",
+    "cause": "The expanded blocked-input test opened a sibling tab first; the original page then stalled in hover readiness before any input. A bounded diagnostic localized it to missing page-focus emulation, rather than cancellation or shared renderer disposal.",
+    "repair": "Match Emulation.setFocusEmulationEnabled({ enabled: true }) from the pinned reference main-frame initialization; shared pointer fixture now asserts visible/focused state with a second open tab and completes native input.",
+    "upstreamReference": {
+      "package": "playwright-core@1.60.0",
+      "file": "lib/coreBundle.js",
+      "line": 36220,
+      "sha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+    }
+  },
+  "limitations": [
+    "Engineering profile covers seven lab workloads and one worker on a shared native macOS host.",
+    "Complete-flow improvement is not established: paired ratio 1.0258 with 95% interval 0.9705\u20131.0419; material-improvement policy fails.",
+    "Noop/failure median and navigation/setup observed-maximum regressions remain; all valid samples were retained.",
+    "Complete-run times across the two separate profiles cannot isolate a causal improvement because the shared-host environment changed.",
+    "Protocol/evaluation accounting, contention sweeps, broader M2/M4 compatibility, native Linux performance and release gates remain open.",
+    "Linux functional run uses amd64 emulation on an arm64 host with a debug driver; its timings are not native Linux performance evidence."
+  ],
+  "node22EvidenceSha256": "0808b17b4a9bedd41f914650e24097d694e6705caed503e72ffa929e9b49d929",
+  "node22ArtifactHashes": {
+    "compatibility/evidence/input-batch-node22-2026-10-07/benchmark-contract-darwin-arm64-22.22.0.json": "626764ea6bab3a118b54fc14323976e5482f3bab2994a1cb2566eac336384329",
+    "compatibility/evidence/input-batch-node22-2026-10-07/packed-library-darwin-arm64-22.22.0.json": "0bcedacc216e458c806b3c3d3d31d289ad79b41f9a693fcd2129c101a5f1d234",
+    "compatibility/evidence/input-batch-node22-2026-10-07/packed-runner-darwin-arm64-22.22.0.json": "a62533ef4958792d6ef28403991467a449b1dcb87d10e21ac1230744910ef45f",
+    "compatibility/evidence/input-batch-node22-2026-10-07/pointer-darwin-arm64-22.22.0.json": "7ce2591e7541f0cb001ad908aa32ca887aefe1326f112330d5cfe986725a7a8b"
+  },
+  "failedDiagnosticCleanup": {
+    "profiles": [
+      {
+        "path": "/var/folders/c4/tbsf2ms10fd3ykfp2m4lsk3w0000gp/T/flashwright-chromium-lme6Z3",
+        "browserProcessIdentifier": 7790,
+        "createdAt": "2026-10-07T19:43:25.010363+00:00",
+        "ownership": "Exact repository-created profile, creation time matches the failed lifecycle run/diagnostic, recorded Chromium lock PID, and no live process references the profile."
+      },
+      {
+        "path": "/var/folders/c4/tbsf2ms10fd3ykfp2m4lsk3w0000gp/T/flashwright-chromium-HYNh6J",
+        "browserProcessIdentifier": 8884,
+        "createdAt": "2026-10-07T19:44:49.128219+00:00",
+        "ownership": "Exact repository-created profile, creation time matches the failed lifecycle run/diagnostic, recorded Chromium lock PID, and no live process references the profile."
+      }
+    ],
+    "removedAfterOwnershipVerification": true,
+    "cause": "The lifecycle test tearDown kills the worker and then immediately kills every still-visible owned process, including the guardian, before its profile cleanup can finish on a failed test. Successful tests await guardian exit separately.",
+    "remainingWork": "Harden failed-test teardown and exercise it explicitly; do not confuse this test-harness failure path with successful benchmark cleanup.",
+    "finalAudit": "No live Flashwright driver/browser processes or owned profiles remain."
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "runIdentifier": "2026-10-07T12-43-18.519Z-darwin-arm64-fb948a3f",
+  "startedAt": "2026-10-07T12:43:18.549Z",
+  "purpose": "Reference baseline only; no Flashwright speed claim",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "operatingSystem": "Darwin Kernel Version 27.0.0: Tue Aug 11 21:06:24 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6030",
+  "release": "27.0.0",
+  "cpu": "Apple M3 Pro",
+  "logicalProcessors": 11,
+  "totalMemoryBytes": 38654705664,
+  "node": "v24.15.0",
+  "playwright": "1.60.0",
+  "typescript": "5.9.3",
+  "npm": "11.12.1",
+  "rust": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "browser": {
+    "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+    "revision": "1223",
+    "version": "148.0.7778.96",
+    "flagsSource": "Each raw launch retains DEBUG=pw:browser actual launch flags."
+  },
+  "environmentClass": "native",
+  "containerImage": null,
+  "configuration": {
+    "schemaVersion": 1,
+    "referenceVersion": "1.60.0",
+    "browserVersion": "148.0.7778.96",
+    "independentLaunches": 8,
+    "warmupIterations": 3,
+    "measuredIterations": 12,
+    "workloads": [
+      "noop",
+      "interaction",
+      "assertion",
+      "navigation",
+      "setup",
+      "backend",
+      "failure"
+    ],
+    "workers": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "headless": true,
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    },
+    "delayedAssertionMilliseconds": 8,
+    "backendDelayMilliseconds": 20,
+    "expectedFailureTimeoutMilliseconds": 25,
+    "statistics": {
+      "unit": "independent launch median",
+      "bootstrapReplicates": 10000,
+      "confidenceLevel": 0.95,
+      "seed": 41723,
+      "minimumSamplesForP95": 200,
+      "minimumSamplesForP99": 1000
+    },
+    "acceptance": {
+      "minimumMaterialImprovementFraction": 0.1,
+      "maximumMedianRegressionFraction": 0.05,
+      "maximumObservedTailRegressionFraction": 0.15,
+      "maximumConcurrentResidentMemoryRegressionFraction": 0.1,
+      "allowedUnexpectedFailures": 0,
+      "rationale": "Require at least a 10% complete-flow improvement with a launch-clustered confidence interval excluding parity. Reject median regressions above 5%, observed tail regressions above 15%, and memory growth above 10% unless explicitly reviewed. Baseline-only data establishes variability; it cannot pass a speed comparison. Tail claims need the stated sample counts."
+    },
+    "exclusionPolicy": "Retain every attempted launch and sample. Unexpected errors invalidate a comparison, not individual slow observations. Only an explicitly documented external interruption can invalidate an entire run. Never rerun selectively.",
+    "executionOrder": "Rotate workloads by launch index; paired engine comparisons must alternate which engine starts each launch pair.",
+    "resourceCoverage": "External watchdog samples the observed descendant process tree, including separately grouped browser processes. Short-lived processes between samples may be missed; report this limitation."
+  },
+  "sourceHashes": {
+    ".gitignore": "dd54487ff0e642d3ee800e634898b449c181e991d9e2453c2c55caa7997999b9",
+    "AGENTS.md": "15399493b714336cc4117ae1dd2a8aa01f802448148f3c52dcdd734d006a74fd",
+    "SPECS.md": "e90b656babd8756d6acecf71bde97db5d3930ac779ff75d35d081e4c4761a63e",
+    "benchmarks/configurations/baseline.json": "6cd5b1d765be047c2d61c19cf022b966e5af3fde093eafc25ff47c506cbfdfe2",
+    "benchmarks/fixture-server.mjs": "4a4e613a78b0f57dc8c56def8c7d88f39d202f8f2582cb0427a710b2dc2a35fc",
+    "benchmarks/run.mjs": "a9047e3a777d905ebc624924b75708a50d95ef30414d4da3ae2f946210c10593",
+    "benchmarks/sample.mjs": "7758b055ef67b22205d27ebe34b0d5df8de5f266ca4b5aaaa3723f2293c510f3",
+    "benchmarks/statistics.mjs": "2581b6bae3cacb7656eaaccfd7d014774cea4cf30b40edf133912e429f6e8f2e",
+    "benchmarks/workloads/index.mjs": "61bfb4c17a1372a8edb7595a86cc2bc9edcc8ccb76adaafbfefc2a329420ecda",
+    "compatibility/capabilities.json": "f96bca8189a0f18760001332bd6d600230ea9ac5cad01ca6101caf74221571b7",
+    "compatibility/migration-projects/todomvc/tests/fixtures.ts": "10d5cb93faf3d516432a975e0df3b95d670b100d46e6322228115d2a315021f6",
+    "compatibility/runner-boundary/adapter.ts": "6e70e102287b96cef5d1803e853f1a0c453dbcb03774addc5ae6db0177bd55ab",
+    "compatibility/runner-boundary/boundary.spec.ts": "079b1eefb0911943be5553dc84a36ac0df50a6011e2e9da6b33edb5643405435",
+    "compatibility/runner-boundary/playwright.config.ts": "61b31a57555d260a5e9a6329a5a2969e74ef4d3e5ead9fdd1c1d139ec1280bcb",
+    "compatibility/upstream/LICENSE.playwright": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
+    "compatibility/upstream/NOTICE.playwright": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d",
+    "compatibility/upstream/runner-index.ts.source": "5f73b5cc176cd74fee3558e1e9c0492d8c7fb6951e367a13072dec71befae84b",
+    "package-lock.json": "18bb24f38e1b89030c7a43d5639be6ac1405b7372894168c06fc5485f2515aff",
+    "package.json": "3a2291f6beb5972c2bcd872ba321eff5e879140fd7cdbd46ca3d9caf0dbc0e52",
+    "tools/bootstrap.py": "0cdc3480230b1f773033265885128041e5a57bae9b6db697d7638980f86ed218",
+    "tools/generate-inventory.mjs": "1e3d1812fd45f3f72c4db692ae5caf683486cee9b6b667de6592adb6d399f079",
+    "tools/watchdog.py": "48a350474301a2f55cca572abbf9be0709487351080e6dbc058589c75afa6058",
+    "tsconfig.json": "c29ce18492caa4f9ed9a389ad47e7c06c6eba74d89d03ea17b8cd8d73b062b9f"
+  },
+  "instrumentation": {
+    "browserLaunchLogging": true,
+    "protocolWireCapture": false,
+    "protocolCrossings": null,
+    "payloadBytes": null,
+    "discoveryVisits": null,
+    "residentEvaluations": null,
+    "detectionLag": "Upper bound includes one additional browser evaluation after the assertion.",
+    "resources": "Run under tools/watchdog.py with --report for sampled descendant-tree CPU and concurrent RSS."
+  }
+}

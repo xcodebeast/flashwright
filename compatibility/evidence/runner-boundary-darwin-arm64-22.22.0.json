@@ -1,0 +1,445 @@
+{
+  "verifiedAt": "2026-10-07T14:21:23.355Z",
+  "reference": "1.60.0",
+  "node": "v22.22.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "sourceHashes": {
+    "compatibility/runner-boundary/adapter.ts": "84b54e2e6418b3748d829991fde4c2261c66615a3bb82beb3a769de76771514a",
+    "compatibility/runner-boundary/boundary.spec.ts": "926589a677a8d798edbd38456bda56957c5d1815de99655ca75b5dad62303925",
+    "compatibility/runner-boundary/playwright.config.ts": "d3edc9810100ca3075f45c6c7472e8c9aa229e70a61f61159ab52c82b8fa0051",
+    "tools/verify-runner-boundary.mjs": "6a2d84cf4867e5a5ea3eaabb3206242ec7a6b2d94db5324de06c5d987a059553",
+    "tools/run-runner-boundary.mjs": "1c3811b8cb2b541fe571ead67d5687b253c2be44d20d167fedd08c7703badc65",
+    "package-lock.json": "4f60f04465656fbbe617a2d01e418d0fb89879e09b8132b8cf73f67cdd432ca0"
+  },
+  "rawReportSha256": "7e48e6dc8e698516f99ea77f1789cd4fd87f3c5128959c81f37a00445c2eacfe",
+  "checks": [
+    "isolated upstream runner dependency identity",
+    "extended fixtures",
+    "custom option forwarding",
+    "worker scope",
+    "async custom matchers",
+    "negation",
+    "configured expect",
+    "soft failure status",
+    "steps",
+    "reporter attachments",
+    "retries",
+    "timeout teardown",
+    "upstream launch/connect/request paths poisoned"
+  ],
+  "limitations": [
+    "Probe uses no browser objects; browser-operation cancellation and artifact integration remain M2 gates.",
+    "Packed adapter and alias dependency isolation remain unverified."
+  ],
+  "report": {
+    "config": {
+      "configFile": "/Users/P/p/flashwright/compatibility/runner-boundary/playwright.config.ts",
+      "rootDir": "/Users/P/p/flashwright/compatibility/runner-boundary",
+      "forbidOnly": false,
+      "fullyParallel": false,
+      "globalSetup": null,
+      "globalTeardown": null,
+      "globalTimeout": 0,
+      "grep": {},
+      "grepInvert": null,
+      "maxFailures": 0,
+      "metadata": {
+        "actualWorkers": 1
+      },
+      "preserveOutput": "always",
+      "projects": [
+        {
+          "outputDir": "/Users/P/p/flashwright/test-results",
+          "repeatEach": 1,
+          "retries": 1,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "id": "",
+          "name": "",
+          "testDir": "/Users/P/p/flashwright/compatibility/runner-boundary",
+          "testIgnore": [],
+          "testMatch": [
+            "boundary.spec.ts"
+          ],
+          "timeout": 10000
+        }
+      ],
+      "quiet": false,
+      "reporter": [
+        [
+          "list",
+          null
+        ],
+        [
+          "json",
+          {
+            "outputFile": "/Users/P/p/flashwright/test-results/runner-boundary.json"
+          }
+        ]
+      ],
+      "reportSlowTests": {
+        "max": 5,
+        "threshold": 300000
+      },
+      "shard": null,
+      "tags": [],
+      "updateSnapshots": "missing",
+      "updateSourceMethod": "patch",
+      "version": "1.60.0",
+      "workers": 1,
+      "webServer": null
+    },
+    "suites": [
+      {
+        "title": "boundary.spec.ts",
+        "file": "boundary.spec.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "preserves extended fixture dependency order and custom options",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 5,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-07T14:21:22.384Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "boundary",
+                        "contentType": "text/plain",
+                        "body": "Tm8gdXBzdHJlYW0gYnJvd3NlciBmaXh0dXJlcyByZXF1ZXN0ZWQ="
+                      },
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "27c88724c5d7e5a2516e-0570585ac4bfcb0c6260",
+            "file": "boundary.spec.ts",
+            "line": 10,
+            "column": 1
+          },
+          {
+            "title": "supports configured expectations and runner steps",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 2,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "steps": [
+                      {
+                        "title": "custom matcher step",
+                        "duration": 1
+                      }
+                    ],
+                    "startTime": "2026-10-07T14:21:22.404Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "27c88724c5d7e5a2516e-14ec0836d8a6891a42e6",
+            "file": "boundary.spec.ts",
+            "line": 17,
+            "column": 1
+          },
+          {
+            "title": "soft matcher failure reaches runner status",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [
+                  {
+                    "type": "fail",
+                    "location": {
+                      "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                      "line": 24,
+                      "column": 12
+                    }
+                  }
+                ],
+                "expectedStatus": "failed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 2,
+                    "error": {
+                      "message": "Error: Expected /^impossible:/, received custom:worker-0",
+                      "stack": "Error: Expected /^impossible:/, received custom:worker-0\n    at /Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts:25:28",
+                      "location": {
+                        "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                        "column": 28,
+                        "line": 25
+                      },
+                      "snippet": "  23 | extended('soft matcher failure reaches runner status', async ({ probe }, testInfo) => {\n  24 |   extended.fail();\n> 25 |   await expect.soft(probe).toHaveProbeValue(/^impossible:/);\n     |                            ^\n  26 |   expect(testInfo.errors).toHaveLength(1);\n  27 | });\n  28 |"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                          "column": 28,
+                          "line": 25
+                        },
+                        "message": "Error: Expected /^impossible:/, received custom:worker-0\n\n  23 | extended('soft matcher failure reaches runner status', async ({ probe }, testInfo) => {\n  24 |   extended.fail();\n> 25 |   await expect.soft(probe).toHaveProbeValue(/^impossible:/);\n     |                            ^\n  26 |   expect(testInfo.errors).toHaveLength(1);\n  27 | });\n  28 |\n    at /Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts:25:28"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-07T14:21:22.407Z",
+                    "annotations": [
+                      {
+                        "type": "fail",
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                          "line": 24,
+                          "column": 12
+                        }
+                      }
+                    ],
+                    "attachments": [
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                      "column": 28,
+                      "line": 25
+                    }
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "27c88724c5d7e5a2516e-69652c2e373693d0714e",
+            "file": "boundary.spec.ts",
+            "line": 23,
+            "column": 1
+          },
+          {
+            "title": "uses runner retries",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 3,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at /Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts:30:26",
+                      "location": {
+                        "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                        "column": 26,
+                        "line": 30
+                      },
+                      "snippet": "  28 |\n  29 | extended('uses runner retries', async ({}, testInfo) => {\n> 30 |   expect(testInfo.retry).toBe(1);\n     |                          ^\n  31 | });\n  32 |\n  33 | extended('runner timeout still tears down dependent fixtures', async ({ probe }) => {"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                          "column": 26,
+                          "line": 30
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\n  28 |\n  29 | extended('uses runner retries', async ({}, testInfo) => {\n> 30 |   expect(testInfo.retry).toBe(1);\n     |                          ^\n  31 | });\n  32 |\n  33 | extended('runner timeout still tears down dependent fixtures', async ({ probe }) => {\n    at /Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts:30:26"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-07T14:21:22.412Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "/Users/P/p/flashwright/compatibility/runner-boundary/boundary.spec.ts",
+                      "column": 26,
+                      "line": 30
+                    }
+                  },
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 4,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 1,
+                    "startTime": "2026-10-07T14:21:22.768Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "flaky"
+              }
+            ],
+            "id": "27c88724c5d7e5a2516e-6239d310ba1e04e2ac39",
+            "file": "boundary.spec.ts",
+            "line": 29,
+            "column": 1
+          },
+          {
+            "title": "runner timeout still tears down dependent fixtures",
+            "ok": false,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 50,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "timedOut",
+                    "duration": 54,
+                    "error": {
+                      "message": "\u001b[31mTest timeout of 50ms exceeded.\u001b[39m",
+                      "stack": "\u001b[31mTest timeout of 50ms exceeded.\u001b[39m"
+                    },
+                    "errors": [
+                      {
+                        "message": "\u001b[31mTest timeout of 50ms exceeded.\u001b[39m"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-07T14:21:22.785Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  },
+                  {
+                    "workerIndex": 2,
+                    "parallelIndex": 0,
+                    "status": "timedOut",
+                    "duration": 53,
+                    "error": {
+                      "message": "\u001b[31mTest timeout of 50ms exceeded.\u001b[39m",
+                      "stack": "\u001b[31mTest timeout of 50ms exceeded.\u001b[39m"
+                    },
+                    "errors": [
+                      {
+                        "message": "\u001b[31mTest timeout of 50ms exceeded.\u001b[39m"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 1,
+                    "startTime": "2026-10-07T14:21:23.234Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "probe-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "unexpected"
+              }
+            ],
+            "id": "27c88724c5d7e5a2516e-15751ffe0d302fca7886",
+            "file": "boundary.spec.ts",
+            "line": 33,
+            "column": 1
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "stats": {
+      "startTime": "2026-10-07T14:21:21.912Z",
+      "duration": 1402.1109999999999,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 1
+    }
+  }
+}

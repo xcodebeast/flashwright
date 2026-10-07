@@ -1,0 +1,24 @@
+{
+  "status": "historical reproduction; repaired with retained regression evidence",
+  "platform": "darwin-arm64",
+  "node": "24.15.0",
+  "driverSha256": "d7d252ab82e1facd6979da4b6e694792c5708bdc9108fc42195caad3c60b2b3b",
+  "source": "crates/flashwright-engine/src/lib.rs",
+  "sourceSha256": "fbe7d2c727ef50163f285f3d74d34c6a4d9337a805d24fc392f3961a7c69ffad",
+  "reproduction": "For each message below, call page.evaluate(message => { throw new Error(message); }, message) and observe the rejection name.",
+  "outcomes": [
+    {
+      "message": "UnsupportedFeatureError: user exception",
+      "actualErrorName": "UnsupportedFeatureError",
+      "expectedErrorName": "EvaluationError"
+    },
+    {
+      "message": "ResourceLimitError: user exception",
+      "actualErrorName": "ResourceLimitError",
+      "expectedErrorName": "EvaluationError"
+    }
+  ],
+  "cause": "The renderer wrapper catches user execution and value encoding in one branch; Rust classifies the resulting stack text by substring. User error contents must not select an engine capability/limit category.",
+  "requiredRepair": "Use explicit stages and bounded structured codec failures, preserving arbitrary user exceptions as evaluation errors. Correct the Node argument-serialization catch-all in the same boundary.",
+  "repairEvidence": "compatibility/evidence/evaluation-error-repair-2026-10-07.json"
+}

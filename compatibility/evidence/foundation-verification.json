@@ -1,0 +1,53 @@
+{
+  "phase": "M0 and M1 protocol foundation",
+  "rust": {
+    "toolchain": "1.98.0",
+    "platform": "darwin-arm64",
+    "format": "passed",
+    "clippy": "passed with warnings denied",
+    "protocolTestsPassed": 9,
+    "browserEngineTests": 0
+  },
+  "typescript": {
+    "version": "5.9.3",
+    "rootNodeNextTypecheck": "passed",
+    "upstreamCorpusBundlerTypecheck": "passed",
+    "inventoryCheck": "passed, 6425 entries",
+    "harnessStatisticsTest": "passed"
+  },
+  "runner": {
+    "reference": "1.60.0",
+    "isolatedDependency": "flashwright-upstream-runner",
+    "nodeVersions": [
+      "22.22.0",
+      "24.15.0"
+    ],
+    "status": "passed",
+    "expectedNestedOutcomes": "3 expected tests, 1 retry recovery and 1 deliberate timeout failure; wrapper verifies exact outcomes and teardown"
+  },
+  "watchdog": {
+    "macosArm64": "passed",
+    "linuxX64Emulated": "passed",
+    "checks": [
+      "timeout of hung job",
+      "termination and reaping of detached owned child",
+      "unrelated process preserved"
+    ],
+    "linuxAdoption": "PR_SET_CHILD_SUBREAPER; required to reap detached descendants after the original parent exits"
+  },
+  "sources": {
+    "Cargo.toml": "37a93374280092608c24a15fb67c9178de3296567fdae8a68af4d11209fbc66e",
+    "Cargo.lock": "fa113b17bfd00a54fa5425b1a98954da78d054fcf01806a94027f29d74bafa0c",
+    "crates/flashwright-protocol/src/lib.rs": "61f990d7c30e6b5d15f174f1b727f1d97114fbecb2a90be0c2a755b2dfc5ced3",
+    "crates/flashwright-protocol/src/framing.rs": "2946103856ce7d70377651fcf80559ec42a74b11ec6489aa528304e027502e18",
+    "crates/flashwright-protocol/src/messages.rs": "385eca3b0c6125620e36f044dfc4eb965c26e9ce482e64798e78b4020ff76ac3",
+    "crates/flashwright-protocol/tests/framing.rs": "6b24e715ebcf3907a48058b0379bf5d9c849d41d5546015491c022eb50eecd96",
+    "tools/watchdog.py": "1986a5dd68710859e3e09085b16fc1eb7f38471938b6ce72dcd368bab97cbed4",
+    "tools/test_watchdog.py": "4649f290953c8d6ee8e1140384a822dde7cb128a27bd73d893efc12908cebf00",
+    "package-lock.json": "e9031dc751d10b3cefeca8a70cc8b2e740602321cafc986d7afedf5f32bc2d7c"
+  },
+  "limitations": [
+    "These are development foundations, not a completed M1 browser library or release gate.",
+    "Native Linux x64 CI and packed consumer verification remain open."
+  ]
+}

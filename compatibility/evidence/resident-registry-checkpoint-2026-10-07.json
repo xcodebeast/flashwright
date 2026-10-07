@@ -1,0 +1,93 @@
+{
+  "status": "Disabled registry experiment verified; production runtime and retry behavior unchanged",
+  "coreEvidence": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/report.json",
+  "coreChecks": 25,
+  "sourceCount": 136,
+  "allCoreLogHashesVerified": true,
+  "driverSha256": "0f8c5a4a0187c9e02153f42ee576b124cae77d7fdee518ce532e27e08894181b",
+  "changedSourcesSinceCleanupAttribution": [
+    "package.json",
+    "packages/resident-runtime/condition-registry.js",
+    "tools/run-condition-tests.mjs",
+    "tools/verify-core.mjs",
+    "compatibility/m2/condition-registry.mjs"
+  ],
+  "registryEvidence": [
+    {
+      "path": "compatibility/evidence/resident-registry-darwin-arm64-24.15.0-2026-10-07T21-05-53.370Z.json",
+      "sha256": "e1e2866824af28a28ea23e65b15ca796d49afffe0664bdb07fd82506089f7bc2",
+      "cases": 24
+    },
+    {
+      "path": "compatibility/evidence/resident-registry-darwin-arm64-22.22.0-2026-10-07T21-04-39.743Z.json",
+      "sha256": "7ab8c34ce430c6c32df180bfa832812b0a42b7f10c2531c0c6d5a03c5274e154",
+      "cases": 24
+    },
+    {
+      "path": "compatibility/evidence/resident-registry-linux-x64-24.15.0-2026-10-07T21-04-44.481Z.json",
+      "sha256": "d282807336b58fb65236b91331005dbab992a5d64ad65cd116271cb333667060",
+      "cases": 24
+    }
+  ],
+  "resourceEvidence": [
+    {
+      "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/registry-resources-0.json",
+      "sha256": "ee5b78456323bf81aa869c14d8d5ac162ccfcb35eb5454bf29a3bf0e8c6b0b97"
+    },
+    {
+      "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/registry-resources-1.json",
+      "sha256": "54463e9dcf73ba74d0cfb4a382427e3dd176c33926227acd403e61d3819c0967"
+    },
+    {
+      "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/registry-resources-2.json",
+      "sha256": "bcf1548678a88ade702aa63675f263ed12b0091edf7fceda52d1a0ffc0daec76"
+    }
+  ],
+  "semanticArtifacts": {
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/navigation-darwin-arm64-24.15.0.json": "34def88757a53886b6d49812601d20c0d39fb05122715630cba166526e48fb1f",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/assertions-darwin-arm64-24.15.0.json": "64e0c54821064dbf0c8d210631a279f7be1e42a52d11ae0d97b0d23a9295b86b",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/benchmark-contract-darwin-arm64-24.15.0.json": "04e2e03c77dcdca7153710de845776b7ebdba4a2c1d50ea902ef181b98b585c8",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/keyboard-darwin-arm64-24.15.0.json": "5af4454495e0b47a2822de469b74181679e74cba4844e34bf89d90a6c4eec0f4",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/locators-darwin-arm64-24.15.0.json": "e7bd3885d011214e26388cfc12ab23a2292a56c749ee3dba8f8a22e00c599b0b",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/migration-todomvc-darwin-arm64-24.15.0.json": "7fd9234def55303fbb0e571b0a7952279eca46f7761ac086e3b5b719606cda36",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/native-runner-darwin-arm64-24.15.0.json": "2cc44e7164239c96d308b31fdcb040bdc6651c4f62700fa5ebc774d4cae7109b",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/packed-library-darwin-arm64-24.15.0.json": "e3d960febb6383232e58beaca7522a44ae4f43834bdb623f60ac37f163484f63",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/packed-runner-darwin-arm64-24.15.0.json": "698094f8479a5f4f05eb4ef31d764504100edfa2395e75b551a4c8d7c251f281",
+    "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T21-04-36.199Z/artifacts/pointer-darwin-arm64-24.15.0.json": "50b5da89a6703e0bccb7224b3c0cdef6e6a20b0cdcd291fd347c6779a2fd4328"
+  },
+  "implementation": {
+    "file": "packages/resident-runtime/condition-registry.js",
+    "ownership": "One registry per isolated document; register before initial check, retain only bounded active operations and discovery state, release observers/timers/roots when the last operation ends. Pagehide disposes remaining work.",
+    "predicate": "Uses the existing locator assertion wrapper and pinned complete _expectCore predicate; every notification resolves membership and checks the complete predicate again. No element identity or assertion truth cache.",
+    "detection": "Shared MutationObserver and document/lifecycle events, requestAnimationFrame fallback for the broad supported selector/predicate dependencies, and a 100ms timer when frame scheduling is insufficient. This is an experimental policy, not a public timing contract.",
+    "discovery": "Already-true checks do no discovery. Pending checks share an incremental TreeWalker pass over the document and known open roots, then inserted subtrees. Work is split into 512-node tasks; active operations, roots, queued subtrees and total visits are capped. Missed roots at a bound remain covered by full predicate fallback.",
+    "instrumentation": "Opt-in counters distinguish predicate evaluations from discovery passes/visits; no intermediate operation events. Snapshot inspection is rejected when instrumentation is disabled."
+  },
+  "observations": {
+    "immediate": {
+      "predicateEvaluations": 1,
+      "discoveryPasses": 0,
+      "discoveryVisits": 0
+    },
+    "concurrent": {
+      "conditions": 12,
+      "discoveryPasses": 1,
+      "discoveryVisits": 6005,
+      "fixture": "3000 div/span pairs plus document structure"
+    },
+    "cleanup": "All 24 cases on all three environments end with zero active conditions, observed roots, queued subtrees or scheduled timers/frames. Counters remain stable after a further 30ms. Three external watchdogs report no remaining processes and no cleanup signals."
+  },
+  "remaining": [
+    "Integrate descriptor preparation, exact session/context operation identity and registry lifecycle into the Rust engine behind a disabled experiment switch; do not change the supported predicate contract.",
+    "Preserve authoritative host monotonic deadlines, timely cancellation and bounded last-observation diagnostics, including blocked renderer, worker/driver death, stale documents and concurrent operations. The current renderer-only timeout/cancellation tests do not prove these host properties.",
+    "Bound mutation-record admission and evaluate mutation-heavy/fallback-heavy CPU behavior before enabling the registry. Native MutationObserver batch sizes are outside the explicit discovery queue cap.",
+    "Prove timer fallback under real suspended frame scheduling, CSS animation/font changes and high mutation load; retain exact discovery and predicate counters.",
+    "Run preparation-inclusive off/on and matched reference measurements without instrumentation and at matched resource budgets; no net performance benefit is established.",
+    "Complete remaining M2 APIs, the full S12 finish line and the S10 CBOR boundary; no milestone or release gate is completed by this prototype."
+  ],
+  "platformScope": "Full current macOS Node 24 core suite; current registry-only tests on macOS Node 22 and emulated Linux Node 24. The prior full emulated Linux suite covers the unchanged production engine and adapter at its separately retained 133-source checkpoint. Native Linux CI/performance remains open.",
+  "finalCleanupAudit": {
+    "remainingFlashwrightTemporaryPaths": [],
+    "remainingDriverProcesses": []
+  }
+}

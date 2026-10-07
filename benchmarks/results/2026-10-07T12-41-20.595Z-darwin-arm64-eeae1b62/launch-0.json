@@ -1,0 +1,662 @@
+{
+  "launchIndex": 0,
+  "engine": "playwright",
+  "workloads": [
+    {
+      "name": "noop",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 1.5915840000006938
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 1.7849999999998545
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 0.5392499999998108
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 0.623250000000553
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 0.3616250000004584
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 0.9871250000005602
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 1.6343749999996362
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 1.3930410000002666
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 0.8256249999994907
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 0.991874999999709
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 0.4453330000005735
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 0.4824589999998352
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 11.076125000000502
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 1.9617079999998168
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 1.3611659999996846
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 749.1872500000004,
+      "accounting": {
+        "publicCallsPerIteration": 1,
+        "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+      },
+      "cleanupMilliseconds": 11.002292000000125,
+      "completeMilliseconds": 786.3108340000003
+    },
+    {
+      "name": "interaction",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 32.139250000000175
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 34.42512499999975
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 29.745582999999897
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 33.96991699999944
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 41.83887499999946
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 41.75541700000031
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 34.52966599999945
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 35.70749999999953
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 28.264624999999796
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 33.852083000000675
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 38.876666000000114
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 28.687415999999757
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 135.82412499999919
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 24.6670409999997
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 31.370708999999806
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 446.21179200000006,
+      "accounting": {
+        "publicCallsPerIteration": 3,
+        "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+      },
+      "cleanupMilliseconds": 13.304458999999952,
+      "completeMilliseconds": 1065.2424170000004
+    },
+    {
+      "name": "assertion",
+      "samples": [],
+      "warmupSamples": [],
+      "failures": [
+        {
+          "phase": "warmupSamples",
+          "iteration": 0,
+          "milliseconds": 33.908166999999594,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 1,
+          "milliseconds": 6.450875000000451,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Waiting</div> aka getByText('Waiting')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 2,
+          "milliseconds": 6.5844999999999345,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 0,
+          "milliseconds": 3.9335000000000946,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Waiting</div> aka getByText('Waiting')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 1,
+          "milliseconds": 4.405625000000327,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 2,
+          "milliseconds": 5.564416999999594,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 3,
+          "milliseconds": 4.010541999999987,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Waiting</div> aka getByText('Waiting')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 4,
+          "milliseconds": 4.35766700000022,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Waiting</div> aka getByText('Waiting')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 5,
+          "milliseconds": 3.5622080000002825,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 6,
+          "milliseconds": 5.176707999999962,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 7,
+          "milliseconds": 2.0780409999997573,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 8,
+          "milliseconds": 1.7007910000002084,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Waiting</div> aka getByText('Waiting')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 9,
+          "milliseconds": 2.9231669999999212,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 10,
+          "milliseconds": 4.324791000000005,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 11,
+          "milliseconds": 5.0665829999998095,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.assertion (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:36:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        }
+      ],
+      "preparationMilliseconds": 371.22508300000027,
+      "accounting": {
+        "publicCallsPerIteration": 3,
+        "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+      },
+      "cleanupMilliseconds": 10.24066700000003,
+      "completeMilliseconds": 475.5881250000002
+    },
+    {
+      "name": "navigation",
+      "samples": [],
+      "warmupSamples": [],
+      "failures": [
+        {
+          "phase": "warmupSamples",
+          "iteration": 0,
+          "milliseconds": 118.41533400000026,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 1,
+          "milliseconds": 79.22116600000027,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 2,
+          "milliseconds": 86.37429100000008,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 0,
+          "milliseconds": 84.97233299999971,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 1,
+          "milliseconds": 82.99304200000006,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 2,
+          "milliseconds": 79.64199999999983,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 3,
+          "milliseconds": 114.11145800000031,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 4,
+          "milliseconds": 123.2856670000001,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 5,
+          "milliseconds": 117.66145799999958,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 6,
+          "milliseconds": 84.42741599999954,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 7,
+          "milliseconds": 147.15920900000037,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 8,
+          "milliseconds": 106.21979100000044,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 9,
+          "milliseconds": 110.99954100000014,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 10,
+          "milliseconds": 353.75466699999924,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 11,
+          "milliseconds": 171.82949999999983,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.navigation (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:44:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        }
+      ],
+      "preparationMilliseconds": 389.8394589999998,
+      "accounting": {
+        "publicCallsPerIteration": 3,
+        "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+      },
+      "cleanupMilliseconds": 14.78387499999917,
+      "completeMilliseconds": 2265.7825839999996
+    },
+    {
+      "name": "setup",
+      "samples": [],
+      "warmupSamples": [],
+      "failures": [
+        {
+          "phase": "warmupSamples",
+          "iteration": 0,
+          "milliseconds": 470.27866600000016,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 1,
+          "milliseconds": 3361.2636250000014,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 2,
+          "milliseconds": 1439.9362079999992,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 0,
+          "milliseconds": 1219.1294589999998,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 1,
+          "milliseconds": 944.7581659999996,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 2,
+          "milliseconds": 787.8468330000014,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 3,
+          "milliseconds": 667.1646249999976,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 4,
+          "milliseconds": 640.0495840000003,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 5,
+          "milliseconds": 772.0952080000025,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 6,
+          "milliseconds": 635.1960830000025,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 7,
+          "milliseconds": 1313.135333000002,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 8,
+          "milliseconds": 4863.714166999998,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 9,
+          "milliseconds": 2366.6563749999987,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 10,
+          "milliseconds": 777.8015420000011,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 11,
+          "milliseconds": 909.3102500000023,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Ready\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Ready</div> aka getByText('Ready')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.run (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:14:50)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        }
+      ],
+      "preparationMilliseconds": 0.05912500000158616,
+      "accounting": {
+        "description": "Fresh context + page + navigation + assertion + disposal per iteration",
+        "publicCallsPerIteration": 6
+      },
+      "cleanupMilliseconds": 0.24654200000077253,
+      "completeMilliseconds": 21168.757375
+    },
+    {
+      "name": "backend",
+      "samples": [],
+      "warmupSamples": [],
+      "failures": [
+        {
+          "phase": "warmupSamples",
+          "iteration": 0,
+          "milliseconds": 171.00991700000304,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-1\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-1</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 1,
+          "milliseconds": 83.39462499999718,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-2\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-2</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "warmupSamples",
+          "iteration": 2,
+          "milliseconds": 58.52337500000067,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-3\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-3</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 0,
+          "milliseconds": 71.53437499999927,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-4\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-4</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 1,
+          "milliseconds": 67.94624999999724,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-5\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-5</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 2,
+          "milliseconds": 63.173791000001074,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-6\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-6</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 3,
+          "milliseconds": 64.71470799999952,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-7\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-7</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 4,
+          "milliseconds": 65.6450420000001,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-8\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-8</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 5,
+          "milliseconds": 66.90641600000163,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-9\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-9</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 6,
+          "milliseconds": 68.41133300000001,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-10\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-10</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0', { exact: true })\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 7,
+          "milliseconds": 65.52758300000278,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-11\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-11</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 8,
+          "milliseconds": 71.36116699999911,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-12\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-12</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 9,
+          "milliseconds": 78.8080000000009,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-13\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-13</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 10,
+          "milliseconds": 66.76970900000015,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-14\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-14</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        },
+        {
+          "phase": "samples",
+          "iteration": 11,
+          "milliseconds": 67.57241599999907,
+          "error": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByRole('status')\nExpected: \"Saved person-15\"\nError: strict mode violation: getByRole('status') resolved to 2 elements:\n    1) <div id=\"status\" role=\"status\">Saved person-15</div> aka getByText('Saved person-')\n    2) <output id=\"count\">0</output> aka getByText('0')\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for getByRole('status')\n\n    at captureRawStack (/Users/P/p/flashwright/node_modules/playwright-core/lib/coreBundle.js:3130:17)\n    at callMatcherAsStep (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12873:57)\n    at Object.toHaveText (/Users/P/p/flashwright/node_modules/playwright/lib/matchers/expect.js:12863:23)\n    at Object.backend (/Users/P/p/flashwright/benchmarks/workloads/index.mjs:53:28)\n    at async file:///Users/P/p/flashwright/benchmarks/sample.mjs:36:29"
+        }
+      ],
+      "preparationMilliseconds": 1068.8534580000014,
+      "accounting": {
+        "publicCallsPerIteration": 5,
+        "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+      },
+      "cleanupMilliseconds": 7.979042000002664,
+      "completeMilliseconds": 2208.1715829999994
+    },
+    {
+      "name": "failure",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 27.175749999998516
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 24.540917000002082
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 26.161041999999725
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 24.621416000001773
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 25.789749999999913
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 25.969457999999577
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 25.808791999999812
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 24.80779099999927
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 25.270958000000974
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 26.05241599999863
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 28.107540999997582
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 25.803249999997206
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 27.384000000001834
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 24.595291999998153
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 24.760333999998693
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 560.7351249999992,
+      "accounting": {
+        "publicCallsPerIteration": 1,
+        "description": "Includes outcome verification calls; protocol/evaluation internals are not instrumented in baseline timing."
+      },
+      "cleanupMilliseconds": 9.913042000000132,
+      "completeMilliseconds": 957.5378330000021
+    }
+  ],
+  "failures": [],
+  "launchMilliseconds": 3438.4516249999997,
+  "browserVersion": "148.0.7778.96",
+  "cleanupMilliseconds": 1417.3802910000013,
+  "completeMilliseconds": 33789.87075,
+  "backend": {
+    "documents": 36,
+    "backendRequests": 15,
+    "otherRequests": 1
+  },
+  "processExit": {
+    "code": 0,
+    "signal": null
+  },
+  "diagnostics": "2026-10-07T12:41:22.083Z pw:browser <launching> /Users/P/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/var/folders/c4/tbsf2ms10fd3ykfp2m4lsk3w0000gp/T/playwright_chromiumdev_profile-XnJQOq --remote-debugging-pipe --no-startup-window\n2026-10-07T12:41:22.088Z pw:browser <launched> pid=35432\n2026-10-07T12:41:25.860Z pw:browser [pid=35432][err] [35556:10348716:1007/144125.853800:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.860Z pw:browser [pid=35432][err] [35556:10348892:1007/144125.859834:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.860Z pw:browser [pid=35432][err] [35556:10348716:1007/144125.860172:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.861Z pw:browser [pid=35432][err] [35556:10348716:1007/144125.860683:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.861Z pw:browser [pid=35432][err] [35556:10348892:1007/144125.860748:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.861Z pw:browser [pid=35432][err] [35556:10348716:1007/144125.860760:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.861Z pw:browser [pid=35432][err] [35556:10348716:1007/144125.861110:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.861Z pw:browser [pid=35432][err] [35556:10348892:1007/144125.861171:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:25.861Z pw:browser [pid=35432][err] [35556:10348716:1007/144125.861190:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.397Z pw:browser [pid=35432][err] [35556:10348716:1007/144126.397251:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.397Z pw:browser [pid=35432][err] [35556:10348892:1007/144126.397342:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.397Z pw:browser [pid=35432][err] [35556:10348716:1007/144126.397355:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.398Z pw:browser [pid=35432][err] [35556:10348716:1007/144126.397744:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.398Z pw:browser [pid=35432][err] [35556:10348892:1007/144126.397817:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.398Z pw:browser [pid=35432][err] [35556:10348716:1007/144126.397833:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.398Z pw:browser [pid=35432][err] [35556:10348716:1007/144126.398113:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.398Z pw:browser [pid=35432][err] [35556:10348892:1007/144126.398171:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:26.398Z pw:browser [pid=35432][err] [35556:10348716:1007/144126.398190:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.488005:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348892:1007/144127.488099:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.488119:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.488440:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348892:1007/144127.488500:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.488522:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.488Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.488814:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.489Z pw:browser [pid=35432][err] [35556:10348892:1007/144127.488884:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.489Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.488905:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.796Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.795038:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:361] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.\n2026-10-07T12:41:27.796Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.795061:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.\n2026-10-07T12:41:27.951Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.950773:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.951Z pw:browser [pid=35432][err] [35556:10348892:1007/144127.950866:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.951Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.950903:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.951Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.951179:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.951Z pw:browser [pid=35432][err] [35556:10348892:1007/144127.951222:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.951Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.951248:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.955Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.951419:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.955Z pw:browser [pid=35432][err] [35556:10348892:1007/144127.951459:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:27.955Z pw:browser [pid=35432][err] [35556:10348716:1007/144127.951464:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348716:1007/144130.305113:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348892:1007/144130.305218:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348716:1007/144130.305235:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348716:1007/144130.305559:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348892:1007/144130.305605:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348716:1007/144130.305620:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348716:1007/144130.305805:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348892:1007/144130.305840:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:30.305Z pw:browser [pid=35432][err] [35556:10348716:1007/144130.305852:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348716:1007/144132.740205:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348892:1007/144132.740318:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348716:1007/144132.740341:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348716:1007/144132.740736:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348892:1007/144132.740817:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348716:1007/144132.740844:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348716:1007/144132.741163:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348892:1007/144132.741226:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:32.741Z pw:browser [pid=35432][err] [35556:10348716:1007/144132.741263:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.280Z pw:browser [pid=35432][err] [35556:10348716:1007/144134.279707:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.280Z pw:browser [pid=35432][err] [35556:10348892:1007/144134.279829:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.280Z pw:browser [pid=35432][err] [35556:10348716:1007/144134.279848:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.280Z pw:browser [pid=35432][err] [35556:10348716:1007/144134.280310:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.280Z pw:browser [pid=35432][err] [35556:10348716:1007/144134.280424:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.280Z pw:browser [pid=35432][err] [35556:10348892:1007/144134.280449:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.281Z pw:browser [pid=35432][err] [35556:10348716:1007/144134.280905:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.281Z pw:browser [pid=35432][err] [35556:10348892:1007/144134.280982:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:34.281Z pw:browser [pid=35432][err] [35556:10348716:1007/144134.281010:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.766Z pw:browser [pid=35432][err] [35556:10348716:1007/144135.766373:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.766Z pw:browser [pid=35432][err] [35556:10348892:1007/144135.766447:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.766Z pw:browser [pid=35432][err] [35556:10348716:1007/144135.766459:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.766Z pw:browser [pid=35432][err] [35556:10348716:1007/144135.766708:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.766Z pw:browser [pid=35432][err] [35556:10348892:1007/144135.766750:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.766Z pw:browser [pid=35432][err] [35556:10348716:1007/144135.766782:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.767Z pw:browser [pid=35432][err] [35556:10348716:1007/144135.767078:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.767Z pw:browser [pid=35432][err] [35556:10348892:1007/144135.767115:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:35.767Z pw:browser [pid=35432][err] [35556:10348716:1007/144135.767122:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348716:1007/144136.868065:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348892:1007/144136.868158:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348716:1007/144136.868184:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348716:1007/144136.868499:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348892:1007/144136.868543:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348716:1007/144136.868573:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348716:1007/144136.868787:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.871Z pw:browser [pid=35432][err] [35556:10348892:1007/144136.868826:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:36.872Z pw:browser [pid=35432][err] [35556:10348716:1007/144136.868856:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348716:1007/144137.757940:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348892:1007/144137.758008:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348716:1007/144137.758018:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348716:1007/144137.758267:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348892:1007/144137.758302:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348716:1007/144137.758330:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348716:1007/144137.758502:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348716:1007/144137.758538:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:37.758Z pw:browser [pid=35432][err] [35556:10348892:1007/144137.758546:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348716:1007/144138.529006:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348892:1007/144138.529080:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348716:1007/144138.529120:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348716:1007/144138.529424:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348892:1007/144138.529471:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348716:1007/144138.529490:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348716:1007/144138.529758:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348892:1007/144138.529801:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:38.530Z pw:browser [pid=35432][err] [35556:10348716:1007/144138.529832:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.218Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.218232:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.218Z pw:browser [pid=35432][err] [35556:10348892:1007/144139.218300:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.218Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.218334:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.218Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.218558:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.219Z pw:browser [pid=35432][err] [35556:10348892:1007/144139.218602:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.219Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.218636:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.219Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.218807:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.219Z pw:browser [pid=35432][err] [35556:10348892:1007/144139.218849:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.219Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.218878:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.850189:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348892:1007/144139.850268:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.850283:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.850646:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348892:1007/144139.850682:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.850702:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.850Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.850863:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.851Z pw:browser [pid=35432][err] [35556:10348892:1007/144139.850900:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:39.851Z pw:browser [pid=35432][err] [35556:10348716:1007/144139.850942:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.587Z pw:browser [pid=35432][err] [35556:10348716:1007/144140.587145:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.587Z pw:browser [pid=35432][err] [35556:10348892:1007/144140.587238:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.587Z pw:browser [pid=35432][err] [35556:10348716:1007/144140.587254:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.587Z pw:browser [pid=35432][err] [35556:10348716:1007/144140.587642:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.587Z pw:browser [pid=35432][err] [35556:10348892:1007/144140.587714:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.587Z pw:browser [pid=35432][err] [35556:10348716:1007/144140.587737:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.588Z pw:browser [pid=35432][err] [35556:10348716:1007/144140.588000:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.588Z pw:browser [pid=35432][err] [35556:10348892:1007/144140.588065:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:40.588Z pw:browser [pid=35432][err] [35556:10348716:1007/144140.588089:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.280Z pw:browser [pid=35432][err] [35556:10348716:1007/144141.280400:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.280Z pw:browser [pid=35432][err] [35556:10348892:1007/144141.280477:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.280Z pw:browser [pid=35432][err] [35556:10348716:1007/144141.280491:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.281Z pw:browser [pid=35432][err] [35556:10348716:1007/144141.280830:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.281Z pw:browser [pid=35432][err] [35556:10348716:1007/144141.280950:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.281Z pw:browser [pid=35432][err] [35556:10348892:1007/144141.280935:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.281Z pw:browser [pid=35432][err] [35556:10348716:1007/144141.281282:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.281Z pw:browser [pid=35432][err] [35556:10348892:1007/144141.281371:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:41.281Z pw:browser [pid=35432][err] [35556:10348716:1007/144141.281400:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348716:1007/144143.535180:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348892:1007/144143.535281:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348716:1007/144143.535309:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348716:1007/144143.535606:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348716:1007/144143.535693:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348892:1007/144143.535699:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348716:1007/144143.536074:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348892:1007/144143.536117:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:43.536Z pw:browser [pid=35432][err] [35556:10348716:1007/144143.536122:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:47.158Z pw:browser [pid=35432][err] [35432:10348715:1007/144147.155699:ERROR:base/process/process_mac.cc:98] task_policy_set TASK_SUPPRESSION_POLICY: (os/kern) invalid argument (4)\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348716:1007/144148.240857:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348892:1007/144148.240937:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348716:1007/144148.240946:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348716:1007/144148.241211:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348892:1007/144148.241258:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348716:1007/144148.241267:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348716:1007/144148.241465:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348892:1007/144148.241503:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:48.241Z pw:browser [pid=35432][err] [35556:10348716:1007/144148.241514:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348716:1007/144149.912187:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348716:1007/144149.912304:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348892:1007/144149.912308:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348716:1007/144149.912548:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348892:1007/144149.912597:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348716:1007/144149.912608:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.912Z pw:browser [pid=35432][err] [35556:10348716:1007/144149.912890:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.913Z pw:browser [pid=35432][err] [35556:10348892:1007/144149.912964:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:49.913Z pw:browser [pid=35432][err] [35556:10348716:1007/144149.912990:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.496Z pw:browser [pid=35432][err] [35556:10348716:1007/144150.496624:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.496Z pw:browser [pid=35432][err] [35556:10348892:1007/144150.496717:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.497Z pw:browser [pid=35432][err] [35556:10348716:1007/144150.496736:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.497Z pw:browser [pid=35432][err] [35556:10348716:1007/144150.497141:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.497Z pw:browser [pid=35432][err] [35556:10348892:1007/144150.497209:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.497Z pw:browser [pid=35432][err] [35556:10348716:1007/144150.497223:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.498Z pw:browser [pid=35432][err] [35556:10348716:1007/144150.497537:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.498Z pw:browser [pid=35432][err] [35556:10348892:1007/144150.497598:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:50.498Z pw:browser [pid=35432][err] [35556:10348716:1007/144150.497617:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348716:1007/144151.472592:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348892:1007/144151.472661:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348716:1007/144151.472678:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348716:1007/144151.472957:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348892:1007/144151.472999:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348716:1007/144151.473014:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348716:1007/144151.473344:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348716:1007/144151.473433:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:51.473Z pw:browser [pid=35432][err] [35556:10348892:1007/144151.473444:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.649Z pw:browser [pid=35432][err] [35556:10348716:1007/144153.648386:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348892:1007/144153.648473:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348716:1007/144153.648498:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348716:1007/144153.649048:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348892:1007/144153.649113:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348716:1007/144153.649129:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348716:1007/144153.649416:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348892:1007/144153.649477:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:53.650Z pw:browser [pid=35432][err] [35556:10348716:1007/144153.649512:ERROR:ui/display/mac/cv_display_link_mac.mm:184] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670\n2026-10-07T12:41:54.393Z pw:browser [pid=35432] <gracefully close start>\n2026-10-07T12:41:54.968Z pw:browser [pid=35432] <process did exit: exitCode=0, signal=null>\n2026-10-07T12:41:54.969Z pw:browser [pid=35432] starting temporary directories cleanup\n2026-10-07T12:41:55.809Z pw:browser [pid=35432] finished temporary directories cleanup\n2026-10-07T12:41:55.809Z pw:browser [pid=35432] <gracefully close end>\n"
+}

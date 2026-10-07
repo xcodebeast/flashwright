@@ -1,0 +1,38 @@
+{
+  "reference": "1.60.0",
+  "license": "Apache-2.0",
+  "notice": "../upstream/NOTICE.playwright",
+  "sources": [
+    {
+      "path": "compatibility/migration-projects/todomvc/tests/fixtures.ts",
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/v1.60.0/examples/todomvc/tests/fixtures.ts",
+      "sha256": "10d5cb93faf3d516432a975e0df3b95d670b100d46e6322228115d2a315021f6",
+      "changes": []
+    },
+    {
+      "path": "compatibility/migration-projects/todomvc/tests/adding-todos/should-add-single-todo.spec.ts",
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/v1.60.0/examples/todomvc/tests/adding-todos/should-add-single-todo.spec.ts",
+      "sha256": "2cca72221c1827502bccb8901c879b209cfd617e058d8ea8efb027da7e2fd124",
+      "changes": []
+    },
+    {
+      "path": "compatibility/migration-projects/todomvc/tests/adding-todos/should-add-multiple-todos.spec.ts",
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/v1.60.0/examples/todomvc/tests/adding-todos/should-add-multiple-todos.spec.ts",
+      "sha256": "07b7218ecca9e1ce767b1f5edc01f546e6f2e694732e56c2c9f7575bf1845829",
+      "changes": []
+    },
+    {
+      "path": "compatibility/migration-projects/todomvc/tests/completing-todos/should-complete-single-todo.spec.ts",
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/v1.60.0/examples/todomvc/tests/completing-todos/should-complete-single-todo.spec.ts",
+      "sha256": "92e501321a3569623a70bfdd7b54ded59eefeab4fe7a93c3a2f0c1d2f691b86e",
+      "changes": []
+    },
+    {
+      "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/v1.60.0/examples/svgomg/tests/example.spec.ts",
+      "sha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+      "changes": []
+    }
+  ],
+  "status": "Selected upstream test corpus with unchanged retained source bodies. tools/test-packed-migration.mjs verifies source hashes, changes only package import specifiers in a fresh packed TodoMVC consumer, type-checks both trees and runs all three tests against the public demo with the upstream browser backend disabled for Flashwright. Application asset hashes are checked before and after; this remains an external-network functional check. Per-platform results are retained under compatibility/evidence/migration-todomvc-*.json. SVGOMG execution remains pending frame, download and file APIs."
+}
