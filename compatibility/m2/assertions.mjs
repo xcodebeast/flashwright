@@ -15,7 +15,14 @@ const fixture = `<!doctype html><meta charset="utf-8"><title>  Assertion   fixtu
 <div id="hidden" hidden>Hidden text</div><div id="empty">  </div><div id="host"></div><div id="pending" hidden>pending</div>
 <div id="replacement">original</div><div id="unicode"></div><iframe name="child" src="/child"></iframe>
 <script>document.querySelector('#mixed').indeterminate=true;document.querySelector('#host').attachShadow({mode:'open'}).innerHTML='<span>Shadow value</span>';</script>`;
-const server = createServer((request, response) => { response.setHeader('content-type','text/html; charset=utf-8'); response.end(request.url === '/child' ? '<p>Child value</p>' : request.url === '/successor' ? '<h1>Successor</h1>' : fixture); });
+const fontBytes = await readFile('compatibility/m2/fixtures/zero-advance.ttf');
+const pendingFonts = new Map();
+const server = createServer((request, response) => {
+ const acceptFont = pendingFonts.get(request.url);
+ if (acceptFont) { pendingFonts.delete(request.url); acceptFont(response); return; }
+ response.setHeader('content-type','text/html; charset=utf-8');
+ response.end(request.url === '/child' ? '<p>Child value</p>' : request.url === '/successor' ? '<h1>Successor</h1>' : fixture);
+});
 server.listen(0,'127.0.0.1'); await once(server,'listening');
 const baseURL = 'http://127.0.0.1:' + server.address().port;
 const outcomes = {};
@@ -88,6 +95,32 @@ async function run(name, chromium, expect) {
   await expect(page.getByText('Late shadow')).toBeVisible();
   await page.evaluate(() => { document.querySelector('#pending').style.opacity='0'; });
   await expect(page.locator('#pending')).toBeVisible();
+  await page.evaluate(() => {
+    const style=document.createElement('style');
+    style.textContent='@keyframes assertionHide { to { transform:scale(0) } } #animated-target { animation:assertionHide 100ms linear forwards paused }';
+    const target=document.createElement('p');target.id='animated-target';target.textContent='Animated';
+    document.head.append(style);document.body.append(target);
+  });
+  await expect(page.locator('#animated-target')).toBeVisible();
+  await page.evaluate(() => { document.querySelector('#animated-target').getAnimations()[0].play(); });
+  await expect(page.locator('#animated-target')).toBeHidden();
+  result['css-animation']=true;
+  const fontPath='/condition-font-'+name+'.ttf';
+  const fontRequested=new Promise(resolve => pendingFonts.set(fontPath,resolve));
+  await page.evaluate(url => {
+    const target=document.createElement('span');target.id='font-target';target.textContent='A';
+    target.style.cssText='display:inline-block;font:20px AssertionFont,monospace';document.body.append(target);
+    globalThis.fixtureFont=new FontFace('AssertionFont',`url(${url})`,{display:'swap'});
+    document.fonts.add(fixtureFont);globalThis.fixtureFontLoad=fixtureFont.load().then(()=>true,()=>false);
+  },baseURL+fontPath);
+  const fontResponse=await fontRequested;
+  await expect(page.locator('#font-target')).toBeVisible();
+  const hiddenAfterFont=expect(page.locator('#font-target')).toBeHidden();
+  fontResponse.writeHead(200,{'content-type':'font/ttf'});fontResponse.end(fontBytes);
+  await hiddenAfterFont;
+  assert.equal(await page.evaluate(()=>fixtureFontLoad),true);
+  assert.equal(await page.evaluate(()=>document.querySelector('#font-target').getBoundingClientRect().width),0);
+  result['font-loading']=true;
   await page.evaluate(() => {
     document.querySelector('#unicode').textContent='a'.repeat(9000)+'z';
     const list=document.createElement('section'); list.id='large-list';

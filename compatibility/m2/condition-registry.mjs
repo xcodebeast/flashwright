@@ -2,18 +2,34 @@ import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { createServer } from 'node:http';
+import { once } from 'node:events';
 import { chromium } from 'playwright';
 import { sourceManifest } from '../../tools/source-manifest.mjs';
+import { createLifecycleTarget } from './lifecycle-target.mjs';
 
 const sources = await sourceManifest();
 const sourceNames = ['playwright-injected.js', 'serialization.cjs', 'locator-runtime.js', 'condition-registry.js'];
 const [injectedSource, codecSource, locatorSource, registrySource] = await Promise.all(sourceNames.map(name => readFile(`packages/resident-runtime/${name}`, 'utf8')));
 const browserPath = process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath();
+const fontBytes = await readFile('compatibility/m2/fixtures/zero-advance.ttf');
+const fontMetadata = JSON.parse(await readFile('compatibility/m2/fixtures/zero-advance.json', 'utf8'));
+assert.equal(createHash('sha256').update(fontBytes).digest('hex'), fontMetadata.fontSha256);
+assert.equal(createHash('sha256').update(await readFile('compatibility/m2/fixtures/' + fontMetadata.generator)).digest('hex'), fontMetadata.generatorSha256);
 const browser = await chromium.launch({ executablePath: browserPath });
 const page = await browser.newPage();
-const session = await page.context().newCDPSession(page);
+let session = await page.context().newCDPSession(page);
 const cases = [];
 let executionContextId;
+const fontRequests = new Map();
+const fontServer = createServer((request, response) => {
+  const accept = fontRequests.get(request.url);
+  if (!accept) { response.writeHead(404); response.end(); return; }
+  fontRequests.delete(request.url);
+  accept(response);
+});
+fontServer.listen(0, '127.0.0.1');
+await once(fontServer, 'listening');
 
 async function evaluate(expression) {
   const result = await session.send('Runtime.evaluate', { expression, contextId: executionContextId, returnByValue: true, awaitPromise: true });
@@ -21,7 +37,7 @@ async function evaluate(expression) {
   return result.result.value;
 }
 
-async function reset(html, observeMutations = true, hiddenChildFrame = false, withholdRegistryFrames = false) {
+async function reset(html, observeMutations = true, hiddenChildFrame = false, withholdRegistryFrames = false, withholdRegistryTimer = false) {
   if (executionContextId) await evaluate('globalThis.testConditions?.dispose()');
   if (hiddenChildFrame) {
     await page.setContent('<iframe name="hidden" style="display:none"></iframe>');
@@ -29,10 +45,15 @@ async function reset(html, observeMutations = true, hiddenChildFrame = false, wi
   } else await page.setContent(html);
   const { frameTree } = await session.send('Page.getFrameTree');
   const frameId = hiddenChildFrame ? frameTree.childFrames[0].frame.id : frameTree.frame.id;
+  await installRegistry(frameId, observeMutations, withholdRegistryFrames, withholdRegistryTimer);
+}
+
+async function installRegistry(frameId, observeMutations, withholdRegistryFrames = false, withholdRegistryTimer = false) {
   ({ executionContextId } = await session.send('Page.createIsolatedWorld', { frameId, worldName: '__flashwright_condition_test__' }));
   await evaluate(`(() => {
     const requestAnimationFrame = ${withholdRegistryFrames ? '() => 1' : 'globalThis.requestAnimationFrame.bind(globalThis)'};
     const cancelAnimationFrame = ${withholdRegistryFrames ? '() => {}' : 'globalThis.cancelAnimationFrame.bind(globalThis)'};
+    const setTimeout = ${withholdRegistryTimer ? '(callback, milliseconds, ...callbackArguments) => milliseconds === 100 ? -1 : globalThis.setTimeout(callback, milliseconds, ...callbackArguments)' : 'globalThis.setTimeout.bind(globalThis)'};
     const module = {}; ${injectedSource}; const exports = {}; ${codecSource}; ${locatorSource}; ${registrySource};
     const injected = new (module.exports.InjectedScript())(globalThis, {isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]});
     globalThis.testLocator = createLocatorRuntime(injected, exports.createValueCodec());
@@ -41,7 +62,7 @@ async function reset(html, observeMutations = true, hiddenChildFrame = false, wi
     globalThis.startCondition = (token, options) => {
       const request = JSON.stringify({selector:options.selector, ...options.request});
       const units = Array.from({length:request.length}, (_, index) => request.charCodeAt(index));
-      const promise = testConditions.wait({token,timeoutMilliseconds:options.timeoutMilliseconds ?? 2000,isNot:options.isNot ?? false,
+      const promise = testConditions.wait({token,timeoutMilliseconds:options.timeoutMilliseconds === undefined ? 2000 : options.timeoutMilliseconds,isNot:options.isNot ?? false,
         check:() => testLocator.assertion(units, null, options.expression, options.isNot ?? false)});
       testPromises.set(token, promise); return true;
     };
@@ -124,6 +145,69 @@ try {
   const stylesheetState = await clean('CSSOM-only changes use fallback');
   assert.equal(stylesheetState.mutationBatches, 0);
   assert.ok(stylesheetState.fallbackChecks > 0);
+
+  await reset('<style>@keyframes hide { to { transform:scale(0) } } p { animation:hide 100ms linear forwards paused }</style><p>target</p>');
+  const animation = await start(state('css=p', 'to.be.hidden'));
+  await page.evaluate(() => { document.querySelector('p').getAnimations()[0].play(); });
+  await finish(animation);
+  const animationState = await clean('CSS animation changes visibility without DOM mutation');
+  assert.equal(animationState.mutationBatches, 0);
+  assert.ok(animationState.predicateEvaluations > 1);
+  assert.equal(await page.locator('p').isVisible(), false);
+
+  await reset('<style>@keyframes reveal { 0%,100% { visibility:hidden } 25%,75% { visibility:visible } } p { animation:reveal 500ms linear both paused }</style><p>target</p>');
+  const animatedTransient = await start(state('css=p', 'to.be.visible'));
+  await page.evaluate(() => { document.querySelector('p').getAnimations()[0].play(); });
+  assert.equal((await finish(animatedTransient)).observation.matches, true);
+  await page.evaluate(() => document.querySelector('p').getAnimations()[0].finished.then(() => true));
+  assert.equal(await page.locator('p').isVisible(), false);
+  const animatedTransientState = await clean('a full predicate observes a transient CSS animation state');
+  assert.equal(animatedTransientState.mutationBatches, 0);
+  assert.ok(animatedTransientState.fallbackChecks > 0);
+
+  for (const mode of ['ordinary', 'withheld-fallback', 'failed-font']) {
+    const family = 'ConditionFont-' + randomUUID();
+    const withholdFallback = mode !== 'ordinary';
+    await reset(`<style>span { display:inline-block;font:20px "${family}",monospace }</style><span>A</span>`, true, false, withholdFallback, withholdFallback);
+    await evaluate(`globalThis.fontEvents=[]; globalThis.recordFontEvent=event=>fontEvents.push(event.type);
+      for (const name of ['loadingdone','loadingerror']) document.fonts.addEventListener(name, recordFontEvent); true`);
+    const beforeFont = await page.locator('span').boundingBox();
+    assert.ok(beforeFont.width > 0);
+    const requestPath = '/font/' + randomUUID();
+    const requested = new Promise(resolve => fontRequests.set(requestPath, resolve));
+    await page.evaluate(({ family, url }) => {
+      globalThis.fixtureFont = new FontFace(family, `url(${url})`, { display: 'swap' });
+      document.fonts.add(fixtureFont);
+      globalThis.fixtureFontLoad = fixtureFont.load().then(() => true, () => false);
+    }, { family, url: `http://127.0.0.1:${fontServer.address().port}${requestPath}` });
+    const response = await requested;
+    assert.equal(await page.evaluate(() => fixtureFont.status), 'loading');
+    const fontCondition = await start(state('css=span', 'to.be.hidden', { timeoutMilliseconds: mode === 'failed-font' ? 250 : 2000 }));
+    response.writeHead(mode === 'failed-font' ? 404 : 200, { 'content-type': 'font/ttf', 'access-control-allow-origin': '*' });
+    response.end(mode === 'failed-font' ? '' : fontBytes);
+    assert.equal(await page.evaluate(() => fixtureFontLoad), mode !== 'failed-font');
+    const result = await finish(fontCondition, mode === 'failed-font' ? 'expired' : 'matched');
+    const afterFont = await page.locator('span').boundingBox();
+    const fontEvents = await evaluate('fontEvents');
+    const label = mode === 'ordinary' ? 'font loading changes geometry without DOM mutation'
+      : mode === 'withheld-fallback' ? 'font completion wakes conditions while registry fallback callbacks are withheld'
+      : 'failed font loading wakes a full check without reporting false success';
+    const fontState = await clean(label);
+    assert.equal(fontState.mutationBatches, 0);
+    assert.ok(fontState.predicateEvaluations > 1);
+    if (withholdFallback) assert.equal(fontState.fallbackChecks, 0);
+    if (mode === 'failed-font') {
+      assert.equal(result.observation.matches, false);
+      assert.ok(afterFont.width > 0);
+      assert.ok(fontEvents.includes('loadingerror'));
+    } else {
+      assert.equal(afterFont.width, 0);
+      assert.ok(fontEvents.includes('loadingdone'));
+    }
+    cases.at(-1).font = { mode, beforeWidth: beforeFont.width, afterWidth: afterFont.width, events: fontEvents };
+    await evaluate(`for (const name of ['loadingdone','loadingerror']) document.fonts.removeEventListener(name, recordFontEvent); true`);
+    await page.evaluate(() => { document.fonts.delete(fixtureFont); });
+  }
 
   await reset('<style>@media (min-width:800px) { p { display:none } }</style><p>target</p>');
   const viewport = await start(state('css=p', 'to.be.visible'));
@@ -378,6 +462,67 @@ try {
   assert.equal(afterTimerChange.animationFrameChecks, 0);
   assert.ok(afterTimerChange.timerFallbackChecks > beforeTimerChange.timerFallbackChecks);
 
+  for (const mode of ['unbounded', 'deadline', 'cancelled']) {
+    const originalSession = session;
+    const originalExecutionContextId = executionContextId;
+    const target = await createLifecycleTarget(browser);
+    session = target;
+    executionContextId = undefined;
+    async function application(expression) {
+      const result = await target.send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+      assert.equal(result.exceptionDetails, undefined, JSON.stringify(result.exceptionDetails));
+      return result.result.value;
+    }
+    try {
+      await application(`document.body.innerHTML='<input value="before">';
+        globalThis.lifecycleState={freezeCount:0,resumeCount:0,timerCallbacks:0,frameCallbacks:0};
+        document.addEventListener('freeze',()=>lifecycleState.freezeCount++);
+        document.addEventListener('resume',()=>{lifecycleState.resumeCount++;document.querySelector('input').value='after';});
+        setInterval(()=>lifecycleState.timerCallbacks++,10);
+        requestAnimationFrame(function frame(){lifecycleState.frameCallbacks++;requestAnimationFrame(frame);}); true`);
+      const { frameTree } = await target.send('Page.getFrameTree');
+      await installRegistry(frameTree.frame.id, false);
+      await target.send('Page.setWebLifecycleState', { state: 'frozen' });
+      let lifecycle;
+      for (let attempt = 0; attempt < 100; attempt++) {
+        lifecycle = await application('({...lifecycleState,visibility:document.visibilityState})');
+        if (lifecycle.freezeCount === 1) break;
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.equal(lifecycle.freezeCount, 1, 'CDP acknowledgement alone does not prove a page froze');
+      assert.equal(lifecycle.visibility, 'hidden');
+      const token = await start({ selector: 'css=input', expression: 'to.have.value', request: { expectedText: [{ string: 'after' }] }, timeoutMilliseconds: mode === 'deadline' ? 750 : null });
+      const before = await evaluate('testConditions.inspect()');
+      assert.equal(before.activeConditions, 1);
+      await new Promise(resolve => setTimeout(resolve, mode === 'deadline' ? 900 : 150));
+      const suspended = await evaluate('testConditions.inspect()');
+      assert.deepEqual(suspended, before, 'registry callbacks ran while the target was frozen');
+      assert.deepEqual(await application('({...lifecycleState,visibility:document.visibilityState})'), lifecycle, 'application callbacks ran while the target was frozen');
+      if (mode === 'cancelled') {
+        assert.equal((await evaluate(`testConditions.cancel(${JSON.stringify(token)})`)).status, 'cancelled');
+      }
+      await target.send('Page.setWebLifecycleState', { state: 'active' });
+      const result = await finish(token, mode === 'deadline' ? 'expired' : mode === 'cancelled' ? 'cancelled' : 'matched');
+      const recovered = await application('({...lifecycleState,visibility:document.visibilityState,value:document.querySelector("input").value})');
+      assert.equal(recovered.resumeCount, 1);
+      assert.equal(recovered.value, 'after');
+      if (mode !== 'unbounded') assert.equal(result.observation.matches, false);
+      const label = mode === 'unbounded' ? 'a truly frozen page resumes property detection through the timer fallback'
+        : mode === 'deadline' ? 'a deadline passed during real suspension cannot become a late success'
+        : 'cancellation during real suspension cannot resurrect on resume';
+      const recoveredState = await clean(label);
+      if (mode === 'unbounded') {
+        assert.equal(recoveredState.animationFrameChecks, 0);
+        assert.ok(recoveredState.timerFallbackChecks > 0);
+      }
+      cases.at(-1).lifecycle = { mode, suspended: lifecycle, recovered, frozenRegistry: suspended,
+        scope: 'Separate CDP target without the reference driver focus/visibility emulation; real lifecycle suspension, not a default-launch or performance claim.' };
+    } finally {
+      try { await target.close(); }
+      finally { session = originalSession; executionContextId = originalExecutionContextId; }
+    }
+  }
+
   await reset('<p>before</p><section></section>');
   const mutationStorm = await start(text('css=p', 'after'));
   await page.evaluate(() => {
@@ -433,6 +578,11 @@ try {
     browserSha256:createHash('sha256').update(await readFile(browserPath)).digest('hex'),
     environmentClass:process.env.FLASHWRIGHT_ENVIRONMENT_CLASS ?? 'local-development-host',containerImage:process.env.FLASHWRIGHT_CONTAINER_IMAGE ?? null,sources,cases,
     sourceHashes:Object.fromEntries(sourceNames.map((name,index)=>[name,createHash('sha256').update([injectedSource,codecSource,locatorSource,registrySource][index]).digest('hex')])),
-    scope:'Disabled renderer-registry experiment using the existing complete isolated assertion predicate. Production engine integration, independent host deadlines/cancellation, blocked-renderer handling and net performance benefit remain unverified.' }, null, 2)+'\n');
+    fontFixture:fontMetadata,
+    scope:'Isolated registry correctness using the complete assertion predicate, including explicit fallback withholding and separate real lifecycle targets without focus emulation. Host deadlines, production ownership and performance require their separate integration evidence.' }, null, 2)+'\n');
   console.log(`Resident registry evidence: ${destination}`);
-} finally { await browser.close(); }
+} finally {
+  await browser.close();
+  fontServer.closeAllConnections();
+  await new Promise(resolve => fontServer.close(resolve));
+}

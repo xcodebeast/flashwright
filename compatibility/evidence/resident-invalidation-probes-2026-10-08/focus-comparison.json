@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "scope": "One target with focus emulation explicitly enabled, then disabled. Native freeze is ineffective in the first phase and effective in the second; this isolates the visibility-emulation prerequisite. Diagnostic functional evidence, not a timing comparison.",
+  "snapshots": {
+    "focusEmulated": {
+      "freeze": 0,
+      "resume": 0,
+      "ticks": 20,
+      "visibility": "visible"
+    },
+    "before": {
+      "freeze": 0,
+      "resume": 0,
+      "ticks": 21,
+      "visibility": "hidden"
+    },
+    "frozen": {
+      "freeze": 1,
+      "resume": 0,
+      "ticks": 21,
+      "visibility": "hidden"
+    },
+    "frozen2": {
+      "freeze": 1,
+      "resume": 0,
+      "ticks": 21,
+      "visibility": "hidden"
+    },
+    "resumed": {
+      "freeze": 1,
+      "resume": 1,
+      "ticks": 31,
+      "visibility": "hidden"
+    }
+  },
+  "source": "focus-comparison.mjs",
+  "sourceSha256": "97c792dddfc3e1dad3c1b07504f83eef19b5c2ec7fd02e1eb09d4c332e8a00d8",
+  "log": "focus-comparison.log",
+  "logSha256": "44fb959091cfbdb64bbbdc074279a2411f554435633224d9aaa0d87eaeea1f68"
+}

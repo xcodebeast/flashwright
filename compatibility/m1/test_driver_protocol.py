@@ -169,9 +169,9 @@ class ResidentAssertionProtocolTests(OwnedDriverCase):
         return self.request("assertion.run", self.assertion("Ready"))["conditionMetrics"]
 
     def assert_no_live_conditions(self, metrics):
-        for name in ["activeConditions", "observedRoots", "queuedDiscovery"]:
+        for name in ["activeConditions", "observedRoots", "queuedDiscovery", "queuedConditions"]:
             self.assertEqual(metrics[name], 0, (name, metrics))
-        for name in ["animationFrameScheduled", "fallbackTimerScheduled", "deadlineTimerScheduled", "discoveryTimerScheduled"]:
+        for name in ["animationFrameScheduled", "fallbackTimerScheduled", "deadlineTimerScheduled", "discoveryTimerScheduled", "flushMicrotaskScheduled", "flushTaskScheduled", "flushChannelOpen"]:
             self.assertFalse(metrics[name], (name, metrics))
 
     def wait_for_active_conditions(self, expected):
