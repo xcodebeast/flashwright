@@ -28,13 +28,13 @@ def adopt_orphaned_descendants():
 
 
 def process_snapshot():
-    output = subprocess.check_output(["ps", "-axo", "pid=,ppid=,pgid=,rss=,time=,lstart="], text=True)
+    output = subprocess.check_output(["ps", "-axo", "pid=,ppid=,pgid=,rss=,time=,stat=,lstart="], text=True)
     processes = {}
     for line in output.splitlines():
-        fields = line.split(None, 5)
-        if len(fields) != 6:
+        fields = line.split(None, 6)
+        if len(fields) != 7:
             continue
-        process, parent, group, memory, cpu_time, started = fields
+        process, parent, group, memory, cpu_time, state, started = fields
         days, separator, clock = cpu_time.rpartition("-")
         parts = [float(part) for part in clock.split(":")]
         seconds = sum(part * 60 ** index for index, part in enumerate(reversed(parts)))
@@ -42,7 +42,7 @@ def process_snapshot():
             seconds += int(days) * 86400
         processes[int(process)] = {
             "parent": int(parent), "group": int(group), "rssBytes": int(memory) * 1024,
-            "cpuSeconds": seconds, "started": started,
+            "cpuSeconds": seconds, "state": state, "started": started,
         }
     return processes
 
@@ -52,6 +52,69 @@ def record_cpu_observation(records, process, details):
     identity = (process, details["started"])
     previous = records.get(identity, {}).get("cpuSeconds", 0)
     records[identity] = {**details, "cpuSeconds": max(previous, details["cpuSeconds"])}
+
+
+CLEANUP_GRACE_SECONDS = 2
+CLEANUP_STAGED_SECONDS = 10
+CLEANUP_FORCED_SECONDS = 2
+
+
+def cleanup_owned_processes(observe, root_process):
+    """Stop owners before their descendants so independent resource cleanup can finish.
+
+    Orphaned descendants receive a grace period before promotion to the next owners.
+    Stopped/ignoring owners are killed individually; a final whole-tree deadline bounds
+    adversarial trees without relying on executable names or shared process groups.
+    """
+    started = time.monotonic()
+    staged_deadline = started + CLEANUP_STAGED_SECONDS
+    remaining = observe()
+    signals = []
+
+    def signal_processes(identities, termination_signal):
+        for process, identity in identities.items():
+            details = remaining.get(process)
+            if not details or details["started"] != identity["started"] or details["state"].startswith(("Z", "X")):
+                continue
+            try:
+                os.kill(process, termination_signal)
+                signals.append({"process": process, "signal": termination_signal.name, "cleanupElapsedSeconds": time.monotonic() - started})
+            except ProcessLookupError:
+                pass
+
+    def wait_until(deadline):
+        nonlocal remaining
+        while remaining and time.monotonic() < deadline:
+            time.sleep(min(0.05, max(0, deadline - time.monotonic())))
+            remaining = observe()
+
+    root_details = remaining.get(root_process)
+    if not root_details or root_details["state"].startswith(("Z", "X")):
+        wait_until(min(staged_deadline, time.monotonic() + CLEANUP_GRACE_SECONDS))
+    while remaining and time.monotonic() < staged_deadline:
+        live = {process: details for process, details in remaining.items() if not details["state"].startswith(("Z", "X"))}
+        owners = {process: details for process, details in live.items() if details["parent"] not in live}
+        signal_processes(owners, signal.SIGTERM)
+        wait_until(min(staged_deadline, time.monotonic() + CLEANUP_GRACE_SECONDS))
+        signals_before_kill = len(signals)
+        signal_processes(owners, signal.SIGKILL)
+        if len(signals) != signals_before_kill:
+            wait_until(min(staged_deadline, time.monotonic() + CLEANUP_GRACE_SECONDS))
+
+    forced = bool(remaining)
+    forced_deadline = staged_deadline + CLEANUP_FORCED_SECONDS
+    while remaining and time.monotonic() < forced_deadline:
+        # Reobserve between attempts: an owned process can fork during shutdown.
+        signal_processes(remaining, signal.SIGKILL)
+        wait_until(min(forced_deadline, time.monotonic() + 0.1))
+    return remaining, signals, {
+        "policy": "owners-before-descendants",
+        "graceSeconds": CLEANUP_GRACE_SECONDS,
+        "stagedTimeoutSeconds": CLEANUP_STAGED_SECONDS,
+        "forcedTimeoutSeconds": CLEANUP_FORCED_SECONDS,
+        "wholeTreeEscalation": forced,
+        "elapsedSeconds": time.monotonic() - started,
+    }
 
 
 def main():
@@ -134,20 +197,8 @@ def main():
                 break
             time.sleep(0.1)
     finally:
-        remaining = observe()
-        cleanup_signals = []
-        for termination_signal in (signal.SIGTERM, signal.SIGKILL):
-            # A browser may create its own process group; only observed identities are signalled.
-            for process in remaining:
-                try:
-                    os.kill(process, termination_signal)
-                    cleanup_signals.append({"process": process, "signal": termination_signal.name})
-                except ProcessLookupError:
-                    pass
-            if remaining:
-                time.sleep(0.2)
-            remaining = observe()
-        child.wait(timeout=5)
+        remaining, cleanup_signals, cleanup = cleanup_owned_processes(observe, child.pid)
+        child.poll()
         report = {
             "schemaVersion": 2, "cpuAccounting": "maximum-per-observed-process-identity",
             "command": command, "timeoutSeconds": arguments.timeout, "timedOut": timed_out,
@@ -158,6 +209,7 @@ def main():
             "observedProcessCount": len(cpu_records), "remainingObservedProcesses": list(remaining),
             "processes": [{"process": process, **details} for (process, _started), details in cpu_records.items()],
             "cleanupSignals": cleanup_signals,
+            "cleanup": cleanup,
             "linuxChildSubreaper": subreaper,
             "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU sums maximum observed process time per PID/start identity, preserving work when zombie accounting resets; it is not an exact kernel tree accounting. ps CPU precision is platform-dependent (centiseconds on macOS, whole seconds on the pinned Linux image). RSS is a concurrent sum, not summed per-process maxima.",
             "samples": samples,
@@ -167,7 +219,7 @@ def main():
             with arguments.report.open("x") as report_file:
                 json.dump(report, report_file, indent=2)
                 report_file.write("\n")
-    return 124 if timed_out else 130 if interrupted else child.returncode
+    return 124 if timed_out else 130 if interrupted else 125 if remaining or child.returncode is None else child.returncode
 
 
 if __name__ == "__main__":

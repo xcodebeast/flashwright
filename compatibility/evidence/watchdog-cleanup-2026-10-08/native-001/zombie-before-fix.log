@@ -1,0 +1,29 @@
+test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace (tools.test_watchdog.WatchdogLifecycleTests.test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace) ... FAIL
+
+======================================================================
+FAIL: test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace (tools.test_watchdog.WatchdogLifecycleTests.test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/P/p/flashwright/tools/test_watchdog.py", line 27, in test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace
+    remaining, signals, cleanup = cleanup_owned_processes(lambda: next(snapshots), 101)
+                                  ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/P/p/flashwright/tools/watchdog.py", line 96, in cleanup_owned_processes
+    signal_processes(owners, signal.SIGTERM)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/P/p/flashwright/tools/watchdog.py", line 80, in signal_processes
+    os.kill(process, termination_signal)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1241, in _execute_mock_call
+    raise effect
+AssertionError: cleanup was interrupted
+
+----------------------------------------------------------------------
+Ran 1 test in 0.028s
+
+FAILED (failures=1)
