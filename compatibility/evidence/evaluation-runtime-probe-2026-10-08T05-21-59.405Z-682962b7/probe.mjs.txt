@@ -1,0 +1,102 @@
+import assert from 'node:assert/strict';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { resolve, join } from 'node:path';
+import { chromium } from 'playwright';
+import { sourceManifest } from '../tools/source-manifest.mjs';
+import { identifyBrowser } from '../tools/browser-identity.mjs';
+import { startFixtureServer } from '../benchmarks/fixture-server.mjs';
+import { createValueCodec } from '../packages/resident-runtime/serialization.cjs';
+
+const digest = value => createHash('sha256').update(value).digest('hex');
+const sources = await sourceManifest();
+const browserIdentity = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH);
+const codecSource = await readFile('packages/resident-runtime/serialization.cjs', 'utf8');
+const evaluationSource = await readFile('packages/resident-runtime/evaluation.cjs', 'utf8');
+const probeSource = await readFile(new URL(import.meta.url));
+const destination = resolve('compatibility/evidence', `evaluation-runtime-probe-${new Date().toISOString().replaceAll(':', '-')}-${randomUUID().slice(0,8)}`);
+await mkdir(destination);
+await writeFile(join(destination, 'probe.mjs.txt'), probeSource);
+const configuration = { independentLaunches:4, warmupIterations:2, measuredIterations:12, variants:['repeated-source','private-function'], cases:['scalar','structured','user-error','unsupported-result'] };
+await writeFile(join(destination, 'metadata.json'), JSON.stringify({sources,browser:browserIdentity,configuration,probeSha256:digest(probeSource),
+  scope:'Direct CDP component diagnostic on fresh real-HTTP documents through Playwright transport. Both variants execute the same application callbacks and full codec. Private-function preparation is included and creates a fresh codec per call. Component totals include local validation and warmup but exclude browser/context/document creation, the terminal counter audit and object release. Not a production-engine, suite, native Linux or release comparison. Parameter bytes are reconstructed JSON, not raw wire capture.'},null,2));
+const server = await startFixtureServer(25);
+const codec = createValueCodec();
+const records = [];
+let previousLoader;
+try {
+  for (let launch = 0; launch < configuration.independentLaunches; launch++) {
+    const browser = await chromium.launch({executablePath:browserIdentity.executablePath,headless:true});
+    try {
+      const context = await browser.newContext({viewport:{width:1280,height:720}});
+      const page = await context.newPage();
+      const session = await context.newCDPSession(page);
+      const variants = launch % 2 ? [...configuration.variants].reverse() : configuration.variants;
+      for (const variant of variants) {
+        await page.goto(`${server.origin}/fixture?evaluation-probe=${launch}-${variant}`);
+        const {frameTree} = await session.send('Page.getFrameTree');
+        const loader = frameTree.frame.loaderId;
+        assert.ok(loader && loader !== previousLoader); previousLoader = loader;
+        const globalsBefore = await page.evaluate(() => Object.getOwnPropertyNames(globalThis).sort());
+        const record = {launch,variant,loader,calls:[],preparationMilliseconds:0,preparationParameterBytes:0};
+        const started = performance.now();
+        let objectId;
+        if (variant === 'private-function') {
+          const expression = `(() => { const exports = {}; ${codecSource}; ${evaluationSource}; return (source, isFunction, argument) => exports.runEvaluation(exports.createValueCodec(), source, isFunction, argument); })()`;
+          const parameters = {expression,returnByValue:false,objectGroup:'flashwright-evaluation-probe'};
+          const result = await session.send('Runtime.evaluate', parameters);
+          assert.equal(result.exceptionDetails, undefined);
+          objectId = result.result.objectId; assert.ok(objectId);
+          record.preparationParameterBytes = Buffer.byteLength(JSON.stringify(parameters));
+        }
+        record.preparationMilliseconds = performance.now() - started;
+        assert.deepEqual(await page.evaluate(() => Object.getOwnPropertyNames(globalThis).sort()), globalsBefore);
+        for (let iteration = 0; iteration < configuration.warmupIterations + configuration.measuredIterations; iteration++) {
+          for (const name of configuration.cases) {
+            const argument = {iteration,text:'astral \u{1F680} lone \ud800',number:-0,date:new Date('2020-01-02T03:04:05Z'),expression:/abc/gi};
+            argument.self = argument;
+            const body = {scalar:'return 42;',structured:'return argument;', 'user-error':"throw new Error('expected probe failure');",'unsupported-result':'return () => 42;'}[name];
+            const source = `(argument) => { globalThis.completedEvaluations = (globalThis.completedEvaluations || 0) + 1; ${body} }`;
+            const encodedArgument = codec.encode(argument);
+            let method, parameters;
+            if (objectId) {
+              method = 'Runtime.callFunctionOn';
+              parameters = {objectId,functionDeclaration:'function(source, isFunction, argument) { return this(source, isFunction, argument); }',arguments:[{value:source},{value:true},{value:encodedArgument}],returnByValue:true,awaitPromise:true,userGesture:true};
+            } else {
+              method = 'Runtime.evaluate';
+              const escapedSource = Array.from({length:source.length}, (_,index) => '\\u' + source.charCodeAt(index).toString(16).padStart(4,'0')).join('');
+              parameters = {expression:`(() => { const exports = {}; ${codecSource}; ${evaluationSource}; return exports.runEvaluation(exports.createValueCodec(), '${escapedSource}', true, ${JSON.stringify(encodedArgument)}); })()`,returnByValue:true,awaitPromise:true,userGesture:true};
+            }
+            const callStarted = performance.now();
+            const response = await session.send(method, parameters);
+            const milliseconds = performance.now() - callStarted;
+            assert.equal(response.exceptionDetails, undefined);
+            const outcome = response.result.value;
+            if (name === 'scalar' || name === 'structured') {
+              assert.equal(outcome.outcome,'success');
+              assert.deepEqual(codec.decode(outcome.value), name === 'scalar' ? 42 : argument);
+            } else {
+              assert.equal(outcome.outcome,'exception');
+              assert.equal(outcome.stage,name === 'user-error' ? 'execution' : 'resultSerialization');
+              assert.equal(outcome.error.code,name === 'user-error' ? 'EvaluationError' : 'UnsupportedFeatureError');
+              if (name === 'user-error') assert.ok(String.fromCharCode(...outcome.error.messageUnits).includes('expected probe failure'));
+            }
+            record.calls.push({iteration,name,phase:iteration < configuration.warmupIterations ? 'warmup' : 'measured',method,milliseconds,parameterBytes:Buffer.byteLength(JSON.stringify(parameters)),outcome:outcome.outcome,stage:outcome.stage,errorCode:outcome.error?.code});
+          }
+        }
+        record.completeMilliseconds = performance.now() - started;
+        record.completedEvaluations = await page.evaluate(() => globalThis.completedEvaluations);
+        assert.equal(record.completedEvaluations,(configuration.warmupIterations + configuration.measuredIterations) * configuration.cases.length);
+        assert.deepEqual((await session.send('Page.getFrameTree')).frameTree.frame.loaderId,loader);
+        if (objectId) await session.send('Runtime.releaseObjectGroup',{objectGroup:'flashwright-evaluation-probe'});
+        records.push(record);
+        await writeFile(join(destination,`launch-${launch}-${variant}.json`),JSON.stringify(record,null,2));
+        console.log(JSON.stringify({launch,variant,completeMilliseconds:record.completeMilliseconds,completedEvaluations:record.completedEvaluations}));
+      }
+      await context.close();
+    } finally { await browser.close(); }
+  }
+} finally { await server.close(); }
+assert.deepEqual(await sourceManifest(),sources);
+await writeFile(join(destination,'report.json'),JSON.stringify({status:'passed',configuration,records,sources},null,2));
+console.log(JSON.stringify({destination,verifiedCalls:records.reduce((total,record) => total + record.completedEvaluations,0)}));
