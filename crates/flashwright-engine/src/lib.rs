@@ -150,15 +150,7 @@ impl Engine {
             "locator.run" => self.run_locator(parameters, operation).await,
             "assertion.run" => self.run_assertion(parameters, operation).await,
             "keyboard.press" => self.press_page_key(parameters, operation).await,
-            "page.evaluate" => {
-                let result = operation.wait(self.evaluate(parameters.clone())).await;
-                if result.as_ref().is_err_and(|error| {
-                    matches!(error.code, ErrorCode::Cancelled | ErrorCode::Timeout)
-                }) {
-                    self.cancel_operation(method, &parameters).await;
-                }
-                result
-            }
+            "page.evaluate" => self.evaluate(parameters, operation).await,
             "browser.close" => {
                 validate_keys(method, &parameters, &["browser"])?;
                 let identifier = identifier(&parameters, "browser", method)?;
@@ -378,26 +370,6 @@ impl Engine {
             browser.close().await?;
         }
         Ok(())
-    }
-
-    /// Cancel renderer evaluation without waiting for the evaluated script's event loop.
-    pub async fn cancel_operation(&self, method: &str, parameters: &Value) {
-        if method == "page.evaluate"
-            && let Some(identifier) = parameters.get("page").and_then(Value::as_str)
-            && let Ok(page) = self.page(identifier, method)
-            && let Ok(context) = self.context(&page.context_identifier, method)
-            && let Ok(browser) = self.browser(&context.browser_identifier, method)
-        {
-            let _ = timeout(
-                Duration::from_secs(1),
-                browser.connection.call(
-                    "Runtime.terminateExecution",
-                    json!({}),
-                    Some(&page.session_identifier),
-                ),
-            )
-            .await;
-        }
     }
 
     pub async fn shutdown(&self) {

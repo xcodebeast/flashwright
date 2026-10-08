@@ -60,6 +60,9 @@ impl Engine {
         let relevant = matches!(
             event.method.as_str(),
             "Page.frameAttached"
+                | "Runtime.executionContextCreated"
+                | "Runtime.executionContextDestroyed"
+                | "Runtime.executionContextsCleared"
                 | "Page.frameNavigated"
                 | "Page.frameDetached"
                 | "Page.navigatedWithinDocument"

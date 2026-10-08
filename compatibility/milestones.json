@@ -39,7 +39,8 @@
         "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -88,7 +89,8 @@
         "One shared resident source manifest keeps Rust, JavaScript and protocol-test runtime hashes aligned",
         "Verification accepts an explicit driver binary so the exact optimized executable is checked before timing",
         "Failed setup/test cleanup now terminates the owner and waits for its guardian; four deliberate-failure regressions retain the original test failures and leave no owned processes or profiles on macOS Node 22/24 and emulated Linux Node 24.",
-        "Ordinary page/context close waits for Chromium acknowledgement without applying the cancellation-cleanup budget; a delayed-acknowledgement unit regression and all three current full core suites pass."
+        "Ordinary page/context close waits for Chromium acknowledgement without applying the cancellation-cleanup budget; a delayed-acknowledgement unit regression and all three current full core suites pass.",
+        "Document-owned private evaluation helpers share one preparation across concurrent callers, use unique execution-context identity and keep fresh per-call codec error provenance. Differential navigation/no-replay, document.open, Unicode, page closure and paused-browser cancellation regressions pass on macOS Node22/24 and emulated Linux Node24; all 104 core groups pass."
       ],
       "remaining": [
         "Packed platform runtime acquisition and automatic binary selection; fresh consumers currently use FLASHWRIGHT_DRIVER_PATH",
@@ -147,7 +149,8 @@
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json"
+        "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -254,7 +257,8 @@
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json"
+        "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -310,11 +314,12 @@
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json"
+        "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Retain the passing native macOS load-resource matrix and default-off policy while broader semantic, contention, native Linux and complete-flow net-benefit gates remain open.",
-        "Attribute the remaining small-call/failure overhead and setup critical path. Evaluation currently resends the value codec per call, and page initialization awaits several commands serially; use equivalent-work component diagnostics before adopting changes.",
+        "Measure the integrated private evaluation helper using the predeclared 64 ordinary launches and separate four-launch protocol attribution. Page initialization still awaits multiple independent commands; investigate only after this comparison and prioritize remaining M2 coverage.",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
         "Improve complete flows and setup using measured critical paths; native Linux, contention, consumer installation and release gates remain open."
@@ -333,6 +338,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Implement a private per-document evaluation helper using the verified component candidate at compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json. Add main-world context ownership, concurrent preparation and bounded cancellation/late-object cleanup; preserve fresh per-call codec state, Unicode and existing errors. Run conformance before matched production comparisons. Keep residency default off: load-resource gates pass but complete-flow material, native Linux, contention, M2 coverage and release gates remain open.",
+  "nextImplementation": "Complete the private evaluation helper comparison plan, retain all results and independently verify every run. Then prioritize remaining M2 preview APIs and artifacts, using the measured complete-flow bottlenecks for further optimization. Residency stays default off; native Linux performance, contention, platform packages and release gates remain open.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }

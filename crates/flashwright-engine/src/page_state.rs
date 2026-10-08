@@ -1,19 +1,21 @@
 //! Page lifecycle and network state, updated in Chromium event order before notifying waiters.
 
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
-use flashwright_protocol::ErrorRecord;
+use flashwright_protocol::{ErrorCode, ErrorRecord};
 use serde_json::{Value, json};
 use tokio::sync::watch;
 use tokio::time::Instant;
 
 const MAXIMUM_RETAINED_REQUESTS: usize = 1024;
+const MAXIMUM_EXECUTION_CONTEXTS: usize = 1024;
 
 pub(crate) struct PageState {
     pub state: Mutex<DocumentState>,
     pub changed: watch::Sender<u64>,
     pub locator_realms: tokio::sync::Mutex<HashMap<String, super::locators::LocatorRealm>>,
+    pub evaluation_runtime: Mutex<Option<Arc<super::evaluation::EvaluationRuntime>>>,
     pub native_input: tokio::sync::Mutex<()>,
 }
 
@@ -21,6 +23,7 @@ pub(crate) struct PageState {
 pub(crate) struct DocumentState {
     pub frames: HashMap<String, FrameState>,
     pub main_frame: Option<String>,
+    pub main_worlds: HashMap<String, ExecutionContext>,
     pub requests: HashMap<String, RequestState>,
     completed_requests: VecDeque<String>,
     pub response_by_loader: HashMap<String, Value>,
@@ -32,6 +35,13 @@ pub(crate) struct DocumentState {
     pub failure: Option<ErrorRecord>,
     pub sequence: u64,
     pub published: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ExecutionContext {
+    pub identifier: u64,
+    pub unique_identifier: String,
+    pub frame_identifier: String,
 }
 
 #[derive(Default)]
@@ -68,12 +78,42 @@ impl Default for PageState {
             }),
             changed: watch::channel(0).0,
             locator_realms: tokio::sync::Mutex::new(HashMap::new()),
+            evaluation_runtime: Mutex::new(None),
             native_input: tokio::sync::Mutex::new(()),
         }
     }
 }
 
 impl PageState {
+    pub async fn while_execution_context<T>(
+        &self,
+        context: &ExecutionContext,
+        work: impl std::future::Future<Output = Result<T, ErrorRecord>>,
+    ) -> Result<T, ErrorRecord> {
+        let mut changes = self.changed.subscribe();
+        let lost = async {
+            loop {
+                {
+                    let state = self.state.lock().unwrap();
+                    if let Err(error) = state.check("page.evaluate") {
+                        return error;
+                    }
+                    if state.main_execution_context() != Some(context) {
+                        return super::evaluation::context_destroyed();
+                    }
+                }
+                if changes.changed().await.is_err() {
+                    return super::closed("page.evaluate");
+                }
+            }
+        };
+        tokio::select! {
+            biased;
+            error = lost => Err(error),
+            result = work => result,
+        }
+    }
+
     pub async fn while_alive<T>(
         &self,
         method: &str,
@@ -105,6 +145,12 @@ impl FrameState {
 }
 
 impl DocumentState {
+    pub fn main_execution_context(&self) -> Option<&ExecutionContext> {
+        self.main_frame
+            .as_ref()
+            .and_then(|frame| self.main_worlds.get(frame))
+    }
+
     pub fn check(&self, method: &str) -> Result<(), ErrorRecord> {
         match &self.failure {
             Some(error) => {
@@ -125,6 +171,58 @@ impl DocumentState {
         self.sequence += 1;
         let mut events = Vec::new();
         match method {
+            "Runtime.executionContextCreated" => {
+                let description = &parameters["context"];
+                if description["auxData"]["isDefault"] == true {
+                    match (
+                        description["id"].as_u64(),
+                        description["uniqueId"]
+                            .as_str()
+                            .filter(|identifier| !identifier.is_empty()),
+                        description["auxData"]["frameId"]
+                            .as_str()
+                            .filter(|identifier| !identifier.is_empty()),
+                    ) {
+                        (Some(identifier), Some(unique_identifier), Some(frame_identifier)) => {
+                            if self.main_worlds.len() >= MAXIMUM_EXECUTION_CONTEXTS
+                                && !self.main_worlds.contains_key(frame_identifier)
+                            {
+                                self.failure = Some(ErrorRecord::new(
+                                    ErrorCode::ResourceLimit,
+                                    "page.evaluate",
+                                    "too many live main-world execution contexts",
+                                ));
+                            } else {
+                                self.main_worlds.insert(
+                                    frame_identifier.to_owned(),
+                                    ExecutionContext {
+                                        identifier,
+                                        unique_identifier: unique_identifier.to_owned(),
+                                        frame_identifier: frame_identifier.to_owned(),
+                                    },
+                                );
+                            }
+                        }
+                        _ => {
+                            self.failure = Some(ErrorRecord::new(
+                                ErrorCode::Protocol,
+                                "page.evaluate",
+                                "Chromium omitted a main-world execution context identity",
+                            ))
+                        }
+                    }
+                }
+            }
+            "Runtime.executionContextDestroyed" => {
+                self.main_worlds.retain(|_, context| {
+                    if let Some(unique) = parameters["executionContextUniqueId"].as_str() {
+                        context.unique_identifier != unique
+                    } else {
+                        Some(context.identifier) != parameters["executionContextId"].as_u64()
+                    }
+                });
+            }
+            "Runtime.executionContextsCleared" => self.main_worlds.clear(),
             "Page.frameAttached" => {
                 let identifier = text(parameters, "frameId");
                 let frame = self
@@ -217,6 +315,7 @@ impl DocumentState {
             "Page.frameDetached" => {
                 let identifier = text(parameters, "frameId");
                 if parameters["reason"] == "swap" {
+                    self.main_worlds.remove(&identifier);
                     if let Some(frame) = self.frames.get_mut(&identifier) {
                         frame.remote = true;
                     }
@@ -400,6 +499,8 @@ impl DocumentState {
         if !include_root {
             depths.remove(root);
         }
+        self.main_worlds
+            .retain(|frame, _| !depths.contains_key(frame));
         self.active_requests.retain(|identifier| {
             self.requests.get(identifier).is_some_and(|request| {
                 !depths.contains_key(request.metadata["frame"].as_str().unwrap_or(""))
@@ -449,4 +550,128 @@ fn response_metadata(identifier: &str, request: &Value, response: &Value) -> Val
 
 fn text(value: &Value, field: &str) -> String {
     value[field].as_str().unwrap_or_default().to_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_context(state: &mut DocumentState, frame: &str, identifier: u64, unique: &str) {
+        state.observe(
+            "Runtime.executionContextCreated",
+            &json!({ "context": {
+                "id": identifier, "uniqueId": unique,
+                "auxData": { "frameId": frame, "isDefault": true },
+            } }),
+        );
+    }
+
+    #[test]
+    fn context_events_can_precede_frame_initialization() {
+        let mut state = DocumentState::default();
+        create_context(&mut state, "main", 1, "main-world");
+        assert!(state.main_execution_context().is_none());
+        state.observe(
+            "Page.frameNavigated",
+            &json!({ "frame": { "id": "main", "loaderId": "document" } }),
+        );
+        assert_eq!(
+            state.main_execution_context().unwrap().unique_identifier,
+            "main-world"
+        );
+        // document.open and same-world document changes must not invent realm loss.
+        state.observe(
+            "Page.frameNavigated",
+            &json!({ "frame": { "id": "main", "loaderId": "replacement" } }),
+        );
+        assert_eq!(
+            state.main_execution_context().unwrap().unique_identifier,
+            "main-world"
+        );
+    }
+
+    #[test]
+    fn isolated_and_detached_child_worlds_cannot_replace_the_main_world() {
+        let mut state = DocumentState {
+            main_frame: Some("main".into()),
+            ..Default::default()
+        };
+        create_context(&mut state, "main", 1, "main-world");
+        state.observe(
+            "Runtime.executionContextCreated",
+            &json!({ "context": {
+                "id": 2, "uniqueId": "isolated-world",
+                "auxData": { "frameId": "main", "isDefault": false },
+            } }),
+        );
+        for (identifier, reason) in [(3, "swap"), (4, "remove")] {
+            state.observe(
+                "Page.frameAttached",
+                &json!({ "frameId": "child", "parentFrameId": "main" }),
+            );
+            create_context(&mut state, "child", identifier, "child-world");
+            state.observe(
+                "Page.frameDetached",
+                &json!({ "frameId": "child", "reason": reason }),
+            );
+            assert!(!state.main_worlds.contains_key("child"));
+            assert_eq!(
+                state.main_execution_context().unwrap().unique_identifier,
+                "main-world"
+            );
+        }
+    }
+
+    #[test]
+    fn delayed_destruction_cannot_remove_a_reused_numeric_context() {
+        let mut state = DocumentState {
+            main_frame: Some("main".into()),
+            ..Default::default()
+        };
+        create_context(&mut state, "main", 1, "predecessor");
+        create_context(&mut state, "main", 1, "successor");
+        state.observe(
+            "Runtime.executionContextDestroyed",
+            &json!({ "executionContextId": 1, "executionContextUniqueId": "predecessor" }),
+        );
+        assert_eq!(
+            state.main_execution_context().unwrap().unique_identifier,
+            "successor"
+        );
+        state.observe(
+            "Runtime.executionContextDestroyed",
+            &json!({ "executionContextId": 1, "executionContextUniqueId": "successor" }),
+        );
+        assert!(state.main_execution_context().is_none());
+        create_context(&mut state, "main", 2, "third-world");
+        state.observe("Runtime.executionContextsCleared", &json!({}));
+        assert!(state.main_worlds.is_empty());
+    }
+
+    #[test]
+    fn context_identity_and_live_world_capacity_fail_explicitly() {
+        let mut malformed = DocumentState::default();
+        create_context(&mut malformed, "main", 1, "");
+        assert_eq!(
+            malformed.check("page.evaluate").unwrap_err().code,
+            ErrorCode::Protocol
+        );
+        let mut state = DocumentState::default();
+        for identifier in 0..MAXIMUM_EXECUTION_CONTEXTS {
+            create_context(
+                &mut state,
+                &identifier.to_string(),
+                identifier as u64,
+                "world",
+            );
+        }
+        create_context(&mut state, "0", 2048, "replacement");
+        assert!(state.check("page.evaluate").is_ok());
+        create_context(&mut state, "overflow", 2049, "overflow");
+        assert_eq!(
+            state.check("page.evaluate").unwrap_err().code,
+            ErrorCode::ResourceLimit
+        );
+        assert_eq!(state.main_worlds.len(), MAXIMUM_EXECUTION_CONTEXTS);
+    }
 }
