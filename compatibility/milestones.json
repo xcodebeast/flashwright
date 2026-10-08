@@ -38,7 +38,8 @@
         "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -144,7 +145,8 @@
         "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -249,7 +251,8 @@
         "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -278,7 +281,8 @@
         "Explored timer-based pacing for long waits: 104 current core groups, Node22 checks and 52 registry cases pass. All 210 predeclared ordinary launches verify. Nine instrumented diagnostics and a controlled-clock comparison expose unresolved timer fragmentation; this experiment remains default off and does not establish performance acceptance.",
         "Reproduced and repaired persistent timer fragmentation from staggered registrations. A due timer now checks the pending group together, while frames retain individual pacing and events remain immediate. Current 104 core groups, Node22 checks and 54 registry cases pass; thirteen separate fixed-work counter diagnostics verify. The subsequent 210-launch ordinary plan independently verifies; resource and complete-flow acceptance remain incomplete.",
         "Coalesced timer groups pass eight of nine sustained-load CPU gates and all nine memory/time gates. Mutation-text/1 still uses about 11.7% more CPU than Playwright by paired ratio. Two complete-flow replications show about 5.4% and 5.6% less time, below the 10% material target; median/observed-maximum regressions are retained. All 210 ordinary launches and independent verifiers pass with no forced cleanup or leftover owned processes.",
-        "Fresh indexed document queries preserve pinned CSS/nth order with full fallback, full predicates and synchronous-only membership sharing. All 104 core groups, Node22 checks and 57 registry cases pass. A 4000-match isolated counter comparison proves avoided NodeList copying and shadow-host scans; it does not establish ordinary CPU or speed benefit."
+        "Fresh indexed document queries preserve pinned CSS/nth order with full fallback, full predicates and synchronous-only membership sharing. All 104 core groups, Node22 checks and 57 registry cases pass. A 4000-match isolated counter comparison proves avoided NodeList copying and shadow-host scans; it does not establish ordinary CPU or speed benefit.",
+        "Indexed document queries pass all nine CPU, memory and complete-time load gates in the six-group matrix. At 128 conditions, sampled CPU is roughly one-third of Playwright by paired ratio. All 210 ordinary launches and independent verifiers pass with clean process/profile audits. Two complete-flow comparisons show about 5.5% and 6.7% less time; both remain below the 10% material target and retain noop/failure median regressions. Residency remains default off."
       ],
       "evidence": [
         "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
@@ -302,11 +306,12 @@
         "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
-        "Run and independently verify all 210 predeclared ordinary launches for indexed document queries: compatibility/evidence/resident-indexed-profile-plan-2026-10-08.json. Retain every result and keep residency default off pending resource and net-benefit gates.",
-        "Use the new comparison to reassess mutation-text/1 CPU, short-call overhead and the 10% complete-flow material target; preceding results are retained at compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json.",
+        "Retain the passing native macOS load-resource matrix and default-off policy while broader semantic, contention, native Linux and complete-flow net-benefit gates remain open.",
+        "Attribute the remaining small-call/failure overhead and setup critical path. Evaluation currently resends the value codec per call, and page initialization awaits several commands serially; use equivalent-work component diagnostics before adopting changes.",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
         "Improve complete flows and setup using measured critical paths; native Linux, contention, consumer installation and release gates remain open."
@@ -325,6 +330,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Complete and independently verify the 210-launch indexed-document-query comparison after current conformance. Keep residency default off until resource and net-benefit gates pass. Then continue measured complete-flow improvements and unfinished M2 API/runner/artifact coverage, transport evaluation, native Linux performance, contention, installation and release gates.",
+  "nextImplementation": "Current indexed-query resource and complete-flow comparisons are complete. Keep residency default off: resource gates pass, but complete-flow material improvement and release gates remain open. Attribute repeated evaluation-runtime and page-initialization costs while continuing unfinished M2 API/runner/artifact coverage, transport evaluation, native Linux performance, contention and installation.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }
