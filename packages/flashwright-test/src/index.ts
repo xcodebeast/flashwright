@@ -63,16 +63,16 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
   geolocation: [undefined, { option: true }], hasTouch: [undefined, { option: true }], httpCredentials: [undefined, { option: true }],
   ignoreHTTPSErrors: [undefined, { option: true }], isMobile: [undefined, { option: true }], javaScriptEnabled: [undefined, { option: true }],
   locale: [undefined, { option: true }], offline: [undefined, { option: true }], permissions: [undefined, { option: true }],
-  proxy: [undefined, { option: true }], storageState: [undefined, { option: true }], timezoneId: [undefined, { option: true }],
+  proxy: [undefined, { option: true }], storageState: [async ({ contextOptions }, use) => use(contextOptions.storageState), { option: true }], timezoneId: [undefined, { option: true }],
   userAgent: [undefined, { option: true }], serviceWorkers: [undefined, { option: true }], testIdAttribute: ['data-testid', { option: true }],
-  _validateContextOptions: [async ({ acceptDownloads, bypassCSP, colorScheme, clientCertificates, deviceScaleFactor, extraHTTPHeaders, geolocation, hasTouch, httpCredentials, ignoreHTTPSErrors, isMobile, javaScriptEnabled, locale, offline, permissions, proxy, storageState, timezoneId, userAgent, serviceWorkers, testIdAttribute }, use) => {
-    unsupportedOptions({ acceptDownloads, bypassCSP, colorScheme, clientCertificates, deviceScaleFactor, extraHTTPHeaders, geolocation, hasTouch, httpCredentials, ignoreHTTPSErrors, isMobile, javaScriptEnabled, locale, offline, permissions, proxy, storageState, timezoneId, userAgent, serviceWorkers });
+  _validateContextOptions: [async ({ acceptDownloads, bypassCSP, colorScheme, clientCertificates, deviceScaleFactor, extraHTTPHeaders, geolocation, hasTouch, httpCredentials, ignoreHTTPSErrors, isMobile, javaScriptEnabled, locale, offline, permissions, proxy, timezoneId, userAgent, serviceWorkers, testIdAttribute }, use) => {
+    unsupportedOptions({ acceptDownloads, bypassCSP, colorScheme, clientCertificates, deviceScaleFactor, extraHTTPHeaders, geolocation, hasTouch, httpCredentials, ignoreHTTPSErrors, isMobile, javaScriptEnabled, locale, offline, permissions, proxy, timezoneId, userAgent, serviceWorkers });
     if (testIdAttribute !== 'data-testid') throw failure('UnsupportedFeatureError', 'test.use.testIdAttribute', 'custom test-ID attributes are not implemented');
     await use();
   }, { auto: true }],
-  context: async ({ _validateContextOptions, browser, contextOptions, viewport, baseURL, actionTimeout, navigationTimeout }, use) => {
+  context: async ({ _validateContextOptions, browser, contextOptions, viewport, baseURL, storageState, actionTimeout, navigationTimeout }, use) => {
     void _validateContextOptions;
-    const context = await browser.newContext({ ...contextOptions, viewport, ...(baseURL === undefined ? {} : { baseURL }) });
+    const context = await browser.newContext({ ...contextOptions, viewport, ...(baseURL === undefined ? {} : { baseURL }), ...(storageState === undefined ? {} : { storageState }) });
     context.setDefaultTimeout(actionTimeout); context.setDefaultNavigationTimeout(navigationTimeout);
     try { await use(context); } finally { await context.close(); }
   },

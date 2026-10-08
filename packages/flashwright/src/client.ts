@@ -9,6 +9,7 @@ export const requiredCapabilities = [
   'browser.launch', 'browser.close', 'browser.newContext', 'context.newPage', 'context.close',
   'page.close', 'page.evaluate', 'page.goto', 'page.waitForLoadState', 'response.body',
   'locator.run', 'assertion.run', 'keyboard.press',
+  'context.cookies', 'context.addCookies', 'context.clearCookies', 'context.storageState',
 ];
 
 const maximumFrameBytes = 8 * 1024 * 1024;

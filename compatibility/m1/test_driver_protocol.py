@@ -10,6 +10,7 @@ import signal
 import struct
 import subprocess
 import time
+import threading
 import unittest
 
 from test_lifecycle import snapshot
@@ -177,6 +178,58 @@ class DriverProtocolTests(OwnedDriverCase):
         self.assert_resources_released()
         self.driver.stdin.close()
         self.assertEqual(self.driver.wait(timeout=5), 0)
+
+
+class StorageProtocolTests(OwnedDriverCase):
+    def test_cookie_read_timeout_leaves_context_reusable(self):
+        os.kill(self.browser_process, signal.SIGSTOP)
+        try:
+            pending = self.command("context.cookies", {"context": self.context}, timeout=100)
+            self.send(pending)
+            result = self.receive()
+            self.assertEqual(result["requestId"], pending["requestId"])
+            self.assertEqual(result["error"]["code"], "TimeoutError")
+        finally:
+            os.kill(self.browser_process, signal.SIGCONT)
+        self.assertEqual(self.request("context.cookies", {"context": self.context}), [])
+        self.assertEqual(self.request("page.evaluate", self.evaluation("42")), {"kind": "number", "value": 42})
+
+    def test_uncertain_cookie_mutation_retires_only_its_context(self):
+        survivor = self.request("browser.newContext", {"browser": self.browser})["identifier"]
+        os.kill(self.browser_process, signal.SIGSTOP)
+        # Let the deadline retire the owner, then release the genuine Chromium replies
+        # inside the independent disposal budget. There is no mutation replay.
+        resume = threading.Timer(0.25, lambda: os.kill(self.browser_process, signal.SIGCONT))
+        resume.start()
+        try:
+            pending = self.command("context.addCookies", {"context": self.context, "cookies": [{"name": "late", "value": "value", "domain": "example.test", "path": "/"}]}, timeout=100)
+            self.send(pending)
+            result = self.receive()
+            self.assertEqual(result["requestId"], pending["requestId"])
+            self.assertEqual(result["error"]["code"], "TimeoutError")
+            self.assertEqual(result["error"]["cleanup"], "resourceDisposed")
+        finally:
+            resume.join()
+        self.send(self.command("context.cookies", {"context": self.context}))
+        self.assertEqual(self.receive()["error"]["code"], "TargetClosedError")
+        self.assertEqual(self.request("context.storageState", {"context": survivor}), {"cookies": [], "origins": []})
+        self.request("context.newPage", {"context": survivor})
+
+    def test_context_close_interrupts_cookie_read_without_waiting_for_browser(self):
+        os.kill(self.browser_process, signal.SIGSTOP)
+        try:
+            pending = self.command("context.cookies", {"context": self.context})
+            self.send(pending)
+            closing = self.command("context.close", {"context": self.context})
+            self.send(closing)
+            result = self.receive()
+            self.assertEqual(result["requestId"], pending["requestId"])
+            self.assertEqual(result["error"]["code"], "TargetClosedError")
+        finally:
+            os.kill(self.browser_process, signal.SIGCONT)
+        result = self.receive()
+        self.assertEqual(result["requestId"], closing["requestId"])
+        self.assertEqual(result["kind"], "result")
 
 
 class ResidentAssertionProtocolTests(OwnedDriverCase):

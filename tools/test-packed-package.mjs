@@ -36,6 +36,19 @@ try {
   assert.equal(await page.getByRole('button').textContent(), 'true');
   await page.getByLabel('Check', { exact: true }).check();
   assert.equal(await page.getByLabel('Check', { exact: true }).isChecked(), true);
+  await page.context().addCookies([{ name: 'packed', value: 'round trip', url: page.url() }]);
+  await page.evaluate(() => localStorage.setItem('packed', 'stored'));
+  const state = await page.context().storageState({ path: 'state.json' });
+  for (const storageState of [state, 'state.json']) {
+    const restored = await browser.newContext({ storageState });
+    assert.equal((await restored.cookies())[0].value, 'round trip');
+    const restoredPage = await restored.newPage();
+    await restoredPage.goto(page.url());
+    assert.equal(await restoredPage.evaluate(() => localStorage.getItem('packed')), 'stored');
+    await restored.clearCookies({ name: /^packed$/ });
+    assert.deepEqual(await restored.cookies(), []);
+    await restored.close();
+  }
   await page.close();
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 `;
@@ -47,6 +60,14 @@ async function example(): Promise<number> {
   try {
     const context: BrowserContext = await browser.newContext();
     const page: Page = await context.newPage();
+    const cookie: import('flashwright').SetCookie = { name: 'typed', value: 'value', url: 'https://example.test' };
+    await context.addCookies([cookie]);
+    const cookies: import('flashwright').Cookie[] = await context.cookies(['https://example.test']);
+    const state: import('flashwright').StorageState = await context.storageState({ path: 'state.json', indexedDB: false });
+    await context.clearCookies({ name: /typed/, domain: 'example.test' });
+    const restored: BrowserContext = await browser.newContext({ storageState: state });
+    await restored.close();
+    void cookies;
     const locator: import('flashwright').Locator = page.getByRole('button', { name: /submit/i });
     const count: number = await locator.count();
     const visible: boolean = await locator.isVisible();
@@ -85,7 +106,7 @@ const evidence = {
   package: packed[0].filename, archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
   consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH,
   driverSha256: createHash('sha256').update(await readFile(environment.FLASHWRIGHT_DRIVER_PATH)).digest('hex'),
-  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
 const destination = `compatibility/evidence/packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`;

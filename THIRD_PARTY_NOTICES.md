@@ -16,6 +16,8 @@ The native Chromium launch policy uses generated default argument lists from the
 
 The assertion wrapper calls the pinned injected matcher predicates and adapts expected-text serialization and matcher options. The native fixture adapter uses the pinned runner root and public fixture/expect extension points; its fixture option precedence follows the retained upstream source. These adaptations are recorded in [selector and assertion provenance](compatibility/upstream/selector-provenance.json). The separate @flashwright/test package has the isolated Playwright 1.60.0 scheduler as a runtime dependency; the plain library does not load that runner. Chromium binaries are acquired separately and are not redistributed by this repository
 
+Cookie URL rewriting and filtering adapt the pinned network helpers. [Cookie helper provenance](compatibility/upstream/cookie-helpers-provenance.json) records the retained extract, hashes and validation changes under the same Apache-2.0 license and notice.
+
 ## L2 Other dependencies
 
 Cargo.lock and package-lock.json pin the dependency graphs. Their upstream license files remain in the installed packages. Release packaging must generate and verify the complete notices for the binaries and JavaScript packages it actually distributes, as required by SPECS.md S18.i

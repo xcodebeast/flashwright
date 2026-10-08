@@ -14,7 +14,7 @@ try {
  assert.equal(code,1,'Exactly the deliberate timeout fails the nested runner');
  const report=JSON.parse(await readFile('test-results/native-runner.json','utf8'));
  const specs=suites=>suites.flatMap(suite=>[...suite.specs,...specs(suite.suites??[])]);
- const all=specs(report.suites); assert.equal(all.length,9); assert.equal(report.stats.unexpected,1); assert.equal(report.stats.flaky,1);
+ const all=specs(report.suites); assert.equal(all.length,12); assert.equal(report.stats.unexpected,1); assert.equal(report.stats.flaky,1);
  for(const spec of all) {
    const test=spec.tests[0];
    if(spec.title.includes('unsupported context')) { assert.equal(test.expectedStatus,'failed'); assert.ok(test.results[0].errors.some(error=>error.message.includes('test.use.locale'))); }
@@ -27,6 +27,6 @@ try {
  const hash=value=>createHash('sha256').update(value).digest('hex');
  await mkdir('compatibility/evidence',{recursive:true});
  const destination=`compatibility/evidence/native-runner-${process.platform}-${process.arch}-${process.versions.node}.json`;
- await writeFile(destination,JSON.stringify({node:process.version,platform:process.platform,architecture:process.arch,driverSha256:hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH ?? 'target/debug/flashwright-driver')),report,checks:['native browser fixtures','extended page objects and custom options','context isolation','soft/configured/negated assertions','retry ownership','timeout teardown','explicit unsupported config and matcher rejection','upstream browser/request paths poisoned'],scope:'Experimental adapter; artifacts, aliases and full runner/config parity remain incomplete.'},null,2)+'\n');
+ await writeFile(destination,JSON.stringify({node:process.version,platform:process.platform,architecture:process.arch,driverSha256:hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH ?? 'target/debug/flashwright-driver')),report,checks:['native browser fixtures','extended page objects and custom options','context isolation','storageState context-option inheritance, explicit override and file fixture','soft/configured/negated assertions','retry ownership','timeout teardown','explicit unsupported config and matcher rejection','upstream browser/request paths poisoned'],scope:'Experimental adapter; artifacts, aliases and full runner/config parity remain incomplete.'},null,2)+'\n');
  console.log(`Native runner evidence: ${destination}`);
 } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

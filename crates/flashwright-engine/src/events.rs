@@ -117,8 +117,30 @@ impl Engine {
                     );
                 }
                 _ => {
+                    let context = self
+                        .context(&page.context_identifier, "context.storageState")
+                        .ok();
                     let mut state = page.state.state.lock().unwrap();
                     let events = state.observe(&event.method, &parameters);
+                    if state.published
+                        && event.method == "Page.frameNavigated"
+                        && let Some(origin) = parameters["frame"]["securityOrigin"].as_str()
+                        && let Some(context) = &context
+                        && let Err(error) = context.state.visit(origin)
+                    {
+                        state.failure = Some(error);
+                    }
+                    if state.published
+                        && event.method == "Page.frameDetached"
+                        && parameters["reason"] == "swap"
+                        && let Some(context) = &context
+                    {
+                        *context.state.storage_failure.lock().unwrap() = Some(ErrorRecord::new(
+                            ErrorCode::UnsupportedFeature,
+                            "context.storageState",
+                            "storage collection from out-of-process child frames is not implemented",
+                        ));
+                    }
                     if state.published {
                         for (name, parameters) in events {
                             self.emit(&identifier, name, parameters);
@@ -173,7 +195,8 @@ impl Engine {
         for (identifier, page) in pages {
             self.finish_page(&identifier, &page, closed("page"), "close");
         }
-        if context.is_some() {
+        if let Some(context) = &context {
+            context.state.closed.send_replace(true);
             self.emit(identifier, "close", Value::Null);
         }
         context

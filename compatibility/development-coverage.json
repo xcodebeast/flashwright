@@ -15,7 +15,8 @@
       "newContext with viewport",
       "newPage",
       "contexts",
-      "close"
+      "close",
+      "newContext/newPage with cookie and HTTP(S) localStorage storageState object or file"
     ],
     "context": [
       "browser",
@@ -25,7 +26,11 @@
       "normal page and close events",
       "baseURL",
       "setDefaultTimeout",
-      "setDefaultNavigationTimeout"
+      "setDefaultNavigationTimeout",
+      "cookies with URL filtering",
+      "addCookies including Chromium partition keys",
+      "clearCookies with name/domain/path string or RegExp filters",
+      "storageState with atomic path output and exact UTF-16 localStorage"
     ],
     "page": [
       "context",
@@ -147,19 +152,20 @@
     "input": "Native text and pointer input with method-specific actionability, fresh frame stability, hit interception, button/modifier cleanup and navigation barriers. Protocol results and errors carry operation input delivery progress, including replies crossing the caller deadline. Keyboard, pointer and fill/focus mutations share per-page input ownership. Key chords are validated before effects; interrupted keys are released or the affected page is closed. Pinned macOS editing commands preserve platform shortcuts. Page-level presses retain current focus and use an unbounded operation without locator navigation waiting. Undelayed clicks admit their whole bounded command sequence atomically, dispatch in wire order without reply barriers, and withdraw unsent commands on cancellation. Uncertain pointer delivery closes the owned page without replaying a release; the input lock remains held through disposal.",
     "rendererExpiry": "Wall-clock renderer guard suppresses already-expired work queued behind a blocked event loop; the Rust monotonic deadline remains authoritative.",
     "assertions": "Complete pinned predicates and bounded observations in both host-polled and opt-in resident paths. Authoritative host monotonic deadlines cannot accept late success. Responsive cancellation gathers terminal diagnostics; blocked-renderer cancellation retains bounded exact-context cleanup until acknowledgement or owner closure.",
-    "runner": "Pinned flashwright-upstream-runner alias supplies scheduling and generic assertion infrastructure; _baseTest is the private boundary. Native fixtures and expect.extend browser matchers dispatch only to Flashwright. Plain library loading is independent of the scheduler.",
+    "runner": "Pinned flashwright-upstream-runner alias supplies scheduling and generic assertion infrastructure; _baseTest is the private boundary. Native fixtures and expect.extend browser matchers dispatch only to Flashwright. Plain library loading is independent of the scheduler. Native storageState fixtures inherit contextOptions and support explicit object and file overrides.",
     "handshake": "The client requires every implemented operation capability before dispatching browser allocation; missing keyboard.press is covered by a rejecting fake-driver test.",
     "evaluationErrors": "Explicit execution/argument-decoding/result-serialization stages with private codec error identity and independently bounded UTF-16 diagnostics; Node argument encoding uses the same classification.",
     "launchPolicy": "Default CDP Chromium arguments extracted from the pinned reference, including default headed/headless variants; the guardian substitutes its owned profile at the retained position. Shared benchmark contracts compare actual emitted launch arguments.",
     "pageFocusPolicy": "Main page sessions enable Emulation.setFocusEmulationEnabled, matching pinned Playwright initialization. Two-page visibility/focus and fresh pointer-frame checks conform; a blocked handler in one page leaves another page usable.",
     "testFailureCleanup": "Unittest cleanup registered immediately after owner creation; only the worker/driver is terminated, and guardian completion is awaited before diagnostic streams close. Four intentionally failed setup/body cases cover both owner paths.",
     "protocolAttribution": "Opt-in external byte-preserving Chromium pipe proxy records bounded command metadata and script hashes without argument/result payloads. Two clock calibrations bound Node/Python epoch offset, and an independent verifier recomputes correlated phase accounting. Instrumented timing is diagnostic only.",
-    "residentRegistryExperiment": "Default-off fair registry with synchronous selector sharing, coalesced fallback timers and indexed CSS lookup. Current 104 core groups, Node22 and 57 registry cases pass with private evaluation helpers. The two residency-on Playwright comparisons show about 5.0% and 5.7% less complete-run time, below the 10% material target, with failure-path median regressions. The preceding sustained-load matrix applies to its recorded binary only. See compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+    "residentRegistryExperiment": "Default-off fair registry with synchronous selector sharing, coalesced fallback timers and indexed CSS lookup. The preceding evaluation-helper checkpoint records 104 core groups, Node22 and 57 registry cases pass with private evaluation helpers. The two residency-on Playwright comparisons show about 5.0% and 5.7% less complete-run time, below the 10% material target, with failure-path median regressions. The preceding sustained-load matrix applies to its recorded binary only. See compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
     "ordinaryResourceClose": "Ordinary page/context closure waits for its actual Chromium acknowledgement. The bounded operation-cancellation disposal budget no longer causes a slow ordinary close to shut down the entire browser. Unit test withholds close acknowledgement for 750ms; full emulated Linux suite passes.",
     "benchmarkBrowserBinding": "Core reports bind exact browser path, SHA-256, version and distribution; new benchmark admission and independent verification require that identity. compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
     "runtimeSourceEncoding": "Resident source files remain ASCII, enforced by the Rust build. Unicode runtime values use JavaScript escapes without changing diagnostics or supported application text. A literal U+2026 caused a verified installation regression; compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
     "residentResourceMeasurement": "Fixed-work sustained-load harness covers quiet text, property-only and mutation workloads at 1/32/128 conditions with all six engine orders, actual launch flags, backend/application counts, source/browser/binary binding and self-contained verification logs. Corrected CPU accounting survives macOS zombie resets. compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-    "evaluationRuntime": "Private helper code is installed once per main-world unique identity and shared by concurrent callers. Setup belongs to the document and survives caller cancellation without running user callbacks. Each invocation gets a fresh value codec. Calls remain concurrent and are never replayed across navigation. See compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json All 64 ordinary and four instrumented launches independently verify. Protocol accounting records six helper installations and 81 callbacks per launch; each callback wrapper has 107 UTF-16 units. Default-mode complete runs remain near parity with Playwright; residency-on runs use about 5.0–5.7% less time. See compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
+    "evaluationRuntime": "Private helper code is installed once per main-world unique identity and shared by concurrent callers. Setup belongs to the document and survives caller cancellation without running user callbacks. Each invocation gets a fresh value codec. Calls remain concurrent and are never replayed across navigation. See compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json All 64 ordinary and four instrumented launches independently verify. Protocol accounting records six helper installations and 81 callbacks per launch; each callback wrapper has 107 UTF-16 units. Default-mode complete runs remain near parity with Playwright; residency-on runs use about 5.0\u20135.7% less time. See compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json These performance results predate cookie/storage-state implementation and apply to the recorded binary only.",
+    "contextStorage": "Context-owned visited origins survive page closure. Native context-scoped cookie commands serialize with state snapshots. Private origin pages fulfill their requests locally, bypass service workers and preserve exact UTF-16 entries. Cancelled prior-document interceptions are consumed without replay; unrelated fulfillment failures propagate. Initial restoration finishes before publication, snapshot files replace atomically, and uncertain mutation acknowledgements retire the affected context without replay. SPECS S4.j records the intentional reference service-worker difference. See compatibility/evidence/storage-checkpoint-2026-10-08.json"
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -198,13 +204,16 @@
     "tools/test-resident-load.mjs",
     "tools/verify-resident-load.mjs",
     "compatibility/m2/condition-query-batches.mjs",
-    "compatibility/m2/condition-fallback-cadence.mjs"
+    "compatibility/m2/condition-fallback-cadence.mjs",
+    "crates/flashwright-engine/src/context_state.rs",
+    "crates/flashwright-engine/src/storage.rs",
+    "compatibility/m2/storage.mjs",
+    "tools/run-storage-tests.mjs"
   ],
   "limitations": [
     "No platform runtime publication or automatic driver acquisition; npm consumers provide an explicit compiled driver path",
     "No complete runner adapter, aliases, pnpm or Yarn verification yet",
     "Value coverage is a tested development subset, not full differential conformance with every Playwright evaluation case",
-    "Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547–1.1719) and 1.0515 (1.0090–1.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
     "Emulated Linux functional evidence does not satisfy native Linux performance gates",
     "Navigation/network support is the tested development subset; URLPattern, full header/cookie variants, routing, API requests and service-worker semantics require further conformance",
     "Screenshot artifacts remain unimplemented; persistent Page.keyboard down/up, sequential typing and broader keyboard APIs remain unimplemented",
@@ -213,6 +222,9 @@
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
     "Popup/dialog/console/pageerror coverage remains unfinished",
     "TodoMVC migration verification uses the public demo URL retained by the original fixture; asset hashes are checked before and after but offline application reproduction is not yet available",
-    "Resident assertions remain opt-in. The current 64-launch ordinary plan and four-launch protocol attribution are complete and independently verified. Default-mode complete time is near parity; residency-on runs are about 5.0–5.7% faster, below the material target. Failure-path and observed-maximum regressions remain. Native Linux, contention, remaining APIs, platform packages and release gates are open."
+    "Resident assertions remain opt-in. The preceding evaluation-helper 64-launch ordinary plan and four-launch protocol attribution are complete and independently verified. Default-mode complete time is near parity; residency-on runs are about 5.0\u20135.7% faster, below the material target. Failure-path and observed-maximum regressions remain. Native Linux, contention, remaining APIs, platform packages and release gates are open.",
+    "Basic storage excludes IndexedDB, existing-context setStorageState, non-HTTP origins and out-of-process child-frame collection. Snapshot origin, UTF-16 and serialized-message caps fail explicitly. Temporary pages bypass service-worker interception; the pinned reference can execute worker-supplied application code during fallback collection, an intentional documented difference rather than full service-worker parity.",
+    "The general outbound control-frame overflow path still shuts down the driver instead of returning a per-call ResourceLimitError. Snapshot results have a local guard; large cookie results and future artifacts require the next M1 transport fix.",
+    "Cookie/storage-state conformance adds 81 core groups over three native macOS configurations, focused Node22 checks, and three complete storage-corpus runs on emulated Linux. The full Linux run after the interception fix exceeded its lifecycle watchdog budget and remains incomplete; its forced cleanup left an owned profile in the stopped container, which was removed. Watchdog profile cleanup remains open. Ordinary performance has not been rerun for this new binary; prior timing and CPU claims remain bound to their immutable checkpoints."
   ]
 }
