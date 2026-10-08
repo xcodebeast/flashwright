@@ -1,0 +1,15 @@
+
+> flashwright-workspace@0.0.0 test:conditions
+> node tools/run-condition-tests.mjs
+
+Resident registry: synchronous selector batches share native queries without skipping predicates
+Resident registry: positive CSS index avoids copying all matches and scanning shadow hosts
+file:///Users/P/p/flashwright/compatibility/m2/condition-query-batches.mjs:190
+  assert.ok(shadowIndexing.captureMessage.includes('capture'));
+                                          ^
+
+TypeError: shadowIndexing.captureMessage.includes is not a function
+    at verifyConditionQueryBatches (file:///Users/P/p/flashwright/compatibility/m2/condition-query-batches.mjs:190:43)
+    at async file:///Users/P/p/flashwright/compatibility/m2/condition-registry.mjs:106:3
+
+Node.js v24.15.0

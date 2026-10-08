@@ -168,6 +168,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     if (prepareSelectorPrefix && selector?.capture === undefined && selector?.parts.length > 1 && selector.parts.at(-1).name === 'nth') {
       const parts = selector.parts.slice(0, -1);
       prefix = { selector: { parts }, key: JSON.stringify(parts.map(part => [part.name, part.source])), index: Number(selector.parts.at(-1).body) };
+      if (readOnlyAssertions.has(expression)) prefix.documentCss = indexedDocumentCss(parts, prefix.index);
     }
     return { options, selector, prefix };
   }
@@ -177,18 +178,41 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       (!part.body?.parsed || isReadOnlySelector(part.body.parsed)));
   }
 
+  /** The pinned CSS engine appends shadow matches after document matches for one
+   * plain compound. An in-range positive index needs neither a copied match array
+   * nor shadow discovery. Other selector forms retain the complete resolver. */
+  function indexedDocumentCss(parts, index) {
+    if (!Number.isSafeInteger(index) || index < 0 || parts.length !== 1 || parts[0].name !== 'css') return undefined;
+    const selectors = parts[0].body;
+    if (!Array.isArray(selectors) || selectors.length !== 1 || selectors[0].simples.length !== 1) return undefined;
+    const simple = selectors[0].simples[0].selector;
+    return simple.functions.length === 0 && simple.css ? simple.css : undefined;
+  }
+
+  function queryAssertionPrefix(prefix) {
+    let candidates = selectorPrefixes?.get(prefix.key);
+    if (!candidates) {
+      candidates = {};
+      selectorPrefixes?.set(prefix.key, candidates);
+    }
+    if (!candidates.completeMatches && prefix.documentCss) {
+      candidates.documentMatches ??= document.querySelectorAll(prefix.documentCss);
+      if (prefix.index < candidates.documentMatches.length) return [candidates.documentMatches[prefix.index]];
+    }
+    candidates.completeMatches ??= injected.querySelectorAll(prefix.selector, document);
+    // Preserve the pinned nth engine's special -1 and native slice behavior.
+    const index = prefix.index === -1 ? candidates.completeMatches.length - 1 : prefix.index;
+    return candidates.completeMatches.slice(index, index + 1);
+  }
+
   async function observeAssertion({ options, selector, prefix }) {
     const expression = options.expression;
     let elements = [];
     let element;
     if (selector !== null) {
       const multiple = expression === 'to.have.count' || expression.endsWith('.array');
-      if (selectorPrefixes && prefix) {
-        if (!selectorPrefixes.has(prefix.key)) selectorPrefixes.set(prefix.key, injected.querySelectorAll(prefix.selector, document));
-        const candidates = selectorPrefixes.get(prefix.key);
-        // Preserve the pinned nth engine's special -1 and native slice behavior.
-        const index = prefix.index === -1 ? candidates.length - 1 : prefix.index;
-        elements = candidates.slice(index, index + 1);
+      if (prefix && (selectorPrefixes || prefix.documentCss)) {
+        elements = queryAssertionPrefix(prefix);
         element = elements[0];
       } else if (multiple) elements = injected.querySelectorAll(selector, document);
       else element = injected.querySelector(selector, document, true);

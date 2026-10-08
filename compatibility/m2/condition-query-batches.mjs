@@ -86,7 +86,7 @@ export async function verifyConditionQueryBatches({ reset, evaluate, page, cases
         testInjected.querySelectorAll = originalResolution;
       }
     })()`);
-    assert.deepEqual(result.initial, { queries: 32, predicates: 32, resolutions: 32 });
+    assert.deepEqual(result.initial, { queries: 32, predicates: 32, resolutions: selectorBatchCache ? 0 : 32 });
     assert.ok(result.rechecks.predicates >= 32);
     assert.ok(result.checksPerCondition.every(count => count >= 2));
     assert.deepEqual(result.statuses, Array(32).fill('cancelled'));
@@ -96,11 +96,123 @@ export async function verifyConditionQueryBatches({ reset, evaluate, page, cases
   assert.equal(comparisons[0].rechecks.queries, comparisons[0].rechecks.predicates);
   assert.equal(comparisons[0].rechecks.resolutions, comparisons[0].rechecks.predicates);
   assert.ok(comparisons[1].rechecks.queries < comparisons[1].rechecks.predicates && comparisons[1].rechecks.queries > 0, JSON.stringify(comparisons));
-  assert.equal(comparisons[1].rechecks.resolutions, comparisons[1].rechecks.queries);
+  assert.equal(comparisons[1].rechecks.resolutions, 0);
   cases.push({ name: 'synchronous selector batches share native queries without skipping predicates', comparisons });
   console.log(`Resident registry: ${cases.at(-1).name}`);
   assert.equal(await page.evaluate(() => Document.prototype.querySelectorAll.toString().includes('[native code]')), true,
     'Isolated diagnostic wrappers must not modify application prototypes');
+
+  const indexedComparisons = [];
+  for (const selectorBatchCache of [false, true]) {
+    await prepare('<section>' + '<p class="item">ready</p>'.repeat(4000) + '</section>');
+    const result = await evaluate(`(async () => {
+      testLocator = createTestLocator(${selectorBatchCache});
+      const originalQuery = Document.prototype.querySelectorAll;
+      const originalIterator = NodeList.prototype[Symbol.iterator];
+      const shadowDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'shadowRoot');
+      const originalExpect = testInjected._expectCore;
+      const selectors = [];
+      let iteratedNodes = 0;
+      let shadowRootReads = 0;
+      let predicates = 0;
+      let resolution;
+      Document.prototype.querySelectorAll = function(selector) {
+        selectors.push(selector);
+        return originalQuery.call(this, selector);
+      };
+      NodeList.prototype[Symbol.iterator] = function*() {
+        for (const element of originalIterator.call(this)) { iteratedNodes++; yield element; }
+      };
+      Object.defineProperty(Element.prototype, 'shadowRoot', {...shadowDescriptor, get() {
+        shadowRootReads++;
+        return shadowDescriptor.get.call(this);
+      }});
+      testInjected._expectCore = function(...arguments_) {
+        predicates++;
+        resolution = {selectors:[...selectors],iteratedNodes,shadowRootReads};
+        return originalExpect.apply(this, arguments_);
+      };
+      let status;
+      try {
+        startNativeCondition('last-document-match', 'css=.item >> nth=3999', 'to.have.text', {expectedText:[{string:'ready'}]});
+        [{status}] = await Promise.all(nativePromises);
+      } finally {
+        cancelNativeConditions();
+        Document.prototype.querySelectorAll = originalQuery;
+        NodeList.prototype[Symbol.iterator] = originalIterator;
+        Object.defineProperty(Element.prototype, 'shadowRoot', shadowDescriptor);
+        testInjected._expectCore = originalExpect;
+      }
+      return {status,predicates,resolution,...(await inspectNativeConditions())};
+    })()`);
+    assert.equal(result.status, 'matched');
+    assert.equal(result.predicates, 1);
+    assertReleased(result);
+    indexedComparisons.push({ selectorBatchCache, ...result });
+  }
+  assert.deepEqual(indexedComparisons[0].resolution.selectors, ['.item', '*']);
+  assert.ok(indexedComparisons[0].resolution.iteratedNodes >= 8000);
+  assert.ok(indexedComparisons[0].resolution.shadowRootReads >= 4000);
+  assert.deepEqual(indexedComparisons[1].resolution, { selectors: ['.item'], iteratedNodes: 0, shadowRootReads: 0 });
+  cases.push({ name: 'positive CSS index avoids copying all matches and scanning shadow hosts', comparisons: indexedComparisons });
+  console.log(`Resident registry: ${cases.at(-1).name}`);
+
+  await prepare('<section><p class="item" data-note="a &gt;&gt; nth=0">light-zero</p><div id="first-shadow"></div><p class="item">light-one</p><div id="second-shadow"></div><p class="item other">light-two</p></section>');
+  const shadowIndexing = await evaluate(`(async () => {
+    document.querySelector('#first-shadow').attachShadow({mode:'open'}).innerHTML = '<p class="item">shadow-zero</p><div id="nested"></div>';
+    document.querySelector('#first-shadow').shadowRoot.querySelector('#nested').attachShadow({mode:'open'}).innerHTML = '<p class="item">nested</p>';
+    document.querySelector('#second-shadow').attachShadow({mode:'open'}).innerHTML = '<p class="item">shadow-one</p>';
+    const samples = [
+      ['css=.item >> nth=0','light-zero'], ['css=.item >> nth=2','light-two'],
+      ['css=.item >> nth=3','shadow-zero'], ['css=.item >> nth=4','nested'],
+      ['css=.item >> nth=5','shadow-one'], ['css=.item >> nth=-1','shadow-one'],
+      ['css=.item >> nth=-2','nested'], ['css=.item >> nth=1.8','light-one'],
+      ['css=.item[data-note="a >> nth=0"] >> nth=0','light-zero'],
+      ['css=.item:text("shadow") >> nth=0','shadow-zero'],
+      ['css=section > .item >> nth=2','light-two'],
+      ['css=section >> css=.item >> nth=3','shadow-zero'],
+      ['css=.item, .other >> nth=1','shadow-zero']
+    ];
+    const reference = samples.map(([selector]) => testInjected.querySelector(testInjected.parseSelector(selector), document, true)?.textContent);
+    try {
+      for (const [index,[selector,value]] of samples.entries())
+        startNativeCondition('index-' + index, selector, 'to.have.text', {expectedText:[{string:value}]});
+      for (const index of [6,99,-99]) startNativeCondition('missing-' + index, 'css=.item >> nth=' + index, 'to.have.count', {expectedNumber:0});
+      startNativeCondition('array', 'css=.item >> nth=2', 'to.have.text.array', {expectedText:[{string:'light-two'}]});
+      startNativeCondition('captured-index', '*css=.item >> nth=0', 'to.have.text', {expectedText:[{string:'light-zero'}]});
+      const results = await Promise.all(nativePromises);
+      return {reference,expected:samples.map(([,value]) => value),statuses:results.map(result => result.status),
+        captureMessage:results.at(-1).message,...(await inspectNativeConditions())};
+    } finally { cancelNativeConditions(); }
+  })()`);
+  assert.deepEqual(shadowIndexing.reference, shadowIndexing.expected);
+  assert.deepEqual(shadowIndexing.statuses, [...Array(shadowIndexing.expected.length + 4).fill('matched'), 'error']);
+  assert.ok(shadowIndexing.captureMessage.units.map(unit => String.fromCharCode(unit)).join('').includes('capture'));
+  assertReleased(shadowIndexing);
+  cases.push({ name: 'indexed document matches preserve shadow order and full-selector fallbacks', ...shadowIndexing });
+  console.log(`Resident registry: ${cases.at(-1).name}`);
+
+  await prepare('<section><p class="item">before</p><p class="item remove">before</p><p class="item remove">before</p><div id="shadow-host"></div></section>');
+  const changingRoots = await evaluate(`(async () => {
+    const shadow = document.querySelector('#shadow-host').attachShadow({mode:'open'});
+    shadow.innerHTML = '<p class="item">before</p><p class="item">before</p><p class="item">before</p>';
+    const samples = [[-1,'shadow-two'],[0,'light'],[1,'shadow-zero'],[-2,'shadow-one'],[2,'shadow-one'],[3,'shadow-two']];
+    try {
+      for (const [index,value] of samples) startNativeCondition('moving-' + index, 'css=.item >> nth=' + index,
+        'to.have.text', {expectedText:[{string:value}]});
+      startNativeCondition('removed-index', 'css=.item >> nth=4', 'to.have.count', {expectedNumber:0});
+      await new Promise(resolve => setTimeout(resolve, 0));
+      for (const element of document.querySelectorAll('.remove')) element.remove();
+      document.querySelector('.item').textContent = 'light';
+      [...shadow.querySelectorAll('.item')].forEach((element,index) => { element.textContent = ['shadow-zero','shadow-one','shadow-two'][index]; });
+      const results = await Promise.all(nativePromises);
+      return {statuses:results.map(result => result.status),...(await inspectNativeConditions())};
+    } finally { cancelNativeConditions(); }
+  })()`);
+  assert.deepEqual(changingRoots.statuses, Array(7).fill('matched'));
+  assertReleased(changingRoots);
+  cases.push({ name: 'fresh indexed batches follow targets between document and shadow matches', ...changingRoots });
+  console.log(`Resident registry: ${cases.at(-1).name}`);
 
   await prepare('<section data-note="a &gt;&gt; nth=0">' + '<p class="item">before</p>'.repeat(100) + '</section>');
   const indexing = await evaluate(`(async () => {
