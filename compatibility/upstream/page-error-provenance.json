@@ -1,0 +1,24 @@
+{
+  "referenceVersion": "1.60.0",
+  "referenceFiles": [
+    "server/chromium/crProtocolHelper.ts",
+    "utils/isomorphic/stackTrace.ts",
+    "server/chromium/crPage.ts",
+    "server/errors.ts"
+  ],
+  "source": "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crProtocolHelper.ts",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/page-error.source.js",
+  "extractSha256": "0c914d6ad8214130d1b3b69ed7a27bd77aff25e561e6ca86bbec12c8efb13e44",
+  "destination": "packages/flashwright/src/page-errors.ts",
+  "implementationSha256": "c32a7dbf6d79e63966a326b8ab2ee41e128ec38505cdadc0a6308dd986157d8e",
+  "changes": [
+    "Combine exception formatting and error reconstruction in the TypeScript client.",
+    "Carry the original bounded Chromium event as JSON text through Rust, preserving lone UTF-16 surrogates without evaluating code in the failing document.",
+    "Validate the event envelope before reconstructing a native Error with the reference name, message and stack."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

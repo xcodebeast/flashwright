@@ -1,0 +1,29 @@
+
+> flashwright-workspace@0.0.0 test:harness
+> node --test tools/test-harness.mjs tools/test-protocol-profile.mjs tools/test-attachments.mjs
+
+✔ raw and base64 attachments interleave without exposing partial buffers (10.944126ms)
+✔ attachment offsets, identities, caps and terminal sizes reject corruption (3.200625ms)
+✔ base64 chunks require complete groups and canonical terminal padding (2.703292ms)
+✔ expired attachments release bytes but still validate late chunks (0.618333ms)
+✔ client assembles fragmented attachment frames and concurrent replies (393.669875ms)
+✔ an attachment larger than a control frame returns every byte (428.089875ms)
+✔ client rejects malformed starts, chunks, terminal replies and EOF (3214.048668ms)
+✔ client deadline discards a partial attachment and leaves its successor usable (621.3135ms)
+✔ resident load invocation supports legacy and explicitly classified production samples (23.840541ms)
+✔ statistics preserve independent-launch units and do not invent tail estimates (9.83925ms)
+✔ paired comparisons retain launch correspondence and reject incomplete pairs (16.066584ms)
+✔ actual launch comparison normalizes only owned profile paths (13.747292ms)
+✔ benchmark admission binds core verification to the exact browser executable (1.730084ms)
+✔ independent clock epochs and overlapping commands preserve accounting without double-counting waits (14.45575ms)
+✔ clock discontinuities invalidate attribution (5.131542ms)
+✔ commands near a phase boundary remain in global counts without arbitrary phase assignment (15.238625ms)
+✔ lost replies and duplicate command identities invalidate attribution (3.630459ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5237.441503

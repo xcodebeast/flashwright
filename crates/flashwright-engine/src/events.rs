@@ -67,6 +67,7 @@ impl Engine {
                 | "Runtime.executionContextCreated"
                 | "Runtime.executionContextDestroyed"
                 | "Runtime.executionContextsCleared"
+                | "Runtime.exceptionThrown"
                 | "Page.frameNavigated"
                 | "Page.frameDetached"
                 | "Page.navigatedWithinDocument"
@@ -84,7 +85,12 @@ impl Engine {
         if !relevant {
             return Ok(());
         }
+        // Exception descriptions can contain escaped lone UTF-16 surrogates. Preserve
+        // their JSON through the bounded event transport for decoding by JavaScript.
         let parameters: Value = match event.parameters {
+            Some(parameters) if event.method == "Runtime.exceptionThrown" => {
+                json!({ "exceptionJson": parameters.get() })
+            }
             Some(parameters) => serde_json::from_str(parameters.get()).map_err(|error| {
                 ErrorRecord::new(ErrorCode::Protocol, "event", error.to_string())
             })?,
@@ -119,6 +125,12 @@ impl Engine {
                         ErrorRecord::new(ErrorCode::PageCrashed, "page", "page renderer crashed"),
                         "crash",
                     );
+                }
+                "Runtime.exceptionThrown" => {
+                    let state = page.state.state.lock().unwrap();
+                    if state.published && state.failure.is_none() {
+                        self.emit(&identifier, "pageerror", parameters.clone());
+                    }
                 }
                 _ => {
                     let context = self
@@ -242,6 +254,75 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn exceptions_preserve_utf16_and_follow_published_page_session_ownership() {
+        let (outgoing, mut messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
+        engine.registry.lock().unwrap().contexts.insert(
+            "context".into(),
+            Context {
+                browser_identifier: "browser".into(),
+                protocol_identifier: "native-context".into(),
+                viewport: None,
+                state: Arc::new(context_state::ContextState::default()),
+                published: true,
+            },
+        );
+        let state = Arc::new(PageState::default());
+        engine.registry.lock().unwrap().pages.insert(
+            "page".into(),
+            Page {
+                context_identifier: "context".into(),
+                target_identifier: "target".into(),
+                session_identifier: "session".into(),
+                state: state.clone(),
+            },
+        );
+        let exception = r#"{"exceptionDetails":{"text":"Uncaught","exception":{"description":"Error: \ud800\u0000\udfff"}}}"#;
+        let event = |session: &str| Event {
+            sequence: 1,
+            method: "Runtime.exceptionThrown".into(),
+            session_identifier: Some(session.into()),
+            parameters: Some(serde_json::from_str(exception).unwrap()),
+        };
+        engine.handle_event("browser", event("session")).unwrap();
+        assert!(messages.try_recv().is_err());
+        state.state.lock().unwrap().published = true;
+        engine
+            .handle_event("browser", event("other-session"))
+            .unwrap();
+        engine
+            .handle_event("other-browser", event("session"))
+            .unwrap();
+        assert!(messages.try_recv().is_err());
+        engine.handle_event("browser", event("session")).unwrap();
+        let DriverOutput::Message(DriverMessage::Event {
+            target,
+            event,
+            parameters,
+        }) = messages.try_recv().unwrap()
+        else {
+            panic!("expected page exception event");
+        };
+        assert_eq!(target, "page");
+        assert_eq!(event, "pageerror");
+        assert_eq!(parameters["exceptionJson"], exception);
+        state.state.lock().unwrap().failure = Some(closed("page"));
+        engine
+            .handle_event(
+                "browser",
+                Event {
+                    sequence: 2,
+                    method: "Runtime.exceptionThrown".into(),
+                    session_identifier: Some("session".into()),
+                    parameters: Some(serde_json::from_str(exception).unwrap()),
+                },
+            )
+            .unwrap();
+        assert!(messages.try_recv().is_err());
+    }
 
     #[tokio::test]
     async fn originating_failure_survives_context_and_page_removal() {
