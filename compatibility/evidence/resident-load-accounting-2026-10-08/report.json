@@ -1,0 +1,29 @@
+{
+  "status": "reproduced-and-repaired",
+  "beforeChildCpuSeconds": 0.0,
+  "afterChildMaximumObservedCpuSeconds": 1.15,
+  "beforeWatchdogMatchesInvalidatedMatrix": true,
+  "invalidatedResourceComparison": "benchmarks/results/2026-10-08T00-24-07.610Z-darwin-arm64-resident-load-2ecf4995",
+  "reason": "macOS ps reports zero CPU for a zombie. The previous observer overwrote prior CPU observations. Its per-process final records cannot reconstruct the lost CPU. Preserve the whole matrix; use no CPU/resource acceptance from it. Rerun all scenarios after fixed accounting and fresh verification.",
+  "scope": "The original complete-time, memory and functional observations remain raw historical evidence. This invalidates CPU acceptance, not those operation outcomes. Older watchdog CPU totals may have the same limitation.",
+  "repair": "Keep maximum observed CPU for every PID/start identity, retain raw per-process snapshots, and independently recompute CPU maxima, concurrent RSS and process counts. No browser-engine changes.",
+  "platforms": {
+    "darwin-arm64": "Reproduction failed before repair and four supervisor tests pass after repair.",
+    "linux-x64-emulated": "Four supervisor tests pass. The short initial CPU fixture was below Linux ps whole-second precision; the shared fixture now burns 1.2 CPU seconds before exit."
+  },
+  "retainedFileHashes": {
+    "after-resources.json": "9bddeef2cd55a864267ec1c44af48f99d2bb538d9b4ee279df6e1367169e91fa",
+    "after-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after-stdout.txt": "3f2814b868bdba48d33ebf3faf5ec3ecb7081c9ce69bc757b4a6fd4f3b751888",
+    "before-resources.json": "e1c9b57ef1f1d4aa63b40b1ea438e0a632d7e3fc16c21aec067abcbf19f6cad0",
+    "before-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "before-stdout.txt": "b8b15ffe9c713baf9bd7f7064731143df496af967f555fb8d091c301ad1407dd",
+    "resident-load-linux-watchdog-fixed.log": "f86ca98f948186ebbe19ada9534de101325d48b452eda10c7dc979b6b90cc5a7",
+    "resident-load-linux-watchdog-initial.log": "d6ecf4a2c78d04c639a2b79d2b41a3b6a5afc20cf5934ccc6775f76c644edc78",
+    "resident-load-linux-zombie-before.log": "9bcbdb34eddb9f501a810c00774e3266486c79388ad52570c07499c573e4b21c",
+    "resident-load-mac-watchdog-fixed.log": "1ab6d0f7a92d31ac0e42104cfe65339d660580c39ef03d89a77bf4321f96f372",
+    "resident-load-mac-zombie-before.log": "bb15692af5dde29cfc83747872ba86e4396b12deb26718a4e6eca19b5db0579f",
+    "watchdog-after.py": "966a46d145097e939ea2a231306b0614a79129b854b0fd8e39cdcdb89bbf2f28",
+    "watchdog-before.py": "90d603bfbaed9b3f928ff6b5b8e823d9368cf47b1415a7ed282a5b6258c62784"
+  }
+}

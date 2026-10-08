@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { verifyResidentLoadDirectory } from '../tools/verify-resident-load.mjs';
+import { sha256 } from '../tools/resident-load-evidence.mjs';
+
+const source = resolve((await readFile('.cache/resident-load-corrected-profile-path.txt', 'utf8')).trim());
+const invalidated = resolve((await readFile('.cache/resident-load-profile-path.txt', 'utf8')).trim());
+const destination = await mkdtemp(resolve('.cache/resident-load-relocated-'));
+await cp(source, destination, { recursive: true });
+const checks = [{ name: 'relocated self-contained evidence verifies', result: await verifyResidentLoadDirectory(destination) }];
+const baselineSummary = await readFile(join(destination, 'summary.json'));
+const metadata = JSON.parse(await readFile(join(destination, 'metadata.json')));
+
+async function rejectAlteration(name, files, mutate) {
+  const originals = Object.fromEntries(await Promise.all(files.map(async file => [file, await readFile(join(destination, file))])));
+  try {
+    await mutate();
+    await assert.rejects(() => verifyResidentLoadDirectory(destination), error => {
+      checks.push({ name, rejected: true, reason: error.message.slice(0, 500) });
+      return error.code === 'ERR_ASSERTION';
+    });
+  } finally {
+    for (const [file, bytes] of Object.entries(originals)) await writeFile(join(destination, file), bytes);
+  }
+}
+
+const launchName = 'launch-0-quiet-text-1-playwright.json';
+const resourceName = 'resources-0-quiet-text-1-playwright.json';
+await rejectAlteration('coherent CPU totals and updated hashes disagree with raw observations', [launchName, resourceName, 'summary.json'], async () => {
+  const launch = JSON.parse(await readFile(join(destination, launchName)));
+  launch.resources.processes[0].cpuSeconds++;
+  launch.resources.observedCpuSeconds = launch.resources.processes.reduce((total, process) => total + process.cpuSeconds, 0);
+  await writeFile(join(destination, launchName), JSON.stringify(launch));
+  await writeFile(join(destination, resourceName), JSON.stringify(launch.resources));
+  const summary = JSON.parse(baselineSummary);
+  for (const file of [launchName, resourceName]) summary.retainedFileHashes[file] = sha256(await readFile(join(destination, file)));
+  await writeFile(join(destination, 'summary.json'), JSON.stringify(summary));
+});
+await rejectAlteration('altered reported statistics', ['summary.json'], async () => {
+  const summary = JSON.parse(baselineSummary);
+  summary.scenarios[0].comparisons[0].metrics.completeTime.referenceMedian++;
+  await writeFile(join(destination, 'summary.json'), JSON.stringify(summary));
+});
+const core = JSON.parse(await readFile(join(destination, metadata.verification.on.path)));
+const logName = `verification/on/${core.checks[0].log}`;
+await rejectAlteration('altered bundled verification log', [logName], () => writeFile(join(destination, logName), 'corrupted'));
+await rejectAlteration('altered launch order', ['metadata.json', 'summary.json'], async () => {
+  const altered = structuredClone(metadata);
+  altered.plan.reverse();
+  await writeFile(join(destination, 'metadata.json'), JSON.stringify(altered));
+  const summary = JSON.parse(baselineSummary);
+  summary.retainedFileHashes['metadata.json'] = sha256(await readFile(join(destination, 'metadata.json')));
+  await writeFile(join(destination, 'summary.json'), JSON.stringify(summary));
+});
+await assert.rejects(() => verifyResidentLoadDirectory(invalidated), error => {
+  checks.push({ name: 'legacy CPU accounting cannot enter the corrected resource comparison', rejected: true, reason: error.message });
+  return error.code === 'ERR_ASSERTION' && error.message.includes('undefined !== 2');
+});
+checks.push({ name: 'restored relocated evidence verifies', result: await verifyResidentLoadDirectory(destination) });
+const report = { status: 'passed', source, relocatedDirectory: destination,
+  verifierSha256: sha256(await readFile('tools/verify-resident-load.mjs')), checks };
+const reportPath = 'compatibility/evidence/resident-load-verifier-checks-2026-10-08.json';
+await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+console.log(reportPath);
