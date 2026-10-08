@@ -113,6 +113,28 @@ class OwnedDriverCase(unittest.TestCase):
 
 
 class DriverProtocolTests(OwnedDriverCase):
+    def test_cancelled_cold_evaluation_does_not_own_shared_preparation(self):
+        # No evaluation has run in this page. Hold the helper's real CDP reply
+        # while one caller expires and another remains interested in the result.
+        os.kill(self.browser_process, signal.SIGSTOP)
+        try:
+            expired = self.command("page.evaluate", self.evaluation("globalThis.expiredEvaluations = (globalThis.expiredEvaluations || 0) + 1"), timeout=100)
+            survivor = self.command("page.evaluate", self.evaluation("globalThis.survivingEvaluations = (globalThis.survivingEvaluations || 0) + 1"))
+            self.send(expired)
+            self.send(survivor)
+            reply = self.receive()
+            self.assertEqual(reply["requestId"], expired["requestId"], reply)
+            self.assertEqual(reply["error"]["code"], "TimeoutError")
+            self.assertEqual(reply["error"]["cleanup"], "evaluationNotDispatched")
+            self.assertIsNone(self.driver.poll())
+        finally:
+            os.kill(self.browser_process, signal.SIGCONT)
+        reply = self.receive()
+        self.assertEqual(reply["requestId"], survivor["requestId"], reply)
+        self.assertEqual(reply["value"], {"kind": "number", "value": 1})
+        result = self.request("page.evaluate", self.evaluation("[globalThis.expiredEvaluations || 0, globalThis.survivingEvaluations || 0]"))
+        self.assertEqual([item["value"] for item in result["items"]], [0, 1])
+
     def test_malformed_frame_releases_browser(self):
         os.write(self.driver.stdin.fileno(), struct.pack("<I", 8388609))
         self.assertNotEqual(self.driver.wait(timeout=8), 0)

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { chromium, firefox, webkit, request, UnsupportedFeatureError, InvalidArgumentError, TargetClosedError, EvaluationError, ResourceLimitError } from 'flashwright';
+import { verifyEvaluationContexts } from './evaluation-context.mjs';
 
 await assert.rejects(firefox.launch(), UnsupportedFeatureError);
 await assert.rejects(webkit.launch(), UnsupportedFeatureError);
@@ -78,6 +79,26 @@ try {
   });
   await assert.rejects(first.evaluate(() => new Map()), UnsupportedFeatureError);
   await assert.rejects(first.evaluate(value => value, new Map()), UnsupportedFeatureError);
+  await first.evaluate(() => {
+    globalThis.originalErrorConstructor = Error;
+    globalThis.Error = class extends originalErrorConstructor {
+      constructor(...arguments_) { super(...arguments_); globalThis.retainedCodecError = this; }
+    };
+  });
+  try {
+    await assert.rejects(first.evaluate(() => new Map()), UnsupportedFeatureError);
+    await assert.rejects(first.evaluate(() => ({ get value() { throw retainedCodecError; } })), error => {
+      assert(error instanceof EvaluationError);
+      assert.equal(error.details.diagnostics.stage, 'resultSerialization');
+      return true;
+    });
+  } finally {
+    await first.evaluate(() => {
+      globalThis.Error = originalErrorConstructor;
+      delete globalThis.originalErrorConstructor;
+      delete globalThis.retainedCodecError;
+    });
+  }
   await first.evaluate(() => console.log('lone\ud800'));
   assert.equal(await first.evaluate(() => 42), 42);
   const completionOrder = [];
@@ -110,4 +131,5 @@ try {
   const page = await sharedSecond.newPage();
   assert.equal(await page.evaluate(() => 'still alive'), 'still alive');
 } finally { await sharedSecond.close(); }
+await verifyEvaluationContexts(chromium);
 console.log('Real Chromium library smoke passed: identity, isolation, value graph, concurrent replies and cleanup.');
