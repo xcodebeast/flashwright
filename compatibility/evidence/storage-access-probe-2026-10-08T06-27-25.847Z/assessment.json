@@ -1,0 +1,37 @@
+{
+  "status": "Exploration complete; cookie/storage-state production APIs are not implemented yet.",
+  "reference": "Playwright 1.60.0 on Chromium 148.0.7778.96 headless shell, macOS arm64, Node24.15.0",
+  "reportSha256": "11b579290264af3dcce6ddb2b69579399accdcfbe096832ffcf8ef1d4e4d2993",
+  "scriptSha256": "80b6441469cc992b915c780b5cee175891a0d964fe339bfd4209d413280c6428",
+  "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+  "referenceBundle": {
+    "path": "node_modules/playwright-core/lib/coreBundle.js",
+    "sha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+    "locations": [
+      "filterCookies and rewriteCookies near lines 13411 and 13453",
+      "Chromium get/add/clear cookies near lines 37152\u201337202",
+      "storageState and setStorageState near lines 47434 and 47485"
+    ]
+  },
+  "findings": [
+    "DOMStorage access requires a live frame at the requested origin; an about:blank page cannot read or restore an arbitrary origin, including after a prior visit.",
+    "Setting a matching cookie with expires:0 through Storage.setCookies removed it while preserving an unrelated cookie in this one unpartitioned HTTP case. This is a candidate for selective removal, not proven coverage of secure/partitioned/domain/path combinations.",
+    "The pinned reference saves local storage from current pages where possible and uses a private page with intercepted blank HTML for other visited origins and restoration. The implementation must preserve closed-page origins, context isolation and avoid application/backend requests during state work."
+  ],
+  "nextImplementation": [
+    "Implement basic BrowserContext cookie operations with validation, URL filtering and exact typed failures for unsupported options.",
+    "Implement context-owned temporary storage pages and intercepted origin navigation with cancellation/closure cleanup; do not use upstream browser operations in production.",
+    "Add differential HTTP authentication/state fixtures, state file round trips, context isolation, closed-origin collection and network-side-effect checks before claiming the M2 slice."
+  ],
+  "limitations": "One functional exploratory browser launch, no speed or full cookie/storage compatibility claim. Production source and the preceding evaluation-helper checkpoint remain unchanged.",
+  "cleanup": {
+    "resourceReports": [
+      {
+        "path": "compatibility/evidence/resources/2026-10-08T06-27-25Z-95023a98.json",
+        "sha256": "d58b91252e1cb2962e18c8135947dd30899ae0d415c898c70a006cbd5242d63a"
+      }
+    ],
+    "remainingDrivers": [],
+    "remainingProfiles": []
+  }
+}
