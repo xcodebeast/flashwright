@@ -2,7 +2,20 @@ import assert from 'node:assert/strict';
 import { resolve } from 'node:path';
 import { EngineClient } from '../../packages/flashwright/dist/commonjs/client.js';
 
-for (const method of ['browser.launch', 'browser.newContext', 'context.newPage']) {
+const allocationMethods = ['browser.launch', 'browser.newContext', 'context.newPage'];
+const deliveryScenarios = [
+  ['locator.acknowledged', { inputDelivery: 'acknowledged' }],
+  ['locator.notDispatched', { inputDelivery: 'notDispatched' }],
+  ['locator.error', { error: true }],
+];
+const assertionScenarios = [['assertion.result', false], ['assertion.error', true]];
+const selectedScenario = process.argv[2];
+const scenarioNames = [...allocationMethods, ...deliveryScenarios.map(([name]) => name), ...assertionScenarios.map(([name]) => name), 'handshake.capabilityMismatch'];
+assert.ok(selectedScenario === undefined || scenarioNames.includes(selectedScenario), `Unknown deadline scenario: ${selectedScenario}`);
+const isSelected = name => selectedScenario === undefined || selectedScenario === name;
+
+for (const method of allocationMethods) {
+  if (!isSelected(method)) continue;
   const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
   client.retain();
   try {
@@ -10,7 +23,8 @@ for (const method of ['browser.launch', 'browser.newContext', 'context.newPage']
     await assert.rejects(client.request(method, {}, 200), error => error.name === 'TimeoutError' && error.details.cleanup === 'resourceDisposedAfterLateSuccess');
   } finally { await client.release(); }
 }
-for (const parameters of [{ inputDelivery: 'acknowledged' }, { inputDelivery: 'notDispatched' }, { error: true }]) {
+for (const [name, parameters] of deliveryScenarios) {
+  if (!isSelected(name)) continue;
   const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
   client.retain();
   try {
@@ -27,7 +41,8 @@ for (const parameters of [{ inputDelivery: 'acknowledged' }, { inputDelivery: 'n
     });
   } finally { await client.release(); }
 }
-for (const error of [false, true]) {
+for (const [name, error] of assertionScenarios) {
+  if (!isSelected(name)) continue;
   const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
   client.retain();
   const observation = { status: 'observation', matches: true, received: { kind: 'string', units: [0xD800, 0, 0xDC00] }, diagnosticTruncated: false };
@@ -41,10 +56,12 @@ for (const error of [false, true]) {
     });
   } finally { await client.release(); }
 }
-process.env.FLASHWRIGHT_TEST_OMIT_CAPABILITY = 'keyboard.press';
-const incompatible = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
-delete process.env.FLASHWRIGHT_TEST_OMIT_CAPABILITY;
-incompatible.retain();
-try { await assert.rejects(incompatible.request('browser.launch', {}), error => error.name === 'ProtocolError' && error.message.includes('mismatch')); }
-finally { await incompatible.release(); }
-console.log('Late replies preserve ownership cleanup, input delivery and UTF-16 diagnostics.');
+if (isSelected('handshake.capabilityMismatch')) {
+  process.env.FLASHWRIGHT_TEST_OMIT_CAPABILITY = 'keyboard.press';
+  const incompatible = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  delete process.env.FLASHWRIGHT_TEST_OMIT_CAPABILITY;
+  incompatible.retain();
+  try { await assert.rejects(incompatible.request('browser.launch', {}), error => error.name === 'ProtocolError' && error.message.includes('mismatch')); }
+  finally { await incompatible.release(); }
+}
+console.log(`Deadline scenario ${selectedScenario ?? 'all'} preserved ownership cleanup and terminal diagnostics.`);
