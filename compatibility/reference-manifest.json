@@ -236,7 +236,7 @@
       "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T04-55-06.517Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "The indexed-document-query change has current conformance but ordinary comparisons are pending under compatibility/evidence/resident-indexed-profile-plan-2026-10-08.json. The preceding coalesced-timer binary passed eight CPU and all memory/time load gates and repeated roughly 5.4–5.6% complete-flow savings, below the material target. Historical results are not acceptance for this binary. Residency remains default off.",
+    "performanceStatus": "All 210 predeclared ordinary launches independently verify. Two eight-pair Playwright comparisons show complete-run ratios 1.0578 (95% bootstrap interval 1.0355–1.0684) and 1.0724 (1.0340–1.0896), about 5.5% and 6.7% less time. Both miss the 10% material target and retain noop/failure median regressions; neither flags an observed-maximum regression. Residency remains default off; native Linux, contention and release gates remain open.",
     "sourceIdentity": "158 matching source hashes pass 104 current core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 assertions, 25 lifecycle/protocol tests and 57 registry cases also pass. The current optimized driver is 61f6acb7413094fc1bd00ed45221af2fc19c8c959265079db77ad389e1423ef7.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
@@ -308,7 +308,7 @@
     "residentFairnessCheckpoint": "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
     "residentInvalidationCheckpoint": "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
     "residentLoadCheckpoint": "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-    "residentResourceStatus": "For a safe positive nth of one plain CSS compound, an existing document match is read from a fresh native NodeList. Full fallback preserves shadow and other selector semantics; synchronous-only cache scope and full predicates remain. An isolated 4000-match counter comparison records one native query, zero NodeList iterations and zero shadow-host reads before the predicate, versus two queries, 8004 iterations and 4004 reads. These counters are not CPU/time evidence. All 57 registry cases and 104 core groups pass; the full 210-launch ordinary plan is pending.",
+    "residentResourceStatus": "The current six-group sustained-load matrix passes all nine CPU, memory and complete-time gates. At 128 conditions, paired Playwright/resident CPU ratios are 3.046–3.250, roughly one-third as much sampled candidate CPU. Single-condition ratios are 1.127 quiet text, 0.995 property-only and 0.974 mutation-text, all within the 10% CPU-growth budget. Complete-time ratios span 1.112–1.230. All fixed application work and cleanup verify. These are shared native macOS one-worker observations, not native Linux, contention, broad-suite or release acceptance. See compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
     "residentQueryCheckpoint": "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
     "residentQueryPerformanceCheckpoint": "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
     "residentFramePacingCheckpoint": "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
@@ -316,7 +316,8 @@
     "residentCoalescingCheckpoint": "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
     "residentCoalescingInitialEvidence": "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
     "residentCoalescingPerformanceCheckpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
-    "residentIndexedCheckpoint": "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json"
+    "residentIndexedCheckpoint": "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
+    "residentIndexedPerformanceCheckpoint": "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json"
   },
   "pairedRuns": [
     {
@@ -481,6 +482,32 @@
       "verification": "tools/verify-paired.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
       "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T05-17-54.385Z-darwin-arm64-paired-b4be8e29",
+      "metadataSha256": "cc2649ab06931af6fa8c5da2ebe7ebf90c2d23726596bd75dd77f0350d721977",
+      "summarySha256": "6dd09b44fefad90ad3d878f3e3aa7219293de9d741669b198666973a1950cb5b",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-residency-on",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T05-19-07.068Z-darwin-arm64-paired-a6850601",
+      "metadataSha256": "528cc9fcf631168648dcb7a66d2bf0fca07572c5715c9b2bb642967e007ae4a5",
+      "summarySha256": "2a457fbfc097f17aa90abe9ca1aadb5f048dcc802027f785ac34d71af715c9bd",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-residency-on-replication",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
     }
   ],
   "attributionRuns": [
@@ -606,6 +633,19 @@
       "verification": "tools/verify-residency.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
       "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T05-16-42.146Z-darwin-arm64-residency-7bd4514c",
+      "metadataSha256": "19ec9ca5110392daf122c4e0c4b93bd452093b36c2772895bdf8f31f93f6f4c9",
+      "summarySha256": "7e2c87832cbacbfc551d1c8c69c3a55535896276f6204b7293d5952d978c9886",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
+      "kind": "same-binary-residency-off-on",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-residency.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
     }
   ],
   "additionalBrowserDistributions": [
@@ -657,6 +697,18 @@
       "valid": true,
       "unexpectedFailures": 0,
       "checkpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
+      "kind": "sustained-load",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-resident-load.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T05-07-07.992Z-darwin-arm64-resident-load-e9e0fc42",
+      "metadataSha256": "028012145983004f33b4911e0f76b0e18a0bcca4e049d628734c303c4ab23372",
+      "summarySha256": "ff88c022b5fa40ac4835ba3d076af6b17a6c4d3dcf3baab4bb5890da7b1bf2bf",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
       "kind": "sustained-load",
       "distribution": "chromium-headless-shell",
       "verification": "tools/verify-resident-load.mjs",
