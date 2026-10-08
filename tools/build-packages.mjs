@@ -44,5 +44,5 @@ for (const name of ['flashwright', 'flashwright-test']) {
   }
   await writeModuleFacade(packageDirectory, 'index');
   if (name === 'flashwright-test') await writeModuleFacade(packageDirectory, 'reporter');
-  for (const notice of ['LICENSE.playwright', 'NOTICE.playwright']) await copyFile(`compatibility/upstream/${notice}`, `${packageDirectory}/dist/${notice}`);
+  for (const notice of ['LICENSE.playwright', 'NOTICE.playwright', 'LICENSE.node-types']) await copyFile(`compatibility/upstream/${notice}`, `${packageDirectory}/dist/${notice}`);
 }

@@ -15,6 +15,32 @@ from tools.watchdog import cleanup_owned_processes, record_cpu_observation
 
 
 class WatchdogLifecycleTests(unittest.TestCase):
+    def test_parent_exit_near_deadline_gives_promoted_child_a_fresh_grace_period(self):
+        elapsed = [0.0]
+
+        def observe():
+            if elapsed[0] >= 3.6:
+                return {}
+            guardian = {"parent": 101 if elapsed[0] < 1.9 else 1, "started": "guardian", "state": "S"}
+            if elapsed[0] < 1.9:
+                return {101: {"parent": 1, "started": "owner", "state": "S"}, 102: guardian}
+            return {102: guardian}
+
+        def sleep(duration):
+            elapsed[0] += duration
+
+        def signal_owner(process, termination_signal):
+            self.assertEqual(process, 101, "newly orphaned guardian lost its cleanup grace")
+            self.assertEqual(termination_signal, signal.SIGTERM)
+
+        with patch("tools.watchdog.time.monotonic", side_effect=lambda: elapsed[0]), \
+                patch("tools.watchdog.time.sleep", side_effect=sleep), \
+                patch("tools.watchdog.os.kill", side_effect=signal_owner):
+            remaining, signals, cleanup = cleanup_owned_processes(observe, 101)
+        self.assertEqual(remaining, {})
+        self.assertEqual(len(signals), 1)
+        self.assertFalse(cleanup["wholeTreeEscalation"])
+
     def test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace(self):
         guardian = {"parent": 1, "started": "guardian", "state": "S"}
         snapshots = iter([

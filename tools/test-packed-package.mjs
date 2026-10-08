@@ -35,6 +35,13 @@ try {
   const response = await page.goto('http://127.0.0.1:' + server.address().port);
   assert.equal(response.status(), 200);
   assert.equal(await page.title(), 'Packed consumer');
+  const consoleEvent = page.context().waitForEvent('console');
+  await page.evaluate(() => console.log('packed console', { answer: 42 }));
+  const consoleMessage = await consoleEvent;
+  assert.equal(consoleMessage.page(), page);
+  assert.equal(consoleMessage.text(), 'packed console {answer: 42}');
+  assert.deepEqual(await consoleMessage.args()[1].jsonValue(), { answer: 42 });
+  for (const handle of consoleMessage.args()) await handle.dispose();
   const pageError = page.waitForEvent('pageerror');
   await page.evaluate(() => { setTimeout(() => { throw new TypeError('packed page error'); }, 0); });
   const error = await pageError;
@@ -97,6 +104,20 @@ async function example(): Promise<number> {
     });
     const pageError: Error = await page.waitForEvent('pageerror', { predicate: error => error.name === 'TypeError' });
     void pageError;
+    const chainedPage: Page = page.on('console', message => {
+      const text: string = message.text();
+      const handles: import('flashwright').JSHandle[] = message.args();
+      const type: import('flashwright').ConsoleMessageType = message.type();
+      // @ts-expect-error Console callbacks preserve the message type.
+      const missing: number = message.missing;
+      void text; void handles; void type; void missing;
+    });
+    const chainedContext: BrowserContext = context.prependOnceListener('console', message => {
+      const page: Page | null = message.page(); void page;
+    });
+    const consoleMessage: import('flashwright').ConsoleMessage = await context.waitForEvent('console', message => message.text() === 'typed');
+    const pageConsole: import('flashwright').ConsoleMessage = await page.waitForEvent('console');
+    void chainedPage; void chainedContext; void consoleMessage; void pageConsole;
     const cookie: import('flashwright').SetCookie = { name: 'typed', value: 'value', url: 'https://example.test' };
     await context.addCookies([cookie]);
     const cookies: import('flashwright').Cookie[] = await context.cookies(['https://example.test']);
@@ -143,7 +164,7 @@ const evidence = {
   package: packed[0].filename, archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
   consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH,
   driverSha256: createHash('sha256').update(await readFile(environment.FLASHWRIGHT_DRIVER_PATH)).digest('hex'),
-  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
 const destination = `compatibility/evidence/packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`;

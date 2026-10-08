@@ -30,7 +30,9 @@
       "cookies with URL filtering",
       "addCookies including Chromium partition keys",
       "clearCookies with name/domain/path string or RegExp filters",
-      "storageState with atomic path output and exact UTF-16 localStorage"
+      "storageState with atomic path output and exact UTF-16 localStorage",
+      "live console events including future pages and same-process child frames",
+      "waitForEvent for console, page and close"
     ],
     "page": [
       "context",
@@ -57,7 +59,8 @@
       "reference focus/visibility defaults across multiple open pages",
       "screenshot returning a Buffer with optional atomic file output",
       "pageerror events and typed on/once/waitForEvent for main-page and same-process child-frame exceptions",
-      "evaluateHandle with JSHandle or ElementHandle identity"
+      "evaluateHandle with JSHandle or ElementHandle identity",
+      "live console events and waitForEvent(console) with native JSHandle arguments"
     ],
     "evaluation": [
       "expression strings",
@@ -171,6 +174,16 @@
       "independent property-reference disposal",
       "primitive handles across live pages and after navigation",
       "detached DOM identity without rebinding to replacements"
+    ],
+    "console": [
+      "type, text and pinned handle previews",
+      "args with live original-context JSHandle or ElementHandle references",
+      "location with url, line/column and lineNumber/columnNumber aliases",
+      "timestamp, page identity and null worker in the supported scope",
+      "page listeners before context listeners with shared message identity",
+      "on/addListener/once/prependListener/prependOnceListener/off/removeListener/removeAllListeners without async policies",
+      "browser log entries without argument handles",
+      "safe disposal after console.clear invalidates console objects"
     ]
   },
   "implementation": {
@@ -209,7 +222,10 @@
     "pageErrors": "Native Error name/message/stack follow pinned Chromium formatting. Original event JSON preserves exact UTF-16 through bounded Rust/Node framing; no renderer callback or retained history is added. Exceptions are routed only to live published pages by browser/session identity. Shared waits remain independent of pending evaluations and remove their listeners on settlement. Workers, out-of-process frames, context error events and pageErrors history remain outside this slice.",
     "pageErrorVerification": "All 31 native macOS core groups pass, including 58 Rust tests and 65 lifecycle cases. Seven focused Node22/headless-shell groups and ten focused Linux amd64-emulation groups pass at the same 191 source hashes. The final three diagnostic differentials match all 20 error cases and nine lifecycle checks exactly against Playwright 1.60.0. Packed ESM/CommonJS consumers preserve Error inference, and oversized exceptions fail with ResourceLimitError and release owned resources. This is functional evidence only; a full current Linux core and native Linux/performance/release gates remain open. See compatibility/evidence/diagnostics-checkpoint-2026-10-08.json",
     "handles": "Object references remain in their original page/frame/unique context. Primitive values survive navigation and may cross live pages in the same engine. Destroyed object contexts free native slots; explicit disposal is idempotent. Property handles own separate native references and remain alive after parent or sibling disposal. New allocations are grouped privately, published only after reply encoding, and discarded on cancellation, output rejection or late caller success. At most 4096 retained or pending handles per page. Exhaustion rejects before user evaluation. Incomplete property allocation rolls back its private group. Ordinary CDP property replies retain their 8 MiB cap; application results obey negotiated bytes/depth/nodes. Cleanup has a separate 500 ms recovery budget and retires the affected page when its pending allocation cannot be recovered safely. SPECS S4.l: preserve primitive BigInt values. Pinned Playwright 1.60.0 converts its Chromium BigInt handle to undefined. Creation preview, jsonValue, argument passing and receiver evaluation are recorded separately, never counted as equal-result conformance or a speedup.",
-    "handleVerification": "All 33 native macOS core groups pass, including 62 Rust tests and 73 lifecycle cases. Ten focused Node22/headless-shell groups and thirteen focused Linux amd64-emulation groups pass at the same 199 source hashes. The three final handle differentials match nine shared groups, including ten primitive cases, and retain the S4.l BigInt difference separately. Seven native handle lifecycle/publication cases and all five caller-deadline allocation cases pass. Packed ESM/CommonJS consumers preserve nested handle inference, property types, DOM subtypes and frame evaluation. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open. See compatibility/evidence/handles-checkpoint-2026-10-08.json"
+    "handleVerification": "All 33 native macOS core groups pass, including 62 Rust tests and 73 lifecycle cases. Ten focused Node22/headless-shell groups and thirteen focused Linux amd64-emulation groups pass at the same 199 source hashes. The three final handle differentials match nine shared groups, including ten primitive cases, and retain the S4.l BigInt difference separately. Seven native handle lifecycle/publication cases and all five caller-deadline allocation cases pass. Packed ESM/CommonJS consumers preserve nested handle inference, property types, DOM subtypes and frame evaluation. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open. See compatibility/evidence/handles-checkpoint-2026-10-08.json",
+    "console": "Apply subscription controls in driver acceptance order. All EventEmitter registration/removal forms update capture; page listeners run before context listeners with the same message and argument objects. Evaluation replies wait for preceding browser events to be processed, without an extra browser command. Context subscriptions include future pages and main-world same-process child frames. Retain the original execution context and remote reference without installing an evaluation helper during capture. Console references use individual releases rather than Chromium's shared console group. Property and evaluation results use separate private groups. Chromium console.clear invalidates its own object arguments; later disposal recognizes already-released references and preserves the page and unrelated private handles. At most 4096 retained/pending public handles per page. Unobserved or discarded in-flight argument references enter a separate bounded 4096-ID queue, released in batches of 64. This background queue has no hidden application timeout. Unrepresentable events and exhausted capacity deliver a bounded originating global error before the stream closes and owned resources are released.",
+    "consoleVerification": "All 35 native macOS core groups pass, including 65 Rust tests and 82 lifecycle cases. Sixteen focused Node22/headless-shell groups and nineteen focused Linux amd64-emulation groups pass at the same 205 source hashes. Console and handle differentials match their shared reference outcomes on all three configurations, with the S4.l BigInt difference retained separately. Eight native console cases cover ordering, ownership, long-task cleanup, clear invalidation, capacity and publication limits. Fresh packed ESM/CommonJS consumers preserve console callback inference and live handles. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open. See compatibility/evidence/console-checkpoint-2026-10-08.json",
+    "guardianCleanup": "The watchdog gives newly promoted orphan owners a fresh grace interval within its unchanged total cleanup bound. Guardian diagnostic writes tolerate a closed stderr pipe instead of panicking before browser/profile cleanup. A deterministic watchdog regression, a broken-diagnostic-pipe browser case and complete real watchdog cases pass; failed earlier attempts and restorative profile recovery are retained in the checkpoint."
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -271,7 +287,11 @@
     "compatibility/m2/handles.mjs",
     "compatibility/m1/test_handles.py",
     "tools/run-handle-tests.mjs",
-    "tools/record-handle-provenance.mjs"
+    "tools/record-handle-provenance.mjs",
+    "compatibility/m2/console.mjs",
+    "compatibility/m1/test_console.py",
+    "tools/run-console-tests.mjs",
+    "tools/record-console-provenance.mjs"
   ],
   "limitations": [
     "No platform runtime publication or automatic driver acquisition; npm consumers provide an explicit compiled driver path",
@@ -295,6 +315,7 @@
     "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open.",
     "Screenshot preparation in out-of-process frames is not implemented; only unmodified capture is supported there. Images are limited to 32767 pixels on each axis, 16777216 total pixels and the negotiated encoded attachment bound (32 MiB by default). Screenshot cleanup has an independent bounded budget and can retire a page when restoration is uncertain. Native viewport setup changed in this implementation, so previous timing observations do not apply to this binary.",
     "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. Native Linux, full artifact/runner coverage, platform packaging and release gates remain open.",
-    "ElementHandle-specific actions/reads remain typed unsupported; use a Locator for implemented operations. Handles can retain and evaluate Maps, functions and symbols, but jsonValue for those classes, Error/typed-array serialization, cross-context element adoption and out-of-process frame evaluation remain unsupported. Handle slots are capped at 4096 per page, including pending allocations. No new performance result applies to this binary."
+    "ElementHandle-specific actions/reads remain typed unsupported; use a Locator for implemented operations. Handles can retain and evaluate Maps, functions and symbols, but jsonValue for those classes, Error/typed-array serialization, cross-context element adoption and out-of-process frame evaluation remain unsupported. Handle slots are capped at 4096 per page, including pending allocations. No new performance result applies to this binary.",
+    "Console/error history, worker and out-of-process frame console delivery, and async removeAllListeners behavior remain outside this slice. Async listener-removal options reject explicitly. Console references share the 4096 public handle limit and require disposal; unobserved references use a separate bounded background queue. Native Linux and new performance claims remain open."
   ]
 }

@@ -18,6 +18,7 @@ pub(crate) struct PageState {
     pub evaluation_runtimes: Mutex<HashMap<String, Arc<super::evaluation::EvaluationRuntime>>>,
     pub handles: Mutex<HashMap<String, super::handles::Handle>>,
     pub handle_slots: Arc<tokio::sync::Semaphore>,
+    pub console_cleanup: Mutex<super::console::ConsoleCleanup>,
     pub native_input: tokio::sync::Mutex<()>,
     pub screenshots: tokio::sync::Mutex<()>,
 }
@@ -38,6 +39,7 @@ pub(crate) struct DocumentState {
     pub failure: Option<ErrorRecord>,
     pub sequence: u64,
     pub published: bool,
+    pub console_enabled: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -84,6 +86,7 @@ impl Default for PageState {
             evaluation_runtimes: Mutex::new(HashMap::new()),
             handles: Mutex::new(HashMap::new()),
             handle_slots: Arc::new(tokio::sync::Semaphore::new(super::handles::MAXIMUM_HANDLES)),
+            console_cleanup: Mutex::new(super::console::ConsoleCleanup::default()),
             native_input: tokio::sync::Mutex::new(()),
             screenshots: tokio::sync::Mutex::new(()),
         }

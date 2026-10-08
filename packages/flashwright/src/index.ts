@@ -1,4 +1,7 @@
 import { EventEmitter } from 'node:events';
+import { ConsoleEmitter, ConsoleMessage, consoleMessage } from './console.js';
+export { ConsoleMessage } from './console.js';
+export type { ConsoleMessageType } from './console.js';
 import { JSHandle, ElementHandle, receivedHandles, encodeEvaluationArgument, type Unboxed, type SmartHandle } from './handles.js';
 import { pageError } from './page-errors.js';
 import { prepareScreenshot, type PageScreenshotOptions } from './screenshots.js';
@@ -34,7 +37,8 @@ export interface ViewportSize { width: number; height: number }
 export interface BrowserContextOptions { viewport?: ViewportSize | null; baseURL?: string; storageState?: StorageState | string }
 export interface NavigationOptions { timeout?: number; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit'; referer?: string }
 interface PageInitialization { identifier: string; frames: FrameSnapshot[]; mainFrame: string }
-interface PageEvents { response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
+interface ContextEvents { page: Page; close: BrowserContext; console: ConsoleMessage }
+interface PageEvents { console: ConsoleMessage; response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
 
 
 function identifier(value: unknown): string {
@@ -125,7 +129,7 @@ export class Browser extends EventEmitter {
   }
 }
 
-export class BrowserContext extends EventEmitter {
+export class BrowserContext extends ConsoleEmitter<{ [Event in keyof ContextEvents]: [ContextEvents[Event]] }> {
   private readonly ownedPages = new Set<Page>();
   private closed = false;
   private closing: Promise<void> | undefined;
@@ -133,8 +137,15 @@ export class BrowserContext extends EventEmitter {
   private defaultTimeout = 30000;
   private defaultNavigationTimeout: number | undefined;
   constructor(private readonly client: EngineClient, private readonly identifier: string, private readonly owner: Browser, readonly viewport: ViewportSize | null, readonly baseURL: string | undefined) {
-    super();
+    super(enabled => client.setConsoleSubscription('context', identifier, enabled));
     this.unsubscribe = client.subscribeObject(identifier, event => { if (event.event === 'close' || event.event === 'transportclosed') this.didClose(); });
+  }
+  async waitForEvent<Event extends keyof ContextEvents>(event: Event, waitOptions: EventWaitOptions<ContextEvents[Event]> | ((value: ContextEvents[Event]) => boolean | Promise<boolean>) = {}): Promise<ContextEvents[Event]> {
+    if (!['console', 'page', 'close'].includes(event)) throw failure('UnsupportedFeatureError', 'context.waitForEvent', 'event is not implemented');
+    if (this.closed) throw failure('TargetClosedError', 'context.waitForEvent', 'context is closed');
+    const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
+    options('context.waitForEvent', configured, ['predicate', 'timeout']);
+    return waitForEvent(this, event, configured, this.timeout(), 'context.waitForEvent');
   }
   setDefaultTimeout(timeout: number): void { this.defaultTimeout = validateTimeout(timeout, 'context.setDefaultTimeout'); }
   setDefaultNavigationTimeout(timeout: number): void { this.defaultNavigationTimeout = validateTimeout(timeout, 'context.setDefaultNavigationTimeout'); }
@@ -200,7 +211,7 @@ export class BrowserContext extends EventEmitter {
   }
 }
 
-export class Page extends EventEmitter<{ [Event in keyof PageEvents]: [PageEvents[Event]] }> {
+export class Page extends ConsoleEmitter<{ [Event in keyof PageEvents]: [PageEvents[Event]] }> {
   readonly keyboard = new Keyboard(this);
   private closed = false;
   private closing: Promise<void> | undefined;
@@ -213,7 +224,7 @@ export class Page extends EventEmitter<{ [Event in keyof PageEvents]: [PageEvent
   private defaultTimeout: number | undefined;
   private defaultNavigationTimeout: number | undefined;
   constructor(private readonly client: EngineClient, private readonly identifier: string, private readonly owner: BrowserContext, private readonly ownsContext: boolean, initialization: PageInitialization) {
-    super();
+    super(enabled => client.setConsoleSubscription('page', identifier, enabled));
     this.mainFrameIdentifier = initialization.mainFrame;
     for (const snapshot of initialization.frames) this.updateFrame(snapshot);
     this.unsubscribe = client.subscribeObject(identifier, ({ event, parameters }) => {
@@ -235,6 +246,18 @@ export class Page extends EventEmitter<{ [Event in keyof PageEvents]: [PageEvent
         const request = this.requestFor(details.request); request.didFail(details.errorText); this.emit(event, request);
       } else if (event === 'load' || event === 'domcontentloaded') this.emit(event, this);
       else if (event === 'pageerror') this.emit('pageerror', pageError(parameters));
+      else if (event === 'console') {
+        if (!this.listenerCount('console') && !this.owner.listenerCount('console')) {
+          const group = (parameters as { group?: unknown })?.group;
+          if (typeof group === 'string') this.client.discardConsoleArguments(this.identifier, group);
+          return;
+        }
+        let message: ConsoleMessage;
+        try { message = consoleMessage(this, this.client, this.identifier, parameters); }
+        catch (error) { this.client.rejectConsoleProtocol(error); return; }
+        this.emit('console', message);
+        this.owner.emit('console', message);
+      }
     });
   }
   private updateFrame(snapshot: FrameSnapshot): Frame {
@@ -350,7 +373,7 @@ export class Page extends EventEmitter<{ [Event in keyof PageEvents]: [PageEvent
     await this.client.request('page.waitForLoadState', { page: this.identifier, state }, validateTimeout(waitOptions.timeout ?? this.navigationTimeout(), 'page.waitForLoadState'));
   }
   async waitForEvent<Event extends keyof PageEvents>(event: Event, waitOptions: EventWaitOptions<PageEvents[Event]> | ((value: PageEvents[Event]) => boolean | Promise<boolean>) = {}): Promise<PageEvents[Event]> {
-    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
+    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror', 'console'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
     this.checkOpen('page.waitForEvent');
     const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
     options('page.waitForEvent', configured, ['predicate', 'timeout']);

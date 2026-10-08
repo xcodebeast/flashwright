@@ -88,12 +88,24 @@ def cleanup_owned_processes(observe, root_process):
             time.sleep(min(0.05, max(0, deadline - time.monotonic())))
             remaining = observe()
 
+    def live_owners():
+        live = {process: details for process, details in remaining.items() if not details["state"].startswith(("Z", "X"))}
+        return {process: details for process, details in live.items() if details["parent"] not in live}
+
     root_details = remaining.get(root_process)
+    previous_owners = live_owners()
     if not root_details or root_details["state"].startswith(("Z", "X")):
         wait_until(min(staged_deadline, time.monotonic() + CLEANUP_GRACE_SECONDS))
     while remaining and time.monotonic() < staged_deadline:
-        live = {process: details for process, details in remaining.items() if not details["state"].startswith(("Z", "X"))}
-        owners = {process: details for process, details in live.items() if details["parent"] not in live}
+        owners = live_owners()
+        promoted = any(process not in previous_owners or details["started"] != previous_owners[process]["started"]
+                       for process, details in owners.items())
+        previous_owners = owners
+        if promoted:
+            # A parent can exit near the end of its own signal grace. Its child
+            # needs a fresh interval to finish cleanup after observing that death.
+            wait_until(min(staged_deadline, time.monotonic() + CLEANUP_GRACE_SECONDS))
+            continue
         signal_processes(owners, signal.SIGTERM)
         wait_until(min(staged_deadline, time.monotonic() + CLEANUP_GRACE_SECONDS))
         signals_before_kill = len(signals)

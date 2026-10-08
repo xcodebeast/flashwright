@@ -1,6 +1,6 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::os::fd::{FromRawFd, OwnedFd, RawFd};
 use std::os::unix::process::CommandExt;
 use std::process::{Command, Stdio};
@@ -58,7 +58,8 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         return Err("browser launch policy requires exactly one owned profile argument".into());
     }
     if std::env::var_os("FLASHWRIGHT_DEBUG_BROWSER").is_some() {
-        eprintln!(
+        let _ = writeln!(
+            std::io::stderr(),
             "flashwright:browser <launching> {}",
             serde_json::json!({
                 "executable": executable.to_string_lossy(),
@@ -85,7 +86,8 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
     drop(command);
     let browser_group = Pid::from_raw(browser.id() as i32);
     if trace_ownership {
-        eprintln!(
+        let _ = writeln!(
+            std::io::stderr(),
             "guardian {} owns browser {browser_group} profile {}",
             std::process::id(),
             profile.path().display()
@@ -122,7 +124,8 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         match events.recv_timeout(Duration::from_millis(50)) {
             Ok(node_pipe) => {
                 if trace_ownership {
-                    eprintln!(
+                    let _ = writeln!(
+                        std::io::stderr(),
                         "guardian {} lost {} liveness",
                         std::process::id(),
                         if node_pipe { "node" } else { "driver" }
@@ -146,7 +149,8 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         }
     }
     if trace_ownership {
-        eprintln!(
+        let _ = writeln!(
+            std::io::stderr(),
             "guardian {} removing profile {}",
             std::process::id(),
             profile.path().display()
@@ -154,7 +158,11 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
     }
     profile.close()?;
     if trace_ownership {
-        eprintln!("guardian {} removed profile", std::process::id());
+        let _ = writeln!(
+            std::io::stderr(),
+            "guardian {} removed profile",
+            std::process::id()
+        );
     }
     Ok(())
 }

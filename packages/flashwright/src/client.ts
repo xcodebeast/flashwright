@@ -9,6 +9,7 @@ import { AttachmentReceiver } from './attachments.js';
 export const requiredCapabilities = [
   'browser.launch', 'browser.close', 'browser.newContext', 'context.newPage', 'context.close',
   'page.close', 'page.evaluate', 'page.event.pageerror', 'page.screenshot', 'page.goto', 'page.waitForLoadState', 'response.body',
+  'page.console.subscribe', 'context.console.subscribe',
   'locator.run', 'assertion.run', 'keyboard.press',
   'page.evaluateHandle', 'frame.evaluate', 'frame.evaluateHandle', 'handle.evaluate', 'handle.evaluateHandle',
   'handle.jsonValue', 'handle.getProperty', 'handle.getProperties', 'handle.dispose', 'handle.discard',
@@ -138,6 +139,19 @@ export class EngineClient {
 
   retain(): void { this.references++; }
   isClosed(): boolean { return this.closed || this.failure !== undefined; }
+
+  setConsoleSubscription(owner: 'page' | 'context', identifier: string, enabled: boolean): void {
+    void this.request(`${owner}.console.subscribe`, { [owner]: identifier, enabled }).catch(error => this.consoleControlFailure(error));
+  }
+  discardConsoleArguments(page: string, group: string): void {
+    void this.request('handle.discard', { page, group }).catch(error => this.consoleControlFailure(error));
+  }
+  rejectConsoleProtocol(error: unknown): void {
+    this.fail(error instanceof Error ? error : failure('ProtocolError', 'console', String(error)));
+  }
+  private consoleControlFailure(error: Error): void {
+    if (!['TargetClosedError', 'PageCrashedError', 'BrowserDisconnectedError'].includes(error.name)) this.fail(error);
+  }
 
   async release(): Promise<void> {
     if (--this.references > 0) return;

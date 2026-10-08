@@ -172,12 +172,16 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         };
                         let (sender, receiver) = watch::channel(false);
                         cancellations.insert(request_id, sender);
+                        let operation = Operation::new(method.clone(), deadline, receiver);
+                        let control_result = engine.execute_control(&method, &parameters, &operation);
                         let engine = engine.clone();
                         let limits = limits.clone();
                         let outgoing = outgoing.clone();
                         operations.spawn(async move {
-                            let operation = Operation::new(method.clone(), deadline, receiver);
-                            let result = engine.execute(&method, parameters, &operation).await;
+                            let result = match control_result {
+                                Some(result) => result.map(OperationResult::Value),
+                                None => engine.execute(&method, parameters, &operation).await,
+                            };
                             let result = match result {
                                 Ok(OperationResult::Binary(attachment)) => {
                                     let reply = attachments::stream_attachment(request_id, attachment, &operation, &outgoing, &limits).await;

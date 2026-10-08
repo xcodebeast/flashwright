@@ -119,6 +119,11 @@ impl Engine {
             }
             result => result?,
         };
+        // Chromium sends console events before this reply, but the separate event
+        // consumer can still be applying them when the command waiter wakes.
+        operation
+            .wait(prepared.browser.connection.synchronize_events())
+            .await?;
         evaluation_result(method, &result)
     }
 
@@ -190,13 +195,16 @@ impl Engine {
             .map(|_| identifier(&parameters, "frame", method))
             .transpose()?;
         let runtime = match &receiver {
-            Some(receiver) => receiver.runtime.clone(),
+            Some(receiver) => {
+                self.context_evaluation_runtime(&page, &browser, &receiver.context)?
+            }
             None => {
                 self.evaluation_runtime(&page, &browser, frame, operation)
                     .await?
             }
         };
-        let handles = self.handle_arguments(&page_identifier, &runtime, &references, method)?;
+        let handles =
+            self.handle_arguments(&page_identifier, &runtime.context, &references, method)?;
         let receiver_index = receiver.map(|_| handles.arguments.len() - 1);
         let runtime_object = ready_runtime(&page, &runtime, operation, method).await?;
         Ok(PreparedEvaluation {
@@ -260,10 +268,25 @@ impl Engine {
                 }
             })
             .await?;
+        self.context_evaluation_runtime(page, browser, &context)
+    }
+
+    /// Console handles retain a context without installing a renderer helper until evaluated.
+    pub(crate) fn context_evaluation_runtime(
+        &self,
+        page: &Page,
+        browser: &Arc<Chromium>,
+        context: &ExecutionContext,
+    ) -> Result<Arc<EvaluationRuntime>, ErrorRecord> {
+        let state = page.state.state.lock().unwrap();
+        state.check(METHOD)?;
+        if state.main_worlds.get(&context.frame_identifier) != Some(context) {
+            return Err(context_destroyed());
+        }
         let mut cached = page.state.evaluation_runtimes.lock().unwrap();
         if let Some(runtime) = cached
             .get(&context.frame_identifier)
-            .filter(|runtime| runtime.context == context)
+            .filter(|runtime| runtime.context == *context)
         {
             return Ok(runtime.clone());
         }
@@ -275,6 +298,7 @@ impl Engine {
         cached.insert(context.frame_identifier.clone(), runtime.clone());
         let page = page.clone();
         let browser = browser.clone();
+        let context = context.clone();
         tokio::spawn(async move {
             let result = initialize_runtime(&page, &browser, &context).await;
             sender.send_replace(Some(result));

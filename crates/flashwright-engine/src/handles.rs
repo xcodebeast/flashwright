@@ -1,7 +1,8 @@
 //! Native object references belong to their original execution context and allocation group.
 
-use super::evaluation::{EvaluationRuntime, evaluation_result};
+use super::evaluation::evaluation_result;
 use super::handle_values::{RemoteObject, RemoteProperties};
+use super::page_state::ExecutionContext;
 use super::*;
 use flashwright_browser::connection::Command;
 use tokio::sync::OwnedSemaphorePermit;
@@ -11,11 +12,12 @@ const CLEANUP_BUDGET: Duration = Duration::from_millis(500);
 
 #[derive(Clone)]
 pub(crate) struct Handle {
-    pub runtime: Arc<EvaluationRuntime>,
+    pub context: ExecutionContext,
     pub object_identifier: Option<String>,
     pub primitive: Option<Value>,
     pub element: bool,
     pub group: String,
+    pub uses_object_group: bool,
     pub published: bool,
     _reservation: Arc<OwnedSemaphorePermit>,
 }
@@ -25,6 +27,13 @@ pub(crate) struct Handle {
 pub(crate) struct HandleReference {
     pub page: String,
     pub identifier: String,
+}
+
+pub(crate) struct HandleOwner<'owner> {
+    pub context: &'owner ExecutionContext,
+    pub group: &'owner str,
+    pub uses_object_group: bool,
+    pub published: bool,
 }
 
 pub(crate) struct HandleArguments {
@@ -38,10 +47,11 @@ pub(crate) struct HandleAllocation<'owner> {
     pub page_identifier: &'owner str,
     pub page: &'owner Page,
     pub browser: &'owner Chromium,
-    pub runtime: Arc<EvaluationRuntime>,
+    pub context: ExecutionContext,
     pub operation: &'owner Operation,
     pub method: &'owner str,
     pub group: String,
+    pub uses_object_group: bool,
 }
 
 impl Engine {
@@ -61,10 +71,11 @@ impl Engine {
             page_identifier: &prepared.page_identifier,
             page: &prepared.page,
             browser: &prepared.browser,
-            runtime: prepared.runtime.clone(),
+            context: prepared.runtime.context.clone(),
             operation,
             method,
             group: self.identifier("handle-group"),
+            uses_object_group: true,
         };
         let result = async {
             operation.check()?;
@@ -147,10 +158,11 @@ impl Engine {
             page_identifier,
             page: &page,
             browser: &browser,
-            runtime: handle.runtime.clone(),
+            context: handle.context.clone(),
             operation,
             method,
             group: self.identifier("handle-group"),
+            uses_object_group: true,
         };
         let result = async {
             // An alias places all newly discovered property objects in a new group.
@@ -213,15 +225,16 @@ impl Engine {
             page_identifier,
             page: &page,
             browser: &browser,
-            runtime: handle.runtime.clone(),
+            context: handle.context.clone(),
             operation,
             method,
             group: handle.group.clone(),
+            uses_object_group: handle.uses_object_group,
         };
         if !allocation.context_is_alive() {
             return Ok(Value::Null);
         }
-        let (release_method, release_parameters) = if last_in_group {
+        let (release_method, release_parameters) = if last_in_group && handle.uses_object_group {
             (
                 "Runtime.releaseObjectGroup",
                 json!({ "objectGroup": handle.group }),
@@ -245,7 +258,9 @@ impl Engine {
             Err(error) => Err(error.clone()),
         };
         if let Err(mut error) = result {
-            if !allocation.context_is_alive() {
+            if !allocation.context_is_alive()
+                || (release_method == "Runtime.releaseObject" && remote_reference_is_gone(&error))
+            {
                 return Ok(Value::Null);
             }
             // A cancelled wait leaves its receiver unread; other failures may have
@@ -270,6 +285,12 @@ impl Engine {
             error.cleanup = Some(
                 match cleanup {
                     Ok(Ok(_)) => "handleDisposed",
+                    Ok(Err(error))
+                        if release_method == "Runtime.releaseObject"
+                            && remote_reference_is_gone(&error) =>
+                    {
+                        "handleDisposed"
+                    }
                     _ => allocation.retire_page().await,
                 }
                 .into(),
@@ -280,12 +301,15 @@ impl Engine {
     }
 
     pub(super) async fn discard_handle_group(
-        &self,
+        self: &Arc<Self>,
         parameters: Value,
     ) -> Result<Value, ErrorRecord> {
         validate_keys("handle.discard", &parameters, &["page", "group"])?;
         identifier(&parameters, "page", "handle.discard")?;
         identifier(&parameters, "group", "handle.discard")?;
+        if self.discard_console_group(&parameters)? {
+            return Ok(Value::Null);
+        }
         self.discard_handle_allocation(&parameters).await;
         Ok(Value::Null)
     }
@@ -324,10 +348,11 @@ impl Engine {
             page_identifier,
             page: &page,
             browser: &browser,
-            runtime: handle.runtime,
+            context: handle.context,
             operation: &operation,
             method: "handle.discard",
             group: group.to_owned(),
+            uses_object_group: handle.uses_object_group,
         };
         Some(allocation.rollback().await)
     }
@@ -358,10 +383,7 @@ impl Engine {
                 .filter(|handle| handle.group == group)
                 .ok_or_else(|| closed("handle.publish"))?;
             if handle.object_identifier.is_some()
-                && state
-                    .main_worlds
-                    .get(&handle.runtime.context.frame_identifier)
-                    != Some(&handle.runtime.context)
+                && state.main_worlds.get(&handle.context.frame_identifier) != Some(&handle.context)
             {
                 return Err(evaluation::context_destroyed());
             }
@@ -402,7 +424,7 @@ impl Engine {
     pub(crate) fn handle_arguments(
         &self,
         page_identifier: &str,
-        runtime: &EvaluationRuntime,
+        context: &ExecutionContext,
         references: &[HandleReference],
         method: &str,
     ) -> Result<HandleArguments, ErrorRecord> {
@@ -418,7 +440,7 @@ impl Engine {
                 result.arguments.push(json!({ "value": primitive }));
                 result.primitive.push(true);
             } else {
-                if reference.page != page_identifier || handle.runtime.context != runtime.context {
+                if reference.page != page_identifier || handle.context != *context {
                     let (code, message) = if handle.element {
                         (
                             ErrorCode::UnsupportedFeature,
@@ -442,6 +464,50 @@ impl Engine {
         Ok(result)
     }
 
+    pub(crate) fn retain_handle(
+        &self,
+        page: &Page,
+        owner: HandleOwner<'_>,
+        value: RemoteObject,
+        reservation: OwnedSemaphorePermit,
+        method: &str,
+    ) -> Result<Value, ErrorRecord> {
+        let HandleOwner {
+            context,
+            group,
+            uses_object_group,
+            published,
+        } = owner;
+        let state = page.state.state.lock().unwrap();
+        state.check(method)?;
+        if state.main_worlds.get(&context.frame_identifier) != Some(context) {
+            return Err(evaluation::context_destroyed());
+        }
+        let primitive = value.primitive(method)?;
+        let element = value.subtype.as_deref() == Some("node");
+        let identifier = self.identifier("handle");
+        let preview = if element {
+            Some("JSHandle@node".encode_utf16().collect::<Vec<_>>())
+        } else {
+            value.description.map(|text| text.0)
+        };
+        let initialization = json!({ "identifier": identifier, "primitive": primitive, "previewUnits": preview, "element": element, "frame": context.frame_identifier });
+        page.state.handles.lock().unwrap().insert(
+            identifier,
+            Handle {
+                context: context.clone(),
+                object_identifier: value.object_id,
+                primitive,
+                element,
+                group: group.to_owned(),
+                published,
+                uses_object_group,
+                _reservation: Arc::new(reservation),
+            },
+        );
+        Ok(initialization)
+    }
+
     pub(crate) fn reserve_handle(
         &self,
         page: &Page,
@@ -463,6 +529,14 @@ impl Engine {
 
 impl HandleAllocation<'_> {
     async fn finish(&self, result: Result<Value, ErrorRecord>) -> Result<Value, ErrorRecord> {
+        let result = match result {
+            Ok(value) => self
+                .operation
+                .wait(self.browser.connection.synchronize_events())
+                .await
+                .map(|()| value),
+            Err(error) => Err(error),
+        };
         match result {
             Ok(value) => Ok(value),
             Err(mut error) => {
@@ -478,10 +552,7 @@ impl HandleAllocation<'_> {
     fn context_is_alive(&self) -> bool {
         let state = self.page.state.state.lock().unwrap();
         state.failure.is_none()
-            && state
-                .main_worlds
-                .get(&self.runtime.context.frame_identifier)
-                == Some(&self.runtime.context)
+            && state.main_worlds.get(&self.context.frame_identifier) == Some(&self.context)
     }
 
     /// Keep every allocating reply owned until it completes or the original page is retired.
@@ -495,7 +566,7 @@ impl HandleAllocation<'_> {
             .wait(
                 self.page
                     .state
-                    .while_execution_context(&self.runtime.context, command.response()),
+                    .while_execution_context(&self.context, command.response()),
             )
             .await;
         if let Err(mut error) = result {
@@ -624,60 +695,58 @@ impl HandleAllocation<'_> {
         reservation: OwnedSemaphorePermit,
     ) -> Result<Value, ErrorRecord> {
         self.operation.check()?;
-        let state = self.page.state.state.lock().unwrap();
-        state.check(self.method)?;
-        if state
-            .main_worlds
-            .get(&self.runtime.context.frame_identifier)
-            != Some(&self.runtime.context)
-        {
-            return Err(evaluation::context_destroyed());
-        }
-        let primitive = value.primitive(self.method)?;
-        let element = value.subtype.as_deref() == Some("node");
-        let identifier = self.engine.identifier("handle");
-        let preview = if element {
-            Some("JSHandle@node".encode_utf16().collect::<Vec<_>>())
-        } else {
-            value.description.map(|text| text.0)
-        };
-        let initialization = json!({ "identifier": identifier, "primitive": primitive, "previewUnits": preview, "element": element, "frame": self.runtime.context.frame_identifier });
-        self.page.state.handles.lock().unwrap().insert(
-            identifier,
-            Handle {
-                runtime: self.runtime.clone(),
-                object_identifier: value.object_id,
-                primitive,
-                element,
-                group: self.group.clone(),
+        self.engine.retain_handle(
+            self.page,
+            HandleOwner {
+                context: &self.context,
+                group: &self.group,
+                uses_object_group: self.uses_object_group,
                 published: false,
-                _reservation: Arc::new(reservation),
             },
-        );
-        Ok(initialization)
+            value,
+            reservation,
+            self.method,
+        )
     }
 
     pub async fn rollback(&self) -> &'static str {
-        self.page
+        let discarded: Vec<_> = self
+            .page
             .state
             .handles
             .lock()
             .unwrap()
-            .retain(|_, handle| handle.group != self.group);
+            .extract_if(|_, handle| handle.group == self.group)
+            .map(|(_, handle)| handle)
+            .collect();
         if !self.context_is_alive() {
             return "handleContextDestroyed";
         }
-        match timeout(
-            CLEANUP_BUDGET,
-            self.browser.connection.call(
-                "Runtime.releaseObjectGroup",
-                json!({ "objectGroup": self.group }),
-                Some(&self.page.session_identifier),
-            ),
-        )
-        .await
-        {
-            Ok(Ok(_)) => "handleGroupDisposed",
+        let cleanup = async {
+            if self.uses_object_group {
+                self.browser
+                    .connection
+                    .call(
+                        "Runtime.releaseObjectGroup",
+                        json!({ "objectGroup": self.group }),
+                        Some(&self.page.session_identifier),
+                    )
+                    .await
+                    .map(|_| ())
+            } else {
+                release_object_references(
+                    self.browser,
+                    self.page,
+                    &discarded
+                        .iter()
+                        .filter_map(|handle| handle.object_identifier.clone())
+                        .collect::<Vec<_>>(),
+                )
+                .await
+            }
+        };
+        match timeout(CLEANUP_BUDGET, cleanup).await {
+            Ok(Ok(())) => "handleGroupDisposed",
             _ if !self.context_is_alive() => "handleContextDestroyed",
             _ => self.retire_page().await,
         }
@@ -713,4 +782,41 @@ impl HandleAllocation<'_> {
             outcome => outcome,
         }
     }
+}
+
+/// Release only the remote IDs owned by an event; never clear Chromium's shared console group.
+pub(crate) async fn release_object_references(
+    browser: &Chromium,
+    page: &Page,
+    identifiers: &[String],
+) -> Result<(), ErrorRecord> {
+    for chunk in identifiers.chunks(64) {
+        let mut commands = browser.connection.start_commands(
+            "Runtime.releaseObject",
+            chunk
+                .iter()
+                .map(|identifier| json!({ "objectId": identifier }))
+                .collect(),
+            Some(&page.session_identifier),
+        )?;
+        for command in &mut commands {
+            if let Err(error) = command.response().await
+                && !remote_reference_is_gone(&error)
+            {
+                return Err(error);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Navigation and console.clear can release the original reference before explicit disposal.
+fn remote_reference_is_gone(error: &ErrorRecord) -> bool {
+    error.browser_error_code == Some(-32000)
+        && (error
+            .message
+            .contains("Cannot find context with specified id")
+            || error
+                .message
+                .contains("Could not find object with given id"))
 }
