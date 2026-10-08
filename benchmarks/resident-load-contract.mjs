@@ -7,8 +7,24 @@ export function loadEngineConfiguration(mode, diagnostic = false) {
   return { residentAssertions: mode === 'flashwright-on', conditionInstrumentation: diagnostic };
 }
 
+export function loadExecutionBudget(configuration, functionalConformance = false) {
+  return functionalConformance ? configuration.functionalConformance : {
+    assertionTimeoutMilliseconds: configuration.assertionTimeoutMilliseconds, watchdogTimeoutMilliseconds: 45000,
+  };
+}
+
 /** Require fixed application work, complete public assertions and independently sampled resources. */
-export function verifyResidentLoad(result, configuration, launchPolicy, executablePath, diagnostic = false) {
+export function verifyResidentLoad(result, configuration, launchPolicy, executablePath, diagnostic = false, functionalConformance = false) {
+  assert.equal(result.resources.timeoutSeconds, loadExecutionBudget(configuration, functionalConformance).watchdogTimeoutMilliseconds / 1000);
+  if (configuration.functionalConformance) {
+    assert.equal(result.schemaVersion, 2);
+    assert.equal(result.executionPurpose, functionalConformance ? 'functional-conformance' : 'comparison');
+    assert.equal(result.assertionTimeoutMilliseconds, loadExecutionBudget(configuration, functionalConformance).assertionTimeoutMilliseconds);
+  } else {
+    // Retained pre-profile comparisons used the same fixed production deadline.
+    assert.equal(functionalConformance, false);
+    assert.equal(result.schemaVersion, undefined);
+  }
   assert.ok(loadModes.includes(result.mode));
   assert.equal(result.engine, result.mode === 'playwright' ? 'playwright' : 'flashwright');
   assert.deepEqual(result.engineConfiguration, loadEngineConfiguration(result.mode, diagnostic));
@@ -51,8 +67,8 @@ export function verifyResidentLoad(result, configuration, launchPolicy, executab
     assert.equal(result.mode, 'flashwright-on');
     assert.ok(result.diagnosticScope.includes('not production comparison'));
     const metrics = result.conditionMetrics;
-    for (const name of ['activeConditions', 'observedRoots', 'queuedConditions', 'queuedDiscovery']) assert.equal(metrics[name], 0, name);
-    for (const name of ['animationFrameScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'fallbackTimerScheduled', 'flushChannelOpen', 'flushMicrotaskScheduled', 'flushTaskScheduled']) assert.equal(metrics[name], false, name);
+    for (const name of ['activeConditions', 'observedRoots', 'queuedConditions', 'queuedDiscovery', 'cachedSelectorPrefixes']) assert.equal(metrics[name], 0, name);
+    for (const name of ['animationFrameScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'fallbackTimerScheduled', 'flushChannelOpen', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'selectorBatchActive']) assert.equal(metrics[name], false, name);
     assert.ok(metrics.predicateEvaluations >= conditionCount + 2);
     assert.ok(metrics.discoveryPasses > 0 && metrics.discoveryVisits > 0);
     assert.equal(metrics.fallbackChecks, metrics.animationFrameChecks + metrics.timerFallbackChecks);

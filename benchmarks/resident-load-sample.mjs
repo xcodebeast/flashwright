@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startResidentLoadFixture } from './resident-load-fixture.mjs';
 import { readEngineConfiguration } from '../tools/engine-configuration.mjs';
+import { loadExecutionBudget } from './resident-load-contract.mjs';
 
 const configuration = JSON.parse(await readFile(new URL('./configurations/resident-load.json', import.meta.url), 'utf8'));
-const [mode, workload, count, group] = process.argv.slice(2);
+const [mode, workload, count, group, executionPurpose = 'comparison'] = process.argv.slice(2);
+assert.ok(['comparison', 'functional-conformance'].includes(executionPurpose));
+const budget = loadExecutionBudget(configuration, executionPurpose === 'functional-conformance');
 const scenario = { workload, conditionCount: Number(count) };
 assert.ok(['playwright', 'flashwright-off', 'flashwright-on'].includes(mode));
 assert.ok(configuration.workloads.includes(workload));
@@ -24,7 +27,8 @@ if (engine === 'flashwright') {
 
 const started = performance.now();
 const fixture = await startResidentLoadFixture(configuration, scenario);
-const result = { mode, engine, scenario, launchGroup: Number(group), engineConfiguration: readEngineConfiguration(),
+const result = { schemaVersion: 2, executionPurpose, assertionTimeoutMilliseconds: budget.assertionTimeoutMilliseconds,
+  mode, engine, scenario, launchGroup: Number(group), engineConfiguration: readEngineConfiguration(),
   assertionsStarted: 0, assertionsCompleted: 0, failures: [] };
 let browser;
 try {
@@ -36,8 +40,8 @@ try {
   const page = await context.newPage();
   await page.goto(fixture.origin + '/fixture');
   const property = workload === 'property-only';
-  const assertValue = (locator, expected) => property ? expect(locator).toHaveValue(expected, { timeout: configuration.assertionTimeoutMilliseconds })
-    : expect(locator).toHaveText(expected, { timeout: configuration.assertionTimeoutMilliseconds });
+  const assertValue = (locator, expected) => property ? expect(locator).toHaveValue(expected, { timeout: budget.assertionTimeoutMilliseconds })
+    : expect(locator).toHaveText(expected, { timeout: budget.assertionTimeoutMilliseconds });
   await assertValue(page.locator('.probe').nth(configuration.elementCount - 1), 'before');
   result.warmupAssertions = 1;
   result.preparationMilliseconds = performance.now() - started;
@@ -67,7 +71,7 @@ try {
     const request = JSON.stringify({ selector: `css=.probe >> nth=${configuration.elementCount - 1}`, expectedText: [{ string: 'after', normalizeWhiteSpace: !property }] });
     const observation = await browser.client.request('assertion.run', { page: page.identifier, frame: page.mainFrame().snapshot.identifier,
       expression: property ? 'to.have.value' : 'to.have.text', isNot: false,
-      request: Array.from({ length: request.length }, (_, index) => request.charCodeAt(index)) }, configuration.assertionTimeoutMilliseconds);
+      request: Array.from({ length: request.length }, (_, index) => request.charCodeAt(index)) }, budget.assertionTimeoutMilliseconds);
     result.conditionMetrics = observation.conditionMetrics;
     result.diagnosticScope = 'Counters enabled throughout; final immediate audit adds one predicate evaluation. Timing/resources are diagnostic, not production comparison samples.';
   }

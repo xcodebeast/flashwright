@@ -1,5 +1,5 @@
 // Document-owned conditions. The engine keeps this path behind its experiment switch.
-function createConditionRegistry({ instrumentation = false, observeMutations = true } = {}) {
+function createConditionRegistry({ instrumentation = false, observeMutations = true, runSynchronousBatch = callback => callback() } = {}) {
   const conditions = new Map();
   const dirtyConditions = new Set();
   const roots = new Set();
@@ -11,10 +11,12 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   const discoveryVisitsPerTask = 512;
   const mutationVisitsPerBatch = 512;
   const fallbackMilliseconds = 100;
-  const maximumChecksPerTask = 8;
+  const fastFallbackWindowMilliseconds = 100;
+  const pendingFallbackIntervalMilliseconds = 32;
+  const maximumChecksPerTask = 32;
   const maximumCheckMillisecondsPerTask = 4;
   const events = ['input', 'change', 'focusin', 'focusout', 'resize', 'scroll', 'hashchange', 'popstate', 'visibilitychange', 'transitionrun', 'transitionend', 'animationstart', 'animationend'];
-  const counters = { predicateEvaluations: 0, discoveryPasses: 0, discoveryVisits: 0, mutationBatches: 0, mutationRecordsVisited: 0, addedNodesVisited: 0, fallbackChecks: 0, animationFrameChecks: 0, timerFallbackChecks: 0, discoveryOverflows: 0, flushTasks: 0, maximumChecksBeforeYield: 0 };
+  const counters = { predicateEvaluations: 0, discoveryPasses: 0, discoveryVisits: 0, mutationBatches: 0, mutationRecordsVisited: 0, addedNodesVisited: 0, fallbackChecks: 0, animationFrameChecks: 0, timerFallbackChecks: 0, fallbackConditionInvalidations: 0, fallbackConditionsDeferred: 0, discoveryOverflows: 0, flushTasks: 0, maximumChecksBeforeYield: 0 };
   let observer;
   let generation = 0;
   let flushQueued = false;
@@ -167,7 +169,9 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   }
 
   /** Frame callbacks catch property/CSS/animation changes; the timer covers stalled
-   * frame scheduling. Neither path assumes that a prior assertion result stays true. */
+   * frame scheduling. Short waits check each frame; long waits avoid redundant
+   * fallback work shortly after any complete check. Mutation and event wakeups
+   * remain immediate, and deadlines use their own timer. */
   function scheduleFallback() {
     if (!conditions.size) return;
     if (animationFrame === undefined) {
@@ -175,7 +179,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
         animationFrame = undefined;
         count('fallbackChecks');
         count('animationFrameChecks');
-        invalidate();
+        invalidateFallback();
         scheduleFallback();
       });
     }
@@ -184,7 +188,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
         fallbackTimer = undefined;
         count('fallbackChecks');
         count('timerFallbackChecks');
-        invalidate();
+        invalidateFallback();
         scheduleFallback();
       }, fallbackMilliseconds);
     }
@@ -226,12 +230,19 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     if (flushStartedAt === undefined) flushStartedAt = performance.now();
     scheduleFlushTask();
     pruneRoots();
+    function flushChecks(canShareSelectorQueries) {
+      while (dirtyConditions.size && hasFlushBudget()) {
+        const condition = dirtyConditions.values().next().value;
+        if (condition.canShareSelectorQueries !== canShareSelectorQueries) break;
+        dirtyConditions.delete(condition);
+        checksBeforeYield++;
+        if (instrumentation) counters.maximumChecksBeforeYield = Math.max(counters.maximumChecksBeforeYield, checksBeforeYield);
+        void evaluate(condition);
+      }
+    }
     while (dirtyConditions.size && hasFlushBudget()) {
-      const condition = dirtyConditions.values().next().value;
-      dirtyConditions.delete(condition);
-      checksBeforeYield++;
-      if (instrumentation) counters.maximumChecksBeforeYield = Math.max(counters.maximumChecksBeforeYield, checksBeforeYield);
-      void evaluate(condition);
+      if (dirtyConditions.values().next().value.canShareSelectorQueries) runSynchronousBatch(() => flushChecks(true));
+      else flushChecks(false);
     }
   }
 
@@ -255,14 +266,31 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     queueFlush();
   }
 
+  function invalidateFallback() {
+    const now = performance.now();
+    for (const condition of conditions.values()) {
+      if (now - condition.registeredAt >= fastFallbackWindowMilliseconds &&
+          now - condition.lastCheckStartedAt < pendingFallbackIntervalMilliseconds) {
+        count('fallbackConditionsDeferred');
+        continue;
+      }
+      count('fallbackConditionInvalidations');
+      condition.dirty = true;
+      if (!condition.running) dirtyConditions.add(condition);
+    }
+    queueFlush();
+  }
+
   async function evaluate(condition) {
     if (conditions.get(condition.token) !== condition) return;
-    if (performance.now() >= condition.deadline) {
+    const now = performance.now();
+    if (now >= condition.deadline) {
       finish(condition, { status: 'expired', observation: condition.observation });
       return;
     }
     condition.running = true;
     condition.dirty = false;
+    condition.lastCheckStartedAt = now;
     try {
       count('predicateEvaluations');
       const observation = await condition.check();
@@ -286,15 +314,16 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   }
 
   /** Subscribe before checking, without retaining a locator's element or truth value. */
-  function wait({ token, timeoutMilliseconds = null, isNot = false, check }) {
-    if (typeof token !== 'string' || !token || typeof check !== 'function' || typeof isNot !== 'boolean') throw new Error('Invalid condition registration');
+  function wait({ token, timeoutMilliseconds = null, isNot = false, check, canShareSelectorQueries = false }) {
+    if (typeof token !== 'string' || !token || typeof check !== 'function' || typeof isNot !== 'boolean' || typeof canShareSelectorQueries !== 'boolean') throw new Error('Invalid condition registration');
     if (timeoutMilliseconds !== null && (!Number.isFinite(timeoutMilliseconds) || timeoutMilliseconds < 0)) throw new Error('Invalid condition timeout');
     if (conditions.has(token)) throw new Error('Condition token is already registered');
     if (conditions.size >= maximumConditions) return Promise.resolve({ status: 'limit', message: 'Document condition limit exceeded' });
-    const deadline = timeoutMilliseconds === null ? Infinity : performance.now() + timeoutMilliseconds;
+    const registeredAt = performance.now();
+    const deadline = timeoutMilliseconds === null ? Infinity : registeredAt + timeoutMilliseconds;
     if (!conditions.size) begin();
     return new Promise(resolve => {
-      const condition = { token, deadline, isNot, check, resolve, observation: null, dirty: true, running: false };
+      const condition = { token, deadline, registeredAt, lastCheckStartedAt: registeredAt, isNot, check, canShareSelectorQueries, resolve, observation: null, dirty: true, running: false };
       conditions.set(token, condition);
       scheduleDeadline();
       void evaluate(condition);

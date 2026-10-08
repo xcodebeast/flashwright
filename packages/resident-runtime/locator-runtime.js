@@ -1,12 +1,42 @@
 /* The browser boundary for locator operations. This file executes only in an isolated realm. */
-function createLocatorRuntime(injected, codec, { conditionInstrumentation = false } = {}) {
+function createLocatorRuntime(injected, codec, { conditionInstrumentation = false, selectorBatchCache = true } = {}) {
   const succeeded = value => ({ status: 'success', value: codec.encode(value) });
   const retry = reason => ({ status: 'retry', reason: codec.encode(String(reason)) });
   const pointerAttempts = new Map();
   const completedPointers = new Map();
-  const conditions = createConditionRegistry({ instrumentation: conditionInstrumentation });
+  let selectorPrefixes;
+  const conditions = createConditionRegistry({ instrumentation: conditionInstrumentation,
+    runSynchronousBatch: selectorBatchCache ? runReadOnlyAssertionBatch : undefined });
+  // Optimization eligibility is separate from API support: additions stay uncached until reviewed.
+  const readOnlyAssertions = new Set(['to.have.text', 'to.have.text.array', 'to.contain.text.array', 'to.have.count',
+    'to.be.visible', 'to.be.hidden', 'to.be.enabled', 'to.be.disabled', 'to.be.checked', 'to.be.attached', 'to.be.detached',
+    'to.be.editable', 'to.be.readonly', 'to.be.empty', 'to.be.focused', 'to.have.value', 'to.have.url', 'to.have.title',
+    'to.have.attribute', 'to.have.attribute.value']);
+  const readOnlySelectorEngines = new Set(['css', 'xpath', 'xpath:light', 'role', 'text', 'text:light', 'id', 'id:light',
+    'data-testid', 'data-testid:light', 'data-test-id', 'data-test-id:light', 'data-test', 'data-test:light', 'nth', 'visible',
+    'internal:has', 'internal:has-not', 'internal:and', 'internal:or', 'internal:chain', 'internal:label', 'internal:text',
+    'internal:has-text', 'internal:has-not-text', 'internal:attr', 'internal:testid', 'internal:role', 'internal:describe', 'aria-ref']);
   const decodeRequest = units => JSON.parse(units.map(unit => String.fromCharCode(unit)).join(''));
   const expired = deadline => deadline !== null && Date.now() >= deadline;
+
+  /** Supported assertions only read the isolated DOM. Share the pinned evaluator's
+   * selector work until this synchronous stack returns, never across await or a
+   * browser task. Full predicates still run independently with their own reads. */
+  function runReadOnlyAssertionBatch(callback) {
+    const previousPrefixes = selectorPrefixes;
+    selectorPrefixes = new Map();
+    injected._evaluator.begin();
+    try { callback(); }
+    finally {
+      injected._evaluator.end();
+      selectorPrefixes.clear();
+      selectorPrefixes = previousPrefixes;
+    }
+  }
+
+  function inspectAssertionConditions() {
+    return { ...conditions.inspect(), cachedSelectorPrefixes: selectorPrefixes?.size ?? 0, selectorBatchActive: selectorPrefixes !== undefined };
+  }
 
   function cleanupPointer(token) {
     completedPointers.delete(token);
@@ -131,18 +161,36 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     catch (error) { return { status: 'error', message: codec.encode(String(error && error.stack || error)) }; }
   }
 
-  function prepareAssertion(units, expression, isNot) {
+  function prepareAssertion(units, expression, isNot, prepareSelectorPrefix = false) {
     const options = { ...decodeRequest(units), expression, isNot };
-    return { options, selector: options.selector === null ? null : injected.parseSelector(options.selector) };
+    const selector = options.selector === null ? null : injected.parseSelector(options.selector);
+    let prefix;
+    if (prepareSelectorPrefix && selector?.capture === undefined && selector?.parts.length > 1 && selector.parts.at(-1).name === 'nth') {
+      const parts = selector.parts.slice(0, -1);
+      prefix = { selector: { parts }, key: JSON.stringify(parts.map(part => [part.name, part.source])), index: Number(selector.parts.at(-1).body) };
+    }
+    return { options, selector, prefix };
   }
 
-  async function observeAssertion({ options, selector }) {
+  function isReadOnlySelector(selector) {
+    return selector === null || selector.parts.every(part => readOnlySelectorEngines.has(part.name) &&
+      (!part.body?.parsed || isReadOnlySelector(part.body.parsed)));
+  }
+
+  async function observeAssertion({ options, selector, prefix }) {
     const expression = options.expression;
     let elements = [];
     let element;
     if (selector !== null) {
       const multiple = expression === 'to.have.count' || expression.endsWith('.array');
-      if (multiple) elements = injected.querySelectorAll(selector, document);
+      if (selectorPrefixes && prefix) {
+        if (!selectorPrefixes.has(prefix.key)) selectorPrefixes.set(prefix.key, injected.querySelectorAll(prefix.selector, document));
+        const candidates = selectorPrefixes.get(prefix.key);
+        // Preserve the pinned nth engine's special -1 and native slice behavior.
+        const index = prefix.index === -1 ? candidates.length - 1 : prefix.index;
+        elements = candidates.slice(index, index + 1);
+        element = elements[0];
+      } else if (multiple) elements = injected.querySelectorAll(selector, document);
       else element = injected.querySelector(selector, document, true);
     }
     const result = await injected._expectCore(element, options, elements);
@@ -171,12 +219,13 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
 
   async function waitForAssertion(units, deadline, expression, isNot, token) {
     if (expired(deadline)) return { status: 'expired', observation: null };
-    const descriptor = prepareAssertion(units, expression, isNot);
+    const descriptor = prepareAssertion(units, expression, isNot, selectorBatchCache);
     const result = await conditions.wait({
       token, isNot, timeoutMilliseconds: deadline === null ? null : Math.max(0, deadline - Date.now()),
+      canShareSelectorQueries: readOnlyAssertions.has(expression) && isReadOnlySelector(descriptor.selector),
       check: () => safely(() => observeAssertion(descriptor)),
     });
-    if (conditionInstrumentation && result.observation) result.observation.conditionMetrics = conditions.inspect();
+    if (conditionInstrumentation && result.observation) result.observation.conditionMetrics = inspectAssertionConditions();
     return result;
   }
 
@@ -247,7 +296,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     waitForAssertion: (units, deadline, expression, isNot, token) => safely(() => waitForAssertion(units, deadline, expression, isNot, token)),
     cancelAssertion(token) {
       const result = conditions.cancel(token);
-      if (conditionInstrumentation && result?.observation) result.observation.conditionMetrics = conditions.inspect();
+      if (conditionInstrumentation && result?.observation) result.observation.conditionMetrics = inspectAssertionConditions();
       return result;
     },
     run: (requestUnits, deadline) => safely(() => run(decodeRequest(requestUnits), deadline)),
