@@ -264,8 +264,8 @@
       "compatibility/evidence/console-checkpoint-2026-10-08.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "All 64 ordinary launches and four separate attribution launches independently verify. Default-off complete-run ratios are 1.0138 (95% bootstrap interval 1.0008\u20131.0296) and 1.0015 (0.9858\u20131.0358), near parity. Residency-on ratios are 1.0524 (1.0421\u20131.0837) and 1.0599 (1.0442\u20131.0759), about 5.0% and 5.7% less time. Every comparison misses the 10% material target. Noop median regression is absent in all four, but its confidence interval overlaps parity in both repeats and its observed maximum regresses in the on-repeat. Failure medians regress in three comparisons, and setup observed maximum regresses in the first off comparison. All memory checks pass. Residency remains default off; native Linux, contention and release gates remain open. These performance observations apply to the immutable evaluation-helper binary, before storage and output-limit changes. The current output-limit checkpoint has no new timing claim. The subsequent binary-attachment checkpoint also has no new timing claim. The subsequent browser-payload decoder checkpoint also has no new timing claim. The screenshot/native-viewport checkpoint changes browser setup and has no new timing claim.",
-    "sourceIdentity": "205 source hashes match across 35 native macOS core groups, sixteen focused Node22/headless-shell groups and nineteen focused emulated Linux groups. Current debug binaries: macOS 435c4c5c881923c4cf243964d1b68789f47d29eed247242e8555d86636e0a64b; Linux 6151d35167ca5d3d3f140b8c9613aae0663558e3f990d020e6822bcc38c1f7b6. See compatibility/evidence/console-checkpoint-2026-10-08.json. No new performance claim.",
+    "performanceStatus": "The rebuilt default comparison records median ratio 1.0672 (95% bootstrap interval 0.9919\u20131.1313), about 6.3% less complete-run time. Its confidence interval includes parity, so this final run does not establish a statistically resolved complete-run gain. The preceding identical-binary adoption comparisons show 5.3% less time against Playwright and 4.6% less time against residency off; all eighteen resident-on resource comparisons pass. The 10% complete-flow release target remains open. Failure medians and interaction/navigation observed maxima exceed the regression thresholds. The resource matrix remains bound to its pre-default binary; the assertion algorithm is unchanged. Native Linux performance, worker contention and broader release gates remain open.",
+    "sourceIdentity": "205 source hashes match across 35 native default core groups, eight Node22/default groups, four native/off groups and eleven emulated Linux/default groups. Native optimized driver: 233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c; Linux debug driver: d1cdf4f654261f62d0fefbb36870c1f20c7b8f54aa4a7cf49a757a76043cf4f5. See compatibility/evidence/resident-default-checkpoint-2026-10-08.json.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -364,7 +364,9 @@
     "handleCheckpoint": "compatibility/evidence/handles-checkpoint-2026-10-08.json",
     "handleStatus": "All 33 native macOS core groups pass, including 62 Rust tests and 73 lifecycle cases. Ten focused Node22/headless-shell groups and thirteen focused Linux amd64-emulation groups pass at the same 199 source hashes. The three final handle differentials match nine shared groups, including ten primitive cases, and retain the S4.l BigInt difference separately. Seven native handle lifecycle/publication cases and all five caller-deadline allocation cases pass. Packed ESM/CommonJS consumers preserve nested handle inference, property types, DOM subtypes and frame evaluation. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open.",
     "consoleCheckpoint": "compatibility/evidence/console-checkpoint-2026-10-08.json",
-    "consoleStatus": "All 35 native macOS core groups pass, including 65 Rust tests and 82 lifecycle cases. Sixteen focused Node22/headless-shell groups and nineteen focused Linux amd64-emulation groups pass at the same 205 source hashes. Console and handle differentials match their shared reference outcomes on all three configurations, with the S4.l BigInt difference retained separately. Eight native console cases cover ordering, ownership, long-task cleanup, clear invalidation, capacity and publication limits. Fresh packed ESM/CommonJS consumers preserve console callback inference and live handles. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open."
+    "consoleStatus": "All 35 native macOS core groups pass, including 65 Rust tests and 82 lifecycle cases. Sixteen focused Node22/headless-shell groups and nineteen focused Linux amd64-emulation groups pass at the same 205 source hashes. Console and handle differentials match their shared reference outcomes on all three configurations, with the S4.l BigInt difference retained separately. Eight native console cases cover ordering, ownership, long-task cleanup, clear invalidation, capacity and publication limits. Fresh packed ESM/CommonJS consumers preserve console callback inference and live handles. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open.",
+    "residentDefaultCheckpoint": "compatibility/evidence/resident-default-checkpoint-2026-10-08.json",
+    "residentAssertionsDefault": true
   },
   "pairedRuns": [
     {
@@ -607,6 +609,46 @@
       "distribution": "chromium-headless-shell",
       "verification": "tools/verify-paired.mjs",
       "scope": "Shared native macOS, seven workloads, one worker, full preparation and cleanup. See checkpoint for confidence intervals and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-00-01.120Z-darwin-arm64-paired-0e1601c1",
+      "metadataSha256": "7d697c2223bb14d98b6de186d2b6c70422b8a625aa776d0c8ae4e693b3f346cb",
+      "summarySha256": "42453af8b7d87b83c369cf58b59e4567d79ebf0b871dbc802320794da82565aa",
+      "valid": true,
+      "independentLaunchPairs": 8,
+      "verification": "tools/verify-paired.mjs",
+      "checkpoint": "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json",
+      "scope": "Shared native macOS, same pinned headless shell, seven fixed workloads, one worker. See checkpoint for mode, complete observations and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-01-02.719Z-darwin-arm64-paired-2da9078a",
+      "metadataSha256": "2a62dc2ca1f5165546abcd566dbba33b687b34c26d8714a0d6dcafeb0897b479",
+      "summarySha256": "9045728c281c108e14520b100e52f3defc58a92ea609479ebd042214a9c9ef4e",
+      "valid": true,
+      "independentLaunchPairs": 8,
+      "verification": "tools/verify-paired.mjs",
+      "checkpoint": "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json",
+      "scope": "Shared native macOS, same pinned headless shell, seven fixed workloads, one worker. See checkpoint for mode, complete observations and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-17-08.624Z-darwin-arm64-paired-a0f3ecb4",
+      "metadataSha256": "820662890f0b3e9de1ecd39c5e00efacae27a50fb6c2198829cf8ab05d3f6ce9",
+      "summarySha256": "72af644225c21bca66d39bb3b13e3bfdcf93176320116836a7ac500f1860012e",
+      "valid": true,
+      "independentLaunchPairs": 8,
+      "verification": "tools/verify-paired.mjs",
+      "checkpoint": "compatibility/evidence/resident-adoption-profile-checkpoint-2026-10-08.json",
+      "scope": "Shared native macOS, same pinned headless shell, seven fixed workloads, one worker. See checkpoint for mode, complete observations and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-47-34.514Z-darwin-arm64-paired-8fa2c306",
+      "metadataSha256": "2ac9574fc54c464269c311792392d51571238a0276a48eeb0606c44e910f1120",
+      "summarySha256": "2b201263e62a7328117abb2859228b92f53c07e1ffd675ade5addb92d771ae5c",
+      "valid": true,
+      "independentLaunchPairs": 8,
+      "verification": "tools/verify-paired.mjs",
+      "checkpoint": "compatibility/evidence/resident-default-checkpoint-2026-10-08.json",
+      "scope": "Shared native macOS, same pinned headless shell, seven fixed workloads, one worker. See checkpoint for mode, complete observations and regressions."
     }
   ],
   "attributionRuns": [
@@ -655,6 +697,13 @@
       "independentLaunchPairs": 2,
       "verification": "tools/verify-attribution.mjs",
       "scope": "Payload-free proxy records count exact forwarded bytes and script identities. Six private helper installations serve 81 user evaluations per Flashwright launch. Instrumentation changes timing and resource costs; these observations are not ordinary speed or CPU claims."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-02-05.549Z-darwin-arm64-attribution-f964206c",
+      "metadataSha256": "e7b5fe7719e52b42048731d1b8abc2556d02cd9aa4965577f4da16573d4f57fd",
+      "summarySha256": "e0233a223305dd269cc46f48408dc4dfc3da7c1dba676dca302eba0f2bec6d63",
+      "verification": "tools/verify-attribution.mjs",
+      "checkpoint": "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json"
     }
   ],
   "residencyRuns": [
@@ -755,6 +804,14 @@
       "verification": "tools/verify-residency.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
       "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-18-09.448Z-darwin-arm64-residency-85269f9f",
+      "metadataSha256": "05c5178d23917e83539c56418e1ab98795b2df5be7eb2cd4daa8df2a9fed6909",
+      "summarySha256": "6ce05b21e102636ffc030c0c3b90523f643ffd1e81b6f382e0d2bdaaf8ffb862",
+      "verification": "tools/verify-residency.mjs",
+      "checkpoint": "compatibility/evidence/resident-adoption-profile-checkpoint-2026-10-08.json",
+      "independentLaunchPairs": 8
     }
   ],
   "additionalBrowserDistributions": [
@@ -822,6 +879,16 @@
       "distribution": "chromium-headless-shell",
       "verification": "tools/verify-resident-load.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275",
+      "summary": {
+        "path": "benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275/summary.json",
+        "sha256": "4308e291a12c2863bee6218045bd3219b628a1b0ee8c37409bf0089f20eb138e"
+      },
+      "checkpoint": "compatibility/evidence/resident-adoption-profile-checkpoint-2026-10-08.json",
+      "status": "All eighteen resident-on comparisons pass CPU/memory/complete-time gates; all 162 launches independently verify.",
+      "verificationCommand": "node tools/verify-resident-load.mjs benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275"
     }
   ]
 }

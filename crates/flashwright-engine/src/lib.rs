@@ -136,7 +136,7 @@ impl Engine {
             attachment_slots: Arc::new(tokio::sync::Semaphore::new(limits.pending_attachments)),
             maximum_attachment_bytes: limits.binary_attachment_bytes,
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
-                == Ok("1"),
+                != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
                 .as_deref()
                 == Ok("1"),
