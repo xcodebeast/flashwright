@@ -25,6 +25,12 @@ try {
   const response = await page.goto('http://127.0.0.1:' + server.address().port);
   assert.equal(response.status(), 200);
   assert.equal(await page.title(), 'Packed consumer');
+  const pageError = page.waitForEvent('pageerror');
+  await page.evaluate(() => { setTimeout(() => { throw new TypeError('packed page error'); }, 0); });
+  const error = await pageError;
+  assert(error instanceof Error);
+  assert.equal(error.name, 'TypeError');
+  assert.equal(error.message, 'packed page error');
   assert.match(await response.text(), /real HTTP/);
   assert.equal(await page.getByRole('heading').textContent(), 'real HTTP');
   await page.getByLabel('Name').fill('packed input');
@@ -60,6 +66,14 @@ async function example(): Promise<number> {
   try {
     const context: BrowserContext = await browser.newContext();
     const page: Page = await context.newPage();
+    page.on('pageerror', error => {
+      const message: string = error.message;
+      // @ts-expect-error Page errors must not erase their type to any.
+      const missing: number = error.missing;
+      void message; void missing;
+    });
+    const pageError: Error = await page.waitForEvent('pageerror', { predicate: error => error.name === 'TypeError' });
+    void pageError;
     const cookie: import('flashwright').SetCookie = { name: 'typed', value: 'value', url: 'https://example.test' };
     await context.addCookies([cookie]);
     const cookies: import('flashwright').Cookie[] = await context.cookies(['https://example.test']);
@@ -106,7 +120,7 @@ const evidence = {
   package: packed[0].filename, archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
   consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH,
   driverSha256: createHash('sha256').update(await readFile(environment.FLASHWRIGHT_DRIVER_PATH)).digest('hex'),
-  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
 const destination = `compatibility/evidence/packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`;

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { pageError } from './page-errors.js';
 import { prepareScreenshot, type PageScreenshotOptions } from './screenshots.js';
 import { writeAtomicFile } from './files.js';
 import { Keyboard, type KeyboardPressOptions } from './keyboard.js';
@@ -31,7 +32,7 @@ export interface ViewportSize { width: number; height: number }
 export interface BrowserContextOptions { viewport?: ViewportSize | null; baseURL?: string; storageState?: StorageState | string }
 export interface NavigationOptions { timeout?: number; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit'; referer?: string }
 interface PageInitialization { identifier: string; frames: FrameSnapshot[]; mainFrame: string }
-interface PageEvents { response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page }
+interface PageEvents { response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
 
 
 function identifier(value: unknown): string {
@@ -197,7 +198,7 @@ export class BrowserContext extends EventEmitter {
   }
 }
 
-export class Page extends EventEmitter {
+export class Page extends EventEmitter<{ [Event in keyof PageEvents]: [PageEvents[Event]] }> {
   readonly keyboard = new Keyboard(this);
   private closed = false;
   private closing: Promise<void> | undefined;
@@ -231,6 +232,7 @@ export class Page extends EventEmitter {
         const details = parameters as { request: RequestMetadata; errorText: string };
         const request = this.requestFor(details.request); request.didFail(details.errorText); this.emit(event, request);
       } else if (event === 'load' || event === 'domcontentloaded') this.emit(event, this);
+      else if (event === 'pageerror') this.emit('pageerror', pageError(parameters));
     });
   }
   private updateFrame(snapshot: FrameSnapshot): Frame {
@@ -346,7 +348,7 @@ export class Page extends EventEmitter {
     await this.client.request('page.waitForLoadState', { page: this.identifier, state }, validateTimeout(waitOptions.timeout ?? this.navigationTimeout(), 'page.waitForLoadState'));
   }
   async waitForEvent<Event extends keyof PageEvents>(event: Event, waitOptions: EventWaitOptions<PageEvents[Event]> | ((value: PageEvents[Event]) => boolean | Promise<boolean>) = {}): Promise<PageEvents[Event]> {
-    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
+    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
     this.checkOpen('page.waitForEvent');
     const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
     options('page.waitForEvent', configured, ['predicate', 'timeout']);

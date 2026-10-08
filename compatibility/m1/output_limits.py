@@ -85,6 +85,20 @@ class ByteLimitTests(OwnedDriverCase):
             server.server_close()
             thread.join(timeout=5)
 
+    def test_oversized_page_exception_preserves_utf16_until_the_event_limit(self):
+        # The outstanding evaluation never settles. Its uncaught timer exception must
+        # independently reach the output limit, even with non-scalar UTF-16 text.
+        expression = "new Promise(() => { setTimeout(() => { throw new Error('\\ud800'.repeat(40000)); }, 0); })"
+        self.send(self.command("page.evaluate", self.evaluation(expression)))
+        reply = self.receive()
+        self.assertEqual(reply["kind"], "error", reply)
+        self.assertIsNone(reply["requestId"], reply)
+        self.assertEqual(reply["error"]["code"], "ResourceLimitError", reply)
+        self.assertEqual(reply["error"]["method"], "protocol.output", reply)
+        self.assertEqual(reply["error"]["inputDelivery"], "uncertain", reply)
+        self.assertNotEqual(self.driver.wait(timeout=10), 0)
+        self.assert_resources_released()
+
 
 class NodeLimitTests(OwnedDriverCase):
     resource_limits = {"controlFrameBytes": 32768, "valueNodes": 1000}

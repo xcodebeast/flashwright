@@ -47,6 +47,7 @@ pub const CAPABILITIES: &[&str] = &[
     "context.storageState",
     "page.close",
     "page.evaluate",
+    "page.event.pageerror",
     "page.screenshot",
     "page.goto",
     "page.waitForLoadState",
