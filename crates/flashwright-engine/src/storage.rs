@@ -151,9 +151,7 @@ impl Engine {
         } else {
             "context.storageState"
         };
-        let created = self
-            .create_page(context_identifier, operation, false)
-            .await?;
+        let created = self.create_page(context_identifier, operation).await?;
         let page_identifier = identifier(&created, "identifier", method)?;
         let page = self.page(page_identifier, method)?;
         let mut events = browser.connection.subscribe();

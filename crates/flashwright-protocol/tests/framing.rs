@@ -1,5 +1,6 @@
 use flashwright_protocol::{
-    ClientMessage, DriverMessage, FrameError, FrameReader, FrameWriter, Handshake, ResourceLimits,
+    ClientMessage, DriverMessage, EncodedFrame, FrameError, FrameReader, FrameWriter, Handshake,
+    InputDelivery, ResourceLimits,
 };
 use serde_json::{Value, json};
 use tokio::io::{AsyncWriteExt, duplex};
@@ -155,4 +156,71 @@ async fn oversized_outgoing_frame_does_not_write_or_poison_the_stream() {
     writer.write(&json!(42)).await.unwrap();
     let mut reader = FrameReader::new(consumer, 16);
     assert_eq!(reader.read::<Value>().await.unwrap(), Some(json!(42)));
+}
+
+#[tokio::test]
+async fn prepared_frames_still_obey_the_destination_limit_without_writing_a_prefix() {
+    let (producer, consumer) = duplex(64);
+    let mut writer = FrameWriter::new(producer, 16);
+    let frame = EncodedFrame::encode(&"a".repeat(100), 1024).unwrap();
+    assert!(matches!(
+        writer.write_frame(&frame).await,
+        Err(FrameError::TooLarge { .. })
+    ));
+    writer
+        .write_frame(&EncodedFrame::encode(&42, 16).unwrap())
+        .await
+        .unwrap();
+    let mut reader = FrameReader::new(consumer, 16);
+    assert_eq!(reader.read::<Value>().await.unwrap(), Some(json!(42)));
+}
+
+#[tokio::test]
+async fn borrowed_result_encoding_matches_the_owned_wire_contract() {
+    let value =
+        json!({ "unicode": "\u{0}é😃", "units": [0, 55296, 65535], "nested": [null, true, 42] });
+    let frame =
+        DriverMessage::encode_result(41, &value, InputDelivery::Acknowledged, 1024).unwrap();
+    let (producer, consumer) = duplex(1024);
+    FrameWriter::new(producer, 1024)
+        .write_frame(&frame)
+        .await
+        .unwrap();
+    let actual = FrameReader::new(consumer, 1024)
+        .read::<Value>()
+        .await
+        .unwrap()
+        .unwrap();
+    let expected = serde_json::to_value(DriverMessage::Result {
+        request_id: 41,
+        value,
+        input_delivery: InputDelivery::Acknowledged,
+    })
+    .unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn utf16_diagnostics_and_structured_diagnostics_share_the_value_budget() {
+    use flashwright_protocol::{ErrorCode, ErrorRecord};
+    let limits = ResourceLimits {
+        value_nodes: 8,
+        value_depth: 2,
+        ..ResourceLimits::default()
+    };
+    let mut error = ErrorRecord::new(ErrorCode::Evaluation, "page.evaluate", "failed");
+    error.message_utf16 = Some(vec![55296; 5].into_boxed_slice());
+    error.diagnostics = Some(Box::new(json!({"field": 1})));
+    assert!(limits.validate_error(&error).is_ok());
+    error.message_utf16 = Some(vec![55296; 6].into_boxed_slice());
+    assert_eq!(
+        limits.validate_error(&error).unwrap_err().code,
+        ErrorCode::ResourceLimit
+    );
+    error.message_utf16 = None;
+    error.diagnostics = Some(Box::new(json!([[1]])));
+    assert_eq!(
+        limits.validate_error(&error).unwrap_err().code,
+        ErrorCode::ResourceLimit
+    );
 }

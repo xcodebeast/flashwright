@@ -2,17 +2,21 @@
 
 use super::*;
 use flashwright_browser::connection::Event;
+use flashwright_protocol::DriverMessage;
 use tokio::sync::broadcast;
 
 impl Engine {
     pub(crate) fn emit(&self, target: &str, event: &str, parameters: Value) {
         if self
             .outgoing
-            .try_send(DriverMessage::Event {
-                target: target.to_owned(),
-                event: event.to_owned(),
-                parameters,
-            })
+            .try_send(
+                DriverMessage::Event {
+                    target: target.to_owned(),
+                    event: event.to_owned(),
+                    parameters,
+                }
+                .into(),
+            )
             .is_err()
         {
             let _ = self.fatal.send(true);
@@ -197,7 +201,9 @@ impl Engine {
         }
         if let Some(context) = &context {
             context.state.closed.send_replace(true);
-            self.emit(identifier, "close", Value::Null);
+            if context.published {
+                self.emit(identifier, "close", Value::Null);
+            }
         }
         context
     }
@@ -216,9 +222,9 @@ impl Engine {
         for context in contexts {
             self.remove_context(&context);
         }
-        if browser.is_some() {
+        if browser.as_ref().is_some_and(|entry| entry.published) {
             self.emit(identifier, "disconnected", Value::Null);
         }
-        browser
+        browser.map(|entry| entry.browser)
     }
 }

@@ -12,6 +12,7 @@ mod navigation;
 mod operation;
 mod page_state;
 mod pointer;
+mod publication;
 mod storage;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
@@ -22,7 +23,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use flashwright_browser::{Chromium, LaunchOptions};
-use flashwright_protocol::{DriverMessage, ErrorCode, ErrorRecord};
+use flashwright_protocol::{DriverOutput, ErrorCode, ErrorRecord};
 use page_state::PageState;
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -55,7 +56,7 @@ pub struct Engine {
     next_identifier: AtomicU64,
     registry: Mutex<Registry>,
     parent_liveness: Option<OwnedFd>,
-    outgoing: mpsc::Sender<DriverMessage>,
+    outgoing: mpsc::Sender<DriverOutput>,
     fatal: watch::Sender<bool>,
     resident_assertions: bool,
     condition_instrumentation: bool,
@@ -63,9 +64,14 @@ pub struct Engine {
 
 #[derive(Default)]
 struct Registry {
-    browsers: HashMap<String, Arc<Chromium>>,
+    browsers: HashMap<String, Browser>,
     contexts: HashMap<String, Context>,
     pages: HashMap<String, Page>,
+}
+
+struct Browser {
+    browser: Arc<Chromium>,
+    published: bool,
 }
 
 #[derive(Clone)]
@@ -74,6 +80,7 @@ struct Context {
     protocol_identifier: String,
     viewport: Option<Viewport>,
     state: Arc<context_state::ContextState>,
+    published: bool,
 }
 
 #[derive(Clone)]
@@ -94,7 +101,7 @@ struct Viewport {
 impl Engine {
     pub fn new(
         parent_liveness: Option<OwnedFd>,
-        outgoing: mpsc::Sender<DriverMessage>,
+        outgoing: mpsc::Sender<DriverOutput>,
         fatal: watch::Sender<bool>,
     ) -> Self {
         Self {
@@ -135,19 +142,28 @@ impl Engine {
                 );
                 let identifier = self.identifier("browser");
                 let result = json!({ "identifier": identifier, "version": browser.version.split('/').next_back(), "processIdentifier": browser.process_identifier() });
-                self.registry
-                    .lock()
-                    .unwrap()
-                    .browsers
-                    .insert(identifier.clone(), browser.clone());
+                self.registry.lock().unwrap().browsers.insert(
+                    identifier.clone(),
+                    Browser {
+                        browser: browser.clone(),
+                        published: false,
+                    },
+                );
                 self.observe_browser(identifier.clone(), &browser);
-                operation
+                if let Err(mut error) = operation
                     .wait(browser.connection.call(
                         "Target.setDiscoverTargets",
                         json!({ "discover": true }),
                         None,
                     ))
-                    .await?;
+                    .await
+                {
+                    error.cleanup = self
+                        .discard_unreturned_allocation(method, &result)
+                        .await
+                        .map(Into::into);
+                    return Err(error);
+                }
                 Ok(result)
             }
             "browser.newContext" => self.new_context(parameters, operation).await,
@@ -195,7 +211,7 @@ impl Engine {
             .unwrap()
             .browsers
             .get(identifier)
-            .cloned()
+            .map(|entry| entry.browser.clone())
             .ok_or_else(|| closed(method))
     }
 
@@ -276,6 +292,7 @@ impl Engine {
                     protocol_identifier: protocol_identifier.clone(),
                     viewport,
                     state: Arc::new(context_state::ContextState::default()),
+                    published: false,
                 },
             );
             Ok(json!({ "identifier": identifier }))
@@ -313,14 +330,13 @@ impl Engine {
         let method = "context.newPage";
         validate_keys(method, &parameters, &["context"])?;
         let context_identifier = identifier(&parameters, "context", method)?.to_owned();
-        self.create_page(&context_identifier, operation, true).await
+        self.create_page(&context_identifier, operation).await
     }
 
     async fn create_page(
         &self,
         context_identifier: &str,
         operation: &Operation,
-        published: bool,
     ) -> Result<Value, ErrorRecord> {
         let method = "context.newPage";
         let context_identifier = context_identifier.to_owned();
@@ -362,7 +378,6 @@ impl Engine {
             let mut document = state.state.lock().unwrap();
             // Page.enable normally supplies the initial frame; getFrameTree covers an idle about:blank.
             if document.main_frame.is_none() { document.observe("Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
-            document.published = published;
             Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame }))
         }.await;
         if let Err(mut error) = result {
@@ -427,7 +442,7 @@ impl Engine {
         let mut closing = tokio::task::JoinSet::new();
         for browser in browsers.into_values() {
             closing.spawn(async move {
-                if let Err(error) = browser.close().await {
+                if let Err(error) = browser.browser.close().await {
                     eprintln!("flashwright cleanup: {}", error.message);
                 }
             });

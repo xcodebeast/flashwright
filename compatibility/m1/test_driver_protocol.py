@@ -18,29 +18,20 @@ from test_lifecycle import snapshot
 
 class OwnedDriverCase(unittest.TestCase):
     driver_environment = {}
+    resource_limits = {}
+    create_initial_page = True
 
     def setUp(self):
-        self.identities = {}
-        self.profile = None
-        self.driver = subprocess.Popen([os.environ["FLASHWRIGHT_DRIVER_PATH"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0, env={**os.environ, **self.driver_environment})
-        self.addCleanup(self.release_owned_browser)
-        self.identifier = 0
-        self.send({"kind": "handshake", "handshake": {"packageVersion": "0.0.0", "protocolVersion": 4, "capabilityInventoryVersion": 1, "limits": {"controlFrameBytes": 8388608, "pendingOperations": 1024, "queuedMessages": 128, "valueDepth": 64, "valueNodes": 100000}}})
-        handshake = self.receive()
-        runtime_digest = hashlib.sha256()
-        for name in Path("packages/resident-runtime/sources.txt").read_text().splitlines():
-            source = Path("packages/resident-runtime", name).read_bytes()
-            runtime_digest.update(struct.pack("<Q", len(source)))
-            runtime_digest.update(source)
-        self.assertEqual(handshake["residentRuntimeSha256"], runtime_digest.hexdigest())
+        self.start_driver()
         browser = self.request("browser.launch", {"executablePath": os.environ["FLASHWRIGHT_BROWSER_PATH"]})
         self.browser = browser["identifier"]
         self.guardian = browser["processIdentifier"]
         context = self.request("browser.newContext", {"browser": self.browser})
         self.context = context["identifier"]
-        page = self.request("context.newPage", {"context": self.context})
-        self.page = page["identifier"]
-        self.frame = page["mainFrame"]
+        if self.create_initial_page:
+            page = self.request("context.newPage", {"context": self.context})
+            self.page = page["identifier"]
+            self.frame = page["mainFrame"]
         processes = snapshot()
         owned = {self.guardian}
         while descendants := {process for process, (parent, _) in processes.items() if parent in owned} - owned:
@@ -49,6 +40,24 @@ class OwnedDriverCase(unittest.TestCase):
         self.browser_process = next(process for process, (parent, _) in processes.items() if parent == self.guardian)
         command = subprocess.check_output(["ps", "-p", str(self.browser_process), "-o", "command="], text=True)
         self.profile = Path(re.search(r"--user-data-dir=(\S+)", command).group(1))
+
+    def start_driver(self):
+        self.identities = {}
+        self.profile = None
+        self.events = []
+        self.limits = {"controlFrameBytes": 8388608, "pendingOperations": 1024, "queuedMessages": 128, "valueDepth": 64, "valueNodes": 100000, **self.resource_limits}
+        self.driver = subprocess.Popen([os.environ["FLASHWRIGHT_DRIVER_PATH"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0, env={**os.environ, **self.driver_environment})
+        self.addCleanup(self.release_owned_browser)
+        self.identifier = 0
+        self.send({"kind": "handshake", "handshake": {"packageVersion": "0.0.0", "protocolVersion": 4, "capabilityInventoryVersion": 1, "limits": self.limits}})
+        handshake = self.receive()
+        runtime_digest = hashlib.sha256()
+        for name in Path("packages/resident-runtime/sources.txt").read_text().splitlines():
+            source = Path("packages/resident-runtime", name).read_bytes()
+            runtime_digest.update(struct.pack("<Q", len(source)))
+            runtime_digest.update(source)
+        self.assertEqual(handshake["residentRuntimeSha256"], runtime_digest.hexdigest())
+        self.assertEqual(handshake["handshake"]["limits"], self.limits)
 
     def release_owned_browser(self):
         """A dead driver releases its liveness pipe; let the guardian finish cleanup."""
@@ -80,10 +89,11 @@ class OwnedDriverCase(unittest.TestCase):
 
     def receive(self):
         length, = struct.unpack("<I", self.read_exact(4))
-        self.assertLessEqual(length, 8388608)
+        self.assertLessEqual(length, self.limits["controlFrameBytes"])
         message = json.loads(self.read_exact(length))
         if message["kind"] == "event":
             self.assertIn("target", message)
+            self.events.append(message)
             return self.receive()
         return message
 

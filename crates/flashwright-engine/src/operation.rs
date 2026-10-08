@@ -223,7 +223,10 @@ impl Operation {
     }
 }
 
-async fn close_for_cleanup(owner: &impl ResourceOwner, success: &'static str) -> &'static str {
+pub(crate) async fn close_for_cleanup(
+    owner: &impl ResourceOwner,
+    success: &'static str,
+) -> &'static str {
     match owner.close().await {
         Ok(()) => success,
         Err(error) if error.cleanup.as_deref() == Some("guardianContinuingCleanup") => {
