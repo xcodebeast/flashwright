@@ -7,6 +7,8 @@ import { once } from 'node:events';
 import { chromium } from 'playwright';
 import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { createLifecycleTarget } from './lifecycle-target.mjs';
+import { verifyConditionQueryBatches } from './condition-query-batches.mjs';
+import { verifyConditionFallbackCadence } from './condition-fallback-cadence.mjs';
 
 const sources = await sourceManifest();
 const sourceNames = ['playwright-injected.js', 'serialization.cjs', 'locator-runtime.js', 'condition-registry.js'];
@@ -56,7 +58,9 @@ async function installRegistry(frameId, observeMutations, withholdRegistryFrames
     const setTimeout = ${withholdRegistryTimer ? '(callback, milliseconds, ...callbackArguments) => milliseconds === 100 ? -1 : globalThis.setTimeout(callback, milliseconds, ...callbackArguments)' : 'globalThis.setTimeout.bind(globalThis)'};
     const module = {}; ${injectedSource}; const exports = {}; ${codecSource}; ${locatorSource}; ${registrySource};
     const injected = new (module.exports.InjectedScript())(globalThis, {isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]});
-    globalThis.testLocator = createLocatorRuntime(injected, exports.createValueCodec());
+    globalThis.testInjected = injected;
+    globalThis.createTestLocator = selectorBatchCache => createLocatorRuntime(injected, exports.createValueCodec(), {conditionInstrumentation:true,selectorBatchCache});
+    globalThis.testLocator = createTestLocator(true);
     globalThis.testConditions = createConditionRegistry({instrumentation:true,observeMutations:${observeMutations}});
     globalThis.testPromises = new Map();
     globalThis.startCondition = (token, options) => {
@@ -87,7 +91,7 @@ async function clean(label) {
   const state = await evaluate('testConditions.inspect()');
   for (const name of ['activeConditions', 'observedRoots', 'queuedDiscovery', 'queuedConditions']) assert.equal(state[name], 0, `${label}: ${name}`);
   for (const name of ['animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'flushChannelOpen']) assert.equal(state[name], false, `${label}: ${name}`);
-  assert.ok(state.maximumChecksBeforeYield <= 8, `${label}: unbounded predicate batch`);
+  assert.ok(state.maximumChecksBeforeYield <= 32, `${label}: unbounded predicate batch`);
   await new Promise(resolve => setTimeout(resolve, 30));
   assert.deepEqual(await evaluate('testConditions.inspect()'), state, `${label}: work continued after the last condition`);
   cases.push({ name: label, counters: state });
@@ -99,6 +103,8 @@ const text = (selector, value, extra = {}) => ({ selector, expression: 'to.have.
 const state = (selector, expression, extra = {}) => ({ selector, expression, ...extra });
 
 try {
+  await verifyConditionQueryBatches({ reset, evaluate, page, cases });
+  await verifyConditionFallbackCadence({ reset, evaluate, page, start, finish, clean, cases, registrySource });
   await reset('<p>already true</p>');
   await finish(await start(text('css=p', 'already true')));
   const immediate = await clean('already true skips discovery');

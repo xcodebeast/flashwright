@@ -1,19 +1,20 @@
 import { spawn } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { verifyResidentLoad } from './resident-load-contract.mjs';
+import { loadExecutionBudget, verifyResidentLoad } from './resident-load-contract.mjs';
 
 export function residentLoadName({ mode, scenario, launchGroup }) {
   return `${launchGroup}-${scenario.workload}-${scenario.conditionCount}-${mode}`;
 }
 
 /** Each launch owns immutable raw output and a watchdog report, including failed attempts. */
-export async function runResidentLoad({ mode, scenario, launchGroup, destination, configuration, launchPolicy, driverPath, executablePath, diagnostic = false }) {
+export async function runResidentLoad({ mode, scenario, launchGroup, destination, configuration, launchPolicy, driverPath, executablePath, diagnostic = false, functionalConformance = false }) {
   const name = residentLoadName({ mode, scenario, launchGroup });
   const resourcePath = join(destination, `resources-${name}.json`);
   const started = performance.now();
-  const child = spawn('python3', ['tools/watchdog.py', '--timeout', '45', '--report', resourcePath, '--', process.execPath,
-    'benchmarks/resident-load-sample.mjs', mode, scenario.workload, String(scenario.conditionCount), String(launchGroup)], {
+  const budget = loadExecutionBudget(configuration, functionalConformance);
+  const child = spawn('python3', ['tools/watchdog.py', '--timeout', String(budget.watchdogTimeoutMilliseconds / 1000), '--report', resourcePath, '--', process.execPath,
+    'benchmarks/resident-load-sample.mjs', mode, scenario.workload, String(scenario.conditionCount), String(launchGroup), functionalConformance ? 'functional-conformance' : 'comparison'], {
     env: { ...process.env, DEBUG: 'pw:browser', DEBUG_COLORS: '0', FLASHWRIGHT_DEBUG_BROWSER: '1',
       FLASHWRIGHT_DRIVER_PATH: driverPath, FLASHWRIGHT_BROWSER_PATH: executablePath,
       FLASHWRIGHT_RESIDENT_ASSERTIONS: mode === 'flashwright-on' ? '1' : '0',
@@ -34,7 +35,7 @@ export async function runResidentLoad({ mode, scenario, launchGroup, destination
   Object.assign(result, { processExit, processWallMilliseconds: performance.now() - started, output, diagnostics });
   result.resources = await readFile(resourcePath, 'utf8').then(JSON.parse, error => ({ error: error.message }));
   result.contractFailures = [];
-  try { verifyResidentLoad(result, configuration, launchPolicy, executablePath, diagnostic); }
+  try { verifyResidentLoad(result, configuration, launchPolicy, executablePath, diagnostic, functionalConformance); }
   catch (error) { result.contractFailures.push(error.stack); }
   await writeFile(join(destination, `launch-${name}.json`), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
   return result;

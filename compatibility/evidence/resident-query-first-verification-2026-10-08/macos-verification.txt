@@ -1,0 +1,279 @@
+
+> flashwright-workspace@0.0.0 verify:core
+> node tools/verify-core.mjs
+
+Verifying: cargo fmt --all --check
+Verifying: cargo clippy --workspace --all-targets --locked -- -D warnings
+   Compiling flashwright-engine v0.0.0 (/Users/P/p/flashwright/crates/flashwright-engine)
+    Checking flashwright-driver v0.0.0 (/Users/P/p/flashwright/crates/flashwright-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.27s
+Verifying: python3 tools/watchdog.py --timeout 120 --report-directory compatibility/evidence/resources -- cargo test --workspace --locked
+   Compiling flashwright-engine v0.0.0 (/Users/P/p/flashwright/crates/flashwright-engine)
+   Compiling flashwright-driver v0.0.0 (/Users/P/p/flashwright/crates/flashwright-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.16s
+     Running unittests src/lib.rs (target/debug/deps/flashwright_browser-326fcf5ae871b4d3)
+
+running 2 tests
+test process_group::tests::termination_waits_for_members_after_the_leader_exits ... ok
+test chromium::tests::guardian_cleanup_survives_cancelled_waiters_and_the_previous_kill_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.12s
+
+     Running tests/connection.rs (target/debug/deps/connection-d4cbc0c25a9d5590)
+
+running 8 tests
+test eof_settles_all_pending_requests_and_future_calls ... ok
+test late_reply_after_cancellation_cannot_settle_another_request ... ok
+test eof_settles_entire_sequence_and_received_replies_can_be_recovered_without_waiting ... ok
+test cancellation_withdraws_unsent_suffix_after_partial_first_write ... ok
+test full_queue_rejects_entire_sequence_and_rolls_back_registrations ... ok
+test sequence_dispatches_all_commands_before_any_reply_and_matches_reversed_replies ... ok
+test interleaved_events_and_out_of_order_replies_preserve_request_identity ... ok
+test rejected_sequences_have_no_wire_effects_and_release_pending_capacity ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running unittests src/main.rs (target/debug/deps/flashwright_driver-3c7eba2741104e72)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/flashwright_engine-f0f9dad9ac0ca665)
+
+running 5 tests
+test operation::tests::cancellation_recovers_late_allocation_then_waits_for_disposal ... ok
+test operation::tests::queued_creation_is_withdrawn_without_waiting_for_a_reply ... ok
+test operation::tests::already_cancelled_creation_dispatches_nothing ... ok
+test operation::tests::cancellation_with_unknown_allocation_closes_only_its_owner ... ok
+test operation::tests::ordinary_close_waits_for_acknowledgement_without_cleanup_deadline ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+
+     Running unittests src/lib.rs (target/debug/deps/flashwright_protocol-4b337f47ba408aed)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/framing.rs (target/debug/deps/framing-27266f51397ed804)
+
+running 9 tests
+test handshake_rejects_incompatible_versions_and_invalid_limits ... ok
+test protocol_rejects_unknown_fields_and_limits_nested_value_work ... ok
+test handshake_envelopes_round_trip_and_reject_nested_unknown_options ... ok
+test truncation_and_oversized_lengths_invalidate_without_allocating_the_payload ... ok
+test cancellation_of_a_fragmented_read_invalidates_the_stream ... ok
+test malformed_json_cannot_be_followed_by_an_apparently_valid_frame ... ok
+test oversized_outgoing_frame_does_not_write_or_poison_the_stream ... ok
+test cancellation_of_a_blocked_partial_write_invalidates_the_stream ... ok
+test fragmented_and_concatenated_frames_preserve_unicode_and_nul ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_browser
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_protocol
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Verifying: cargo build --workspace --locked
+   Compiling flashwright-driver v0.0.0 (/Users/P/p/flashwright/crates/flashwright-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.50s
+Verifying: /Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node tools/build-packages.mjs
+Verifying: /Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node tools/extract-selector-runtime.mjs --check
+Verified 307101 characters of pinned injected runtime and locator helpers
+Verifying: /Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node tools/extract-keyboard-layout.mjs --check
+Verified 212 pinned keyboard descriptions and 114 macOS editing shortcuts.
+Verifying: /Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node tools/extract-chromium-launch-policy.mjs --check
+Verified pinned Chromium launch policy: 40 headed and 44 headless arguments.
+Verifying: npm run inventory:check
+
+> flashwright-workspace@0.0.0 inventory:check
+> node tools/generate-inventory.mjs --check
+
+6425 classified declaration/subpath entries from 4 pinned sources.
+Verifying: npm run typecheck
+
+> flashwright-workspace@0.0.0 typecheck
+> tsc --noEmit && tsc --noEmit --project compatibility/migration-projects/tsconfig.json
+
+Verifying: npm run test:harness
+
+> flashwright-workspace@0.0.0 test:harness
+> node --test tools/test-harness.mjs tools/test-protocol-profile.mjs
+
+✔ statistics preserve independent-launch units and do not invent tail estimates (2.35025ms)
+✔ paired comparisons retain launch correspondence and reject incomplete pairs (2.991625ms)
+✔ actual launch comparison normalizes only owned profile paths (0.729375ms)
+✔ benchmark admission binds core verification to the exact browser executable (0.504917ms)
+✔ independent clock epochs and overlapping commands preserve accounting without double-counting waits (1.492542ms)
+✔ clock discontinuities invalidate attribution (0.99275ms)
+✔ commands near a phase boundary remain in global counts without arbitrary phase assignment (1.02ms)
+✔ lost replies and duplicate command identities invalidate attribution (0.479042ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.368125
+Verifying: python3 -m unittest discover -s tools -p test_*.py -v
+test_fragmented_frames_and_partial_writes_preserve_exact_bytes_without_payloads (test_protocol_proxy.ProtocolProxyTests.test_fragmented_frames_and_partial_writes_preserve_exact_bytes_without_payloads) ... ok
+test_response_payloads_are_not_retained (test_protocol_proxy.ProtocolProxyTests.test_response_payloads_are_not_retained) ... ok
+test_truncated_frame_is_reported_and_not_counted_as_a_complete_message (test_protocol_proxy.ProtocolProxyTests.test_truncated_frame_is_reported_and_not_counted_as_a_complete_message) ... ok
+test_clean_job_needs_no_watchdog_cleanup (test_watchdog.WatchdogLifecycleTests.test_clean_job_needs_no_watchdog_cleanup) ... ok
+test_cpu_records_retain_a_child_while_it_is_an_unreaped_zombie (test_watchdog.WatchdogLifecycleTests.test_cpu_records_retain_a_child_while_it_is_an_unreaped_zombie) ... ok
+test_cpu_reset_and_reused_process_identifiers_preserve_both_identities (test_watchdog.WatchdogLifecycleTests.test_cpu_reset_and_reused_process_identifiers_preserve_both_identities) ... ok
+test_timeout_kills_owned_descendants_and_preserves_an_unrelated_process (test_watchdog.WatchdogLifecycleTests.test_timeout_kills_owned_descendants_and_preserves_an_unrelated_process) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 4.165s
+
+OK
+Verifying: npm run test:library
+
+> flashwright-workspace@0.0.0 test:library
+> node tools/run-library-smoke.mjs
+
+Real Chromium library smoke passed: identity, isolation, value graph, concurrent replies and cleanup.
+Verifying: npm run test:lifecycle
+
+> flashwright-workspace@0.0.0 test:lifecycle
+> node tools/run-lifecycle-tests.mjs
+
+test_success_crossing_caller_deadline_is_disposed (test_driver_protocol.ClientDeadlineTests.test_success_crossing_caller_deadline_is_disposed) ... Late replies preserve ownership cleanup, input delivery and UTF-16 diagnostics.
+ok
+test_blocked_output_exhaustion_still_releases_browser (test_driver_protocol.DriverProtocolTests.test_blocked_output_exhaustion_still_releases_browser) ... ok
+test_cancelled_allocation_with_unresponsive_browser_reports_cleanup (test_driver_protocol.DriverProtocolTests.test_cancelled_allocation_with_unresponsive_browser_reports_cleanup) ... ok
+test_duplicate_request_while_renderer_is_blocked_releases_browser (test_driver_protocol.DriverProtocolTests.test_duplicate_request_while_renderer_is_blocked_releases_browser) ... ok
+test_eof_inside_frame_releases_browser (test_driver_protocol.DriverProtocolTests.test_eof_inside_frame_releases_browser) ... ok
+test_malformed_frame_releases_browser (test_driver_protocol.DriverProtocolTests.test_malformed_frame_releases_browser) ... ok
+test_explicit_cancellation_retains_diagnostics_and_releases_subscription (test_driver_protocol.ResidentAssertionProtocolTests.test_explicit_cancellation_retains_diagnostics_and_releases_subscription) ... ok
+test_page_closure_releases_deferred_cancellation_ownership (test_driver_protocol.ResidentAssertionProtocolTests.test_page_closure_releases_deferred_cancellation_ownership) ... ok
+test_unbounded_cancellation_during_blocked_renderer_finishes_after_recovery (test_driver_protocol.ResidentAssertionProtocolTests.test_unbounded_cancellation_during_blocked_renderer_finishes_after_recovery) ... ok
+test_dead_node_worker_releases_driver_and_browser (test_lifecycle.EngineLifecycleTests.test_dead_node_worker_releases_driver_and_browser) ... ok
+test_dead_node_worker_with_stopped_driver_still_releases_browser (test_lifecycle.EngineLifecycleTests.test_dead_node_worker_with_stopped_driver_still_releases_browser) ... ok
+test_driver_crash_does_not_orphan_browser (test_lifecycle.EngineLifecycleTests.test_driver_crash_does_not_orphan_browser) ... ok
+test_host_deadline_survives_stopped_driver (test_lifecycle.EngineLifecycleTests.test_host_deadline_survives_stopped_driver) ... ok
+test_renderer_deadline_can_interrupt_infinite_javascript (test_lifecycle.EngineLifecycleTests.test_renderer_deadline_can_interrupt_infinite_javascript) ... ok
+test_failed_setup_and_test_body_release_profiles_without_killing_guardians (test_lifecycle.FailedCaseCleanupTests.test_failed_setup_and_test_body_release_profiles_without_killing_guardians) ... ok
+test_blocked_input_handler_closes_page_without_replaying_input (test_public_lifecycle.PublicLifecycleTests.test_blocked_input_handler_closes_page_without_replaying_input) ... ok
+test_blocked_keyboard_handler_closes_only_its_owned_page (test_public_lifecycle.PublicLifecycleTests.test_blocked_keyboard_handler_closes_only_its_owned_page) ... ok
+test_blocked_renderer_cannot_delay_assertion_deadline (test_public_lifecycle.PublicLifecycleTests.test_blocked_renderer_cannot_delay_assertion_deadline) ... ok
+test_browser_crash_updates_public_objects (test_public_lifecycle.PublicLifecycleTests.test_browser_crash_updates_public_objects) ... ok
+test_context_close_cancels_page_keyboard_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_page_keyboard_and_preserves_browser) ... ok
+test_context_close_cancels_unbounded_assertion (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_unbounded_assertion) ... ok
+test_keyboard_deadline_releases_keys_and_serializes_pointer_input (test_public_lifecycle.PublicLifecycleTests.test_keyboard_deadline_releases_keys_and_serializes_pointer_input) ... ok
+test_locator_deadline_suppresses_late_renderer_mutation (test_public_lifecycle.PublicLifecycleTests.test_locator_deadline_suppresses_late_renderer_mutation) ... ok
+test_pointer_deadline_releases_button_and_modifiers (test_public_lifecycle.PublicLifecycleTests.test_pointer_deadline_releases_button_and_modifiers) ... ok
+test_renderer_crash_updates_page_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_renderer_crash_updates_page_and_preserves_browser) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 35.147s
+
+OK
+Verifying: npm run test:navigation
+
+> flashwright-workspace@0.0.0 test:navigation
+> node tools/run-navigation-tests.mjs
+
+Navigation differential passed: compatibility/evidence/navigation-darwin-arm64-24.15.0.json
+Verifying: npm run test:locators
+
+> flashwright-workspace@0.0.0 test:locators
+> node tools/run-locator-tests.mjs
+
+reference: locator and text input corpus passed
+flashwright: locator and text input corpus passed
+Locator differential evidence: compatibility/evidence/locators-darwin-arm64-24.15.0.json
+Verifying: npm run test:pointer
+
+> flashwright-workspace@0.0.0 test:pointer
+> node tools/run-pointer-tests.mjs
+
+reference: first native click passed
+reference: event and option cases passed
+reference: state and scroll cases passed
+reference: child-frame cases passed
+reference: hit guard, stability and concurrency cases passed
+reference: navigation commit barrier passed
+reference: native pointer corpus passed
+flashwright: first native click passed
+flashwright: event and option cases passed
+flashwright: state and scroll cases passed
+flashwright: child-frame cases passed
+flashwright: hit guard, stability and concurrency cases passed
+flashwright: navigation commit barrier passed
+flashwright: native pointer corpus passed
+Pointer differential evidence: compatibility/evidence/pointer-darwin-arm64-24.15.0.json
+Verifying: npm run test:keyboard
+
+> flashwright-workspace@0.0.0 test:keyboard
+> node tools/run-keyboard-tests.mjs
+
+reference: all 212 key descriptions and chord events passed
+reference: all page-level key descriptions, existing focus and selection passed
+reference: focus, editing, shadow and frame cases passed
+reference: native keyboard corpus passed
+flashwright: all 212 key descriptions and chord events passed
+flashwright: all page-level key descriptions, existing focus and selection passed
+flashwright: focus, editing, shadow and frame cases passed
+flashwright: native keyboard corpus passed
+Keyboard differential evidence: compatibility/evidence/keyboard-darwin-arm64-24.15.0.json
+Verifying: npm run test:assertions
+
+> flashwright-workspace@0.0.0 test:assertions
+> node tools/run-assertion-tests.mjs
+
+reference: immediate, array, state and missing-element assertions passed
+reference: retry, failure and successor-document assertions passed
+flashwright: immediate, array, state and missing-element assertions passed
+flashwright: retry, failure and successor-document assertions passed
+Assertion differential evidence: compatibility/evidence/assertions-darwin-arm64-24.15.0.json
+Verifying: npm run test:conditions
+
+> flashwright-workspace@0.0.0 test:conditions
+> node tools/run-condition-tests.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
++   predicates: 64,
++   queries: 64,
++   resolutions: 64
+-   predicates: 32,
+-   queries: 32,
+-   resolutions: 32
+  }
+
+    at verifyConditionQueryBatches (file:///Users/P/p/flashwright/compatibility/m2/condition-query-batches.mjs:80:12)
+    at async file:///Users/P/p/flashwright/compatibility/m2/condition-registry.mjs:106:3 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: { queries: 64, predicates: 64, resolutions: 64 },
+  expected: { queries: 32, predicates: 32, resolutions: 32 },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0
+Core verification failed: compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T01-37-52.178Z/report.json

@@ -1,0 +1,31 @@
+
+> flashwright-workspace@0.0.0 test:conditions
+> node tools/run-condition-tests.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
++   predicates: 64,
++   queries: 64,
++   resolutions: 64
+-   predicates: 32,
+-   queries: 32,
+-   resolutions: 32
+  }
+
+    at verifyConditionQueryBatches (file:///Users/P/p/flashwright/compatibility/m2/condition-query-batches.mjs:80:12)
+    at async file:///Users/P/p/flashwright/compatibility/m2/condition-registry.mjs:106:3 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: { queries: 64, predicates: 64, resolutions: 64 },
+  expected: { queries: 32, predicates: 32, resolutions: 32 },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

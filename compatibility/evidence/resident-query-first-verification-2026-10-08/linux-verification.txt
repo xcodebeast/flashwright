@@ -1,0 +1,668 @@
+./rustup-init: OK
+warn: it looks like you have an existing rustup settings file at:
+warn: /root/.rustup/settings.toml
+warn: rustup will install the default toolchain as specified in the settings file,
+warn: instead of the one inferred from the default host tuple.
+info: profile set to minimal
+info: default host tuple is x86_64-unknown-linux-gnu
+warn: Updating existing toolchain, profile choice will be ignored
+info: syncing channel updates for 1.98.0-x86_64-unknown-linux-gnu
+info: latest update on 2026-08-20 for version 1.98.0 (88d9e12ae 2026-08-18)
+info: component clippy is up to date
+info: component rustfmt is up to date
+info: default toolchain set to 1.98.0-x86_64-unknown-linux-gnu
+
+  1.98.0-x86_64-unknown-linux-gnu unchanged - rustc 1.98.0 (88d9e12ae 2026-08-18)
+
+
+Rust is installed now. Great!
+
+To get started you need Cargo's bin directory ($HOME/.cargo/bin) in your PATH
+environment variable. This has not been done automatically.
+
+To configure your current shell, you need to source
+the corresponding env file under $HOME/.cargo.
+
+Consider running the right command for your shell (note the leading DOT):
+. "$HOME/.cargo/env" # For sh/ash/dash/pdksh/bash
+cargo:rerun-if-env-changed=CC_x86_64-unknown-linux-gnu
+CC_x86_64-unknown-linux-gnu = None
+cargo:rerun-if-env-changed=CC_x86_64_unknown_linux_gnu
+CC_x86_64_unknown_linux_gnu = None
+cargo:rerun-if-env-changed=HOST_CC
+HOST_CC = None
+cargo:rerun-if-env-changed=CC
+CC = None
+cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+cargo:rerun-if-env-changed=CFLAGS
+CFLAGS = None
+cargo:rerun-if-env-changed=HOST_CFLAGS
+HOST_CFLAGS = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64_unknown_linux_gnu
+CFLAGS_x86_64_unknown_linux_gnu = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64-unknown-linux-gnu
+CFLAGS_x86_64-unknown-linux-gnu = None
+
+added 9 packages in 2s
+npm notice
+npm notice New major version of npm available! 11.12.1 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+> flashwright-workspace@0.0.0 verify:core
+> node tools/verify-core.mjs
+
+Verifying: cargo fmt --all --check
+Verifying: cargo clippy --workspace --all-targets --locked -- -D warnings
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded cfg_aliases v0.2.2
+  Downloaded command-fds v0.3.2
+  Downloaded block-buffer v0.10.4
+  Downloaded cfg-if v1.0.5
+  Downloaded cpufeatures v0.2.17
+  Downloaded generic-array v0.14.7
+  Downloaded crypto-common v0.1.7
+  Downloaded itoa v1.0.18
+  Downloaded errno v0.3.14
+  Downloaded version_check v0.9.5
+  Downloaded pin-project-lite v0.2.17
+  Downloaded quote v1.0.47
+  Downloaded signal-hook-registry v1.4.8
+  Downloaded digest v0.10.7
+  Downloaded fastrand v2.5.0
+  Downloaded thiserror-impl v2.0.17
+  Downloaded sha2 v0.10.9
+  Downloaded thiserror v2.0.17
+  Downloaded tokio-macros v2.6.1
+  Downloaded unicode-ident v1.0.26
+  Downloaded once_cell v1.21.4
+  Downloaded bitflags v2.13.2
+  Downloaded getrandom v0.3.4
+  Downloaded proc-macro2 v1.0.107
+  Downloaded ryu v1.0.23
+  Downloaded serde_derive v1.0.228
+  Downloaded tempfile v3.23.0
+  Downloaded bytes v1.12.1
+  Downloaded serde_core v1.0.228
+  Downloaded socket2 v0.6.5
+  Downloaded serde v1.0.228
+  Downloaded memchr v2.8.3
+  Downloaded typenum v1.20.1
+  Downloaded mio v1.2.4
+  Downloaded serde_json v1.0.145
+  Downloaded nix v0.30.1
+  Downloaded syn v2.0.119
+  Downloaded rustix v1.1.5
+  Downloaded tokio v1.48.0
+  Downloaded libc v0.2.190
+  Downloaded linux-raw-sys v0.12.1
+   Compiling libc v0.2.190
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.228
+   Compiling version_check v0.9.5
+   Compiling thiserror v2.0.17
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.145
+   Compiling typenum v1.20.1
+    Checking cfg-if v1.0.5
+    Checking memchr v2.8.3
+    Checking bytes v1.12.1
+    Checking bitflags v2.13.2
+    Checking itoa v1.0.18
+    Checking pin-project-lite v0.2.17
+   Compiling generic-array v0.14.7
+   Compiling cfg_aliases v0.2.2
+    Checking ryu v1.0.23
+   Compiling getrandom v0.3.4
+   Compiling rustix v1.1.5
+   Compiling nix v0.30.1
+    Checking linux-raw-sys v0.12.1
+    Checking once_cell v1.21.4
+    Checking fastrand v2.5.0
+   Compiling cpufeatures v0.2.17
+    Checking errno v0.3.14
+    Checking mio v1.2.4
+    Checking socket2 v0.6.5
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+    Checking signal-hook-registry v1.4.8
+   Compiling digest v0.10.7
+   Compiling syn v2.0.119
+   Compiling sha2 v0.10.9
+    Checking tempfile v3.23.0
+   Compiling flashwright-engine v0.0.0 (/workspace/crates/flashwright-engine)
+   Compiling thiserror-impl v2.0.17
+   Compiling serde_derive v1.0.228
+   Compiling tokio-macros v2.6.1
+    Checking tokio v1.48.0
+    Checking command-fds v0.3.2
+    Checking flashwright-protocol v0.0.0 (/workspace/crates/flashwright-protocol)
+    Checking flashwright-browser v0.0.0 (/workspace/crates/flashwright-browser)
+    Checking flashwright-driver v0.0.0 (/workspace/crates/flashwright-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 31.89s
+Verifying: python3 tools/watchdog.py --timeout 120 --report-directory compatibility/evidence/resources -- cargo test --workspace --locked
+   Compiling cfg-if v1.0.5
+   Compiling pin-project-lite v0.2.17
+   Compiling ryu v1.0.23
+   Compiling itoa v1.0.18
+   Compiling libc v0.2.190
+   Compiling serde_core v1.0.228
+   Compiling bytes v1.12.1
+   Compiling memchr v2.8.3
+   Compiling bitflags v2.13.2
+   Compiling thiserror v2.0.17
+   Compiling linux-raw-sys v0.12.1
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling sha2 v0.10.9
+   Compiling rustix v1.1.5
+   Compiling errno v0.3.14
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling getrandom v0.3.4
+   Compiling nix v0.30.1
+   Compiling flashwright-engine v0.0.0 (/workspace/crates/flashwright-engine)
+   Compiling signal-hook-registry v1.4.8
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.145
+   Compiling tempfile v3.23.0
+   Compiling tokio v1.48.0
+   Compiling command-fds v0.3.2
+   Compiling flashwright-protocol v0.0.0 (/workspace/crates/flashwright-protocol)
+   Compiling flashwright-browser v0.0.0 (/workspace/crates/flashwright-browser)
+   Compiling flashwright-driver v0.0.0 (/workspace/crates/flashwright-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.07s
+     Running unittests src/lib.rs (target/debug/deps/flashwright_browser-c193eb406f29e3e3)
+
+running 2 tests
+test process_group::tests::termination_waits_for_members_after_the_leader_exits ... ok
+test chromium::tests::guardian_cleanup_survives_cancelled_waiters_and_the_previous_kill_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.16s
+
+     Running tests/connection.rs (target/debug/deps/connection-2af6077dbd4c7577)
+
+running 8 tests
+test eof_settles_all_pending_requests_and_future_calls ... ok
+test sequence_dispatches_all_commands_before_any_reply_and_matches_reversed_replies ... ok
+test full_queue_rejects_entire_sequence_and_rolls_back_registrations ... ok
+test cancellation_withdraws_unsent_suffix_after_partial_first_write ... ok
+test eof_settles_entire_sequence_and_received_replies_can_be_recovered_without_waiting ... ok
+test late_reply_after_cancellation_cannot_settle_another_request ... ok
+test interleaved_events_and_out_of_order_replies_preserve_request_identity ... ok
+test rejected_sequences_have_no_wire_effects_and_release_pending_capacity ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
+     Running unittests src/main.rs (target/debug/deps/flashwright_driver-8ed767658a05ccab)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/flashwright_engine-81ef8164d91bcf4a)
+
+running 5 tests
+test operation::tests::already_cancelled_creation_dispatches_nothing ... ok
+test operation::tests::cancellation_recovers_late_allocation_then_waits_for_disposal ... ok
+test operation::tests::queued_creation_is_withdrawn_without_waiting_for_a_reply ... ok
+test operation::tests::cancellation_with_unknown_allocation_closes_only_its_owner ... ok
+test operation::tests::ordinary_close_waits_for_acknowledgement_without_cleanup_deadline ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.08s
+
+     Running unittests src/lib.rs (target/debug/deps/flashwright_protocol-6fba28f50a4d0dd3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/framing.rs (target/debug/deps/framing-df13d69dfe7b6034)
+
+running 9 tests
+test handshake_rejects_incompatible_versions_and_invalid_limits ... ok
+test protocol_rejects_unknown_fields_and_limits_nested_value_work ... ok
+test handshake_envelopes_round_trip_and_reject_nested_unknown_options ... ok
+test malformed_json_cannot_be_followed_by_an_apparently_valid_frame ... ok
+test truncation_and_oversized_lengths_invalidate_without_allocating_the_payload ... ok
+test cancellation_of_a_fragmented_read_invalidates_the_stream ... ok
+test oversized_outgoing_frame_does_not_write_or_poison_the_stream ... ok
+test cancellation_of_a_blocked_partial_write_invalidates_the_stream ... ok
+test fragmented_and_concatenated_frames_preserve_unicode_and_nul ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+   Doc-tests flashwright_browser
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flashwright_protocol
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Verifying: cargo build --workspace --locked
+   Compiling flashwright-driver v0.0.0 (/workspace/crates/flashwright-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.66s
+Verifying: /usr/bin/node tools/build-packages.mjs
+Verifying: /usr/bin/node tools/extract-selector-runtime.mjs --check
+Verified 307101 characters of pinned injected runtime and locator helpers
+Verifying: /usr/bin/node tools/extract-keyboard-layout.mjs --check
+Verified 212 pinned keyboard descriptions and 114 macOS editing shortcuts.
+Verifying: /usr/bin/node tools/extract-chromium-launch-policy.mjs --check
+Verified pinned Chromium launch policy: 40 headed and 44 headless arguments.
+Verifying: npm run inventory:check
+
+> flashwright-workspace@0.0.0 inventory:check
+> node tools/generate-inventory.mjs --check
+
+6425 classified declaration/subpath entries from 4 pinned sources.
+Verifying: npm run typecheck
+
+> flashwright-workspace@0.0.0 typecheck
+> tsc --noEmit && tsc --noEmit --project compatibility/migration-projects/tsconfig.json
+
+Verifying: npm run test:harness
+
+> flashwright-workspace@0.0.0 test:harness
+> node --test tools/test-harness.mjs tools/test-protocol-profile.mjs
+
+✔ statistics preserve independent-launch units and do not invent tail estimates (33.030375ms)
+✔ paired comparisons retain launch correspondence and reject incomplete pairs (37.455167ms)
+✔ actual launch comparison normalizes only owned profile paths (13.709333ms)
+✔ benchmark admission binds core verification to the exact browser executable (3.371791ms)
+✔ independent clock epochs and overlapping commands preserve accounting without double-counting waits (17.491584ms)
+✔ clock discontinuities invalidate attribution (6.594875ms)
+✔ commands near a phase boundary remain in global counts without arbitrary phase assignment (19.71075ms)
+✔ lost replies and duplicate command identities invalidate attribution (4.299292ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 836.439333
+Verifying: python3 -m unittest discover -s tools -p test_*.py -v
+test_fragmented_frames_and_partial_writes_preserve_exact_bytes_without_payloads (test_protocol_proxy.ProtocolProxyTests.test_fragmented_frames_and_partial_writes_preserve_exact_bytes_without_payloads) ... ok
+test_response_payloads_are_not_retained (test_protocol_proxy.ProtocolProxyTests.test_response_payloads_are_not_retained) ... ok
+test_truncated_frame_is_reported_and_not_counted_as_a_complete_message (test_protocol_proxy.ProtocolProxyTests.test_truncated_frame_is_reported_and_not_counted_as_a_complete_message) ... ok
+test_clean_job_needs_no_watchdog_cleanup (test_watchdog.WatchdogLifecycleTests.test_clean_job_needs_no_watchdog_cleanup) ... ok
+test_cpu_records_retain_a_child_while_it_is_an_unreaped_zombie (test_watchdog.WatchdogLifecycleTests.test_cpu_records_retain_a_child_while_it_is_an_unreaped_zombie) ... ok
+test_cpu_reset_and_reused_process_identifiers_preserve_both_identities (test_watchdog.WatchdogLifecycleTests.test_cpu_reset_and_reused_process_identifiers_preserve_both_identities) ... ok
+test_timeout_kills_owned_descendants_and_preserves_an_unrelated_process (test_watchdog.WatchdogLifecycleTests.test_timeout_kills_owned_descendants_and_preserves_an_unrelated_process) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 4.636s
+
+OK
+Verifying: npm run test:library
+
+> flashwright-workspace@0.0.0 test:library
+> node tools/run-library-smoke.mjs
+
+Real Chromium library smoke passed: identity, isolation, value graph, concurrent replies and cleanup.
+Verifying: npm run test:lifecycle
+
+> flashwright-workspace@0.0.0 test:lifecycle
+> node tools/run-lifecycle-tests.mjs
+
+test_success_crossing_caller_deadline_is_disposed (test_driver_protocol.ClientDeadlineTests.test_success_crossing_caller_deadline_is_disposed) ... Late replies preserve ownership cleanup, input delivery and UTF-16 diagnostics.
+ok
+test_blocked_output_exhaustion_still_releases_browser (test_driver_protocol.DriverProtocolTests.test_blocked_output_exhaustion_still_releases_browser) ... ok
+test_cancelled_allocation_with_unresponsive_browser_reports_cleanup (test_driver_protocol.DriverProtocolTests.test_cancelled_allocation_with_unresponsive_browser_reports_cleanup) ... ok
+test_duplicate_request_while_renderer_is_blocked_releases_browser (test_driver_protocol.DriverProtocolTests.test_duplicate_request_while_renderer_is_blocked_releases_browser) ... ok
+test_eof_inside_frame_releases_browser (test_driver_protocol.DriverProtocolTests.test_eof_inside_frame_releases_browser) ... ok
+test_malformed_frame_releases_browser (test_driver_protocol.DriverProtocolTests.test_malformed_frame_releases_browser) ... ok
+test_explicit_cancellation_retains_diagnostics_and_releases_subscription (test_driver_protocol.ResidentAssertionProtocolTests.test_explicit_cancellation_retains_diagnostics_and_releases_subscription) ... ok
+test_page_closure_releases_deferred_cancellation_ownership (test_driver_protocol.ResidentAssertionProtocolTests.test_page_closure_releases_deferred_cancellation_ownership) ... ok
+test_unbounded_cancellation_during_blocked_renderer_finishes_after_recovery (test_driver_protocol.ResidentAssertionProtocolTests.test_unbounded_cancellation_during_blocked_renderer_finishes_after_recovery) ... ok
+test_dead_node_worker_releases_driver_and_browser (test_lifecycle.EngineLifecycleTests.test_dead_node_worker_releases_driver_and_browser) ... ok
+test_dead_node_worker_with_stopped_driver_still_releases_browser (test_lifecycle.EngineLifecycleTests.test_dead_node_worker_with_stopped_driver_still_releases_browser) ... ok
+test_driver_crash_does_not_orphan_browser (test_lifecycle.EngineLifecycleTests.test_driver_crash_does_not_orphan_browser) ... ok
+test_host_deadline_survives_stopped_driver (test_lifecycle.EngineLifecycleTests.test_host_deadline_survives_stopped_driver) ... ok
+test_renderer_deadline_can_interrupt_infinite_javascript (test_lifecycle.EngineLifecycleTests.test_renderer_deadline_can_interrupt_infinite_javascript) ... ok
+test_failed_setup_and_test_body_release_profiles_without_killing_guardians (test_lifecycle.FailedCaseCleanupTests.test_failed_setup_and_test_body_release_profiles_without_killing_guardians) ... ok
+test_blocked_input_handler_closes_page_without_replaying_input (test_public_lifecycle.PublicLifecycleTests.test_blocked_input_handler_closes_page_without_replaying_input) ... ok
+test_blocked_keyboard_handler_closes_only_its_owned_page (test_public_lifecycle.PublicLifecycleTests.test_blocked_keyboard_handler_closes_only_its_owned_page) ... ok
+test_blocked_renderer_cannot_delay_assertion_deadline (test_public_lifecycle.PublicLifecycleTests.test_blocked_renderer_cannot_delay_assertion_deadline) ... ok
+test_browser_crash_updates_public_objects (test_public_lifecycle.PublicLifecycleTests.test_browser_crash_updates_public_objects) ... ok
+test_context_close_cancels_page_keyboard_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_page_keyboard_and_preserves_browser) ... ok
+test_context_close_cancels_unbounded_assertion (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_unbounded_assertion) ... ok
+test_keyboard_deadline_releases_keys_and_serializes_pointer_input (test_public_lifecycle.PublicLifecycleTests.test_keyboard_deadline_releases_keys_and_serializes_pointer_input) ... ok
+test_locator_deadline_suppresses_late_renderer_mutation (test_public_lifecycle.PublicLifecycleTests.test_locator_deadline_suppresses_late_renderer_mutation) ... ok
+test_pointer_deadline_releases_button_and_modifiers (test_public_lifecycle.PublicLifecycleTests.test_pointer_deadline_releases_button_and_modifiers) ... ok
+test_renderer_crash_updates_page_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_renderer_crash_updates_page_and_preserves_browser) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 138.947s
+
+OK
+Verifying: npm run test:navigation
+
+> flashwright-workspace@0.0.0 test:navigation
+> node tools/run-navigation-tests.mjs
+
+Navigation differential passed: compatibility/evidence/navigation-linux-x64-24.15.0.json
+Verifying: npm run test:locators
+
+> flashwright-workspace@0.0.0 test:locators
+> node tools/run-locator-tests.mjs
+
+reference: locator and text input corpus passed
+flashwright: locator and text input corpus passed
+Locator differential evidence: compatibility/evidence/locators-linux-x64-24.15.0.json
+Verifying: npm run test:pointer
+
+> flashwright-workspace@0.0.0 test:pointer
+> node tools/run-pointer-tests.mjs
+
+reference: first native click passed
+reference: event and option cases passed
+reference: state and scroll cases passed
+reference: child-frame cases passed
+reference: hit guard, stability and concurrency cases passed
+reference: navigation commit barrier passed
+reference: native pointer corpus passed
+flashwright: first native click passed
+flashwright: event and option cases passed
+flashwright: state and scroll cases passed
+flashwright: child-frame cases passed
+flashwright: hit guard, stability and concurrency cases passed
+flashwright: navigation commit barrier passed
+flashwright: native pointer corpus passed
+Pointer differential evidence: compatibility/evidence/pointer-linux-x64-24.15.0.json
+Verifying: npm run test:keyboard
+
+> flashwright-workspace@0.0.0 test:keyboard
+> node tools/run-keyboard-tests.mjs
+
+reference: all 212 key descriptions and chord events passed
+reference: all page-level key descriptions, existing focus and selection passed
+reference: focus, editing, shadow and frame cases passed
+reference: native keyboard corpus passed
+flashwright: all 212 key descriptions and chord events passed
+flashwright: all page-level key descriptions, existing focus and selection passed
+flashwright: focus, editing, shadow and frame cases passed
+flashwright: native keyboard corpus passed
+Keyboard differential evidence: compatibility/evidence/keyboard-linux-x64-24.15.0.json
+Verifying: npm run test:assertions
+
+> flashwright-workspace@0.0.0 test:assertions
+> node tools/run-assertion-tests.mjs
+
+reference: immediate, array, state and missing-element assertions passed
+reference: retry, failure and successor-document assertions passed
+flashwright: immediate, array, state and missing-element assertions passed
+flashwright: retry, failure and successor-document assertions passed
+Assertion differential evidence: compatibility/evidence/assertions-linux-x64-24.15.0.json
+Verifying: npm run test:conditions
+
+> flashwright-workspace@0.0.0 test:conditions
+> node tools/run-condition-tests.mjs
+
+Resident registry: synchronous selector batches share native queries without skipping predicates
+Resident registry: shared prefixes preserve quoted separators, negative indices and missing targets
+Resident registry: property changes after a batch still execute fresh predicates
+Resident registry: replacement after a batch sees fresh membership
+Resident registry: application callback predicates close any adjacent query-cache scopes
+Resident registry: unknown nested selector engines remain outside shared query scopes
+Resident registry: predicate errors release query scopes and preserve unrelated progress
+Resident registry: paced fallback preserves fresh-condition frames, immediate events and independent deadlines
+Resident registry: long-pending property, CSSOM and new-shadow conditions still detect fresh state
+Resident registry: long-pending mutation still wakes with both fallback callbacks withheld
+Resident registry: already true skips discovery
+Resident registry: mutation wakeup runs the complete text predicate
+Resident registry: valid transient state can be observed before the next task
+Resident registry: negation checks the new value
+Resident registry: property-only values and checkbox state use fallback
+Resident registry: CSSOM-only changes use fallback
+Resident registry: CSS animation changes visibility without DOM mutation
+Resident registry: a full predicate observes a transient CSS animation state
+Resident registry: font loading changes geometry without DOM mutation
+Resident registry: font completion wakes conditions while registry fallback callbacks are withheld
+Resident registry: failed font loading wakes a full check without reporting false success
+Resident registry: viewport media-query changes invalidate visibility
+Resident registry: focus changes are observed without DOM mutations
+Resident registry: replacement re-resolves membership
+Resident registry: new shadow on an existing host uses fallback
+Resident registry: existing shadow roots are observed
+Resident registry: root and discovery bounds retain fallback correctness
+Resident registry: concurrent conditions share one bounded discovery pass
+Resident registry: 128 expensive pending predicates yield to a browser timer and all complete
+Resident registry: repeated microtask invalidations also yield to browser tasks
+Resident registry: continuous invalidation preserves the last condition place in the queue
+Resident registry: cancellation closes a queued flush before a new condition group starts
+Resident registry: detached shadow roots release observer references
+Resident registry: deadline keeps the last full observation
+Resident registry: cancellation cannot turn into a later success
+Resident registry: change during an asynchronous check is not lost
+Resident registry: late asynchronous predicate cannot resurrect cancelled work
+Resident registry: strictness failure is terminal and releases subscriptions
+Resident registry: a predicate finishing after its budget cannot report success
+Resident registry: observer-off path preserves full predicate behavior
+Resident registry: property fallback works in a real hidden child frame
+Resident registry: timer fallback works when registry frame callbacks are withheld
+Resident registry: a truly frozen page resumes property detection through the timer fallback
+Resident registry: a deadline passed during real suspension cannot become a late success
+Resident registry: cancellation during real suspension cannot resurrect on resume
+Resident registry: mutation storms cap discovery admission and still check the final predicate
+Resident registry: registration bound and bulk disposal release all work
+Resident registry: application realm cannot forge an isolated condition outcome
+Resident registry: document transition retires the old registry
+Resident registry evidence: compatibility/evidence/resident-registry-linux-x64-24.15.0-2026-10-08T01-44-04.301Z.json
+Verifying: npm run test:native-runner
+
+> flashwright-workspace@0.0.0 test:native-runner
+> node tools/run-native-runner-tests.mjs
+
+
+Running 9 tests using 1 worker
+
+  ✓  1 compatibility/m2/runner/runner.spec.ts:5:1 › extended fixtures run native browser actions and assertions (2.5s)
+  ✓  2 compatibility/m2/runner/runner.spec.ts:12:1 › fresh contexts isolate browser storage (1.4s)
+  ✘  3 compatibility/m2/runner/runner.spec.ts:16:1 › soft native assertion failures reach the reporter (1.5s)
+  ✓  4 compatibility/m2/runner/runner.spec.ts:22:1 › configured native assertion reports received value and call site (1.7s)
+  ✘  5 compatibility/m2/runner/runner.spec.ts:31:1 › runner retries use fresh fixture ownership (1.5s)
+  ✓  6 compatibility/m2/runner/runner.spec.ts:31:1 › runner retries use fresh fixture ownership (retry #1) (2.3s)
+  ✘  7 compatibility/m2/runner/runner.spec.ts:35:1 › runner timeout tears down an unbounded native assertion (1.2s)
+  ✘  8 compatibility/m2/runner/runner.spec.ts:35:1 › runner timeout tears down an unbounded native assertion (retry #1) (2.0s)
+  ✓  9 compatibility/m2/runner/runner.spec.ts:39:1 › unimplemented browser matchers reject explicitly (2.0s)
+  ✘  10 compatibility/m2/runner/unsupported-context.spec.ts:4:1 › unsupported context options reject before the test body (1ms)
+  ✘  11 compatibility/m2/runner/unsupported-trace.spec.ts:4:1 › unsupported artifact policy rejects before the test body (1ms)
+
+
+  1) compatibility/m2/runner/runner.spec.ts:35:1 › runner timeout tears down an unbounded native assertion 
+
+    [31mTest timeout of 150ms exceeded.[39m
+
+    TargetClosedError: assertion.run: target has been closed or is not owned by this driver
+
+       at ../../../packages/flashwright/src/errors.ts:43
+
+      41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,
+      42 |   };
+    > 43 |   return new (constructors[record.code] ?? ProtocolError)(record);
+         |          ^
+      44 | }
+      45 |
+      46 | export function failure(code: string, method: string, message: string): FlashwrightError {
+        at fromRecord (/workspace/packages/flashwright/src/errors.ts:43:10)
+        at EngineClient.consume (/workspace/packages/flashwright/src/client.ts:255:35)
+        at Socket.<anonymous> (/workspace/packages/flashwright/src/client.ts:77:60)
+        at EngineClient.request (/workspace/packages/flashwright/src/client.ts:143:22)
+        at Page.runAssertion (/workspace/packages/flashwright/src/index.ts:244:34)
+        at Frame.runAssertion (/workspace/packages/flashwright/src/frame.ts:18:23)
+        at Locator.runAssertion (/workspace/packages/flashwright/src/locator.ts:99:111)
+        at assertion (/workspace/packages/flashwright-test/src/matchers.ts:27:59)
+        at textAssertion (/workspace/packages/flashwright-test/src/matchers.ts:46:10)
+        at Object.toHaveText (/workspace/packages/flashwright-test/src/matchers.ts:50:124)
+        at /workspace/compatibility/m2/runner/runner.spec.ts:37:40
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    [31mTest timeout of 150ms exceeded.[39m
+
+    TargetClosedError: assertion.run: target has been closed or is not owned by this driver
+
+       at ../../../packages/flashwright/src/errors.ts:43
+
+      41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,
+      42 |   };
+    > 43 |   return new (constructors[record.code] ?? ProtocolError)(record);
+         |          ^
+      44 | }
+      45 |
+      46 | export function failure(code: string, method: string, message: string): FlashwrightError {
+        at fromRecord (/workspace/packages/flashwright/src/errors.ts:43:10)
+        at EngineClient.consume (/workspace/packages/flashwright/src/client.ts:255:35)
+        at Socket.<anonymous> (/workspace/packages/flashwright/src/client.ts:77:60)
+        at EngineClient.request (/workspace/packages/flashwright/src/client.ts:143:22)
+        at Page.runAssertion (/workspace/packages/flashwright/src/index.ts:244:34)
+        at Frame.runAssertion (/workspace/packages/flashwright/src/frame.ts:18:23)
+        at Locator.runAssertion (/workspace/packages/flashwright/src/locator.ts:99:111)
+        at assertion (/workspace/packages/flashwright-test/src/matchers.ts:27:59)
+        at textAssertion (/workspace/packages/flashwright-test/src/matchers.ts:46:10)
+        at Object.toHaveText (/workspace/packages/flashwright-test/src/matchers.ts:50:124)
+        at /workspace/compatibility/m2/runner/runner.spec.ts:37:40
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) compatibility/m2/runner/runner.spec.ts:31:1 › runner retries use fresh fixture ownership ──────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m1[39m
+    Received: [31m0[39m
+
+      31 | test('runner retries use fresh fixture ownership', async ({ page }, testInfo) => {
+      32 |   await expect(page.getByRole('status')).toHaveText('Ready');
+    > 33 |   expect(testInfo.retry).toBe(1);
+         |                          ^
+      34 | });
+      35 | test('runner timeout tears down an unbounded native assertion', async ({ page }) => {
+      36 |   test.setTimeout(150);
+        at /workspace/compatibility/m2/runner/runner.spec.ts:33:26
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    compatibility/m2/runner/runner.spec.ts:35:1 › runner timeout tears down an unbounded native assertion 
+  1 flaky
+    compatibility/m2/runner/runner.spec.ts:31:1 › runner retries use fresh fixture ownership ───────
+  7 passed (31.7s)
+Native runner evidence: compatibility/evidence/native-runner-linux-x64-24.15.0.json
+Verifying: npm run test:packed
+
+> flashwright-workspace@0.0.0 test:packed
+> node tools/test-packed-package.mjs
+
+Packed library consumers passed: compatibility/evidence/packed-library-linux-x64-24.15.0.json
+Verifying: npm run test:packed-runner
+
+> flashwright-workspace@0.0.0 test:packed-runner
+> node tools/test-packed-runner.mjs
+
+
+Running 3 tests using 1 worker
+
+  ✓  1 commonjs.spec.cjs:4:1 › packed fixture and assertion (2.5s)
+  ✓  2 esm.spec.mjs:4:1 › packed fixture and assertion (1.6s)
+  ✓  3 typed.spec.ts:19:1 › typed extended fixture (2.4s)
+
+  3 passed (13.2s)
+UnsupportedFeatureError: only noninteractive flashwright test execution is implemented.
+Packed runner consumers passed: compatibility/evidence/packed-runner-linux-x64-24.15.0.json
+Verifying: npm run test:migration
+
+> flashwright-workspace@0.0.0 test:migration
+> node tools/test-packed-migration.mjs
+
+
+Running 3 tests using 1 worker
+
+  ✓  1 reference/tests/adding-todos/should-add-multiple-todos.spec.ts:6:3 › Adding Todos › should add multiple todos (3.4s)
+  ✓  2 reference/tests/adding-todos/should-add-single-todo.spec.ts:6:3 › Adding Todos › should add single todo (2.2s)
+  ✓  3 reference/tests/completing-todos/should-complete-single-todo.spec.ts:7:3 › Completing Todos › should-complete-single-todo (2.4s)
+
+  3 passed (11.3s)
+
+Running 3 tests using 1 worker
+
+  ✓  1 flashwright/tests/adding-todos/should-add-multiple-todos.spec.ts:6:3 › Adding Todos › should add multiple todos (3.2s)
+  ✓  2 flashwright/tests/adding-todos/should-add-single-todo.spec.ts:6:3 › Adding Todos › should add single todo (2.4s)
+  ✓  3 flashwright/tests/completing-todos/should-complete-single-todo.spec.ts:7:3 › Completing Todos › should-complete-single-todo (2.4s)
+
+  3 passed (11.8s)
+Preserved TodoMVC migration passed: compatibility/evidence/migration-todomvc-linux-x64-24.15.0.json
+Verifying: npm run test:benchmark-contract
+
+> flashwright-workspace@0.0.0 test:benchmark-contract
+> node tools/test-benchmark-contract.mjs
+
+Seven shared benchmark flows and matched launch policy verified: compatibility/evidence/benchmark-contract-linux-x64-24.15.0.json
+Verifying: npm run test:resident-load
+
+> flashwright-workspace@0.0.0 test:resident-load
+> node tools/test-resident-load.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: flashwright-off/mutation-text: see /workspace/compatibility/evidence/resident-load-contract-linux-x64-24.15.0-qS90zX
++ actual - expected
+
++ [
++   'AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n' +
++     '\n' +
++     '1 !== 0\n' +
++     '\n' +
++     '    at verifyResidentLoad (file:///workspace/benchmarks/resident-load-contract.mjs:15:10)\n' +
++     '    at runResidentLoad (file:///workspace/benchmarks/execute-resident-load.mjs:37:9)\n' +
++     '    at async file:///workspace/tools/test-resident-load.mjs:21:20'
++ ]
+- []
+
+    at file:///workspace/tools/test-resident-load.mjs:22:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n' +
+      '\n' +
+      '1 !== 0\n' +
+      '\n' +
+      '    at verifyResidentLoad (file:///workspace/benchmarks/resident-load-contract.mjs:15:10)\n' +
+      '    at runResidentLoad (file:///workspace/benchmarks/execute-resident-load.mjs:37:9)\n' +
+      '    at async file:///workspace/tools/test-resident-load.mjs:21:20'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0
+Core verification failed: compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T01-38-00.981Z/report.json

@@ -1,0 +1,40 @@
+
+> flashwright-workspace@0.0.0 test:resident-load
+> node tools/test-resident-load.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: flashwright-off/mutation-text: see /workspace/compatibility/evidence/resident-load-contract-linux-x64-24.15.0-qS90zX
++ actual - expected
+
++ [
++   'AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n' +
++     '\n' +
++     '1 !== 0\n' +
++     '\n' +
++     '    at verifyResidentLoad (file:///workspace/benchmarks/resident-load-contract.mjs:15:10)\n' +
++     '    at runResidentLoad (file:///workspace/benchmarks/execute-resident-load.mjs:37:9)\n' +
++     '    at async file:///workspace/tools/test-resident-load.mjs:21:20'
++ ]
+- []
+
+    at file:///workspace/tools/test-resident-load.mjs:22:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n' +
+      '\n' +
+      '1 !== 0\n' +
+      '\n' +
+      '    at verifyResidentLoad (file:///workspace/benchmarks/resident-load-contract.mjs:15:10)\n' +
+      '    at runResidentLoad (file:///workspace/benchmarks/execute-resident-load.mjs:37:9)\n' +
+      '    at async file:///workspace/tools/test-resident-load.mjs:21:20'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0
