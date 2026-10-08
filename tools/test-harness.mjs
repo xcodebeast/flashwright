@@ -4,6 +4,42 @@ import { requireVerifiedBrowser } from './browser-identity.mjs';
 import { quantile, summarize, comparePaired } from '../benchmarks/statistics.mjs';
 import { launchArguments } from '../benchmarks/paired-contract.mjs';
 import { verifyResidentLoadInvocation } from './verify-resident-load.mjs';
+import { verifyDriverComparisonCore } from './driver-comparison-contract.mjs';
+
+test('driver comparisons require identical execution contracts across independently verified backends', () => {
+  const browser = { executablePath: '/browser', sha256: 'browser-hash', version: '148.0.7778.96', distribution: 'chromium-headless-shell' };
+  const sources = {
+    'packages/flashwright/src/index.ts': 'adapter', 'benchmarks/workloads/index.mjs': 'workload',
+    'benchmarks/sample.mjs': 'sample', 'benchmarks/execute-sample.mjs': 'execution',
+    'benchmarks/configurations/baseline.json': 'configuration', 'benchmarks/statistics.mjs': 'statistics',
+    'tools/watchdog.py': 'resources', 'tools/engine-configuration.mjs': 'mode',
+    'crates/flashwright-protocol/src/messages.rs': 'protocol',
+    'crates/flashwright-browser/src/chromium-launch-policy.json': 'flags',
+    'crates/flashwright-engine/src/lib.rs': 'old-backend',
+  };
+  const report = { status: 'passed', sourceChangedDuringVerification: false, browserChangedDuringVerification: false,
+    browser, node: 'v24.15.0', platform: 'darwin', architecture: 'arm64', driverSha256: 'reference-driver',
+    engineConfiguration: { residentAssertions: true, conditionInstrumentation: false }, sources,
+    checks: Array.from({ length: 35 }, () => ({ code: 0 })),
+  };
+  const metadata = { browser, node: report.node, platform: report.platform, architecture: report.architecture,
+    engineConfiguration: report.engineConfiguration,
+    drivers: { reference: { sha256: 'reference-driver' }, candidate: { sha256: 'candidate-driver' } },
+    sources: { ...sources, 'crates/flashwright-engine/src/lib.rs': 'new-backend', 'benchmarks/compare-drivers.mjs': 'new-harness' },
+  };
+  verifyDriverComparisonCore(report, metadata, 'reference');
+  verifyDriverComparisonCore({ ...report, sources: metadata.sources, driverSha256: 'candidate-driver' }, metadata, 'candidate');
+  for (const name of Object.keys(sources).filter(name => name !== 'crates/flashwright-engine/src/lib.rs')) {
+    assert.throws(() => verifyDriverComparisonCore(report, { ...metadata, sources: { ...metadata.sources, [name]: 'changed' } }, 'reference'), /changed shared execution source/);
+  }
+  assert.throws(() => verifyDriverComparisonCore(report, { ...metadata, sources: { ...metadata.sources, 'benchmarks/workloads/new-helper.mjs': 'unverified' } }, 'reference'), /Missing verified execution source/);
+  for (const alteration of [
+    { status: 'failed' }, { sourceChangedDuringVerification: true }, { driverSha256: 'different-driver' },
+    { engineConfiguration: { residentAssertions: false, conditionInstrumentation: false } }, { checks: [{ code: 0 }] },
+    { browser: { ...browser, sha256: 'another-browser' } },
+  ]) assert.throws(() => verifyDriverComparisonCore({ ...report, ...alteration }, metadata, 'reference'));
+  assert.throws(() => verifyDriverComparisonCore({ ...report, driverSha256: 'candidate-driver' }, metadata, 'candidate'));
+});
 
 test('resident load invocation supports legacy and explicitly classified production samples', () => {
   const entry = { mode: 'playwright', scenario: { workload: 'quiet-text', conditionCount: 1 }, launchGroup: 0 };

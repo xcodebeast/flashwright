@@ -261,11 +261,13 @@
       "compatibility/evidence/screenshots-checkpoint-2026-10-08.json",
       "compatibility/evidence/diagnostics-checkpoint-2026-10-08.json",
       "compatibility/evidence/handles-checkpoint-2026-10-08.json",
-      "compatibility/evidence/console-checkpoint-2026-10-08.json"
+      "compatibility/evidence/console-checkpoint-2026-10-08.json",
+      "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T20-41-43.893Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
     "performanceStatus": "The rebuilt default comparison records median ratio 1.0672 (95% bootstrap interval 0.9919\u20131.1313), about 6.3% less complete-run time. Its confidence interval includes parity, so this final run does not establish a statistically resolved complete-run gain. The preceding identical-binary adoption comparisons show 5.3% less time against Playwright and 4.6% less time against residency off; all eighteen resident-on resource comparisons pass. The 10% complete-flow release target remains open. Failure medians and interaction/navigation observed maxima exceed the regression thresholds. The resource matrix remains bound to its pre-default binary; the assertion algorithm is unchanged. Native Linux performance, worker contention and broader release gates remain open.",
-    "sourceIdentity": "205 source hashes match across 35 native default core groups, eight Node22/default groups, four native/off groups and eleven emulated Linux/default groups. Native optimized driver: 233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c; Linux debug driver: d1cdf4f654261f62d0fefbb36870c1f20c7b8f54aa4a7cf49a757a76043cf4f5. See compatibility/evidence/resident-default-checkpoint-2026-10-08.json.",
+    "sourceIdentity": "Current benchmark-tooling tree has 208 source hashes and passes all 35 native core groups. Production Rust/TypeScript source and optimized driver remain byte-for-byte unchanged from the resident-default checkpoint (233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c). The rejected initialization candidate passed 56 groups at 209 source hashes; its evidence is separate. Prior default Node22/Linux/opt-out coverage remains bound to its original 205-source snapshot. See compatibility/evidence/page-initialization-checkpoint-2026-10-08.json.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -366,7 +368,9 @@
     "consoleCheckpoint": "compatibility/evidence/console-checkpoint-2026-10-08.json",
     "consoleStatus": "All 35 native macOS core groups pass, including 65 Rust tests and 82 lifecycle cases. Sixteen focused Node22/headless-shell groups and nineteen focused Linux amd64-emulation groups pass at the same 205 source hashes. Console and handle differentials match their shared reference outcomes on all three configurations, with the S4.l BigInt difference retained separately. Eight native console cases cover ordering, ownership, long-task cleanup, clear invalidation, capacity and publication limits. Fresh packed ESM/CommonJS consumers preserve console callback inference and live handles. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open.",
     "residentDefaultCheckpoint": "compatibility/evidence/resident-default-checkpoint-2026-10-08.json",
-    "residentAssertionsDefault": true
+    "residentAssertionsDefault": true,
+    "pageInitializationExperiment": "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
+    "pageInitializationDecision": "Parallel page initialization was tested and rejected: all 56 candidate verification groups passed, but the direct eight-pair comparison did not resolve complete-run or setup benefit. Complete-run ratio 0.9973 (95% interval 0.9767\u20131.0619); setup ratio 1.0195 (0.9732\u20131.0440). Navigation median point crossed the 5% regression threshold. Wrapper-inclusive process wall improved about 1.4%, but did not justify the added concurrency. Production initialization and optimized binary were restored exactly; the current 208-source tree passes 35 native groups, 65 Rust tests and 82 lifecycle cases. The candidate patch, every observation, separate attribution and verifier corruption checks are retained."
   },
   "pairedRuns": [
     {
@@ -649,6 +653,16 @@
       "verification": "tools/verify-paired.mjs",
       "checkpoint": "compatibility/evidence/resident-default-checkpoint-2026-10-08.json",
       "scope": "Shared native macOS, same pinned headless shell, seven fixed workloads, one worker. See checkpoint for mode, complete observations and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T20-38-05.623Z-darwin-arm64-paired-0df4a248",
+      "metadataSha256": "8e5901f2a454c382dacc1270e0c47116b4b1379f15a560c0dcfab4272f80783f",
+      "summarySha256": "41536ed0066b26fef1ef7e1d2c0ed4626c7dfde477e4f3f2d207e93d04a53c46",
+      "valid": true,
+      "checkpoint": "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
+      "scope": "Rejected initialization candidate, not current production. Shared native macOS, one worker, unchanged seven workloads. All observations retained.",
+      "independentLaunchPairs": 8,
+      "verification": "tools/verify-paired.mjs"
     }
   ],
   "attributionRuns": [
@@ -704,6 +718,16 @@
       "summarySha256": "e0233a223305dd269cc46f48408dc4dfc3da7c1dba676dca302eba0f2bec6d63",
       "verification": "tools/verify-attribution.mjs",
       "checkpoint": "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json"
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T20-39-17.662Z-darwin-arm64-attribution-7c9790f8",
+      "metadataSha256": "1f420033a3f6446c00ba59d0b97f82ffb50c788b1f51a85ac1cb106822f58521",
+      "summarySha256": "094e938eda4b51bfe09779fd911fb26092dec6a54cc19834af3cd17b160b0cc8",
+      "valid": true,
+      "checkpoint": "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
+      "scope": "Rejected initialization candidate, not current production. Shared native macOS, one worker, unchanged seven workloads. All observations retained.",
+      "independentLaunchPairs": 2,
+      "verification": "tools/verify-attribution.mjs"
     }
   ],
   "residencyRuns": [
@@ -889,6 +913,19 @@
       "checkpoint": "compatibility/evidence/resident-adoption-profile-checkpoint-2026-10-08.json",
       "status": "All eighteen resident-on comparisons pass CPU/memory/complete-time gates; all 162 launches independently verify.",
       "verificationCommand": "node tools/verify-resident-load.mjs benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275"
+    }
+  ],
+  "driverComparisonRuns": [
+    {
+      "directory": "benchmarks/results/2026-10-08T20-36-53.660Z-darwin-arm64-drivers-b52a6fee",
+      "metadataSha256": "7481e565af7b18182d878fca260a31814935ae99e9acdf30aa760d4adbee666e",
+      "summarySha256": "a72e1b535d98f26a86a765e2fbb5d42ad5b5a4f3231587b5c28b1bdc689a0773",
+      "valid": true,
+      "checkpoint": "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
+      "scope": "Rejected initialization candidate, not current production. Shared native macOS, one worker, unchanged seven workloads. All observations retained.",
+      "independentLaunchPairs": 8,
+      "verification": "tools/verify-driver-comparison.mjs",
+      "adopted": false
     }
   ]
 }
