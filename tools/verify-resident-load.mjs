@@ -7,6 +7,17 @@ import { residentLoadPlan, summarizeResidentLoad } from '../benchmarks/resident-
 import { verifyResidentLoad } from '../benchmarks/resident-load-contract.mjs';
 import { sha256, verifyLoadCoreReport } from './resident-load-evidence.mjs';
 
+/** Bind the recorded invocation to its scenario and versioned production purpose. */
+export function verifyResidentLoadInvocation(command, entry, sampleVersion) {
+  assert.ok(sampleVersion === undefined || sampleVersion === 2, 'Unknown resident load sample version');
+  const expected = ['benchmarks/resident-load-sample.mjs', entry.mode, entry.scenario.workload,
+    String(entry.scenario.conditionCount), String(entry.launchGroup)];
+  if (sampleVersion === 2) expected.push('comparison');
+  assert.equal(typeof command[0], 'string');
+  assert.ok(command[0].length > 0, 'Missing sample runtime executable');
+  assert.deepEqual(command.slice(1), expected);
+}
+
 /** Recheck raw samples, bundled conformance evidence, balanced orders and all reported statistics. */
 export async function verifyResidentLoadDirectory(directory) {
   const read = async name => JSON.parse(await readFile(join(directory, name), 'utf8'));
@@ -51,7 +62,7 @@ export async function verifyResidentLoadDirectory(directory) {
     for (const field of ['mode', 'scenario', 'launchGroup']) assert.deepEqual(launch[field], entry[field]);
     assert.deepEqual(launch.contractFailures, []);
     assert.deepEqual(launch.resources, await read(resourceName));
-    assert.deepEqual(launch.resources.command.slice(-5), ['benchmarks/resident-load-sample.mjs', entry.mode, entry.scenario.workload, String(entry.scenario.conditionCount), String(entry.launchGroup)]);
+    verifyResidentLoadInvocation(launch.resources.command, entry, launch.schemaVersion);
     const raw = JSON.parse(launch.output);
     for (const [field, value] of Object.entries(raw)) assert.deepEqual(launch[field], value);
     verifyResidentLoad(launch, configuration, metadata.browser.launchPolicy, metadata.browser.executablePath);
