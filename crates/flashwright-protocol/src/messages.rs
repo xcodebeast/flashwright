@@ -8,6 +8,7 @@ use crate::{CAPABILITY_INVENTORY_VERSION, PACKAGE_VERSION, PROTOCOL_VERSION};
 pub enum DriverOutput {
     Message(DriverMessage),
     Frame(crate::EncodedFrame),
+    Attachment(crate::AttachmentStream),
 }
 
 impl From<DriverMessage> for DriverOutput {
@@ -24,6 +25,8 @@ pub struct ResourceLimits {
     pub queued_messages: usize,
     pub value_depth: usize,
     pub value_nodes: usize,
+    pub binary_attachment_bytes: usize,
+    pub pending_attachments: usize,
 }
 
 impl Default for ResourceLimits {
@@ -34,6 +37,8 @@ impl Default for ResourceLimits {
             queued_messages: 128,
             value_depth: 64,
             value_nodes: 100_000,
+            binary_attachment_bytes: 32 * 1024 * 1024,
+            pending_attachments: 2,
         }
     }
 }
@@ -47,12 +52,18 @@ impl ResourceLimits {
             queued_messages: self.queued_messages.min(peer.queued_messages),
             value_depth: self.value_depth.min(peer.value_depth),
             value_nodes: self.value_nodes.min(peer.value_nodes),
+            binary_attachment_bytes: self
+                .binary_attachment_bytes
+                .min(peer.binary_attachment_bytes),
+            pending_attachments: self.pending_attachments.min(peer.pending_attachments),
         };
         if limits.control_frame_bytes < 1024
             || limits.pending_operations == 0
             || limits.queued_messages == 0
             || limits.value_depth == 0
             || limits.value_nodes == 0
+            || limits.binary_attachment_bytes == 0
+            || limits.pending_attachments == 0
         {
             return Err(ErrorRecord::new(
                 ErrorCode::InvalidArgument,

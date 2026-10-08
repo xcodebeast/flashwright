@@ -216,7 +216,7 @@ impl Engine {
         &self,
         parameters: Value,
         operation: &Operation,
-    ) -> Result<Value, ErrorRecord> {
+    ) -> Result<BinaryAttachment, ErrorRecord> {
         let method = "response.body";
         validate_keys(method, &parameters, &["page", "request"])?;
         let page = self.page(identifier(&parameters, "page", method)?, method)?;
@@ -246,13 +246,50 @@ impl Engine {
                 .wait(async { changes.changed().await.map_err(|_| closed(method)) })
                 .await?;
         }
-        operation
-            .wait(browser.connection.call(
-                "Network.getResponseBody",
-                json!({ "requestId": request_identifier }),
-                Some(&page.session_identifier),
+        let reservation = operation
+            .wait(page.state.while_alive(method, async {
+                self.attachment_slots
+                    .clone()
+                    .acquire_owned()
+                    .await
+                    .map_err(|_| closed(method))
+            }))
+            .await?;
+        let mut result = operation
+            .wait(page.state.while_alive(
+                method,
+                browser.connection.call(
+                    "Network.getResponseBody",
+                    json!({ "requestId": request_identifier }),
+                    Some(&page.session_identifier),
+                ),
             ))
-            .await
+            .await?;
+        let Value::String(body) = result["body"].take() else {
+            return Err(ErrorRecord::new(
+                ErrorCode::Protocol,
+                method,
+                "browser omitted response body",
+            ));
+        };
+        let encoding = match result["base64Encoded"].as_bool() {
+            Some(true) => flashwright_protocol::AttachmentEncoding::Base64,
+            Some(false) => flashwright_protocol::AttachmentEncoding::Raw,
+            None => {
+                return Err(ErrorRecord::new(
+                    ErrorCode::Protocol,
+                    method,
+                    "browser omitted response body encoding",
+                ));
+            }
+        };
+        BinaryAttachment::new(
+            body.into_bytes(),
+            encoding,
+            self.maximum_attachment_bytes,
+            reservation,
+            method,
+        )
     }
 }
 

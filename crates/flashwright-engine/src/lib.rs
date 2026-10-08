@@ -23,7 +23,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use flashwright_browser::{Chromium, LaunchOptions};
-use flashwright_protocol::{DriverOutput, ErrorCode, ErrorRecord};
+use flashwright_protocol::{
+    BinaryAttachment, DriverOutput, ErrorCode, ErrorRecord, ResourceLimits,
+};
 use page_state::PageState;
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -60,6 +62,13 @@ pub struct Engine {
     fatal: watch::Sender<bool>,
     resident_assertions: bool,
     condition_instrumentation: bool,
+    attachment_slots: Arc<tokio::sync::Semaphore>,
+    maximum_attachment_bytes: usize,
+}
+
+pub enum OperationResult {
+    Value(Value),
+    Binary(BinaryAttachment),
 }
 
 #[derive(Default)]
@@ -103,8 +112,11 @@ impl Engine {
         parent_liveness: Option<OwnedFd>,
         outgoing: mpsc::Sender<DriverOutput>,
         fatal: watch::Sender<bool>,
+        limits: ResourceLimits,
     ) -> Self {
         Self {
+            attachment_slots: Arc::new(tokio::sync::Semaphore::new(limits.pending_attachments)),
+            maximum_attachment_bytes: limits.binary_attachment_bytes,
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 == Ok("1"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
@@ -125,6 +137,24 @@ impl Engine {
     }
 
     pub async fn execute(
+        self: &Arc<Self>,
+        method: &str,
+        parameters: Value,
+        operation: &Operation,
+    ) -> Result<OperationResult, ErrorRecord> {
+        operation.check()?;
+        if method == "response.body" {
+            return self
+                .response_body(parameters, operation)
+                .await
+                .map(OperationResult::Binary);
+        }
+        self.execute_value(method, parameters, operation)
+            .await
+            .map(OperationResult::Value)
+    }
+
+    async fn execute_value(
         self: &Arc<Self>,
         method: &str,
         parameters: Value,
@@ -174,7 +204,6 @@ impl Engine {
             "context.storageState" => self.storage_state(parameters, operation).await,
             "page.goto" => self.navigate(parameters, operation).await,
             "page.waitForLoadState" => self.wait_for_load_state(parameters, operation).await,
-            "response.body" => self.response_body(parameters, operation).await,
             "locator.run" => self.run_locator(parameters, operation).await,
             "assertion.run" => self.run_assertion(parameters, operation).await,
             "keyboard.press" => self.press_page_key(parameters, operation).await,

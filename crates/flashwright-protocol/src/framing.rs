@@ -10,6 +10,8 @@ pub enum FrameError {
     TooLarge { received: usize, limit: usize },
     #[error("zero-length control frames are invalid")]
     Empty,
+    #[error("invalid binary attachment chunk")]
+    InvalidAttachment,
     #[error("transport ended inside a control frame")]
     Truncated,
     #[error("transport is invalid after a previous framing or write failure")]
@@ -98,6 +100,31 @@ pub struct EncodedFrame {
 }
 
 impl EncodedFrame {
+    /// Binary data is distinguished from JSON by a zero marker, then request identity/offset.
+    pub fn attachment_chunk(
+        request_id: u64,
+        offset: u32,
+        bytes: &[u8],
+        maximum_bytes: usize,
+    ) -> Result<Self, FrameError> {
+        let length = crate::attachment::ATTACHMENT_HEADER_BYTES + bytes.len();
+        if bytes.is_empty() || bytes.len() > crate::attachment::ATTACHMENT_CHUNK_BYTES {
+            return Err(FrameError::InvalidAttachment);
+        }
+        if length > maximum_bytes {
+            return Err(FrameError::TooLarge {
+                received: length,
+                limit: maximum_bytes,
+            });
+        }
+        let mut body = Vec::with_capacity(length);
+        body.push(0);
+        body.extend_from_slice(&request_id.to_le_bytes());
+        body.extend_from_slice(&offset.to_le_bytes());
+        body.extend_from_slice(bytes);
+        Ok(Self { body })
+    }
+
     pub fn encode<Message: Serialize>(
         message: &Message,
         maximum_bytes: usize,
