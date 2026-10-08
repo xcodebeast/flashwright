@@ -46,7 +46,9 @@ class OwnedDriverCase(unittest.TestCase):
         self.profile = None
         self.events = []
         self.limits = {"controlFrameBytes": 8388608, "pendingOperations": 1024, "queuedMessages": 128, "valueDepth": 64, "valueNodes": 100000, "binaryAttachmentBytes": 33554432, "pendingAttachments": 2, **self.resource_limits}
-        self.driver = subprocess.Popen([os.environ["FLASHWRIGHT_DRIVER_PATH"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0, env={**os.environ, **self.driver_environment})
+        environment = {**os.environ, **self.driver_environment}
+        environment = {name: value for name, value in environment.items() if value is not None}
+        self.driver = subprocess.Popen([os.environ["FLASHWRIGHT_DRIVER_PATH"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0, env=environment)
         self.addCleanup(self.release_owned_browser)
         self.identifier = 0
         self.send({"kind": "handshake", "handshake": {"packageVersion": "0.0.0", "protocolVersion": 5, "capabilityInventoryVersion": 1, "limits": self.limits}})
@@ -243,7 +245,8 @@ class StorageProtocolTests(OwnedDriverCase):
 
 
 class ResidentAssertionProtocolTests(OwnedDriverCase):
-    driver_environment = {"FLASHWRIGHT_RESIDENT_ASSERTIONS": "1", "FLASHWRIGHT_CONDITION_INSTRUMENTATION": "1"}
+    # Exercise default registration and cleanup even inside an explicit off-mode run.
+    driver_environment = {"FLASHWRIGHT_RESIDENT_ASSERTIONS": None, "FLASHWRIGHT_CONDITION_INSTRUMENTATION": "1"}
 
     def assertion(self, value):
         request = json.dumps({"selector": "css=p", "expectedText": [{"string": value, "normalizeWhiteSpace": True}]})

@@ -1,4 +1,4 @@
-// Document-owned conditions. The engine keeps this path behind its experiment switch.
+// Document-owned conditions with bounded shared observation and scheduling.
 function createConditionRegistry({ instrumentation = false, observeMutations = true, runSynchronousBatch = callback => callback() } = {}) {
   const conditions = new Map();
   const dirtyConditions = new Set();

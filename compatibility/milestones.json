@@ -41,7 +41,10 @@
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-adoption-profile-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-default-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -58,7 +61,8 @@
         "The first paired engineering profile measured overall parity with material interaction regressions; a separate controlled CDP probe identifies sequential input acknowledgements as avoidable latency",
         "Second eight-pair profile independently verified: input scheduling regression removed, overall material-improvement policy still fails, with every valid launch and observed regression retained",
         "Four verified instrumented launches correlate exact forwarded CDP command/byte counts and acknowledgement intervals with all seven workloads, using bounded cross-process clock calibration. Delayed assertion retries are a measured coordination cost; fewer commands alone do not prove speed.",
-        "Built and independently verified a fixed-work, six-order, 162-launch sustained-load resource matrix. Reproduced macOS zombie CPU resets, retained the invalidated first matrix, repaired maximum-per-identity accounting and reran every case after fresh core verification. Relocation and deliberate-corruption verifier probes pass."
+        "Built and independently verified a fixed-work, six-order, 162-launch sustained-load resource matrix. Reproduced macOS zombie CPU resets, retained the invalidated first matrix, repaired maximum-per-identity accounting and reran every case after fresh core verification. Relocation and deliberate-corruption verifier probes pass.",
+        "Fresh current-event-path attribution retains two default-off comparisons near parity. Resident adoption and actual-default comparisons are now independently verified; all raw observations, failure regressions and source/binary identities remain bound to their own snapshots."
       ],
       "remaining": [
         "Native Linux x64 CI baseline and runner evidence",
@@ -304,7 +308,7 @@
     },
     {
       "id": "M3",
-      "status": "in_progress_opt_in_experiment",
+      "status": "in_progress",
       "completed": [
         "Document registry passes 49 Chromium cases on macOS Node22/24 and emulated Linux Node24, including synchronous query scopes, callback exclusion, prefix semantics, paced fallback, fairness, CSS/font changes and lifecycle suspension/recovery.",
         "Integrated exact-context host deadline/cancellation/diagnostic ownership behind FLASHWRIGHT_RESIDENT_ASSERTIONS=1, default off. Four current 25-step core suites and focused Node22 checks pass.",
@@ -321,7 +325,8 @@
         "Coalesced timer groups pass eight of nine sustained-load CPU gates and all nine memory/time gates. Mutation-text/1 still uses about 11.7% more CPU than Playwright by paired ratio. Two complete-flow replications show about 5.4% and 5.6% less time, below the 10% material target; median/observed-maximum regressions are retained. All 210 ordinary launches and independent verifiers pass with no forced cleanup or leftover owned processes.",
         "Fresh indexed document queries preserve pinned CSS/nth order with full fallback, full predicates and synchronous-only membership sharing. All 104 core groups, Node22 checks and 57 registry cases pass. A 4000-match isolated counter comparison proves avoided NodeList copying and shadow-host scans; it does not establish ordinary CPU or speed benefit.",
         "Indexed document queries pass all nine CPU, memory and complete-time load gates in the six-group matrix. At 128 conditions, sampled CPU is roughly one-third of Playwright by paired ratio. All 210 ordinary launches and independent verifiers pass with clean process/profile audits. Two complete-flow comparisons show about 5.5% and 6.7% less time; both remain below the 10% material target and retain noop/failure median regressions. Residency remains default off.",
-        "The evaluation helper comparison plan is complete: default-mode complete runs are near Playwright parity, while residency-on replications save about 5.0% and 5.7%. Every memory gate passes. All 68 launches and cleanup audits verify; failure medians and some observed maxima still regress. Instrumented counts are separate from ordinary timing."
+        "The evaluation helper comparison plan is complete: default-mode complete runs are near Playwright parity, while residency-on replications save about 5.0% and 5.7%. Every memory gate passes. All 68 launches and cleanup audits verify; failure medians and some observed maxima still regress. Instrumented counts are separate from ordinary timing.",
+        "Enabled the existing resident assertion path by default after fresh 70-group same-binary conformance and 194 production launches. Both complete-flow comparisons show net benefit and all eighteen resident-on CPU/memory/complete-time gates pass. The rebuilt default passes 58 platform/opt-out verification groups and a separately retained 16-launch comparison. Dedicated cancellation cases remove the switch explicitly. The overall material target and retained regressions remain open."
       ],
       "evidence": [
         "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
@@ -349,10 +354,13 @@
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
         "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-adoption-profile-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-default-checkpoint-2026-10-08.json"
       ],
       "remaining": [
-        "Retain the passing native macOS load-resource matrix and default-off policy while broader semantic, contention, native Linux and complete-flow net-benefit gates remain open.",
+        "Extend native Linux and worker-contention evidence and resolve the overall complete-flow target and retained regressions; current resident assertions are enabled by default with an explicit off control. Keep the distinct CBOR and broader M3 semantic gates open.",
         "The evaluation helper has removed repeated helper-source transmission. Current instrumented setup waits roughly 53 ms for Page.enable and about 10 ms for locator runtime installation; acknowledgement timings include proxy overhead and do not isolate CPU. Prioritize remaining M2 preview coverage, then investigate the larger setup critical path with equivalent-work probes rather than assuming more small-call tuning will meet the complete-flow target.",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
@@ -372,6 +380,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Continue M2 with broader diagnostic/runner and artifact integration, then remaining ordinary frame/navigation/network operations. Live console arguments, handle base lifecycle and supported same-process evaluation now pass the full native core and focused Node22/emulated Linux matrix. Console/error history, worker/OOPIF events, async removal policies, ElementHandle operations, screenshot masks/comparison, broader routing/storage, M3 transport, native Linux, contention, platform packages and release gates remain open. Prior performance checkpoints apply only to their recorded binaries.",
+  "nextImplementation": "Use the current protocol attribution to reduce context/page preparation costs while completing remaining M2 runner, artifact, frame and network coverage. Resident assertions now default on with verified explicit-off behavior. Native Linux performance needs a native x64 execution host; emulation remains functional-only. CBOR, platform acquisition, contention, broader migration and release gates remain open.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }

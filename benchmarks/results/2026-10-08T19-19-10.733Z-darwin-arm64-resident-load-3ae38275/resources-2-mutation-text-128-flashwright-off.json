@@ -1,0 +1,1460 @@
+{
+  "schemaVersion": 2,
+  "cpuAccounting": "maximum-per-observed-process-identity",
+  "command": [
+    "/Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node",
+    "benchmarks/resident-load-sample.mjs",
+    "flashwright-off",
+    "mutation-text",
+    "128",
+    "2",
+    "comparison"
+  ],
+  "timeoutSeconds": 45.0,
+  "timedOut": false,
+  "interrupted": false,
+  "exitCode": 0,
+  "elapsedSeconds": 2.8789840000099503,
+  "samplingIntervalSeconds": 0.1,
+  "maximumSampledConcurrentRssBytes": 664469504,
+  "observedCpuSeconds": 3.3499999999999996,
+  "observedProcessCount": 7,
+  "remainingObservedProcesses": [],
+  "processes": [
+    {
+      "process": 58918,
+      "parent": 58906,
+      "group": 58918,
+      "rssBytes": 162676736,
+      "cpuSeconds": 0.3,
+      "state": "Ss",
+      "started": "Thu Oct  8 21:22:40 2026    "
+    },
+    {
+      "process": 58928,
+      "parent": 58926,
+      "group": 58926,
+      "rssBytes": 43597824,
+      "cpuSeconds": 0.03,
+      "state": "S",
+      "started": "Thu Oct  8 21:22:41 2026    "
+    },
+    {
+      "process": 58924,
+      "parent": 58918,
+      "group": 58924,
+      "rssBytes": 15220736,
+      "cpuSeconds": 0.15,
+      "state": "Ss",
+      "started": "Thu Oct  8 21:22:41 2026    "
+    },
+    {
+      "process": 58925,
+      "parent": 58924,
+      "group": 58925,
+      "rssBytes": 2998272,
+      "cpuSeconds": 0,
+      "state": "S",
+      "started": "Thu Oct  8 21:22:41 2026    "
+    },
+    {
+      "process": 58926,
+      "parent": 58925,
+      "group": 58926,
+      "rssBytes": 90308608,
+      "cpuSeconds": 0.26,
+      "state": "S",
+      "started": "Thu Oct  8 21:22:41 2026    "
+    },
+    {
+      "process": 58927,
+      "parent": 58926,
+      "group": 58926,
+      "rssBytes": 64421888,
+      "cpuSeconds": 0.06,
+      "state": "S",
+      "started": "Thu Oct  8 21:22:41 2026    "
+    },
+    {
+      "process": 58930,
+      "parent": 58926,
+      "group": 58926,
+      "rssBytes": 285245440,
+      "cpuSeconds": 2.55,
+      "state": "R",
+      "started": "Thu Oct  8 21:22:41 2026    "
+    }
+  ],
+  "cleanupSignals": [],
+  "cleanup": {
+    "policy": "owners-before-descendants",
+    "graceSeconds": 2,
+    "stagedTimeoutSeconds": 10,
+    "forcedTimeoutSeconds": 2,
+    "wholeTreeEscalation": false,
+    "elapsedSeconds": 0.02675966697279364
+  },
+  "linuxChildSubreaper": false,
+  "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU sums maximum observed process time per PID/start identity, preserving work when zombie accounting resets; it is not an exact kernel tree accounting. ps CPU precision is platform-dependent (centiseconds on macOS, whole seconds on the pinned Linux image). RSS is a concurrent sum, not summed per-process maxima.",
+  "samples": [
+    {
+      "elapsedSeconds": 0.028746875002980232,
+      "concurrentRssBytes": 950272,
+      "liveOwnedProcesses": 1,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 950272,
+          "cpuSeconds": 0.0,
+          "state": "Rs",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.1610137089737691,
+      "concurrentRssBytes": 123617280,
+      "liveOwnedProcesses": 1,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 123617280,
+          "cpuSeconds": 0.15,
+          "state": "Rs",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.29917391698108986,
+      "concurrentRssBytes": 232800256,
+      "liveOwnedProcesses": 6,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 157319168,
+          "cpuSeconds": 0.25,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 4145152,
+          "cpuSeconds": 0.0,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 60309504,
+          "cpuSeconds": 0.05,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 7749632,
+          "cpuSeconds": 0.01,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 278528,
+          "cpuSeconds": 0.01,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.434420624980703,
+      "concurrentRssBytes": 495534080,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162562048,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 14827520,
+          "cpuSeconds": 0.02,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 89948160,
+          "cpuSeconds": 0.09,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 117604352,
+          "cpuSeconds": 0.11,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.566278499958571,
+      "concurrentRssBytes": 507281408,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162562048,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15138816,
+          "cpuSeconds": 0.02,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90030080,
+          "cpuSeconds": 0.1,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 128958464,
+          "cpuSeconds": 0.26,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.7009136250126176,
+      "concurrentRssBytes": 515735552,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162562048,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15138816,
+          "cpuSeconds": 0.03,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90030080,
+          "cpuSeconds": 0.11,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 137412608,
+          "cpuSeconds": 0.4,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.8461537499679253,
+      "concurrentRssBytes": 524697600,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162562048,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15155200,
+          "cpuSeconds": 0.04,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90030080,
+          "cpuSeconds": 0.12,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 146358272,
+          "cpuSeconds": 0.55,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 0.9787044170079753,
+      "concurrentRssBytes": 531300352,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162562048,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15155200,
+          "cpuSeconds": 0.04,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90046464,
+          "cpuSeconds": 0.13,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 152944640,
+          "cpuSeconds": 0.69,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.113615625014063,
+      "concurrentRssBytes": 537133056,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162562048,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15155200,
+          "cpuSeconds": 0.05,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90046464,
+          "cpuSeconds": 0.14,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 158777344,
+          "cpuSeconds": 0.82,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.250196833978407,
+      "concurrentRssBytes": 543129600,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15155200,
+          "cpuSeconds": 0.06,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90046464,
+          "cpuSeconds": 0.15,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43171840,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 164757504,
+          "cpuSeconds": 0.96,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.3798452090122737,
+      "concurrentRssBytes": 549732352,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.07,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.16,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 170704896,
+          "cpuSeconds": 1.1,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.5173837089678273,
+      "concurrentRssBytes": 567558144,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.08,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.17,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 188530688,
+          "cpuSeconds": 1.25,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.662904291995801,
+      "concurrentRssBytes": 592986112,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.09,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.18,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 213958656,
+          "cpuSeconds": 1.4,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.795573916984722,
+      "concurrentRssBytes": 617627648,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.1,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.19,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 238600192,
+          "cpuSeconds": 1.54,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 1.9314379169954918,
+      "concurrentRssBytes": 641138688,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.11,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.2,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 262111232,
+          "cpuSeconds": 1.68,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.061431084002834,
+      "concurrentRssBytes": 645857280,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.11,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.21,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 266829824,
+          "cpuSeconds": 1.83,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.1929102090070955,
+      "concurrentRssBytes": 646725632,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.12,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.21,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 267698176,
+          "cpuSeconds": 1.97,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.333245083980728,
+      "concurrentRssBytes": 646725632,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162578432,
+          "cpuSeconds": 0.29,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15171584,
+          "cpuSeconds": 0.13,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.22,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43548672,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 267698176,
+          "cpuSeconds": 2.11,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.478327708959114,
+      "concurrentRssBytes": 647102464,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162594816,
+          "cpuSeconds": 0.3,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15204352,
+          "cpuSeconds": 0.14,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.23,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43597824,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 267976704,
+          "cpuSeconds": 2.25,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.612505833967589,
+      "concurrentRssBytes": 655097856,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162594816,
+          "cpuSeconds": 0.3,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15204352,
+          "cpuSeconds": 0.15,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.25,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43597824,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 275972096,
+          "cpuSeconds": 2.41,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.747114416968543,
+      "concurrentRssBytes": 664469504,
+      "liveOwnedProcesses": 7,
+      "processes": [
+        {
+          "process": 58918,
+          "parent": 58906,
+          "group": 58918,
+          "rssBytes": 162676736,
+          "cpuSeconds": 0.3,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:40 2026    "
+        },
+        {
+          "process": 58924,
+          "parent": 58918,
+          "group": 58924,
+          "rssBytes": 15220736,
+          "cpuSeconds": 0.15,
+          "state": "Ss",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58925,
+          "parent": 58924,
+          "group": 58925,
+          "rssBytes": 2998272,
+          "cpuSeconds": 0.0,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58926,
+          "parent": 58925,
+          "group": 58926,
+          "rssBytes": 90308608,
+          "cpuSeconds": 0.26,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58927,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 64421888,
+          "cpuSeconds": 0.06,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58928,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 43597824,
+          "cpuSeconds": 0.03,
+          "state": "S",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        },
+        {
+          "process": 58930,
+          "parent": 58926,
+          "group": 58926,
+          "rssBytes": 285245440,
+          "cpuSeconds": 2.55,
+          "state": "R",
+          "started": "Thu Oct  8 21:22:41 2026    "
+        }
+      ]
+    },
+    {
+      "elapsedSeconds": 2.878917249967344,
+      "concurrentRssBytes": 0,
+      "liveOwnedProcesses": 0,
+      "processes": []
+    }
+  ]
+}

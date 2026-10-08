@@ -1,0 +1,3616 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-08T19:30:34.088086+00:00",
+  "status": "All 194 production launches independently verify. Adoption criteria pass.",
+  "plan": {
+    "path": "compatibility/evidence/resident-adoption-plan-2026-10-08.json",
+    "sha256": "8c722b3eeb594e5ec3eb469c7c98e63777410971bf034a91cc3a37fde5259da9"
+  },
+  "defaultBaseline": {
+    "path": "compatibility/evidence/event-path-profile-checkpoint-2026-10-08.json",
+    "sha256": "cd5517a3cb789ccaf2f1ec52fdf032482d440d6179eda017cc49a3e75a8864f6"
+  },
+  "verification": {
+    "off": {
+      "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T18-55-02.219Z/report.json",
+      "sha256": "4d0aa29669b263d4305da296c85a09f9a28da944ee4cd098ec8bf2fc681c87eb"
+    },
+    "on": {
+      "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T19-12-34.418Z/report.json",
+      "sha256": "797255e023b37911099a7344133af46cff1a123327504fd3a04da0f02e5dc89a"
+    }
+  },
+  "coreGroups": 70,
+  "sourceCount": 205,
+  "sources": {
+    "Cargo.toml": "866e59f071d90c9a29521c405f8c39c45814a2f2c403b86b1c9b26754c38c07c",
+    "Cargo.lock": "5ee68fc36886c746cd7e56287563aeabb52c005c22b74b1b2c8e0a84b9272d35",
+    "rust-toolchain.toml": "e879701472a698533f43f54989bbf5f3101eb0503472159d32633f3bb8a13fdf",
+    "package.json": "679aa166ca56bec8e94d42822dc9c1853879a383053b7a639b91fbb80cca39aa",
+    "package-lock.json": "4f546300f56cc2b8794df8c8dee7774deeec382f56d08b97d596c9b99ad586a7",
+    "tsconfig.json": "b6076f5341f78e666450aef8c291560c08002c4ef3ff7815d7bd4f864be8abce",
+    "crates/flashwright-browser/Cargo.toml": "03bb413052cd536ba24faa5017a0705bcfe2d4cb558b529c0289e5e16e9a1219",
+    "crates/flashwright-browser/src/chromium-launch-policy.json": "391f562e7e1972bcff4a446af2cb456f81df4bfd97c4132dd8271b934ae25314",
+    "crates/flashwright-browser/src/chromium.rs": "7fa71b704cc688b773f1b8edb20351a86c4e3eae84cfa2dc564b0b16ccb37f5a",
+    "crates/flashwright-browser/src/connection/incoming.rs": "f4847f1006c1ce412f7304be7239a0f90a8f439a991246300b21780992b00dd4",
+    "crates/flashwright-browser/src/connection.rs": "3e377ea29670e1af812f10d9ef6e689461241934bbb6250f8a688138e1ec10f0",
+    "crates/flashwright-browser/src/lib.rs": "a4e3fb69aa03f1f976669cac35d60fee628e32e101006c6e2dc00ae655881389",
+    "crates/flashwright-browser/src/process_group.rs": "ef6a62083f5879d54c3d142e88fd44d69ced3f068bb9c2cc087a5f33191c9235",
+    "crates/flashwright-browser/src/supervision.rs": "d8950e85be721c15b33e3595536d96d865f1eb74bc1afbd2c574415813c33e90",
+    "crates/flashwright-browser/src/values.rs": "4cf3974138c1466ee310040302bff380184ccbf746a11e557753ae63f46cdccd",
+    "crates/flashwright-browser/tests/connection.rs": "3a16055743a9ca726e09bd8120f559f88fdcc7d2810b47270681647319b839ed",
+    "crates/flashwright-driver/Cargo.toml": "1a21edd808d74d12dd1d942b3e18c5aecf7c818d33bd2848ab7faec8d7faf37a",
+    "crates/flashwright-driver/src/attachments.rs": "ad65aec1baeeed93af9e9914d886eddd9e59d3b757f0b89ccfea62e72a858fdd",
+    "crates/flashwright-driver/src/main.rs": "42783a1cb67b2cc3e91564241a33ce8a382346a8a239e3f2ba9548e01d5af2d5",
+    "crates/flashwright-driver/src/output.rs": "1ee99b6fe214dcde4604033793cc5e612bc727e8f1fc7b0d574510d15610101f",
+    "crates/flashwright-driver/src/pipe.rs": "f7424922ca939fd9795f06d927bb911c9b78638ad33515cb6d08c66233fb43d6",
+    "crates/flashwright-engine/Cargo.toml": "139f58e8498ade8714e096d5aa79f656d76b0a0257a6c5d919bcca6f2804248a",
+    "crates/flashwright-engine/build.rs": "14af4e7fb9708c3a9bee695ed8840678200e76a5b82efa6b02491c66d8e46487",
+    "crates/flashwright-engine/src/assertions.rs": "2919edc12cbab3aafa60d645fba783b970b828691833c2030cfa99aa5ba95c7c",
+    "crates/flashwright-engine/src/console.rs": "e2d28c9e1df1f4a038e104372b25141dcdbdccbcb07f2e67842a131b22552993",
+    "crates/flashwright-engine/src/context_state.rs": "2c1cfbb865a3be431cdfffc40d4b0850a75db842c656767452cdfa3cd1f46e70",
+    "crates/flashwright-engine/src/cookies.rs": "96b7a0b0b76b7bc2d873a76d289d050b81f9549b888296fa56bd1a36f93f3d61",
+    "crates/flashwright-engine/src/evaluation.rs": "9e3e578613b10ecd50eef81d2ab6bf00332e65170d8350748345985c8a3488f6",
+    "crates/flashwright-engine/src/events.rs": "c53b2250568932b1be35935ef6bfba7f69fb98ae4d05189abbe3f8fd74c14fca",
+    "crates/flashwright-engine/src/handle_values.rs": "8ba1d0c40cc84907c766104e6b16b28f9653d46cc631189722cd2aee12cd9715",
+    "crates/flashwright-engine/src/handles.rs": "b6d92f53c68237e346b12e4c7243efa3ccaf3054381ca356d5c419e07197fda4",
+    "crates/flashwright-engine/src/input.rs": "79944b02a3976910262bf9b9fa5e39e900a286f780b94db927233505911d4b26",
+    "crates/flashwright-engine/src/keyboard-layout.json": "05a89ed0e43091b0b1f68d74c123ff10a067053aba0855d5b6757b394c45486d",
+    "crates/flashwright-engine/src/keyboard.rs": "e1d4ec35cf07acd98276b75005da9c9d9b681480eb8da5f19cc6bdc497e30d70",
+    "crates/flashwright-engine/src/lib.rs": "329716af59c22a73e19e3fa7bdafdc50765e54fb661646d0fc164f94072ba3ad",
+    "crates/flashwright-engine/src/locators.rs": "15751dada337f9d2c31ebc4846a92b480a2f1f971a5a81b3879f449b46c65b0d",
+    "crates/flashwright-engine/src/navigation.rs": "b638d2c7521764ead859808b51870b177167298e894c5dbc491cd7049b941bf1",
+    "crates/flashwright-engine/src/operation.rs": "537f9437e68dc2f784620604b40126403b064125055dbd6db8a4f6a29996cd3c",
+    "crates/flashwright-engine/src/page_state.rs": "1ec88f09ec91edcaf40c4bf8b3ac915a6e775d04d684b69130bf58c608ef3a7a",
+    "crates/flashwright-engine/src/pointer.rs": "1accea52f5bfdedbaa751bd6a14bce03c11c06213ff5d6b4d123cd1b6cc43b8d",
+    "crates/flashwright-engine/src/publication.rs": "7a04f85a4c7d7936f41ba2ac42714ba1f66744bfa9ae2bd637d86466006c15f6",
+    "crates/flashwright-engine/src/screenshots.rs": "ebd8a114746e77c0d544465a02b5ef00932a04f61516d56f64efb659b58105af",
+    "crates/flashwright-engine/src/storage.rs": "262ccb7bcac344a992af0d61e6ccd99a3274b418d93a278011d5cfa8604408e0",
+    "crates/flashwright-protocol/Cargo.toml": "6d92cfd0cd988ca2bdd8eff835c8a54d15cac92c306de31d29b279a3cbeb6c60",
+    "crates/flashwright-protocol/src/attachment.rs": "ddf2fb321a153545b15f7cf7b42885f756fdea3f60cf4679e5202699a0d6b514",
+    "crates/flashwright-protocol/src/framing.rs": "2fe458924f92e205d91dee27c5499d26ccef894a9dedfd8e3974283a358dcd6e",
+    "crates/flashwright-protocol/src/lib.rs": "4ed1158d673559d70699f2767b4157aa66eb8ffa0c5c64879ed60b951acaecc3",
+    "crates/flashwright-protocol/src/messages.rs": "3704f5fcf26ef013816f5c9ce3d7e1f37d838ec43dd323f7cac57c259d763626",
+    "crates/flashwright-protocol/tests/framing.rs": "19236adabab7adb038e8b5d28dc2c32fcb6b49252ebd871c87284b4feadb0f45",
+    "packages/flashwright/package.json": "87e857fea9d7ee0fdd09c7450a824eaa9bcc7416e449ac204e6f3c13c58273c9",
+    "packages/flashwright/src/assertions.ts": "3296371c6bd8c6e4dabe0254030fbd5a918fd0cbd547442905a289050583d444",
+    "packages/flashwright/src/attachments.ts": "f02be47b25c19f9c0211b307ea3656c2b26c005ad757e826e1b6f911da3ad7fe",
+    "packages/flashwright/src/client.ts": "b73d43b009b7784341dcad475a331d1e67546017d99cd92e69c38d261489da34",
+    "packages/flashwright/src/console.ts": "fcbad7556247092883fa579770117a6167e30e70553e24c23b4ff7090105bb6c",
+    "packages/flashwright/src/errors.ts": "533f8ccdd34f787eb4320c4f57daf20da8fc68c897cb0f9c1dc0a9fcb95aa2d1",
+    "packages/flashwright/src/files.ts": "0ffa180e72620477c24cd6d7831e76cc01427a0b3db5d9d32b8acec02fea987e",
+    "packages/flashwright/src/frame.ts": "b433cff825f4358cd376cf9345d068ac896c96af8bb6cf417df23eb0ed1cb605",
+    "packages/flashwright/src/handles.ts": "225c1f9c2a8cade23b9206551fac6e33d7ccd2252c72dfd4652e76302dfc2606",
+    "packages/flashwright/src/index.ts": "091444f76d611bc3a72776f4d41d44b16fe60ad4cb804b40230288bc61ddcb07",
+    "packages/flashwright/src/keyboard.ts": "e297a60249f871c5d79ee9cab0891ab8bba6e8bb19e859a7f1c940bf712e2bf6",
+    "packages/flashwright/src/locator.ts": "4f4e1b753bce11ce110a6908332024add6362475885a8b3c491a074daec4b431",
+    "packages/flashwright/src/network.ts": "0f390cc1a3d9fd15a1fde309c2b1d9d8f718a77ef30ce4b9fe67fba3b75e8096",
+    "packages/flashwright/src/page-errors.ts": "c32a7dbf6d79e63966a326b8ab2ee41e128ec38505cdadc0a6308dd986157d8e",
+    "packages/flashwright/src/runtime-version.d.cts": "3f88b96aca69fa9ca934fe40127cdb22d30ea70c64a6e46ecee49defeda87e6c",
+    "packages/flashwright/src/screenshots.ts": "85484d21708ca709fcb7d73907250fee71959e951891d0fbf95ccc0ed7edfcbd",
+    "packages/flashwright/src/serialization.d.cts": "bf183da7c3d78fad3dea0bfcf31e3b7ef826cb47d58c66b6736cf45e17241e02",
+    "packages/flashwright/src/storage.ts": "f38f332d41dfc850c69fabed8c0592e680c618c556bdda8d2256d7dbe2ac3f87",
+    "packages/flashwright/src/url-match.cjs": "6dcd59d0d62941418f176b37d04a2c97f51028d218c73538735487fcc9b94189",
+    "packages/flashwright/src/url-match.d.cts": "85bda4231cc9beb6025bd5b419aadadde980efd5c6b9c9b7783731d03bc7b348",
+    "packages/flashwright/src/validation.ts": "2becadd16511e901ad058e1a09617dd43401e40b5c05a295edc67840409bcd0a",
+    "packages/flashwright/src/waits.ts": "110bf92601f1777488abde00e265719f57224fa7dd510795b3990dea97a2c97f",
+    "packages/flashwright/tsconfig.json": "2cd740915dace6a0b8acbdce0cfc8eebee552d8399387a7abfcb62398ff8b208",
+    "packages/flashwright-test/cli.cjs": "d55c3de91f9dc3f47e22a66ce394463b04fa47f4fbd26326c0913f53ea840afc",
+    "packages/flashwright-test/package.json": "07812d328be0e2f5a37569d28cd7ca4fab394c8cc7ab3e22cc8eaf5c927aa8ed",
+    "packages/flashwright-test/src/index.ts": "7511485e3f614dc77b347c243090db3a56f1e3f7761ba9b719ed424ebd63febd",
+    "packages/flashwright-test/src/matchers.ts": "b80041e8a888da0918e1089568d5180ac894c2c57f0ad145f54280f8c67be4c5",
+    "packages/flashwright-test/src/reporter.ts": "69f05aedaaaefa225468ebac21b5ab0b9d76b169b4e6d546b16e39bf034eb021",
+    "packages/flashwright-test/tsconfig.json": "2cd740915dace6a0b8acbdce0cfc8eebee552d8399387a7abfcb62398ff8b208",
+    "packages/resident-runtime/condition-registry.js": "11870bbd8fb4a53461cd57dadd8486825e7e302acf6d3c36e6b49afda5f4c625",
+    "packages/resident-runtime/evaluation.cjs": "047b73f43bd3f202667f4c8db078378721fb7cb02af88fcb0668fc2d0b82140f",
+    "packages/resident-runtime/locator-runtime.js": "7dfe99fd84422edfbb7343dca25a68a3adeca15a832d448e3075d22831288449",
+    "packages/resident-runtime/playwright-injected.js": "7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a",
+    "packages/resident-runtime/screenshot-preparation.js": "174a011585b3c1ba2ef0419151b5d506ad44ce140e90eadbc6bf143bc5c0d447",
+    "packages/resident-runtime/screenshot-runtime.js": "4a4a0df1cf9ac0e0c8e681be04c28ccf571817a81d345d5e5d36e6a37369cb23",
+    "packages/resident-runtime/serialization.cjs": "a064212f50c25d69d5bbfe42adba7bba6df78e3a66239f98dabe3b0ddd9fd42b",
+    "packages/resident-runtime/sources.txt": "310df9eda77c962e5ffc28b1e346c9bac68dc6b4cb0e963510f73044bdd1e621",
+    "packages/resident-runtime/storage.cjs": "e3831116d14015fa714a4841958745f2e7744271d22de738d8a09ba45275f9a7",
+    "tools/bootstrap.py": "0cdc3480230b1f773033265885128041e5a57bae9b6db697d7638980f86ed218",
+    "tools/browser-identity.mjs": "5d2eefedc9f8acb66dd303dca5fd42d2c0f8ab7a8e36a5d539989bbe9e96d3cc",
+    "tools/build-packages.mjs": "acbf074ca98f882d901501185d7c587c705ab30ba0dc194064f637a6568ebdc2",
+    "tools/engine-configuration.mjs": "e7d5d8035118e3d6f545640fb488b441e85505e8306761fb6e5b89ca342f9b93",
+    "tools/extract-chromium-launch-policy.mjs": "af9328f5c827e642ea68202768725175527a88556e7fb8664c89180dcd8c97da",
+    "tools/extract-keyboard-layout.mjs": "7be5eebbf18c69397f60b7786bccbc4e7e58e88944f49d27f86c10cb9099a842",
+    "tools/extract-screenshot-preparation.mjs": "4f313fdf0b949b41a51684cfb2535dca4d1a472865822c7ca53f1b5dd1d2a971",
+    "tools/extract-selector-runtime.mjs": "928c4e37c4e884d954e148c50b73e6372da14a0c02dd04ee2c877928bb8c57b2",
+    "tools/generate-inventory.mjs": "1e3d1812fd45f3f72c4db692ae5caf683486cee9b6b667de6592adb6d399f079",
+    "tools/linux-baseline.sh": "5c328c2fefc74dd286c1e6605a8f655f5e73e0d7710bf8cd14493de8f79695eb",
+    "tools/linux-core.sh": "365acf8ae639e2561804e67ae2da18eaf030b1704ee9ea0063c866c125bf4aa9",
+    "tools/record-console-provenance.mjs": "a8f177ba8a0255a7025fc5eee5f5730d08cc1dbb0d8852edde9524ca7189763c",
+    "tools/record-handle-provenance.mjs": "0de79ad68f2acf80b9653b0531a538d5f8bb5936dfb506d268228108d5ed4c2b",
+    "tools/record-page-error-provenance.mjs": "cd8e8732d70fcb8f2a6b085c0026f80f107cf587e03fb8d613e80a503748bf27",
+    "tools/resident-load-evidence.mjs": "9d3f0e3e0dd370b4f306064d5601d010746cf4619aba4f3cf98a3c15b6b7c5f8",
+    "tools/run-assertion-tests.mjs": "8cba4ac6b05fdfe94325a6053f143d82687e34ac932d1c9d74f3a9f112839dd7",
+    "tools/run-condition-tests.mjs": "559e2c96c5a77510d28bc94ba8510215ed11731402b00fcc1cf088df14f4a389",
+    "tools/run-console-tests.mjs": "48c39087fca928f0900897e772e17d1693149c30bb0241aea7f3d5cc6ae29230",
+    "tools/run-diagnostic-tests.mjs": "c10f5e12a564d31a02ebae309b1e37e3e2690bb326de8a3577b5c2e26c8d5534",
+    "tools/run-handle-tests.mjs": "239f1aff3d1b7e6271fdfab37ad94a53a11ef36c0a086eaa51fe712e35364b0d",
+    "tools/run-keyboard-tests.mjs": "c6c4a7ee17992747080e6a136a1880dd909d86c1ff640d5b1a6e9f2a4e81c949",
+    "tools/run-library-smoke.mjs": "2eb09a22de1747e3f10d2a66977e77150163de67b59624abbe444696fc5e1735",
+    "tools/run-lifecycle-tests.mjs": "bdf7759df5960700a9ab33a9bb590494023f5bee8967ae45884c64164f1d9015",
+    "tools/run-locator-tests.mjs": "86f5e5d6f8ba734efc77971327667693117e183688929ecc4e63b1cd7d4c412b",
+    "tools/run-native-runner-tests.mjs": "5740eefad59e23fe12de95ebfc60b19ee5ed88e14c73c24d01f3b0afe4cf2fc8",
+    "tools/run-navigation-tests.mjs": "01d00b52ca91a774aeb7a2d862b38a4d8de663ff4663b5a2b827863ad6ebed77",
+    "tools/run-pointer-tests.mjs": "c2f1a26617a30f8b8774f9a744ed7bec7136be9c530c87f6021f1f4a4fb9bcb1",
+    "tools/run-python-tests.py": "10dfb82318a45c470f486002289f436f59de8390c6cad3887b345706352e7784",
+    "tools/run-runner-boundary.mjs": "1c3811b8cb2b541fe571ead67d5687b253c2be44d20d167fedd08c7703badc65",
+    "tools/run-screenshot-tests.mjs": "e3b10771a4715352a350f0ad15c4c84aa7600a5e3c743f534e25726367157732",
+    "tools/run-storage-tests.mjs": "d69770956b45d65a30fdcdfa19ccdfc7f44c5c2985e1e1568d645cfe08757559",
+    "tools/source-manifest.mjs": "9c3137af8142ebcc805732c90a447cb690d5820d9be40254f38bd576429d953f",
+    "tools/test-attachments.mjs": "d5f4bc583159786c779261b2d372cefae0b62311405143f2eb6c77a67f5a6fb4",
+    "tools/test-benchmark-contract.mjs": "ff4540f67ac769fe661679ee8e0137fcbfdcc3be25a3ac9b3558b2023add59a5",
+    "tools/test-harness.mjs": "f28b58237f55ab940ba63777381c0bf961660bc1acc792be8524ef7e371b223e",
+    "tools/test-packed-migration.mjs": "78f0123082c4f0f5af10edcf4146f6bab8860cdb540ff5aff4d93625a04bfec7",
+    "tools/test-packed-package.mjs": "0163af5e1c7d19b3764e11d21ce4b073f66d87403aae30191fae7cb241b69e0e",
+    "tools/test-packed-runner.mjs": "1beb182d78595402d453f479ab16fa3391acefe6d08b6aefdd7d9e0b38e53e57",
+    "tools/test-protocol-profile.mjs": "3082d12b9a1019c25125eb57b0e7cb04645f5c028f0e715d9d969665c25247a4",
+    "tools/test-resident-load.mjs": "c7dcc85b1dea2e32d98aece9757eb07f6e06a3d56ca339e0174ff16399b93610",
+    "tools/test_protocol_proxy.py": "8e06d8f567aff23f480397ac6777e80c631e521519dfb38a70071f0ed2cc596c",
+    "tools/test_python_runner.py": "2fff5d722b28ae2c92a884ca779b693b23963352462fe54a03705811de1aceb9",
+    "tools/test_watchdog.py": "8353d9d43125b6e6dd3657b7f0ba66e1715633ffdbb220553119f93e9882201c",
+    "tools/verify-attribution.mjs": "ab7fc16d454c3cc91027634d392e52632cb278aa73c26b1724e40032898f6530",
+    "tools/verify-baseline.mjs": "48ab556fe6539c77f509fa44d1dcc6ecaad9768330b049eb5f84efd2a0a57b36",
+    "tools/verify-core.mjs": "63ab41657a2835d580f622f31a3f74144a891fe9732c656b9fd2b83ccd5978aa",
+    "tools/verify-paired.mjs": "15c8b81261c37bbe4360136f31f4f606d0f9b720415d8ea22bf799ff1c9ba553",
+    "tools/verify-residency.mjs": "e851796e72c6333f6af5aa494877d5ffa7b6db541f55e4c837b6df4341a5c850",
+    "tools/verify-resident-load.mjs": "42ae8e8f21161208c5d13a860dd6c7b75241c4cdff6539d46296c75c4eb620d2",
+    "tools/verify-runner-boundary.mjs": "6a2d84cf4867e5a5ea3eaabb3206242ec7a6b2d94db5324de06c5d987a059553",
+    "tools/verify-runtime-installation.mjs": "1878bdbafa784046316ded5d1638ef4ef13a9c280fde6282e7f71d9e654227b0",
+    "tools/watchdog.py": "250e38bc00f24b02dcbc378103a20da5aee539da887fa591b812feb7687ddeeb",
+    "compatibility/m1/attachment-driver.mjs": "146b0ce1ca7ddee3c54f0ea22aebdc6a3803237c22e50aacc2719df1d4cc9097",
+    "compatibility/m1/binary_attachments.py": "220cd82294dac2dc8f3ca6e02c62e5540d4a3eb6a440790e9e9193922dd73d4f",
+    "compatibility/m1/client-deadline.mjs": "a097a920a90ceef139f73da5fe920b3aa32df84a8b7839e629b9c309d4eb5fbb",
+    "compatibility/m1/evaluation-context.mjs": "d25f0fdd9e441342aebf00c02997784a2e5dd65c31cb5e60b5a32c317c3d65a2",
+    "compatibility/m1/library-smoke.mjs": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+    "compatibility/m1/lifecycle-worker.mjs": "47005a7b1a141f4315bdd7f2e12d0b0567a20f71a6cc5d27036833046567316b",
+    "compatibility/m1/output_limits.py": "f2629538d21c992f7aa133a1133fa7ab93dd321d809b931d8277a4fe185b23d1",
+    "compatibility/m1/public-lifecycle-worker.mjs": "6fd6e13b7e2b73feffbcb67617a8867f2ce9a777acacde22fb09d2312370e370",
+    "compatibility/m1/reply-race-driver.mjs": "e84e8e9590c3b407c8b3579db873281aa89143bb52fdce87a154f97f03bf81bd",
+    "compatibility/m1/test_console.py": "8f348820e2258f5f435d3f0eafe55e3455e738faf8407b2f987b81d56d3f8ef9",
+    "compatibility/m1/test_driver_protocol.py": "2d8f27cf63942760487d967c150340c0a6400e7e398f5f7a6bd877474e0e7929",
+    "compatibility/m1/test_handles.py": "ac3bd604bf6499077055e61322000a238ae7eede3a49b7d873f55bff56dc69b8",
+    "compatibility/m1/test_lifecycle.py": "f027428893869b9f5500c854e33e37f8659964bbe4f74a3a1f7c21cef2e8dda1",
+    "compatibility/m1/test_public_lifecycle.py": "d3254bf842221c2a9591916f22aa0d782a075709e2b5fc3163ccff40abdfc138",
+    "compatibility/m1/watchdog_lifecycle.py": "590e50dc4648f036f202790b40d93fbb1f2a103b27c2acdd39cd0c04004bce36",
+    "compatibility/m2/assertions.mjs": "4b415c3a33a879e9981d1f80fcd2b5a84d04068f82bcac9597f7f76cd20a9dd8",
+    "compatibility/m2/condition-fallback-cadence.mjs": "e1a66697a41ce2e454d0ad0444012ce2e03127d7f89109baf0e110ed5746d07d",
+    "compatibility/m2/condition-query-batches.mjs": "6eba40c57cfa2b67f7e65997eebc760d8df8d72d355669dd299b84ec560926ab",
+    "compatibility/m2/condition-registry.mjs": "994fbde8980172bc96fd3ea5b3b390cf243d7dc5f27ed4f3d35cd54444bb393d",
+    "compatibility/m2/console.mjs": "dab936a16951c2de5d4ff1d6b139070d112ba538b5f23b487f4dd8799c31b83e",
+    "compatibility/m2/diagnostics.mjs": "0baf3a59f9ba575f5de2cb9fbb0427efe1442cf4355ea8ceb397be8489017f9e",
+    "compatibility/m2/fixtures/generate-condition-font.py": "b584bf6f58fbc6c33f9dd70c4ec4af34e34d54f174bba73224b262a3bbdac4de",
+    "compatibility/m2/fixtures/zero-advance.json": "faf2e9ca4f0ebd7a5afd38aec8cd0843409ec3c496e11615df5fd9b151cc67bb",
+    "compatibility/m2/fixtures/zero-advance.ttf": "cf48078492259c9f9cfc3feeb7d7302ea46057f035ce22a8073d7c7dfa2de222",
+    "compatibility/m2/handles.mjs": "5065a5a24e2143fe9dcb762a3d55b0207b3b95acad06132d35c509dbe06e6c85",
+    "compatibility/m2/keyboard.mjs": "546c4b0889b141d3d4023ebbd726bcf008413a229198c7acbf1c70345e39f869",
+    "compatibility/m2/lifecycle-target.mjs": "fe9d754f732ab4820aff2a3cd8e9ff94700ce450cf1640d8fa8c24d7dce885d9",
+    "compatibility/m2/locators.mjs": "dcb4260a79b14026f1aea19fea4f7ac9580c0b312ccf7fe8af0e49a124c35db3",
+    "compatibility/m2/navigation.mjs": "171ccae56ca8676e121e8a76aa6f66a40b34ad711565a7cfb859f8500aba5181",
+    "compatibility/m2/pointer.mjs": "cafbe2f7db9dffd69fbacba99ce5297253789d9dd86c0a247801a77672a4d5b5",
+    "compatibility/m2/runner/fixtures.ts": "9f5ebeb74d9d82997aa25974d792cb60e14af10f4afb7a94978ec269aaa3ceba",
+    "compatibility/m2/runner/playwright.config.ts": "a8acd8849a8fb94d02d5df6e710250d306bd92f6523efdfb8f53fd49f2d36c38",
+    "compatibility/m2/runner/runner.spec.ts": "0783cbd3719dcc8d709f92639023aae00598f0b9f0eb1de800354f623f234f6c",
+    "compatibility/m2/runner/unsupported-context.spec.ts": "8e805412f1d0856499deb3f689f81bb58967df0cff7fd0d659d7c3dbe07249a7",
+    "compatibility/m2/runner/unsupported-trace.spec.ts": "3c0250701c5034ef73abba112f88246cc6a64d44e4ea99410a47106ca888f0b2",
+    "compatibility/m2/screenshots.mjs": "d96962b09b0eace1956f3dca72a5177109c9bf0e5fb39e94b34e59fcdce8a7c9",
+    "compatibility/m2/storage.mjs": "bb5ae2171cdf70c858ad5e11454fff4da49a8193070327e7b92f522debae13e6",
+    "compatibility/migration-projects/provenance.json": "edadf2184a10da2ac47e9bbc019d947a3a2ca3dcf845177d6e624ce078a3c1df",
+    "compatibility/migration-projects/svgomg/tests/example.spec.ts": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+    "compatibility/migration-projects/todomvc/tests/adding-todos/should-add-multiple-todos.spec.ts": "07b7218ecca9e1ce767b1f5edc01f546e6f2e694732e56c2c9f7575bf1845829",
+    "compatibility/migration-projects/todomvc/tests/adding-todos/should-add-single-todo.spec.ts": "2cca72221c1827502bccb8901c879b209cfd617e058d8ea8efb027da7e2fd124",
+    "compatibility/migration-projects/todomvc/tests/completing-todos/should-complete-single-todo.spec.ts": "92e501321a3569623a70bfdd7b54ded59eefeab4fe7a93c3a2f0c1d2f691b86e",
+    "compatibility/migration-projects/todomvc/tests/fixtures.ts": "10d5cb93faf3d516432a975e0df3b95d670b100d46e6322228115d2a315021f6",
+    "compatibility/migration-projects/tsconfig.json": "0f98fba6acae2cbfb214b7f2eae15056b93862c0006ce39b03612a40ce001651",
+    "benchmarks/attribution.mjs": "24dd76632a3d902647551068fbc559d280cfa98765b0e06318b1b3b7c9161710",
+    "benchmarks/configurations/baseline.json": "6cd5b1d765be047c2d61c19cf022b966e5af3fde093eafc25ff47c506cbfdfe2",
+    "benchmarks/configurations/resident-load.json": "f1da1d3260e16d7e545fa63e25084147f4a525c61d13f379a93eb563daeaf517",
+    "benchmarks/execute-resident-load.mjs": "5ce19de5c93616f03e8c604bcc0c4caedb29eefe16103f22a41b2b4cde863f64",
+    "benchmarks/execute-sample.mjs": "4387b392c133f9d26657603f989d9e94b5050271abb9d4f94073d2ad7fff3fbd",
+    "benchmarks/fixture-server.mjs": "4a4e613a78b0f57dc8c56def8c7d88f39d202f8f2582cb0427a710b2dc2a35fc",
+    "benchmarks/paired-contract.mjs": "c27a505ad488e7d211e39478f2246e26c2703549eeb59a03399ed7627405a360",
+    "benchmarks/paired.mjs": "afe87c47f022c5810496f2de40efc3a9501b02e76a16eb8e7d771bfb3b4b5c63",
+    "benchmarks/profile-clock.mjs": "a7510f2fc05240c682ba622dba3219861b997e716226b7328fcc83e0112b897f",
+    "benchmarks/protocol-profile.mjs": "b82b56f610fe2e8d105807669551fad77e52aac04931837dc318dccacb784881",
+    "benchmarks/protocol-proxy.py": "c2d8ce1fd1187615c0d0d9d6f6ef61f27cc9dde7cd63494bca9a743108c5bce1",
+    "benchmarks/residency.mjs": "cfb773d6eed1011c81611d90231d66a04ef7ceaab150d2ff3d4627029e071f92",
+    "benchmarks/resident-load-analysis.mjs": "a7a13e0c187d04cd1b00f177f6bfbda4fcde61b874b6cd98b1b41a9161985247",
+    "benchmarks/resident-load-contract.mjs": "ff29e27c2b9de3aacc97b47b63665eca70835e247356799d9c0b16ac831e0efe",
+    "benchmarks/resident-load-fixture.mjs": "b71b83ebdfc96552ed01cee99bc6426f67830f41143e31e05e95454de66380d4",
+    "benchmarks/resident-load-sample.mjs": "0236311f9252b72b90bd17531cbca4b94a052caa30857417c79297bb923e91fd",
+    "benchmarks/resident-load.mjs": "3e52fdad8d9025da5540a122fbbb90dcc69329d481243b64de73c2166764697a",
+    "benchmarks/run.mjs": "d84f87d38d6edd8ac2f1b62297bcdf65417f513341210a61b9496fc94821fb4d",
+    "benchmarks/runtime-installation.mjs": "838a40246bedec33b3730d9d2fc48999b5da5a934f2b57e5a31b278281ba8e90",
+    "benchmarks/sample.mjs": "5f727eb00234e2501b84c0757441a5e5c51f13e506894ffd4d0d5760027ef838",
+    "benchmarks/statistics.mjs": "7f700929131747a4e77fc186b1b200b90824f7e2bc3c9807c0fa728b474c952c",
+    "benchmarks/workloads/index.mjs": "0b0f90de82f3205c2561204f4286a6736792aab7bb7521bb49de685c907af619"
+  },
+  "driverSha256": "2c7fec466aa6441ae75ded20542cf9fce809d863707237027eecb1fa8d83e13d",
+  "browser": {
+    "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+    "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "chromium-headless-shell"
+  },
+  "comparisons": {
+    "playwright": {
+      "directory": "benchmarks/results/2026-10-08T19-17-08.624Z-darwin-arm64-paired-a0f3ecb4",
+      "metadata": {
+        "path": "benchmarks/results/2026-10-08T19-17-08.624Z-darwin-arm64-paired-a0f3ecb4/metadata.json",
+        "sha256": "820662890f0b3e9de1ecd39c5e00efacae27a50fb6c2198829cf8ab05d3f6ce9"
+      },
+      "summary": {
+        "path": "benchmarks/results/2026-10-08T19-17-08.624Z-darwin-arm64-paired-a0f3ecb4/summary.json",
+        "sha256": "72af644225c21bca66d39bb3b13e3bfdcf93176320116836a7ac500f1860012e"
+      },
+      "independentVerification": {
+        "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/playwright-verification.log",
+        "sha256": "76b00fe0cef136630e35a4bd7f102ad85b3c97038a2f58f6d647215a615b8a73"
+      },
+      "completeLaunch": {
+        "reference": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3440.991375,
+          "launchMedianMilliseconds": 3440.991375,
+          "launchMedianConfidenceInterval": [
+            3374.203584,
+            3456.7174170000003
+          ],
+          "observedMaximumMilliseconds": 3477.252375,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3451.561833,
+            3366.495791,
+            3374.203584,
+            3439.3962920000004,
+            3456.7174170000003,
+            3442.5864579999998,
+            3477.252375,
+            3406.119333
+          ]
+        },
+        "candidate": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3274.8808335000003,
+          "launchMedianMilliseconds": 3274.8808335000003,
+          "launchMedianConfidenceInterval": [
+            3169.962542,
+            3316.719791
+          ],
+          "observedMaximumMilliseconds": 3323.771917,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3247.825542,
+            3169.962542,
+            3161.619334,
+            3323.771917,
+            3293.5881249999998,
+            3316.719791,
+            3261.907667,
+            3287.8540000000003
+          ]
+        },
+        "speedupRatios": [
+          1.062730059963301,
+          1.0619986029475297,
+          1.0672390403594363,
+          1.0347870966742994,
+          1.0495293539473762,
+          1.0379491409981458,
+          1.0660180268677115,
+          1.0359703724678773
+        ],
+        "medianPairedSpeedup": 1.055763978447453,
+        "pairedSpeedupConfidenceInterval": [
+          1.0359703724678773,
+          1.0660180268677115
+        ],
+        "observedMaximumRatio": 0.9558615707322653
+      },
+      "processWall": {
+        "reference": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3752.774104,
+          "launchMedianMilliseconds": 3752.774104,
+          "launchMedianConfidenceInterval": [
+            3733.5460409999996,
+            3782.1862919999985
+          ],
+          "observedMaximumMilliseconds": 3807.6699579999986,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3733.5460409999996,
+            3744.3824999999997,
+            3724.4753330000003,
+            3761.1657080000004,
+            3774.043999999998,
+            3782.1862919999985,
+            3807.6699579999986,
+            3739.936375000005
+          ]
+        },
+        "candidate": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3604.370395500001,
+          "launchMedianMilliseconds": 3604.370395500001,
+          "launchMedianConfidenceInterval": [
+            3542.9292080000014,
+            3658.7839160000003
+          ],
+          "observedMaximumMilliseconds": 3693.9678340000028,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3550.1878749999996,
+            3589.0854579999996,
+            3442.2671660000015,
+            3629.7185420000023,
+            3619.6553330000024,
+            3658.7839160000003,
+            3542.9292080000014,
+            3693.9678340000028
+          ]
+        },
+        "speedupRatios": [
+          1.0516474542914156,
+          1.0432692516846724,
+          1.0819832259934465,
+          1.0362141484192242,
+          1.042652864097985,
+          1.033727702655616,
+          1.0747236917413443,
+          1.012444217996946
+        ],
+        "medianPairedSpeedup": 1.0429610578913286,
+        "pairedSpeedupConfidenceInterval": [
+          1.033727702655616,
+          1.0747236917413443
+        ],
+        "observedMaximumRatio": 0.9701386608466143
+      },
+      "workloads": {
+        "noop": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 0.22006249999992633,
+              "launchMedianMilliseconds": 0.21465624999999022,
+              "launchMedianConfidenceInterval": [
+                0.19156249999991815,
+                0.2561977499999415
+              ],
+              "observedMaximumMilliseconds": 0.3762090000000171,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                0.27868749999998954,
+                0.19156249999991815,
+                0.2062710000000152,
+                0.19147899999984475,
+                0.22770799999989322,
+                0.20306249999998727,
+                0.22304149999996525,
+                0.28468749999998977
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 0.22139550000014196,
+              "launchMedianMilliseconds": 0.22696925000005308,
+              "launchMedianConfidenceInterval": [
+                0.20039599999995517,
+                0.2532704999998714
+              ],
+              "observedMaximumMilliseconds": 0.4300829999999678,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                0.24254200000001447,
+                0.19566650000001573,
+                0.20039599999995517,
+                0.2532704999998714,
+                0.2113965000000917,
+                0.24774999999999636,
+                0.20645849999999655,
+                0.3214164999999696
+              ]
+            },
+            "speedupRatios": [
+              1.1490277972473755,
+              0.9790255357963819,
+              1.0293169524344865,
+              0.7560256721566151,
+              1.0771606909281584,
+              0.819626639757781,
+              1.080321226783925,
+              0.8857277084406578
+            ],
+            "medianPairedSpeedup": 1.0041712441154342,
+            "pairedSpeedupConfidenceInterval": [
+              0.819626639757781,
+              1.080321226783925
+            ],
+            "observedMaximumRatio": 1.1432023157339357
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 51.664187500000025,
+              "launchMedianMilliseconds": 51.664187500000025,
+              "launchMedianConfidenceInterval": [
+                51.055875000000015,
+                62.386749999999665
+              ],
+              "observedMaximumMilliseconds": 65.93587500000001,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                61.480958999999984,
+                48.271792000000005,
+                51.93687499999987,
+                51.39150000000018,
+                62.386749999999665,
+                51.307124999999814,
+                51.055875000000015,
+                65.93587500000001
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 55.47060399999987,
+              "launchMedianMilliseconds": 55.47060399999987,
+              "launchMedianConfidenceInterval": [
+                50.25312499999973,
+                64.48925000000008
+              ],
+              "observedMaximumMilliseconds": 73.18699999999995,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                60.928875000000005,
+                50.25312499999973,
+                49.46454199999971,
+                64.48925000000008,
+                55.944666999999754,
+                51.225625000000036,
+                54.99654099999998,
+                73.18699999999995
+              ]
+            },
+            "speedupRatios": [
+              1.0090611224973378,
+              0.9605729394938178,
+              1.0499819244257873,
+              0.7969002585702285,
+              1.115150975874071,
+              1.001591000597841,
+              0.9283470209517365,
+              0.9009233197152506
+            ],
+            "medianPairedSpeedup": 0.9810819700458294,
+            "pairedSpeedupConfidenceInterval": [
+              0.9009233197152506,
+              1.0499819244257873
+            ],
+            "observedMaximumRatio": 1.1099723784661983
+          }
+        },
+        "interaction": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 33.31989599999997,
+              "launchMedianMilliseconds": 33.32533300000017,
+              "launchMedianConfidenceInterval": [
+                33.259479000000056,
+                33.37858349999996
+              ],
+              "observedMaximumMilliseconds": 38.16558299999997,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                33.27877099999995,
+                33.37858349999996,
+                33.36052050000035,
+                33.366437500000075,
+                33.2292295000002,
+                33.290145499999994,
+                33.259479000000056,
+                33.45252050000005
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 33.30441649999989,
+              "launchMedianMilliseconds": 33.30923974999985,
+              "launchMedianConfidenceInterval": [
+                33.213791000000015,
+                33.45395799999997
+              ],
+              "observedMaximumMilliseconds": 41.12891599999989,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                33.540958000000046,
+                33.45395799999997,
+                33.322103999999854,
+                33.285520500000075,
+                33.29637549999984,
+                33.213791000000015,
+                33.1317499999999,
+                33.377583000000016
+              ]
+            },
+            "speedupRatios": [
+              0.9921830795649875,
+              0.99774691831681,
+              1.001152883383369,
+              1.0024309969856111,
+              0.9979833841073892,
+              1.0022988794022332,
+              1.0038551842266152,
+              1.0022451445930052
+            ],
+            "medianPairedSpeedup": 1.001699013988187,
+            "pairedSpeedupConfidenceInterval": [
+              0.99774691831681,
+              1.0024309969856111
+            ],
+            "observedMaximumRatio": 1.0776441172141906
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 553.757083,
+              "launchMedianMilliseconds": 553.757083,
+              "launchMedianConfidenceInterval": [
+                544.5352499999999,
+                561.351375
+              ],
+              "observedMaximumMilliseconds": 567.277958,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                556.8433749999999,
+                567.277958,
+                544.5352499999999,
+                552.298041,
+                544.9148329999998,
+                542.2354580000001,
+                555.216125,
+                561.351375
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 556.087938,
+              "launchMedianMilliseconds": 556.087938,
+              "launchMedianConfidenceInterval": [
+                545.714417,
+                561.6137090000002
+              ],
+              "observedMaximumMilliseconds": 567.219834,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                552.952292,
+                554.018542,
+                542.9103329999998,
+                567.219834,
+                558.157334,
+                561.6137090000002,
+                545.714417,
+                558.927958
+              ]
+            },
+            "speedupRatios": [
+              1.00703692353987,
+              1.0239331628723718,
+              1.0029929749007007,
+              0.9736931043211723,
+              0.9762746089796964,
+              0.9654954095858794,
+              1.0174115026174946,
+              1.0043358307011008
+            ],
+            "medianPairedSpeedup": 1.0036644028009007,
+            "pairedSpeedupConfidenceInterval": [
+              0.9736931043211723,
+              1.0174115026174946
+            ],
+            "observedMaximumRatio": 0.9998975387652907
+          }
+        },
+        "assertion": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 23.237312999999972,
+              "launchMedianMilliseconds": 23.309270749999996,
+              "launchMedianConfidenceInterval": [
+                23.169104500000003,
+                23.573792000000026
+              ],
+              "observedMaximumMilliseconds": 29.97858300000007,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                23.195249999999874,
+                23.54031249999997,
+                23.210458000000017,
+                22.701250500000015,
+                23.169104500000003,
+                23.775874999999814,
+                23.408083499999975,
+                23.573792000000026
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 10.063958499999899,
+              "launchMedianMilliseconds": 10.078385500000024,
+              "launchMedianConfidenceInterval": [
+                9.933229499999925,
+                10.218082999999979
+              ],
+              "observedMaximumMilliseconds": 11.585874999999987,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                10.04658350000011,
+                10.193416500000012,
+                9.817020999999983,
+                10.02668749999998,
+                9.933229499999925,
+                10.218082999999979,
+                10.110187499999938,
+                10.305229000000054
+              ]
+            },
+            "speedupRatios": [
+              2.308769941542776,
+              2.30936433334201,
+              2.364307665227573,
+              2.2640827790833273,
+              2.3324845660719085,
+              2.3268430095938606,
+              2.3152966747649457,
+              2.287556346394622
+            ],
+            "medianPairedSpeedup": 2.312330504053478,
+            "pairedSpeedupConfidenceInterval": [
+              2.287556346394622,
+              2.3324845660719085
+            ],
+            "observedMaximumRatio": 0.3864717355053092
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 395.17274999999995,
+              "launchMedianMilliseconds": 395.17274999999995,
+              "launchMedianConfidenceInterval": [
+                384.34504200000003,
+                401.33741699999996
+              ],
+              "observedMaximumMilliseconds": 402.5026250000001,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                384.34504200000003,
+                398.703584,
+                401.33741699999996,
+                378.53266699999995,
+                395.88137499999993,
+                402.5026250000001,
+                391.37070800000015,
+                394.46412499999997
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 206.797125,
+              "launchMedianMilliseconds": 206.797125,
+              "launchMedianConfidenceInterval": [
+                201.55879099999993,
+                212.85649999999987
+              ],
+              "observedMaximumMilliseconds": 214.29016599999989,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                214.29016599999989,
+                206.940792,
+                206.653458,
+                212.85649999999987,
+                201.55879099999993,
+                201.81654200000003,
+                200.66116699999998,
+                207.46329100000003
+              ]
+            },
+            "speedupRatios": [
+              1.7935729351201317,
+              1.9266553498065282,
+              1.9420793674790575,
+              1.7783467594365225,
+              1.964098777512513,
+              1.9943985810637863,
+              1.9504058201754613,
+              1.901368300380427
+            ],
+            "medianPairedSpeedup": 1.9343673586427927,
+            "pairedSpeedupConfidenceInterval": [
+              1.7935729351201317,
+              1.964098777512513
+            ],
+            "observedMaximumRatio": 0.5323944558125548
+          }
+        },
+        "navigation": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 8.846853999999894,
+              "launchMedianMilliseconds": 8.693916749999943,
+              "launchMedianConfidenceInterval": [
+                8.412604500000043,
+                9.245541999999887
+              ],
+              "observedMaximumMilliseconds": 11.692250000000058,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                9.234291999999868,
+                8.464249999999879,
+                8.221499999999992,
+                8.923583500000007,
+                8.412604500000043,
+                9.245541999999887,
+                10.37012500000003,
+                8.430375499999968
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 8.426312999999965,
+              "launchMedianMilliseconds": 8.496135250000009,
+              "launchMedianConfidenceInterval": [
+                8.14810399999999,
+                8.959166500000265
+              ],
+              "observedMaximumMilliseconds": 14.935791000000108,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                8.688625000000002,
+                8.969062500000064,
+                7.834082999999964,
+                8.168687500000004,
+                8.8034375000002,
+                8.959166500000265,
+                8.14810399999999,
+                8.303645500000016
+              ]
+            },
+            "speedupRatios": [
+              1.0628024572357382,
+              0.943716246820648,
+              1.049452756627678,
+              1.0924133773020455,
+              0.9556045010826568,
+              1.0319645248248945,
+              1.2727040548328843,
+              1.015261971383527
+            ],
+            "medianPairedSpeedup": 1.0407086407262862,
+            "pairedSpeedupConfidenceInterval": [
+              0.9556045010826568,
+              1.0924133773020455
+            ],
+            "observedMaximumRatio": 1.2774094806388876
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 192.38960450000002,
+              "launchMedianMilliseconds": 192.38960450000002,
+              "launchMedianConfidenceInterval": [
+                180.1221250000001,
+                229.09400000000005
+              ],
+              "observedMaximumMilliseconds": 229.52895799999988,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                197.9848340000001,
+                180.1221250000001,
+                181.13241600000003,
+                209.47387499999996,
+                186.79437499999995,
+                229.09400000000005,
+                229.52895799999988,
+                178.58516600000007
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 186.9841875000002,
+              "launchMedianMilliseconds": 186.9841875000002,
+              "launchMedianConfidenceInterval": [
+                177.07687499999997,
+                193.34554200000002
+              ],
+              "observedMaximumMilliseconds": 199.167416,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                199.167416,
+                193.34554200000002,
+                168.31558299999995,
+                190.84583399999997,
+                183.62712500000043,
+                189.11775000000034,
+                177.07687499999997,
+                184.85062500000004
+              ]
+            },
+            "speedupRatios": [
+              0.9940623721301887,
+              0.9316073343961563,
+              1.0761476315594622,
+              1.0976077947816245,
+              1.0172482687402502,
+              1.2113828553903567,
+              1.2962108010998044,
+              0.9661052863629757
+            ],
+            "medianPairedSpeedup": 1.0466979501498561,
+            "pairedSpeedupConfidenceInterval": [
+              0.9661052863629757,
+              1.2113828553903567
+            ],
+            "observedMaximumRatio": 0.8677223899565654
+          }
+        },
+        "setup": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 56.208875000000035,
+              "launchMedianMilliseconds": 55.70620824999992,
+              "launchMedianConfidenceInterval": [
+                54.45393749999994,
+                58.58810399999993
+              ],
+              "observedMaximumMilliseconds": 77.66425000000015,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                58.58810399999993,
+                54.72012499999994,
+                55.07293749999985,
+                59.49945850000006,
+                57.49656249999998,
+                54.45393749999994,
+                56.33947899999998,
+                54.224478999999974
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 56.4020414999998,
+              "launchMedianMilliseconds": 57.33646900000005,
+              "launchMedianConfidenceInterval": [
+                54.789416500000016,
+                58.90306250000003
+              ],
+              "observedMaximumMilliseconds": 74.32708300000013,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                55.243625000000065,
+                54.789416500000016,
+                53.85131250000006,
+                57.24368750000002,
+                59.056208500000025,
+                57.42925050000008,
+                58.90306250000003,
+                58.23033299999997
+              ]
+            },
+            "speedupRatios": [
+              1.0605405420082383,
+              0.9987353123207641,
+              1.02268514811036,
+              1.0394064585723979,
+              0.9735904820235786,
+              0.9481916797782318,
+              0.9564779250654404,
+              0.9312067475210901
+            ],
+            "medianPairedSpeedup": 0.9861628971721713,
+            "pairedSpeedupConfidenceInterval": [
+              0.9481916797782318,
+              1.0394064585723979
+            ],
+            "observedMaximumRatio": 0.9570308475263714
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 861.4933954999999,
+              "launchMedianMilliseconds": 861.4933954999999,
+              "launchMedianConfidenceInterval": [
+                827.159042,
+                889.3080205
+              ],
+              "observedMaximumMilliseconds": 893.100541,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                893.100541,
+                827.159042,
+                844.776791,
+                885.5155,
+                892.307208,
+                827.2282089999999,
+                878.2099999999998,
+                822.917541
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 876.323375,
+              "launchMedianMilliseconds": 876.323375,
+              "launchMedianConfidenceInterval": [
+                821.6922079999999,
+                904.657541
+              ],
+              "observedMaximumMilliseconds": 916.138291,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                835.463542,
+                818.6202090000002,
+                821.6922079999999,
+                904.657541,
+                916.138291,
+                873.6057920000003,
+                879.0409579999998,
+                891.97225
+              ]
+            },
+            "speedupRatios": [
+              1.0689880480745144,
+              1.0104307625271438,
+              1.0280939538859544,
+              0.9788405665873955,
+              0.9739874610262306,
+              0.9469124593441336,
+              0.9990546993374568,
+              0.9225819984870606
+            ],
+            "medianPairedSpeedup": 0.9889476329624262,
+            "pairedSpeedupConfidenceInterval": [
+              0.9469124593441336,
+              1.0280939538859544
+            ],
+            "observedMaximumRatio": 1.0257952480626702
+          }
+        },
+        "backend": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 49.923291500000005,
+              "launchMedianMilliseconds": 49.972676999999976,
+              "launchMedianConfidenceInterval": [
+                49.80270799999994,
+                50.107750000000124
+              ],
+              "observedMaximumMilliseconds": 52.28554200000008,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                49.84681249999994,
+                50.107750000000124,
+                49.80270799999994,
+                49.62962500000003,
+                50.29008349999992,
+                50.09854150000001,
+                49.824562500000184,
+                50.10029150000014
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 50.06754150000006,
+              "launchMedianMilliseconds": 50.091249999999945,
+              "launchMedianConfidenceInterval": [
+                49.97595799999999,
+                50.12495799999988
+              ],
+              "observedMaximumMilliseconds": 52.450042000000394,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                50.12495799999988,
+                50.07981249999989,
+                50.163791500000116,
+                50.1026875,
+                49.97595799999999,
+                49.68999999999994,
+                50.056562500000155,
+                50.105770499999835
+              ]
+            },
+            "speedupRatios": [
+              0.9944509579439461,
+              1.000557859516751,
+              0.9928019097200782,
+              0.9905581412174752,
+              1.0062855323353668,
+              1.008221805192193,
+              0.995365243068779,
+              0.9998906513173029
+            ],
+            "medianPairedSpeedup": 0.9976279471930409,
+            "pairedSpeedupConfidenceInterval": [
+              0.9928019097200782,
+              1.0062855323353668
+            ],
+            "observedMaximumRatio": 1.0031461852303323
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 834.2397920000001,
+              "launchMedianMilliseconds": 834.2397920000001,
+              "launchMedianConfidenceInterval": [
+                823.6219579999997,
+                844.5740420000002
+              ],
+              "observedMaximumMilliseconds": 861.6443330000001,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                829.7237500000001,
+                828.9149579999998,
+                823.6219579999997,
+                838.755834,
+                844.5740420000002,
+                861.6443330000001,
+                839.5444170000001,
+                811.2244999999998
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 826.9414374999999,
+              "launchMedianMilliseconds": 826.9414374999999,
+              "launchMedianConfidenceInterval": [
+                806.6783340000002,
+                836.21325
+              ],
+              "observedMaximumMilliseconds": 866.8721250000001,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                806.6783340000002,
+                801.1964579999999,
+                831.9634999999998,
+                836.21325,
+                810.9469999999999,
+                866.8721250000001,
+                832.2490830000002,
+                821.919375
+              ]
+            },
+            "speedupRatios": [
+              1.028568284319385,
+              1.0345963836000882,
+              0.9899736683159777,
+              1.0030405928152897,
+              1.041466386829226,
+              0.9939693619748126,
+              1.0087658059936846,
+              0.9869879268875975
+            ],
+            "medianPairedSpeedup": 1.0059031994044871,
+            "pairedSpeedupConfidenceInterval": [
+              0.9899736683159777,
+              1.0345963836000882
+            ],
+            "observedMaximumRatio": 1.0060672272767097
+          }
+        },
+        "failure": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 24.00543749999997,
+              "launchMedianMilliseconds": 24.001656499999967,
+              "launchMedianConfidenceInterval": [
+                23.983520999999882,
+                24.07747949999998
+              ],
+              "observedMaximumMilliseconds": 28.955583999999817,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                23.965146000000004,
+                23.983520999999882,
+                24.00041699999997,
+                24.002895999999964,
+                24.07747949999998,
+                24.090561999999977,
+                23.999854,
+                24.003625000000056
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 25.565124999999966,
+              "launchMedianMilliseconds": 25.550521250000088,
+              "launchMedianConfidenceInterval": [
+                25.38899949999984,
+                25.59539599999971
+              ],
+              "observedMaximumMilliseconds": 26.338999999999942,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                25.70187450000003,
+                25.59539599999971,
+                25.167624999999816,
+                25.561333500000046,
+                25.48981249999997,
+                25.38899949999984,
+                25.570374500000014,
+                25.53970900000013
+              ]
+            },
+            "speedupRatios": [
+              0.9324279441174602,
+              0.9370248071176611,
+              0.9536226401974817,
+              0.9390314476355438,
+              0.9445922562200099,
+              0.9488582643833653,
+              0.9385804654523142,
+              0.9398550703925379
+            ],
+            "medianPairedSpeedup": 0.9394432590140409,
+            "pairedSpeedupConfidenceInterval": [
+              0.9370248071176611,
+              0.9488582643833653
+            ],
+            "observedMaximumRatio": 0.9096345630604483
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 416.0929585,
+              "launchMedianMilliseconds": 416.0929585,
+              "launchMedianConfidenceInterval": [
+                408.108209,
+                420.55104200000005
+              ],
+              "observedMaximumMilliseconds": 422.93829200000005,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                420.4841250000004,
+                408.108209,
+                414.6959999999999,
+                407.42975000000024,
+                420.55104200000005,
+                417.4899170000001,
+                422.93829200000005,
+                413.70291700000007
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 434.01543749999973,
+              "launchMedianMilliseconds": 434.01543749999973,
+              "launchMedianConfidenceInterval": [
+                430.3494169999999,
+                444.81399999999996
+              ],
+              "observedMaximumMilliseconds": 448.89808300000004,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                448.89808300000004,
+                432.9192079999998,
+                435.11166699999967,
+                431.31641599999966,
+                430.3494169999999,
+                430.2134580000002,
+                444.81399999999996,
+                435.2725830000004
+              ]
+            },
+            "speedupRatios": [
+              0.9367028751601961,
+              0.9426890779122006,
+              0.9530794769518333,
+              0.9446191586642521,
+              0.9772315829580877,
+              0.9704250511847073,
+              0.9508205497129139,
+              0.9504456130654103
+            ],
+            "medianPairedSpeedup": 0.9506330813891621,
+            "pairedSpeedupConfidenceInterval": [
+              0.9426890779122006,
+              0.9704250511847073
+            ],
+            "observedMaximumRatio": 1.0613796184716233
+          }
+        }
+      },
+      "policy": {
+        "materialCompleteFlowImprovement": false,
+        "medianRegressionWorkloads": [
+          "failure"
+        ],
+        "observedMaximumRegressionWorkloads": [
+          "navigation"
+        ],
+        "memoryWithinPolicy": true,
+        "releaseAccepted": false,
+        "reason": "Engineering measurements only; compatibility, attribution, contention and native-platform release gates remain open."
+      }
+    },
+    "off-on": {
+      "directory": "benchmarks/results/2026-10-08T19-18-09.448Z-darwin-arm64-residency-85269f9f",
+      "metadata": {
+        "path": "benchmarks/results/2026-10-08T19-18-09.448Z-darwin-arm64-residency-85269f9f/metadata.json",
+        "sha256": "05c5178d23917e83539c56418e1ab98795b2df5be7eb2cd4daa8df2a9fed6909"
+      },
+      "summary": {
+        "path": "benchmarks/results/2026-10-08T19-18-09.448Z-darwin-arm64-residency-85269f9f/summary.json",
+        "sha256": "6ce05b21e102636ffc030c0c3b90523f643ffd1e81b6f382e0d2bdaaf8ffb862"
+      },
+      "independentVerification": {
+        "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/off-on-verification.log",
+        "sha256": "10b71ea2d41ebe62e4ff1bbd4a3fb82d4dc0e24fed8baaa96590022f25c99294"
+      },
+      "completeLaunch": {
+        "reference": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3384.5228125,
+          "launchMedianMilliseconds": 3384.5228125,
+          "launchMedianConfidenceInterval": [
+            3374.575083,
+            3482.912458
+          ],
+          "observedMaximumMilliseconds": 3528.423041,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3382.4314999999997,
+            3528.423041,
+            3482.912458,
+            3374.575083,
+            3386.614125,
+            3414.704875,
+            3381.245833,
+            3350.670125
+          ]
+        },
+        "candidate": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3255.886896,
+          "launchMedianMilliseconds": 3255.886896,
+          "launchMedianConfidenceInterval": [
+            3213.831709,
+            3324.4165
+          ],
+          "observedMaximumMilliseconds": 3403.127792,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3236.286875,
+            3261.517917,
+            3250.255875,
+            3264.109625,
+            3324.4165,
+            3403.127792,
+            3213.831709,
+            3170.331334
+          ]
+        },
+        "speedupRatios": [
+          1.04515811812882,
+          1.0818346336866067,
+          1.0715810052954677,
+          1.033842447310574,
+          1.0187093359090236,
+          1.0034018948765941,
+          1.0520917518895512,
+          1.0568832629782159
+        ],
+        "medianPairedSpeedup": 1.0486249350091856,
+        "pairedSpeedupConfidenceInterval": [
+          1.0187093359090236,
+          1.0715810052954677
+        ],
+        "observedMaximumRatio": 0.9644897316608358
+      },
+      "processWall": {
+        "reference": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3786.176771000002,
+          "launchMedianMilliseconds": 3786.176771000002,
+          "launchMedianConfidenceInterval": [
+            3721.8964579999956,
+            3833.3248330000006
+          ],
+          "observedMaximumMilliseconds": 3855.748332999996,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3748.83275,
+            3833.3248330000006,
+            3792.5999169999996,
+            3686.8309169999993,
+            3855.748332999996,
+            3812.046291999999,
+            3779.753625000005,
+            3721.8964579999956
+          ]
+        },
+        "candidate": {
+          "sampleCount": 8,
+          "independentLaunchCount": 8,
+          "medianMilliseconds": 3632.1094375,
+          "launchMedianMilliseconds": 3632.1094375,
+          "launchMedianConfidenceInterval": [
+            3564.8849580000024,
+            3710.8091249999998
+          ],
+          "observedMaximumMilliseconds": 3718.988249999995,
+          "p95Milliseconds": null,
+          "p99Milliseconds": null,
+          "launchMedians": [
+            3623.103,
+            3657.7092090000006,
+            3641.1158749999995,
+            3597.792583000002,
+            3710.8091249999998,
+            3718.988249999995,
+            3529.803874999998,
+            3564.8849580000024
+          ]
+        },
+        "speedupRatios": [
+          1.034702229000942,
+          1.048012461889504,
+          1.041603741050949,
+          1.0247480453488935,
+          1.0390586535490414,
+          1.0250224081778168,
+          1.0708112288533331,
+          1.0440439177841185
+        ],
+        "medianPairedSpeedup": 1.0403311972999951,
+        "pairedSpeedupConfidenceInterval": [
+          1.0250224081778168,
+          1.048012461889504
+        ],
+        "observedMaximumRatio": 0.96453085855487
+      },
+      "workloads": {
+        "noop": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 0.21595849999997085,
+              "launchMedianMilliseconds": 0.20989575000010063,
+              "launchMedianConfidenceInterval": [
+                0.20147950000000492,
+                0.2259582499999766
+              ],
+              "observedMaximumMilliseconds": 0.5487499999999272,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                0.2359790000000146,
+                0.18460449999997763,
+                0.20925000000011096,
+                0.20437500000002728,
+                0.20147950000000492,
+                0.2105415000000903,
+                0.2159374999999386,
+                0.23508350000000178
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 0.21402100000000246,
+              "launchMedianMilliseconds": 0.21900000000016462,
+              "launchMedianConfidenceInterval": [
+                0.19995799999992414,
+                0.23568750000004002
+              ],
+              "observedMaximumMilliseconds": 0.3102079999999887,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                0.24964550000001395,
+                0.18662450000010722,
+                0.2175000000002001,
+                0.19995799999992414,
+                0.22050000000012915,
+                0.23568750000004002,
+                0.2112084999999979,
+                0.2321875000000091
+              ]
+            },
+            "speedupRatios": [
+              0.9452563735376821,
+              0.9891761263921488,
+              0.9620689655168665,
+              1.0220896388246772,
+              0.9137392290244304,
+              0.8933078758952195,
+              1.0223901973639353,
+              1.0124726783310583
+            ],
+            "medianPairedSpeedup": 0.9756225459545076,
+            "pairedSpeedupConfidenceInterval": [
+              0.9137392290244304,
+              1.0220896388246772
+            ],
+            "observedMaximumRatio": 0.565299316628756
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 51.38545799999997,
+              "launchMedianMilliseconds": 51.38545799999997,
+              "launchMedianConfidenceInterval": [
+                47.717209000000366,
+                61.33483299999989
+              ],
+              "observedMaximumMilliseconds": 62.58575000000002,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                62.58575000000002,
+                61.33483299999989,
+                49.472957999999835,
+                47.717209000000366,
+                53.29795800000011,
+                47.24370799999997,
+                48.592750000000024,
+                58.814750000000004
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 57.42979150000001,
+              "launchMedianMilliseconds": 57.42979150000001,
+              "launchMedianConfidenceInterval": [
+                50.81662499999993,
+                62.41104200000018
+              ],
+              "observedMaximumMilliseconds": 74.22725000000037,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                58.34508299999999,
+                62.41104200000018,
+                47.764624999999796,
+                60.48154199999999,
+                74.22725000000037,
+                50.81662499999993,
+                51.55549999999994,
+                56.51450000000003
+              ]
+            },
+            "speedupRatios": [
+              1.072682508652872,
+              0.9827561122917915,
+              1.0357656529282926,
+              0.7889549013151876,
+              0.7180376209545665,
+              0.9296899981059354,
+              0.9425328044534547,
+              1.0407019437489489
+            ],
+            "medianPairedSpeedup": 0.962644458372623,
+            "pairedSpeedupConfidenceInterval": [
+              0.7889549013151876,
+              1.0407019437489489
+            ],
+            "observedMaximumRatio": 1.186008795931987
+          }
+        },
+        "interaction": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 33.34416700000003,
+              "launchMedianMilliseconds": 33.376489750000104,
+              "launchMedianConfidenceInterval": [
+                33.21327050000008,
+                33.533209
+              ],
+              "observedMaximumMilliseconds": 39.538916999999856,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                33.35258349999998,
+                33.100832999999966,
+                33.40039600000023,
+                33.402416499999845,
+                33.21462500000007,
+                33.54397950000009,
+                33.21327050000008,
+                33.533209
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 33.286125,
+              "launchMedianMilliseconds": 33.221499999999935,
+              "launchMedianConfidenceInterval": [
+                33.12383349999999,
+                33.54656249999988
+              ],
+              "observedMaximumMilliseconds": 36.22762499999999,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                32.963479000000035,
+                33.12383349999999,
+                33.238416500000085,
+                33.626125,
+                33.33577100000002,
+                33.204583499999785,
+                33.54656249999988,
+                33.18575050000001
+              ]
+            },
+            "speedupRatios": [
+              1.011804109026233,
+              0.9993056208303902,
+              1.0048732616368816,
+              0.9933471816928011,
+              0.9963658857627755,
+              1.010221359951716,
+              0.9900647942691654,
+              1.010470111260554
+            ],
+            "medianPairedSpeedup": 1.0020894412336359,
+            "pairedSpeedupConfidenceInterval": [
+              0.9933471816928011,
+              1.010470111260554
+            ],
+            "observedMaximumRatio": 0.9162523343772951
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 548.0716454999999,
+              "launchMedianMilliseconds": 548.0716454999999,
+              "launchMedianConfidenceInterval": [
+                542.8453749999999,
+                560.753166
+              ],
+              "observedMaximumMilliseconds": 610.795292,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                542.8453749999999,
+                610.795292,
+                547.4674999999997,
+                539.3937080000001,
+                547.965291,
+                560.753166,
+                548.178,
+                554.6505
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 552.483354,
+              "launchMedianMilliseconds": 552.483354,
+              "launchMedianConfidenceInterval": [
+                547.0968750000002,
+                577.7661250000001
+              ],
+              "observedMaximumMilliseconds": 591.334,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                539.8565000000001,
+                591.334,
+                566.24325,
+                547.0968750000002,
+                577.7661250000001,
+                548.0773330000002,
+                556.325542,
+                548.641166
+              ]
+            },
+            "speedupRatios": [
+              1.0055364249573726,
+              1.0329108287363826,
+              0.966841547338533,
+              0.9859199214033162,
+              0.948420593194175,
+              1.0231278183511372,
+              0.9853547223974123,
+              1.0109531226827408
+            ],
+            "medianPairedSpeedup": 0.9957281731803445,
+            "pairedSpeedupConfidenceInterval": [
+              0.966841547338533,
+              1.0231278183511372
+            ],
+            "observedMaximumRatio": 0.9681377832231227
+          }
+        },
+        "assertion": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 23.377895999999964,
+              "launchMedianMilliseconds": 23.360582999999963,
+              "launchMedianConfidenceInterval": [
+                23.311395999999974,
+                23.561645999999996
+              ],
+              "observedMaximumMilliseconds": 26.58441599999992,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                23.380270499999938,
+                23.561645999999996,
+                23.311395999999974,
+                23.338375000000042,
+                23.064208000000008,
+                23.340895499999988,
+                23.53860450000002,
+                23.562687500000038
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 10.009603999999968,
+              "launchMedianMilliseconds": 9.989739749999956,
+              "launchMedianConfidenceInterval": [
+                9.969062000000122,
+                10.10202099999998
+              ],
+              "observedMaximumMilliseconds": 16.223833000000013,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                10.090270499999974,
+                10.548417000000029,
+                10.10202099999998,
+                9.969937500000015,
+                9.969062000000122,
+                9.958062500000096,
+                9.974937499999896,
+                10.004542000000015
+              ]
+            },
+            "speedupRatios": [
+              2.3171103787554554,
+              2.2336665302480867,
+              2.307597261973621,
+              2.340874754731412,
+              2.313578549315846,
+              2.343919361823624,
+              2.359774635179445,
+              2.3551990186057497
+            ],
+            "medianPairedSpeedup": 2.328992566743434,
+            "pairedSpeedupConfidenceInterval": [
+              2.307597261973621,
+              2.3551990186057497
+            ],
+            "observedMaximumRatio": 0.610276073019624
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 394.57008350000007,
+              "launchMedianMilliseconds": 394.57008350000007,
+              "launchMedianConfidenceInterval": [
+                391.3784999999998,
+                406.61297949999994
+              ],
+              "observedMaximumMilliseconds": 408.56879200000003,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                408.56879200000003,
+                393.04641700000013,
+                396.09375,
+                404.65716699999984,
+                407.5595830000002,
+                391.3784999999998,
+                392.88466700000004,
+                389.0535000000001
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 200.97272850000013,
+              "launchMedianMilliseconds": 200.97272850000013,
+              "launchMedianConfidenceInterval": [
+                197.28708399999982,
+                210.57962500000008
+              ],
+              "observedMaximumMilliseconds": 211.277916,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                210.54820800000016,
+                210.57962500000008,
+                211.277916,
+                197.89200000000028,
+                203.03591600000027,
+                198.909541,
+                197.28708399999982,
+                195.71370799999988
+              ]
+            },
+            "speedupRatios": [
+              1.9404999732887764,
+              1.8664978484979255,
+              1.874752257590424,
+              2.044838432074057,
+              2.007327526229397,
+              1.9676205476739792,
+              1.9914363324463775,
+              1.9878704663855244
+            ],
+            "medianPairedSpeedup": 1.9777455070297518,
+            "pairedSpeedupConfidenceInterval": [
+              1.874752257590424,
+              2.007327526229397
+            ],
+            "observedMaximumRatio": 0.5171171174522796
+          }
+        },
+        "navigation": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 7.995875000000069,
+              "launchMedianMilliseconds": 8.03087524999998,
+              "launchMedianConfidenceInterval": [
+                7.845207999999843,
+                8.340207999999961
+              ],
+              "observedMaximumMilliseconds": 9.967916999999943,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                8.06443749999994,
+                8.340207999999961,
+                8.40556250000003,
+                7.99731300000002,
+                8.234229000000141,
+                7.7599795000000995,
+                7.845207999999843,
+                7.976812499999937
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 8.384916500000031,
+              "launchMedianMilliseconds": 8.332958249999876,
+              "launchMedianConfidenceInterval": [
+                8.018145500000003,
+                8.717500000000086
+              ],
+              "observedMaximumMilliseconds": 12.072958999999855,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                8.335228999999913,
+                8.253020499999934,
+                8.018145500000003,
+                9.533270999999985,
+                7.389353999999912,
+                8.33068749999984,
+                8.444082999999978,
+                8.717500000000086
+              ]
+            },
+            "speedupRatios": [
+              0.9675124102769131,
+              1.0105643139987388,
+              1.0483175317783928,
+              0.8388844710278385,
+              1.114336787762535,
+              0.9314932891193253,
+              0.9290775564380246,
+              0.9150344135359746
+            ],
+            "medianPairedSpeedup": 0.9495028496981193,
+            "pairedSpeedupConfidenceInterval": [
+              0.9150344135359746,
+              1.0483175317783928
+            ],
+            "observedMaximumRatio": 1.2111817343583342
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 176.036208,
+              "launchMedianMilliseconds": 176.036208,
+              "launchMedianConfidenceInterval": [
+                170.75204199999985,
+                187.76658299999997
+              ],
+              "observedMaximumMilliseconds": 189.443291,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                174.58137499999998,
+                179.29775000000018,
+                187.76658299999997,
+                189.443291,
+                177.16820800000005,
+                174.90420799999993,
+                168.52654100000018,
+                170.75204199999985
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 179.5037705000001,
+              "launchMedianMilliseconds": 179.5037705000001,
+              "launchMedianConfidenceInterval": [
+                170.36654199999998,
+                192.52816699999994
+              ],
+              "observedMaximumMilliseconds": 227.373042,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                186.41270800000007,
+                173.42004199999997,
+                170.36654199999998,
+                227.373042,
+                169.97604200000023,
+                181.3808750000003,
+                177.6266659999999,
+                192.52816699999994
+              ]
+            },
+            "speedupRatios": [
+              0.9365315105019553,
+              1.0338928991840528,
+              1.1021329704514398,
+              0.8331827262090288,
+              1.042312821944635,
+              0.964292448142615,
+              0.9487682496951234,
+              0.8868938226581667
+            ],
+            "medianPairedSpeedup": 0.9565303489188692,
+            "pairedSpeedupConfidenceInterval": [
+              0.8868938226581667,
+              1.042312821944635
+            ],
+            "observedMaximumRatio": 1.2002169134614538
+          }
+        },
+        "setup": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 55.17331299999995,
+              "launchMedianMilliseconds": 55.089572999999945,
+              "launchMedianConfidenceInterval": [
+                54.308146000000306,
+                59.35943750000001
+              ],
+              "observedMaximumMilliseconds": 80.169083,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                55.08722949999992,
+                59.35943750000001,
+                60.61768700000016,
+                53.120311999999956,
+                55.09191649999997,
+                54.732020999999804,
+                55.68429149999997,
+                54.308146000000306
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 56.35647899999992,
+              "launchMedianMilliseconds": 55.898656250000045,
+              "launchMedianConfidenceInterval": [
+                55.1763954999999,
+                58.798
+              ],
+              "observedMaximumMilliseconds": 78.97412500000019,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                56.30483349999997,
+                55.49247900000012,
+                58.798,
+                55.302708499999994,
+                57.107124999999996,
+                74.30799999999999,
+                55.1763954999999,
+                54.45464599999991
+              ]
+            },
+            "speedupRatios": [
+              0.9783747873084457,
+              1.0696843711018909,
+              1.030948110479951,
+              0.960537258315295,
+              0.9647117850881124,
+              0.736556238897559,
+              1.0092049506930925,
+              0.9973096877721029
+            ],
+            "medianPairedSpeedup": 0.9878422375402743,
+            "pairedSpeedupConfidenceInterval": [
+              0.960537258315295,
+              1.030948110479951
+            ],
+            "observedMaximumRatio": 0.9850945282734516
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 828.8448955,
+              "launchMedianMilliseconds": 828.8448955,
+              "launchMedianConfidenceInterval": [
+                821.1623124999999,
+                887.4675410000002
+              ],
+              "observedMaximumMilliseconds": 926.629292,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                819.0662499999999,
+                887.4675410000002,
+                926.629292,
+                823.258375,
+                847.515958,
+                823.718875,
+                833.970916,
+                819.7574169999998
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 857.484917,
+              "launchMedianMilliseconds": 857.484917,
+              "launchMedianConfidenceInterval": [
+                828.102834,
+                891.658417
+              ],
+              "observedMaximumMilliseconds": 1019.7753749999997,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                856.6508749999998,
+                828.102834,
+                874.7657089999999,
+                849.94825,
+                891.658417,
+                1019.7753749999997,
+                858.3189590000002,
+                823.161042
+              ]
+            },
+            "speedupRatios": [
+              0.9561260881219552,
+              1.0716876027500712,
+              1.0592885414533322,
+              0.9685982352454987,
+              0.950493980476831,
+              0.8077454066784072,
+              0.971632872902671,
+              0.9958651772541003
+            ],
+            "medianPairedSpeedup": 0.9701155540740849,
+            "pairedSpeedupConfidenceInterval": [
+              0.950493980476831,
+              1.0592885414533322
+            ],
+            "observedMaximumRatio": 1.1005214100225096
+          }
+        },
+        "backend": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 50.02187500000002,
+              "launchMedianMilliseconds": 50.02056249999998,
+              "launchMedianConfidenceInterval": [
+                49.9358960000003,
+                50.324604000000136
+              ],
+              "observedMaximumMilliseconds": 51.965124999999716,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                50.09156250000001,
+                49.87591650000013,
+                49.9358960000003,
+                50.02729150000005,
+                49.972687500000006,
+                50.42397899999992,
+                50.324604000000136,
+                50.01383349999992
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 50.03620799999999,
+              "launchMedianMilliseconds": 50.02535399999999,
+              "launchMedianConfidenceInterval": [
+                49.90316699999994,
+                50.175500000000056
+              ],
+              "observedMaximumMilliseconds": 60.274542,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                50.478812500000004,
+                50.175500000000056,
+                49.950458500000195,
+                50.08660400000008,
+                49.96410399999991,
+                49.89814599999994,
+                49.90316699999994,
+                50.12937500000021
+              ]
+            },
+            "speedupRatios": [
+              0.9923284645414352,
+              0.9940292872019227,
+              0.999708461134548,
+              0.9988158011271829,
+              1.0001717933338723,
+              1.0105381270077645,
+              1.0084450952782256,
+              0.9976951338411801
+            ],
+            "medianPairedSpeedup": 0.9992621311308655,
+            "pairedSpeedupConfidenceInterval": [
+              0.9940292872019227,
+              1.0084450952782256
+            ],
+            "observedMaximumRatio": 1.159903723891751
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 824.8940415,
+              "launchMedianMilliseconds": 824.8940415,
+              "launchMedianConfidenceInterval": [
+                808.2164160000002,
+                829.2621249999997
+              ],
+              "observedMaximumMilliseconds": 848.745791,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                805.0618750000003,
+                829.2621249999997,
+                828.627708,
+                822.720292,
+                810.896958,
+                848.745791,
+                827.0677909999999,
+                808.2164160000002
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 820.3083330000002,
+              "launchMedianMilliseconds": 820.3083330000002,
+              "launchMedianConfidenceInterval": [
+                805.8233749999999,
+                832.5263749999999
+              ],
+              "observedMaximumMilliseconds": 852.169208,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                807.437042,
+                825.1922910000003,
+                832.5263749999999,
+                815.424375,
+                832.264833,
+                852.169208,
+                805.8233749999999,
+                794.7599579999996
+              ]
+            },
+            "speedupRatios": [
+              0.9970583873708389,
+              1.004931982574713,
+              0.9953170648797764,
+              1.008947386445248,
+              0.9743256303129175,
+              0.9959827027685798,
+              1.026363613490363,
+              1.0169314745471871
+            ],
+            "medianPairedSpeedup": 1.0009951849727758,
+            "pairedSpeedupConfidenceInterval": [
+              0.9953170648797764,
+              1.0169314745471871
+            ],
+            "observedMaximumRatio": 1.004033501003836
+          }
+        },
+        "failure": {
+          "operation": {
+            "reference": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 25.36395800000014,
+              "launchMedianMilliseconds": 25.369239750000133,
+              "launchMedianConfidenceInterval": [
+                25.221457999999984,
+                25.44277100000022
+              ],
+              "observedMaximumMilliseconds": 25.725374999999985,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                25.334938000000193,
+                25.44277100000022,
+                25.447854500000176,
+                25.37893750000012,
+                25.359542000000147,
+                25.427916500000038,
+                25.221457999999984,
+                25.205666500000234
+              ]
+            },
+            "candidate": {
+              "sampleCount": 96,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 25.607249999999794,
+              "launchMedianMilliseconds": 25.57196874999994,
+              "launchMedianConfidenceInterval": [
+                25.393916499999932,
+                25.708541999999852
+              ],
+              "observedMaximumMilliseconds": 26.329459000000043,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                25.661166500000263,
+                25.618812499999876,
+                25.443145999999842,
+                25.708541999999852,
+                25.776541999999836,
+                25.525125000000003,
+                25.05710399999998,
+                25.393916499999932
+              ]
+            },
+            "speedupRatios": [
+              0.9872870744204062,
+              0.9931284285717905,
+              1.0001850596620534,
+              0.9871791834791823,
+              0.9838225003183246,
+              0.9961916543014004,
+              1.0065591777884628,
+              0.9925868071591203
+            ],
+            "medianPairedSpeedup": 0.9928576178654553,
+            "pairedSpeedupConfidenceInterval": [
+              0.9871791834791823,
+              1.0001850596620534
+            ],
+            "observedMaximumRatio": 1.0234820289305815
+          },
+          "preparationInclusive": {
+            "reference": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 437.16404149999994,
+              "launchMedianMilliseconds": 437.16404149999994,
+              "launchMedianConfidenceInterval": [
+                426.16029200000025,
+                447.23987499999976
+              ],
+              "observedMaximumMilliseconds": 450.86737500000004,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                439.3072080000002,
+                447.23987499999976,
+                431.8319580000002,
+                424.7633329999999,
+                426.16029200000025,
+                450.86737500000004,
+                436.498333,
+                437.8297499999999
+              ]
+            },
+            "candidate": {
+              "sampleCount": 8,
+              "independentLaunchCount": 8,
+              "medianMilliseconds": 440.3930624999999,
+              "launchMedianMilliseconds": 440.3930624999999,
+              "launchMedianConfidenceInterval": [
+                436.903417,
+                443.693166
+              ],
+              "observedMaximumMilliseconds": 455.4716669999998,
+              "p95Milliseconds": null,
+              "p99Milliseconds": null,
+              "launchMedians": [
+                455.4716669999998,
+                443.693166,
+                431.27416600000015,
+                436.903417,
+                442.451458,
+                438.054666,
+                441.88879199999997,
+                438.8973329999999
+              ]
+            },
+            "speedupRatios": [
+              0.9645105059849977,
+              1.0079936074561935,
+              1.0012933582485903,
+              0.9722133461821835,
+              0.9631797664909045,
+              1.029249109744673,
+              0.9878013221932997,
+              0.9975675792042236
+            ],
+            "medianPairedSpeedup": 0.9926844506987617,
+            "pairedSpeedupConfidenceInterval": [
+              0.9676965563365441,
+              1.0079936074561935
+            ],
+            "observedMaximumRatio": 1.0102120762230795
+          }
+        }
+      }
+    },
+    "load": {
+      "directory": "benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275",
+      "metadata": {
+        "path": "benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275/metadata.json",
+        "sha256": "2bbe30f79b4455408b495103b6cb2a1db0b876e1f97e60cf439fc272585f41f7"
+      },
+      "summary": {
+        "path": "benchmarks/results/2026-10-08T19-19-10.733Z-darwin-arm64-resident-load-3ae38275/summary.json",
+        "sha256": "4308e291a12c2863bee6218045bd3219b628a1b0ee8c37409bf0089f20eb138e"
+      },
+      "independentVerification": {
+        "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/load-verification.log",
+        "sha256": "e8fb7eddd10a91aa520a5a2977c341d152d7c9db1cf21736819ece4fe9deca03"
+      }
+    }
+  },
+  "residentLoadGates": [
+    {
+      "scenario": {
+        "workload": "quiet-text",
+        "conditionCount": 1
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1460598144739669,
+          "confidenceInterval": [
+            1.1310512443299037,
+            1.2073253165744142
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1483434062091105,
+          "confidenceInterval": [
+            1.1464762371471293,
+            1.152081441716853
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.071047679225999,
+          "confidenceInterval": [
+            0.994625555424063,
+            1.3438275319266089
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.1098527936039297,
+          "confidenceInterval": [
+            1.089386820732058,
+            1.208567521798754
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.0441176470588236,
+          "confidenceInterval": [
+            0.9920178799489141,
+            1.1364240611498837
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 0.9837755613712484,
+          "confidenceInterval": [
+            0.9798365649279586,
+            0.9869529434925598
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 0.9916973633021082,
+          "confidenceInterval": [
+            0.9860800761472388,
+            1.0027624283011285
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "quiet-text",
+        "conditionCount": 1
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.0181345699559912,
+          "confidenceInterval": [
+            1.0038436608434524,
+            1.0275780977830027
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.019896939197694,
+          "confidenceInterval": [
+            1.0189999885146226,
+            1.0233109403601293
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9857885594526569,
+          "confidenceInterval": [
+            0.8423126817636384,
+            1.0583145800325546
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 0.9905788988638109,
+          "confidenceInterval": [
+            0.9709506878451708,
+            1.0334051753794946
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 0.9913793103448276,
+          "confidenceInterval": [
+            0.917211328976035,
+            1.0490196078431373
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.0052036918071587,
+          "confidenceInterval": [
+            1.002029821880547,
+            1.009347708040174
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 0.9972222215690959,
+          "confidenceInterval": [
+            0.9889502768980701,
+            1.0000000016649342
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "quiet-text",
+        "conditionCount": 32
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1688922836106739,
+          "confidenceInterval": [
+            1.1554455004347295,
+            1.2560627711838106
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1830763683464671,
+          "confidenceInterval": [
+            1.1806774139398368,
+            1.2003329112593182
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9489443769288106,
+          "confidenceInterval": [
+            0.671501129707767,
+            1.0396242967402878
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.1494060546070122,
+          "confidenceInterval": [
+            1.120571100170286,
+            1.2420002466943378
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.803846153846154,
+          "confidenceInterval": [
+            1.6150392817059482,
+            1.9334179970972425
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.0878121020037201,
+          "confidenceInterval": [
+            1.0744889116195193,
+            1.0947174747775068
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 2.5359115975523374,
+          "confidenceInterval": [
+            2.495871699454545,
+            2.5524861896555855
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "quiet-text",
+        "conditionCount": 32
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.0292805442839337,
+          "confidenceInterval": [
+            0.944854071862697,
+            1.0396263877000755
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.0374445500980558,
+          "confidenceInterval": [
+            1.036004539636394,
+            1.0385152973314078
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9466371491069838,
+          "confidenceInterval": [
+            0.5525420518234563,
+            1.0524311877815138
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0166741785078806,
+          "confidenceInterval": [
+            0.9194406857017019,
+            1.0330515240901297
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 2.384265734265734,
+          "confidenceInterval": [
+            1.8675645342312008,
+            2.45700290275762
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.1282703597967285,
+          "confidenceInterval": [
+            1.114559447414036,
+            1.1380294135628986
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 1.9475138111540384,
+          "confidenceInterval": [
+            1.8950276224718208,
+            2.0970227116253857
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "quiet-text",
+        "conditionCount": 128
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.0850840582498367,
+          "confidenceInterval": [
+            1.0752332704706162,
+            1.12027940283346
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.112888096927759,
+          "confidenceInterval": [
+            1.097519235891673,
+            1.1230266334606553
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.061333886066103,
+          "confidenceInterval": [
+            0.9201259742112231,
+            1.3809516484505375
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0789838781350793,
+          "confidenceInterval": [
+            1.0355953921131356,
+            1.1451193234773949
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 3.2873411016949152,
+          "confidenceInterval": [
+            2.997460317460318,
+            3.847034715525554
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.1834341627852636,
+          "confidenceInterval": [
+            1.1573496090636053,
+            1.1871698100247663
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 6.319716776201872,
+          "confidenceInterval": [
+            5.802131329261893,
+            6.577926220145933
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "quiet-text",
+        "conditionCount": 128
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1507817015715673,
+          "confidenceInterval": [
+            1.0822889555065267,
+            1.287010598757171
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1830302112647337,
+          "confidenceInterval": [
+            1.0952797191928845,
+            1.3268254782723377
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.056245347131208,
+          "confidenceInterval": [
+            0.8504306224150517,
+            1.2639881484535453
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.120869786182378,
+          "confidenceInterval": [
+            1.0554416602618608,
+            1.24495036648691
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 5.066553672316385,
+          "confidenceInterval": [
+            4.929191468253968,
+            5.773746383799422
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.303816881827397,
+          "confidenceInterval": [
+            1.2927774157498186,
+            1.3147979901511126
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 5.971230149573465,
+          "confidenceInterval": [
+            5.3982630308412265,
+            6.166797405956588
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "property-only",
+        "conditionCount": 1
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1066982855272438,
+          "confidenceInterval": [
+            1.0762792837610293,
+            1.1224629352542523
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1413201176464123,
+          "confidenceInterval": [
+            1.1295657183399763,
+            1.1450571780631837
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9174513596507086,
+          "confidenceInterval": [
+            0.7127047923179739,
+            1.05151212176346
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0844311377507918,
+          "confidenceInterval": [
+            1.056016852965317,
+            1.1448156882377831
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.0086206896551722,
+          "confidenceInterval": [
+            0.8274725274725274,
+            1.0779761904761904
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 0.9813292883979718,
+          "confidenceInterval": [
+            0.9731918133804085,
+            0.985275977490391
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 0.994444446431266,
+          "confidenceInterval": [
+            0.9694444437821705,
+            1.0581952107638717
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "property-only",
+        "conditionCount": 1
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.007987257961511,
+          "confidenceInterval": [
+            0.9745191118702515,
+            1.0694446319219946
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.016769051634735,
+          "confidenceInterval": [
+            1.0074658752318966,
+            1.0248221988933772
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.0888390192969246,
+          "confidenceInterval": [
+            0.7705065604814769,
+            1.478208805953496
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0282430294406555,
+          "confidenceInterval": [
+            0.978534799109019,
+            1.111776644090031
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.0261699507389164,
+          "confidenceInterval": [
+            0.8782051282051282,
+            1.1678571428571427
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 0.999813578385093,
+          "confidenceInterval": [
+            0.9924535700039991,
+            1.0041084275503704
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 1.0305555562178292,
+          "confidenceInterval": [
+            1.0000000016556845,
+            1.0471147939975847
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "property-only",
+        "conditionCount": 32
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.163996568740807,
+          "confidenceInterval": [
+            0.9673434339551009,
+            1.1789628956746259
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1799141746735713,
+          "confidenceInterval": [
+            1.1757992831458284,
+            1.1857928460283005
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.0089744110188503,
+          "confidenceInterval": [
+            0.7181622964067138,
+            1.1060509258841273
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.1557619638053866,
+          "confidenceInterval": [
+            0.965782051055572,
+            1.1736735662388544
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.7912885662431939,
+          "confidenceInterval": [
+            1.679405737704918,
+            1.8848684210526314
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.087535476087032,
+          "confidenceInterval": [
+            1.0865942183702275,
+            1.0980587059783393
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 2.7507059559633324,
+          "confidenceInterval": [
+            2.6396546295257193,
+            2.852777777446641
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "property-only",
+        "conditionCount": 32
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.0416674447218677,
+          "confidenceInterval": [
+            0.8604062946513785,
+            1.04707864422233
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.0371267251079637,
+          "confidenceInterval": [
+            1.0312033987472131,
+            1.0408987173238209
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.0845374307794944,
+          "confidenceInterval": [
+            0.7568921318790758,
+            1.1380899622097411
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0368696916950304,
+          "confidenceInterval": [
+            0.8804253756699691,
+            1.0469131381367558
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 2.391258318209316,
+          "confidenceInterval": [
+            2.1615778688524587,
+            2.4425125313283207
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.1216005612903501,
+          "confidenceInterval": [
+            1.1194061217088116,
+            1.1280717554155835
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 2.130427240491099,
+          "confidenceInterval": [
+            2.000076735812003,
+            2.397222222553359
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "property-only",
+        "conditionCount": 128
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.112132535514668,
+          "confidenceInterval": [
+            1.1026384258913242,
+            1.1552700439289008
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1326999166165324,
+          "confidenceInterval": [
+            1.11686282377835,
+            1.1644459651202737
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9950618988046198,
+          "confidenceInterval": [
+            0.9530643308540472,
+            1.1079726274530266
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0869611590102863,
+          "confidenceInterval": [
+            1.080508211143292,
+            1.1552581341110209
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 3.2756696428571432,
+          "confidenceInterval": [
+            3.1893939393939394,
+            3.3677884615384617
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.157459176058689,
+          "confidenceInterval": [
+            1.151007252322421,
+            1.1780774838662986
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 6.2617131130779535,
+          "confidenceInterval": [
+            5.925153284186136,
+            6.820228040106722
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "property-only",
+        "conditionCount": 128
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.449675802184839,
+          "confidenceInterval": [
+            1.3860350676429303,
+            1.7624788522189487
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.4999767103163086,
+          "confidenceInterval": [
+            1.4282375850110807,
+            1.8364289906936393
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.0450108300028322,
+          "confidenceInterval": [
+            0.9723303239567384,
+            1.1386573840956027
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.3935670056012377,
+          "confidenceInterval": [
+            1.3490542624156756,
+            1.6807108991393873
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 6.3262310606060606,
+          "confidenceInterval": [
+            5.963924963924964,
+            7.241786858974359
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.34074375062063,
+          "confidenceInterval": [
+            1.32266252847601,
+            1.405846536253079
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 5.6183517668390355,
+          "confidenceInterval": [
+            5.19277090307065,
+            6.2650717739770645
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "mutation-text",
+        "conditionCount": 1
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1422542596689005,
+          "confidenceInterval": [
+            1.1169045993496862,
+            1.1905691127357831
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1489984274021894,
+          "confidenceInterval": [
+            1.1467194406710584,
+            1.1512855072882258
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.0875167021735284,
+          "confidenceInterval": [
+            0.8811742051518505,
+            1.6429600760908911
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.1266751113431734,
+          "confidenceInterval": [
+            1.0924175775004197,
+            1.1866549354298996
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.047027972027972,
+          "confidenceInterval": [
+            0.9910714285714284,
+            1.1606060606060606
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 0.978343654179475,
+          "confidenceInterval": [
+            0.9722947192098799,
+            0.9859349189091262
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 1.0055865935181594,
+          "confidenceInterval": [
+            0.9943973638112319,
+            1.0228252337219987
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "mutation-text",
+        "conditionCount": 1
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.0239905634519386,
+          "confidenceInterval": [
+            0.9990729845700288,
+            1.0495251735385707
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.022505906430323,
+          "confidenceInterval": [
+            1.0206295778843624,
+            1.0288291883097356
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9695978697697873,
+          "confidenceInterval": [
+            0.8690298141010767,
+            1.2685595537714598
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.0215163097082405,
+          "confidenceInterval": [
+            0.9788335843832594,
+            1.055114827074961
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.0178571428571428,
+          "confidenceInterval": [
+            1,
+            1.0849650349650348
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.00533813708943,
+          "confidenceInterval": [
+            0.9985481314661954,
+            1.0100221580813948
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 1.0199233712297495,
+          "confidenceInterval": [
+            1.0083488519834982,
+            1.0396443256081562
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "mutation-text",
+        "conditionCount": 32
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1572579350136367,
+          "confidenceInterval": [
+            1.1376795785965346,
+            1.1712288772253006
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1851036977712952,
+          "confidenceInterval": [
+            1.1828465511267718,
+            1.194824364593519
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9477982585533287,
+          "confidenceInterval": [
+            0.8039864882060541,
+            1.0427734322727122
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.1163284089016852,
+          "confidenceInterval": [
+            1.0721113169442837,
+            1.1554713138300319
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 1.7814814814814814,
+          "confidenceInterval": [
+            1.710897435897436,
+            1.8406954887218043
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.0868608055827123,
+          "confidenceInterval": [
+            1.0792742924001888,
+            1.093890202134399
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 2.683958501368206,
+          "confidenceInterval": [
+            2.5580009867947604,
+            2.8033335404228397
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "mutation-text",
+        "conditionCount": 32
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.0364199289120322,
+          "confidenceInterval": [
+            1.01975359284347,
+            1.0413294054863882
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.0420413300027205,
+          "confidenceInterval": [
+            1.0363899264164327,
+            1.0503390513086759
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 1.0010104078153916,
+          "confidenceInterval": [
+            0.9507756747517668,
+            1.036587498491572
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.041356847190297,
+          "confidenceInterval": [
+            0.9992718719434863,
+            1.0874444078601524
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 2.329945054945055,
+          "confidenceInterval": [
+            2.2407894736842104,
+            2.4231481481481483
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.1213451921850066,
+          "confidenceInterval": [
+            1.1130691597902143,
+            1.125942455655768
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 1.9501350634064802,
+          "confidenceInterval": [
+            1.9187119475859242,
+            2.0298901089197083
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "mutation-text",
+        "conditionCount": 128
+      },
+      "referenceMode": "playwright",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1076210894473553,
+          "confidenceInterval": [
+            1.0820091446682194,
+            1.1489532051971971
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1259316208372352,
+          "confidenceInterval": [
+            1.1152951039555612,
+            1.1388672220032112
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9818093894504111,
+          "confidenceInterval": [
+            0.7926250575178346,
+            1.2839948680592979
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.111426580768712,
+          "confidenceInterval": [
+            1.0783297806033982,
+            1.1631867508293126
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 3.327228327228327,
+          "confidenceInterval": [
+            3.1319489508976854,
+            3.6742424242424248
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.163628660281025,
+          "confidenceInterval": [
+            1.1435940145153705,
+            1.2788218909222089
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 6.681296291509938,
+          "confidenceInterval": [
+            5.8156589163674255,
+            6.866108008452666
+          ]
+        }
+      }
+    },
+    {
+      "scenario": {
+        "workload": "mutation-text",
+        "conditionCount": 128
+      },
+      "referenceMode": "flashwright-off",
+      "gate": {
+        "cpu": true,
+        "memory": true,
+        "completeTime": true
+      },
+      "passed": true,
+      "ratios": {
+        "completeTime": {
+          "medianReferenceOverCandidate": 1.1300295546845744,
+          "confidenceInterval": [
+            1.1061733881444717,
+            1.1779942613525076
+          ]
+        },
+        "operationTime": {
+          "medianReferenceOverCandidate": 1.1590813297277138,
+          "confidenceInterval": [
+            1.1197368080058192,
+            1.2153872119157485
+          ]
+        },
+        "preparationTime": {
+          "medianReferenceOverCandidate": 0.9432170109716891,
+          "confidenceInterval": [
+            0.758635562217834,
+            1.0501347353698094
+          ]
+        },
+        "processWallTime": {
+          "medianReferenceOverCandidate": 1.1145656226987906,
+          "confidenceInterval": [
+            1.0978093138293215,
+            1.1632567902368072
+          ]
+        },
+        "observedCpuTime": {
+          "medianReferenceOverCandidate": 4.923395445134576,
+          "confidenceInterval": [
+            4.8043871551334245,
+            5.022494172494172
+          ]
+        },
+        "peakSampledMemory": {
+          "medianReferenceOverCandidate": 1.2823171340178097,
+          "confidenceInterval": [
+            1.271858643074405,
+            1.28809712461484
+          ]
+        },
+        "maximumApplicationTaskGap": {
+          "medianReferenceOverCandidate": 6.064318609744417,
+          "confidenceInterval": [
+            5.957016843763489,
+            6.101666666898463
+          ]
+        }
+      }
+    }
+  ],
+  "adoptionCriteriaPassed": true,
+  "decisionScope": "Decision about enabling the existing supported assertion path. A passing decision does not satisfy the separate 10% complete-flow release target or erase workload regressions. A source change of default still needs verification.",
+  "limitations": [
+    "Shared native Apple M3 Pro macOS, one worker, matched pinned headless shell and artifacts off.",
+    "Eight pairs per complete-flow comparison and six groups per load scenario; confidence intervals and observed maxima are retained, not percentile tails.",
+    "The Playwright comparison retains failure median and navigation observed-maximum regressions.",
+    "The identical-binary navigation median ratio is 0.9495 with a confidence interval spanning parity; the point estimate exceeds 5% growth and is retained for review.",
+    "Native Linux throughput, contention, broad migration, platform packages and release acceptance remain open. No fastest-engine claim."
+  ],
+  "retainedArchiveFiles": [
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/record-resident-adoption-profile.py",
+      "sha256": "5721135e8a722fc091ae7b131ab0f7bb295926385d7913bb396a58414bb2157d"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-native-001/core-command.json",
+      "sha256": "78d455052e4de6197fd89bd7ff8d4cea1e74ea6f1e66326e31235b5b4f1abc39"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-native-001/core-path.txt",
+      "sha256": "064c91a5b451c848f2f9db031514ac8937a8513f4602e90debaaa0d1e0caddb7"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-native-001/core.log",
+      "sha256": "2ab7b21af772f1ecb60b27dbe8a38583c0524cdc6207102182cf9d1db78d3f86"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-native-001/resources/2026-10-08T19-12-34Z-ed91f9b6.json",
+      "sha256": "3993f713f588d1ea093f37b7bffb5c8eeea36b4d560790ba149cbce81a185ce8"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-native-001/run.log",
+      "sha256": "8c9786ab98bf962ed8f45622cd6f607d65c6f9cee4cfc1253ae3803ade51fb4d"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/attempts.json",
+      "sha256": "54c15defe5ba2a0ef7321ae87d2890a5d2296fb0294d9a0a07df5afd7736a0c4"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/load-verification.log",
+      "sha256": "e8fb7eddd10a91aa520a5a2977c341d152d7c9db1cf21736819ece4fe9deca03"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/load.log",
+      "sha256": "3e27241f44274adb985251ffd30b7642a43708d004ff1729c5e8f8ce4de31be8"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/off-on-verification.log",
+      "sha256": "10b71ea2d41ebe62e4ff1bbd4a3fb82d4dc0e24fed8baaa96590022f25c99294"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/off-on.log",
+      "sha256": "0ced518e62eb209d8b954e3ebac049956bc749f19b758e7a393a7a0d676854ed"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/playwright-verification.log",
+      "sha256": "76b00fe0cef136630e35a4bd7f102ad85b3c97038a2f58f6d647215a615b8a73"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/playwright.log",
+      "sha256": "ae6c61135cfa855e34cbb4710f1dbd4fc85c685fee600f80c64bb71eb1f9fd4a"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/resources/2026-10-08T19-17-08Z-8e18bd4d.json",
+      "sha256": "15bae3a3ee22c1b3e1bffd6c0a4179ec1059d5c553724f62d7e28a88abf5e08d"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/resources/2026-10-08T19-18-09Z-e7e70f93.json",
+      "sha256": "f9124e762b43800d63cb4b093c0ea1c4c914f27f34507449fe5acbe4ea8f48fa"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/resident-adoption-profiles-001/resources/2026-10-08T19-19-10Z-f26d4619.json",
+      "sha256": "73fd621b58ce9085fc3f507e20d7dcadaafbeea5e292da0180d58a61027053fc"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/run-resident-adoption-native.py",
+      "sha256": "30cc6c02b780f35d822426102e6aa3f810e83aa7b0d7a05cdc6ddca39543feb6"
+    },
+    {
+      "path": "compatibility/evidence/resident-adoption-profile-2026-10-08/run-resident-adoption-profiles.py",
+      "sha256": "bd4150956509c4aa192cdc6171928423d52be44e1b50b59b78b65055ac2d0e08"
+    }
+  ]
+}
