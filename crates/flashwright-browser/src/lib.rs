@@ -3,6 +3,7 @@
 pub mod chromium;
 pub mod connection;
 pub mod supervision;
+pub mod values;
 
 pub use chromium::{Chromium, LaunchOptions};
 pub use connection::Connection;

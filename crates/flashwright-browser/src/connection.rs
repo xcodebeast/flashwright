@@ -262,6 +262,36 @@ impl Connection {
             .remove(0))
     }
 
+    /// Keep browser value descriptions as JSON until their UTF-16 fields are decoded.
+    /// These replies obey the same control-frame bound as ordinary structured replies.
+    pub fn start_raw_command(
+        &self,
+        method: &str,
+        parameters: Value,
+        session: Option<&str>,
+    ) -> Result<Command<Box<RawValue>>, ErrorRecord> {
+        let identifier = self.inner.next_identifier.fetch_add(1, Ordering::Relaxed);
+        let outgoing = encode_command(identifier, method, parameters, session)?;
+        let (sender, receiver) = oneshot::channel();
+        let command = Command {
+            identifier,
+            state: self.inner.clone(),
+            receiver,
+        };
+        self.register_commands(
+            vec![outgoing],
+            vec![(
+                identifier,
+                PendingReply {
+                    sender: ReplySender::Raw(sender),
+                    dispatch_started: false,
+                },
+            )],
+            method,
+        )?;
+        Ok(command)
+    }
+
     /// Admit a bounded sequence atomically and write its commands in order, without
     /// waiting for replies between commands. Dropping each handle still withdraws it.
     pub fn start_commands(

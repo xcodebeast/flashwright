@@ -4,7 +4,7 @@ export interface CodecErrorDetails {
   messageTruncated: boolean;
 }
 export function createValueCodec(): {
-  encode(value: unknown): unknown;
-  decode(value: unknown): unknown;
+  encode(value: unknown, handleIndex?: (value: unknown) => number | undefined): unknown;
+  decode(value: unknown, handles?: unknown[]): unknown;
   describeError(error: unknown, classifyCodecFailure?: boolean): CodecErrorDetails;
 };

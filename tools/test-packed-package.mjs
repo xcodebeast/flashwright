@@ -22,6 +22,16 @@ const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
   assert.equal(await page.evaluate(value => value.answer, { answer: 42 }), 42);
+  const parentHandle = await page.evaluateHandle(() => ({ child: { answer: 42 } }));
+  const childHandle = await parentHandle.getProperty('child');
+  await parentHandle.dispose();
+  assert.equal(await page.evaluate(({ handle }) => handle.answer, { handle: childHandle }), 42);
+  assert.deepEqual(await childHandle.jsonValue(), { answer: 42 });
+  await childHandle.dispose();
+  const elementHandle = await page.evaluateHandle(() => document.body);
+  assert.equal(elementHandle.asElement(), elementHandle);
+  assert.equal(await elementHandle.evaluate(element => element.tagName), 'BODY');
+  await elementHandle[Symbol.asyncDispose]();
   const response = await page.goto('http://127.0.0.1:' + server.address().port);
   assert.equal(response.status(), 200);
   assert.equal(await page.title(), 'Packed consumer');
@@ -66,6 +76,19 @@ async function example(): Promise<number> {
   try {
     const context: BrowserContext = await browser.newContext();
     const page: Page = await context.newPage();
+    const handle: import('flashwright').JSHandle<{ answer: number }> = await page.evaluateHandle(() => ({ answer: 42 }));
+    const answer: number = await page.evaluate(({ nested }) => nested[0].answer, { nested: [handle] });
+    const property: import('flashwright').JSHandle<number> = await handle.getProperty('answer');
+    const next: number = await property.evaluate((value, argument) => value + argument.answer, handle);
+    const element: import('flashwright').ElementHandle<HTMLButtonElement> = await page.evaluateHandle(() => document.createElement('button'));
+    const unboxedElement: import('flashwright').ElementHandle<HTMLButtonElement> = element.asElement();
+    const notElement: null = handle.asElement();
+    const frameHandle: import('flashwright').JSHandle<number> = await page.mainFrame().evaluateHandle(() => 42);
+    // @ts-expect-error Handle arguments preserve their underlying value type.
+    await page.evaluate(value => value.missing, handle);
+    // @ts-expect-error Element handles preserve their DOM subtype.
+    await element.evaluate(value => value.notAnElementMember);
+    void answer; void next; void unboxedElement; void notElement; void frameHandle;
     page.on('pageerror', error => {
       const message: string = error.message;
       // @ts-expect-error Page errors must not erase their type to any.

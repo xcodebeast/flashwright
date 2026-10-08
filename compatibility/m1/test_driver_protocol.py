@@ -349,6 +349,11 @@ class ClientDeadlineTests(unittest.TestCase):
     def test_late_page_allocation_is_disposed(self):
         self.run_scenario("context.newPage")
 
+    def test_late_handle_allocations_are_disposed(self):
+        for method in ["page.evaluateHandle", "frame.evaluateHandle", "handle.evaluateHandle", "handle.getProperty", "handle.getProperties"]:
+            with self.subTest(method=method):
+                self.run_scenario(method)
+
     def test_late_input_acknowledgement_is_preserved(self):
         self.run_scenario("locator.acknowledged")
 

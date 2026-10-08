@@ -30,11 +30,13 @@ function createValueCodec() {
     for (let index = 0; index < units.length; index += 8192) value += String.fromCharCode(...units.slice(index, index + 8192));
     return value;
   }
-  function encode(value) {
+  function encode(value, handleIndex) {
     const visited = new Map();
     let nodes = 0;
     function visit(value, depth) {
       if (++nodes > 100000 || depth > 48) throw codecFailure('ResourceLimitError', 'evaluation value exceeds depth or node limits');
+      const index = handleIndex?.(value);
+      if (index !== undefined) return { kind: 'handle', index };
       if (value === undefined) return { kind: 'undefined' };
       if (value === null) return { kind: 'null' };
       if (typeof value === 'string') {
@@ -50,6 +52,10 @@ function createValueCodec() {
       }
       if (typeof value === 'bigint') return { kind: 'bigint', value: String(value) };
       if (typeof value !== 'object') throw codecFailure('UnsupportedFeatureError', `evaluation value of type ${typeof value}`);
+      // Browser objects serialize as reference descriptions, including when nested.
+      for (const name of ['Window', 'Document', 'Node']) {
+        if (typeof globalThis[name] === 'function' && value instanceof globalThis[name]) return { kind: 'string', units: stringUnits(`ref: <${name}>`) };
+      }
       if (visited.has(value)) return { kind: 'reference', identifier: visited.get(value) };
       const identifier = visited.size + 1;
       visited.set(value, identifier);
@@ -61,13 +67,17 @@ function createValueCodec() {
     }
     return visit(value, 0);
   }
-  function decode(value) {
+  function decode(value, handles = []) {
     const references = new Map();
     let nodes = 0;
     function visit(value, depth) {
       if (++nodes > 100000 || depth > 48) throw codecFailure('ResourceLimitError', 'evaluation value exceeds depth or node limits');
       if (!value || typeof value !== 'object') throw codecFailure('ProtocolError', 'malformed evaluation value');
       switch (value.kind) {
+        case 'handle': {
+          if (!Number.isInteger(value.index) || value.index < 0 || value.index >= handles.length) throw codecFailure('ProtocolError', 'unknown evaluation handle');
+          return handles[value.index];
+        }
         case 'undefined': return undefined;
         case 'null': return null;
         case 'string': return fromUnits(value.units);

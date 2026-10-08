@@ -23,6 +23,7 @@ const RETAINED_BUFFER_BYTES: usize = 64 * 1024;
 
 pub(super) enum ReplySender {
     Value(oneshot::Sender<Reply>),
+    Raw(oneshot::Sender<Reply<Box<RawValue>>>),
     Binary {
         kind: BinaryReplyKind,
         sender: oneshot::Sender<Reply<BinaryPayload>>,
@@ -90,6 +91,9 @@ impl ReplySender {
             Self::Value(sender) => {
                 let _ = sender.send(Err(error));
             }
+            Self::Raw(sender) => {
+                let _ = sender.send(Err(error));
+            }
             Self::Binary { sender, .. } => {
                 let _ = sender.send(Err(error));
             }
@@ -112,6 +116,17 @@ impl ReplySender {
             return;
         }
         match self {
+            Self::Raw(sender) => {
+                let result = if frame_bytes > MAXIMUM_CONTROL_BYTES {
+                    Err(resource_error("CDP reply exceeds control-message limit"))
+                } else {
+                    envelope
+                        .result
+                        .map(RawValue::to_owned)
+                        .ok_or_else(|| protocol_error("browser omitted the command result".into()))
+                };
+                let _ = sender.send(result);
+            }
             Self::Value(sender) => {
                 let result = if frame_bytes > MAXIMUM_CONTROL_BYTES {
                     Err(resource_error("CDP reply exceeds control-message limit"))

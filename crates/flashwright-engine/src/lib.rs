@@ -5,6 +5,8 @@ mod context_state;
 mod cookies;
 mod evaluation;
 mod events;
+mod handle_values;
+mod handles;
 mod input;
 mod keyboard;
 mod locators;
@@ -47,6 +49,16 @@ pub const CAPABILITIES: &[&str] = &[
     "context.storageState",
     "page.close",
     "page.evaluate",
+    "page.evaluateHandle",
+    "frame.evaluate",
+    "frame.evaluateHandle",
+    "handle.evaluate",
+    "handle.evaluateHandle",
+    "handle.jsonValue",
+    "handle.getProperty",
+    "handle.getProperties",
+    "handle.dispose",
+    "handle.discard",
     "page.event.pageerror",
     "page.screenshot",
     "page.goto",
@@ -216,7 +228,25 @@ impl Engine {
             "locator.run" => self.run_locator(parameters, operation).await,
             "assertion.run" => self.run_assertion(parameters, operation).await,
             "keyboard.press" => self.press_page_key(parameters, operation).await,
-            "page.evaluate" => self.evaluate(parameters, operation).await,
+            "page.evaluate" | "frame.evaluate" | "handle.evaluate" => self
+                .evaluate(method, parameters, operation)
+                .await
+                .map_err(|mut error| {
+                    error.method = method.into();
+                    error
+                }),
+            "page.evaluateHandle" | "frame.evaluateHandle" | "handle.evaluateHandle" => self
+                .evaluate_handle(method, parameters, operation)
+                .await
+                .map_err(|mut error| {
+                    error.method = method.into();
+                    error
+                }),
+            "handle.jsonValue" => self.handle_json_value(parameters, operation).await,
+            "handle.getProperty" => self.handle_get_property(parameters, operation).await,
+            "handle.getProperties" => self.handle_get_properties(parameters, operation).await,
+            "handle.dispose" => self.dispose_handle(parameters, operation).await,
+            "handle.discard" => self.discard_handle_group(parameters).await,
             "browser.close" => {
                 validate_keys(method, &parameters, &["browser"])?;
                 let identifier = identifier(&parameters, "browser", method)?;
