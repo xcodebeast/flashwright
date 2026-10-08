@@ -1,0 +1,17 @@
+{
+  "status": "declared before production timing",
+  "order": [
+    "resident-load six balanced groups, 162 launches",
+    "residency eight alternating pairs",
+    "paired Playwright versus residency-on eight alternating pairs",
+    "independent repeat of paired Playwright versus residency-on eight alternating pairs"
+  ],
+  "policy": "Retain every attempted launch and both complete-flow comparisons, including regressions. No concurrent verification or timing jobs. Configuration and thresholds are unchanged from committed benchmark files. Diagnostic runs are separate and excluded.",
+  "scriptSha256": "b2861b46fb689bc0c1f4281795c4721973fa324806b731bd90233ddaeba89e3d",
+  "driverSha256": "db3b0f8f7b0fb704f08dc3fe63819cc5855592047734a733a9603a06c832f1ce",
+  "supersedes": "compatibility/evidence/resident-coalescing-profile-plan-2026-10-08.json",
+  "supersededPlanOrdinaryLaunches": 0,
+  "reason": "The earlier four-millisecond-only candidate passed conformance but diagnostic counters still showed fragmented groups. The new runtime also coalesces all pending checks on a due timer; controlled staggered registration and a real-browser counter smoke cover the repaired mechanism.",
+  "initialEvidence": "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
+  "scope": "Single worker on shared native macOS, pinned Playwright and the same headless shell; no native Linux, contention or release claim."
+}

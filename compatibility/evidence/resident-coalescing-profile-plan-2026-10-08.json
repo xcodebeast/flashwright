@@ -1,0 +1,14 @@
+{
+  "status": "declared before production timing",
+  "order": [
+    "resident-load six balanced groups, 162 launches",
+    "residency eight alternating pairs",
+    "paired Playwright versus residency-on eight alternating pairs",
+    "independent repeat of paired Playwright versus residency-on eight alternating pairs"
+  ],
+  "policy": "Retain every attempted launch and both complete-flow comparisons, including regressions. No concurrent verification or timing jobs. Configuration and thresholds are unchanged from committed benchmark files. Nine separate counter diagnostics are excluded from ordinary statistics.",
+  "scriptSha256": "45400801430ae68746a400e58c29feda1438452bdacc30d615b70214b7ca920d",
+  "driverSha256": "7701cccd254eaea97f85c5e09a0f7186464bc07df8d51b563ca16ffb6f39276f",
+  "previousComparison": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+  "change": "Long fallback adds one four-millisecond batch window after the earliest 32-millisecond eligibility time. Immediate events, first-100-millisecond frames and independent deadlines are preserved."
+}
