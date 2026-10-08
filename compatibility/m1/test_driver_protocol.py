@@ -172,7 +172,7 @@ class ResidentAssertionProtocolTests(OwnedDriverCase):
         for name in ["activeConditions", "observedRoots", "queuedDiscovery", "queuedConditions"]:
             self.assertEqual(metrics[name], 0, (name, metrics))
         self.assertEqual(metrics["cachedSelectorPrefixes"], 0)
-        for name in ["animationFrameScheduled", "fallbackTimerScheduled", "deadlineTimerScheduled", "discoveryTimerScheduled", "flushMicrotaskScheduled", "flushTaskScheduled", "flushChannelOpen", "selectorBatchActive"]:
+        for name in ["fallbackSchedulingQueued", "animationFrameScheduled", "fallbackTimerScheduled", "deadlineTimerScheduled", "discoveryTimerScheduled", "flushMicrotaskScheduled", "flushTaskScheduled", "flushChannelOpen", "selectorBatchActive"]:
             self.assertFalse(metrics[name], (name, metrics))
 
     def wait_for_active_conditions(self, expected):

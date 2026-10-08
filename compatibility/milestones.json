@@ -32,7 +32,9 @@
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -132,7 +134,9 @@
         "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -160,7 +164,7 @@
         "Retrying native DOM assertions through pinned predicates, with negation, text/list/state matching, bounded failure observations and explicit no-observation diagnostics",
         "Native fixtures and browser matchers use the pinned test scheduler through the isolated runner dependency; no upstream browser-command fallback",
         "Fresh packed library/runner consumers preserve ESM/CommonJS runtime and type identities, extended fixtures, options and reporter declarations",
-        "Current 146 matching source hashes pass 25 verification groups each on macOS Node24 headless-shell residency on/off, macOS Node24 full Chromium on, and emulated Linux Node24 full Chromium on. All 100 log hashes and archived driver hashes independently checked. Node22 assertion, 25 lifecycle/protocol and 39 registry cases also pass.",
+        "158 matching source hashes pass 104 current core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 assertions, 25 lifecycle/protocol tests and 52 registry cases also pass.",
         "Native page.keyboard.press preserves current focus and selection without locator timeout/navigation waiting; all 212 page-level key descriptions match the reference and context closure cancels delayed input",
         "All three preserved TodoMVC tests and their extended fixture execute through freshly packed packages with only package imports/configuration changed; upstream browser/request methods are disabled in the Flashwright CLI and worker",
         "Matched pinned Chromium launch policy verified against actual browser launch logs; seven shared benchmark flows pass trusted-input, real-request and watchdog-free cleanup contracts",
@@ -231,7 +235,9 @@
         "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -256,7 +262,8 @@
         "Original deterministic font fixture and separately owned lifecycle targets prove invalidation paths using real browser scheduling and explicitly labeled lifecycle fault injection. Public font/animation assertion differentials and integrated flush-resource cleanup pass. All changes are compatibility fixtures; the measured production binary is unchanged.",
         "Measured quiet/property/mutation workloads at 1/32/128 conditions on native M3 Pro macOS with corrected process-tree accounting. All 162 launches and 52 current core groups pass. Residency reduces complete time 10.7–13.2% against Playwright for these cases but fails seven CPU and three memory gates; at 32 conditions it uses 1.97–2.18x CPU and 15.9–19.3% more peak memory. Default remains off.",
         "Implemented synchronous selector sharing and fallback pacing with full predicates and immediate mutation/event wakeups. The 104-group platform checkpoint and Node22 checks pass. The subsequent 210-launch production plan is complete and independently verified; detailed outcomes are in compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json.",
-        "Current sustained-load matrix passes all nine memory and complete-time gates and seven CPU gates. Property-only/1 and mutation-text/1 remain over the CPU budget. Two eight-pair Playwright comparisons show paired complete-run ratios 1.0580 and 1.0548, with delayed assertion ratios 2.503 and 2.393; both miss the 10% complete-flow target and retain noop/failure median regressions. Default remains off."
+        "Current sustained-load matrix passes all nine memory and complete-time gates and seven CPU gates. Property-only/1 and mutation-text/1 remain over the CPU budget. Two eight-pair Playwright comparisons show paired complete-run ratios 1.0580 and 1.0548, with delayed assertion ratios 2.503 and 2.393; both miss the 10% complete-flow target and retain noop/failure median regressions. Default remains off.",
+        "Explored timer-based pacing for long waits: 104 current core groups, Node22 checks and 52 registry cases pass. All 210 predeclared ordinary launches verify. Nine instrumented diagnostics and a controlled-clock comparison expose unresolved timer fragmentation; this experiment remains default off and does not establish performance acceptance."
       ],
       "evidence": [
         "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
@@ -274,10 +281,13 @@
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
-        "Reduce remaining single-condition CPU overhead, including frame wakeups that continue when predicates are deferred. Preserve full reads, mutation/event responsiveness and deadline ownership; repeat the matched resource and complete-flow gates after production changes.",
+        "Coalesce nearby due conditions within a bounded window, while keeping full predicates, immediate event invalidation, fair batch yields, independent deadlines and generation ownership. Validate with staggered controlled clocks and repeat complete conformance and ordinary comparisons before acceptance.",
+        "Reduce remaining single-condition CPU cost and short-call overhead. Current quiet/property/mutation single-condition cases fail the CPU gate; both complete-flow comparisons miss the 10% target. compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
         "Improve complete flows and setup using measured critical paths; native Linux, contention, consumer installation and release gates remain open."

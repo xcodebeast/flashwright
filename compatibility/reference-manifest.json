@@ -221,11 +221,15 @@
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T01-59-34.004Z/report.json",
       "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T01-54-39.884Z/report.json",
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T02-24-40.226Z/report.json",
-      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T02-27-21.891Z/report.json"
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T02-27-21.891Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T03-03-54.497Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T03-06-47.417Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T03-09-12.915Z/report.json",
+      "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T03-03-54.690Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547–1.1719) and 1.0515 (1.0090–1.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
-    "sourceIdentity": "52 fresh headless-shell core groups for the two verifier-only changes. The production runtime and optimized binary are unchanged from the earlier 104-group macOS/full-Chromium/emulated-Linux checkpoint and its Node22 checks. New harness tests also pass on Node22 and emulated Linux.",
+    "performanceStatus": "Two current matched Playwright comparisons record paired complete-run ratios 1.0471 (95% interval 1.0250–1.0761) and 1.0709 (1.0537–1.0749), about 4.5% and 6.6% less time. Both miss the 10% material threshold and retain noop median/observed-maximum regressions; the first also flags failure-path median regression. Residency remains opt-in.",
+    "sourceIdentity": "158 matching source hashes pass 104 current core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 assertions, 25 lifecycle/protocol tests and 52 registry cases also pass.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -290,15 +294,17 @@
     "cleanupNode22Evidence": "compatibility/evidence/cleanup-attribution-node22-2026-10-07.txt",
     "residentRegistryExperiment": "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
     "residentIntegratedCheckpoint": "compatibility/evidence/resident-integrated-checkpoint-2026-10-07.json",
-    "residentNode22Evidence": "compatibility/evidence/resident-query-batch-node22-2026-10-08.txt",
+    "residentNode22Evidence": "compatibility/evidence/resident-frame-pacing-node22-2026-10-08.txt",
     "browserDistributionCheckpoint": "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
     "asciiRuntimeCheckpoint": "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
     "residentFairnessCheckpoint": "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
     "residentInvalidationCheckpoint": "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
     "residentLoadCheckpoint": "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-    "residentResourceStatus": "Current independently verified 162-launch matrix passes all nine memory/complete-time gates and seven CPU gates. Property-only/1 and mutation-text/1 still exceed the 10% CPU-growth gate. Both eight-pair complete-flow comparisons show about 5.2–5.5% less time, below the 10% material target, with noop/failure median regressions. Residency remains default off.",
+    "residentResourceStatus": "All 210 ordinary launches independently verify. All nine memory and complete-time gates pass, and all six concurrent CPU gates pass. Quiet-text/1, property-only/1 and mutation-text/1 miss the 10% CPU-growth gate, with paired reference/candidate ratios 0.9047, 0.8957 and 0.8563. Fewer frame callbacks did not solve resource acceptance; controlled clocks reproduce timer fragmentation. See compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
     "residentQueryCheckpoint": "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
-    "residentQueryPerformanceCheckpoint": "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
+    "residentQueryPerformanceCheckpoint": "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
+    "residentFramePacingCheckpoint": "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
+    "residentFramePacingPerformanceCheckpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json"
   },
   "pairedRuns": [
     {
@@ -411,6 +417,32 @@
       "verification": "tools/verify-paired.mjs",
       "independentLaunchPairs": 8,
       "distribution": "chromium-headless-shell"
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T03-27-45.918Z-darwin-arm64-paired-cb6036c0",
+      "metadataSha256": "9edc462636f5542032ddc1f48ffd7d2960d56056d8b69c33bf12dae1f27bfd10",
+      "summarySha256": "73460654ee1169c2fbb6d794016012b9914dcc7f6a1f4e5900fe6948e80afc58",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-residency-on",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T03-28-57.475Z-darwin-arm64-paired-1a460678",
+      "metadataSha256": "3b4f1e8629a1f7cae1fee35c5401253aeae48c2fd6de1c78b82899e4ee1db478",
+      "summarySha256": "d67d65d0a9cd58b9ef7dde0f2a23e164e11ef3cc8ddc2a145cebc523615d58a0",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-residency-on-replication",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
     }
   ],
   "attributionRuns": [
@@ -510,6 +542,19 @@
       "verification": "tools/verify-residency.mjs",
       "independentLaunchPairs": 8,
       "distribution": "chromium-headless-shell"
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T03-26-34.290Z-darwin-arm64-residency-17e2803f",
+      "metadataSha256": "8b9f2728001a7c95966479111c804c79ca0ebfc04f8939c2344a7ecf928f3060",
+      "summarySha256": "5b2371edd4d114a8b6631936e82891f9041e639c577753e1d8002fe5b26c18f7",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+      "kind": "same-binary-residency-off-on",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-residency.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
     }
   ],
   "additionalBrowserDistributions": [
@@ -541,6 +586,18 @@
       "checkpoint": "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
       "scope": "Shared native macOS headless-shell engineering comparison; see checkpoint for gates and limitations.",
       "verificationCommand": "node tools/verify-resident-load.mjs benchmarks/results/2026-10-08T02-07-46.260Z-darwin-arm64-resident-load-3074d535"
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T03-17-01.633Z-darwin-arm64-resident-load-822499bd",
+      "metadataSha256": "e9498c118fab807dbf1f4d4036fbb11c54d6dfbaaf269e6187450d762f25ead1",
+      "summarySha256": "7c1d1c1827851c0de7ba7a149e1da006dc6724f1ccabecdb9855a39d9433b17d",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+      "kind": "sustained-load",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-resident-load.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations."
     }
   ]
 }

@@ -6,7 +6,7 @@ function assertReleased(result) {
   assert.equal(result.metrics.selectorBatchActive, false);
   assert.ok(Object.values(result.cacheSizes).every(size => size === 0), JSON.stringify(result.cacheSizes));
   for (const name of ['activeConditions', 'observedRoots', 'queuedDiscovery', 'queuedConditions']) assert.equal(result.metrics[name], 0, name);
-  for (const name of ['animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'flushChannelOpen']) assert.equal(result.metrics[name], false, name);
+  for (const name of ['fallbackSchedulingQueued', 'animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'flushChannelOpen']) assert.equal(result.metrics[name], false, name);
 }
 
 /** Native locator integration, including cache opt-out for arbitrary callbacks and selectors. */

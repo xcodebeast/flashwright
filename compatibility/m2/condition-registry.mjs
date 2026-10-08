@@ -90,7 +90,7 @@ async function finish(token, status = 'matched') {
 async function clean(label) {
   const state = await evaluate('testConditions.inspect()');
   for (const name of ['activeConditions', 'observedRoots', 'queuedDiscovery', 'queuedConditions']) assert.equal(state[name], 0, `${label}: ${name}`);
-  for (const name of ['animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'flushChannelOpen']) assert.equal(state[name], false, `${label}: ${name}`);
+  for (const name of ['fallbackSchedulingQueued', 'animationFrameScheduled', 'fallbackTimerScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'flushChannelOpen']) assert.equal(state[name], false, `${label}: ${name}`);
   assert.ok(state.maximumChecksBeforeYield <= 32, `${label}: unbounded predicate batch`);
   await new Promise(resolve => setTimeout(resolve, 30));
   assert.deepEqual(await evaluate('testConditions.inspect()'), state, `${label}: work continued after the last condition`);

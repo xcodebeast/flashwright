@@ -68,7 +68,7 @@ export function verifyResidentLoad(result, configuration, launchPolicy, executab
     assert.ok(result.diagnosticScope.includes('not production comparison'));
     const metrics = result.conditionMetrics;
     for (const name of ['activeConditions', 'observedRoots', 'queuedConditions', 'queuedDiscovery', 'cachedSelectorPrefixes']) assert.equal(metrics[name], 0, name);
-    for (const name of ['animationFrameScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'fallbackTimerScheduled', 'flushChannelOpen', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'selectorBatchActive']) assert.equal(metrics[name], false, name);
+    for (const name of ['fallbackSchedulingQueued', 'animationFrameScheduled', 'deadlineTimerScheduled', 'discoveryTimerScheduled', 'fallbackTimerScheduled', 'flushChannelOpen', 'flushMicrotaskScheduled', 'flushTaskScheduled', 'selectorBatchActive']) assert.equal(metrics[name], false, name);
     assert.ok(metrics.predicateEvaluations >= conditionCount + 2);
     assert.ok(metrics.discoveryPasses > 0 && metrics.discoveryVisits > 0);
     assert.equal(metrics.fallbackChecks, metrics.animationFrameChecks + metrics.timerFallbackChecks);
