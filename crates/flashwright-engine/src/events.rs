@@ -177,6 +177,10 @@ impl Engine {
     }
 
     pub(crate) fn remove_context(&self, identifier: &str) -> Option<Context> {
+        self.remove_context_with_error(identifier, closed("context"))
+    }
+
+    fn remove_context_with_error(&self, identifier: &str, error: ErrorRecord) -> Option<Context> {
         let (context, pages) = {
             let mut registry = self.registry.lock().unwrap();
             let identifiers: Vec<_> = registry
@@ -197,10 +201,10 @@ impl Engine {
             (registry.contexts.remove(identifier), pages)
         };
         for (identifier, page) in pages {
-            self.finish_page(&identifier, &page, closed("page"), "close");
+            self.finish_page(&identifier, &page, error.clone(), "close");
         }
         if let Some(context) = &context {
-            context.state.closed.send_replace(true);
+            context.state.closed.send_replace(Some(error));
             if context.published {
                 self.emit(identifier, "close", Value::Null);
             }
@@ -211,20 +215,96 @@ impl Engine {
     pub(crate) fn remove_browser(&self, identifier: &str) -> Option<Arc<Chromium>> {
         let (browser, contexts) = {
             let mut registry = self.registry.lock().unwrap();
+            let browser = registry.browsers.remove(identifier)?;
             let contexts: Vec<_> = registry
                 .contexts
                 .iter()
                 .filter(|(_, context)| context.browser_identifier == identifier)
                 .map(|(identifier, _)| identifier.clone())
                 .collect();
-            (registry.browsers.remove(identifier), contexts)
+            (browser, contexts)
         };
+        let error = browser
+            .browser
+            .connection
+            .failure()
+            .unwrap_or_else(|| closed("browser"));
         for context in contexts {
-            self.remove_context(&context);
+            self.remove_context_with_error(&context, error.clone());
         }
-        if browser.as_ref().is_some_and(|entry| entry.published) {
+        if browser.published {
             self.emit(identifier, "disconnected", Value::Null);
         }
-        browser.map(|entry| entry.browser)
+        Some(browser.browser)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn originating_failure_survives_context_and_page_removal() {
+        let (outgoing, _messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
+        let context = Arc::new(context_state::ContextState::default());
+        let page = Arc::new(PageState::default());
+        engine.registry.lock().unwrap().contexts.insert(
+            "context".into(),
+            Context {
+                browser_identifier: "browser".into(),
+                protocol_identifier: "native-context".into(),
+                viewport: None,
+                state: context.clone(),
+                published: false,
+            },
+        );
+        engine.registry.lock().unwrap().pages.insert(
+            "page".into(),
+            Page {
+                context_identifier: "context".into(),
+                target_identifier: "target".into(),
+                session_identifier: "session".into(),
+                state: page.clone(),
+            },
+        );
+        let page_operation = page.while_alive::<()>("response.body", std::future::pending());
+        let context_operation =
+            context.while_alive::<()>("context.cookies", std::future::pending());
+        let close = async {
+            tokio::task::yield_now().await;
+            engine
+                .remove_context_with_error(
+                    "context",
+                    ErrorRecord::new(
+                        ErrorCode::ResourceLimit,
+                        "chromium",
+                        "CDP event exceeds control-message limit",
+                    ),
+                )
+                .unwrap();
+        };
+        let (page_result, context_result, ()) =
+            tokio::join!(page_operation, context_operation, close);
+        for (result, method) in [
+            (page_result, "response.body"),
+            (context_result, "context.cookies"),
+        ] {
+            let error = result.unwrap_err();
+            assert_eq!(error.code, ErrorCode::ResourceLimit);
+            assert_eq!(&*error.method, method);
+            assert_eq!(&*error.message, "CDP event exceeds control-message limit");
+        }
+        assert_eq!(
+            context
+                .while_alive("context.cookies", async { Ok(()) })
+                .await
+                .unwrap_err()
+                .code,
+            ErrorCode::ResourceLimit
+        );
+        assert!(engine.registry.lock().unwrap().contexts.is_empty());
+        assert!(engine.registry.lock().unwrap().pages.is_empty());
     }
 }

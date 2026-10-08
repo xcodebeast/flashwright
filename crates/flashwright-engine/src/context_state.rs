@@ -10,7 +10,7 @@ pub(crate) struct ContextState {
     pub origins: Mutex<BTreeSet<String>>,
     pub storage_failure: Mutex<Option<ErrorRecord>>,
     pub storage_operations: tokio::sync::Mutex<()>,
-    pub closed: watch::Sender<bool>,
+    pub closed: watch::Sender<Option<ErrorRecord>>,
 }
 
 impl Default for ContextState {
@@ -19,7 +19,7 @@ impl Default for ContextState {
             origins: Mutex::new(BTreeSet::new()),
             storage_failure: Mutex::new(None),
             storage_operations: tokio::sync::Mutex::new(()),
-            closed: watch::channel(false).0,
+            closed: watch::channel(None).0,
         }
     }
 }
@@ -55,13 +55,21 @@ impl ContextState {
         method: &str,
         work: impl Future<Output = Result<T, ErrorRecord>>,
     ) -> Result<T, ErrorRecord> {
-        let mut closed_state = self.closed.subscribe();
-        if *closed_state.borrow() {
-            return Err(closed(method));
-        }
+        let mut changes = self.closed.subscribe();
+        let lost = async {
+            loop {
+                if let Some(mut error) = changes.borrow().clone() {
+                    error.method = method.into();
+                    return error;
+                }
+                if changes.changed().await.is_err() {
+                    return closed(method);
+                }
+            }
+        };
         tokio::select! {
             biased;
-            _ = closed_state.wait_for(|closed| *closed) => Err(closed(method)),
+            error = lost => Err(error),
             result = work => result,
         }
     }
@@ -112,7 +120,7 @@ mod tests {
         let operation = state.while_alive::<()>("context.cookies", std::future::pending());
         let close = async {
             tokio::task::yield_now().await;
-            state.closed.send_replace(true);
+            state.closed.send_replace(Some(closed("context")));
         };
         let (result, ()) = tokio::join!(operation, close);
         assert_eq!(result.unwrap_err().code, ErrorCode::TargetClosed);

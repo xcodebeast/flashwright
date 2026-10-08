@@ -252,6 +252,113 @@ async fn eof_settles_entire_sequence_and_received_replies_can_be_recovered_witho
     }
 }
 
+#[tokio::test]
+async fn large_body_reply_is_admitted_while_ordinary_reply_rejects_without_disconnect() {
+    let (host, peer) = duplex(65536);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut ordinary = connection
+        .start_command("ordinary", json!({}), None)
+        .unwrap();
+    let binary_connection = connection.clone();
+    let binary = tokio::spawn(async move {
+        binary_connection
+            .response_body("request", "page", 10 * 1024 * 1024)
+            .await
+    });
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let ordinary_command = read_command(&mut reader).await;
+    let binary_command = read_command(&mut reader).await;
+    assert_eq!(ordinary_command["method"], "ordinary");
+    assert_eq!(binary_command["method"], "Network.getResponseBody");
+    let body = "x".repeat(9 * 1024 * 1024);
+    let ordinary_reply = format!(r#"{{"id":{},"result":"{body}"}}"#, ordinary_command["id"]);
+    writer.write_all(ordinary_reply.as_bytes()).await.unwrap();
+    writer.write_all(&[0]).await.unwrap();
+    assert_eq!(
+        ordinary.response().await.unwrap_err().code,
+        ErrorCode::ResourceLimit
+    );
+    // The identity can follow the large body; object member order is not a framing contract.
+    let binary_reply = format!(
+        r#"{{"result":{{"body":"{body}","base64Encoded":false}},"id":{}}}"#,
+        binary_command["id"]
+    );
+    writer.write_all(binary_reply.as_bytes()).await.unwrap();
+    writer.write_all(&[0]).await.unwrap();
+    let result = binary.await.unwrap().unwrap();
+    assert_eq!(result.decoded_length, body.len());
+    assert_eq!(result.bytes, body.as_bytes());
+}
+
+#[tokio::test]
+async fn cancelled_large_reply_finishes_framing_without_poisoning_its_successor() {
+    let (host, peer) = duplex(65536);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let binary_connection = connection.clone();
+    let binary = tokio::spawn(async move {
+        binary_connection
+            .response_body("request", "page", 1024)
+            .await
+    });
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let binary_command = read_command(&mut reader).await;
+    writer
+        .write_all(format!(r#"{{"id":{},"result":{{"body":""#, binary_command["id"]).as_bytes())
+        .await
+        .unwrap();
+    writer.write_all(&vec![b'x'; 65536]).await.unwrap();
+    binary.abort();
+    assert!(binary.await.unwrap_err().is_cancelled());
+    for _ in 0..144 {
+        writer.write_all(&vec![b'x'; 65536]).await.unwrap();
+    }
+    writer
+        .write_all(b"\",\"base64Encoded\":false}}\0")
+        .await
+        .unwrap();
+    let mut successor = connection
+        .start_command("successor", json!({}), None)
+        .unwrap();
+    let command = read_command(&mut reader).await;
+    writer
+        .write_all(format!("{{\"id\":{},\"result\":42}}\0", command["id"]).as_bytes())
+        .await
+        .unwrap();
+    assert_eq!(successor.response().await.unwrap(), 42);
+}
+
+#[tokio::test]
+async fn oversized_event_explicitly_invalidates_pending_and_future_calls() {
+    let (host, peer) = duplex(65536);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut pending = connection
+        .start_command("pending", json!({}), None)
+        .unwrap();
+    let mut peer = BufReader::new(peer);
+    read_command(&mut peer).await;
+    let event = format!(
+        "{{\"method\":\"large\",\"params\":\"{}\"}}\0",
+        "x".repeat(9 * 1024 * 1024)
+    );
+    peer.get_mut().write_all(event.as_bytes()).await.unwrap();
+    let error = pending.response().await.unwrap_err();
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    assert!(error.message.contains("event"));
+    assert_eq!(
+        connection
+            .call("after", json!({}), None)
+            .await
+            .unwrap_err()
+            .code,
+        ErrorCode::ResourceLimit
+    );
+}
+
 async fn read_command<Reader: tokio::io::AsyncBufRead + Unpin>(reader: &mut Reader) -> Value {
     let mut bytes = Vec::new();
     timeout(Duration::from_secs(1), reader.read_until(0, &mut bytes))

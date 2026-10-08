@@ -1,12 +1,14 @@
 //! Request-scoped binary transfers keep payloads out of control JSON values.
 
 use serde::Serialize;
+use std::borrow::Cow;
 use tokio::sync::{OwnedSemaphorePermit, mpsc, oneshot};
 
 use crate::{EncodedFrame, ErrorCode, ErrorRecord};
 
 pub const ATTACHMENT_CHUNK_BYTES: usize = 64 * 1024;
 pub const ATTACHMENT_HEADER_BYTES: usize = 13;
+pub const MAXIMUM_ATTACHMENT_BYTES: usize = 32 * 1024 * 1024;
 
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,21 +17,19 @@ pub enum AttachmentEncoding {
     Base64,
 }
 
-/// The reservation stays owned until the writer acknowledges the terminal frame.
+/// Validated bytes retain their browser representation until the final consumer decodes them.
 #[derive(Debug)]
-pub struct BinaryAttachment {
+pub struct BinaryPayload {
     pub bytes: Vec<u8>,
     pub encoding: AttachmentEncoding,
     pub decoded_length: usize,
-    pub reservation: OwnedSemaphorePermit,
 }
 
-impl BinaryAttachment {
+impl BinaryPayload {
     pub fn new(
-        bytes: Vec<u8>,
+        bytes: Cow<'_, [u8]>,
         encoding: AttachmentEncoding,
         maximum_decoded_bytes: usize,
-        reservation: OwnedSemaphorePermit,
         method: &str,
     ) -> Result<Self, ErrorRecord> {
         let decoded_length = match encoding {
@@ -50,11 +50,41 @@ impl BinaryAttachment {
             ));
         }
         Ok(Self {
-            bytes,
+            bytes: bytes.into_owned(),
             encoding,
             decoded_length,
-            reservation,
         })
+    }
+}
+
+/// The reservation stays owned until the writer acknowledges the terminal frame.
+#[derive(Debug)]
+pub struct BinaryAttachment {
+    pub bytes: Vec<u8>,
+    pub encoding: AttachmentEncoding,
+    pub decoded_length: usize,
+    pub reservation: OwnedSemaphorePermit,
+}
+
+impl BinaryAttachment {
+    pub fn new(
+        bytes: Vec<u8>,
+        encoding: AttachmentEncoding,
+        maximum_decoded_bytes: usize,
+        reservation: OwnedSemaphorePermit,
+        method: &str,
+    ) -> Result<Self, ErrorRecord> {
+        let payload = BinaryPayload::new(bytes.into(), encoding, maximum_decoded_bytes, method)?;
+        Ok(Self::from_payload(payload, reservation))
+    }
+
+    pub fn from_payload(payload: BinaryPayload, reservation: OwnedSemaphorePermit) -> Self {
+        Self {
+            bytes: payload.bytes,
+            encoding: payload.encoding,
+            decoded_length: payload.decoded_length,
+            reservation,
+        }
     }
 }
 

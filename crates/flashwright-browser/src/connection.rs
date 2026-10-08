@@ -2,17 +2,19 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, Weak};
 
-use flashwright_protocol::{ErrorCode, ErrorRecord};
-use serde::Deserialize;
+use flashwright_protocol::{BinaryPayload, ErrorCode, ErrorRecord};
 use serde_json::value::RawValue;
 use serde_json::{Value, json};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task::AbortHandle;
 
-const MAXIMUM_MESSAGE_BYTES: usize = 8 * 1024 * 1024;
+mod incoming;
+use incoming::{ReplySender, read_messages};
+
+const MAXIMUM_CONTROL_BYTES: usize = 8 * 1024 * 1024;
 const MAXIMUM_PENDING: usize = 1024;
-type Reply = Result<Value, ErrorRecord>;
+type Reply<Output = Value> = Result<Output, ErrorRecord>;
 
 #[derive(Clone)]
 pub struct Connection {
@@ -37,17 +39,6 @@ pub struct Event {
     pub parameters: Option<Box<RawValue>>,
 }
 
-#[derive(Deserialize)]
-struct Envelope {
-    id: Option<u64>,
-    method: Option<String>,
-    #[serde(rename = "sessionId")]
-    session_identifier: Option<String>,
-    params: Option<Box<RawValue>>,
-    result: Option<Box<RawValue>>,
-    error: Option<Box<RawValue>>,
-}
-
 #[derive(Default)]
 struct PendingReplies {
     closed: Option<ErrorRecord>,
@@ -60,23 +51,23 @@ struct OutgoingCommand {
 }
 
 struct PendingReply {
-    sender: oneshot::Sender<Reply>,
+    sender: ReplySender,
     dispatch_started: bool,
 }
 
-pub struct Command {
+pub struct Command<Output = Value> {
     identifier: u64,
     state: Arc<ConnectionState>,
-    receiver: oneshot::Receiver<Reply>,
+    receiver: oneshot::Receiver<Reply<Output>>,
 }
 
-impl Command {
-    pub async fn response(&mut self) -> Reply {
+impl<Output> Command<Output> {
+    pub async fn response(&mut self) -> Reply<Output> {
         (&mut self.receiver).await.map_err(|_| disconnected())?
     }
 
     /// Recover a reply already received when cancellation won the caller's wait.
-    pub fn try_response(&mut self) -> Option<Reply> {
+    pub fn try_response(&mut self) -> Option<Reply<Output>> {
         match self.receiver.try_recv() {
             Ok(reply) => Some(reply),
             Err(oneshot::error::TryRecvError::Empty) => None,
@@ -101,7 +92,7 @@ impl Command {
     }
 }
 
-impl Drop for Command {
+impl<Output> Drop for Command<Output> {
     fn drop(&mut self) {
         self.state
             .pending
@@ -152,6 +143,11 @@ impl Connection {
         self.inner.events.subscribe()
     }
 
+    /// Owners retain the originating transport failure when invalidating their children.
+    pub fn failure(&self) -> Option<ErrorRecord> {
+        self.inner.pending.lock().unwrap().closed.clone()
+    }
+
     pub fn acknowledge_event(&self, sequence: u64) {
         self.inner
             .processed_event_sequence
@@ -178,6 +174,50 @@ impl Connection {
         self.start_command(method, parameters, session)?
             .response()
             .await
+    }
+
+    /// Admit the response-body shape without allowing arbitrary large control values.
+    pub async fn response_body(
+        &self,
+        request_identifier: &str,
+        session: &str,
+        maximum_decoded_bytes: usize,
+    ) -> Reply<BinaryPayload> {
+        if maximum_decoded_bytes > flashwright_protocol::attachment::MAXIMUM_ATTACHMENT_BYTES {
+            return Err(ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                "Network.getResponseBody",
+                "binary reply limit exceeds the supported attachment bound",
+            ));
+        }
+        let identifier = self.inner.next_identifier.fetch_add(1, Ordering::Relaxed);
+        let outgoing = encode_command(
+            identifier,
+            "Network.getResponseBody",
+            json!({ "requestId": request_identifier }),
+            Some(session),
+        )?;
+        let (sender, receiver) = oneshot::channel();
+        let mut command = Command {
+            identifier,
+            state: self.inner.clone(),
+            receiver,
+        };
+        self.register_commands(
+            vec![outgoing],
+            vec![(
+                identifier,
+                PendingReply {
+                    sender: ReplySender::ResponseBody {
+                        sender,
+                        maximum_decoded_bytes,
+                    },
+                    dispatch_started: false,
+                },
+            )],
+            "Network.getResponseBody",
+        )?;
+        command.response().await
     }
 
     pub fn start_command(
@@ -212,15 +252,9 @@ impl Connection {
         let mut total_bytes = 0;
         for parameters in parameters {
             let identifier = self.inner.next_identifier.fetch_add(1, Ordering::Relaxed);
-            let mut command = json!({ "id": identifier, "method": method, "params": parameters });
-            if let Some(session) = session {
-                command["sessionId"] = json!(session);
-            }
-            let mut bytes =
-                serde_json::to_vec(&command).map_err(|error| protocol_error(error.to_string()))?;
-            bytes.push(0);
-            total_bytes += bytes.len();
-            if total_bytes > MAXIMUM_MESSAGE_BYTES {
+            let command = encode_command(identifier, method, parameters, session)?;
+            total_bytes += command.bytes.len();
+            if total_bytes > MAXIMUM_CONTROL_BYTES {
                 return Err(ErrorRecord::new(
                     ErrorCode::ResourceLimit,
                     method,
@@ -228,11 +262,11 @@ impl Connection {
                 ));
             }
             let (sender, receiver) = oneshot::channel();
-            outgoing.push(OutgoingCommand { identifier, bytes });
+            outgoing.push(command);
             replies.push((
                 identifier,
                 PendingReply {
-                    sender,
+                    sender: ReplySender::Value(sender),
                     dispatch_started: false,
                 },
             ));
@@ -242,6 +276,16 @@ impl Connection {
                 receiver,
             });
         }
+        self.register_commands(outgoing, replies, method)?;
+        Ok(registrations)
+    }
+
+    fn register_commands(
+        &self,
+        outgoing: Vec<OutgoingCommand>,
+        replies: Vec<(u64, PendingReply)>,
+        method: &str,
+    ) -> Result<(), ErrorRecord> {
         {
             let mut pending = self.inner.pending.lock().unwrap();
             if let Some(error) = &pending.closed {
@@ -267,7 +311,7 @@ impl Connection {
                 ),
                 mpsc::error::TrySendError::Closed(_) => disconnected(),
             })?;
-        Ok(registrations)
+        Ok(())
     }
 
     pub fn close(&self) {
@@ -276,6 +320,29 @@ impl Connection {
             pump.abort();
         }
     }
+}
+
+fn encode_command(
+    identifier: u64,
+    method: &str,
+    parameters: Value,
+    session: Option<&str>,
+) -> Result<OutgoingCommand, ErrorRecord> {
+    let mut command = json!({ "id": identifier, "method": method, "params": parameters });
+    if let Some(session) = session {
+        command["sessionId"] = json!(session);
+    }
+    let mut bytes =
+        serde_json::to_vec(&command).map_err(|error| protocol_error(error.to_string()))?;
+    bytes.push(0);
+    if bytes.len() > MAXIMUM_CONTROL_BYTES {
+        return Err(ErrorRecord::new(
+            ErrorCode::ResourceLimit,
+            method,
+            "CDP command exceeds control-message limit",
+        ));
+    }
+    Ok(OutgoingCommand { identifier, bytes })
 }
 
 fn disconnected() -> ErrorRecord {
@@ -297,7 +364,7 @@ fn fail_connection(state: &ConnectionState, error: ErrorRecord) {
     }
     pending.closed = Some(error.clone());
     for (_, reply) in pending.replies.drain() {
-        let _ = reply.sender.send(Err(error.clone()));
+        reply.sender.fail(error.clone());
     }
     let _ = state.events.send(Event {
         sequence: state.received_event_sequence.fetch_add(1, Ordering::AcqRel) + 1,
@@ -306,94 +373,6 @@ fn fail_connection(state: &ConnectionState, error: ErrorRecord) {
         parameters: None,
     });
     state.processed_event_sequence.send_modify(|_| {});
-}
-
-async fn read_messages<Reader: AsyncRead + Unpin>(
-    mut reader: Reader,
-    state: Weak<ConnectionState>,
-) {
-    let mut chunk = [0_u8; 65536];
-    let mut message = Vec::new();
-    let failure = loop {
-        let length = match reader.read(&mut chunk).await {
-            Ok(0) => break disconnected(),
-            Ok(length) => length,
-            Err(error) => break protocol_error(error.to_string()),
-        };
-        let mut start = 0;
-        for end in 0..length {
-            if chunk[end] != 0 {
-                continue;
-            }
-            if message.len() + end - start > MAXIMUM_MESSAGE_BYTES {
-                if let Some(state) = state.upgrade() {
-                    fail_connection(
-                        &state,
-                        protocol_error("CDP frame limit exceeded".to_owned()),
-                    );
-                }
-                return;
-            }
-            message.extend_from_slice(&chunk[start..end]);
-            let decoded: Envelope = match serde_json::from_slice(&message) {
-                Ok(decoded) => decoded,
-                Err(error) => {
-                    if let Some(state) = state.upgrade() {
-                        fail_connection(&state, protocol_error(error.to_string()));
-                    }
-                    return;
-                }
-            };
-            let Some(state) = state.upgrade() else {
-                return;
-            };
-            if let Some(identifier) = decoded.id {
-                if let Some(reply) = state.pending.lock().unwrap().replies.remove(&identifier) {
-                    let result = if let Some(error) = decoded.error {
-                        let mut record = protocol_error(error.get().to_owned());
-                        record.browser_error_code = serde_json::from_str::<Value>(error.get())
-                            .ok()
-                            .and_then(|value| value["code"].as_i64());
-                        Err(record)
-                    } else {
-                        decoded
-                            .result
-                            .map(|result| {
-                                serde_json::from_str(result.get())
-                                    .map_err(|error| protocol_error(error.to_string()))
-                            })
-                            .unwrap_or(Ok(Value::Null))
-                    };
-                    let _ = reply.sender.send(result);
-                }
-            } else if let Some(method) = decoded.method {
-                // Keep opaque event payloads lossless, including escaped lone UTF-16 surrogates.
-                let _ = state.events.send(Event {
-                    sequence: state.received_event_sequence.fetch_add(1, Ordering::AcqRel) + 1,
-                    method,
-                    session_identifier: decoded.session_identifier,
-                    parameters: decoded.params,
-                });
-            } else {
-                fail_connection(
-                    &state,
-                    protocol_error(
-                        "CDP message has neither a reply identity nor an event method".to_owned(),
-                    ),
-                );
-                return;
-            }
-            message.clear();
-            start = end + 1;
-        }
-        if message.len() + length - start > MAXIMUM_MESSAGE_BYTES {
-            break protocol_error("CDP frame limit exceeded".to_owned());
-        }
-        message.extend_from_slice(&chunk[start..length]);
-    };
-    if let Some(state) = state.upgrade() {
-        fail_connection(&state, failure);
-    }
 }
 
 async fn write_messages<Writer: AsyncWrite + Unpin>(

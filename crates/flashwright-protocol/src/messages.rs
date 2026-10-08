@@ -37,7 +37,7 @@ impl Default for ResourceLimits {
             queued_messages: 128,
             value_depth: 64,
             value_nodes: 100_000,
-            binary_attachment_bytes: 32 * 1024 * 1024,
+            binary_attachment_bytes: crate::attachment::MAXIMUM_ATTACHMENT_BYTES,
             pending_attachments: 2,
         }
     }

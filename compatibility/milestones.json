@@ -97,15 +97,15 @@
         "The external watchdog now stops owners before their descendants and gives guardians time to delete profiles, including when the first owner snapshot is a zombie. Ten Python tests and six Chromium shutdown cases pass on native macOS and emulated Linux. Two retained full-batch budget expirations also leave no process/profile residue; full-matrix conformance remains incomplete.",
         "Outbound results and dynamic error diagnostics obey negotiated byte/depth/node limits before any transport write. Rejected calls preserve input delivery and cleanup without replay; rejected allocations remain private and are disposed. Oversized events fail the stream explicitly. Two native core configurations pass all 54 groups at 170 matching source hashes, plus eight Node22 groups and 26 focused emulated Linux cases. The retained full Linux lifecycle batch still exceeded its job budget.",
         "Protocol 5 streams request-scoped raw/base64 attachments in bounded frames, validates exact offsets and terminal lengths, and retains reservations through writer acknowledgement. Response.body returns a Buffer only after complete delivery. Partial cancellation releases retained bytes and permits a successor without replay. The application defaults allow 32 MiB decoded and two active attachments; the separate browser CDP reader still caps each message at 8 MiB. Binary-attachment conformance passes 27 native core groups including 50 lifecycle cases, four focused Node22 groups plus five headless-shell binary cases, and 31 focused emulated Linux browser cases at 178 matching source hashes. The broad Linux lifecycle run exceeded its unchanged 240-second budget. Its nine-client deadline fixture also exceeded a 10-second aggregate allowance; a diagnostic rerun completed all nine cleanly in 13.847 seconds. The broad failure remains retained, and fixture budgeting/full Linux verification remain open. No new performance claim.",
-        "The deadline fixture now gives each of its nine independent scenarios the original ten-second subprocess bound. Each discovered lifecycle module has its own 240-second watchdog; output-limit, binary and watchdog modules retain their 180-second limits. Public operation deadlines and assertions are unchanged. All 58 counted lifecycle cases pass on native macOS and emulated Linux, nine focused scenarios pass on Node22, and the complete emulated Linux core passes all 27 groups. The native/Linux production binaries are unchanged from the binary-attachment checkpoint. Historical failures remain retained; native Linux and performance/release gates remain open."
+        "The deadline fixture now gives each of its nine independent scenarios the original ten-second subprocess bound. Each discovered lifecycle module has its own 240-second watchdog; output-limit, binary and watchdog modules retain their 180-second limits. Public operation deadlines and assertions are unchanged. All 58 counted lifecycle cases pass on native macOS and emulated Linux, nine focused scenarios pass on Node22, and the complete emulated Linux core passes all 27 groups. The native/Linux production binaries are unchanged from the binary-attachment checkpoint. Historical failures remain retained; native Linux and performance/release gates remain open.",
+        "Protocol 5 keeps request-scoped raw/base64 application streams, 32 MiB decoded attachments, two active reservations and 64 KiB chunks. The Chromium JSON reader now admits typed response bodies beyond the ordinary 8 MiB reply/event cap. Its hard wire bound accounts for worst-case JSON escaping; it releases large frame buffers after use and ignores cancelled reply values. Complete oversized ordinary replies reject only their call. Fatal event/wire failures preserve their original error through page/context cleanup. Chromium JSON frames are still buffered, so this is not a constant-memory streaming CDP decoder. At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open."
       ],
       "remaining": [
         "Packed platform runtime acquisition and automatic binary selection; fresh consumers currently use FLASHWRIGHT_DRIVER_PATH",
         "Native Linux CI execution; local Linux functional runs use amd64 emulation",
         "Additional launch cancellation and concurrent ownership/close conformance",
         "Broader differential value/error conformance beyond the now-repaired codec/user-exception boundary",
-        "Complete negotiated resource-limit and public unsupported-API coverage before a release",
-        "Admit larger browser payload replies with bounded memory and explicit failure behavior; application attachment limits alone do not extend the 8 MiB CDP reader."
+        "Complete negotiated resource-limit and public unsupported-API coverage before a release"
       ],
       "evidence": [
         "compatibility/development-coverage.json",
@@ -164,7 +164,8 @@
         "compatibility/evidence/watchdog-cleanup-2026-10-08/report.json",
         "compatibility/evidence/output-limits-checkpoint-2026-10-08.json",
         "compatibility/evidence/binary-attachments-checkpoint-2026-10-08.json",
-        "compatibility/evidence/lifecycle-budget-checkpoint-2026-10-08.json"
+        "compatibility/evidence/lifecycle-budget-checkpoint-2026-10-08.json",
+        "compatibility/evidence/browser-payload-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -199,7 +200,8 @@
         "Atomic bounded native input sequences dispatch undelayed move/down/up commands in wire order without waiting for earlier replies; per-command delivery accounting withdraws unsent suffixes and uncertain pointer input disposes its page without replay",
         "Transport tests cover 201 ordered commands, reversed replies, partial-write cancellation, queue/pending/byte limits and EOF; differential pointer tests cover click counts through 100, delayed and undelayed modifiers, and a second open page",
         "Matched reference focus/visibility emulation repairs a discovered background-tab frame stall; blocked mousemove/mousedown/mouseup/click handlers close their affected page while a pre-existing sibling remains usable",
-        "Basic cookies and cookie/localStorage state round trips pass 81 full-core groups over native macOS browser/configuration variants, Node22 focused checks, and three post-fix storage corpora on emulated Linux. The final full Linux core run is incomplete, with forced watchdog cleanup retained as a gap. Coverage includes partitioned cookies, selective clearing, real HTTP authentication, exact UTF-16, closed-page and same-process child origins, private HTTPS restoration, atomic files, failure cleanup, runner fixture precedence and packed consumers. The service-worker fallback difference is documented in SPECS S4.j."
+        "Basic cookies and cookie/localStorage state round trips pass 81 full-core groups over native macOS browser/configuration variants, Node22 focused checks, and three post-fix storage corpora on emulated Linux. The final full Linux core run is incomplete, with forced watchdog cleanup retained as a gap. Coverage includes partitioned cookies, selective clearing, real HTTP authentication, exact UTF-16, closed-page and same-process child origins, private HTTPS restoration, atomic files, failure cleanup, runner fixture precedence and packed consumers. The service-worker fallback difference is documented in SPECS S4.j.",
+        "Large response-body differentials and all existing navigation/input/assertion/runner/storage checks pass in the browser-payload checkpoint on native macOS and emulated Linux, with focused Node22/headless-shell checks. Earlier failed storage/full-core runs remain retained as historical failures; the current full emulated Linux matrix passes. Native Linux remains open."
       ],
       "evidence": [
         "compatibility/m2/navigation.mjs",
@@ -276,7 +278,8 @@
         "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/storage-access-probe-2026-10-08T06-27-25.847Z/assessment.json",
-        "compatibility/evidence/storage-checkpoint-2026-10-08.json"
+        "compatibility/evidence/storage-checkpoint-2026-10-08.json",
+        "compatibility/evidence/browser-payload-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -358,6 +361,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Implement the M2 page screenshot Buffer/file slice with bounded artifact transfer, pinned defaults, atomic files and cancellation cleanup. Outbound control limits now reject individual oversized results without closing the driver or replaying effects; allocation publication and diagnostic limits are verified. Preserve the incomplete full Linux matrix and its failure evidence; improve immediate lifecycle failure diagnostics before another broad run so a watchdog cannot erase the traceback. IndexedDB, existing-context replacement, console/pageerror, handles, M3 transport, native Linux, contention, platform packages and release gates remain open. Prior performance checkpoints apply only to their recorded binaries; output-limit conformance makes no new timing claim.",
+  "nextImplementation": "Implement the M2 page screenshot Buffer/file slice using bounded typed artifact transfer, pinned defaults, atomic files and cancellation cleanup. Application attachment transport and large Chromium response-body admission now pass the current full native and emulated Linux core, including exact bytes and originating failure preservation. Keep arbitrary CDP replies/events bounded. IndexedDB, existing-context replacement, console/pageerror, handles, cross-process frame routing, M3 transport, native Linux, contention, platform packages and release gates remain open. Prior performance checkpoints apply only to their recorded binaries.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }
