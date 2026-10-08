@@ -40,7 +40,8 @@
         "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -90,7 +91,8 @@
         "Verification accepts an explicit driver binary so the exact optimized executable is checked before timing",
         "Failed setup/test cleanup now terminates the owner and waits for its guardian; four deliberate-failure regressions retain the original test failures and leave no owned processes or profiles on macOS Node 22/24 and emulated Linux Node 24.",
         "Ordinary page/context close waits for Chromium acknowledgement without applying the cancellation-cleanup budget; a delayed-acknowledgement unit regression and all three current full core suites pass.",
-        "Document-owned private evaluation helpers share one preparation across concurrent callers, use unique execution-context identity and keep fresh per-call codec error provenance. Differential navigation/no-replay, document.open, Unicode, page closure and paused-browser cancellation regressions pass on macOS Node22/24 and emulated Linux Node24; all 104 core groups pass."
+        "Document-owned private evaluation helpers share one preparation across concurrent callers, use unique execution-context identity and keep fresh per-call codec error provenance. Differential navigation/no-replay, document.open, Unicode, page closure and paused-browser cancellation regressions pass on macOS Node22/24 and emulated Linux Node24; all 104 core groups pass.",
+        "Private evaluation helpers are integrated and verified in 64 ordinary and four instrumented launches. Six document-owned preparations serve 81 callbacks per launch; callback wrappers contain 107 UTF-16 units. Noop medians no longer breach the relative regression policy in this snapshot, while complete-flow and release targets remain open."
       ],
       "remaining": [
         "Packed platform runtime acquisition and automatic binary selection; fresh consumers currently use FLASHWRIGHT_DRIVER_PATH",
@@ -150,7 +152,8 @@
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
-        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -258,7 +261,8 @@
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
-        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -288,7 +292,8 @@
         "Reproduced and repaired persistent timer fragmentation from staggered registrations. A due timer now checks the pending group together, while frames retain individual pacing and events remain immediate. Current 104 core groups, Node22 checks and 54 registry cases pass; thirteen separate fixed-work counter diagnostics verify. The subsequent 210-launch ordinary plan independently verifies; resource and complete-flow acceptance remain incomplete.",
         "Coalesced timer groups pass eight of nine sustained-load CPU gates and all nine memory/time gates. Mutation-text/1 still uses about 11.7% more CPU than Playwright by paired ratio. Two complete-flow replications show about 5.4% and 5.6% less time, below the 10% material target; median/observed-maximum regressions are retained. All 210 ordinary launches and independent verifiers pass with no forced cleanup or leftover owned processes.",
         "Fresh indexed document queries preserve pinned CSS/nth order with full fallback, full predicates and synchronous-only membership sharing. All 104 core groups, Node22 checks and 57 registry cases pass. A 4000-match isolated counter comparison proves avoided NodeList copying and shadow-host scans; it does not establish ordinary CPU or speed benefit.",
-        "Indexed document queries pass all nine CPU, memory and complete-time load gates in the six-group matrix. At 128 conditions, sampled CPU is roughly one-third of Playwright by paired ratio. All 210 ordinary launches and independent verifiers pass with clean process/profile audits. Two complete-flow comparisons show about 5.5% and 6.7% less time; both remain below the 10% material target and retain noop/failure median regressions. Residency remains default off."
+        "Indexed document queries pass all nine CPU, memory and complete-time load gates in the six-group matrix. At 128 conditions, sampled CPU is roughly one-third of Playwright by paired ratio. All 210 ordinary launches and independent verifiers pass with clean process/profile audits. Two complete-flow comparisons show about 5.5% and 6.7% less time; both remain below the 10% material target and retain noop/failure median regressions. Residency remains default off.",
+        "The evaluation helper comparison plan is complete: default-mode complete runs are near Playwright parity, while residency-on replications save about 5.0% and 5.7%. Every memory gate passes. All 68 launches and cleanup audits verify; failure medians and some observed maxima still regress. Instrumented counts are separate from ordinary timing."
       ],
       "evidence": [
         "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
@@ -315,11 +320,12 @@
         "compatibility/evidence/resident-indexed-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
-        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Retain the passing native macOS load-resource matrix and default-off policy while broader semantic, contention, native Linux and complete-flow net-benefit gates remain open.",
-        "Measure the integrated private evaluation helper using the predeclared 64 ordinary launches and separate four-launch protocol attribution. Page initialization still awaits multiple independent commands; investigate only after this comparison and prioritize remaining M2 coverage.",
+        "The evaluation helper has removed repeated helper-source transmission. Current instrumented setup waits roughly 53 ms for Page.enable and about 10 ms for locator runtime installation; acknowledgement timings include proxy overhead and do not isolate CPU. Prioritize remaining M2 preview coverage, then investigate the larger setup critical path with equivalent-work probes rather than assuming more small-call tuning will meet the complete-flow target.",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
         "Improve complete flows and setup using measured critical paths; native Linux, contention, consumer installation and release gates remain open."
@@ -338,6 +344,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Complete the private evaluation helper comparison plan, retain all results and independently verify every run. Then prioritize remaining M2 preview APIs and artifacts, using the measured complete-flow bottlenecks for further optimization. Residency stays default off; native Linux performance, contention, platform packages and release gates remain open.",
+  "nextImplementation": "The private evaluation helper is complete and verified; its 64 ordinary and four instrumented launches are retained. Prioritize remaining M2 preview coverage: basic cookies/storage state, screenshot artifacts, console/pageerror and supported handle ownership. Use current setup attribution for the next measured optimization after the required semantic gates. Keep residency default off. Native Linux performance, contention, platform installation, M3 transport and release gates remain open.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }
