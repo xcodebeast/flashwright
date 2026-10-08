@@ -232,7 +232,7 @@
       "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T04-10-40.241Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "The timer-group repair changes the production runtime. Current ordinary comparisons are pending under compatibility/evidence/resident-coalescing-final-profile-plan-2026-10-08.json. Historical complete-flow results remain in the retained checkpoints and do not establish acceptance for this binary. Residency remains default off.",
+    "performanceStatus": "All 210 predeclared ordinary launches for the coalesced-timer binary independently verify. Two eight-pair Playwright comparisons show complete-run ratios 1.0569 (95% bootstrap interval 1.0118–1.0762) and 1.0589 (1.0289–1.0916), about 5.4% and 5.6% less time. Both miss the 10% material target. Noop median regressions remain in both; the replication also flags failure median and navigation/backend observed maxima. Residency remains default off; native Linux, contention and release gates remain open.",
     "sourceIdentity": "158 matching source hashes pass 104 current core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 assertions, 25 lifecycle/protocol tests and 54 registry cases also pass. The current optimized driver is db3b0f8f7b0fb704f08dc3fe63819cc5855592047734a733a9603a06c832f1ce.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
@@ -304,13 +304,14 @@
     "residentFairnessCheckpoint": "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
     "residentInvalidationCheckpoint": "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
     "residentLoadCheckpoint": "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-    "residentResourceStatus": "A four-millisecond-only candidate passed conformance but retained fragmented native timer groups; its ordinary plan was superseded before timing. The repaired group invalidation passes all 54 registry cases, including staggered registration. Thirteen instrumented fixed-work diagnostics verify; four isolated concurrent quiet/property cases show 50–51 timer callbacks over about two seconds. These counts are not a CPU or speed claim. Run the predeclared full ordinary comparisons before resource acceptance.",
+    "residentResourceStatus": "The current six-group sustained-load matrix passes every memory and complete-time gate and eight of nine CPU gates. Mutation-text/1 fails with paired Playwright/resident CPU ratio 0.8953 (95% bootstrap interval 0.8036–0.9421), about 11.7% more candidate CPU. At 32/128 conditions, paired CPU ratios are 1.420–2.046. Thirteen separate diagnostics retain full work and show coalesced concurrent timer groups; their instrumented times are not ordinary performance evidence. See compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
     "residentQueryCheckpoint": "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
     "residentQueryPerformanceCheckpoint": "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
     "residentFramePacingCheckpoint": "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
     "residentFramePacingPerformanceCheckpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
     "residentCoalescingCheckpoint": "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
-    "residentCoalescingInitialEvidence": "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json"
+    "residentCoalescingInitialEvidence": "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json",
+    "residentCoalescingPerformanceCheckpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json"
   },
   "pairedRuns": [
     {
@@ -449,6 +450,32 @@
       "verification": "tools/verify-paired.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
       "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T04-44-06.239Z-darwin-arm64-paired-352af453",
+      "metadataSha256": "334f02b3b4980bc1d99dba360bbff00ec5375dcf6d446dbb9b85c8e9580761ac",
+      "summarySha256": "98afc96608e99960ca02c769955effb9205849b8d60ea64b0f2ed34eee14063d",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-residency-on",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T04-45-18.568Z-darwin-arm64-paired-8c10c81a",
+      "metadataSha256": "8683d89f83d0aeb9c5ae8807c625b482bccd690f9d748b176512a2362b3b67b0",
+      "summarySha256": "07c5108cbb9c1ec9e4a51828fc7e74b59b62cec923b0be9890186d0f863fd344",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-residency-on-replication",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
     }
   ],
   "attributionRuns": [
@@ -561,6 +588,19 @@
       "verification": "tools/verify-residency.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
       "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T04-42-54.746Z-darwin-arm64-residency-9fb55452",
+      "metadataSha256": "6798380e5abe37dc790841477151e6e3ecd88fc34301acaf391e33855da737ca",
+      "summarySha256": "b9d7d7ed91957063188473060958f711ac4bdc7647c970076feeb0077d105270",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
+      "kind": "same-binary-residency-off-on",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-residency.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
+      "independentLaunchPairs": 8
     }
   ],
   "additionalBrowserDistributions": [
@@ -600,6 +640,18 @@
       "valid": true,
       "unexpectedFailures": 0,
       "checkpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+      "kind": "sustained-load",
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-resident-load.mjs",
+      "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T04-33-23.925Z-darwin-arm64-resident-load-60a519ec",
+      "metadataSha256": "4f82873a0f6e7b3efa0a7d28004c9737d4be9c5e5a6b0b75ae78593dfe45fbe3",
+      "summarySha256": "ad6d0722f4abd9dc2cffe6c875f847a5892c4bcf5628c6a9eeb27f1acec2b0b1",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/resident-coalescing-final-performance-checkpoint-2026-10-08.json",
       "kind": "sustained-load",
       "distribution": "chromium-headless-shell",
       "verification": "tools/verify-resident-load.mjs",
