@@ -8,11 +8,21 @@ import { chromium as flashwrightChromium } from 'flashwright';
 
 const sockets = new Set();
 const requestObservers = new Map();
+const largeBinary = Buffer.alloc(9 * 1024 * 1024);
+for (let index = 0; index < largeBinary.length; index++) largeBinary[index] = index % 256;
+const largeBodies = new Map([['/large-binary', largeBinary], ['/escaped-text', Buffer.alloc(2 * 1024 * 1024)]]);
+const bodyRequests = new Map();
 function nextRequest(path) { return new Promise(resolve => requestObservers.set(path, resolve)); }
 const server = createServer((request, response) => {
   const url = new URL(request.url, 'http://fixture');
   requestObservers.get(url.pathname)?.();
   requestObservers.delete(url.pathname);
+  if (largeBodies.has(url.pathname)) {
+    bodyRequests.set(url.pathname, (bodyRequests.get(url.pathname) ?? 0) + 1);
+    response.setHeader('content-type', url.pathname === '/escaped-text' ? 'text/plain; charset=utf-8' : 'application/octet-stream');
+    response.end(largeBodies.get(url.pathname));
+    return;
+  }
   if (url.pathname === '/redirect') { response.writeHead(302, { location: '/final' }); response.end(); return; }
   if (url.pathname === '/json') { response.setHeader('content-type', 'application/json'); response.end(JSON.stringify({ answer: 42, unicode: 'é😃' })); return; }
   if (url.pathname === '/binary') { response.end(Buffer.from([0, 128, 255, 1])); return; }
@@ -73,6 +83,16 @@ async function run(name, chromium) {
     const binaryResponse = page.waitForResponse('**/binary');
     await page.evaluate(async () => { await fetch('/binary'); });
     assert.deepEqual(await (await binaryResponse).body(), Buffer.from([0, 128, 255, 1]));
+    result.largeBodies = [];
+    for (const [path, expected] of largeBodies) {
+      const count = bodyRequests.get(path) ?? 0;
+      const observed = page.waitForResponse('**' + path);
+      await page.evaluate(async path => { await (await fetch(path)).arrayBuffer(); }, path);
+      const received = await (await observed).body();
+      assert.deepEqual(received, expected);
+      assert.equal(bodyRequests.get(path) - count, 1);
+      result.largeBodies.push({ path, bytes: received.length, sha256: createHash('sha256').update(received).digest('hex'), requests: 1 });
+    }
 
     const missing = await page.goto('/missing');
     result.httpFailure = { status: missing.status(), ok: missing.ok() };

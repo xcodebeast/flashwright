@@ -462,7 +462,7 @@ impl Engine {
         let browsers = {
             let mut registry = self.registry.lock().unwrap();
             for context in registry.contexts.values() {
-                context.state.closed.send_replace(true);
+                context.state.closed.send_replace(Some(closed("context")));
             }
             registry.contexts.clear();
             registry.pages.clear();

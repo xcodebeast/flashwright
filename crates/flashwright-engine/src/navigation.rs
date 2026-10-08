@@ -255,41 +255,21 @@ impl Engine {
                     .map_err(|_| closed(method))
             }))
             .await?;
-        let mut result = operation
+        let payload = operation
             .wait(page.state.while_alive(
                 method,
-                browser.connection.call(
-                    "Network.getResponseBody",
-                    json!({ "requestId": request_identifier }),
-                    Some(&page.session_identifier),
+                browser.connection.response_body(
+                    request_identifier,
+                    &page.session_identifier,
+                    self.maximum_attachment_bytes,
                 ),
             ))
-            .await?;
-        let Value::String(body) = result["body"].take() else {
-            return Err(ErrorRecord::new(
-                ErrorCode::Protocol,
-                method,
-                "browser omitted response body",
-            ));
-        };
-        let encoding = match result["base64Encoded"].as_bool() {
-            Some(true) => flashwright_protocol::AttachmentEncoding::Base64,
-            Some(false) => flashwright_protocol::AttachmentEncoding::Raw,
-            None => {
-                return Err(ErrorRecord::new(
-                    ErrorCode::Protocol,
-                    method,
-                    "browser omitted response body encoding",
-                ));
-            }
-        };
-        BinaryAttachment::new(
-            body.into_bytes(),
-            encoding,
-            self.maximum_attachment_bytes,
-            reservation,
-            method,
-        )
+            .await
+            .map_err(|mut error| {
+                error.method = method.into();
+                error
+            })?;
+        Ok(BinaryAttachment::from_payload(payload, reservation))
     }
 }
 

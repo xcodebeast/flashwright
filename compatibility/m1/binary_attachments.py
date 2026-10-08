@@ -71,11 +71,13 @@ class BinaryBodyCase(OwnedDriverCase):
                 return self.receive_frame()
         return message
 
-    def receive_attachment(self, command, cancel=False):
+    def receive_attachment(self, command, cancel=False, encoding=None):
         self.send(command)
         start = self.receive_frame()
         self.assertEqual(start["requestId"], command["requestId"])
         self.assertEqual(start["kind"], "binaryStart", start)
+        if encoding is not None:
+            self.assertEqual(start["encoding"], encoding, start)
         if cancel:
             self.send({"kind": "cancel", "requestId": command["requestId"]})
         encoded = bytearray()
@@ -104,6 +106,29 @@ class BinaryBodyCase(OwnedDriverCase):
 
 
 class BodyTransferTests(BinaryBodyCase):
+    def test_oversized_cdp_event_retains_its_resource_failure_during_browser_cleanup(self):
+        command = self.command("page.evaluate", self.evaluation("console.log('x'.repeat(9 * 1024 * 1024)); 42"))
+        self.send(command)
+        error = self.receive()
+        self.assertEqual(error["requestId"], command["requestId"])
+        self.assertEqual(error["kind"], "error", error)
+        self.assertEqual(error["error"]["code"], "ResourceLimitError", error)
+        self.assertIn("CDP event", error["error"]["message"])
+        self.assert_resources_released()
+
+    def test_binary_body_exceeds_the_ordinary_cdp_reply_limit(self):
+        payload = bytes(range(256)) * (9 * 4096)
+        self.payloads["/large-binary"] = ("application/octet-stream", payload)
+        self.assertEqual(self.receive_attachment(self.fetch("/large-binary")), payload)
+        self.assertEqual(self.requests, ["/large-binary"])
+        self.assertEqual(self.request("page.evaluate", self.evaluation("42")), {"kind": "number", "value": 42})
+
+    def test_json_escaped_body_exceeds_the_ordinary_cdp_reply_limit(self):
+        payload = b"\x00" * (2 * 1024 * 1024)
+        self.payloads["/escaped-text"] = ("text/plain; charset=utf-8", payload)
+        self.assertEqual(self.receive_attachment(self.fetch("/escaped-text"), encoding="raw"), payload)
+        self.assertEqual(self.requests, ["/escaped-text"])
+
     def test_binary_bytes_cross_control_limits_without_replaying_the_request(self):
         command = self.fetch("/binary")
         self.assertEqual(self.receive_attachment(command), self.payloads["/binary"][1])
@@ -130,7 +155,8 @@ class BodyLimitTests(BinaryBodyCase):
     resource_limits = {"controlFrameBytes": 32768, "binaryAttachmentBytes": 1024, "pendingAttachments": 1}
 
     def test_oversized_body_rejects_only_its_call_and_releases_its_slot(self):
-        self.send(self.fetch("/binary"))
+        self.payloads["/large-binary"] = ("application/octet-stream", bytes(range(256)) * (9 * 4096))
+        self.send(self.fetch("/large-binary"))
         error = self.receive()
         self.assertEqual(error["kind"], "error", error)
         self.assertEqual(error["error"]["code"], "ResourceLimitError", error)

@@ -1,0 +1,34 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 864B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for mcr.microsoft.com/playwright@sha256:9bd26ad900bb5e0f4dee75839e957a89ae89c2b7ab1e76050e559790e946b948
+#2 DONE 0.2s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM mcr.microsoft.com/playwright@sha256:9bd26ad900bb5e0f4dee75839e957a89ae89c2b7ab1e76050e559790e946b948
+#4 resolve mcr.microsoft.com/playwright@sha256:9bd26ad900bb5e0f4dee75839e957a89ae89c2b7ab1e76050e559790e946b948 0.0s done
+#4 DONE 0.0s
+
+#5 [2/3] RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 [3/3] RUN curl --fail --silent --show-error --location --max-time 120 https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init -o /tmp/rustup-init && curl --fail --silent --show-error --location --max-time 120 https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init.sha256 -o /tmp/rustup-init.sha256 && cd /tmp && sha256sum --check rustup-init.sha256 && chmod +x rustup-init && ./rustup-init -y --no-modify-path --default-toolchain 1.98.0 --profile minimal --component rustfmt --component clippy && rm rustup-init rustup-init.sha256
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers done
+#7 exporting manifest sha256:c4e4cf25faa2a0eb8a1f7e22180d955230f3721cf321c19f7554605b3c3ccbd8 done
+#7 exporting config sha256:a272309a5c6d8bf1caacf3a807705a2b6ad44f3366648da5b79d5db472ca1f95 done
+#7 exporting attestation manifest sha256:c04ba89fac9d5421e55597fa7018d5c9fad6cb9911bd92a5c0c9b20d6393b10a 0.0s done
+#7 exporting manifest list sha256:a90d64f824a79fbc281c9ba6d200fb32f602c92ac400b0c0236fc37923a3b92f
+#7 exporting manifest list sha256:a90d64f824a79fbc281c9ba6d200fb32f602c92ac400b0c0236fc37923a3b92f 0.0s done
+#7 naming to docker.io/library/flashwright-linux-verification:pw1.60-rust1.98 done
+#7 DONE 0.1s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/ban3yidvttukxir4xpcc3622x

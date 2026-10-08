@@ -4,7 +4,9 @@ pub mod attachment;
 pub mod framing;
 pub mod messages;
 
-pub use attachment::{AttachmentEncoding, AttachmentFrame, AttachmentStream, BinaryAttachment};
+pub use attachment::{
+    AttachmentEncoding, AttachmentFrame, AttachmentStream, BinaryAttachment, BinaryPayload,
+};
 
 pub use framing::{EncodedFrame, FrameError, FrameReader, FrameWriter};
 pub use messages::{
