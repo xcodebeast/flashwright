@@ -3,6 +3,19 @@ use serde_json::Value;
 
 use crate::{CAPABILITY_INVENTORY_VERSION, PACKAGE_VERSION, PROTOCOL_VERSION};
 
+/// Internal queue entries preserve already encoded replies without serializing them twice.
+#[derive(Debug)]
+pub enum DriverOutput {
+    Message(DriverMessage),
+    Frame(crate::EncodedFrame),
+}
+
+impl From<DriverMessage> for DriverOutput {
+    fn from(message: DriverMessage) -> Self {
+        Self::Message(message)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ResourceLimits {
@@ -57,11 +70,17 @@ impl ResourceLimits {
         while let Some((value, depth)) = pending.pop() {
             count += 1;
             if count > self.value_nodes || depth > self.value_depth {
-                return Err(ErrorRecord::new(
-                    ErrorCode::ResourceLimit,
-                    "protocol",
-                    "control value exceeds negotiated depth or node limits",
-                ));
+                return Err(Self::value_limit_error());
+            }
+            let children = match value {
+                Value::Array(values) => values.len(),
+                Value::Object(values) => values.len(),
+                _ => 0,
+            };
+            if children > self.value_nodes.saturating_sub(count + pending.len())
+                || (children > 0 && depth == self.value_depth)
+            {
+                return Err(Self::value_limit_error());
             }
             match value {
                 Value::Array(values) => {
@@ -74,6 +93,38 @@ impl ResourceLimits {
             }
         }
         Ok(())
+    }
+
+    /// Dynamic diagnostics share one value budget; fixed error-envelope metadata remains
+    /// available even when the negotiated payload budget cannot represent the original failure.
+    pub fn validate_error(&self, error: &ErrorRecord) -> Result<(), ErrorRecord> {
+        let text_nodes = error
+            .message_utf16
+            .as_ref()
+            .map_or(0, |units| units.len().saturating_add(1));
+        if text_nodes > self.value_nodes
+            || (error
+                .message_utf16
+                .as_ref()
+                .is_some_and(|units| !units.is_empty())
+                && self.value_depth < 2)
+        {
+            return Err(Self::value_limit_error());
+        }
+        if let Some(diagnostics) = &error.diagnostics {
+            let mut remaining = self.clone();
+            remaining.value_nodes -= text_nodes;
+            remaining.validate_value(diagnostics)?;
+        }
+        Ok(())
+    }
+
+    fn value_limit_error() -> ErrorRecord {
+        ErrorRecord::new(
+            ErrorCode::ResourceLimit,
+            "protocol",
+            "control value exceeds negotiated depth or node limits",
+        )
     }
 }
 
@@ -163,6 +214,34 @@ pub enum DriverMessage {
         request_id: Option<u64>,
         error: ErrorRecord,
     },
+}
+
+impl DriverMessage {
+    /// Encode a borrowed result without cloning potentially large value graphs.
+    pub fn encode_result(
+        request_id: u64,
+        value: &Value,
+        input_delivery: InputDelivery,
+        maximum_bytes: usize,
+    ) -> Result<crate::EncodedFrame, crate::FrameError> {
+        #[derive(Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct ResultMessage<'value> {
+            kind: &'static str,
+            request_id: u64,
+            value: &'value Value,
+            input_delivery: InputDelivery,
+        }
+        crate::EncodedFrame::encode(
+            &ResultMessage {
+                kind: "result",
+                request_id,
+                value,
+                input_delivery,
+            },
+            maximum_bytes,
+        )
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -2,7 +2,8 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
-/// Framing failure invalidates this stream; no resynchronization is attempted.
+/// Read corruption and failed/partial writes invalidate the stream. Encoding limits
+/// reject before publication and leave it usable; corrupted bytes are never resynchronized.
 #[derive(Debug, thiserror::Error)]
 pub enum FrameError {
     #[error("control frame size {received} exceeds the negotiated limit {limit}")]
@@ -90,6 +91,36 @@ async fn read_remaining<Reader: AsyncRead + Unpin>(
     }
 }
 
+/// A complete bounded JSON payload prepared before transport publication.
+#[derive(Debug)]
+pub struct EncodedFrame {
+    body: Vec<u8>,
+}
+
+impl EncodedFrame {
+    pub fn encode<Message: Serialize>(
+        message: &Message,
+        maximum_bytes: usize,
+    ) -> Result<Self, FrameError> {
+        let mut body = BoundedBuffer {
+            bytes: Vec::new(),
+            limit: maximum_bytes.min(u32::MAX as usize),
+            exceeded: false,
+        };
+        if let Err(error) = serde_json::to_writer(&mut body, message) {
+            return if body.exceeded {
+                Err(FrameError::TooLarge {
+                    received: body.limit + 1,
+                    limit: body.limit,
+                })
+            } else {
+                Err(FrameError::Json(error))
+            };
+        }
+        Ok(Self { body: body.bytes })
+    }
+}
+
 /// A single task owns each writer; cancelled or partial writes poison the stream.
 pub struct FrameWriter<Writer> {
     writer: Writer,
@@ -110,27 +141,26 @@ impl<Writer: AsyncWrite + Unpin> FrameWriter<Writer> {
         if self.invalidated {
             return Err(FrameError::Invalidated);
         }
-        let mut body = BoundedBuffer {
-            bytes: Vec::new(),
-            limit: self.maximum_bytes.min(u32::MAX as usize),
-            exceeded: false,
-        };
-        if let Err(error) = serde_json::to_writer(&mut body, message) {
-            return if body.exceeded {
-                Err(FrameError::TooLarge {
-                    received: body.limit + 1,
-                    limit: body.limit,
-                })
-            } else {
-                Err(FrameError::Json(error))
-            };
+        let frame = EncodedFrame::encode(message, self.maximum_bytes)?;
+        self.write_frame(&frame).await
+    }
+
+    pub async fn write_frame(&mut self, frame: &EncodedFrame) -> Result<(), FrameError> {
+        if self.invalidated {
+            return Err(FrameError::Invalidated);
         }
-        let body = body.bytes;
+        let body = &frame.body;
+        if body.len() > self.maximum_bytes {
+            return Err(FrameError::TooLarge {
+                received: body.len(),
+                limit: self.maximum_bytes,
+            });
+        }
         self.invalidated = true;
         self.writer
             .write_all(&(body.len() as u32).to_le_bytes())
             .await?;
-        self.writer.write_all(&body).await?;
+        self.writer.write_all(body).await?;
         self.writer.flush().await?;
         self.invalidated = false;
         Ok(())

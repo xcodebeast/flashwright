@@ -3,9 +3,10 @@
 pub mod framing;
 pub mod messages;
 
-pub use framing::{FrameError, FrameReader, FrameWriter};
+pub use framing::{EncodedFrame, FrameError, FrameReader, FrameWriter};
 pub use messages::{
-    ClientMessage, DriverMessage, ErrorCode, ErrorRecord, Handshake, InputDelivery, ResourceLimits,
+    ClientMessage, DriverMessage, DriverOutput, ErrorCode, ErrorRecord, Handshake, InputDelivery,
+    ResourceLimits,
 };
 
 pub const PROTOCOL_VERSION: u32 = 4;

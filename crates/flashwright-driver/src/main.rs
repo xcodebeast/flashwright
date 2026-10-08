@@ -2,12 +2,13 @@ use std::collections::HashMap;
 use std::os::fd::AsFd;
 use std::sync::Arc;
 
+mod output;
 mod pipe;
 
 use flashwright_engine::{CAPABILITIES, Engine, Operation};
 use flashwright_protocol::{
-    ClientMessage, DriverMessage, ErrorCode, ErrorRecord, FrameReader, FrameWriter, Handshake,
-    InputDelivery, ResourceLimits,
+    ClientMessage, DriverMessage, DriverOutput, EncodedFrame, ErrorCode, ErrorRecord, FrameError,
+    FrameReader, FrameWriter, Handshake, ResourceLimits,
 };
 use tokio::sync::{mpsc, watch};
 use tokio::task::JoinSet;
@@ -66,28 +67,35 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let (outgoing, mut messages) = mpsc::channel(limits.queued_messages);
     let (fatal_sender, mut fatal) = watch::channel(false);
     let engine = Arc::new(Engine::new(parent_liveness, outgoing.clone(), fatal_sender));
-    let maximum_bytes = limits.control_frame_bytes;
+    let writer_limits = limits.clone();
     let mut writer_task = tokio::spawn(async move {
-        let mut writer = FrameWriter::new(output, maximum_bytes);
+        let mut writer = FrameWriter::new(output, writer_limits.control_frame_bytes);
         while let Some(message) = messages.recv().await {
-            writer.write(&message).await?;
+            if output::write_output(&mut writer, message, &writer_limits).await?
+                == output::OutputDisposition::CloseStream
+            {
+                return Ok(output::OutputDisposition::CloseStream);
+            }
         }
-        Ok::<_, flashwright_protocol::FrameError>(())
+        Ok::<_, FrameError>(output::OutputDisposition::Continue)
     });
     outgoing
-        .send(DriverMessage::Handshake {
-            handshake: Handshake {
-                limits: limits.clone(),
-                ..Handshake::default()
-            },
-            resident_runtime_sha256: flashwright_engine::RESIDENT_RUNTIME_SHA256.to_owned(),
-            capabilities: CAPABILITIES
-                .iter()
-                .map(|value| (*value).to_owned())
-                .collect(),
-            browser_identity: None,
-            browser_encodings: vec!["json".to_owned()],
-        })
+        .send(
+            DriverMessage::Handshake {
+                handshake: Handshake {
+                    limits: limits.clone(),
+                    ..Handshake::default()
+                },
+                resident_runtime_sha256: flashwright_engine::RESIDENT_RUNTIME_SHA256.to_owned(),
+                capabilities: CAPABILITIES
+                    .iter()
+                    .map(|value| (*value).to_owned())
+                    .collect(),
+                browser_identity: None,
+                browser_encodings: vec!["json".to_owned()],
+            }
+            .into(),
+        )
         .await?;
     let (incoming_sender, mut incoming) = mpsc::channel(limits.queued_messages);
     // A dedicated reader is never cancelled halfway through a control frame by another event.
@@ -100,8 +108,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     });
-    let mut operations =
-        JoinSet::<(u64, Result<serde_json::Value, ErrorRecord>, InputDelivery)>::new();
+    let mut operations = JoinSet::<(u64, Result<EncodedFrame, FrameError>)>::new();
     let mut cancellations: HashMap<u64, watch::Sender<bool>> = HashMap::new();
     let mut termination =
         tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
@@ -113,21 +120,18 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
             _ = termination.recv() => break,
             _ = fatal.changed() => { failure = Some("browser event stream lost synchronization or exceeded resource bounds".to_owned()); break; },
             result = &mut writer_task => {
-                if !matches!(result, Ok(Ok(()))) { failure = Some("output transport failed".to_owned()); }
+                if !matches!(result, Ok(Ok(output::OutputDisposition::Continue))) { failure = Some("output transport failed".to_owned()); }
                 break;
             }
             completed = operations.join_next(), if !operations.is_empty() => {
                 match completed {
-                    Some(Ok((identifier, result, input_delivery))) => {
+                    Some(Ok((identifier, result))) => {
                         cancellations.remove(&identifier);
-                        let message = match result {
-                            Ok(value) => DriverMessage::Result { request_id: identifier, value, input_delivery },
-                            Err(mut error) => {
-                                error.input_delivery = error.input_delivery.max(input_delivery);
-                                DriverMessage::Error { request_id: Some(identifier), error }
-                            },
+                        let frame = match result {
+                            Ok(frame) => frame,
+                            Err(error) => { failure = Some(error.to_string()); break; }
                         };
-                        if outgoing.try_send(message).is_err() { failure = Some("bounded output queue exhausted".to_owned()); break; }
+                        if outgoing.try_send(DriverOutput::Frame(frame)).is_err() { failure = Some("bounded output queue exhausted".to_owned()); break; }
                     }
                     _ => { failure = Some("operation task panicked".to_owned()); break; }
                 }
@@ -152,7 +156,11 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                             Err(ErrorRecord::new(ErrorCode::ResourceLimit, &method, "pending operation limit exceeded"))
                         } else { limits.validate_value(&parameters) };
                         if let Err(error) = validation {
-                            if outgoing.try_send(DriverMessage::Error { request_id: Some(request_id), error }).is_err() { failure = Some("bounded output queue exhausted".to_owned()); break; }
+                            let frame = match output::prepare_error(request_id, error, &limits) {
+                                Ok(frame) => frame,
+                                Err(error) => { failure = Some(error.to_string()); break; }
+                            };
+                            if outgoing.try_send(DriverOutput::Frame(frame)).is_err() { failure = Some("bounded output queue exhausted".to_owned()); break; }
                             continue;
                         }
                         let deadline = match timeout_milliseconds {
@@ -165,10 +173,12 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         let (sender, receiver) = watch::channel(false);
                         cancellations.insert(request_id, sender);
                         let engine = engine.clone();
+                        let limits = limits.clone();
                         operations.spawn(async move {
                             let operation = Operation::new(method.clone(), deadline, receiver);
                             let result = engine.execute(&method, parameters, &operation).await;
-                            (request_id, result, operation.input_delivery())
+                            let reply = output::prepare_reply(&engine, request_id, &method, result, operation.input_delivery(), &limits).await;
+                            (request_id, reply)
                         });
                     }
                 }
