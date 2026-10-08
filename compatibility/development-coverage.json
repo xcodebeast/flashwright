@@ -54,7 +54,8 @@
       "frame/load/crash lifecycle events",
       "frame lookup by name or URL",
       "locator/getByText/getByLabel/getByTestId/getByRole/getByPlaceholder/getByAltText/getByTitle",
-      "reference focus/visibility defaults across multiple open pages"
+      "reference focus/visibility defaults across multiple open pages",
+      "screenshot returning a Buffer with optional atomic file output"
     ],
     "evaluation": [
       "expression strings",
@@ -138,6 +139,20 @@
       "existing page/shadow/child-frame focus and selection; no locator timeout or navigation barrier",
       "delay validation, complete-chord validation before effects and context-close cancellation",
       "down/up/type/insertText reject explicitly until persistent keyboard state and sequential typing are implemented"
+    ],
+    "page.screenshot": [
+      "type: png or jpeg; default png or case-sensitive path inference",
+      "path: atomic replacement after complete capture",
+      "quality: jpeg integer 0 through 100; default 80",
+      "fullPage and finite rectangular clip",
+      "caret: hide or initial, including open shadow roots and same-process frames",
+      "animations: allow or disabled with finite completion and infinite resumption",
+      "style: temporary document/shadow styles",
+      "omitBackground for PNG",
+      "scale: device or css with currently supported context settings",
+      "timeout: page default or per-call; queued expiry never mutates the page",
+      "main-document fonts wait; navigation-safe original-document cleanup",
+      "unmodified cross-process iframe pixels; preparation affecting these frames explicitly unsupported"
     ]
   },
   "implementation": {
@@ -170,7 +185,9 @@
     "outboundLimits": "Driver replies are validated and encoded once before writing. Byte/depth/node overflow becomes a per-call ResourceLimitError, retaining input delivery and cleanup without replay. UTF-16 errors and diagnostics share the payload node budget; fixed error metadata stays representable. Events that cannot fit send a global error and close. Allocations remain private until their reply is accepted; rejection performs bounded disposal. See compatibility/evidence/output-limits-checkpoint-2026-10-08.json",
     "binaryAttachments": "Protocol 5 keeps request-scoped raw/base64 application streams, 32 MiB decoded attachments, two active reservations and 64 KiB chunks. The Chromium JSON reader now admits typed response bodies beyond the ordinary 8 MiB reply/event cap. Its hard wire bound accounts for worst-case JSON escaping; it releases large frame buffers after use and ignores cancelled reply values. Complete oversized ordinary replies reject only their call. Fatal event/wire failures preserve their original error through page/context cleanup. Chromium JSON frames are still buffered, so this is not a constant-memory streaming CDP decoder. See compatibility/evidence/browser-payload-checkpoint-2026-10-08.json",
     "lifecycleVerification": "The deadline fixture now gives each of its nine independent scenarios the original ten-second subprocess bound. Each discovered lifecycle module has its own 240-second watchdog; output-limit, binary and watchdog modules retain their 180-second limits. Public operation deadlines and assertions are unchanged. All 58 counted lifecycle cases pass on native macOS and emulated Linux, nine focused scenarios pass on Node22, and the complete emulated Linux core passes all 27 groups. The native/Linux production binaries are unchanged from the binary-attachment checkpoint. Historical failures remain retained; native Linux and performance/release gates remain open. See compatibility/evidence/lifecycle-budget-checkpoint-2026-10-08.json",
-    "browserPayloadVerification": "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open. See compatibility/evidence/browser-payload-checkpoint-2026-10-08.json"
+    "browserPayloadVerification": "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open. See compatibility/evidence/browser-payload-checkpoint-2026-10-08.json",
+    "screenshots": "Page-owned serialization and caller deadlines retain preparation through cancellation. Opaque browser object identities restore only the original prepared documents; read-only geometry follows navigation. Typed screenshot replies obey the negotiated attachment bound and pixel dimensions are checked before browser capture. Unknown restoration state retires the affected page without replacing the original error. Native page-window bounds and emulated screen metrics follow the pinned reference. SPECS S4.k records the intentional suppression of expired queued preparation. Even an unmodified out-of-process capture retains the reference child-renderer evaluation dependency through temporary owned sessions. Late successful attachment replies are recovered for cleanup; a blocked renderer times out while its parent remains usable. Exact pixel fixtures establish rendering readiness because both engines can capture before an iframe first composites.",
+    "screenshotsVerification": "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. See compatibility/evidence/screenshots-checkpoint-2026-10-08.json"
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -221,7 +238,11 @@
     "compatibility/m1/binary_attachments.py",
     "compatibility/m1/attachment-driver.mjs",
     "tools/test-attachments.mjs",
-    "tools/test_python_runner.py"
+    "tools/test_python_runner.py",
+    "crates/flashwright-engine/src/screenshots.rs",
+    "compatibility/m2/screenshots.mjs",
+    "tools/run-screenshot-tests.mjs",
+    "tools/extract-screenshot-preparation.mjs"
   ],
   "limitations": [
     "No platform runtime publication or automatic driver acquisition; npm consumers provide an explicit compiled driver path",
@@ -229,7 +250,7 @@
     "Value coverage is a tested development subset, not full differential conformance with every Playwright evaluation case",
     "Emulated Linux functional evidence does not satisfy native Linux performance gates",
     "Navigation/network support is the tested development subset; URLPattern, full header/cookie variants, routing, API requests and service-worker semantics require further conformance",
-    "Screenshot artifacts remain unimplemented; persistent Page.keyboard down/up, sequential typing and broader keyboard APIs remain unimplemented",
+    "Screenshot masks, element capture, assertions and runner artifact policies remain unimplemented; persistent Page.keyboard down/up, sequential typing and broader keyboard APIs remain unimplemented",
     "Cross-process child-frame routing explicitly rejects; FrameLocator, handles and broader frame/navigation conformance remain unfinished",
     "Native text input containing unpaired UTF-16 surrogates rejects explicitly; selector and read strings preserve those units",
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
@@ -242,6 +263,8 @@
     "Output-limit conformance passes 54 native core groups, eight Node22 groups and 26 focused emulated Linux cases at 170 matching source hashes. A Linux Rust compilation exceeded its 120-second job budget; after build preparation the full lifecycle batch exceeded its unchanged 240-second budget following a blocked-pointer case failure. The complete public lifecycle class then passed separately. Both failed runs are retained, with no observed process/profile residue; the full Linux matrix remains incomplete. No ordinary performance result applies to this new binary yet.",
     "Binary-attachment conformance passes 27 native core groups including 50 lifecycle cases, four focused Node22 groups plus five headless-shell binary cases, and 31 focused emulated Linux browser cases at 178 matching source hashes. The broad Linux lifecycle run exceeded its unchanged 240-second budget. Its nine-client deadline fixture also exceeded a 10-second aggregate allowance; a diagnostic rerun completed all nine cleanly in 13.847 seconds. The broad failure remains retained, and fixture budgeting/full Linux verification remain open. No new performance claim.",
     "The lifecycle-budget checkpoint completes the current full functional matrix under Linux amd64 emulation. Earlier incomplete runs remain historical failures, including an older blocked-pointer failure whose traceback was lost before immediate diagnostic reporting existed. The known aggregate fixture budget faults are repaired; this does not retrospectively establish the cause of every older failure. Native Linux and broader contention acceptance remain open. See compatibility/evidence/lifecycle-budget-checkpoint-2026-10-08.json",
-    "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open."
+    "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open.",
+    "Screenshot preparation in out-of-process frames is not implemented; only unmodified capture is supported there. Images are limited to 32767 pixels on each axis, 16777216 total pixels and the negotiated encoded attachment bound (32 MiB by default). Screenshot cleanup has an independent bounded budget and can retire a page when restoration is uncertain. Native viewport setup changed in this implementation, so previous timing observations do not apply to this binary.",
+    "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. Native Linux, full artifact/runner coverage, platform packaging and release gates remain open."
   ]
 }

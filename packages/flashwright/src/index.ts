@@ -1,4 +1,6 @@
 import { EventEmitter } from 'node:events';
+import { prepareScreenshot, type PageScreenshotOptions } from './screenshots.js';
+import { writeAtomicFile } from './files.js';
 import { Keyboard, type KeyboardPressOptions } from './keyboard.js';
 import { EngineClient, retainEngine } from './client.js';
 import { failure, fromRecord, FlashwrightError } from './errors.js';
@@ -14,6 +16,7 @@ import { prepareCookies, filterCookies, cookieFilter, prepareStorageState, decod
 
 export * from './errors.js';
 export { Keyboard };
+export type { PageScreenshotOptions };
 export type { KeyboardPressOptions };
 export type { AssertionOptions, AssertionResult, ExpectedText } from './assertions.js';
 export { Frame, Request, Response };
@@ -289,6 +292,14 @@ export class Page extends EventEmitter {
   }
   url(): string { return this.mainFrame().url(); }
   async title(): Promise<string> { return this.evaluate(() => document.title); }
+  async screenshot(screenshotOptions: PageScreenshotOptions = {}): Promise<Buffer> {
+    this.checkOpen('page.screenshot');
+    const prepared = prepareScreenshot(screenshotOptions);
+    const timeout = validateTimeout(screenshotOptions.timeout ?? this.timeout(), 'page.screenshot');
+    const bytes = await this.client.requestBinary('page.screenshot', { page: this.identifier, ...prepared.parameters }, timeout);
+    if (prepared.path) await writeAtomicFile(prepared.path, bytes);
+    return bytes;
+  }
   private requestFor(metadata: RequestMetadata): Request {
     let request = this.requests.get(metadata.identity);
     if (!request) {

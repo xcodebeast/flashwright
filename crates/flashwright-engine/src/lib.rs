@@ -13,6 +13,7 @@ mod operation;
 mod page_state;
 mod pointer;
 mod publication;
+mod screenshots;
 mod storage;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
@@ -46,6 +47,7 @@ pub const CAPABILITIES: &[&str] = &[
     "context.storageState",
     "page.close",
     "page.evaluate",
+    "page.screenshot",
     "page.goto",
     "page.waitForLoadState",
     "response.body",
@@ -143,6 +145,12 @@ impl Engine {
         operation: &Operation,
     ) -> Result<OperationResult, ErrorRecord> {
         operation.check()?;
+        if method == "page.screenshot" {
+            return self
+                .screenshot(parameters, operation)
+                .await
+                .map(OperationResult::Binary);
+        }
         if method == "response.body" {
             return self
                 .response_body(parameters, operation)
@@ -398,7 +406,7 @@ impl Engine {
             // keep running when another page becomes the browser's active tab.
             operation.wait(browser.connection.call("Emulation.setFocusEmulationEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;
             if let Some(viewport) = context.viewport {
-                operation.wait(browser.connection.call("Emulation.setDeviceMetricsOverride", json!({ "width": viewport.width, "height": viewport.height, "deviceScaleFactor": 1, "mobile": false }), Some(&session_identifier))).await?;
+                configure_viewport(&browser, &viewport, &session_identifier, operation).await?;
             }
             let tree = operation.wait(browser.connection.call("Page.getFrameTree", json!({}), Some(&session_identifier))).await?;
             let registry = self.registry.lock().unwrap();
@@ -532,4 +540,70 @@ fn closed(method: &str) -> ErrorRecord {
         method,
         "target has been closed or is not owned by this driver",
     )
+}
+
+/// Match the reference's window bounds and screen metrics as well as its DOM viewport.
+async fn configure_viewport(
+    browser: &Chromium,
+    viewport: &Viewport,
+    session: &str,
+    operation: &Operation,
+) -> Result<(), ErrorRecord> {
+    let window = operation
+        .wait(
+            browser
+                .connection
+                .call("Browser.getWindowForTarget", json!({}), Some(session)),
+        )
+        .await;
+    let window = match window {
+        Ok(window) => Some(
+            window["windowId"]
+                .as_i64()
+                .ok_or_else(|| invalid("context.newPage", "Chromium omitted window identity"))?,
+        ),
+        Err(error) if error.browser_error_code.is_some() => None,
+        Err(error) => return Err(error),
+    };
+    let insets = if browser.headless {
+        (0, 0)
+    } else {
+        match std::env::consts::OS {
+            "macos" => (2, 80),
+            "linux" => (8, 85),
+            _ => (24, 88),
+        }
+    };
+    let width = viewport.width.checked_add(insets.0).ok_or_else(|| {
+        invalid(
+            "context.newPage",
+            "window width overflows its supported range",
+        )
+    })?;
+    let height = viewport.height.checked_add(insets.1).ok_or_else(|| {
+        invalid(
+            "context.newPage",
+            "window height overflows its supported range",
+        )
+    })?;
+    let bounds = async {
+        if let Some(window) = window {
+            browser
+                .connection
+                .call(
+                    "Browser.setWindowBounds",
+                    json!({"windowId":window,"bounds":{"width":width,"height":height}}),
+                    Some(session),
+                )
+                .await?;
+        }
+        Ok::<(), ErrorRecord>(())
+    };
+    let metrics = browser.connection.call("Emulation.setDeviceMetricsOverride", json!({"width":viewport.width,"height":viewport.height,"screenWidth":viewport.width,"screenHeight":viewport.height,"deviceScaleFactor":1,"mobile":false,"screenOrientation":{"angle":0,"type":"landscapePrimary"}}), Some(session));
+    operation
+        .wait(async {
+            tokio::try_join!(bounds, metrics)?;
+            Ok(())
+        })
+        .await
 }

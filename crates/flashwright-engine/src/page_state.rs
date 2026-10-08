@@ -17,6 +17,7 @@ pub(crate) struct PageState {
     pub locator_realms: tokio::sync::Mutex<HashMap<String, super::locators::LocatorRealm>>,
     pub evaluation_runtime: Mutex<Option<Arc<super::evaluation::EvaluationRuntime>>>,
     pub native_input: tokio::sync::Mutex<()>,
+    pub screenshots: tokio::sync::Mutex<()>,
 }
 
 #[derive(Default)]
@@ -80,6 +81,7 @@ impl Default for PageState {
             locator_realms: tokio::sync::Mutex::new(HashMap::new()),
             evaluation_runtime: Mutex::new(None),
             native_input: tokio::sync::Mutex::new(()),
+            screenshots: tokio::sync::Mutex::new(()),
         }
     }
 }

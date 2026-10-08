@@ -33,6 +33,7 @@ const commands = [
   [process.execPath, 'tools/extract-selector-runtime.mjs', '--check'],
   [process.execPath, 'tools/extract-keyboard-layout.mjs', '--check'],
   [process.execPath, 'tools/extract-chromium-launch-policy.mjs', '--check'],
+  [process.execPath, 'tools/extract-screenshot-preparation.mjs', '--check'],
   ['npm', 'run', 'inventory:check'],
   ['npm', 'run', 'typecheck'],
   ['npm', 'run', 'test:harness'],
@@ -52,6 +53,7 @@ const commands = [
   ['npm', 'run', 'test:benchmark-contract'],
   ['npm', 'run', 'test:resident-load'],
   ['npm', 'run', 'test:storage'],
+  ['npm', 'run', 'test:screenshots'],
 ];
 for (const [index, command] of commands.entries()) {
   const started = performance.now();
