@@ -337,8 +337,35 @@ class ResidentAssertionProtocolTests(OwnedDriverCase):
 
 
 class ClientDeadlineTests(unittest.TestCase):
-    def test_success_crossing_caller_deadline_is_disposed(self):
-        subprocess.run([os.environ["FLASHWRIGHT_TEST_NODE"], "compatibility/m1/client-deadline.mjs"], check=True, timeout=10)
+    def run_scenario(self, scenario):
+        subprocess.run([os.environ["FLASHWRIGHT_TEST_NODE"], "compatibility/m1/client-deadline.mjs", scenario], check=True, timeout=10)
+
+    def test_late_browser_launch_is_disposed(self):
+        self.run_scenario("browser.launch")
+
+    def test_late_context_allocation_is_disposed(self):
+        self.run_scenario("browser.newContext")
+
+    def test_late_page_allocation_is_disposed(self):
+        self.run_scenario("context.newPage")
+
+    def test_late_input_acknowledgement_is_preserved(self):
+        self.run_scenario("locator.acknowledged")
+
+    def test_late_undispatched_input_is_preserved(self):
+        self.run_scenario("locator.notDispatched")
+
+    def test_late_input_error_preserves_utf16_diagnostics(self):
+        self.run_scenario("locator.error")
+
+    def test_late_assertion_result_preserves_observation(self):
+        self.run_scenario("assertion.result")
+
+    def test_late_assertion_error_preserves_observation(self):
+        self.run_scenario("assertion.error")
+
+    def test_missing_capability_rejects_before_browser_allocation(self):
+        self.run_scenario("handshake.capabilityMismatch")
 
 
 if __name__ == "__main__":
