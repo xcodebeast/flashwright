@@ -84,15 +84,21 @@
       "directory": "benchmarks/results/2026-10-07T12-41-20.595Z-darwin-arm64-eeae1b62",
       "reasonFile": "benchmarks/results/2026-10-07T12-41-20.595Z-darwin-arm64-eeae1b62/invalidated.json",
       "resources": "benchmarks/results/macos-reference-resources-001.json"
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T00-24-07.610Z-darwin-arm64-resident-load-2ecf4995",
+      "reasonFile": "compatibility/evidence/resident-load-accounting-2026-10-08/report.json",
+      "scope": "CPU/resource acceptance invalidated by macOS zombie CPU reset; all 162 attempts retained. No selective replacement."
     }
   ],
   "benchmarkLimitations": [
     "The historical baselineRuns are reference-only. The first paired engineering profile is recorded under pairedRuns; it does not pass the overall material-improvement policy or establish fastest-engine status.",
-    "macOS measurements ran on a shared development host, with ordinary source editing during the run; not exclusive performance hardware.",
+    "Historical reference-only macOS measurements ran on a shared development host, with ordinary source editing during the run; not exclusive performance hardware.",
     "Chromium logged macOS CVDisplayLink warnings. Semantic verifiers passed; the browser launch logs are retained.",
     "Linux x64 ran under Docker emulation on an arm64 host with 4 CPUs, 4 GiB memory and 1 GiB shared memory. Compilation and runner probes overlapped this functional run; its timings cannot support performance acceptance.",
-    "Only 96 measured operations per workload; report observed maxima, not p95 or p99.",
-    "Resource sampling covers observed descendants and can miss very short-lived processes; Ordinary paired runs do not measure protocol traffic. A separate instrumented attribution run counts forwarded bytes and CDP evaluations, with clock bounds; it does not count internal predicate/discovery work or establish a speed claim."
+    "The seven-workload profiles retain 96 measured operations per workload; the sustained-load matrix retains six independent pairs per scenario. Report observed maxima, not p95 or p99.",
+    "Resource sampling covers observed descendants and can miss very short-lived processes; Ordinary paired runs do not measure protocol traffic. A separate instrumented attribution run counts forwarded bytes and CDP evaluations, with clock bounds; it does not count internal predicate/discovery work or establish a speed claim.",
+    "Watchdog reports without schemaVersion 2 can lose CPU at macOS process exit. Their CPU totals cannot support acceptance; wall-time, memory and conformance retain their stated scopes. Corrected sustained-load evidence retains raw per-process observations and maximum CPU per PID/start identity. Sampling is nominally 100 ms plus process-query overhead, and is not complete kernel accounting."
   ],
   "runnerIntegration": {
     "internalDependency": "flashwright-upstream-runner = npm:playwright@1.60.0",
@@ -207,11 +213,13 @@
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T23-44-09.237Z/report.json",
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T23-46-12.120Z/report.json",
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-07T23-48-02.010Z/report.json",
-      "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T23-44-16.249Z/report.json"
+      "compatibility/evidence/core-linux-x64-24.15.0-2026-10-07T23-44-16.249Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T00-38-44.301Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T00-41-26.352Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547–1.1719) and 1.0515 (1.0090–1.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
-    "sourceIdentity": "Current 146 matching source hashes pass 25 verification groups each on macOS Node24 headless-shell residency on/off, macOS Node24 full Chromium on, and emulated Linux Node24 full Chromium on. All 100 log hashes and archived driver hashes independently checked. Node22 assertion, 25 lifecycle/protocol and 39 registry cases also pass.",
+    "performanceStatus": "Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547\u20131.1719) and 1.0515 (1.0090\u20131.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
+    "sourceIdentity": "Current 156 source hashes match both corrected macOS Node24 headless-shell core reports, with residency on/off: 52 passing groups. Four watchdog tests also pass on macOS and emulated Linux. The preceding 146-source invalidation checkpoint retains full-Chromium, Node22 and Linux engine conformance; production sources and the measured optimized driver are unchanged.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -280,7 +288,9 @@
     "browserDistributionCheckpoint": "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
     "asciiRuntimeCheckpoint": "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
     "residentFairnessCheckpoint": "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
-    "residentInvalidationCheckpoint": "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json"
+    "residentInvalidationCheckpoint": "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
+    "residentLoadCheckpoint": "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
+    "residentResourceStatus": "Corrected six-group, 162-launch sustained-load matrix on native M3 Pro macOS: residency reduces complete time 10.7\u201313.2% against matched Playwright in these nine cases, but fails CPU gates in seven and memory gates in all three 32-condition cases. CPU rises 1.97\u20132.18x and memory 15.9\u201319.3% at 32 conditions. Keep default off; no general suite or fastest-engine claim."
   },
   "pairedRuns": [
     {
@@ -310,7 +320,7 @@
       "driverArchive": ".cache/paired-input-batch-002/flashwright-driver-darwin-arm64",
       "materialImprovement": false,
       "changes": "Bounded atomic admission of ordered native input sequences without reply barriers; page initialization matches the reference focus/visibility defaults.",
-      "comparison": "Interaction paired ratio 1.0004 (95% interval 0.9971–1.0049); complete-run paired ratio 1.0258 (0.9705–1.0419). The initial click-flow regression is gone; the overall speed objective remains unmet."
+      "comparison": "Interaction paired ratio 1.0004 (95% interval 0.9971\u20131.0049); complete-run paired ratio 1.0258 (0.9705\u20131.0419). The initial click-flow regression is gone; the overall speed objective remains unmet."
     },
     {
       "directory": "benchmarks/results/2026-10-07T21-50-21.774Z-darwin-arm64-paired-2b2e8b4f",
@@ -465,6 +475,15 @@
       "verificationCheckpoint": "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
       "defaultSelectionEvidence": "Pinned node_modules/playwright-core/lib/coreBundle.js getExecutableName chooses chromium-headless-shell for headless launch without a channel, and full chromium for explicit channel chromium.",
       "baselinePolicy": "benchmarks/configurations/baseline.json; actual browser executable/flags matched within each run"
+    }
+  ],
+  "residentLoadRuns": [
+    {
+      "directory": "benchmarks/results/2026-10-08T00-44-03.619Z-darwin-arm64-resident-load-419994cd",
+      "summary": "benchmarks/results/2026-10-08T00-44-03.619Z-darwin-arm64-resident-load-419994cd/summary.json",
+      "checkpoint": "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
+      "status": "valid measurements; resource acceptance fails",
+      "verificationCommand": "node tools/verify-resident-load.mjs benchmarks/results/2026-10-08T00-44-03.619Z-darwin-arm64-resident-load-419994cd"
     }
   ]
 }

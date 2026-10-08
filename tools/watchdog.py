@@ -47,6 +47,13 @@ def process_snapshot():
     return processes
 
 
+def record_cpu_observation(records, process, details):
+    """Retain work already observed when exit reporting resets CPU, and distinguish reused PIDs."""
+    identity = (process, details["started"])
+    previous = records.get(identity, {}).get("cpuSeconds", 0)
+    records[identity] = {**details, "cpuSeconds": max(previous, details["cpuSeconds"])}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--timeout", type=float, required=True)
@@ -69,6 +76,7 @@ def main():
     subreaper = adopt_orphaned_descendants()
     child = subprocess.Popen(command, start_new_session=True, env=environment)
     known = {}
+    cpu_records = {}
     samples = []
     started = time.monotonic()
     interrupted = False
@@ -91,7 +99,7 @@ def main():
                 reaped, _status = os.waitpid(process, os.WNOHANG)
                 if reaped:
                     known[process] = details
-                    snapshot.pop(process)
+                    adopted.add(process)
                 elif subreaper:
                     adopted.add(process)
             except ChildProcessError:
@@ -109,10 +117,12 @@ def main():
         for process in owned:
             if process in snapshot:
                 known[process] = snapshot[process]
+                record_cpu_observation(cpu_records, process, snapshot[process])
+        observed = [{"process": process, **snapshot[process]} for process in sorted(owned) if process in snapshot]
         samples.append({
             "elapsedSeconds": time.monotonic() - started,
-            "concurrentRssBytes": sum(snapshot[process]["rssBytes"] for process in owned if process in snapshot),
-            "liveOwnedProcesses": len(owned),
+            "concurrentRssBytes": sum(process["rssBytes"] for process in observed),
+            "liveOwnedProcesses": len(observed), "processes": observed,
         })
         return {process: snapshot[process] for process in owned if process in snapshot}
 
@@ -139,15 +149,17 @@ def main():
             remaining = observe()
         child.wait(timeout=5)
         report = {
+            "schemaVersion": 2, "cpuAccounting": "maximum-per-observed-process-identity",
             "command": command, "timeoutSeconds": arguments.timeout, "timedOut": timed_out,
             "interrupted": interrupted, "exitCode": child.returncode,
             "elapsedSeconds": time.monotonic() - started, "samplingIntervalSeconds": 0.1,
             "maximumSampledConcurrentRssBytes": max(sample["concurrentRssBytes"] for sample in samples),
-            "observedCpuSeconds": sum(details["cpuSeconds"] for details in known.values()),
-            "observedProcessCount": len(known), "remainingObservedProcesses": list(remaining),
+            "observedCpuSeconds": sum(details["cpuSeconds"] for details in cpu_records.values()),
+            "observedProcessCount": len(cpu_records), "remainingObservedProcesses": list(remaining),
+            "processes": [{"process": process, **details} for (process, _started), details in cpu_records.items()],
             "cleanupSignals": cleanup_signals,
             "linuxChildSubreaper": subreaper,
-            "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU is accumulated last-observed process time, not an exact kernel tree accounting. RSS is a concurrent sum, not summed per-process maxima.",
+            "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU sums maximum observed process time per PID/start identity, preserving work when zombie accounting resets; it is not an exact kernel tree accounting. ps CPU precision is platform-dependent (centiseconds on macOS, whole seconds on the pinned Linux image). RSS is a concurrent sum, not summed per-process maxima.",
             "samples": samples,
         }
         if arguments.report:

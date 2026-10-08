@@ -157,7 +157,8 @@
     "residentRegistryExperiment": "Default-off integrated registry with fair bounded reevaluations and complete frame/timer fallback. Current 39-case correctness includes CSS animation, gated font loads/failures and actual suspension/recovery: compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json; performance snapshots remain in compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json.",
     "ordinaryResourceClose": "Ordinary page/context closure waits for its actual Chromium acknowledgement. The bounded operation-cancellation disposal budget no longer causes a slow ordinary close to shut down the entire browser. Unit test withholds close acknowledgement for 750ms; full emulated Linux suite passes.",
     "benchmarkBrowserBinding": "Core reports bind exact browser path, SHA-256, version and distribution; new benchmark admission and independent verification require that identity. compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
-    "runtimeSourceEncoding": "Resident source files remain ASCII, enforced by the Rust build. Unicode runtime values use JavaScript escapes without changing diagnostics or supported application text. A literal U+2026 caused a verified installation regression; compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json"
+    "runtimeSourceEncoding": "Resident source files remain ASCII, enforced by the Rust build. Unicode runtime values use JavaScript escapes without changing diagnostics or supported application text. A literal U+2026 caused a verified installation regression; compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
+    "residentResourceMeasurement": "Fixed-work sustained-load harness covers quiet text, property-only and mutation workloads at 1/32/128 conditions with all six engine orders, actual launch flags, backend/application counts, source/browser/binary binding and self-contained verification logs. Corrected CPU accounting survives macOS zombie resets. compatibility/evidence/resident-load-checkpoint-2026-10-08.json"
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -192,13 +193,15 @@
     "tools/verify-residency.mjs",
     "tools/verify-runtime-installation.mjs",
     "compatibility/m2/lifecycle-target.mjs",
-    "compatibility/m2/fixtures/zero-advance.json"
+    "compatibility/m2/fixtures/zero-advance.json",
+    "tools/test-resident-load.mjs",
+    "tools/verify-resident-load.mjs"
   ],
   "limitations": [
     "No platform runtime publication or automatic driver acquisition; npm consumers provide an explicit compiled driver path",
     "No complete runner adapter, aliases, pnpm or Yarn verification yet",
     "Value coverage is a tested development subset, not full differential conformance with every Playwright evaluation case",
-    "Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547–1.1719) and 1.0515 (1.0090–1.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
+    "Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547\u20131.1719) and 1.0515 (1.0090\u20131.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
     "Emulated Linux functional evidence does not satisfy native Linux performance gates",
     "Navigation/network support is the tested development subset; URLPattern, full header/cookie variants, routing, API requests and service-worker semantics require further conformance",
     "Screenshot artifacts remain unimplemented; persistent Page.keyboard down/up, sequential typing and broader keyboard APIs remain unimplemented",
@@ -207,6 +210,6 @@
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
     "Popup/dialog/console/pageerror coverage remains unfinished",
     "TodoMVC migration verification uses the public demo URL retained by the original fixture; asset hashes are checked before and after but offline application reproduction is not yet available",
-    "Resident assertions remain opt-in. CSS/font and real suspension cases pass for the current slice; sustained mutation/fallback CPU/resource measurements and remaining S12 gates remain open."
+    "Resident assertions remain opt-in. The corrected 162-launch sustained-load matrix fails seven CPU gates and all three 32-condition memory gates against Playwright. Full supported predicates and cleanup pass; repeated predicate cost still requires optimization. compatibility/evidence/resident-load-checkpoint-2026-10-08.json"
   ]
 }

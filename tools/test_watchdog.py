@@ -7,9 +7,18 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from tools.watchdog import record_cpu_observation
 
 
 class WatchdogLifecycleTests(unittest.TestCase):
+    def test_cpu_reset_and_reused_process_identifiers_preserve_both_identities(self):
+        records = {}
+        record_cpu_observation(records, 101, {"started": "first", "cpuSeconds": 1.25})
+        record_cpu_observation(records, 101, {"started": "first", "cpuSeconds": 0})
+        record_cpu_observation(records, 101, {"started": "second", "cpuSeconds": 0.75})
+        self.assertEqual(records[(101, "first")]["cpuSeconds"], 1.25)
+        self.assertEqual(records[(101, "second")]["cpuSeconds"], 0.75)
+
     def test_timeout_kills_owned_descendants_and_preserves_an_unrelated_process(self):
         unrelated = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
         try:
@@ -49,6 +58,34 @@ class WatchdogLifecycleTests(unittest.TestCase):
             ], timeout=10, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(report_path.read_text())
+            self.assertEqual(report["cleanupSignals"], [])
+            self.assertEqual(report["remainingObservedProcesses"], [])
+
+    def test_cpu_records_retain_a_child_while_it_is_an_unreaped_zombie(self):
+        with tempfile.TemporaryDirectory(prefix="flashwright-watchdog-cpu-test-") as directory:
+            report_path = Path(directory) / "resources.json"
+            job = (
+                "import subprocess,sys,time; "
+                "child=subprocess.Popen([sys.executable,'-c',"
+                "'import time; end=time.process_time()+1.2\\nwhile time.process_time()<end: pass\\nprint(\"ready\",flush=True)'],stdout=subprocess.PIPE); "
+                "print(child.pid,flush=True); child.stdout.readline(); time.sleep(0.6); child.wait(); time.sleep(0.3)"
+            )
+            result = subprocess.run([
+                sys.executable, "tools/watchdog.py", "--timeout", "5", "--report", str(report_path),
+                "--", sys.executable, "-c", job,
+            ], timeout=10, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(report_path.read_text())
+            child_process = int(result.stdout.strip())
+            child_records = [record for record in report["processes"] if record["process"] == child_process]
+            self.assertEqual(len(child_records), 1)
+            self.assertGreater(child_records[0]["cpuSeconds"], 0.1)
+            child_samples = [process["cpuSeconds"] for sample in report["samples"]
+                             for process in sample["processes"] if process["process"] == child_process]
+            self.assertEqual(child_records[0]["cpuSeconds"], max(child_samples))
+            self.assertEqual(report["observedProcessCount"], len(report["processes"]))
+            self.assertEqual(report["observedCpuSeconds"], sum(record["cpuSeconds"] for record in report["processes"]))
+            self.assertEqual(report["maximumSampledConcurrentRssBytes"], max(sample["concurrentRssBytes"] for sample in report["samples"]))
             self.assertEqual(report["cleanupSignals"], [])
             self.assertEqual(report["remainingObservedProcesses"], [])
 
