@@ -38,12 +38,12 @@ export function encodeEvaluationArgument(argument: unknown, client: EngineClient
   }
 }
 
-export function receivedHandles(owner: Page, client: EngineClient, pageIdentifier: string, result: unknown): { handle: JSHandle; name: string | undefined }[] {
+export function receivedHandles(owner: Page, client: EngineClient, pageIdentifier: string, result: unknown, previews?: string[]): { handle: JSHandle; name: string | undefined }[] {
   if (!result || typeof result !== 'object' || !('handles' in result) || !Array.isArray(result.handles)) throw failure('ProtocolError', 'handle', 'driver omitted handle initializations');
-  return result.handles.map((initialization: HandleInitialization) => {
+  return result.handles.map((initialization: HandleInitialization, index: number) => {
     if (typeof initialization.identifier !== 'string' || typeof initialization.element !== 'boolean') throw failure('ProtocolError', 'handle', 'driver omitted handle identity or type');
-    const preview = initialization.primitive !== null ? String(codec.decode(initialization.primitive))
-      : initialization.previewUnits ? codec.decode({ kind: 'string', units: initialization.previewUnits }) as string : 'JSHandle@object';
+    const preview = previews?.[index] ?? (initialization.primitive !== null ? String(codec.decode(initialization.primitive))
+      : initialization.previewUnits ? codec.decode({ kind: 'string', units: initialization.previewUnits }) as string : 'JSHandle@object');
     const state: HandleState = { owner, client, pageIdentifier, identifier: initialization.identifier, preview, disposed: false };
     const handle = initialization.element ? new ElementHandle(state) : new JSHandle(state);
     return { handle, name: initialization.nameUnits ? codec.decode({ kind: 'string', units: initialization.nameUnits }) as string : undefined };

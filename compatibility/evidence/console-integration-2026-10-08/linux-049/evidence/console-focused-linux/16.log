@@ -1,0 +1,44 @@
+test_cleared_console_arguments_are_already_disposed_without_retiring_page (test_console.ConsoleLifetimeTests.test_cleared_console_arguments_are_already_disposed_without_retiring_page) ... ok
+test_console_exhaustion_reports_originating_resource_error_and_releases_browser (test_console.ConsoleLifetimeTests.test_console_exhaustion_reports_originating_resource_error_and_releases_browser) ... ok
+test_context_subscription_captures_future_pages_and_page_disable_cannot_override_it (test_console.ConsoleLifetimeTests.test_context_subscription_captures_future_pages_and_page_disable_cannot_override_it) ... ok
+test_discarding_a_message_does_not_release_other_console_references (test_console.ConsoleLifetimeTests.test_discarding_a_message_does_not_release_other_console_references) ... ok
+test_in_transit_discard_does_not_interrupt_a_later_application_task (test_console.ConsoleLifetimeTests.test_in_transit_discard_does_not_interrupt_a_later_application_task) ... ok
+test_subscription_applies_before_the_next_accepted_evaluation (test_console.ConsoleLifetimeTests.test_subscription_applies_before_the_next_accepted_evaluation) ... ok
+test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work (test_console.ConsoleLifetimeTests.test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work) ... FAIL
+
+Immediate failure details:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/case.py", line 58, in testPartExecutor
+    yield
+  File "/usr/lib/python3.12/unittest/case.py", line 634, in run
+    self._callTestMethod(testMethod)
+  File "/usr/lib/python3.12/unittest/case.py", line 589, in _callTestMethod
+    if method() is not None:
+       ^^^^^^^^
+  File "/workspace/compatibility/m1/test_console.py", line 44, in test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work
+    self.request("page.evaluate", self.evaluation("(() => { for (let index = 0; index < 1000; index++) console.log({index}); const end = performance.now() + 900; while (performance.now() < end) {} return 42; })()"))
+  File "/workspace/compatibility/m1/test_driver_protocol.py", line 107, in request
+    self.assertEqual(reply["kind"], "result", reply)
+AssertionError: 'error' != 'result'
+- error
++ result
+ : {'kind': 'error', 'requestId': None, 'error': {'code': 'BrowserDisconnectedError', 'method': 'chromium', 'message': 'Chromium protocol connection closed', 'referenceVersion': '1.60.0', 'browser': 'chromium', 'inputDelivery': 'uncertain'}}
+test_unpublishable_console_event_fails_explicitly_and_releases_owned_resources (test_console.ConsolePublicationTests.test_unpublishable_console_event_fails_explicitly_and_releases_owned_resources) ... ok
+
+======================================================================
+FAIL: test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work (test_console.ConsoleLifetimeTests.test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/compatibility/m1/test_console.py", line 44, in test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work
+    self.request("page.evaluate", self.evaluation("(() => { for (let index = 0; index < 1000; index++) console.log({index}); const end = performance.now() + 900; while (performance.now() < end) {} return 42; })()"))
+  File "/workspace/compatibility/m1/test_driver_protocol.py", line 107, in request
+    self.assertEqual(reply["kind"], "result", reply)
+AssertionError: 'error' != 'result'
+- error
++ result
+ : {'kind': 'error', 'requestId': None, 'error': {'code': 'BrowserDisconnectedError', 'method': 'chromium', 'message': 'Chromium protocol connection closed', 'referenceVersion': '1.60.0', 'browser': 'chromium', 'inputDelivery': 'uncertain'}}
+
+----------------------------------------------------------------------
+Ran 8 tests in 22.176s
+
+FAILED (failures=1)

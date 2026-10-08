@@ -15,6 +15,7 @@ use incoming::{BinaryReplyKind, ReplySender, read_messages};
 const MAXIMUM_CONTROL_BYTES: usize = 8 * 1024 * 1024;
 const MAXIMUM_PENDING: usize = 1024;
 type Reply<Output = Value> = Result<Output, ErrorRecord>;
+type EventHandler = Box<dyn Fn(Event) -> Result<(), ErrorRecord> + Send + Sync>;
 
 #[derive(Clone)]
 pub struct Connection {
@@ -26,6 +27,7 @@ struct ConnectionState {
     pending: Mutex<PendingReplies>,
     outgoing: mpsc::Sender<Vec<OutgoingCommand>>,
     events: broadcast::Sender<Event>,
+    event_handler: Mutex<Option<EventHandler>>,
     received_event_sequence: AtomicU64,
     processed_event_sequence: watch::Sender<u64>,
     pumps: Mutex<Vec<AbortHandle>>,
@@ -125,6 +127,7 @@ impl Connection {
             pending: Mutex::new(PendingReplies::default()),
             outgoing,
             events,
+            event_handler: Mutex::new(None),
             received_event_sequence: AtomicU64::new(0),
             processed_event_sequence: watch::channel(0).0,
             pumps: Mutex::new(Vec::new()),
@@ -148,13 +151,27 @@ impl Connection {
         self.inner.pending.lock().unwrap().closed.clone()
     }
 
-    pub fn acknowledge_event(&self, sequence: u64) {
-        self.inner
-            .processed_event_sequence
-            .send_modify(|processed| *processed = (*processed).max(sequence));
+    /// Apply owned state in wire order, before replies can wake their callers. The
+    /// handler must not block on protocol work or close the connection synchronously.
+    pub fn observe_events(
+        &self,
+        handler: impl Fn(Event) -> Result<(), ErrorRecord> + Send + Sync + 'static,
+    ) -> Result<(), ErrorRecord> {
+        let mut observer = self.inner.event_handler.lock().unwrap();
+        if let Some(error) = self.failure() {
+            return Err(error);
+        }
+        if observer.is_some() {
+            return Err(protocol_error(
+                "browser event owner is already registered".into(),
+            ));
+        }
+        *observer = Some(Box::new(handler));
+        Ok(())
     }
 
-    /// A reply can wake its caller before the event consumer has applied preceding events.
+    /// Wait for an event already being applied on another runtime worker. Event
+    /// handlers run in the reader, so every event preceding a reply is already applied.
     pub async fn synchronize_events(&self) -> Result<(), ErrorRecord> {
         let sequence = self.inner.received_event_sequence.load(Ordering::Acquire);
         let mut processed = self.inner.processed_event_sequence.subscribe();
@@ -418,21 +435,53 @@ fn protocol_error(message: String) -> ErrorRecord {
     ErrorRecord::new(ErrorCode::Protocol, "chromium", message)
 }
 
-fn fail_connection(state: &ConnectionState, error: ErrorRecord) {
-    let mut pending = state.pending.lock().unwrap();
-    if pending.closed.is_some() {
-        return;
+/// Serialize event application with terminal invalidation. The pending-command lock
+/// is never held while invoking owners, which may inspect failure or queue cleanup.
+fn dispatch_event(
+    state: &ConnectionState,
+    method: String,
+    session_identifier: Option<String>,
+    parameters: Option<Box<RawValue>>,
+) -> Result<(), ErrorRecord> {
+    let handler = state.event_handler.lock().unwrap();
+    if method != "Flashwright.disconnected"
+        && let Some(error) = &state.pending.lock().unwrap().closed
+    {
+        return Err(error.clone());
     }
-    pending.closed = Some(error.clone());
-    for (_, reply) in pending.replies.drain() {
+    let sequence = state.received_event_sequence.fetch_add(1, Ordering::AcqRel) + 1;
+    let event = Event {
+        sequence,
+        method,
+        session_identifier,
+        parameters,
+    };
+    // Secondary temporary waiters do not own engine state. Avoid copying opaque
+    // parameters when no such waiter is active.
+    let secondary = (state.events.receiver_count() != 0).then(|| event.clone());
+    if let Some(handler) = handler.as_ref() {
+        handler(event)?;
+    }
+    if let Some(event) = secondary {
+        let _ = state.events.send(event);
+    }
+    state.processed_event_sequence.send_replace(sequence);
+    Ok(())
+}
+
+fn fail_connection(state: &ConnectionState, error: ErrorRecord) {
+    let replies = {
+        let mut pending = state.pending.lock().unwrap();
+        if pending.closed.is_some() {
+            return;
+        }
+        pending.closed = Some(error.clone());
+        std::mem::take(&mut pending.replies)
+    };
+    let _ = dispatch_event(state, "Flashwright.disconnected".to_owned(), None, None);
+    for (_, reply) in replies {
         reply.sender.fail(error.clone());
     }
-    let _ = state.events.send(Event {
-        sequence: state.received_event_sequence.fetch_add(1, Ordering::AcqRel) + 1,
-        method: "Flashwright.disconnected".to_owned(),
-        session_identifier: None,
-        parameters: None,
-    });
     state.processed_event_sequence.send_modify(|_| {});
 }
 

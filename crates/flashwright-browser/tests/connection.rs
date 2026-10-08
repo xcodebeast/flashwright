@@ -1,6 +1,8 @@
 use flashwright_browser::Connection;
-use flashwright_protocol::ErrorCode;
+use flashwright_protocol::{ErrorCode, ErrorRecord};
 use serde_json::{Value, json};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, duplex, split};
 use tokio::time::{Duration, timeout};
 
@@ -94,20 +96,127 @@ async fn interleaved_events_and_out_of_order_replies_preserve_request_identity()
     assert_eq!(first.await.unwrap().unwrap()["method"], "first");
     assert_eq!(second.await.unwrap().unwrap()["method"], "second");
     let event = events.recv().await.unwrap();
-    let synchronization = connection.synchronize_events();
-    tokio::pin!(synchronization);
-    assert!(
-        timeout(Duration::from_millis(10), &mut synchronization)
-            .await
-            .is_err()
-    );
-    connection.acknowledge_event(event.sequence);
-    timeout(Duration::from_secs(1), synchronization)
+    timeout(Duration::from_secs(1), connection.synchronize_events())
         .await
         .unwrap()
         .unwrap();
     assert_eq!(event.method, "Runtime.consoleAPICalled");
     assert_eq!(event.parameters.unwrap().get(), r#"{"text":"\ud800"}"#);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn owned_event_burst_is_lossless_and_applied_before_the_following_reply() {
+    let (host, peer) = duplex(1024 * 1024);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let observed = Arc::new(AtomicU64::new(0));
+    let applied = observed.clone();
+    connection
+        .observe_events(move |event| {
+            if event.method == "Flashwright.disconnected" {
+                return Ok(());
+            }
+            let expected = applied.load(Ordering::Acquire) + 1;
+            assert_eq!(event.sequence, expected);
+            let parameters: Value = serde_json::from_str(event.parameters.unwrap().get()).unwrap();
+            assert_eq!(parameters["index"], expected);
+            if expected.is_multiple_of(128) {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            applied.store(expected, Ordering::Release);
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(
+        connection.observe_events(|_| Ok(())).unwrap_err().code,
+        ErrorCode::Protocol
+    );
+    let mut command = connection
+        .start_command("evaluate", json!({}), None)
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let identifier = read_command(&mut reader).await["id"].as_u64().unwrap();
+    let mut burst = Vec::new();
+    for index in 1..=2048 {
+        burst.extend_from_slice(
+            format!("{{\"method\":\"console\",\"params\":{{\"index\":{index}}}}}\0").as_bytes(),
+        );
+    }
+    burst.extend_from_slice(
+        format!("{{\"id\":{identifier},\"result\":{{\"value\":42}}}}\0").as_bytes(),
+    );
+    writer.write_all(&burst).await.unwrap();
+    assert_eq!(
+        timeout(Duration::from_secs(5), command.response())
+            .await
+            .unwrap()
+            .unwrap()["value"],
+        42
+    );
+    assert_eq!(observed.load(Ordering::Acquire), 2048);
+    connection.synchronize_events().await.unwrap();
+}
+
+#[tokio::test]
+async fn owned_event_failure_invalidates_pending_work_with_its_original_error() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let observed = Arc::new(Mutex::new(Vec::new()));
+    let events = observed.clone();
+    // Weak ownership avoids a callback/connection cycle while exercising failure
+    // inspection and cleanup command registration from a terminal notification.
+    let inspection = Arc::new(connection.clone());
+    let weak = Arc::downgrade(&inspection);
+    connection
+        .observe_events(move |event| {
+            events.lock().unwrap().push(event.method.clone());
+            if event.method == "Flashwright.disconnected" {
+                let connection = weak.upgrade().unwrap();
+                assert_eq!(
+                    connection.failure().unwrap().message.as_ref(),
+                    "owned event exhausted its bound"
+                );
+                assert_eq!(
+                    connection
+                        .start_command("cleanup", json!({}), None)
+                        .err()
+                        .unwrap()
+                        .code,
+                    ErrorCode::ResourceLimit
+                );
+                connection.close();
+                return Ok(());
+            }
+            Err(ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                "event.owner",
+                "owned event exhausted its bound",
+            ))
+        })
+        .unwrap();
+    let mut pending = connection
+        .start_command("evaluate", json!({}), None)
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    read_command(&mut reader).await;
+    writer.write_all(b"{\"method\":\"overflow\",\"params\":{}}\0{\"id\":1,\"result\":{}}\0{\"method\":\"tooLate\"}\0").await.unwrap();
+    let error = timeout(Duration::from_secs(1), pending.response())
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    assert_eq!(error.method.as_ref(), "event.owner");
+    assert_eq!(
+        connection.synchronize_events().await.unwrap_err().message,
+        error.message
+    );
+    assert_eq!(
+        *observed.lock().unwrap(),
+        ["overflow", "Flashwright.disconnected"]
+    );
 }
 
 #[tokio::test]

@@ -1,6 +1,7 @@
 //! Browser object ownership and semantic operations, independent of the Node test runner.
 
 mod assertions;
+mod console;
 mod context_state;
 mod cookies;
 mod evaluation;
@@ -60,6 +61,8 @@ pub const CAPABILITIES: &[&str] = &[
     "handle.dispose",
     "handle.discard",
     "page.event.pageerror",
+    "page.console.subscribe",
+    "context.console.subscribe",
     "page.screenshot",
     "page.goto",
     "page.waitForLoadState",
@@ -158,6 +161,9 @@ impl Engine {
         operation: &Operation,
     ) -> Result<OperationResult, ErrorRecord> {
         operation.check()?;
+        if let Some(result) = self.execute_control(method, &parameters, operation) {
+            return result.map(OperationResult::Value);
+        }
         if method == "page.screenshot" {
             return self
                 .screenshot(parameters, operation)
@@ -200,13 +206,18 @@ impl Engine {
                         published: false,
                     },
                 );
-                self.observe_browser(identifier.clone(), &browser);
                 if let Err(mut error) = operation
-                    .wait(browser.connection.call(
-                        "Target.setDiscoverTargets",
-                        json!({ "discover": true }),
-                        None,
-                    ))
+                    .wait(async {
+                        self.observe_browser(identifier.clone(), &browser)?;
+                        browser
+                            .connection
+                            .call(
+                                "Target.setDiscoverTargets",
+                                json!({ "discover": true }),
+                                None,
+                            )
+                            .await
+                    })
                     .await
                 {
                     error.cleanup = self
@@ -433,6 +444,7 @@ impl Engine {
             operation.wait(browser.connection.call("Page.setLifecycleEventsEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;
             operation.wait(browser.connection.call("Network.enable", json!({}), Some(&session_identifier))).await?;
             operation.wait(browser.connection.call("Runtime.enable", json!({}), Some(&session_identifier))).await?;
+            operation.wait(browser.connection.call("Log.enable", json!({}), Some(&session_identifier))).await?;
             // Match the reference's page focus/visibility policy so fresh frame checks
             // keep running when another page becomes the browser's active tab.
             operation.wait(browser.connection.call("Emulation.setFocusEmulationEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;

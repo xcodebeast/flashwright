@@ -185,6 +185,10 @@ pub async fn write_output<Writer: AsyncWrite + Unpin>(
             .validate_value(parameters)
             .err()
             .map(|error| error.message.to_string()),
+        DriverMessage::Error { error, .. } => limits
+            .validate_error(error)
+            .err()
+            .map(|error| error.message.to_string()),
         _ => None,
     };
     let reason = match rejection {
@@ -192,7 +196,19 @@ pub async fn write_output<Writer: AsyncWrite + Unpin>(
         None => match EncodedFrame::encode(&message, limits.control_frame_bytes) {
             Ok(frame) => {
                 writer.write_frame(&frame).await?;
-                return Ok(OutputDisposition::Continue);
+                return Ok(
+                    if matches!(
+                        message,
+                        DriverMessage::Error {
+                            request_id: None,
+                            ..
+                        }
+                    ) {
+                        OutputDisposition::CloseStream
+                    } else {
+                        OutputDisposition::Continue
+                    },
+                );
             }
             Err(error @ FrameError::TooLarge { .. }) => error.to_string(),
             Err(error) => return Err(error),
@@ -328,6 +344,30 @@ mod tests {
             assert_eq!(error["error"]["code"], "ResourceLimitError");
             assert!(reader.read::<Value>().await.unwrap().is_none());
         }
+    }
+
+    #[tokio::test]
+    async fn originating_global_error_is_written_before_closing_the_stream() {
+        let limits = ResourceLimits::default();
+        let (producer, consumer) = duplex(1024);
+        let mut writer = FrameWriter::new(producer, limits.control_frame_bytes);
+        let message = DriverMessage::Error {
+            request_id: None,
+            error: ErrorRecord::new(ErrorCode::ResourceLimit, "console", "handle limit exceeded"),
+        };
+        assert_eq!(
+            write_output(&mut writer, message.into(), &limits)
+                .await
+                .unwrap(),
+            OutputDisposition::CloseStream
+        );
+        drop(writer);
+        let mut reader = FrameReader::new(consumer, limits.control_frame_bytes);
+        let error = reader.read::<Value>().await.unwrap().unwrap();
+        assert_eq!(error["error"]["code"], "ResourceLimitError");
+        assert_eq!(error["error"]["method"], "console");
+        assert_eq!(error["error"]["message"], "handle limit exceeded");
+        assert!(reader.read::<Value>().await.unwrap().is_none());
     }
 
     #[tokio::test]

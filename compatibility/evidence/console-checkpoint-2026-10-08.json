@@ -1,0 +1,4067 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-08T18:48:13.546212+00:00",
+  "scope": "M2 live page/context console events and owned native argument handles, plus guardian/watchdog cleanup repairs. Functional verification only; no performance or release claim.",
+  "sources": {
+    "Cargo.toml": "866e59f071d90c9a29521c405f8c39c45814a2f2c403b86b1c9b26754c38c07c",
+    "Cargo.lock": "5ee68fc36886c746cd7e56287563aeabb52c005c22b74b1b2c8e0a84b9272d35",
+    "rust-toolchain.toml": "e879701472a698533f43f54989bbf5f3101eb0503472159d32633f3bb8a13fdf",
+    "package.json": "679aa166ca56bec8e94d42822dc9c1853879a383053b7a639b91fbb80cca39aa",
+    "package-lock.json": "4f546300f56cc2b8794df8c8dee7774deeec382f56d08b97d596c9b99ad586a7",
+    "tsconfig.json": "b6076f5341f78e666450aef8c291560c08002c4ef3ff7815d7bd4f864be8abce",
+    "crates/flashwright-browser/Cargo.toml": "03bb413052cd536ba24faa5017a0705bcfe2d4cb558b529c0289e5e16e9a1219",
+    "crates/flashwright-browser/src/chromium-launch-policy.json": "391f562e7e1972bcff4a446af2cb456f81df4bfd97c4132dd8271b934ae25314",
+    "crates/flashwright-browser/src/chromium.rs": "7fa71b704cc688b773f1b8edb20351a86c4e3eae84cfa2dc564b0b16ccb37f5a",
+    "crates/flashwright-browser/src/connection/incoming.rs": "f4847f1006c1ce412f7304be7239a0f90a8f439a991246300b21780992b00dd4",
+    "crates/flashwright-browser/src/connection.rs": "3e377ea29670e1af812f10d9ef6e689461241934bbb6250f8a688138e1ec10f0",
+    "crates/flashwright-browser/src/lib.rs": "a4e3fb69aa03f1f976669cac35d60fee628e32e101006c6e2dc00ae655881389",
+    "crates/flashwright-browser/src/process_group.rs": "ef6a62083f5879d54c3d142e88fd44d69ced3f068bb9c2cc087a5f33191c9235",
+    "crates/flashwright-browser/src/supervision.rs": "d8950e85be721c15b33e3595536d96d865f1eb74bc1afbd2c574415813c33e90",
+    "crates/flashwright-browser/src/values.rs": "4cf3974138c1466ee310040302bff380184ccbf746a11e557753ae63f46cdccd",
+    "crates/flashwright-browser/tests/connection.rs": "3a16055743a9ca726e09bd8120f559f88fdcc7d2810b47270681647319b839ed",
+    "crates/flashwright-driver/Cargo.toml": "1a21edd808d74d12dd1d942b3e18c5aecf7c818d33bd2848ab7faec8d7faf37a",
+    "crates/flashwright-driver/src/attachments.rs": "ad65aec1baeeed93af9e9914d886eddd9e59d3b757f0b89ccfea62e72a858fdd",
+    "crates/flashwright-driver/src/main.rs": "42783a1cb67b2cc3e91564241a33ce8a382346a8a239e3f2ba9548e01d5af2d5",
+    "crates/flashwright-driver/src/output.rs": "1ee99b6fe214dcde4604033793cc5e612bc727e8f1fc7b0d574510d15610101f",
+    "crates/flashwright-driver/src/pipe.rs": "f7424922ca939fd9795f06d927bb911c9b78638ad33515cb6d08c66233fb43d6",
+    "crates/flashwright-engine/Cargo.toml": "139f58e8498ade8714e096d5aa79f656d76b0a0257a6c5d919bcca6f2804248a",
+    "crates/flashwright-engine/build.rs": "14af4e7fb9708c3a9bee695ed8840678200e76a5b82efa6b02491c66d8e46487",
+    "crates/flashwright-engine/src/assertions.rs": "2919edc12cbab3aafa60d645fba783b970b828691833c2030cfa99aa5ba95c7c",
+    "crates/flashwright-engine/src/console.rs": "e2d28c9e1df1f4a038e104372b25141dcdbdccbcb07f2e67842a131b22552993",
+    "crates/flashwright-engine/src/context_state.rs": "2c1cfbb865a3be431cdfffc40d4b0850a75db842c656767452cdfa3cd1f46e70",
+    "crates/flashwright-engine/src/cookies.rs": "96b7a0b0b76b7bc2d873a76d289d050b81f9549b888296fa56bd1a36f93f3d61",
+    "crates/flashwright-engine/src/evaluation.rs": "9e3e578613b10ecd50eef81d2ab6bf00332e65170d8350748345985c8a3488f6",
+    "crates/flashwright-engine/src/events.rs": "c53b2250568932b1be35935ef6bfba7f69fb98ae4d05189abbe3f8fd74c14fca",
+    "crates/flashwright-engine/src/handle_values.rs": "8ba1d0c40cc84907c766104e6b16b28f9653d46cc631189722cd2aee12cd9715",
+    "crates/flashwright-engine/src/handles.rs": "b6d92f53c68237e346b12e4c7243efa3ccaf3054381ca356d5c419e07197fda4",
+    "crates/flashwright-engine/src/input.rs": "79944b02a3976910262bf9b9fa5e39e900a286f780b94db927233505911d4b26",
+    "crates/flashwright-engine/src/keyboard-layout.json": "05a89ed0e43091b0b1f68d74c123ff10a067053aba0855d5b6757b394c45486d",
+    "crates/flashwright-engine/src/keyboard.rs": "e1d4ec35cf07acd98276b75005da9c9d9b681480eb8da5f19cc6bdc497e30d70",
+    "crates/flashwright-engine/src/lib.rs": "329716af59c22a73e19e3fa7bdafdc50765e54fb661646d0fc164f94072ba3ad",
+    "crates/flashwright-engine/src/locators.rs": "15751dada337f9d2c31ebc4846a92b480a2f1f971a5a81b3879f449b46c65b0d",
+    "crates/flashwright-engine/src/navigation.rs": "b638d2c7521764ead859808b51870b177167298e894c5dbc491cd7049b941bf1",
+    "crates/flashwright-engine/src/operation.rs": "537f9437e68dc2f784620604b40126403b064125055dbd6db8a4f6a29996cd3c",
+    "crates/flashwright-engine/src/page_state.rs": "1ec88f09ec91edcaf40c4bf8b3ac915a6e775d04d684b69130bf58c608ef3a7a",
+    "crates/flashwright-engine/src/pointer.rs": "1accea52f5bfdedbaa751bd6a14bce03c11c06213ff5d6b4d123cd1b6cc43b8d",
+    "crates/flashwright-engine/src/publication.rs": "7a04f85a4c7d7936f41ba2ac42714ba1f66744bfa9ae2bd637d86466006c15f6",
+    "crates/flashwright-engine/src/screenshots.rs": "ebd8a114746e77c0d544465a02b5ef00932a04f61516d56f64efb659b58105af",
+    "crates/flashwright-engine/src/storage.rs": "262ccb7bcac344a992af0d61e6ccd99a3274b418d93a278011d5cfa8604408e0",
+    "crates/flashwright-protocol/Cargo.toml": "6d92cfd0cd988ca2bdd8eff835c8a54d15cac92c306de31d29b279a3cbeb6c60",
+    "crates/flashwright-protocol/src/attachment.rs": "ddf2fb321a153545b15f7cf7b42885f756fdea3f60cf4679e5202699a0d6b514",
+    "crates/flashwright-protocol/src/framing.rs": "2fe458924f92e205d91dee27c5499d26ccef894a9dedfd8e3974283a358dcd6e",
+    "crates/flashwright-protocol/src/lib.rs": "4ed1158d673559d70699f2767b4157aa66eb8ffa0c5c64879ed60b951acaecc3",
+    "crates/flashwright-protocol/src/messages.rs": "3704f5fcf26ef013816f5c9ce3d7e1f37d838ec43dd323f7cac57c259d763626",
+    "crates/flashwright-protocol/tests/framing.rs": "19236adabab7adb038e8b5d28dc2c32fcb6b49252ebd871c87284b4feadb0f45",
+    "packages/flashwright/package.json": "87e857fea9d7ee0fdd09c7450a824eaa9bcc7416e449ac204e6f3c13c58273c9",
+    "packages/flashwright/src/assertions.ts": "3296371c6bd8c6e4dabe0254030fbd5a918fd0cbd547442905a289050583d444",
+    "packages/flashwright/src/attachments.ts": "f02be47b25c19f9c0211b307ea3656c2b26c005ad757e826e1b6f911da3ad7fe",
+    "packages/flashwright/src/client.ts": "b73d43b009b7784341dcad475a331d1e67546017d99cd92e69c38d261489da34",
+    "packages/flashwright/src/console.ts": "fcbad7556247092883fa579770117a6167e30e70553e24c23b4ff7090105bb6c",
+    "packages/flashwright/src/errors.ts": "533f8ccdd34f787eb4320c4f57daf20da8fc68c897cb0f9c1dc0a9fcb95aa2d1",
+    "packages/flashwright/src/files.ts": "0ffa180e72620477c24cd6d7831e76cc01427a0b3db5d9d32b8acec02fea987e",
+    "packages/flashwright/src/frame.ts": "b433cff825f4358cd376cf9345d068ac896c96af8bb6cf417df23eb0ed1cb605",
+    "packages/flashwright/src/handles.ts": "225c1f9c2a8cade23b9206551fac6e33d7ccd2252c72dfd4652e76302dfc2606",
+    "packages/flashwright/src/index.ts": "091444f76d611bc3a72776f4d41d44b16fe60ad4cb804b40230288bc61ddcb07",
+    "packages/flashwright/src/keyboard.ts": "e297a60249f871c5d79ee9cab0891ab8bba6e8bb19e859a7f1c940bf712e2bf6",
+    "packages/flashwright/src/locator.ts": "4f4e1b753bce11ce110a6908332024add6362475885a8b3c491a074daec4b431",
+    "packages/flashwright/src/network.ts": "0f390cc1a3d9fd15a1fde309c2b1d9d8f718a77ef30ce4b9fe67fba3b75e8096",
+    "packages/flashwright/src/page-errors.ts": "c32a7dbf6d79e63966a326b8ab2ee41e128ec38505cdadc0a6308dd986157d8e",
+    "packages/flashwright/src/runtime-version.d.cts": "3f88b96aca69fa9ca934fe40127cdb22d30ea70c64a6e46ecee49defeda87e6c",
+    "packages/flashwright/src/screenshots.ts": "85484d21708ca709fcb7d73907250fee71959e951891d0fbf95ccc0ed7edfcbd",
+    "packages/flashwright/src/serialization.d.cts": "bf183da7c3d78fad3dea0bfcf31e3b7ef826cb47d58c66b6736cf45e17241e02",
+    "packages/flashwright/src/storage.ts": "f38f332d41dfc850c69fabed8c0592e680c618c556bdda8d2256d7dbe2ac3f87",
+    "packages/flashwright/src/url-match.cjs": "6dcd59d0d62941418f176b37d04a2c97f51028d218c73538735487fcc9b94189",
+    "packages/flashwright/src/url-match.d.cts": "85bda4231cc9beb6025bd5b419aadadde980efd5c6b9c9b7783731d03bc7b348",
+    "packages/flashwright/src/validation.ts": "2becadd16511e901ad058e1a09617dd43401e40b5c05a295edc67840409bcd0a",
+    "packages/flashwright/src/waits.ts": "110bf92601f1777488abde00e265719f57224fa7dd510795b3990dea97a2c97f",
+    "packages/flashwright/tsconfig.json": "2cd740915dace6a0b8acbdce0cfc8eebee552d8399387a7abfcb62398ff8b208",
+    "packages/flashwright-test/cli.cjs": "d55c3de91f9dc3f47e22a66ce394463b04fa47f4fbd26326c0913f53ea840afc",
+    "packages/flashwright-test/package.json": "07812d328be0e2f5a37569d28cd7ca4fab394c8cc7ab3e22cc8eaf5c927aa8ed",
+    "packages/flashwright-test/src/index.ts": "7511485e3f614dc77b347c243090db3a56f1e3f7761ba9b719ed424ebd63febd",
+    "packages/flashwright-test/src/matchers.ts": "b80041e8a888da0918e1089568d5180ac894c2c57f0ad145f54280f8c67be4c5",
+    "packages/flashwright-test/src/reporter.ts": "69f05aedaaaefa225468ebac21b5ab0b9d76b169b4e6d546b16e39bf034eb021",
+    "packages/flashwright-test/tsconfig.json": "2cd740915dace6a0b8acbdce0cfc8eebee552d8399387a7abfcb62398ff8b208",
+    "packages/resident-runtime/condition-registry.js": "11870bbd8fb4a53461cd57dadd8486825e7e302acf6d3c36e6b49afda5f4c625",
+    "packages/resident-runtime/evaluation.cjs": "047b73f43bd3f202667f4c8db078378721fb7cb02af88fcb0668fc2d0b82140f",
+    "packages/resident-runtime/locator-runtime.js": "7dfe99fd84422edfbb7343dca25a68a3adeca15a832d448e3075d22831288449",
+    "packages/resident-runtime/playwright-injected.js": "7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a",
+    "packages/resident-runtime/screenshot-preparation.js": "174a011585b3c1ba2ef0419151b5d506ad44ce140e90eadbc6bf143bc5c0d447",
+    "packages/resident-runtime/screenshot-runtime.js": "4a4a0df1cf9ac0e0c8e681be04c28ccf571817a81d345d5e5d36e6a37369cb23",
+    "packages/resident-runtime/serialization.cjs": "a064212f50c25d69d5bbfe42adba7bba6df78e3a66239f98dabe3b0ddd9fd42b",
+    "packages/resident-runtime/sources.txt": "310df9eda77c962e5ffc28b1e346c9bac68dc6b4cb0e963510f73044bdd1e621",
+    "packages/resident-runtime/storage.cjs": "e3831116d14015fa714a4841958745f2e7744271d22de738d8a09ba45275f9a7",
+    "tools/bootstrap.py": "0cdc3480230b1f773033265885128041e5a57bae9b6db697d7638980f86ed218",
+    "tools/browser-identity.mjs": "5d2eefedc9f8acb66dd303dca5fd42d2c0f8ab7a8e36a5d539989bbe9e96d3cc",
+    "tools/build-packages.mjs": "acbf074ca98f882d901501185d7c587c705ab30ba0dc194064f637a6568ebdc2",
+    "tools/engine-configuration.mjs": "e7d5d8035118e3d6f545640fb488b441e85505e8306761fb6e5b89ca342f9b93",
+    "tools/extract-chromium-launch-policy.mjs": "af9328f5c827e642ea68202768725175527a88556e7fb8664c89180dcd8c97da",
+    "tools/extract-keyboard-layout.mjs": "7be5eebbf18c69397f60b7786bccbc4e7e58e88944f49d27f86c10cb9099a842",
+    "tools/extract-screenshot-preparation.mjs": "4f313fdf0b949b41a51684cfb2535dca4d1a472865822c7ca53f1b5dd1d2a971",
+    "tools/extract-selector-runtime.mjs": "928c4e37c4e884d954e148c50b73e6372da14a0c02dd04ee2c877928bb8c57b2",
+    "tools/generate-inventory.mjs": "1e3d1812fd45f3f72c4db692ae5caf683486cee9b6b667de6592adb6d399f079",
+    "tools/linux-baseline.sh": "5c328c2fefc74dd286c1e6605a8f655f5e73e0d7710bf8cd14493de8f79695eb",
+    "tools/linux-core.sh": "365acf8ae639e2561804e67ae2da18eaf030b1704ee9ea0063c866c125bf4aa9",
+    "tools/record-console-provenance.mjs": "a8f177ba8a0255a7025fc5eee5f5730d08cc1dbb0d8852edde9524ca7189763c",
+    "tools/record-handle-provenance.mjs": "0de79ad68f2acf80b9653b0531a538d5f8bb5936dfb506d268228108d5ed4c2b",
+    "tools/record-page-error-provenance.mjs": "cd8e8732d70fcb8f2a6b085c0026f80f107cf587e03fb8d613e80a503748bf27",
+    "tools/resident-load-evidence.mjs": "9d3f0e3e0dd370b4f306064d5601d010746cf4619aba4f3cf98a3c15b6b7c5f8",
+    "tools/run-assertion-tests.mjs": "8cba4ac6b05fdfe94325a6053f143d82687e34ac932d1c9d74f3a9f112839dd7",
+    "tools/run-condition-tests.mjs": "559e2c96c5a77510d28bc94ba8510215ed11731402b00fcc1cf088df14f4a389",
+    "tools/run-console-tests.mjs": "48c39087fca928f0900897e772e17d1693149c30bb0241aea7f3d5cc6ae29230",
+    "tools/run-diagnostic-tests.mjs": "c10f5e12a564d31a02ebae309b1e37e3e2690bb326de8a3577b5c2e26c8d5534",
+    "tools/run-handle-tests.mjs": "239f1aff3d1b7e6271fdfab37ad94a53a11ef36c0a086eaa51fe712e35364b0d",
+    "tools/run-keyboard-tests.mjs": "c6c4a7ee17992747080e6a136a1880dd909d86c1ff640d5b1a6e9f2a4e81c949",
+    "tools/run-library-smoke.mjs": "2eb09a22de1747e3f10d2a66977e77150163de67b59624abbe444696fc5e1735",
+    "tools/run-lifecycle-tests.mjs": "bdf7759df5960700a9ab33a9bb590494023f5bee8967ae45884c64164f1d9015",
+    "tools/run-locator-tests.mjs": "86f5e5d6f8ba734efc77971327667693117e183688929ecc4e63b1cd7d4c412b",
+    "tools/run-native-runner-tests.mjs": "5740eefad59e23fe12de95ebfc60b19ee5ed88e14c73c24d01f3b0afe4cf2fc8",
+    "tools/run-navigation-tests.mjs": "01d00b52ca91a774aeb7a2d862b38a4d8de663ff4663b5a2b827863ad6ebed77",
+    "tools/run-pointer-tests.mjs": "c2f1a26617a30f8b8774f9a744ed7bec7136be9c530c87f6021f1f4a4fb9bcb1",
+    "tools/run-python-tests.py": "10dfb82318a45c470f486002289f436f59de8390c6cad3887b345706352e7784",
+    "tools/run-runner-boundary.mjs": "1c3811b8cb2b541fe571ead67d5687b253c2be44d20d167fedd08c7703badc65",
+    "tools/run-screenshot-tests.mjs": "e3b10771a4715352a350f0ad15c4c84aa7600a5e3c743f534e25726367157732",
+    "tools/run-storage-tests.mjs": "d69770956b45d65a30fdcdfa19ccdfc7f44c5c2985e1e1568d645cfe08757559",
+    "tools/source-manifest.mjs": "9c3137af8142ebcc805732c90a447cb690d5820d9be40254f38bd576429d953f",
+    "tools/test-attachments.mjs": "d5f4bc583159786c779261b2d372cefae0b62311405143f2eb6c77a67f5a6fb4",
+    "tools/test-benchmark-contract.mjs": "ff4540f67ac769fe661679ee8e0137fcbfdcc3be25a3ac9b3558b2023add59a5",
+    "tools/test-harness.mjs": "f28b58237f55ab940ba63777381c0bf961660bc1acc792be8524ef7e371b223e",
+    "tools/test-packed-migration.mjs": "78f0123082c4f0f5af10edcf4146f6bab8860cdb540ff5aff4d93625a04bfec7",
+    "tools/test-packed-package.mjs": "0163af5e1c7d19b3764e11d21ce4b073f66d87403aae30191fae7cb241b69e0e",
+    "tools/test-packed-runner.mjs": "1beb182d78595402d453f479ab16fa3391acefe6d08b6aefdd7d9e0b38e53e57",
+    "tools/test-protocol-profile.mjs": "3082d12b9a1019c25125eb57b0e7cb04645f5c028f0e715d9d969665c25247a4",
+    "tools/test-resident-load.mjs": "c7dcc85b1dea2e32d98aece9757eb07f6e06a3d56ca339e0174ff16399b93610",
+    "tools/test_protocol_proxy.py": "8e06d8f567aff23f480397ac6777e80c631e521519dfb38a70071f0ed2cc596c",
+    "tools/test_python_runner.py": "2fff5d722b28ae2c92a884ca779b693b23963352462fe54a03705811de1aceb9",
+    "tools/test_watchdog.py": "8353d9d43125b6e6dd3657b7f0ba66e1715633ffdbb220553119f93e9882201c",
+    "tools/verify-attribution.mjs": "ab7fc16d454c3cc91027634d392e52632cb278aa73c26b1724e40032898f6530",
+    "tools/verify-baseline.mjs": "48ab556fe6539c77f509fa44d1dcc6ecaad9768330b049eb5f84efd2a0a57b36",
+    "tools/verify-core.mjs": "63ab41657a2835d580f622f31a3f74144a891fe9732c656b9fd2b83ccd5978aa",
+    "tools/verify-paired.mjs": "15c8b81261c37bbe4360136f31f4f606d0f9b720415d8ea22bf799ff1c9ba553",
+    "tools/verify-residency.mjs": "e851796e72c6333f6af5aa494877d5ffa7b6db541f55e4c837b6df4341a5c850",
+    "tools/verify-resident-load.mjs": "42ae8e8f21161208c5d13a860dd6c7b75241c4cdff6539d46296c75c4eb620d2",
+    "tools/verify-runner-boundary.mjs": "6a2d84cf4867e5a5ea3eaabb3206242ec7a6b2d94db5324de06c5d987a059553",
+    "tools/verify-runtime-installation.mjs": "1878bdbafa784046316ded5d1638ef4ef13a9c280fde6282e7f71d9e654227b0",
+    "tools/watchdog.py": "250e38bc00f24b02dcbc378103a20da5aee539da887fa591b812feb7687ddeeb",
+    "compatibility/m1/attachment-driver.mjs": "146b0ce1ca7ddee3c54f0ea22aebdc6a3803237c22e50aacc2719df1d4cc9097",
+    "compatibility/m1/binary_attachments.py": "220cd82294dac2dc8f3ca6e02c62e5540d4a3eb6a440790e9e9193922dd73d4f",
+    "compatibility/m1/client-deadline.mjs": "a097a920a90ceef139f73da5fe920b3aa32df84a8b7839e629b9c309d4eb5fbb",
+    "compatibility/m1/evaluation-context.mjs": "d25f0fdd9e441342aebf00c02997784a2e5dd65c31cb5e60b5a32c317c3d65a2",
+    "compatibility/m1/library-smoke.mjs": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+    "compatibility/m1/lifecycle-worker.mjs": "47005a7b1a141f4315bdd7f2e12d0b0567a20f71a6cc5d27036833046567316b",
+    "compatibility/m1/output_limits.py": "f2629538d21c992f7aa133a1133fa7ab93dd321d809b931d8277a4fe185b23d1",
+    "compatibility/m1/public-lifecycle-worker.mjs": "6fd6e13b7e2b73feffbcb67617a8867f2ce9a777acacde22fb09d2312370e370",
+    "compatibility/m1/reply-race-driver.mjs": "e84e8e9590c3b407c8b3579db873281aa89143bb52fdce87a154f97f03bf81bd",
+    "compatibility/m1/test_console.py": "8f348820e2258f5f435d3f0eafe55e3455e738faf8407b2f987b81d56d3f8ef9",
+    "compatibility/m1/test_driver_protocol.py": "2d8f27cf63942760487d967c150340c0a6400e7e398f5f7a6bd877474e0e7929",
+    "compatibility/m1/test_handles.py": "ac3bd604bf6499077055e61322000a238ae7eede3a49b7d873f55bff56dc69b8",
+    "compatibility/m1/test_lifecycle.py": "f027428893869b9f5500c854e33e37f8659964bbe4f74a3a1f7c21cef2e8dda1",
+    "compatibility/m1/test_public_lifecycle.py": "d3254bf842221c2a9591916f22aa0d782a075709e2b5fc3163ccff40abdfc138",
+    "compatibility/m1/watchdog_lifecycle.py": "590e50dc4648f036f202790b40d93fbb1f2a103b27c2acdd39cd0c04004bce36",
+    "compatibility/m2/assertions.mjs": "4b415c3a33a879e9981d1f80fcd2b5a84d04068f82bcac9597f7f76cd20a9dd8",
+    "compatibility/m2/condition-fallback-cadence.mjs": "e1a66697a41ce2e454d0ad0444012ce2e03127d7f89109baf0e110ed5746d07d",
+    "compatibility/m2/condition-query-batches.mjs": "6eba40c57cfa2b67f7e65997eebc760d8df8d72d355669dd299b84ec560926ab",
+    "compatibility/m2/condition-registry.mjs": "994fbde8980172bc96fd3ea5b3b390cf243d7dc5f27ed4f3d35cd54444bb393d",
+    "compatibility/m2/console.mjs": "dab936a16951c2de5d4ff1d6b139070d112ba538b5f23b487f4dd8799c31b83e",
+    "compatibility/m2/diagnostics.mjs": "0baf3a59f9ba575f5de2cb9fbb0427efe1442cf4355ea8ceb397be8489017f9e",
+    "compatibility/m2/fixtures/generate-condition-font.py": "b584bf6f58fbc6c33f9dd70c4ec4af34e34d54f174bba73224b262a3bbdac4de",
+    "compatibility/m2/fixtures/zero-advance.json": "faf2e9ca4f0ebd7a5afd38aec8cd0843409ec3c496e11615df5fd9b151cc67bb",
+    "compatibility/m2/fixtures/zero-advance.ttf": "cf48078492259c9f9cfc3feeb7d7302ea46057f035ce22a8073d7c7dfa2de222",
+    "compatibility/m2/handles.mjs": "5065a5a24e2143fe9dcb762a3d55b0207b3b95acad06132d35c509dbe06e6c85",
+    "compatibility/m2/keyboard.mjs": "546c4b0889b141d3d4023ebbd726bcf008413a229198c7acbf1c70345e39f869",
+    "compatibility/m2/lifecycle-target.mjs": "fe9d754f732ab4820aff2a3cd8e9ff94700ce450cf1640d8fa8c24d7dce885d9",
+    "compatibility/m2/locators.mjs": "dcb4260a79b14026f1aea19fea4f7ac9580c0b312ccf7fe8af0e49a124c35db3",
+    "compatibility/m2/navigation.mjs": "171ccae56ca8676e121e8a76aa6f66a40b34ad711565a7cfb859f8500aba5181",
+    "compatibility/m2/pointer.mjs": "cafbe2f7db9dffd69fbacba99ce5297253789d9dd86c0a247801a77672a4d5b5",
+    "compatibility/m2/runner/fixtures.ts": "9f5ebeb74d9d82997aa25974d792cb60e14af10f4afb7a94978ec269aaa3ceba",
+    "compatibility/m2/runner/playwright.config.ts": "a8acd8849a8fb94d02d5df6e710250d306bd92f6523efdfb8f53fd49f2d36c38",
+    "compatibility/m2/runner/runner.spec.ts": "0783cbd3719dcc8d709f92639023aae00598f0b9f0eb1de800354f623f234f6c",
+    "compatibility/m2/runner/unsupported-context.spec.ts": "8e805412f1d0856499deb3f689f81bb58967df0cff7fd0d659d7c3dbe07249a7",
+    "compatibility/m2/runner/unsupported-trace.spec.ts": "3c0250701c5034ef73abba112f88246cc6a64d44e4ea99410a47106ca888f0b2",
+    "compatibility/m2/screenshots.mjs": "d96962b09b0eace1956f3dca72a5177109c9bf0e5fb39e94b34e59fcdce8a7c9",
+    "compatibility/m2/storage.mjs": "bb5ae2171cdf70c858ad5e11454fff4da49a8193070327e7b92f522debae13e6",
+    "compatibility/migration-projects/provenance.json": "edadf2184a10da2ac47e9bbc019d947a3a2ca3dcf845177d6e624ce078a3c1df",
+    "compatibility/migration-projects/svgomg/tests/example.spec.ts": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+    "compatibility/migration-projects/todomvc/tests/adding-todos/should-add-multiple-todos.spec.ts": "07b7218ecca9e1ce767b1f5edc01f546e6f2e694732e56c2c9f7575bf1845829",
+    "compatibility/migration-projects/todomvc/tests/adding-todos/should-add-single-todo.spec.ts": "2cca72221c1827502bccb8901c879b209cfd617e058d8ea8efb027da7e2fd124",
+    "compatibility/migration-projects/todomvc/tests/completing-todos/should-complete-single-todo.spec.ts": "92e501321a3569623a70bfdd7b54ded59eefeab4fe7a93c3a2f0c1d2f691b86e",
+    "compatibility/migration-projects/todomvc/tests/fixtures.ts": "10d5cb93faf3d516432a975e0df3b95d670b100d46e6322228115d2a315021f6",
+    "compatibility/migration-projects/tsconfig.json": "0f98fba6acae2cbfb214b7f2eae15056b93862c0006ce39b03612a40ce001651",
+    "benchmarks/attribution.mjs": "24dd76632a3d902647551068fbc559d280cfa98765b0e06318b1b3b7c9161710",
+    "benchmarks/configurations/baseline.json": "6cd5b1d765be047c2d61c19cf022b966e5af3fde093eafc25ff47c506cbfdfe2",
+    "benchmarks/configurations/resident-load.json": "f1da1d3260e16d7e545fa63e25084147f4a525c61d13f379a93eb563daeaf517",
+    "benchmarks/execute-resident-load.mjs": "5ce19de5c93616f03e8c604bcc0c4caedb29eefe16103f22a41b2b4cde863f64",
+    "benchmarks/execute-sample.mjs": "4387b392c133f9d26657603f989d9e94b5050271abb9d4f94073d2ad7fff3fbd",
+    "benchmarks/fixture-server.mjs": "4a4e613a78b0f57dc8c56def8c7d88f39d202f8f2582cb0427a710b2dc2a35fc",
+    "benchmarks/paired-contract.mjs": "c27a505ad488e7d211e39478f2246e26c2703549eeb59a03399ed7627405a360",
+    "benchmarks/paired.mjs": "afe87c47f022c5810496f2de40efc3a9501b02e76a16eb8e7d771bfb3b4b5c63",
+    "benchmarks/profile-clock.mjs": "a7510f2fc05240c682ba622dba3219861b997e716226b7328fcc83e0112b897f",
+    "benchmarks/protocol-profile.mjs": "b82b56f610fe2e8d105807669551fad77e52aac04931837dc318dccacb784881",
+    "benchmarks/protocol-proxy.py": "c2d8ce1fd1187615c0d0d9d6f6ef61f27cc9dde7cd63494bca9a743108c5bce1",
+    "benchmarks/residency.mjs": "cfb773d6eed1011c81611d90231d66a04ef7ceaab150d2ff3d4627029e071f92",
+    "benchmarks/resident-load-analysis.mjs": "a7a13e0c187d04cd1b00f177f6bfbda4fcde61b874b6cd98b1b41a9161985247",
+    "benchmarks/resident-load-contract.mjs": "ff29e27c2b9de3aacc97b47b63665eca70835e247356799d9c0b16ac831e0efe",
+    "benchmarks/resident-load-fixture.mjs": "b71b83ebdfc96552ed01cee99bc6426f67830f41143e31e05e95454de66380d4",
+    "benchmarks/resident-load-sample.mjs": "0236311f9252b72b90bd17531cbca4b94a052caa30857417c79297bb923e91fd",
+    "benchmarks/resident-load.mjs": "3e52fdad8d9025da5540a122fbbb90dcc69329d481243b64de73c2166764697a",
+    "benchmarks/run.mjs": "d84f87d38d6edd8ac2f1b62297bcdf65417f513341210a61b9496fc94821fb4d",
+    "benchmarks/runtime-installation.mjs": "838a40246bedec33b3730d9d2fc48999b5da5a934f2b57e5a31b278281ba8e90",
+    "benchmarks/sample.mjs": "5f727eb00234e2501b84c0757441a5e5c51f13e506894ffd4d0d5760027ef838",
+    "benchmarks/statistics.mjs": "7f700929131747a4e77fc186b1b200b90824f7e2bc3c9807c0fa728b474c952c",
+    "benchmarks/workloads/index.mjs": "0b0f90de82f3205c2561204f4286a6736792aab7bb7521bb49de685c907af619"
+  },
+  "previousCheckpoint": {
+    "path": "compatibility/evidence/handles-checkpoint-2026-10-08.json",
+    "sha256": "d81e249340ada18d5707a125e70cf2e286646160bd74c3a1b49fc7ad40a799c3"
+  },
+  "provenance": {
+    "path": "compatibility/upstream/console-provenance.json",
+    "sha256": "93763ea0096f974f6524651a3b926d47a92386d8b5e10fb509e6fa8e08c317c6"
+  },
+  "contract": {
+    "requiredCapabilities": [
+      "page.console.subscribe",
+      "context.console.subscribe"
+    ],
+    "delivery": "Apply subscription controls in driver acceptance order. All EventEmitter registration/removal forms update capture; page listeners run before context listeners with the same message and argument objects. Evaluation replies wait for preceding browser events to be processed, without an extra browser command. Context subscriptions include future pages and main-world same-process child frames.",
+    "arguments": "Retain the original execution context and remote reference without installing an evaluation helper during capture. Console references use individual releases rather than Chromium's shared console group. Property and evaluation results use separate private groups. Chromium console.clear invalidates its own object arguments; later disposal recognizes already-released references and preserves the page and unrelated private handles.",
+    "diagnostics": "Pinned type, preview/text, exact UTF-16, first stack location and aliases, timestamp, page identity and null worker for this supported scope. Log.entryAdded supplies browser log entries with no argument handles; worker logs are excluded.",
+    "bounds": "At most 4096 retained/pending public handles per page. Unobserved or discarded in-flight argument references enter a separate bounded 4096-ID queue, released in batches of 64. This background queue has no hidden application timeout. Unrepresentable events and exhausted capacity deliver a bounded originating global error before the stream closes and owned resources are released.",
+    "intentionalDifference": "SPECS S4.l: preserve BigInt argument values and resulting console text where pinned Playwright 1.60.0 converts them to undefined. Retained separately from equal-result conformance.",
+    "cleanupRepair": "The watchdog gives newly promoted orphan owners a fresh grace interval within its unchanged total cleanup bound. Guardian diagnostic writes tolerate a closed stderr pipe instead of panicking before browser/profile cleanup."
+  },
+  "verification": {
+    "nativeCore": {
+      "path": "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T18-38-57.456Z/report.json",
+      "sha256": "3324bbc5e63d50fefcc6353666a0e717a3de0d8eff2338ad15de02091baf7611",
+      "groups": 35,
+      "rustTests": 65,
+      "lifecycleCases": 82,
+      "driverSha256": "435c4c5c881923c4cf243964d1b68789f47d29eed247242e8555d86636e0a64b"
+    },
+    "node22": {
+      "path": "compatibility/evidence/console-integration-2026-10-08/node22/report.json",
+      "sha256": "b137e89e4be2708dea7fe052862ea8d5a64bc6c6d490a8823e9ba969fdcc88ca",
+      "groups": 16,
+      "consoleLifecycleCases": 8,
+      "handleLifecycleCases": 7,
+      "guardianLifecycleCases": 7,
+      "watchdogBrowserCases": 6
+    },
+    "linuxFocused": {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/console-focused-linux/report.json",
+      "sha256": "c908677810e3ae1bf996c0b428056b621652773a59704901ab70d7d3ad38419b",
+      "groups": 19,
+      "rustTests": 65,
+      "consoleLifecycleCases": 8,
+      "handleLifecycleCases": 7,
+      "guardianLifecycleCases": 7,
+      "watchdogBrowserCases": 6,
+      "driverSha256": "6151d35167ca5d3d3f140b8c9613aae0663558e3f990d020e6822bcc38c1f7b6",
+      "environmentClass": "local-amd64-emulation-functional-only",
+      "containerImage": "sha256:928479a7100c77d60d26880ac6aa181e69e231abdbe7892054cec83ad604c766"
+    },
+    "linuxBurstRepetitions": {
+      "cases": 12,
+      "log": {
+        "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-054/run.log",
+        "sha256": "9e591da1ab99fcfa01c7ebe3cf63f3f30283b655fccfb2fcec5766f18dbc67f5"
+      },
+      "sourceReport": {
+        "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-054/source-report.json",
+        "sha256": "c908677810e3ae1bf996c0b428056b621652773a59704901ab70d7d3ad38419b"
+      },
+      "cleanupAudit": {
+        "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-054/container-audit.json",
+        "sha256": "2c2dc4671a0d9e8622a0286bffecf4c296b7f79c1c2588746f8b2c90498d795f"
+      }
+    },
+    "consoleComparisons": [
+      {
+        "path": "compatibility/evidence/console-darwin-arm64-22.22.0-2026-10-08T18-46-07.306Z/report.json",
+        "sha256": "a8d335191c3e240ed406e5d3cf03a02fe5ca700e9225495905745076d3c91e4e",
+        "node": "v22.22.0",
+        "browser": {
+          "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+          "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+          "version": "148.0.7778.96",
+          "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+          "distribution": "chromium-headless-shell"
+        },
+        "sharedGroups": 16,
+        "referenceDifference": {
+          "reference": {
+            "text": "undefined",
+            "preview": "undefined",
+            "valueType": "undefined",
+            "valueText": "undefined",
+            "argument": {
+              "type": "undefined",
+              "text": "undefined"
+            }
+          },
+          "flashwright": {
+            "text": "12345678901234567890",
+            "preview": "12345678901234567890",
+            "valueType": "bigint",
+            "valueText": "12345678901234567890",
+            "argument": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            }
+          }
+        }
+      },
+      {
+        "path": "compatibility/evidence/console-darwin-arm64-24.15.0-2026-10-08T18-45-53.267Z/report.json",
+        "sha256": "8ed6b2cecf6c5f5fd30cb0d997f2a3edf0c150976899834593f6edd0055d0197",
+        "node": "v24.15.0",
+        "browser": {
+          "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+          "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+          "version": "148.0.7778.96",
+          "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+          "distribution": "full-chromium"
+        },
+        "sharedGroups": 16,
+        "referenceDifference": {
+          "reference": {
+            "text": "undefined",
+            "preview": "undefined",
+            "valueType": "undefined",
+            "valueText": "undefined",
+            "argument": {
+              "type": "undefined",
+              "text": "undefined"
+            }
+          },
+          "flashwright": {
+            "text": "12345678901234567890",
+            "preview": "12345678901234567890",
+            "valueType": "bigint",
+            "valueText": "12345678901234567890",
+            "argument": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            }
+          }
+        }
+      },
+      {
+        "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/console-linux-x64-24.15.0-2026-10-08T18-32-32.817Z/report.json",
+        "sha256": "c2cc3bbd028f70eaa43c52ab74e50ab3a6d23c317413df78abc963901969a645",
+        "node": "v24.15.0",
+        "browser": {
+          "executablePath": "/ms-playwright/chromium-1223/chrome-linux64/chrome",
+          "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+          "version": "148.0.7778.96",
+          "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+          "distribution": "full-chromium"
+        },
+        "sharedGroups": 16,
+        "referenceDifference": {
+          "reference": {
+            "text": "undefined",
+            "preview": "undefined",
+            "valueType": "undefined",
+            "valueText": "undefined",
+            "argument": {
+              "type": "undefined",
+              "text": "undefined"
+            }
+          },
+          "flashwright": {
+            "text": "12345678901234567890",
+            "preview": "12345678901234567890",
+            "valueType": "bigint",
+            "valueText": "12345678901234567890",
+            "argument": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            }
+          }
+        }
+      }
+    ],
+    "handleRegressions": [
+      {
+        "path": "compatibility/evidence/handles-darwin-arm64-22.22.0-2026-10-08T18-46-05.798Z/report.json",
+        "sha256": "0d994082a038bf84afc0bca9c3886cd834065aea79f550bc9764793377a0c5d0",
+        "node": "v22.22.0",
+        "browser": {
+          "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+          "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+          "version": "148.0.7778.96",
+          "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+          "distribution": "chromium-headless-shell"
+        },
+        "sharedGroups": 9,
+        "referenceDifference": {
+          "reference": {
+            "bigintPreview": "undefined",
+            "bigintJsonType": "undefined",
+            "bigintJsonText": "undefined",
+            "bigintArgument": {
+              "type": "undefined",
+              "text": "undefined"
+            },
+            "bigintReceiver": {
+              "type": "undefined",
+              "text": "undefined"
+            }
+          },
+          "flashwright": {
+            "bigintPreview": "12345678901234567890",
+            "bigintJsonType": "bigint",
+            "bigintJsonText": "12345678901234567890",
+            "bigintArgument": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            },
+            "bigintReceiver": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            }
+          }
+        }
+      },
+      {
+        "path": "compatibility/evidence/handles-darwin-arm64-24.15.0-2026-10-08T18-45-51.052Z/report.json",
+        "sha256": "926dfc2599c74046eaa12ec77794fc44b556a582cec90a82ec7b8dbaff9a1d1f",
+        "node": "v24.15.0",
+        "browser": {
+          "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+          "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+          "version": "148.0.7778.96",
+          "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+          "distribution": "full-chromium"
+        },
+        "sharedGroups": 9,
+        "referenceDifference": {
+          "reference": {
+            "bigintPreview": "undefined",
+            "bigintJsonType": "undefined",
+            "bigintJsonText": "undefined",
+            "bigintArgument": {
+              "type": "undefined",
+              "text": "undefined"
+            },
+            "bigintReceiver": {
+              "type": "undefined",
+              "text": "undefined"
+            }
+          },
+          "flashwright": {
+            "bigintPreview": "12345678901234567890",
+            "bigintJsonType": "bigint",
+            "bigintJsonText": "12345678901234567890",
+            "bigintArgument": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            },
+            "bigintReceiver": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            }
+          }
+        }
+      },
+      {
+        "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/handles-linux-x64-24.15.0-2026-10-08T18-32-19.692Z/report.json",
+        "sha256": "5fd0e994be1e2e7c641266346350be6ceb7353c5edb1b90d8f54ac8b2b250ee2",
+        "node": "v24.15.0",
+        "browser": {
+          "executablePath": "/ms-playwright/chromium-1223/chrome-linux64/chrome",
+          "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+          "version": "148.0.7778.96",
+          "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+          "distribution": "full-chromium"
+        },
+        "sharedGroups": 9,
+        "referenceDifference": {
+          "reference": {
+            "bigintPreview": "undefined",
+            "bigintJsonType": "undefined",
+            "bigintJsonText": "undefined",
+            "bigintArgument": {
+              "type": "undefined",
+              "text": "undefined"
+            },
+            "bigintReceiver": {
+              "type": "undefined",
+              "text": "undefined"
+            }
+          },
+          "flashwright": {
+            "bigintPreview": "12345678901234567890",
+            "bigintJsonType": "bigint",
+            "bigintJsonText": "12345678901234567890",
+            "bigintArgument": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            },
+            "bigintReceiver": {
+              "type": "bigint",
+              "text": "12345678901234567890"
+            }
+          }
+        }
+      }
+    ],
+    "resourcesIndependentlyRecomputed": 187
+  },
+  "developmentAttempts": [
+    "The first differential expected +0 instead of the actual preserved -0; the fixture was corrected. Two reference runs then timed out because removing every BrowserContext listener removes its private close resolver. The all-listener test is isolated in a disposable context closed by browser teardown; no reference close hang is counted as a successful case.",
+    "Native core attempt 001 failed two browser watchdog cases. Focused inspection found a promoted-owner grace race; a deterministic regression fails with the previous watchdog and passes with the fix. Ownership diagnostics additionally exposed guardian panic on a closed stderr pipe. The failed debug probe left four profiles, and the original failed core left two. All six were matched to recorded test windows, checked for active use and moved reversibly to ignored recovery storage. They are not claimed as successful automatic cleanup. The final frozen-source runs pass cleanup without those interventions.",
+    "A console.clear probe exposed disposal of an already-released CDP object retiring the page. Exact missing-reference errors now count as completed release; both native and shared differential tests preserve page usability and unrelated private handles.",
+    "Linux attempt 049 and exact-binary probes 050/052 failed the unobserved 1000-event long-task case, while probe 051 passed. Probe 052 retained the driver synchronization-failure shutdown reason. The primary event path was replaced with synchronous owner processing, without increasing the queue or reducing application work. The final frozen Linux matrix is checked separately from these retained failures.",
+    "Build and Clippy attempts include corrected TypeScript EventEmitter override typing and Rust collapsible-if lint failures. Earlier successful smoke/differential runs predate the final source and do not substitute for the frozen matrix."
+  ],
+  "environmentRecovery": "The local Linux image tag was absent. The pinned recipe was rebuilt using cached layers. When its tag later disappeared again, the recorded image digest remained present and was used directly for the owned verification container. This is emulated functional evidence only.",
+  "eventBurstRepair": "The Linux 1000-event unobserved-console case intermittently overflowed the old 512-event primary broadcast queue. Applying engine metadata synchronously in the CDP read path removes that lossy primary handoff and preserves preceding-event/reply order. Secondary bounded storage interception waiters remain explicit-failure subscribers. Two transport regressions cover a 2048-event burst and originating event failure/closure without pending-lock reentrancy.",
+  "cleanupAudit": {
+    "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-audit.json",
+    "sha256": "61e747756924c9f29783a5c0b1acbb40709b0c61d3c1d659b2c12dcf66e7900a"
+  },
+  "failedProfileRecovery": {
+    "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-001/recovered-profiles.json",
+    "sha256": "fe40d817cafadc8162de767d12c2e17caa1a48d281f1b38be39354236dc4e94e"
+  },
+  "resourceReports": [
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-37-59Z-22cad46e.json",
+      "sha256": "5e7b1943687d0a409dba18ce05f75b3b9af4adfcbf5ee130bff5b60588ab8cbd",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.060288499982561916
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-39-43Z-6aeec758.json",
+      "sha256": "94edda1e316d820d093a88e05f78a027a487aad89f7f53f2d540372d58dd6e10",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04629299999214709
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-40-02Z-f598f48b.json",
+      "sha256": "a17ff06cbb566268603ece61c0be6328b451c8c9e42905ab20b42de33062057b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.13104599999496713
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-40-18Z-4770e2f0.json",
+      "sha256": "e73102260a2c3c9dad58e2b97416db1cf9c8f58a071d92b3321d7a1204664f31",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.10754549998091534
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-41-01Z-38113525.json",
+      "sha256": "ca265daffb6c45fa7b9ad98ac84047c070e216608434a47af30f9bdb21679c58",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.052246291015762836
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-41-16Z-7a92b69d.json",
+      "sha256": "99f4fe4de018e0ec184452a934c48158315aaf308e3ea741b87888dbb8fb7dae",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.07616900000721216
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-41-38Z-e4966132.json",
+      "sha256": "107cd50d690894933f2619afc42312d608b06f7fa8def1b0f2f708bb59a59e05",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04737920896150172
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-42-13Z-ee7f5e16.json",
+      "sha256": "38edb73a48a270dc52f96945cc888372006ffe7edcb1e8f80527228c5e6d24ac",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04307125002378598
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-42-39Z-09b71366.json",
+      "sha256": "eacb38b5ec421dc548984aa2d9ab35553d2f457fead805e1bf0544c3d2bd721e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.08919458300806582
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-43-37Z-37dca436.json",
+      "sha256": "e2496bd45d1ef5116e0bf1b3f96fe1640a2e16d6e02cb44bb814be7baf5f6665",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03727783297654241
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-56-46Z-68e98267.json",
+      "sha256": "b39d4adf19d66a18b5a003569d573aba05cef860fd14f6521a3b45c5f91eae99",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.038490334001835436
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-57-39Z-67a6fec8.json",
+      "sha256": "2bf540b9637d514d3ea9f54b886833d1bf3a91d07942ef58072dfb419eb1322c",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03700970800127834
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-57-45Z-2bb6f9b5.json",
+      "sha256": "026eb0153cb4c7b67ae1738cce75336da14c24ac83fb84d9f099d891cd585715",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03638641705038026
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-57-55Z-aa5586c2.json",
+      "sha256": "3c2f8421edcff77c6737be0f7997d2918cc79699dbf0e955a32f2c4763d5d3bf",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03977270895848051
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-58-12Z-9f6f40ba.json",
+      "sha256": "3b3efd01641b1457f8c26a28629225fa0c241406ba46b97fda4f72af8e9a69ef",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04229787498479709
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-58-20Z-0d534e2b.json",
+      "sha256": "94b4c780a10649a75bbd7ad666c041788c38e5b6d3bfc07b3e13162fc67cd01c",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03144120896467939
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-58-31Z-8fd38d68.json",
+      "sha256": "0f69cdd6b4cacb00874d8bcbfe04caab1996829619221dede5dd0c7f8b1ea2f6",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.028329874970950186
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-58-50Z-c47c772c.json",
+      "sha256": "d27c29f18ab2c809e8094bad2a380f637357586f428a0e4cdc46d8d818f26aef",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.032771125028375536
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-59-00Z-3910ff79.json",
+      "sha256": "e60011502d7a22b8b778cf39d0dda96cd60037cd7a3b3affcd2ec4a6c3b9a079",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04393558402080089
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T17-59-15Z-376a795b.json",
+      "sha256": "112be55c3602e9884243f11fea3b2bd1d4b252667d11d73f7eeca48542bc7ec7",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03752895904472098
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-00-15Z-c8df1a21.json",
+      "sha256": "9ccacd8fbb059cbc7dae060b4581d1ed6833591f142dcac220a268322164dd58",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.0341255419771187
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-00-23Z-0c77f6da.json",
+      "sha256": "1a549ce97df2a3137d1340b553512e3316b007ddcc7640c36d826926192fbd85",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03152941702865064
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-00-27Z-fb7dddb6.json",
+      "sha256": "3ea7acac18d84640ae461081d9bb77f52b1a3382d4eea90c13113f0ccea7fca4",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.06847491703229025
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-00-41Z-a110b9dc.json",
+      "sha256": "19faaa1623709ee114f3889b9c4ac6addb91fbcc5d7b94ded0997c8c2af97986",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05273537500761449
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-01-02Z-88212ef7.json",
+      "sha256": "0d9430085e335194f72df7c9015a17271470675105db56c19b63415173a2e378",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05923733295639977
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-01-13Z-aa2146c6.json",
+      "sha256": "aa3ab57ed4a89bae312f603e2e6bb0bd9eca9186033294d396d442cb32858308",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.18346183298854157
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-01-29Z-cce388c2.json",
+      "sha256": "0c11f17ab0bcd106409fe4508a14b34bec3f63cb917896b31732679d264e9197",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05776595900533721
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-04-08Z-e3f8e687.json",
+      "sha256": "db80e2a660ba34d7f2e95f1ff639480fe6402487ce91dfe520101f85c879aaaa",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04808033397421241
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-04-21Z-e935893a.json",
+      "sha256": "d23e5c22c3240aca1395c7798fb465c587c123a58eecf0ab595cb727575996ec",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03112179203890264
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-04-37Z-cb8403de.json",
+      "sha256": "5e145dad227a941b01289d13a593fa7bb32b1bc03346243b2792213fc810b693",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.051028417015913874
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-04-40Z-10b18e08.json",
+      "sha256": "95c5512448e69135801403a73aae4192f743d2c582e45ee5d25eb88a064b2278",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.10848041600547731
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-04-44Z-9083f29b.json",
+      "sha256": "c875971d76bbae3d6b5f1e6bf6a6f4cc6654831d053e3de41e2f3deb56fe85bb",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05799741600640118
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-20Z-15966c2b.json",
+      "sha256": "d0aa2688c1d84d30dfa8aef4d865a6938441c32a58da91fc913a15523e7f93e9",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030266957997810096
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-22Z-5da30d2b.json",
+      "sha256": "8e83fd650dd47b1d73878236e3cf6343901acf0e2967333035565392f5f74a35",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.026960540970321745
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-24Z-68fbd1b2.json",
+      "sha256": "239122803b0eaaa3de6ce0f99a995a1fa921e786fcf101882ae712da8ed98364",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029455167008563876
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-26Z-36a845ee.json",
+      "sha256": "e0c252d96f316e2f2191956b83e9d724bcb5ae28c2351da724e5ae5fe1e0161b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030435874999966472
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-40Z-f54206fc.json",
+      "sha256": "d7c89c5d850bfe814bd8ead15323621f63abcea8c6fb1dd3961a35d1004d4622",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02846670796861872
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-44Z-9f95727f.json",
+      "sha256": "687da29c24bde2d484873f9d25cd4624576b55aa58fdc13fd2ec710a697d710d",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.028179666958749294
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-48Z-028be6cb.json",
+      "sha256": "dfbe5a00d0499b2783fe17f54be2d8b41e084fce2618544f4620e4cf75336410",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03396862500812858
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-05-53Z-b5950d17.json",
+      "sha256": "680911f613ead111fc11df5d4553f5169a41e56bcaefd70c41df56e929d39d84",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.0436930829891935
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-06-20Z-f7cb02b8.json",
+      "sha256": "67a159806e0aec874bb6ead07e33350bb1caa2888a058bde5bdc70d300081e99",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03238866600440815
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-06-26Z-ab84c1c6.json",
+      "sha256": "28d6fc0e21d1fefaa79d856e717d41240b2a2828677d05f173ae76f6e88d66b6",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.032543250010348856
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-39-03Z-c3db1fc5.json",
+      "sha256": "5d852c894804490c1a26dcd1731e1fe80da1fe24108055fdf0fcdbd13402eaad",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02861916698748246
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-40-07Z-65b06d66.json",
+      "sha256": "834b330665b815f2b4275793d8dbde60a16a429c73408194d12ed5fa1aca18ff",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02724966697860509
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-40-22Z-f1c7a1a6.json",
+      "sha256": "0cdfee252c3b2a2e62216528327101a76eec6781048d630c7c66bb20ace3f3cd",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029168459004722536
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-40-32Z-ce361fbd.json",
+      "sha256": "86e8fbb7ae7bbbedd708ef82f69b22d7b25afb92206b53989227611727f4c0b1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03105900000082329
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-40-50Z-1ead7afd.json",
+      "sha256": "0c700a5db8154066c808dd50ca3781867a6a84520b0dfe63258fc96f4928bf7f",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.06840845901751891
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-40-58Z-fa7f261a.json",
+      "sha256": "1f6c4bb97f141a63a6b5f5a12a2d6dae7f412d2556252103332e934e1130fc14",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030684875033330172
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-41-11Z-6a7394a0.json",
+      "sha256": "f34b01bdd8997e90d9e81e5d4852d327d9e18cb9aa330d709c276a56d9f4a3bd",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03394674998708069
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-41-32Z-79db0293.json",
+      "sha256": "4533a6840b0a9ba31ab577ce504d43104ebf6afb522e690f2c04a5e342e3eb10",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.027568166027776897
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-41-42Z-837c1976.json",
+      "sha256": "562855f2590e9a4b1fc40f954ab02169da96dffa46901457e260ede74700c056",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.10682683304185048
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-41-59Z-583a26d0.json",
+      "sha256": "795120901628f539156782e83209f9eece5cb48fec4a517cecf12d306ceba752",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02853237499948591
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-00Z-a675ae4a.json",
+      "sha256": "0da82c7c69e09968e7bd621ed76391168a2439d74124d30784045384d3ef721a",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.21267883299151435
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-08Z-6f222201.json",
+      "sha256": "eafefa934616cdb8f971267f6a4ab07b1967145c46de8ed1c951854fa47fd1e3",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03667866700561717
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-16Z-1c9d0d56.json",
+      "sha256": "c090eb707af53bd3c67efdfccb2a27b2c62b7453df036c2f8edebc584c81ff5e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.0329875840106979
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-27Z-8f76c79d.json",
+      "sha256": "2b536c234b7e35d2763fc70b5b3d523538051dfb5b5e3147f576a54d6d3d5173",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030475791019853204
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-37Z-918ffe74.json",
+      "sha256": "b428210d90637dd89b7d57219ddd6b4ca2230d4129924610728fe0bfd67396b1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.038260415953118354
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-42Z-545af020.json",
+      "sha256": "a2541a9f970b07a3342f92bae50b91db37796e7da97ee4f7825cbd91990e648e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.027826708974316716
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-43-51Z-59f2122a.json",
+      "sha256": "d88578054692f6252fd081e18bbc29affc5f9939d013e2da3193e766f698457e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029149541980586946
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-45-24Z-9d22aaf4.json",
+      "sha256": "4f2ea553a814c5a90f370d3112397b1cafd9a824c706f447c4734b8f3cd282f5",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.038457833987195045
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-45-33Z-88a18553.json",
+      "sha256": "db59b74a098276dfa0f467a04207eb89b8466385e0e7f7de6ac62d0fb1f5f7c9",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02843158401083201
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-45-48Z-d48dda57.json",
+      "sha256": "766654ebd0a80ff5613f132b4613f293a06b862e3e9d1562a704742399079fc9",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029026374977547675
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-45-50Z-ce78365e.json",
+      "sha256": "8c27bc84328d29efa3d1d5cf4025eb9735b8f2703125aedfb442521b04d7b3d8",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.026575250027235597
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-45-53Z-d0877bf6.json",
+      "sha256": "ea7343618686fb965fba48a85aee0d27168f293b5ef746e6f569646b7b7b93c3",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02565087500261143
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-02Z-292994e3.json",
+      "sha256": "9a69b0ec8afef7b487ababef59466a7ea2e60d2827daaa4e37e3bb3b13614a8e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02664425002876669
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-03Z-685626df.json",
+      "sha256": "6f303d5d0496ba09ffb8b8c712d40c579810f667131d8af089894d80af8944f5",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.028912624984513968
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-05Z-554ae5b7.json",
+      "sha256": "f6e51d588d2f10c4745f9301f3c8b1f20f5a8217441fe4a1ea87f6a74f441dec",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.027725958032533526
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-07Z-3894c111.json",
+      "sha256": "163a3851b71ad3cf4d098a4c46bdf3a407140bb3b113a172573b0d840d779124",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029531167005188763
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-20Z-e4feef78.json",
+      "sha256": "5902b31e20ecff06d12c31e5e18825e50b76b86845b26e9696768169be9d17f4",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.040348917013034225
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-24Z-2bdb60b3.json",
+      "sha256": "c3546cceed5182ebc7989a5acec072dd11058d8c17ac05c797a0742aeaba9524",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03658383304718882
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-28Z-bdb3e56b.json",
+      "sha256": "7ceabb3a6431584074058023cc3261513fec583c82c6792110feccce278f805e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.024749958014581352
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-46-32Z-29ea6e20.json",
+      "sha256": "5f219c808cdacb16d435507b917dc2630e86f812638b9a33c463a6ac7ac5130b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.023479958006646484
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-47-00Z-43734425.json",
+      "sha256": "ab9453ca3c67686d5d96ad31f80992400854695f496dc64cdec1b8ec5dd03d9d",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.028370499960146844
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/2026-10-08T18-47-06Z-fbb4981f.json",
+      "sha256": "ddad052fbb578ed5af8e2f546cbe72e28d750400b638c8d75894eee819abc27a",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03216554201208055
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-445956db8c494d43866d826036b5659f.json",
+      "sha256": "3ed13ae51fbca02dbd47d9d219ca76b8aea99cf22227633c87254544daa32354",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04110216599656269
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-544400ad9eac4600bc4c885dca60d705.json",
+      "sha256": "13467062605f099f535a29b8ab3e014f4709f209aa5e9855f98681841cca3231",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.025346666981931776
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-5d74d01b71a248f19af9ee2f1ff70607.json",
+      "sha256": "6030b12cedd428ab224b9c8771ac094355f415dcae9f715c834b5c100cf18832",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.053524124959949404
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-978af94ac86741db8f151f0ffe4f4837.json",
+      "sha256": "1b730725d499603c7a5cd08672797edea5c0d8a4e172b507e3d0fdeb6d02464d",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.048260417010169476
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-b48626d8c1284508a13109dcf1a032ba.json",
+      "sha256": "bf507a2905bbe02874dba3461c38fe97a8b6c73a4d1dde5285f97a108ad594e3",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.0828672909992747
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-c2b76ab2bdda43e48045d055801c5ec9.json",
+      "sha256": "94590c2d6d239dea8b7930ecfe6de9bc305455de33a1c3d9cbe612f94b5e05ce",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.06372170796385035
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-clean-e9aa4fe929964ae4ae82c10fccb4593b.json",
+      "sha256": "c245d6c464192f082c620e023d40002e12e1c0cb96909b72d295aca8e3048171",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.08178129198495299
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-55fa5626fe1b4d799885110c49d29c54.json",
+      "sha256": "51d1b1d1ae0c67c34006513705fa1efe5eae8305ca362d2460b35e8f89780aa4",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 89484,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.090168958005961
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.291931875050068
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-71a630eecded4a3391a926175d7ca7e9.json",
+      "sha256": "0e0298d2aaa24422e35bcca2d1b16120fbcca5212f666eba32a465f83d7ee21d",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 12290,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.0687415419961326
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.239445208979305
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-74f03df5103641dbafd9b666c206d1bb.json",
+      "sha256": "8ac80abe8ec2f2a25e4e664537cb956a6b7f318ab1a8b4e1b09a474e28fa331b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 98370,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.052414417034015
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.224355625046883
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-859abefa3ad84d2386c89b82eea5f050.json",
+      "sha256": "699e3a225c90614927ee0c17a52f44b73719412ab983fba3fc403fe0d2ecc765",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 85025,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.7102503339992836
+        },
+        {
+          "process": 85029,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 5.816243042005226
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.563488124986179
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-8aa901963a254c65970733b346acae32.json",
+      "sha256": "6fbe79ddb368df85d92ae680a7118d6ed39042d369b78a18413be04f050877b9",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 78322,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.081964292039629
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.509206084010657
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-acb095c7318c447ab02a463ce8487ae1.json",
+      "sha256": "be6254deed5d1536e2fa2d97d0f6e8b5636addc600fe4a9faa714026edc73301",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 31243,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.033766333013773
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.1145225830259733
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-failed-owner-ef7c8718019f412498a4add79710538b.json",
+      "sha256": "60f1f3d7ab670363f35a974cbc9a1113b979a25f229d592ddc4160e4d4f7f1b4",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 93846,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.056653790990822
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.134439832996577
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-2c14e730c82446dabb2ef54730f3ea61.json",
+      "sha256": "f8d020027e52a38d5442f0eb4b618f79bb174401b1c470df3dbbb49e7cc1f9df",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 85367,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.06774391699582338
+        },
+        {
+          "process": 85371,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.26266145799309
+        },
+        {
+          "process": 85389,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.548320500005502
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 5.023803832998965
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-376a26088da943e5b2ab1b7cddd3c62f.json",
+      "sha256": "b0d68ecdd02c125fd2591297e1617164ff2739170fcbb1ecc0073f53fc446343",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 93967,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.026046333950944245
+        },
+        {
+          "process": 93971,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.068060374993365
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.151280166988727
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-4c365afcb527414ab656d47c6c118193.json",
+      "sha256": "870e132c65ab298ca95d36563b8457b584d4ce9e111dc9a6501b39d1c72eb8d6",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 78658,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03873133298475295
+        },
+        {
+          "process": 78661,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.108460457995534
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.280445249984041
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-60c3f8b7149643598dc1b5ab951acbb4.json",
+      "sha256": "1249d68ed3d516759edb39ad63804788c523913d36268275974caa120d7acb28",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 12477,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03333362500416115
+        },
+        {
+          "process": 12480,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.090272625035141
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.262858458037954
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-6e75ee10e95c4800999d76f1ad0b0d21.json",
+      "sha256": "0c073f438c9f2ef45968c5d0004658092bb124c1778cc5a6e450e4db392c08cb",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 98539,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.05044691695366055
+        },
+        {
+          "process": 98543,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.16661179199582
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.490075459005311
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-cf31c6f34a2c41d8a3b6389e17df79b8.json",
+      "sha256": "4b6e2cb1c975c023d2d6e62e253b74d59f911e2eea5136a99ff4ebc62379709d",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 89637,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.06155329098692164
+        },
+        {
+          "process": 89640,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.075007540988736
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.2759571250062436
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-interrupt-e80b3f5b466e461385f690a9850dfb16.json",
+      "sha256": "54e110d2bb2f736b78d845b3fc9486379cedb56494982bacbf64f3166cd7efff",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 31437,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.024689541955012828
+        },
+        {
+          "process": 31439,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.082227874954697
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.166434416954871
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-142462b9e8e641658af09e93eb69324f.json",
+      "sha256": "848b7d487f25d55457dcd00bb59c15e1da761dd4d71d00bece4439c0bf0295c4",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 80520,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.04899412504164502
+        },
+        {
+          "process": 80524,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.131985417043325
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.338239959033672
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-3c6f84f6bf424715904b658dcd71ecc7.json",
+      "sha256": "57f479f3366ed85a947a255788525339a68399cf80043ef49e34ff362cf48c48",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 33138,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.08507937501417473
+        },
+        {
+          "process": 33169,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.155456917011179
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.242767666990403
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-4344a6eb7c1841bb8fcd15fad3836198.json",
+      "sha256": "e99a74c642ae873da78e42fd38d88f54525273580866a239319c7077a62fcf7d",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 14400,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.05434737500036135
+        },
+        {
+          "process": 14416,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.094971459009685
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.282420917006675
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-787ccc99e80d447aad0aee4f93662c51.json",
+      "sha256": "66eabfec6c9d06eb5e2e5584950e6fefd8e82cb395ca7f9652981cc0f6d47cf4",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 481,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03868783300276846
+        },
+        {
+          "process": 483,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.045219499967061
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.211393042001873
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-9fb1caea3d084317acfb7ba08bec805f.json",
+      "sha256": "1e2d5a7d08c7688d6d9743f05bc3e71c6012c73b62687b26a5ddd98284c2f010",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 86872,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.17996754095656797
+        },
+        {
+          "process": 86875,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.468347249960061
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.8647033749730326
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-bcdfae4312954b41bfca12b940a348f1.json",
+      "sha256": "93d413ea9f904b4218debf638aa69fc48949a349ef6fad1e7a77a87d1e4f30a4",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 91108,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.33412187499925494
+        },
+        {
+          "process": 91110,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.4503339160000905
+        },
+        {
+          "process": 91112,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.45357245800551
+        },
+        {
+          "process": 91114,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.454033540969249
+        },
+        {
+          "process": 91112,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.541117832995951
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.686921665968839
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-driver-c1d622a8b90b46a38d9308f6fe9c32c0.json",
+      "sha256": "210ca2ff33b5ad93328c8987273335538f05851130e4c5c47abd14349a2b4cfd",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 95411,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03457662498112768
+        },
+        {
+          "process": 95425,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.093970875022933
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.174424915981945
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-4c7e0bbe5d364f3686f0173f64f877e6.json",
+      "sha256": "8795054d8039272db0fd43d3c196040cdd1e8396c1be05cab4f64994f3095158",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 14708,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.042535249958746135
+        },
+        {
+          "process": 14712,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.116754291986581
+        },
+        {
+          "process": 14712,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.152655749989208
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.317503583966754
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-78f7a09a60f547cda8b834d834471886.json",
+      "sha256": "d306cc74d2d2d281b9afa2dbfb6aacda9f49b44c69629703c0f6681d606d71b9",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 33448,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.032047541986685246
+        },
+        {
+          "process": 33464,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.095031792006921
+        },
+        {
+          "process": 33464,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.136518624960445
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.223365542013198
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-986ecf1d20bd43bbaa89238899a2982a.json",
+      "sha256": "d1b795dffa94ba01fc3052593d74406bdf6186368353831bea12ba4158867fa4",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 87150,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.061483333993237466
+        },
+        {
+          "process": 87163,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.1057664590189233
+        },
+        {
+          "process": 87163,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 4.146858624997549
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.343759542040061
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-9881421590ce4df5835280bf6b023052.json",
+      "sha256": "e065250b7da56a27fcec18927aa6209f03c77ea9543ac901b6f694de3b903a4f",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 95657,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.026483708003070205
+        },
+        {
+          "process": 95659,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.070927041000687
+        },
+        {
+          "process": 95659,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.111059915972874
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.1941121249692515
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-abb9ad8e602c4afcb16b2a588aabef8a.json",
+      "sha256": "042847423e0d7dc3fd84e57b200e974a5f37ee82504c1b5f30aa141c233ace50",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 852,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.02913683297811076
+        },
+        {
+          "process": 856,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.089299332990777
+        },
+        {
+          "process": 856,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.1203599169966765
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.285712707962375
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-ca3d9728cfe2444e9e71da228306d531.json",
+      "sha256": "5a1de6281a1db058512815646a16ead4e4084b3ae9af779fe60da0c602028bf8",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 91440,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.1047194580314681
+        },
+        {
+          "process": 91444,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.166613375011366
+        },
+        {
+          "process": 91444,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 4.230147792026401
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.4497352500329725
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-stopped-worker-e1e979f2e6844b54a72e12d0800aa8f4.json",
+      "sha256": "34ec5af2facdbc449d34934b6e9726d5d5ad67cf8db8b0062231cd5f4de74b1b",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 80848,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03418625000631437
+        },
+        {
+          "process": 80852,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.239769750041887
+        },
+        {
+          "process": 80852,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.255515542055946
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.433881667035166
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-16c965a602584abeba758dee191ce0a2.json",
+      "sha256": "337067baa5415c872cc25ac6a369faf67a9b667e6732f78f8ada9c5b72503d12",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 31713,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.02831666695419699
+        },
+        {
+          "process": 31728,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.044478458003141
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.124424666981213
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-209fedca71ad43d18c6bc66f76e9eab2.json",
+      "sha256": "3d54846229b690c0ba4d3dacb233b8619ce5932c10dae493dcf4527de794b724",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 12751,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03156037500593811
+        },
+        {
+          "process": 12765,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.160899999958929
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.347394332988188
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-5c6bfde0c8c14a91b51592a6e3434f84.json",
+      "sha256": "e50ae2efcd76d54ffad2f64b259bae70a9b3393e60f4495c57234a71bc8e77f8",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 78988,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03211191698210314
+        },
+        {
+          "process": 79008,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.094137458014302
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.265211375022773
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-82cdd4c2207c4712b0bcda1e8ff5e673.json",
+      "sha256": "9c0102e0e0a4ae2fc4f3f7d20dbe7863c36cb228a4945ca34e23ea9351bb9f23",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 85691,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.036265250004362315
+        },
+        {
+          "process": 85699,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.0418959590024315
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.2238451250013895
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-9f93ddb366b44cf690cf5a1875297b16.json",
+      "sha256": "ecb479b1450f279240c3f5c3b2bab499336b0c132effa33b2f6757aedcc17fae",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 89788,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.04118504095822573
+        },
+        {
+          "process": 89791,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.107009290950373
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.5767017499892972
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-a3ce465af48e493aab3e998f3de148f8.json",
+      "sha256": "597f29932d51e04fa11565f3395d97c39ca31c5084a715d1b561065d1af636be",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 98884,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.029582165996544063
+        },
+        {
+          "process": 98888,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.0672087910352275
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.14906870800769
+      }
+    },
+    {
+      "path": "compatibility/evidence/resources/browser-watchdog-timeout-da13d9f983ce494e9120b57759246d8a.json",
+      "sha256": "dc38772b46bd7ad1f04b0fecbb86ea45f9580d209024de1a420da1236f15d105",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 94168,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.030240457970649004
+        },
+        {
+          "process": 94170,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.057685333013069
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.141569625004195
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-image-rebuild/resources/2026-10-08T17-39-25Z-bf82af15.json",
+      "sha256": "d8683424aa1db380b8ddbaa24b948175148842abe4aa7506af2693db4793f023",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.06044091598596424
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-clear-probe-001/resources/2026-10-08T17-54-29Z-e3796c61.json",
+      "sha256": "2a82e26974d84836246ab36f41e87ab226debe6ac8daa8dab89af40cf88cf860",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030645166989415884
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-reference-001/resources/2026-10-08T16-56-37Z-f6493f78.json",
+      "sha256": "0721a8ff737781687b38277b7f036187110b4b240589ac075841840324c7d187",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03288237500237301
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-differential-001/resources/2026-10-08T17-26-20Z-ea225e78.json",
+      "sha256": "b03dcaa26f3e783a57ef4096889d4402fce69cd558872c9bf9c5cd4f443d41c1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.043480125023052096
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-006/resources/2026-10-08T17-30-00Z-accd3570.json",
+      "sha256": "ffee7224fc1706c1b5fffb7a1878b05479e1a3172cba3a75bc3f82ef4bc80998",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.042166875035036355
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-core-001/resources/2026-10-08T17-37-44Z-28ba7f71.json",
+      "sha256": "a7db946d51ef0ea40db21f2993750c2f70c2582c3917fcc5057417510db356d0",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04121399996802211
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-001/resources/2026-10-08T17-03-51Z-745fc6f2.json",
+      "sha256": "cd92417dfbc9c25f805a10bce1724a8de370ca5255e205b79cf5f6e7df6d4875",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 101,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04386249999515712
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-008/resources/2026-10-08T17-33-11Z-36cf22e1.json",
+      "sha256": "cba3757f7f5374ba05029fd2503ef1bc93f257e4ab8801c28346429e84ba8028",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.044690582959447056
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-002/resources/2026-10-08T17-51-56Z-e431e053.json",
+      "sha256": "de2a0013f9a3e89e54bae64f1741d24e80b039f1cf60c24419ba730356899ac1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029167958011385053
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-002/resources/2026-10-08T17-52-37Z-4a188ca3.json",
+      "sha256": "fc34669d497c2094d383d61a8a5ef857fcb6b61f6d7c99c303a6f6c51588ddc0",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029509167012292892
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-002/resources/2026-10-08T17-52-24Z-0ef2f824.json",
+      "sha256": "bc15b852e5efbf6e2df4506a611bd87eb1719ba31271053acde0ad897a8720b6",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04049033299088478
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-002/resources/2026-10-08T17-51-56Z-3922d816.json",
+      "sha256": "73da5694ffce215446baddd10d32c0f4253552863505b49a624c12772d52d97e",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030804709007497877
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-007/resources/2026-10-08T17-31-42Z-88ba1085.json",
+      "sha256": "af02676ffc9dfae48065e77d9471200c88bc942d6171cbd81b1e9caec9c66829",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05629979103105143
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-checks-001/resources/2026-10-08T17-36-56Z-0443df20.json",
+      "sha256": "ab633639c055b7e8a9b094c91e943d0a72bbe907511a8bf381e6ceec9ada4c27",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 101,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.07460795796941966
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-054/resources/2026-10-08T18-37-37Z-5b7c11d0.json",
+      "sha256": "bc174e6a44a325138f65a06b3e4cfa98656642790afa3ee8c610ea4838c233e7",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.035198083000068436
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-event-order-002/resources/2026-10-08T18-29-38Z-89f4744e.json",
+      "sha256": "bdc2251c7e10ecf9eb580e3e3496ff58d14b387b81b6ba6b2c92cb14dda3cc21",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05738274997565895
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-052/resources/2026-10-08T18-25-30Z-ad72c8c6.json",
+      "sha256": "eb7d80014be6f4bb6f0f133452a698c3e1233f4feb11824c0630b8b3f05e5249",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.0310708749999975
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-native-001/resources/2026-10-08T17-33-40Z-45aa92d2.json",
+      "sha256": "05f138484295c3b740ccdf863de1f931806891f49624c2ea905f07f6671de4b8",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.045182749978266656
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-clear-probe-002/resources/2026-10-08T17-55-39Z-e6073676.json",
+      "sha256": "fae81eb3475335270498d797e4dc2e22e934355a884f33aac69fd50881dea612",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.026397125038783997
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-differential-004/resources/2026-10-08T17-31-55Z-fad3a75f.json",
+      "sha256": "fbffa5b53749d63964e34c411dcd4b323d4efcb9bbda261bd49347feb7aa0ade",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03714274999219924
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-differential-003/resources/2026-10-08T17-30-23Z-7b03f23d.json",
+      "sha256": "b6d8a15c9c6acee2fbd15d61dd7d56304f9bcc14fe012cab4baf7d4c880a0ee6",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -9,
+      "cleanupSignals": [
+        {
+          "process": 64989,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.04747637500986457
+        },
+        {
+          "process": 64989,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 2.125954292016104
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.327373792009894
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-differential-002/resources/2026-10-08T17-26-58Z-5a5c64a7.json",
+      "sha256": "74be14c6f7cc3b70a049416f767a0f90051234578e3ff04ea6cecbbed15be0ae",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -9,
+      "cleanupSignals": [
+        {
+          "process": 59674,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.04151854198426008
+        },
+        {
+          "process": 59674,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 2.0859154170029797
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.268839124997612
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-smoke-001/resources/2026-10-08T17-14-17Z-285b2ae5.json",
+      "sha256": "4887f609d042fa79ab682b473b078638f6150bbb73d8d96e0300ed0f134851ef",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.041996208019554615
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-core-002/resources/2026-10-08T17-56-42Z-16f8a040.json",
+      "sha256": "55ea92e0618ab586f60cb130816a253b5f6e47d3ebeddc3264c641027d78a690",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03354179102461785
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-release-reference-001/resources/2026-10-08T16-57-37Z-7cae14d5.json",
+      "sha256": "f96869a5a5b168168c4b7f6b8f83e1aec1c3ed11a0c920a6bed2d6fbede9478b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03486024995800108
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-002/resources/2026-10-08T17-09-59Z-2f435d6b.json",
+      "sha256": "2cd98e61217fccd114bb35ee8acd612ee78347b0a11a9eede26a038907185d67",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04558575002010912
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-005/resources/2026-10-08T17-25-55Z-1dc68db2.json",
+      "sha256": "9e91c9f37bbfeac481b1f1abda8b7b22b8190dd776391161326de8d58a78d8af",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03984295896952972
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-004/resources/2026-10-08T17-13-06Z-262d08ff.json",
+      "sha256": "c094f0fd2932ef7d4e0a5649dd316406a3638f8f14bd1d5d26efc5258c8b9cab",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.06231966702034697
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-core-003/resources/2026-10-08T18-38-55Z-3a6a0357.json",
+      "sha256": "236fd153c2dd493f865ef38ed070acd273ee0216f71e9e946483582d1ecdd92b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.026556292024906725
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-cleanup-001/resources/2026-10-08T17-50-44Z-33606700.json",
+      "sha256": "a8125cc5f76ff909cdcbc0e29c46d9bed05df0fc3ff06304fa0de433b2ee9dae",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.04174383298959583
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-build-003/resources/2026-10-08T17-11-11Z-f73ea33a.json",
+      "sha256": "9178c0a8ffb3e474007763e0ed589f7b684782855c3326ec3b03ef909fc888d2",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.046735959011130035
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-050/resources/2026-10-08T18-15-12Z-d79faf00.json",
+      "sha256": "719daccd268fb7f94a49eef2572a038c19c5e9921c3c7973b534e3ffbacb5f58",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02706433299999844
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-event-order-001/resources/2026-10-08T18-29-14Z-577b004a.json",
+      "sha256": "b10546d6bf5437646c2b7de103c717355da0bbfbbc99933d4361eb67a9d2c825",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 101,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.029066874994896352
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/console-watchdog-001/resources/2026-10-08T17-46-43Z-b85d77fe.json",
+      "sha256": "aa47ff624f1fb7aeef6f54050161481218d2404615780ac525ac69148ff6ca1b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03635091701289639
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-051/resources/2026-10-08T18-25-03Z-e835724d.json",
+      "sha256": "17a41dcf39e165d83cc72f2109317fb11936c6b74f55925bf0112dabca1c9e8c",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03033770800000024
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-08-28Z-02e5758c.json",
+      "sha256": "72b41c58875a3d6cb5cff3fea4cca21b9c7e18e5c725224f44f6073f6a2e9937",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.027475625000001003
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-08-54Z-ae8430e1.json",
+      "sha256": "89d4dbc1625c0e1d397cef70c4689d5605f36992b66b0d8f57a30c976e1fc1bf",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.034025083000003065
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-10-46Z-d20c452a.json",
+      "sha256": "f247464f29482a664fa98621092e937c2af41d4554cd8c4f4656351e0d9721e9",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02710404100000119
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-11-08Z-d6ec9096.json",
+      "sha256": "0a2816f23c34ab53a01bc595b71a407b6a6941ce7597b82bbbb77e2147f378d8",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.027872000000002117
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-09-21Z-b5109d3a.json",
+      "sha256": "d0d2d58547bcde3adf57f6072e1f0516ef1ed350879d67e5d047363b6acc8341",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03154125000000363
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-09-32Z-f4e5185a.json",
+      "sha256": "de046fbf5f5ba3002bed9114731d30151eeeac4bd672250df315a3d22970601f",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.037598874999986265
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-10-14Z-9acfe67f.json",
+      "sha256": "ce247231c3452bd7118b4cf8b751295cf1282a939b311089f2380be0d239fd8b",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03303033400001709
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-09-11Z-c7199895.json",
+      "sha256": "0c20b8bc6da236dde5102d61b7c0034ae1a7e7d2fb5db9a9c25112b0862e9e10",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03562291599999412
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-08-18Z-7815eb8f.json",
+      "sha256": "473edf44bdc7e3cf0219798f6b38c642689ab2918d356460380b4b24cd6b6a3d",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.031521166999993966
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/evidence/resources/2026-10-08T18-07-39Z-9cb2f275.json",
+      "sha256": "ba0014c243bcdad6f97cfd42a791a6e862471b14163cf285099d4012e7326d72",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02719958399999811
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-31-12Z-15191e6b.json",
+      "sha256": "d9d930fb23d643af0510f8983213386734dd85998abe5d52302a204f5b9e3a92",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.032686083999976745
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-31-45Z-d8c85ffe.json",
+      "sha256": "8dc9b023dc07fb6d1db1cd144223c9acb218ca58146e4f7a22cd02e5959a72b8",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.11125862500000494
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/browser-watchdog-failed-owner-8dabce10f8c64b1dbccf51951ec33594.json",
+      "sha256": "cd2ae2c76d788814e7738c437dacc18d9f854be252d88ad9f6379395d15e5958",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 17,
+      "cleanupSignals": [
+        {
+          "process": 13152,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.0641623759998993
+        },
+        {
+          "process": 13204,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.0641820419999704
+        },
+        {
+          "process": 13210,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 2.0641929169999003
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 2.245895083999926
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-34-27Z-02a15158.json",
+      "sha256": "5345c631411517071d84c86b880f21b540c3da7293fbc64f2098773624935abd",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05049158300005274
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-35-52Z-7209ef4f.json",
+      "sha256": "b39b1ef6627dbd931e43ac6bd3d69fe444fa756250e04df30537ba3d34accd16",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03605191700000887
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-30-22Z-92dfc033.json",
+      "sha256": "1d8ba3a529176b28303b90dbb6649932d0cd47a15cc5600949bc68cb2d780d05",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02736462500001835
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/browser-watchdog-stopped-worker-94545896a22c4f17a334f7f5800d3144.json",
+      "sha256": "3f1b102f202435789a6bad27b87eeb1555895b9ebbfd36f58814805c990f59ee",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 15205,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.037901958000020386
+        },
+        {
+          "process": 15210,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03791854100006731
+        },
+        {
+          "process": 15148,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03792641600000479
+        },
+        {
+          "process": 15155,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.096531252000091
+        },
+        {
+          "process": 15155,
+          "signal": "SIGKILL",
+          "cleanupElapsedSeconds": 6.126512002000027
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 6.286002252000003
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-33-59Z-c28f39c7.json",
+      "sha256": "db805c50cc778306737c5ba5e5b77a743cc2c235486bcc9d2e51c0c663f181c0",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.026979541999935464
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-35-21Z-e293227a.json",
+      "sha256": "b15dac62b6c7cf9ceaa9289f5033f613a348fecf4f26caee46a911d6c2ef167f",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03300229199999194
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-34-52Z-a708ce2b.json",
+      "sha256": "15a1cc433e74a012d317035d844d3bc2d069d363640905dff6bfe81f5823cc86",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.042807874999994056
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-31-01Z-f586fc38.json",
+      "sha256": "c45d0e736734e77a7a50342a483b7fe3e05dc06082d77f0cc64a21d584eda7b1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03481887500004177
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/browser-watchdog-stopped-driver-c49c5904d4394ec49e0a971678e4a8d9.json",
+      "sha256": "8747e319cfa7be2ed3a54a35f200f22699c997a35e35920805aac01113b649c6",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 14817,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.0322068750000426
+        },
+        {
+          "process": 14883,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.03222070900005747
+        },
+        {
+          "process": 14878,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.032226250000007894
+        },
+        {
+          "process": 14822,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.089287127000034
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.268440460999955
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/browser-watchdog-timeout-5b683e5d8523423b93d692ddfe2f4a85.json",
+      "sha256": "b8ef9d143f51f1c0764eeffe959c96be4dd3a2a4b9a5e451d93532f2d53557d9",
+      "timedOut": true,
+      "interrupted": false,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 13793,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.04002741600004356
+        },
+        {
+          "process": 13800,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.04004883300001438
+        },
+        {
+          "process": 13738,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.040060207999999875
+        },
+        {
+          "process": 13743,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.107314709999969
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.271946585000023
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/browser-watchdog-clean-60390720e7964315837629e79a11bfdb.json",
+      "sha256": "ef5018ec10fc5bce87381a2e981cfd8f912bc9da0bfa90821d25e146ff8c2dca",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.02871408299995437
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-33-22Z-f38e8b81.json",
+      "sha256": "940f89a597496536971f4d64fb97d8470d758fb2542dacc65982a1ebbee755e1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.042512208000061946
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/browser-watchdog-interrupt-9e3f73d0774348a28700ef6b622977bc.json",
+      "sha256": "6d71262b2891d53f13fead0f92f4900c9482232297ded5218feca9539ef7c0f7",
+      "timedOut": false,
+      "interrupted": true,
+      "exitCode": -15,
+      "cleanupSignals": [
+        {
+          "process": 13475,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.030106541999998626
+        },
+        {
+          "process": 13480,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.030124125000043023
+        },
+        {
+          "process": 13417,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 0.030131666999977824
+        },
+        {
+          "process": 13422,
+          "signal": "SIGTERM",
+          "cleanupElapsedSeconds": 4.086226168000053
+        }
+      ],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 4.255942460000028
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-32-31Z-a8a2790d.json",
+      "sha256": "980a449f7c5b03333e4b4f3b13605e08791b562dbd960a89c4dd18a22d34325c",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.031343332999995255
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-32-06Z-d7df1710.json",
+      "sha256": "05a2bdaf0a78574b5e80fb66412e6c987b94ef705ca7fe11583e5a0eb2da6103",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03539795800003276
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/evidence/resources/2026-10-08T18-32-18Z-dc34145d.json",
+      "sha256": "96b5ea6ef66d204c918e60539f09ff0e6c303e40ffb793a5b42d7ba37d5b8faa",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.03010237500001267
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-054/host-resources/2026-10-08T18-37-37Z-0e77e825.json",
+      "sha256": "37a700fe8b8f0d30e9df757b2b88c81ec7dfff2e9029dac35e9f9b759cba2dbf",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.053891582996584475
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-052/host-resources/2026-10-08T18-25-30Z-686fdee7.json",
+      "sha256": "8923eff02d4630682e31beee68800718bef6a5be3624233956165221f15e7ce3",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.0596036670031026
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-053/host-resources/2026-10-08T18-30-19Z-6144aab1.json",
+      "sha256": "6b02d4fcee909504dd8c10853be521e30c6543ca0af806dc9e8f6846176e96d3",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.030327125045005232
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-049/host-resources/2026-10-08T18-07-34Z-21aa3d4e.json",
+      "sha256": "8c078f39d9b7cc1944c2a9c3c2704caa634e00cc133df706840f0fb4b6062137",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.048064750037156045
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-050/host-resources/2026-10-08T18-15-12Z-b45611e4.json",
+      "sha256": "b57317ec4a7979a04621c8de00120236d3eca8ae8023fb7feeb014fb7eaf9b27",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 1,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.05210229195654392
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/linux-probe-051/host-resources/2026-10-08T18-25-01Z-c09936a1.json",
+      "sha256": "ec329c2747407912573053b1371e34a842b86a770d428a594f33a57ebd4915c1",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.043341292010154575
+      }
+    },
+    {
+      "path": "compatibility/evidence/console-integration-2026-10-08/node22-resources/2026-10-08T18-45-56Z-31f2adf3.json",
+      "sha256": "9f4f793f52a847a3e0214eeca075a6d66fbf72c110aa9f22c8e1a7463724217a",
+      "timedOut": false,
+      "interrupted": false,
+      "exitCode": 0,
+      "cleanupSignals": [],
+      "cleanup": {
+        "policy": "owners-before-descendants",
+        "graceSeconds": 2,
+        "stagedTimeoutSeconds": 10,
+        "forcedTimeoutSeconds": 2,
+        "wholeTreeEscalation": false,
+        "elapsedSeconds": 0.036117165989708155
+      }
+    }
+  ],
+  "remaining": [
+    "Console/error history, workers, out-of-process frames and async listener-removal policies",
+    "ElementHandle-specific operations, additional by-value classes and cross-context element adoption",
+    "Broader runner/artifact/network/frame compatibility and M3 transport",
+    "Full current Linux core, native Linux CI/performance, contention, platform packages, material complete-flow speedup and release gates"
+  ],
+  "performance": "No new performance claim. Previous timings remain bound to their recorded source/browser/binary snapshots."
+}

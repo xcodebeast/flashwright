@@ -1,7 +1,6 @@
 //! Bound wire storage independently from the explicitly admitted reply representation.
 
 use std::borrow::Cow;
-use std::sync::atomic::Ordering;
 use std::sync::{Arc, Weak};
 
 use flashwright_protocol::attachment::MAXIMUM_ATTACHMENT_BYTES;
@@ -13,7 +12,7 @@ use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::sync::oneshot;
 
 use super::{
-    ConnectionState, Event, MAXIMUM_CONTROL_BYTES, Reply, disconnected, fail_connection,
+    ConnectionState, MAXIMUM_CONTROL_BYTES, Reply, disconnected, dispatch_event, fail_connection,
     protocol_error,
 };
 
@@ -245,12 +244,12 @@ fn receive_message(state: &Arc<ConnectionState>, message: &[u8]) -> Result<(), E
             return Err(resource_error("CDP event exceeds control-message limit"));
         }
         // Opaque event JSON preserves escaped lone UTF-16 surrogates.
-        let _ = state.events.send(Event {
-            sequence: state.received_event_sequence.fetch_add(1, Ordering::AcqRel) + 1,
-            method: method.into_owned(),
-            session_identifier: envelope.session_identifier.map(Cow::into_owned),
-            parameters: envelope.params.map(RawValue::to_owned),
-        });
+        dispatch_event(
+            state,
+            method.into_owned(),
+            envelope.session_identifier.map(Cow::into_owned),
+            envelope.params.map(RawValue::to_owned),
+        )?;
     } else {
         return Err(protocol_error(
             "CDP message has neither a reply identity nor an event method".to_owned(),

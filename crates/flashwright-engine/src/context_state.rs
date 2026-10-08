@@ -8,6 +8,7 @@ pub(crate) const MAXIMUM_STORAGE_ORIGINS: usize = 1024;
 
 pub(crate) struct ContextState {
     pub origins: Mutex<BTreeSet<String>>,
+    pub console_enabled: std::sync::atomic::AtomicBool,
     pub storage_failure: Mutex<Option<ErrorRecord>>,
     pub storage_operations: tokio::sync::Mutex<()>,
     pub closed: watch::Sender<Option<ErrorRecord>>,
@@ -17,6 +18,7 @@ impl Default for ContextState {
     fn default() -> Self {
         Self {
             origins: Mutex::new(BTreeSet::new()),
+            console_enabled: std::sync::atomic::AtomicBool::new(false),
             storage_failure: Mutex::new(None),
             storage_operations: tokio::sync::Mutex::new(()),
             closed: watch::channel(None).0,

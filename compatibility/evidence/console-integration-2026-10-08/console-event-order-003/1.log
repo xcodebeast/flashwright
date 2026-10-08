@@ -1,0 +1,14 @@
+    Checking flashwright-browser v0.0.0 (/Users/P/p/flashwright/crates/flashwright-browser)
+    Checking flashwright-engine v0.0.0 (/Users/P/p/flashwright/crates/flashwright-engine)
+error: manual implementation of `.is_multiple_of()`
+   --> crates/flashwright-browser/tests/connection.rs:123:16
+    |
+123 |             if expected % 128 == 0 {
+    |                ^^^^^^^^^^^^^^^^^^^ help: replace with: `expected.is_multiple_of(128)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#manual_is_multiple_of
+    = note: `-D clippy::manual-is-multiple-of` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_is_multiple_of)]`
+
+error: could not compile `flashwright-browser` (test "connection") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

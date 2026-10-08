@@ -1,0 +1,21 @@
+test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work (__main__.ConsoleShutdownProbe.test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work) ... FIRST_FAILURE {"kind": "error", "requestId": null, "error": {"code": "BrowserDisconnectedError", "method": "chromium", "message": "Chromium protocol connection closed", "referenceVersion": "1.60.0", "browser": "chromium", "inputDelivery": "uncertain"}}
+DRIVER_EXIT 1
+FAIL
+
+======================================================================
+FAIL: test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work (__main__.ConsoleShutdownProbe.test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/source/compatibility/m1/test_console.py", line 44, in test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work
+    self.request("page.evaluate", self.evaluation("(() => { for (let index = 0; index < 1000; index++) console.log({index}); const end = performance.now() + 900; while (performance.now() < end) {} return 42; })()"))
+  File "/output/probe.py", line 16, in request
+    self.assertEqual(reply['kind'], 'result', reply)
+AssertionError: 'error' != 'result'
+- error
++ result
+ : {'kind': 'error', 'requestId': None, 'error': {'code': 'BrowserDisconnectedError', 'method': 'chromium', 'message': 'Chromium protocol connection closed', 'referenceVersion': '1.60.0', 'browser': 'chromium', 'inputDelivery': 'uncertain'}}
+
+----------------------------------------------------------------------
+Ran 1 test in 2.739s
+
+FAILED (failures=1)

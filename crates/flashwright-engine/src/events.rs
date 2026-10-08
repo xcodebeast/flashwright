@@ -3,7 +3,6 @@
 use super::*;
 use flashwright_browser::connection::Event;
 use flashwright_protocol::DriverMessage;
-use tokio::sync::broadcast;
 
 impl Engine {
     pub(crate) fn emit(&self, target: &str, event: &str, parameters: Value) {
@@ -23,44 +22,57 @@ impl Engine {
         }
     }
 
-    pub(crate) fn observe_browser(self: &Arc<Self>, identifier: String, browser: &Arc<Chromium>) {
-        let mut events = browser.connection.subscribe();
-        let connection = browser.connection.clone();
-        let engine = Arc::downgrade(self);
-        tokio::spawn(async move {
-            loop {
-                let event = events.recv().await;
-                let Some(engine) = engine.upgrade() else {
-                    break;
-                };
-                match event {
-                    Ok(event) => {
-                        let sequence = event.sequence;
-                        if event.method == "Flashwright.disconnected" {
-                            if let Some(browser) = engine.remove_browser(&identifier)
-                                && let Err(error) = browser.close().await
-                            {
-                                eprintln!("flashwright cleanup: {}", error.message);
-                            }
-                            break;
-                        }
-                        if engine.handle_event(&identifier, event).is_err() {
-                            let _ = engine.fatal.send(true);
-                            break;
-                        }
-                        connection.acknowledge_event(sequence);
-                    }
-                    Err(broadcast::error::RecvError::Lagged(_)) => {
-                        let _ = engine.fatal.send(true);
-                        break;
-                    }
-                    Err(broadcast::error::RecvError::Closed) => break,
+    /// The writer closes only after delivering the originating bounded event failure.
+    pub(crate) fn event_failure(&self, mut error: ErrorRecord) {
+        error.input_delivery = flashwright_protocol::InputDelivery::Uncertain;
+        if self
+            .outgoing
+            .try_send(
+                DriverMessage::Error {
+                    request_id: None,
+                    error,
                 }
-            }
-        });
+                .into(),
+            )
+            .is_err()
+        {
+            let _ = self.fatal.send(true);
+        }
     }
 
-    fn handle_event(&self, browser_identifier: &str, event: Event) -> Result<(), ErrorRecord> {
+    pub(crate) fn observe_browser(
+        self: &Arc<Self>,
+        identifier: String,
+        browser: &Arc<Chromium>,
+    ) -> Result<(), ErrorRecord> {
+        let engine = Arc::downgrade(self);
+        browser.connection.observe_events(move |event| {
+            let Some(engine) = engine.upgrade() else {
+                return Ok(());
+            };
+            if event.method == "Flashwright.disconnected" {
+                if let Some(browser) = engine.remove_browser(&identifier) {
+                    tokio::spawn(async move {
+                        if let Err(error) = browser.close().await {
+                            eprintln!("flashwright cleanup: {}", error.message);
+                        }
+                    });
+                }
+                return Ok(());
+            }
+            if let Err(error) = engine.handle_event(&identifier, event) {
+                engine.event_failure(error.clone());
+                return Err(error);
+            }
+            Ok(())
+        })
+    }
+
+    fn handle_event(
+        self: &Arc<Self>,
+        browser_identifier: &str,
+        event: Event,
+    ) -> Result<(), ErrorRecord> {
         let relevant = matches!(
             event.method.as_str(),
             "Page.frameAttached"
@@ -68,6 +80,8 @@ impl Engine {
                 | "Runtime.executionContextDestroyed"
                 | "Runtime.executionContextsCleared"
                 | "Runtime.exceptionThrown"
+                | "Runtime.consoleAPICalled"
+                | "Log.entryAdded"
                 | "Page.frameNavigated"
                 | "Page.frameDetached"
                 | "Page.navigatedWithinDocument"
@@ -90,6 +104,14 @@ impl Engine {
         let parameters: Value = match event.parameters {
             Some(parameters) if event.method == "Runtime.exceptionThrown" => {
                 json!({ "exceptionJson": parameters.get() })
+            }
+            Some(parameters)
+                if matches!(
+                    event.method.as_str(),
+                    "Runtime.consoleAPICalled" | "Log.entryAdded"
+                ) =>
+            {
+                json!({ "consoleJson": parameters.get() })
             }
             Some(parameters) => serde_json::from_str(parameters.get()).map_err(|error| {
                 ErrorRecord::new(ErrorCode::Protocol, "event", error.to_string())
@@ -126,6 +148,23 @@ impl Engine {
                         "crash",
                     );
                 }
+                "Runtime.consoleAPICalled" | "Log.entryAdded" => {
+                    if let Err(error) = self.console_event(
+                        &identifier,
+                        &page,
+                        &event.method,
+                        parameters["consoleJson"].as_str().ok_or_else(|| {
+                            ErrorRecord::new(
+                                ErrorCode::Protocol,
+                                "console",
+                                "Chromium omitted console event parameters",
+                            )
+                        })?,
+                    ) && page.state.state.lock().unwrap().failure.is_none()
+                    {
+                        return Err(error);
+                    }
+                }
                 "Runtime.exceptionThrown" => {
                     let state = page.state.state.lock().unwrap();
                     if state.published && state.failure.is_none() {
@@ -156,10 +195,8 @@ impl Engine {
                             });
                         page.state.handles.lock().unwrap().retain(|_, handle| {
                             handle.primitive.is_some()
-                                || state
-                                    .main_worlds
-                                    .get(&handle.runtime.context.frame_identifier)
-                                    == Some(&handle.runtime.context)
+                                || state.main_worlds.get(&handle.context.frame_identifier)
+                                    == Some(&handle.context)
                         });
                     }
                     if state.published
@@ -285,7 +322,12 @@ mod tests {
     fn exceptions_preserve_utf16_and_follow_published_page_session_ownership() {
         let (outgoing, mut messages) = mpsc::channel(16);
         let (fatal, _failure) = watch::channel(false);
-        let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
+        let engine = Arc::new(Engine::new(
+            None,
+            outgoing,
+            fatal,
+            ResourceLimits::default(),
+        ));
         engine.registry.lock().unwrap().contexts.insert(
             "context".into(),
             Context {
@@ -354,7 +396,12 @@ mod tests {
     async fn originating_failure_survives_context_and_page_removal() {
         let (outgoing, _messages) = mpsc::channel(16);
         let (fatal, _failure) = watch::channel(false);
-        let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
+        let engine = Arc::new(Engine::new(
+            None,
+            outgoing,
+            fatal,
+            ResourceLimits::default(),
+        ));
         let context = Arc::new(context_state::ContextState::default());
         let page = Arc::new(PageState::default());
         engine.registry.lock().unwrap().contexts.insert(

@@ -1,0 +1,59 @@
+test_failed_job_owner (__main__.BrowserWatchdogTests.test_failed_job_owner) ... FAIL
+test_interrupted_job (__main__.BrowserWatchdogTests.test_interrupted_job) ... FAIL
+test_job_timeout (__main__.BrowserWatchdogTests.test_job_timeout) ... ok
+test_normal_close (__main__.BrowserWatchdogTests.test_normal_close) ... ok
+test_stopped_driver (__main__.BrowserWatchdogTests.test_stopped_driver) ... FAIL
+test_stopped_worker (__main__.BrowserWatchdogTests.test_stopped_worker) ... FAIL
+
+======================================================================
+FAIL: test_failed_job_owner (__main__.BrowserWatchdogTests.test_failed_job_owner)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 85, in test_failed_job_owner
+    self.exercise("failed-owner")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 70, in exercise
+    self.assertFalse(Path(identities["profile"]).exists(), diagnostics)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : 
+
+======================================================================
+FAIL: test_interrupted_job (__main__.BrowserWatchdogTests.test_interrupted_job)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 91, in test_interrupted_job
+    self.exercise("interrupt")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 70, in exercise
+    self.assertFalse(Path(identities["profile"]).exists(), diagnostics)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : 
+
+======================================================================
+FAIL: test_stopped_driver (__main__.BrowserWatchdogTests.test_stopped_driver)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 97, in test_stopped_driver
+    self.exercise("stopped-driver")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 70, in exercise
+    self.assertFalse(Path(identities["profile"]).exists(), diagnostics)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : 
+
+======================================================================
+FAIL: test_stopped_worker (__main__.BrowserWatchdogTests.test_stopped_worker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 94, in test_stopped_worker
+    self.exercise("stopped-worker")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/P/p/flashwright/.cache/console-watchdog-001/watchdog_lifecycle.py", line 70, in exercise
+    self.assertFalse(Path(identities["profile"]).exists(), diagnostics)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : 
+
+----------------------------------------------------------------------
+Ran 6 tests in 62.518s
+
+FAILED (failures=4)

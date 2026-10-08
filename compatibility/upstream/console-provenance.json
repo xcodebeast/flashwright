@@ -1,0 +1,40 @@
+{
+  "referenceVersion": "1.60.0",
+  "referenceFiles": [
+    "server/javascript.ts",
+    "server/chromium/crProtocolHelper.ts",
+    "server/chromium/crPage.ts",
+    "server/console.ts",
+    "client/consoleMessage.ts",
+    "client/browserContext.ts"
+  ],
+  "source": "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/javascript.ts",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/console.source.js",
+  "extractSha256": "6cc5373c69340f0c90968021e065df028bc9772361f6f665c65620bf8f9c6bea",
+  "implementations": {
+    "packages/flashwright/src/console.ts": "fcbad7556247092883fa579770117a6167e30e70553e24c23b4ff7090105bb6c",
+    "packages/flashwright/src/handles.ts": "225c1f9c2a8cade23b9206551fac6e33d7ccd2252c72dfd4652e76302dfc2606",
+    "crates/flashwright-engine/src/console.rs": "e2d28c9e1df1f4a038e104372b25141dcdbdccbcb07f2e67842a131b22552993"
+  },
+  "relationship": "TypeScript preview formatting adapts the pinned renderPreview and sparseArrayToString helpers. Independent native subscriptions and ownership preserve live page/context delivery without installing an evaluation helper for capture.",
+  "changes": [
+    "Carry bounded raw CDP JSON through Rust to preserve exact UTF-16 descriptions and locations.",
+    "Separate console object references from private evaluation groups; drop unseen references through a bounded background queue.",
+    "Preserve BigInt arguments and resulting message text as documented in S4.l.",
+    "Deliver page listeners before context listeners with the same message and handle identities."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright",
+  "eventEmitterTypes": {
+    "package": "@types/node",
+    "version": "24.10.1",
+    "source": "node_modules/@types/node/events.d.ts",
+    "sha256": "c64e1888baaa3253ca4405b455e4bf44f76357868a1bd0a52998ade9a092ad78",
+    "relationship": "EventKey and EventListener adapt the Key and Listener/Listener1 conditional types to maintain typed overrides and polymorphic this; use readable parameter names and unknown[] for the unused default event map.",
+    "license": "MIT",
+    "licensePath": "compatibility/upstream/LICENSE.node-types"
+  }
+}

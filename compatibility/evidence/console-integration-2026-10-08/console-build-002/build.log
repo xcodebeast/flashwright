@@ -1,0 +1,50 @@
+
+> flashwright-workspace@0.0.0 build
+> cargo build --workspace --locked && node tools/build-packages.mjs
+
+   Compiling flashwright-engine v0.0.0 (/Users/P/p/flashwright/crates/flashwright-engine)
+   Compiling flashwright-driver v0.0.0 (/Users/P/p/flashwright/crates/flashwright-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.78s
+packages/flashwright/src/console.ts(25,12): error TS2416: Property 'on' in type 'ConsoleEmitter<Events>' is not assignable to the same property in base type 'EventEmitter<Events>'.
+  Type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => EventEmitter<Events>' is not assignable to type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => this'.
+    Type 'EventEmitter<Events>' is not assignable to type 'this' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      'this' could be instantiated with an arbitrary type which could be unrelated to 'EventEmitter<Events>'.
+packages/flashwright/src/console.ts(26,12): error TS2416: Property 'addListener' in type 'ConsoleEmitter<Events>' is not assignable to the same property in base type 'EventEmitter<Events>'.
+  Type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => EventEmitter<Events>' is not assignable to type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => this'.
+    Type 'EventEmitter<Events>' is not assignable to type 'this' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      'this' could be instantiated with an arbitrary type which could be unrelated to 'EventEmitter<Events>'.
+packages/flashwright/src/console.ts(27,12): error TS2416: Property 'prependListener' in type 'ConsoleEmitter<Events>' is not assignable to the same property in base type 'EventEmitter<Events>'.
+  Type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => EventEmitter<Events>' is not assignable to type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => this'.
+    Type 'EventEmitter<Events>' is not assignable to type 'this' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      'this' could be instantiated with an arbitrary type which could be unrelated to 'EventEmitter<Events>'.
+packages/flashwright/src/console.ts(28,12): error TS2416: Property 'removeListener' in type 'ConsoleEmitter<Events>' is not assignable to the same property in base type 'EventEmitter<Events>'.
+  Type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => EventEmitter<Events>' is not assignable to type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => this'.
+    Type 'EventEmitter<Events>' is not assignable to type 'this' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      'this' could be instantiated with an arbitrary type which could be unrelated to 'EventEmitter<Events>'.
+packages/flashwright/src/console.ts(29,12): error TS2416: Property 'off' in type 'ConsoleEmitter<Events>' is not assignable to the same property in base type 'EventEmitter<Events>'.
+  Type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => EventEmitter<Events>' is not assignable to type '<K>(eventName: Key<K, Events>, listener: Listener<K, Events, (...args: any[]) => void>) => this'.
+    Type 'EventEmitter<Events>' is not assignable to type 'this' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      'this' could be instantiated with an arbitrary type which could be unrelated to 'EventEmitter<Events>'.
+packages/flashwright/src/console.ts(30,12): error TS2416: Property 'removeAllListeners' in type 'ConsoleEmitter<Events>' is not assignable to the same property in base type 'EventEmitter<Events>'.
+  Type '(eventName?: Key<unknown, Events> | undefined) => EventEmitter<Events>' is not assignable to type '(eventName?: Key<unknown, Events> | undefined) => this'.
+    Type 'EventEmitter<Events>' is not assignable to type 'this' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      'this' could be instantiated with an arbitrary type which could be unrelated to 'EventEmitter<Events>'.
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node /Users/P/p/flashwright/node_modules/typescript/bin/tsc --project packages/flashwright/tsconfig.json --outDir packages/flashwright/dist/commonjs --module CommonJS --moduleResolution Node
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at file:///Users/P/p/flashwright/tools/build-packages.mjs:36:3 {
+  status: 2,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 32670,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v24.15.0

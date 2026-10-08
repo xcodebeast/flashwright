@@ -1,0 +1,29 @@
+   Compiling flashwright-browser v0.0.0 (/Users/P/p/flashwright/crates/flashwright-browser)
+error[E0308]: mismatched types
+   --> crates/flashwright-browser/tests/connection.rs:176:21
+    |
+176 |                     "owned event exhausted its bound"
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Box<str>`, found `&str`
+    |
+    = note: expected struct `Box<str>`
+            found reference `&str`
+help: call `Into::into` on this expression to convert `&str` into `Box<str>`
+    |
+176 |                     "owned event exhausted its bound".into()
+    |                                                      +++++++
+
+error[E0308]: mismatched types
+   --> crates/flashwright-browser/tests/connection.rs:208:30
+    |
+208 |     assert_eq!(error.method, "event.owner");
+    |                              ^^^^^^^^^^^^^ expected `Box<str>`, found `&str`
+    |
+    = note: expected struct `Box<str>`
+            found reference `&str`
+help: call `Into::into` on this expression to convert `&str` into `Box<str>`
+    |
+208 |     assert_eq!(error.method, "event.owner".into());
+    |                                           +++++++
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `flashwright-browser` (test "connection") due to 2 previous errors

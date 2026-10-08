@@ -10,6 +10,7 @@ import subprocess
 import time
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 def snapshot():
@@ -121,6 +122,19 @@ class EngineLifecycleTests(OwnedBrowserCase):
         message = read_message(self.worker, 5)
         self.assertTrue(message["hostDeadline"])
         self.assertLess(message["elapsedMilliseconds"], 3000)
+        self.assert_owned_processes_exit()
+
+
+class DiagnosticPipeLifecycleTests(OwnedBrowserCase):
+    def setUp(self):
+        with patch.dict(os.environ, {"FLASHWRIGHT_DEBUG_OWNERSHIP": "1"}):
+            super().setUp()
+
+    def test_closed_diagnostic_pipe_cannot_interrupt_guardian_cleanup(self):
+        # The Node worker is the only reader of the driver's inherited stderr pipe.
+        # Its death must not turn a diagnostic write into a guardian panic.
+        self.worker.kill()
+        self.worker.wait(timeout=5)
         self.assert_owned_processes_exit()
 
 
