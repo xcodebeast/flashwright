@@ -1,0 +1,23 @@
+
+> flashwright-workspace@0.0.0 test:screenshots
+> node tools/run-screenshot-tests.mjs
+
+reference: screenshot pixels, files, fonts, cancellation, queueing, animations and large PNG passed
+Screenshot differential failed: compatibility/evidence/screenshots-darwin-arm64-22.22.0-2026-10-08T13-47-04.012Z/report.json
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async run (file:///Users/P/p/flashwright/compatibility/m2/screenshots.mjs:218:7)
+    at async file:///Users/P/p/flashwright/compatibility/m2/screenshots.mjs:253:46 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: [Function (anonymous)],
+  operator: 'rejects',
+  diff: 'simple'
+}
+
+Node.js v22.22.0

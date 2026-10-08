@@ -10,7 +10,7 @@ use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task::AbortHandle;
 
 mod incoming;
-use incoming::{ReplySender, read_messages};
+use incoming::{BinaryReplyKind, ReplySender, read_messages};
 
 const MAXIMUM_CONTROL_BYTES: usize = 8 * 1024 * 1024;
 const MAXIMUM_PENDING: usize = 1024;
@@ -183,20 +183,50 @@ impl Connection {
         session: &str,
         maximum_decoded_bytes: usize,
     ) -> Reply<BinaryPayload> {
+        self.binary_reply(
+            "Network.getResponseBody",
+            json!({ "requestId": request_identifier }),
+            session,
+            BinaryReplyKind::ResponseBody,
+            maximum_decoded_bytes,
+        )
+        .await
+    }
+
+    /// Capture data is admitted only as the fixed base64 screenshot result shape.
+    pub async fn capture_screenshot(
+        &self,
+        parameters: Value,
+        session: &str,
+        maximum_decoded_bytes: usize,
+    ) -> Reply<BinaryPayload> {
+        self.binary_reply(
+            "Page.captureScreenshot",
+            parameters,
+            session,
+            BinaryReplyKind::Screenshot,
+            maximum_decoded_bytes,
+        )
+        .await
+    }
+
+    async fn binary_reply(
+        &self,
+        method: &str,
+        parameters: Value,
+        session: &str,
+        kind: BinaryReplyKind,
+        maximum_decoded_bytes: usize,
+    ) -> Reply<BinaryPayload> {
         if maximum_decoded_bytes > flashwright_protocol::attachment::MAXIMUM_ATTACHMENT_BYTES {
             return Err(ErrorRecord::new(
                 ErrorCode::ResourceLimit,
-                "Network.getResponseBody",
+                method,
                 "binary reply limit exceeds the supported attachment bound",
             ));
         }
         let identifier = self.inner.next_identifier.fetch_add(1, Ordering::Relaxed);
-        let outgoing = encode_command(
-            identifier,
-            "Network.getResponseBody",
-            json!({ "requestId": request_identifier }),
-            Some(session),
-        )?;
+        let outgoing = encode_command(identifier, method, parameters, Some(session))?;
         let (sender, receiver) = oneshot::channel();
         let mut command = Command {
             identifier,
@@ -208,14 +238,15 @@ impl Connection {
             vec![(
                 identifier,
                 PendingReply {
-                    sender: ReplySender::ResponseBody {
+                    sender: ReplySender::Binary {
                         sender,
+                        kind,
                         maximum_decoded_bytes,
                     },
                     dispatch_started: false,
                 },
             )],
-            "Network.getResponseBody",
+            method,
         )?;
         command.response().await
     }

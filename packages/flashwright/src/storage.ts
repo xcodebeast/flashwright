@@ -1,6 +1,5 @@
-import { readFile, mkdir, open, rename, rm } from 'node:fs/promises';
-import { dirname } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { writeAtomicFile } from './files.js';
 import { failure } from './errors.js';
 import { validateOptions } from './validation.js';
 
@@ -128,11 +127,5 @@ export function decodeStorageState(state: WireStorageState): StorageState {
 
 /** Complete the snapshot before atomically replacing a requested state file. */
 export async function writeStorageState(path: string, state: StorageState): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  const temporary = `${path}.${randomUUID()}.tmp`;
-  const file = await open(temporary, 'wx', 0o600);
-  try {
-    try { await file.writeFile(JSON.stringify(state, null, 2), 'utf8'); } finally { await file.close(); }
-    await rename(temporary, path);
-  } finally { await rm(temporary, { force: true }); }
+  await writeAtomicFile(path, JSON.stringify(state, null, 2));
 }

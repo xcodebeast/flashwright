@@ -162,3 +162,49 @@ class BodyLimitTests(BinaryBodyCase):
         self.assertEqual(error["error"]["code"], "ResourceLimitError", error)
         self.assertEqual(self.receive_attachment(self.fetch("/empty")), b"")
         self.assertEqual(self.request("page.evaluate", self.evaluation("42")), {"kind": "number", "value": 42})
+
+
+class ScreenshotCase(BinaryBodyCase):
+    def prepare_pixels(self):
+        self.request("page.evaluate", self.evaluation("""(() => {
+            document.body.style.margin = '0';
+            const canvas = document.createElement('canvas'); canvas.width = 640; canvas.height = 480;
+            const context = canvas.getContext('2d'); const pixels = context.createImageData(640, 480);
+            let value = 123456789;
+            for (let index = 0; index < pixels.data.length; index += 4) {
+                value ^= value << 13; value ^= value >>> 17; value ^= value << 5;
+                pixels.data[index] = value & 255; pixels.data[index+1] = (value >>> 8) & 255;
+                pixels.data[index+2] = (value >>> 16) & 255; pixels.data[index+3] = 255;
+            }
+            context.putImageData(pixels, 0, 0); document.body.append(canvas);
+        })()"""))
+
+
+
+class ScreenshotTransferTests(ScreenshotCase):
+    def test_screenshot_binary_frames_are_complete_and_keep_the_page_usable(self):
+        self.prepare_pixels()
+        image = self.receive_attachment(self.command("page.screenshot", {"page": self.page}), encoding="base64")
+        self.assertEqual(image[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertEqual(struct.unpack(">II", image[16:24]), (1280, 720))
+        self.assertGreater(len(image), self.limits["controlFrameBytes"])
+        self.assertEqual(self.request("page.evaluate", self.evaluation("42")), {"kind": "number", "value": 42})
+
+    def test_cancelled_screenshot_stream_releases_its_slot_for_a_successor(self):
+        self.prepare_pixels()
+        self.receive_attachment(self.command("page.screenshot", {"page": self.page}), cancel=True)
+        image = self.receive_attachment(self.command("page.screenshot", {"page": self.page, "clip": {"x": 0, "y": 0, "width": 1, "height": 1}}))
+        self.assertEqual(struct.unpack(">II", image[16:24]), (1, 1))
+
+
+class ScreenshotLimitTests(ScreenshotCase):
+    resource_limits = {"controlFrameBytes": 32768, "binaryAttachmentBytes": 1024, "pendingAttachments": 1}
+
+    def test_screenshot_payload_limit_rejects_only_its_call(self):
+        self.prepare_pixels()
+        self.send(self.command("page.screenshot", {"page": self.page}))
+        error = self.receive()
+        self.assertEqual(error["kind"], "error", error)
+        self.assertEqual(error["error"]["code"], "ResourceLimitError", error)
+        image = self.receive_attachment(self.command("page.screenshot", {"page": self.page, "clip": {"x": 0, "y": 0, "width": 1, "height": 1}}))
+        self.assertEqual(struct.unpack(">II", image[16:24]), (1, 1))

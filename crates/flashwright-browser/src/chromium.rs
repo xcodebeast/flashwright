@@ -53,6 +53,7 @@ type ShutdownCompletion = watch::Receiver<Option<Result<(), ErrorRecord>>>;
 pub struct Chromium {
     pub connection: Connection,
     pub version: String,
+    pub headless: bool,
     child: Mutex<Option<Child>>,
     process_group: Pid,
     liveness: Mutex<Option<StandardUnixStream>>,
@@ -123,6 +124,7 @@ impl Chromium {
         let mut browser = Self {
             connection: Connection::new(incoming, outgoing),
             version: String::new(),
+            headless: options.headless,
             child: Mutex::new(Some(child)),
             process_group,
             liveness: Mutex::new(Some(liveness)),
@@ -243,6 +245,7 @@ mod tests {
         let browser = Chromium {
             connection: Connection::new(tokio::io::empty(), tokio::io::sink()),
             version: String::new(),
+            headless: true,
             child: Mutex::new(Some(child)),
             process_group,
             liveness: Mutex::new(Some(liveness)),

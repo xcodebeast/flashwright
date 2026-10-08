@@ -23,10 +23,42 @@ const RETAINED_BUFFER_BYTES: usize = 64 * 1024;
 
 pub(super) enum ReplySender {
     Value(oneshot::Sender<Reply>),
-    ResponseBody {
+    Binary {
+        kind: BinaryReplyKind,
         sender: oneshot::Sender<Reply<BinaryPayload>>,
         maximum_decoded_bytes: usize,
     },
+}
+
+pub(super) enum BinaryReplyKind {
+    ResponseBody,
+    Screenshot,
+}
+
+#[derive(Deserialize)]
+struct Screenshot<'message> {
+    #[serde(borrow)]
+    data: Cow<'message, str>,
+}
+
+fn decode_screenshot(
+    result: Option<&RawValue>,
+    maximum_decoded_bytes: usize,
+) -> Reply<BinaryPayload> {
+    let result =
+        result.ok_or_else(|| protocol_error("browser omitted screenshot data".to_owned()))?;
+    let screenshot: Screenshot<'_> =
+        serde_json::from_str(result.get()).map_err(|error| protocol_error(error.to_string()))?;
+    let bytes = match screenshot.data {
+        Cow::Borrowed(data) => Cow::Borrowed(data.as_bytes()),
+        Cow::Owned(data) => Cow::Owned(data.into_bytes()),
+    };
+    BinaryPayload::new(
+        bytes,
+        AttachmentEncoding::Base64,
+        maximum_decoded_bytes,
+        "Page.captureScreenshot",
+    )
 }
 
 #[derive(Deserialize)]
@@ -58,7 +90,7 @@ impl ReplySender {
             Self::Value(sender) => {
                 let _ = sender.send(Err(error));
             }
-            Self::ResponseBody { sender, .. } => {
+            Self::Binary { sender, .. } => {
                 let _ = sender.send(Err(error));
             }
         }
@@ -94,11 +126,20 @@ impl ReplySender {
                 };
                 let _ = sender.send(result);
             }
-            Self::ResponseBody {
+            Self::Binary {
                 sender,
+                kind,
                 maximum_decoded_bytes,
             } => {
-                let _ = sender.send(decode_response_body(envelope.result, maximum_decoded_bytes));
+                let result = match kind {
+                    BinaryReplyKind::ResponseBody => {
+                        decode_response_body(envelope.result, maximum_decoded_bytes)
+                    }
+                    BinaryReplyKind::Screenshot => {
+                        decode_screenshot(envelope.result, maximum_decoded_bytes)
+                    }
+                };
+                let _ = sender.send(result);
             }
         }
     }
@@ -244,6 +285,21 @@ pub(super) async fn read_messages<Reader: AsyncRead + Unpin>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn screenshot_shape_requires_canonical_base64_within_the_decoded_bound() {
+        let valid = serde_json::from_str::<&RawValue>(r#"{"data":"AP8="}"#).unwrap();
+        assert_eq!(decode_screenshot(Some(valid), 2).unwrap().decoded_length, 2);
+        assert_eq!(
+            decode_screenshot(Some(valid), 1).unwrap_err().code,
+            ErrorCode::ResourceLimit
+        );
+        let invalid = serde_json::from_str::<&RawValue>(r#"{"data":"AB=="}"#).unwrap();
+        assert_eq!(
+            decode_screenshot(Some(invalid), 2).unwrap_err().code,
+            ErrorCode::Protocol
+        );
+    }
 
     #[test]
     fn receive_buffer_obeys_allocation_bound_and_releases_large_frames() {
