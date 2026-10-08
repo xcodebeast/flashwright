@@ -262,7 +262,8 @@
         "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
         "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
         "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
-        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
+        "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+        "compatibility/evidence/storage-access-probe-2026-10-08T06-27-25.847Z/assessment.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -344,6 +345,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "The private evaluation helper is complete and verified; its 64 ordinary and four instrumented launches are retained. Prioritize remaining M2 preview coverage: basic cookies/storage state, screenshot artifacts, console/pageerror and supported handle ownership. Use current setup attribution for the next measured optimization after the required semantic gates. Keep residency default off. Native Linux performance, contention, platform installation, M3 transport and release gates remain open.",
+  "nextImplementation": "Implement the remaining M2 basic cookies/storage-state slice. The real-browser probe at compatibility/evidence/storage-access-probe-2026-10-08T06-27-25.847Z/assessment.json shows that arbitrary-origin DOMStorage access needs a live frame; use context-owned temporary pages with intercepted blank origin navigation for state collection/restoration, preserving isolation and cleanup without application requests. Evaluation-helper optimization and its performance plan are complete. Screenshot artifacts, console/pageerror, handles, M3 transport, native Linux, contention and release gates remain open.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }
