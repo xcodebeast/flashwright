@@ -414,6 +414,8 @@ i. Preserve upstream Apache/Chromium/inspector notices and provenance for copied
 j. No semver claim exceeds the tested capability/version matrix. On upstream/browser upgrades, regenerate inventory, review selector/runner/codec changes and pass S19 before expanding support
 k. Documentation distinguishes engine/browser installation, preferred import migration, alias mode, unsupported configuration, experimental APIs and artifact viewing. Package examples must run against packed releases
 
+Development packaging now uses exact-version optional platform dependencies, with the explicit executable override retained. Before spawn, the installed package must match the library's protocol and resident runtime, pass executable architecture/size/checksum checks and meet its declared Linux glibc requirement. Runtime resolution consumes the ordinary launch budget. Private local tarball verification is separate from registry acquisition and the package-manager/alias matrix; it does not establish publication or release support. For the retained artifact identities, portable Linux build and tested scope, load [the platform-runtime checkpoint](compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json)
+
 Finish line: supported-platform consumers install and run migration examples without local build tools, resolve the intended engine/runner once, and clean up every owned process
 
 ## S19 Repository layout, verification and release gate

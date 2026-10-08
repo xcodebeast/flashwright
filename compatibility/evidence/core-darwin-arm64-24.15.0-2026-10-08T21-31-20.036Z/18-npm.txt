@@ -1,0 +1,140 @@
+
+> flashwright-workspace@0.0.0 test:lifecycle
+> node tools/run-lifecycle-tests.mjs
+
+test_cleared_console_arguments_are_already_disposed_without_retiring_page (test_console.ConsoleLifetimeTests.test_cleared_console_arguments_are_already_disposed_without_retiring_page) ... ok
+test_console_exhaustion_reports_originating_resource_error_and_releases_browser (test_console.ConsoleLifetimeTests.test_console_exhaustion_reports_originating_resource_error_and_releases_browser) ... ok
+test_context_subscription_captures_future_pages_and_page_disable_cannot_override_it (test_console.ConsoleLifetimeTests.test_context_subscription_captures_future_pages_and_page_disable_cannot_override_it) ... ok
+test_discarding_a_message_does_not_release_other_console_references (test_console.ConsoleLifetimeTests.test_discarding_a_message_does_not_release_other_console_references) ... ok
+test_in_transit_discard_does_not_interrupt_a_later_application_task (test_console.ConsoleLifetimeTests.test_in_transit_discard_does_not_interrupt_a_later_application_task) ... ok
+test_subscription_applies_before_the_next_accepted_evaluation (test_console.ConsoleLifetimeTests.test_subscription_applies_before_the_next_accepted_evaluation) ... ok
+test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work (test_console.ConsoleLifetimeTests.test_unobserved_logs_do_not_consume_handle_slots_or_timeout_application_work) ... ok
+test_unpublishable_console_event_fails_explicitly_and_releases_owned_resources (test_console.ConsolePublicationTests.test_unpublishable_console_event_fails_explicitly_and_releases_owned_resources) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 5.791s
+
+OK
+test_late_assertion_error_preserves_observation (test_driver_protocol.ClientDeadlineTests.test_late_assertion_error_preserves_observation) ... Deadline scenario assertion.error preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_assertion_result_preserves_observation (test_driver_protocol.ClientDeadlineTests.test_late_assertion_result_preserves_observation) ... Deadline scenario assertion.result preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_browser_launch_is_disposed (test_driver_protocol.ClientDeadlineTests.test_late_browser_launch_is_disposed) ... Deadline scenario browser.launch preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_context_allocation_is_disposed (test_driver_protocol.ClientDeadlineTests.test_late_context_allocation_is_disposed) ... Deadline scenario browser.newContext preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_handle_allocations_are_disposed (test_driver_protocol.ClientDeadlineTests.test_late_handle_allocations_are_disposed) ... Deadline scenario page.evaluateHandle preserved ownership cleanup and terminal diagnostics.
+Deadline scenario frame.evaluateHandle preserved ownership cleanup and terminal diagnostics.
+Deadline scenario handle.evaluateHandle preserved ownership cleanup and terminal diagnostics.
+Deadline scenario handle.getProperty preserved ownership cleanup and terminal diagnostics.
+Deadline scenario handle.getProperties preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_input_acknowledgement_is_preserved (test_driver_protocol.ClientDeadlineTests.test_late_input_acknowledgement_is_preserved) ... Deadline scenario locator.acknowledged preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_input_error_preserves_utf16_diagnostics (test_driver_protocol.ClientDeadlineTests.test_late_input_error_preserves_utf16_diagnostics) ... Deadline scenario locator.error preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_page_allocation_is_disposed (test_driver_protocol.ClientDeadlineTests.test_late_page_allocation_is_disposed) ... Deadline scenario context.newPage preserved ownership cleanup and terminal diagnostics.
+ok
+test_late_undispatched_input_is_preserved (test_driver_protocol.ClientDeadlineTests.test_late_undispatched_input_is_preserved) ... Deadline scenario locator.notDispatched preserved ownership cleanup and terminal diagnostics.
+ok
+test_missing_capability_rejects_before_browser_allocation (test_driver_protocol.ClientDeadlineTests.test_missing_capability_rejects_before_browser_allocation) ... Deadline scenario handshake.capabilityMismatch preserved ownership cleanup and terminal diagnostics.
+ok
+test_blocked_output_exhaustion_still_releases_browser (test_driver_protocol.DriverProtocolTests.test_blocked_output_exhaustion_still_releases_browser) ... ok
+test_cancelled_allocation_with_unresponsive_browser_reports_cleanup (test_driver_protocol.DriverProtocolTests.test_cancelled_allocation_with_unresponsive_browser_reports_cleanup) ... ok
+test_cancelled_cold_evaluation_does_not_own_shared_preparation (test_driver_protocol.DriverProtocolTests.test_cancelled_cold_evaluation_does_not_own_shared_preparation) ... ok
+test_duplicate_request_while_renderer_is_blocked_releases_browser (test_driver_protocol.DriverProtocolTests.test_duplicate_request_while_renderer_is_blocked_releases_browser) ... ok
+test_eof_inside_frame_releases_browser (test_driver_protocol.DriverProtocolTests.test_eof_inside_frame_releases_browser) ... ok
+test_malformed_frame_releases_browser (test_driver_protocol.DriverProtocolTests.test_malformed_frame_releases_browser) ... ok
+test_explicit_cancellation_retains_diagnostics_and_releases_subscription (test_driver_protocol.ResidentAssertionProtocolTests.test_explicit_cancellation_retains_diagnostics_and_releases_subscription) ... ok
+test_page_closure_releases_deferred_cancellation_ownership (test_driver_protocol.ResidentAssertionProtocolTests.test_page_closure_releases_deferred_cancellation_ownership) ... ok
+test_unbounded_cancellation_during_blocked_renderer_finishes_after_recovery (test_driver_protocol.ResidentAssertionProtocolTests.test_unbounded_cancellation_during_blocked_renderer_finishes_after_recovery) ... ok
+test_context_close_interrupts_cookie_read_without_waiting_for_browser (test_driver_protocol.StorageProtocolTests.test_context_close_interrupts_cookie_read_without_waiting_for_browser) ... ok
+test_cookie_read_timeout_leaves_context_reusable (test_driver_protocol.StorageProtocolTests.test_cookie_read_timeout_leaves_context_reusable) ... ok
+test_uncertain_cookie_mutation_retires_only_its_context (test_driver_protocol.StorageProtocolTests.test_uncertain_cookie_mutation_retires_only_its_context) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 13.246s
+
+OK
+test_cancelled_cold_handle_evaluation_never_executes (test_handles.HandleLifetimeTests.test_cancelled_cold_handle_evaluation_never_executes) ... ok
+test_handle_limit_rejects_before_user_code_and_disposal_reuses_slots (test_handles.HandleLifetimeTests.test_handle_limit_rejects_before_user_code_and_disposal_reuses_slots) ... ok
+test_navigation_releases_destroyed_object_handle_slots (test_handles.HandleLifetimeTests.test_navigation_releases_destroyed_object_handle_slots) ... ok
+test_partial_property_allocation_rolls_back_without_disposing_parent (test_handles.HandleLifetimeTests.test_partial_property_allocation_rolls_back_without_disposing_parent) ... ok
+test_timed_out_allocations_settle_or_retire_only_their_page (test_handles.HandleLifetimeTests.test_timed_out_allocations_settle_or_retire_only_their_page) ... ok
+test_rejected_property_publication_releases_all_children_and_keeps_parent (test_handles.HandlePublicationTests.test_rejected_property_publication_releases_all_children_and_keeps_parent) ... ok
+test_unpublishable_primitive_handle_runs_once_and_releases_its_group (test_handles.HandlePublicationTests.test_unpublishable_primitive_handle_runs_once_and_releases_its_group) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 3.916s
+
+OK
+test_closed_diagnostic_pipe_cannot_interrupt_guardian_cleanup (test_lifecycle.DiagnosticPipeLifecycleTests.test_closed_diagnostic_pipe_cannot_interrupt_guardian_cleanup) ... ok
+test_dead_node_worker_releases_driver_and_browser (test_lifecycle.EngineLifecycleTests.test_dead_node_worker_releases_driver_and_browser) ... ok
+test_dead_node_worker_with_stopped_driver_still_releases_browser (test_lifecycle.EngineLifecycleTests.test_dead_node_worker_with_stopped_driver_still_releases_browser) ... ok
+test_driver_crash_does_not_orphan_browser (test_lifecycle.EngineLifecycleTests.test_driver_crash_does_not_orphan_browser) ... ok
+test_host_deadline_survives_stopped_driver (test_lifecycle.EngineLifecycleTests.test_host_deadline_survives_stopped_driver) ... ok
+test_renderer_deadline_can_interrupt_infinite_javascript (test_lifecycle.EngineLifecycleTests.test_renderer_deadline_can_interrupt_infinite_javascript) ... ok
+test_failed_setup_and_test_body_release_profiles_without_killing_guardians (test_lifecycle.FailedCaseCleanupTests.test_failed_setup_and_test_body_release_profiles_without_killing_guardians) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 7.221s
+
+OK
+test_blocked_input_handler_closes_page_without_replaying_input (test_public_lifecycle.PublicLifecycleTests.test_blocked_input_handler_closes_page_without_replaying_input) ... ok
+test_blocked_keyboard_handler_closes_only_its_owned_page (test_public_lifecycle.PublicLifecycleTests.test_blocked_keyboard_handler_closes_only_its_owned_page) ... ok
+test_blocked_renderer_cannot_delay_assertion_deadline (test_public_lifecycle.PublicLifecycleTests.test_blocked_renderer_cannot_delay_assertion_deadline) ... ok
+test_browser_crash_updates_public_objects (test_public_lifecycle.PublicLifecycleTests.test_browser_crash_updates_public_objects) ... ok
+test_context_close_cancels_page_keyboard_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_page_keyboard_and_preserves_browser) ... ok
+test_context_close_cancels_unbounded_assertion (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_unbounded_assertion) ... ok
+test_keyboard_deadline_releases_keys_and_serializes_pointer_input (test_public_lifecycle.PublicLifecycleTests.test_keyboard_deadline_releases_keys_and_serializes_pointer_input) ... ok
+test_locator_deadline_suppresses_late_renderer_mutation (test_public_lifecycle.PublicLifecycleTests.test_locator_deadline_suppresses_late_renderer_mutation) ... ok
+test_pointer_deadline_releases_button_and_modifiers (test_public_lifecycle.PublicLifecycleTests.test_pointer_deadline_releases_button_and_modifiers) ... ok
+test_renderer_crash_updates_page_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_renderer_crash_updates_page_and_preserves_browser) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 15.686s
+
+OK
+test_rejected_browser_allocations_release_the_guardian_and_profile (output_limits.BrowserAllocationLimitTests.test_rejected_browser_allocations_release_the_guardian_and_profile) ... ok
+test_acknowledged_selection_survives_an_oversized_result_without_replay (output_limits.ByteLimitTests.test_acknowledged_selection_survives_an_oversized_result_without_replay) ... ok
+test_oversized_browser_event_reports_a_global_error_and_releases_resources (output_limits.ByteLimitTests.test_oversized_browser_event_reports_a_global_error_and_releases_resources) ... ok
+test_oversized_evaluation_runs_once_and_successor_is_usable (output_limits.ByteLimitTests.test_oversized_evaluation_runs_once_and_successor_is_usable) ... ok
+test_oversized_exception_does_not_replay_user_code (output_limits.ByteLimitTests.test_oversized_exception_does_not_replay_user_code) ... ok
+test_oversized_method_diagnostics_cannot_close_the_connection (output_limits.ByteLimitTests.test_oversized_method_diagnostics_cannot_close_the_connection) ... ok
+test_oversized_page_exception_preserves_utf16_until_the_event_limit (output_limits.ByteLimitTests.test_oversized_page_exception_preserves_utf16_until_the_event_limit) ... ok
+test_output_depth_limit_rejects_without_replaying_or_closing_the_page (output_limits.DepthLimitTests.test_output_depth_limit_rejects_without_replaying_or_closing_the_page) ... ok
+test_error_diagnostics_obey_the_node_limit_even_when_their_bytes_fit (output_limits.NodeLimitTests.test_error_diagnostics_obey_the_node_limit_even_when_their_bytes_fit) ... ok
+test_output_node_limit_rejects_without_replaying_or_closing_the_page (output_limits.NodeLimitTests.test_output_node_limit_rejects_without_replaying_or_closing_the_page) ... ok
+test_rejected_pages_are_disposed_privately_and_the_context_remains_usable (output_limits.PageAllocationLimitTests.test_rejected_pages_are_disposed_privately_and_the_context_remains_usable) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 4.978s
+
+OK
+test_oversized_body_rejects_only_its_call_and_releases_its_slot (binary_attachments.BodyLimitTests.test_oversized_body_rejects_only_its_call_and_releases_its_slot) ... ok
+test_binary_body_exceeds_the_ordinary_cdp_reply_limit (binary_attachments.BodyTransferTests.test_binary_body_exceeds_the_ordinary_cdp_reply_limit) ... ok
+test_binary_bytes_cross_control_limits_without_replaying_the_request (binary_attachments.BodyTransferTests.test_binary_bytes_cross_control_limits_without_replaying_the_request) ... ok
+test_cancelled_partial_transfer_releases_its_slot_and_keeps_the_page_usable (binary_attachments.BodyTransferTests.test_cancelled_partial_transfer_releases_its_slot_and_keeps_the_page_usable) ... ok
+test_empty_body_has_complete_start_and_terminal_without_data_frames (binary_attachments.BodyTransferTests.test_empty_body_has_complete_start_and_terminal_without_data_frames) ... ok
+test_json_escaped_body_exceeds_the_ordinary_cdp_reply_limit (binary_attachments.BodyTransferTests.test_json_escaped_body_exceeds_the_ordinary_cdp_reply_limit) ... ok
+test_oversized_cdp_event_retains_its_resource_failure_during_browser_cleanup (binary_attachments.BodyTransferTests.test_oversized_cdp_event_retains_its_resource_failure_during_browser_cleanup) ... ok
+test_text_utf8_and_nul_survive_raw_chunks (binary_attachments.BodyTransferTests.test_text_utf8_and_nul_survive_raw_chunks) ... ok
+test_screenshot_payload_limit_rejects_only_its_call (binary_attachments.ScreenshotLimitTests.test_screenshot_payload_limit_rejects_only_its_call) ... ok
+test_cancelled_screenshot_stream_releases_its_slot_for_a_successor (binary_attachments.ScreenshotTransferTests.test_cancelled_screenshot_stream_releases_its_slot_for_a_successor) ... ok
+test_screenshot_binary_frames_are_complete_and_keep_the_page_usable (binary_attachments.ScreenshotTransferTests.test_screenshot_binary_frames_are_complete_and_keep_the_page_usable) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 10.221s
+
+OK
+test_failed_job_owner (watchdog_lifecycle.BrowserWatchdogTests.test_failed_job_owner) ... ok
+test_interrupted_job (watchdog_lifecycle.BrowserWatchdogTests.test_interrupted_job) ... ok
+test_job_timeout (watchdog_lifecycle.BrowserWatchdogTests.test_job_timeout) ... ok
+test_normal_close (watchdog_lifecycle.BrowserWatchdogTests.test_normal_close) ... ok
+test_stopped_driver (watchdog_lifecycle.BrowserWatchdogTests.test_stopped_driver) ... ok
+test_stopped_worker (watchdog_lifecycle.BrowserWatchdogTests.test_stopped_worker) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 56.191s
+
+OK

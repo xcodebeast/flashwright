@@ -6,19 +6,13 @@ import { failure, fromRecord, errorMessage, type ErrorRecord } from './errors.js
 import { residentRuntimeSha256 } from './runtime-version.cjs';
 import { AttachmentReceiver } from './attachments.js';
 
-export const requiredCapabilities = [
-  'browser.launch', 'browser.close', 'browser.newContext', 'context.newPage', 'context.close',
-  'page.close', 'page.evaluate', 'page.event.pageerror', 'page.screenshot', 'page.goto', 'page.waitForLoadState', 'response.body',
-  'page.console.subscribe', 'context.console.subscribe',
-  'locator.run', 'assertion.run', 'keyboard.press',
-  'page.evaluateHandle', 'frame.evaluate', 'frame.evaluateHandle', 'handle.evaluate', 'handle.evaluateHandle',
-  'handle.jsonValue', 'handle.getProperty', 'handle.getProperties', 'handle.dispose', 'handle.discard',
-  'context.cookies', 'context.addCookies', 'context.clearCookies', 'context.storageState',
-];
+import { engineHandshake, requiredCapabilities } from './engine-contract.js';
+import { resolveDriverExecutable } from './driver-runtime.js';
+export { requiredCapabilities } from './engine-contract.js';
 
-const maximumFrameBytes = 8 * 1024 * 1024;
-const maximumPendingOperations = 1024;
-const limits = { controlFrameBytes: maximumFrameBytes, pendingOperations: maximumPendingOperations, queuedMessages: 128, valueDepth: 64, valueNodes: 100000, binaryAttachmentBytes: 32 * 1024 * 1024, pendingAttachments: 2 };
+const limits = engineHandshake.limits;
+const maximumFrameBytes = limits.controlFrameBytes;
+const maximumPendingOperations = limits.pendingOperations;
 interface PendingRequest {
   method: string;
   resolve: (value: unknown) => void;
@@ -99,7 +93,7 @@ export class EngineClient {
     });
     const handshakeTimeout = setTimeout(() => this.fail(failure('TimeoutError', 'handshake', 'driver handshake exceeded 10 seconds')), 10000);
     this.ready.then(() => clearTimeout(handshakeTimeout), () => clearTimeout(handshakeTimeout));
-    void this.send({ kind: 'handshake', handshake: { packageVersion: '0.0.0', protocolVersion: 5, capabilityInventoryVersion: 1, limits } }).catch(error => this.fail(error));
+    void this.send({ kind: 'handshake', handshake: engineHandshake }).catch(error => this.fail(error));
   }
 
   subscribeObject(identifier: string, listener: (event: ObjectEvent) => void): () => void {
@@ -136,6 +130,8 @@ export class EngineClient {
       this.bufferedEvents.set(message.target, buffered);
     }
   }
+
+  waitForHandshake(): Promise<void> { return this.ready; }
 
   retain(): void { this.references++; }
   isClosed(): boolean { return this.closed || this.failure !== undefined; }
@@ -269,7 +265,7 @@ export class EngineClient {
         if (message.kind === 'handshake') {
           if (this.handshakeComplete) throw failure('ProtocolError', 'handshake', 'duplicate driver handshake');
           const handshake = message.handshake;
-          if (handshake?.protocolVersion !== 5 || handshake.packageVersion !== '0.0.0' || handshake.capabilityInventoryVersion !== 1 || message.residentRuntimeSha256 !== residentRuntimeSha256 || requiredCapabilities.some(method => !message.capabilities?.includes(method))) {
+          if (handshake?.protocolVersion !== engineHandshake.protocolVersion || handshake.packageVersion !== engineHandshake.packageVersion || handshake.capabilityInventoryVersion !== engineHandshake.capabilityInventoryVersion || message.residentRuntimeSha256 !== residentRuntimeSha256 || requiredCapabilities.some(method => !message.capabilities?.includes(method))) {
             throw failure('ProtocolError', 'handshake', 'driver/package capability mismatch');
           }
           for (const field of Object.keys(limits) as Array<keyof typeof limits>) {
@@ -371,10 +367,10 @@ export class EngineClient {
 }
 
 let implicitClient: EngineClient | undefined;
-export function retainEngine(): EngineClient {
+export function retainEngine(deadline = Infinity): EngineClient {
   if (!implicitClient || implicitClient.isClosed()) {
-    const executablePath = process.env.FLASHWRIGHT_DRIVER_PATH;
-    if (!executablePath) throw failure('UnsupportedFeatureError', 'chromium.launch', 'this development build requires FLASHWRIGHT_DRIVER_PATH pointing to the compiled flashwright-driver executable');
+    const executablePath = resolveDriverExecutable();
+    if (performance.now() >= deadline) throw failure('TimeoutError', 'chromium.launch', 'deadline exceeded while resolving the driver');
     implicitClient = new EngineClient(executablePath);
   }
   implicitClient.retain();

@@ -6,6 +6,8 @@ Flashwright is building a Rust browser-testing engine with a TypeScript API comp
 
 The development library now launches real Chromium through a persistent Rust driver, owns contexts and pages, evaluates JavaScript values, navigates real HTTP pages and observes network responses. Locators resolve through the pinned selector runtime in isolated document realms; the tested slice includes reads, waits, child-frame queries, native text fill, selection, focus, clicks, hover, checkbox actions and locator/page keyboard presses. Native pointer tests cover trusted events, fresh frame stability, hit interception, nested frames and navigation completion. ESM/CommonJS npm consumers and failure recovery are exercised against the pinned browser. Retrying DOM assertions and an experimental native fixture adapter now run through the pinned test scheduler, including extended fixtures, retries, soft assertions and timeout teardown. The three preserved TodoMVC tests pass through freshly packed packages with import/config changes only. Page screenshots return PNG/JPEG buffers and atomic files with font, style, caret and animation handling. Typed `pageerror` listeners and waits preserve Chromium error names, messages and stacks from the page and same-process child frames. JSHandle and ElementHandle base operations now preserve graph and DOM identity, with independent property disposal and original-frame ownership. Broader runner, artifact and API coverage remains unfinished. Resident assertions are now the default supported assertion path. The [current default checkpoint](compatibility/evidence/resident-default-checkpoint-2026-10-08.json) records 58 passing verification groups and an independently verified matched comparison whose median point estimate is 6.3% less complete-run time; its confidence interval includes parity. The 10% complete-flow target and release gates remain open; retained failure-path and observed-maximum regressions are described below
 
+Private macOS arm64 and Linux x64 runtime packages now launch automatically after integrity checks. The [packaging checkpoint](compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json) records 53 passing verification groups across native macOS Node 22/24 and emulated Linux, including clean offline npm consumers without Cargo or a driver override. The selected Linux binary requires glibc 2.30 symbols and was loader-tested on 2.31. Names remain provisional and unpublished; this checkpoint makes no new speed claim. Earlier benchmark snapshots remain tied to their recorded adapters and binaries
+
 [SPECS.md](SPECS.md) defines the implementation and release gates. [Milestones](compatibility/milestones.json) track completed evidence and remaining work. [Reference manifest](compatibility/reference-manifest.json) records exact versions, retained runs and platform limitations
 
 ## R2 Development
@@ -58,7 +60,19 @@ try {
 JAVASCRIPT
 ```
 
-The explicit driver path is a development requirement. Published platform binaries, automatic runtime selection and the pnpm/Yarn consumer matrix remain open. [Development coverage](compatibility/development-coverage.json) describes the small implemented slice; the release inventory does not yet mark it supported. Chromium's default argument lists are now extracted from the pinned reference, and the shared benchmark-contract check compares actual launch logs from both engines
+An explicit driver path remains available for checkout development. Installed consumers can instead select a matching platform package automatically. Create private local tarballs for the current host after building the library and driver:
+
+```sh
+cargo build --release --locked
+node tools/pack-driver-runtime.mjs --driver target/release/flashwright-driver --destination .cache/runtime-package
+npm pack ./packages/flashwright --pack-destination .cache --ignore-scripts
+```
+
+The destination must be new. In a fresh consumer, install the library tarball and the generated `flashwright-driver-darwin-arm64-0.0.0.tgz` or `flashwright-driver-linux-x64-0.0.0.tgz` together with `npm install --offline --ignore-scripts /absolute/path/to/library.tgz /absolute/path/to/runtime.tgz`. Set `FLASHWRIGHT_BROWSER_PATH` to the separately installed pinned Chromium, then use the same JavaScript example with `FLASHWRIGHT_DRIVER_PATH` unset. No Rust compiler or install script is needed in that consumer
+
+The package resolver checks version, protocol, resident source identity, executable architecture, size, checksum and permissions before spawning. Linux requires glibc; each artifact records its actual minimum symbol version. The packer preserves third-party notices and records the packaging workspace separately from executable identity. Packages remain private development artifacts under provisional names. Registry acquisition, browser installation tooling, aliases and the pnpm/Yarn matrix remain open. Run `npm run test:platform-runtime` for offline packed-consumer, corruption and ownership checks. [Development coverage](compatibility/development-coverage.json) describes the implemented slice; the release inventory does not yet mark it supported
+
+Chromium's default argument lists are extracted from the pinned reference, and the shared benchmark-contract check compares actual launch logs from both engines
 
 ## R3 Browser baselines
 
