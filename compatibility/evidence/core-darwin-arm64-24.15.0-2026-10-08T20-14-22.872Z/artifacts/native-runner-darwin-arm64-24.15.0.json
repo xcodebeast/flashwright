@@ -1,0 +1,841 @@
+{
+  "node": "v24.15.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "driverSha256": "a55966b2c09e9b82755eb2fde931668cb9f5b877f1d9db1e321357fee1cf2c88",
+  "report": {
+    "config": {
+      "configFile": "/Users/P/p/flashwright/compatibility/m2/runner/playwright.config.ts",
+      "rootDir": "/Users/P/p/flashwright/compatibility/m2/runner",
+      "forbidOnly": false,
+      "fullyParallel": false,
+      "globalSetup": null,
+      "globalTeardown": null,
+      "globalTimeout": 0,
+      "grep": {},
+      "grepInvert": null,
+      "maxFailures": 0,
+      "metadata": {
+        "actualWorkers": 1
+      },
+      "preserveOutput": "always",
+      "projects": [
+        {
+          "outputDir": "/Users/P/p/flashwright/test-results",
+          "repeatEach": 1,
+          "retries": 1,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "id": "",
+          "name": "",
+          "testDir": "/Users/P/p/flashwright/compatibility/m2/runner",
+          "testIgnore": [],
+          "testMatch": [
+            "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          ],
+          "timeout": 10000
+        }
+      ],
+      "quiet": false,
+      "reporter": [
+        [
+          "list",
+          null
+        ],
+        [
+          "json",
+          {
+            "outputFile": "/Users/P/p/flashwright/test-results/native-runner.json"
+          }
+        ]
+      ],
+      "reportSlowTests": {
+        "max": 5,
+        "threshold": 300000
+      },
+      "shard": null,
+      "tags": [],
+      "updateSnapshots": "missing",
+      "updateSourceMethod": "patch",
+      "version": "1.60.0",
+      "workers": 1,
+      "webServer": null
+    },
+    "suites": [
+      {
+        "title": "runner.spec.ts",
+        "file": "runner.spec.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "extended fixtures run native browser actions and assertions",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 163,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "steps": [
+                      {
+                        "title": "checkbox action",
+                        "duration": 17
+                      }
+                    ],
+                    "startTime": "2026-10-08T20:17:54.604Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "153913f684d2eb35d750-2e8ac7d7faa354ff771a",
+            "file": "runner.spec.ts",
+            "line": 6,
+            "column": 1
+          },
+          {
+            "title": "fresh contexts isolate browser storage",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 66,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:54.980Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "153913f684d2eb35d750-d0245bca6866ccf21beb",
+            "file": "runner.spec.ts",
+            "line": 13,
+            "column": 1
+          },
+          {
+            "title": "soft native assertion failures reach the reporter",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [
+                  {
+                    "type": "fail",
+                    "location": {
+                      "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                      "line": 41,
+                      "column": 8
+                    }
+                  }
+                ],
+                "expectedStatus": "failed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 163,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator(\"internal:role=status\")\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\nTimed out after 80ms\nLocator: locator(\"internal:role=status\")\nExpected: \u001b[32m\"impossible\"\u001b[39m\nReceived: \u001b[31m\"Ready\"\u001b[39m",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator(\"internal:role=status\")\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\nTimed out after 80ms\nLocator: locator(\"internal:role=status\")\nExpected: \u001b[32m\"impossible\"\u001b[39m\nReceived: \u001b[31m\"Ready\"\u001b[39m\n    at /Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts:42:47",
+                      "location": {
+                        "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                        "column": 47,
+                        "line": 42
+                      },
+                      "snippet": "  40 | test('soft native assertion failures reach the reporter', async ({ page }, testInfo) => {\n  41 |   test.fail();\n> 42 |   await expect.soft(page.getByRole('status')).toHaveText('impossible', { timeout: 80 });\n     |                                               ^\n  43 |   expect(testInfo.errors).toHaveLength(1);\n  44 |   await expect(page.getByRole('status')).toHaveText('Ready');\n  45 | });"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                          "column": 47,
+                          "line": 42
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator(\"internal:role=status\")\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\nTimed out after 80ms\nLocator: locator(\"internal:role=status\")\nExpected: \u001b[32m\"impossible\"\u001b[39m\nReceived: \u001b[31m\"Ready\"\u001b[39m\n\n  40 | test('soft native assertion failures reach the reporter', async ({ page }, testInfo) => {\n  41 |   test.fail();\n> 42 |   await expect.soft(page.getByRole('status')).toHaveText('impossible', { timeout: 80 });\n     |                                               ^\n  43 |   expect(testInfo.errors).toHaveLength(1);\n  44 |   await expect(page.getByRole('status')).toHaveText('Ready');\n  45 | });\n    at /Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts:42:47"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:55.439Z",
+                    "annotations": [
+                      {
+                        "type": "fail",
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                          "line": 41,
+                          "column": 8
+                        }
+                      }
+                    ],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                      "column": 47,
+                      "line": 42
+                    }
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "153913f684d2eb35d750-1a653aa484ae77d218f1",
+            "file": "runner.spec.ts",
+            "line": 40,
+            "column": 1
+          },
+          {
+            "title": "configured native assertion reports received value and call site",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 282,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:55.611Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "153913f684d2eb35d750-2dcb5032dfa26a672d6b",
+            "file": "runner.spec.ts",
+            "line": 46,
+            "column": 1
+          },
+          {
+            "title": "runner retries use fresh fixture ownership",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 77,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at /Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts:57:26",
+                      "location": {
+                        "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                        "column": 26,
+                        "line": 57
+                      },
+                      "snippet": "  55 | test('runner retries use fresh fixture ownership', async ({ page }, testInfo) => {\n  56 |   await expect(page.getByRole('status')).toHaveText('Ready');\n> 57 |   expect(testInfo.retry).toBe(1);\n     |                          ^\n  58 | });\n  59 | test('runner timeout tears down an unbounded native assertion', async ({ page }) => {\n  60 |   test.setTimeout(150);"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                          "column": 26,
+                          "line": 57
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\n  55 | test('runner retries use fresh fixture ownership', async ({ page }, testInfo) => {\n  56 |   await expect(page.getByRole('status')).toHaveText('Ready');\n> 57 |   expect(testInfo.retry).toBe(1);\n     |                          ^\n  58 | });\n  59 | test('runner timeout tears down an unbounded native assertion', async ({ page }) => {\n  60 |   test.setTimeout(150);\n    at /Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts:57:26"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:55.899Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "/Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts",
+                      "column": 26,
+                      "line": 57
+                    }
+                  },
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 101,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 1,
+                    "startTime": "2026-10-08T20:17:56.492Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "flaky"
+              }
+            ],
+            "id": "153913f684d2eb35d750-ed71240106aba8757de4",
+            "file": "runner.spec.ts",
+            "line": 55,
+            "column": 1
+          },
+          {
+            "title": "runner timeout tears down an unbounded native assertion",
+            "ok": false,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 150,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "timedOut",
+                    "duration": 159,
+                    "error": {
+                      "message": "\u001b[31mTest timeout of 150ms exceeded.\u001b[39m",
+                      "stack": "\u001b[31mTest timeout of 150ms exceeded.\u001b[39m"
+                    },
+                    "errors": [
+                      {
+                        "message": "\u001b[31mTest timeout of 150ms exceeded.\u001b[39m"
+                      },
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                          "column": 10,
+                          "line": 43
+                        },
+                        "message": "TargetClosedError: assertion.run: target has been closed or is not owned by this driver\n\n   at ../../../packages/flashwright/src/errors.ts:43\n\n  41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,\n  42 |   };\n> 43 |   return new (constructors[record.code] ?? ProtocolError)(record);\n     |          ^\n  44 | }\n  45 |\n  46 | export function failure(code: string, method: string, message: string): FlashwrightError {\n    at fromRecord (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:43:10)\n    at EngineClient.consume (/Users/P/p/flashwright/packages/flashwright/src/client.ts:309:35)\n    at Socket.<anonymous> (/Users/P/p/flashwright/packages/flashwright/src/client.ts:88:60)\n    at EngineClient.request (/Users/P/p/flashwright/packages/flashwright/src/client.ts:167:22)\n    at Page.runAssertion (/Users/P/p/flashwright/packages/flashwright/src/index.ts:305:34)\n    at Frame.runAssertion (/Users/P/p/flashwright/packages/flashwright/src/frame.ts:19:23)\n    at Locator.runAssertion (/Users/P/p/flashwright/packages/flashwright/src/locator.ts:99:111)\n    at assertion (/Users/P/p/flashwright/packages/flashwright-test/src/matchers.ts:27:59)\n    at textAssertion (/Users/P/p/flashwright/packages/flashwright-test/src/matchers.ts:46:10)\n    at Object.toHaveText (/Users/P/p/flashwright/packages/flashwright-test/src/matchers.ts:50:124)\n    at /Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts:61:40"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:56.749Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  },
+                  {
+                    "workerIndex": 2,
+                    "parallelIndex": 0,
+                    "status": "timedOut",
+                    "duration": 156,
+                    "error": {
+                      "message": "\u001b[31mTest timeout of 150ms exceeded.\u001b[39m",
+                      "stack": "\u001b[31mTest timeout of 150ms exceeded.\u001b[39m"
+                    },
+                    "errors": [
+                      {
+                        "message": "\u001b[31mTest timeout of 150ms exceeded.\u001b[39m"
+                      },
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                          "column": 10,
+                          "line": 43
+                        },
+                        "message": "TargetClosedError: assertion.run: target has been closed or is not owned by this driver\n\n   at ../../../packages/flashwright/src/errors.ts:43\n\n  41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,\n  42 |   };\n> 43 |   return new (constructors[record.code] ?? ProtocolError)(record);\n     |          ^\n  44 | }\n  45 |\n  46 | export function failure(code: string, method: string, message: string): FlashwrightError {\n    at fromRecord (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:43:10)\n    at EngineClient.consume (/Users/P/p/flashwright/packages/flashwright/src/client.ts:309:35)\n    at Socket.<anonymous> (/Users/P/p/flashwright/packages/flashwright/src/client.ts:88:60)\n    at EngineClient.request (/Users/P/p/flashwright/packages/flashwright/src/client.ts:167:22)\n    at Page.runAssertion (/Users/P/p/flashwright/packages/flashwright/src/index.ts:305:34)\n    at Frame.runAssertion (/Users/P/p/flashwright/packages/flashwright/src/frame.ts:19:23)\n    at Locator.runAssertion (/Users/P/p/flashwright/packages/flashwright/src/locator.ts:99:111)\n    at assertion (/Users/P/p/flashwright/packages/flashwright-test/src/matchers.ts:27:59)\n    at textAssertion (/Users/P/p/flashwright/packages/flashwright-test/src/matchers.ts:46:10)\n    at Object.toHaveText (/Users/P/p/flashwright/packages/flashwright-test/src/matchers.ts:50:124)\n    at /Users/P/p/flashwright/compatibility/m2/runner/runner.spec.ts:61:40"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 1,
+                    "startTime": "2026-10-08T20:17:57.496Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "unexpected"
+              }
+            ],
+            "id": "153913f684d2eb35d750-3ffa99be1c9b4983ce10",
+            "file": "runner.spec.ts",
+            "line": 59,
+            "column": 1
+          },
+          {
+            "title": "unimplemented browser matchers reject explicitly",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 3,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 81,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:58.293Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "flashwright-context-disposed",
+                        "contentType": "text/plain",
+                        "body": "ZGlzcG9zZWQ="
+                      }
+                    ]
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "153913f684d2eb35d750-89aa749a3f0022b2fa2d",
+            "file": "runner.spec.ts",
+            "line": 63,
+            "column": 1
+          }
+        ],
+        "suites": [
+          {
+            "title": "stored login state",
+            "file": "runner.spec.ts",
+            "line": 17,
+            "column": 6,
+            "specs": [
+              {
+                "title": "context options restore state before page fixture",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 10000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 126,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-08T20:17:55.057Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "flashwright-context-disposed",
+                            "contentType": "text/plain",
+                            "body": "ZGlzcG9zZWQ="
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "153913f684d2eb35d750-23861d5630d14cd836d3",
+                "file": "runner.spec.ts",
+                "line": 20,
+                "column": 3
+              }
+            ],
+            "suites": [
+              {
+                "title": "explicit state",
+                "file": "runner.spec.ts",
+                "line": 23,
+                "column": 8,
+                "specs": [
+                  {
+                    "title": "storage state option overrides context options",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 10000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 119,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-08T20:17:55.190Z",
+                            "annotations": [],
+                            "attachments": [
+                              {
+                                "name": "flashwright-context-disposed",
+                                "contentType": "text/plain",
+                                "body": "ZGlzcG9zZWQ="
+                              }
+                            ]
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "153913f684d2eb35d750-52d667f53d8aaa759dac",
+                    "file": "runner.spec.ts",
+                    "line": 25,
+                    "column": 5
+                  }
+                ]
+              },
+              {
+                "title": "file state",
+                "file": "runner.spec.ts",
+                "line": 29,
+                "column": 8,
+                "specs": [
+                  {
+                    "title": "file storage state restores through fixture override",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 10000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 119,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-08T20:17:55.314Z",
+                            "annotations": [],
+                            "attachments": [
+                              {
+                                "name": "flashwright-context-disposed",
+                                "contentType": "text/plain",
+                                "body": "ZGlzcG9zZWQ="
+                              }
+                            ]
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "153913f684d2eb35d750-7bbfc42d004ac215f42e",
+                    "file": "runner.spec.ts",
+                    "line": 35,
+                    "column": 5
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "unsupported-context.spec.ts",
+        "file": "unsupported-context.spec.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "unsupported context options reject before the test body",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [
+                  {
+                    "type": "fail",
+                    "location": {
+                      "file": "/Users/P/p/flashwright/compatibility/m2/runner/unsupported-context.spec.ts",
+                      "line": 3,
+                      "column": 6
+                    }
+                  }
+                ],
+                "expectedStatus": "failed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 3,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 0,
+                    "error": {
+                      "message": "UnsupportedFeatureError: test.use.locale: option is not implemented by the Flashwright development runner",
+                      "stack": "UnsupportedFeatureError: test.use.locale: option is not implemented by the Flashwright development runner\n    at fromRecord (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:43:10)\n    at failure (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:47:10)\n    at unsupportedOptions (/Users/P/p/flashwright/packages/flashwright-test/src/index.ts:12:94)\n    at Object.exports.test.upstream._baseTest.extend._validateContextOptions.auto (/Users/P/p/flashwright/packages/flashwright-test/src/index.ts:69:5)",
+                      "location": {
+                        "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                        "column": 10,
+                        "line": 43
+                      },
+                      "snippet": "\u001b[90m   at \u001b[39m../../../packages/flashwright/src/errors.ts:43\n\n  41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,\n  42 |   };\n> 43 |   return new (constructors[record.code] ?? ProtocolError)(record);\n     |          ^\n  44 | }\n  45 |\n  46 | export function failure(code: string, method: string, message: string): FlashwrightError {"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                          "column": 10,
+                          "line": 43
+                        },
+                        "message": "UnsupportedFeatureError: test.use.locale: option is not implemented by the Flashwright development runner\n\n   at ../../../packages/flashwright/src/errors.ts:43\n\n  41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,\n  42 |   };\n> 43 |   return new (constructors[record.code] ?? ProtocolError)(record);\n     |          ^\n  44 | }\n  45 |\n  46 | export function failure(code: string, method: string, message: string): FlashwrightError {\n    at fromRecord (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:43:10)\n    at failure (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:47:10)\n    at unsupportedOptions (/Users/P/p/flashwright/packages/flashwright-test/src/index.ts:12:94)\n    at Object.exports.test.upstream._baseTest.extend._validateContextOptions.auto (/Users/P/p/flashwright/packages/flashwright-test/src/index.ts:69:5)"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:58.527Z",
+                    "annotations": [
+                      {
+                        "type": "fail",
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/m2/runner/unsupported-context.spec.ts",
+                          "line": 3,
+                          "column": 6
+                        }
+                      }
+                    ],
+                    "attachments": [],
+                    "errorLocation": {
+                      "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                      "column": 10,
+                      "line": 43
+                    }
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "22b7f78ba714e1ed6d4d-e7aad37116ecc17b6add",
+            "file": "unsupported-context.spec.ts",
+            "line": 4,
+            "column": 1
+          }
+        ]
+      },
+      {
+        "title": "unsupported-trace.spec.ts",
+        "file": "unsupported-trace.spec.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "unsupported artifact policy rejects before the test body",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 10000,
+                "annotations": [
+                  {
+                    "type": "fail",
+                    "location": {
+                      "file": "/Users/P/p/flashwright/compatibility/m2/runner/unsupported-trace.spec.ts",
+                      "line": 3,
+                      "column": 6
+                    }
+                  }
+                ],
+                "expectedStatus": "failed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 4,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 0,
+                    "error": {
+                      "message": "UnsupportedFeatureError: test.use.trace: artifact collection is not implemented; use off",
+                      "stack": "UnsupportedFeatureError: test.use.trace: artifact collection is not implemented; use off\n    at fromRecord (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:43:10)\n    at failure (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:47:10)\n    at Object.exports.test.upstream._baseTest.extend._validateWorkerOptions.scope (/Users/P/p/flashwright/packages/flashwright-test/src/index.ts:50:113)",
+                      "location": {
+                        "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                        "column": 10,
+                        "line": 43
+                      },
+                      "snippet": "\u001b[90m   at \u001b[39m../../../packages/flashwright/src/errors.ts:43\n\n  41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,\n  42 |   };\n> 43 |   return new (constructors[record.code] ?? ProtocolError)(record);\n     |          ^\n  44 | }\n  45 |\n  46 | export function failure(code: string, method: string, message: string): FlashwrightError {"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                          "column": 10,
+                          "line": 43
+                        },
+                        "message": "UnsupportedFeatureError: test.use.trace: artifact collection is not implemented; use off\n\n   at ../../../packages/flashwright/src/errors.ts:43\n\n  41 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,\n  42 |   };\n> 43 |   return new (constructors[record.code] ?? ProtocolError)(record);\n     |          ^\n  44 | }\n  45 |\n  46 | export function failure(code: string, method: string, message: string): FlashwrightError {\n    at fromRecord (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:43:10)\n    at failure (/Users/P/p/flashwright/packages/flashwright/src/errors.ts:47:10)\n    at Object.exports.test.upstream._baseTest.extend._validateWorkerOptions.scope (/Users/P/p/flashwright/packages/flashwright-test/src/index.ts:50:113)"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-08T20:17:59.024Z",
+                    "annotations": [
+                      {
+                        "type": "fail",
+                        "location": {
+                          "file": "/Users/P/p/flashwright/compatibility/m2/runner/unsupported-trace.spec.ts",
+                          "line": 3,
+                          "column": 6
+                        }
+                      }
+                    ],
+                    "attachments": [
+                      {
+                        "name": "trace",
+                        "contentType": "application/zip",
+                        "path": "/Users/P/p/flashwright/test-results/unsupported-trace-unsuppor-3c068-ejects-before-the-test-body/trace.zip"
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "/Users/P/p/flashwright/packages/flashwright/src/errors.ts",
+                      "column": 10,
+                      "line": 43
+                    }
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "00b5464a02ccbd50300d-7baf45fe0801da2a6bde",
+            "file": "unsupported-trace.spec.ts",
+            "line": 4,
+            "column": 1
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "stats": {
+      "startTime": "2026-10-08T20:17:54.010Z",
+      "duration": 5049.125,
+      "expected": 10,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 1
+    }
+  },
+  "checks": [
+    "native browser fixtures",
+    "extended page objects and custom options",
+    "context isolation",
+    "storageState context-option inheritance, explicit override and file fixture",
+    "soft/configured/negated assertions",
+    "retry ownership",
+    "timeout teardown",
+    "explicit unsupported config and matcher rejection",
+    "upstream browser/request paths poisoned"
+  ],
+  "scope": "Experimental adapter; artifacts, aliases and full runner/config parity remain incomplete."
+}

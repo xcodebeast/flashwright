@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(workload.completeMilliseconds >= workload.preparationMilliseconds + workload.samples.reduce((sum, sample) => sum + sample.milliseconds, 0))
+
+    at verifyLaunch (file:///Users/P/p/flashwright/benchmarks/paired-contract.mjs:35:12)
+    at file:///Users/P/p/flashwright/tools/verify-driver-comparison.mjs:58:5 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

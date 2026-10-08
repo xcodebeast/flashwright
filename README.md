@@ -160,6 +160,20 @@ The [current adoption checkpoint](compatibility/evidence/resident-adoption-profi
 
 The [default verification and timing checkpoint](compatibility/evidence/resident-default-checkpoint-2026-10-08.json) then checks the rebuilt engine with the environment switch absent: 35 full native groups, eight Node22 groups, eleven emulated Linux groups and four explicit-off groups pass at 205 matching source hashes. The three existing resident protocol cases explicitly remove the switch and verify cancellation ownership and released subscriptions. Its final 16-launch comparison uses that rebuilt default and matching native conformance. The rebuilt default comparison records median ratio 1.0672 (95% bootstrap interval 0.9919–1.1313), about 6.3% less complete-run time. Its confidence interval includes parity, so this final run does not establish a statistically resolved complete-run gain. The preceding identical-binary adoption comparisons show 5.3% less time against Playwright and 4.6% less time against residency off; all eighteen resident-on resource comparisons pass. The 10% complete-flow release target remains open. Failure medians and interaction/navigation observed maxima exceed the regression thresholds. The resource matrix remains bound to its pre-default binary; the assertion algorithm is unchanged. Native Linux performance, worker contention and broader release gates remain open.
 
+
+The [page-initialization experiment](compatibility/evidence/page-initialization-checkpoint-2026-10-08.json) tested concurrent independent CDP setup commands. All 56 candidate verification groups passed, but the eight-pair old/new comparison showed complete-run ratio 0.9973 (95% interval 0.9767–1.0619) and setup ratio 1.0195 (0.9732–1.0440), both unresolved. Navigation's median point crossed the 5% regression threshold. Wrapper-inclusive process wall improved about 1.4%; that small result did not justify added concurrency without a resolved browser-flow benefit. The change was rejected and the prior production binary restored exactly. Its current 208-source tree passes all 35 native groups, including 65 Rust tests and 82 lifecycle cases. The retained candidate's separate Playwright comparison saves about 4.7% complete-run time, below the material target, with failure-median and noop/failure-maximum regressions. That candidate result is not a claim about the restored production path.
+
+The reusable driver comparison alternates two independently verified binaries while requiring identical adapter, workloads, configuration, browser and measurement code. Both reports must match the selected Node/platform/browser/mode; candidate sources must match the current tree. It retains raw resource observations and copies both conformance reports and their logs for verification after relocation. Run it after building and verifying each binary, with the same browser override used for core verification:
+
+```sh
+FLASHWRIGHT_REFERENCE_DRIVER_PATH=/absolute/path/to/reference-driver \
+FLASHWRIGHT_REFERENCE_VERIFICATION_REPORT=/absolute/path/to/reference-core/report.json \
+FLASHWRIGHT_DRIVER_PATH=/absolute/path/to/candidate-driver \
+FLASHWRIGHT_VERIFICATION_REPORT=/absolute/path/to/candidate-core/report.json \
+node benchmarks/compare-drivers.mjs
+node tools/verify-driver-comparison.mjs benchmarks/results/<retained-driver-comparison>
+```
+
 ## R4 Upstream sources
 
 Pinned Playwright declarations supply the compatibility inventory. Selected upstream test bodies are retained unchanged under compatibility/migration-projects, with source URLs and hashes beside them. The packed migration harness now executes the three TodoMVC tests; SVGOMG remains a target for the later frame, download and file API work. Migration results are functional evidence and do not establish a performance advantage
