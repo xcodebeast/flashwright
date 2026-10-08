@@ -23,7 +23,7 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
       do {
         await new Promise(resolve => globalThis.setTimeout(resolve, 0));
         const state = registry.inspect();
-        if (!state.queuedConditions && !state.flushMicrotaskScheduled && !state.flushTaskScheduled) return;
+        if (!state.queuedConditions && !state.flushMicrotaskScheduled && !state.flushTaskScheduled && !state.fallbackSchedulingQueued) return;
       } while (globalThis.performance.now() < deadline);
       throw new Error('Registry queue did not drain before advancing the controlled clock');
     };
@@ -35,18 +35,35 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
       await drain();
       return {...checks};
     };
+    const advanceTimer = async time => {
+      now = time;
+      const timer = [...timers.entries()].find(([,timer]) => timer.deadline <= time);
+      if (!timer) throw new Error('Expected a due fallback timer');
+      timers.delete(timer[0]);
+      timer[1].callback();
+      await drain();
+      return {...checks};
+    };
     const long = registry.wait({token:'long',check:() => {
       checks.long++; return {status:'observation',matches:false};
     }});
     try {
       await drain();
       const frames = [];
-      for (const time of [16,32,96,100,120,128]) frames.push(await advanceFrame(time));
+      for (const time of [16,32,96,100]) frames.push(await advanceFrame(time));
+      const paced = {framePending:frame !== undefined,state:registry.inspect(),deadlines:[...timers.values()].map(timer => timer.deadline)};
+      now = 120;
+      await drain();
+      frames.push({...checks});
+      frames.push(await advanceTimer(128));
       now = 129;
       globalThis.dispatchEvent(new Event('input'));
       await drain();
       const afterEvent = {...checks};
-      const afterRecentEvent = await advanceFrame(145);
+      const afterEventSchedule = {framePending:frame !== undefined,state:registry.inspect(),deadlines:[...timers.values()].map(timer => timer.deadline)};
+      now = 145;
+      await drain();
+      const afterRecentEvent = {...checks};
       const short = registry.wait({token:'short',timeoutMilliseconds:25,check:() => {
         checks.short++; return {status:'observation',matches:false};
       }});
@@ -62,12 +79,17 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
       const shortResult = await short;
       registry.cancel('long');
       const longResult = await long;
-      return {frames,afterEvent,afterRecentEvent,afterNewCondition,afterInterval,shortResult,longResult,
+      return {frames,paced,afterEvent,afterEventSchedule,afterRecentEvent,afterNewCondition,afterInterval,shortResult,longResult,
         state:registry.inspect(),timers:timers.size,framePending:frame !== undefined};
     } finally { registry.dispose(); }
   })()`);
   assert.deepEqual(clocked.frames.map(check => check.long), [2, 3, 4, 4, 4, 5]);
+  assert.equal(clocked.paced.framePending, false);
+  assert.deepEqual(clocked.paced.deadlines, [128]);
   assert.deepEqual(clocked.afterEvent, { long: 6, short: 0 });
+  assert.equal(clocked.afterEventSchedule.framePending, false);
+  assert.deepEqual(clocked.afterEventSchedule.deadlines, [161]);
+  assert.equal(clocked.afterEventSchedule.state.animationFrameRequests, clocked.paced.state.animationFrameRequests);
   assert.deepEqual(clocked.afterRecentEvent, { long: 6, short: 0 });
   assert.deepEqual(clocked.afterNewCondition, { long: 6, short: 2 });
   assert.deepEqual(clocked.afterInterval, { long: 7, short: 3 });
@@ -77,11 +99,14 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
   assert.ok(clocked.state.fallbackConditionsDeferred > 0);
   assert.equal(clocked.state.activeConditions, 0);
   assert.equal(clocked.state.flushChannelOpen, false);
+  assert.equal(clocked.state.fallbackSchedulingQueued, false);
   assert.equal(clocked.timers, 0);
   assert.equal(clocked.framePending, false);
-  cases.push({ name: 'paced fallback preserves fresh-condition frames, immediate events and independent deadlines', clocked,
+  cases.push({ name: 'paced fallback avoids frame requests and preserves fresh-condition frames, immediate events and independent deadlines', clocked,
     scope: 'Controlled registry clock and fallback callbacks; no browser latency or performance claim.' });
   console.log(`Resident registry: ${cases.at(-1).name}`);
+
+  await verifyFallbackOwnership({ evaluate, cases, registrySource });
 
   await reset('<style>p { visibility:hidden }</style><p>target</p><input value="before"><div id="host"></div>');
   const tokens = [
@@ -108,4 +133,134 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
   const awakened = await clean('long-pending mutation still wakes with both fallback callbacks withheld');
   assert.ok(awakened.mutationBatches > 0);
   assert.equal(awakened.fallbackChecks, 0);
+}
+
+/** Exercise callback retirement and concurrent asynchronous checks without relying
+ * on browser frame timing. Real microtasks and registry task yields still run. */
+async function verifyFallbackOwnership({ evaluate, cases, registrySource }) {
+  const ownership = await evaluate(`(async () => {
+    let now = 0;
+    let nextCallback = 0;
+    const frames = new Map();
+    const timers = new Map();
+    const performance = {now:() => now};
+    const requestAnimationFrame = callback => { const token = ++nextCallback; frames.set(token, callback); return token; };
+    const cancelAnimationFrame = token => frames.delete(token);
+    const setTimeout = (callback, delay) => {
+      const token = ++nextCallback; timers.set(token, {callback,deadline:now + delay}); return token;
+    };
+    const clearTimeout = token => timers.delete(token);
+    ${registrySource}
+    const registry = createConditionRegistry({instrumentation:true,observeMutations:false});
+    const observation = {status:'observation',matches:false};
+    const drain = async () => {
+      const deadline = globalThis.performance.now() + 2000;
+      do {
+        await new Promise(resolve => globalThis.setTimeout(resolve, 0));
+        const state = registry.inspect();
+        if (!state.queuedConditions && !state.flushMicrotaskScheduled && !state.flushTaskScheduled && !state.fallbackSchedulingQueued) return;
+      } while (globalThis.performance.now() < deadline);
+      throw new Error('Registry ownership test did not drain');
+    };
+    const snapshot = () => ({state:registry.inspect(),frames:[...frames.keys()],timers:[...timers.keys()]});
+    try {
+      const concurrent = Array.from({length:128}, (_, index) => registry.wait({token:'batch-' + index,check:() => observation}));
+      await drain();
+      const coalesced = snapshot();
+      registry.dispose();
+      const concurrentResults = await Promise.all(concurrent);
+
+      const retired = registry.wait({token:'retired',check:() => observation});
+      await drain();
+      const retiredFrame = [...frames.values()][0];
+      const retiredTimer = [...timers.values()][0].callback;
+      registry.cancel('retired');
+      await retired;
+      const successor = registry.wait({token:'successor',check:() => observation});
+      await drain();
+      const beforeRetiredCallbacks = snapshot();
+      retiredFrame();
+      retiredTimer();
+      await drain();
+      const afterRetiredCallbacks = snapshot();
+      registry.cancel('successor');
+      await successor;
+
+      // Retire a group after its check queues planning but before planning runs.
+      const planning = registry.wait({token:'planning',check:() => observation});
+      await Promise.resolve();
+      const planningWasQueued = registry.inspect().fallbackSchedulingQueued;
+      registry.cancel('planning');
+      const replacement = registry.wait({token:'replacement',check:() => observation});
+      await drain();
+      const replacementScheduled = snapshot();
+      registry.cancel('replacement');
+      await Promise.all([planning, replacement]);
+
+      let finishBlockedCheck;
+      let blockedChecks = 0;
+      const blocked = registry.wait({token:'blocked',timeoutMilliseconds:300,check:() => {
+        if (++blockedChecks === 2) return new Promise(resolve => { finishBlockedCheck = resolve; });
+        return observation;
+      }});
+      await drain();
+      now = 16;
+      const [frameToken, frameCallback] = [...frames.entries()][0];
+      frames.delete(frameToken);
+      frameCallback();
+      await drain();
+      const whileBlocked = {snapshot:snapshot(),checks:blockedChecks,deadlines:[...timers.values()].map(timer => timer.deadline)};
+      const independent = await registry.wait({token:'independent',check:() => ({status:'observation',matches:true})});
+      await drain();
+      finishBlockedCheck(observation);
+      await drain();
+      const afterCompletion = {snapshot:snapshot(),checks:blockedChecks};
+      registry.cancel('blocked');
+      await blocked;
+
+      const expiring = registry.wait({token:'expiring',timeoutMilliseconds:25,check:() => new Promise(() => {})});
+      now = 41;
+      const [deadlineToken, deadline] = [...timers.entries()][0];
+      timers.delete(deadlineToken);
+      deadline.callback();
+      const expired = await expiring;
+      await drain();
+      return {coalesced,concurrentResults,beforeRetiredCallbacks,afterRetiredCallbacks,planningWasQueued,
+        replacementScheduled,whileBlocked,independent,afterCompletion,expired,final:snapshot()};
+    } finally { registry.dispose(); }
+  })()`);
+  assert.equal(ownership.coalesced.state.predicateEvaluations, 128);
+  assert.equal(ownership.coalesced.state.fallbackSchedulingPasses, 1);
+  assert.equal(ownership.coalesced.frames.length, 1);
+  assert.equal(ownership.coalesced.timers.length, 1);
+  assert.ok(ownership.concurrentResults.every(result => result.status === 'cancelled'));
+  cases.push({ name: '128 concurrent completed checks share one fallback planning pass', counters: ownership.coalesced.state });
+  console.log(`Resident registry: ${cases.at(-1).name}`);
+
+  assert.deepEqual(ownership.afterRetiredCallbacks, ownership.beforeRetiredCallbacks);
+  assert.equal(ownership.planningWasQueued, true);
+  assert.equal(ownership.replacementScheduled.state.fallbackSchedulingQueued, false);
+  assert.equal(ownership.replacementScheduled.frames.length, 1);
+  assert.equal(ownership.replacementScheduled.timers.length, 1);
+  cases.push({ name: 'retired frames, timers and planning microtasks preserve successor scheduling',
+    before: ownership.beforeRetiredCallbacks, after: ownership.afterRetiredCallbacks, replacement: ownership.replacementScheduled });
+  console.log(`Resident registry: ${cases.at(-1).name}`);
+
+  assert.equal(ownership.whileBlocked.checks, 2);
+  assert.equal(ownership.whileBlocked.snapshot.state.fallbackTimerScheduled, false);
+  assert.deepEqual(ownership.whileBlocked.snapshot.frames, []);
+  assert.deepEqual(ownership.whileBlocked.deadlines, [300]);
+  assert.equal(ownership.independent.status, 'matched');
+  assert.equal(ownership.afterCompletion.checks, 2);
+  assert.equal(ownership.afterCompletion.snapshot.state.fallbackTimerScheduled, true);
+  assert.equal(ownership.afterCompletion.snapshot.frames.length, 1);
+  assert.equal(ownership.expired.status, 'expired');
+  assert.equal(ownership.final.state.activeConditions, 0);
+  assert.equal(ownership.final.state.fallbackSchedulingQueued, false);
+  assert.equal(ownership.final.state.flushChannelOpen, false);
+  assert.deepEqual(ownership.final.frames, []);
+  assert.deepEqual(ownership.final.timers, []);
+  cases.push({ name: 'running checks suspend fallback work without blocking independent checks or deadlines',
+    blocked: ownership.whileBlocked, resumed: ownership.afterCompletion, expired: ownership.expired, final: ownership.final });
+  console.log(`Resident registry: ${cases.at(-1).name}`);
 }

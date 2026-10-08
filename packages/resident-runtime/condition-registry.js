@@ -16,7 +16,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   const maximumChecksPerTask = 32;
   const maximumCheckMillisecondsPerTask = 4;
   const events = ['input', 'change', 'focusin', 'focusout', 'resize', 'scroll', 'hashchange', 'popstate', 'visibilitychange', 'transitionrun', 'transitionend', 'animationstart', 'animationend'];
-  const counters = { predicateEvaluations: 0, discoveryPasses: 0, discoveryVisits: 0, mutationBatches: 0, mutationRecordsVisited: 0, addedNodesVisited: 0, fallbackChecks: 0, animationFrameChecks: 0, timerFallbackChecks: 0, fallbackConditionInvalidations: 0, fallbackConditionsDeferred: 0, discoveryOverflows: 0, flushTasks: 0, maximumChecksBeforeYield: 0 };
+  const counters = { predicateEvaluations: 0, discoveryPasses: 0, discoveryVisits: 0, mutationBatches: 0, mutationRecordsVisited: 0, addedNodesVisited: 0, fallbackChecks: 0, animationFrameChecks: 0, timerFallbackChecks: 0, fallbackConditionInvalidations: 0, fallbackConditionsDeferred: 0, fallbackSchedulingPasses: 0, animationFrameRequests: 0, fallbackTimerRequests: 0, discoveryOverflows: 0, flushTasks: 0, maximumChecksBeforeYield: 0 };
   let observer;
   let generation = 0;
   let flushQueued = false;
@@ -26,6 +26,8 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   let flushStartedAt;
   let animationFrame;
   let fallbackTimer;
+  let fallbackTimerDeadline;
+  let fallbackSchedulingQueued = false;
   let deadlineTimer;
   let discoveryTimer;
   let discoveryStarted = false;
@@ -138,7 +140,8 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     clearTimeout(fallbackTimer);
     clearTimeout(deadlineTimer);
     clearTimeout(discoveryTimer);
-    animationFrame = fallbackTimer = deadlineTimer = discoveryTimer = undefined;
+    animationFrame = fallbackTimer = fallbackTimerDeadline = deadlineTimer = discoveryTimer = undefined;
+    fallbackSchedulingQueued = false;
     flushQueued = discoveryStarted = false;
     discoveryVisits = 0;
   }
@@ -168,29 +171,67 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     }, Math.max(0, Math.min(nearest - performance.now(), 2147483647)));
   }
 
-  /** Frame callbacks catch property/CSS/animation changes; the timer covers stalled
-   * frame scheduling. Short waits check each frame; long waits avoid redundant
-   * fallback work shortly after any complete check. Mutation and event wakeups
-   * remain immediate, and deadlines use their own timer. */
+  /** Plan once after concurrent checks settle, rather than scan every condition
+   * for every result. Retired callbacks cannot alter a successor group's timers. */
+  function queueFallbackScheduling() {
+    if (fallbackSchedulingQueued || !conditions.size) return;
+    fallbackSchedulingQueued = true;
+    const queuedGeneration = generation;
+    queueMicrotask(() => {
+      if (queuedGeneration !== generation) return;
+      fallbackSchedulingQueued = false;
+      scheduleFallback();
+    });
+  }
+
+  /** Short waits use frames with a stalled-frame timer. Long waits use the next
+   * due predicate's timer directly, so deferred work does not keep requesting
+   * render frames. Events still invalidate immediately; deadlines are independent. */
   function scheduleFallback() {
     if (!conditions.size) return;
-    if (animationFrame === undefined) {
+    count('fallbackSchedulingPasses');
+    const now = performance.now();
+    let needsFrames = false;
+    let nextDeadline = Infinity;
+    for (const condition of conditions.values()) {
+      if (condition.running || condition.dirty) continue;
+      if (now - condition.registeredAt < fastFallbackWindowMilliseconds) needsFrames = true;
+      else nextDeadline = Math.min(nextDeadline, condition.lastCheckStartedAt + pendingFallbackIntervalMilliseconds);
+    }
+    const queuedGeneration = generation;
+    if (needsFrames && animationFrame === undefined) {
+      count('animationFrameRequests');
       animationFrame = requestAnimationFrame(() => {
+        if (queuedGeneration !== generation) return;
         animationFrame = undefined;
         count('fallbackChecks');
         count('animationFrameChecks');
         invalidateFallback();
-        scheduleFallback();
+        queueFallbackScheduling();
       });
+    } else if (!needsFrames && animationFrame !== undefined) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = undefined;
     }
-    if (fallbackTimer === undefined) {
+    // Keep the existing guard while frames are active. For paced waits, move the
+    // timer after fresh event-driven checks as well as before newly due work.
+    if (needsFrames) nextDeadline = fallbackTimerDeadline ?? now + fallbackMilliseconds;
+    else if (Number.isFinite(nextDeadline)) nextDeadline = Math.max(now, nextDeadline);
+    if (!Number.isFinite(nextDeadline)) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = fallbackTimerDeadline = undefined;
+    } else if (fallbackTimer === undefined || fallbackTimerDeadline !== nextDeadline) {
+      clearTimeout(fallbackTimer);
+      fallbackTimerDeadline = nextDeadline;
+      count('fallbackTimerRequests');
       fallbackTimer = setTimeout(() => {
-        fallbackTimer = undefined;
+        if (queuedGeneration !== generation) return;
+        fallbackTimer = fallbackTimerDeadline = undefined;
         count('fallbackChecks');
         count('timerFallbackChecks');
         invalidateFallback();
-        scheduleFallback();
-      }, fallbackMilliseconds);
+        queueFallbackScheduling();
+      }, Math.max(0, Math.min(nextDeadline - now, 2147483647)));
     }
     if (!discoveryStarted) {
       discoveryStarted = true;
@@ -301,14 +342,16 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
       // A full check that finishes after its deadline cannot become a late success.
       if (performance.now() >= condition.deadline) finish(condition, { status: 'expired', observation });
       else if (observation.matches !== condition.isNot) finish(condition, { status: 'matched', observation });
-      else scheduleFallback();
     } catch (error) {
       finish(condition, { status: 'error', message: String(error?.stack ?? error).slice(0, 16384) });
     } finally {
       condition.running = false;
-      if (conditions.get(condition.token) === condition && condition.dirty) {
-        dirtyConditions.add(condition);
-        queueFlush();
+      if (conditions.get(condition.token) === condition) {
+        if (condition.dirty) {
+          dirtyConditions.add(condition);
+          queueFlush();
+        }
+        queueFallbackScheduling();
       }
     }
   }
@@ -350,6 +393,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
       flushTaskScheduled: flushTaskQueued, flushChannelOpen: flushChannel !== undefined,
       queuedDiscovery: discoveryQueue.length, animationFrameScheduled: animationFrame !== undefined,
       fallbackTimerScheduled: fallbackTimer !== undefined, deadlineTimerScheduled: deadlineTimer !== undefined,
+      fallbackSchedulingQueued,
       discoveryTimerScheduled: discoveryTimer !== undefined,
     };
   }
