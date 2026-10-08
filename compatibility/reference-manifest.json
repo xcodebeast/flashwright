@@ -240,7 +240,7 @@
       "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T06-00-52.470Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "The private evaluation helper passes current conformance. Its 64 ordinary Playwright comparisons and four separate protocol-attribution launches are predeclared and pending. Historical timings and resource gates remain evidence for their recorded binaries. Residency remains default off.",
+    "performanceStatus": "All 64 ordinary launches and four separate attribution launches independently verify. Default-off complete-run ratios are 1.0138 (95% bootstrap interval 1.0008–1.0296) and 1.0015 (0.9858–1.0358), near parity. Residency-on ratios are 1.0524 (1.0421–1.0837) and 1.0599 (1.0442–1.0759), about 5.0% and 5.7% less time. Every comparison misses the 10% material target. Noop median regression is absent in all four, but its confidence interval overlaps parity in both repeats and its observed maximum regresses in the on-repeat. Failure medians regress in three comparisons, and setup observed maximum regresses in the first off comparison. All memory checks pass. Residency remains default off; native Linux, contention and release gates remain open.",
     "sourceIdentity": "159 matching source hashes pass 104 core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 library/context, assertion, 26 lifecycle/protocol and 57 registry cases also pass. Optimized driver: 1bb14edecf6a6f6b50436b00892ab837bee03ad3e018a7d03c9568016f0e0ad4.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
@@ -324,7 +324,8 @@
     "residentIndexedPerformanceCheckpoint": "compatibility/evidence/resident-indexed-performance-checkpoint-2026-10-08.json",
     "evaluationRuntimeExploration": "compatibility/evidence/evaluation-runtime-exploration-2026-10-08/report.json",
     "evaluationHelperCheckpoint": "compatibility/evidence/evaluation-helper-checkpoint-2026-10-08.json",
-    "evaluationHelperNode22Evidence": "compatibility/evidence/evaluation-helper-node22-2026-10-08.txt"
+    "evaluationHelperNode22Evidence": "compatibility/evidence/evaluation-helper-node22-2026-10-08.txt",
+    "evaluationHelperPerformanceCheckpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json"
   },
   "pairedRuns": [
     {
@@ -515,6 +516,58 @@
       "verification": "tools/verify-paired.mjs",
       "scope": "Shared native macOS single-worker engineering comparison; see checkpoint for gates and limitations.",
       "independentLaunchPairs": 8
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T06-12-41.700Z-darwin-arm64-paired-7ed36c4b",
+      "metadataSha256": "42e3fc20d852e9c03bd265912fc4edf95c1c62214e4d536c85b469f4416cde67",
+      "summarySha256": "415fde71e7ed849107ce58f3177f36490d80dc260b00d114464663f72303741c",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-evaluation-helper-off-first",
+      "independentLaunchPairs": 8,
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS, seven workloads, one worker, full preparation and cleanup. See checkpoint for confidence intervals and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T06-13-55.688Z-darwin-arm64-paired-f3b15189",
+      "metadataSha256": "737ce6abef4bcd9efdd90b66b1bc37fce90c563ade996291835e5e5de983a58d",
+      "summarySha256": "da3f81e0c8db9d097d85455fa998b7fc1ac553375d1b183953024bee8fee976b",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-evaluation-helper-off-replication",
+      "independentLaunchPairs": 8,
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS, seven workloads, one worker, full preparation and cleanup. See checkpoint for confidence intervals and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T06-15-09.943Z-darwin-arm64-paired-1ac1e536",
+      "metadataSha256": "dc5e06653aa09adae470ba4e62424d7277ce7bb1eb49d144631af631248a94f5",
+      "summarySha256": "6e3356525a074effef7e7eecbe80470fa0f3651c89c0ff19fd28ca31dd23eca2",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-evaluation-helper-on-first",
+      "independentLaunchPairs": 8,
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS, seven workloads, one worker, full preparation and cleanup. See checkpoint for confidence intervals and regressions."
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T06-16-23.078Z-darwin-arm64-paired-d4c986fe",
+      "metadataSha256": "98bcfe361c564e33fd69e85098333d133a7b84abf5590f9ebf30a20afc8bb054",
+      "summarySha256": "26116996c7eb3a5278b94c967c326327be3117bdec69b983aaa53229d2e60f4f",
+      "valid": true,
+      "unexpectedFailures": 0,
+      "checkpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+      "kind": "playwright-versus-evaluation-helper-on-replication",
+      "independentLaunchPairs": 8,
+      "distribution": "chromium-headless-shell",
+      "verification": "tools/verify-paired.mjs",
+      "scope": "Shared native macOS, seven workloads, one worker, full preparation and cleanup. See checkpoint for confidence intervals and regressions."
     }
   ],
   "attributionRuns": [
@@ -553,6 +606,16 @@
       "independentLaunchPairs": 2,
       "distribution": "chromium-headless-shell",
       "checkpoint": "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json"
+    },
+    {
+      "directory": "benchmarks/results/2026-10-08T06-17-36.305Z-darwin-arm64-attribution-2743112e",
+      "metadataSha256": "62b5d74c210abdbc6cff51ade00f36962edaa46308984b301167ae8919b3536e",
+      "summarySha256": "bc282621995856e7eb4022bb23fb186e6f820a86d9249d3f335dbc41c04b8a75",
+      "valid": true,
+      "checkpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
+      "independentLaunchPairs": 2,
+      "verification": "tools/verify-attribution.mjs",
+      "scope": "Payload-free proxy records count exact forwarded bytes and script identities. Six private helper installations serve 81 user evaluations per Flashwright launch. Instrumentation changes timing and resource costs; these observations are not ordinary speed or CPU claims."
     }
   ],
   "residencyRuns": [
