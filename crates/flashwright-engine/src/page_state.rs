@@ -15,7 +15,9 @@ pub(crate) struct PageState {
     pub state: Mutex<DocumentState>,
     pub changed: watch::Sender<u64>,
     pub locator_realms: tokio::sync::Mutex<HashMap<String, super::locators::LocatorRealm>>,
-    pub evaluation_runtime: Mutex<Option<Arc<super::evaluation::EvaluationRuntime>>>,
+    pub evaluation_runtimes: Mutex<HashMap<String, Arc<super::evaluation::EvaluationRuntime>>>,
+    pub handles: Mutex<HashMap<String, super::handles::Handle>>,
+    pub handle_slots: Arc<tokio::sync::Semaphore>,
     pub native_input: tokio::sync::Mutex<()>,
     pub screenshots: tokio::sync::Mutex<()>,
 }
@@ -79,7 +81,9 @@ impl Default for PageState {
             }),
             changed: watch::channel(0).0,
             locator_realms: tokio::sync::Mutex::new(HashMap::new()),
-            evaluation_runtime: Mutex::new(None),
+            evaluation_runtimes: Mutex::new(HashMap::new()),
+            handles: Mutex::new(HashMap::new()),
+            handle_slots: Arc::new(tokio::sync::Semaphore::new(super::handles::MAXIMUM_HANDLES)),
             native_input: tokio::sync::Mutex::new(()),
             screenshots: tokio::sync::Mutex::new(()),
         }
@@ -100,7 +104,7 @@ impl PageState {
                     if let Err(error) = state.check("page.evaluate") {
                         return error;
                     }
-                    if state.main_execution_context() != Some(context) {
+                    if state.main_worlds.get(&context.frame_identifier) != Some(context) {
                         return super::evaluation::context_destroyed();
                     }
                 }

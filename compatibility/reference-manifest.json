@@ -160,6 +160,11 @@
       "path": "compatibility/upstream/page-error.source.js",
       "provenance": "compatibility/upstream/page-error-provenance.json",
       "purpose": "Pinned Chromium exception formatting port; original event JSON preserves UTF-16 through Rust without another renderer command"
+    },
+    {
+      "path": "compatibility/upstream/handle-value.source.js",
+      "provenance": "compatibility/upstream/handle-value-provenance.json",
+      "purpose": "Pinned value/preview reference inspection and adapted DOM reference descriptions; independent native ownership and bounded UTF-16 wire values"
     }
   ],
   "inventory": {
@@ -249,11 +254,12 @@
       "compatibility/evidence/lifecycle-budget-checkpoint-2026-10-08.json",
       "compatibility/evidence/browser-payload-checkpoint-2026-10-08.json",
       "compatibility/evidence/screenshots-checkpoint-2026-10-08.json",
-      "compatibility/evidence/diagnostics-checkpoint-2026-10-08.json"
+      "compatibility/evidence/diagnostics-checkpoint-2026-10-08.json",
+      "compatibility/evidence/handles-checkpoint-2026-10-08.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
     "performanceStatus": "All 64 ordinary launches and four separate attribution launches independently verify. Default-off complete-run ratios are 1.0138 (95% bootstrap interval 1.0008\u20131.0296) and 1.0015 (0.9858\u20131.0358), near parity. Residency-on ratios are 1.0524 (1.0421\u20131.0837) and 1.0599 (1.0442\u20131.0759), about 5.0% and 5.7% less time. Every comparison misses the 10% material target. Noop median regression is absent in all four, but its confidence interval overlaps parity in both repeats and its observed maximum regresses in the on-repeat. Failure medians regress in three comparisons, and setup observed maximum regresses in the first off comparison. All memory checks pass. Residency remains default off; native Linux, contention and release gates remain open. These performance observations apply to the immutable evaluation-helper binary, before storage and output-limit changes. The current output-limit checkpoint has no new timing claim. The subsequent binary-attachment checkpoint also has no new timing claim. The subsequent browser-payload decoder checkpoint also has no new timing claim. The screenshot/native-viewport checkpoint changes browser setup and has no new timing claim.",
-    "sourceIdentity": "191 source hashes match across 31 native macOS core groups, seven focused Node22/headless-shell groups and ten focused emulated Linux groups. Current debug binaries: macOS 95ef7e1df6e34d5a527eb734525d11120237262035947213923a10bc87af34db; Linux b15b8d58b7d8230fa6b4e65e52c9eb6acabf706c0f53032fcf260fe12aca399f. See compatibility/evidence/diagnostics-checkpoint-2026-10-08.json. No new performance claim.",
+    "sourceIdentity": "199 source hashes match across 33 native macOS core groups, ten focused Node22/headless-shell groups and thirteen focused emulated Linux groups. Current debug binaries: macOS d9aa94fd64d78338f56d8116c7da822372df13c28c444762197f7133fd484fce; Linux 7e4b4d68a4aaec85dda5eb7d62bdc646ba80783912897a07f98ca20688eed6f1. See compatibility/evidence/handles-checkpoint-2026-10-08.json. No new performance claim.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -348,7 +354,9 @@
     "screenshotsCheckpoint": "compatibility/evidence/screenshots-checkpoint-2026-10-08.json",
     "screenshotsStatus": "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries.",
     "pageErrorCheckpoint": "compatibility/evidence/diagnostics-checkpoint-2026-10-08.json",
-    "pageErrorStatus": "All 31 native macOS core groups pass, including 58 Rust tests and 65 lifecycle cases. Seven focused Node22/headless-shell groups and ten focused Linux amd64-emulation groups pass at the same 191 source hashes. The final three diagnostic differentials match all 20 error cases and nine lifecycle checks exactly against Playwright 1.60.0. Packed ESM/CommonJS consumers preserve Error inference, and oversized exceptions fail with ResourceLimitError and release owned resources. This is functional evidence only; a full current Linux core and native Linux/performance/release gates remain open."
+    "pageErrorStatus": "All 31 native macOS core groups pass, including 58 Rust tests and 65 lifecycle cases. Seven focused Node22/headless-shell groups and ten focused Linux amd64-emulation groups pass at the same 191 source hashes. The final three diagnostic differentials match all 20 error cases and nine lifecycle checks exactly against Playwright 1.60.0. Packed ESM/CommonJS consumers preserve Error inference, and oversized exceptions fail with ResourceLimitError and release owned resources. This is functional evidence only; a full current Linux core and native Linux/performance/release gates remain open.",
+    "handleCheckpoint": "compatibility/evidence/handles-checkpoint-2026-10-08.json",
+    "handleStatus": "All 33 native macOS core groups pass, including 62 Rust tests and 73 lifecycle cases. Ten focused Node22/headless-shell groups and thirteen focused Linux amd64-emulation groups pass at the same 199 source hashes. The three final handle differentials match nine shared groups, including ten primitive cases, and retain the S4.l BigInt difference separately. Seven native handle lifecycle/publication cases and all five caller-deadline allocation cases pass. Packed ESM/CommonJS consumers preserve nested handle inference, property types, DOM subtypes and frame evaluation. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open."
   },
   "pairedRuns": [
     {

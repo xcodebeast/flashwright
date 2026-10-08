@@ -38,6 +38,8 @@ process.stdin.on('data', chunk => {
         } else {
           reply({ kind: 'result', requestId: allocation.requestId, value: null, inputDelivery: allocation.parameters.inputDelivery });
         }
+      } else if (allocation.method.endsWith('Handle') || allocation.method.startsWith('handle.')) {
+        reply({ kind: 'result', requestId: allocation.requestId, value: { page: 'original-page', group: 'late-group', handles: [] }, inputDelivery: 'notDispatched' });
       } else {
         reply({ kind: 'result', requestId: allocation.requestId, value: { identifier: 'late-allocation' }, inputDelivery: 'notDispatched' });
       }
@@ -49,8 +51,13 @@ process.stdin.on('data', chunk => {
         'browser.newContext': ['context.close', 'context'],
         'context.newPage': ['page.close', 'page'],
       }[allocation.method];
-      assert.equal(message.method, expected[0]);
-      assert.equal(message.parameters[expected[1]], 'late-allocation');
+      if (expected) {
+        assert.equal(message.method, expected[0]);
+        assert.equal(message.parameters[expected[1]], 'late-allocation');
+      } else {
+        assert.equal(message.method, 'handle.discard');
+        assert.deepEqual(message.parameters, { page: 'original-page', group: 'late-group' });
+      }
       completed = true;
       reply({ kind: 'result', requestId: message.requestId, value: null, inputDelivery: 'notDispatched' });
     }

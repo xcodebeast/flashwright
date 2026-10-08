@@ -11,6 +11,16 @@ impl Engine {
         result: &mut Value,
         prepare: impl FnOnce(&Value) -> Result<Prepared, ErrorRecord>,
     ) -> Result<Prepared, ErrorRecord> {
+        if matches!(
+            method,
+            "page.evaluateHandle"
+                | "frame.evaluateHandle"
+                | "handle.evaluateHandle"
+                | "handle.getProperty"
+                | "handle.getProperties"
+        ) {
+            return self.prepare_handle_publication(result, prepare);
+        }
         if !matches!(
             method,
             "browser.launch" | "browser.newContext" | "context.newPage"
@@ -66,6 +76,16 @@ impl Engine {
         method: &str,
         result: &Value,
     ) -> Option<&'static str> {
+        if matches!(
+            method,
+            "page.evaluateHandle"
+                | "frame.evaluateHandle"
+                | "handle.evaluateHandle"
+                | "handle.getProperty"
+                | "handle.getProperties"
+        ) {
+            return self.discard_handle_allocation(result).await;
+        }
         if !matches!(
             method,
             "browser.launch" | "browser.newContext" | "context.newPage"

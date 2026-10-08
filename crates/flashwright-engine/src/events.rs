@@ -138,6 +138,30 @@ impl Engine {
                         .ok();
                     let mut state = page.state.state.lock().unwrap();
                     let events = state.observe(&event.method, &parameters);
+                    if matches!(
+                        event.method.as_str(),
+                        "Runtime.executionContextCreated"
+                            | "Runtime.executionContextDestroyed"
+                            | "Runtime.executionContextsCleared"
+                            | "Page.frameDetached"
+                            | "Page.frameNavigated"
+                    ) {
+                        page.state
+                            .evaluation_runtimes
+                            .lock()
+                            .unwrap()
+                            .retain(|_, runtime| {
+                                state.main_worlds.get(&runtime.context.frame_identifier)
+                                    == Some(&runtime.context)
+                            });
+                        page.state.handles.lock().unwrap().retain(|_, handle| {
+                            handle.primitive.is_some()
+                                || state
+                                    .main_worlds
+                                    .get(&handle.runtime.context.frame_identifier)
+                                    == Some(&handle.runtime.context)
+                        });
+                    }
                     if state.published
                         && event.method == "Page.frameNavigated"
                         && let Some(origin) = parameters["frame"]["securityOrigin"].as_str()
@@ -181,6 +205,8 @@ impl Engine {
             return;
         }
         state.failure = Some(error);
+        page.state.handles.lock().unwrap().clear();
+        page.state.evaluation_runtimes.lock().unwrap().clear();
         state.sequence += 1;
         if state.published {
             self.emit(identifier, event, Value::Null);

@@ -56,7 +56,8 @@
       "locator/getByText/getByLabel/getByTestId/getByRole/getByPlaceholder/getByAltText/getByTitle",
       "reference focus/visibility defaults across multiple open pages",
       "screenshot returning a Buffer with optional atomic file output",
-      "pageerror events and typed on/once/waitForEvent for main-page and same-process child-frame exceptions"
+      "pageerror events and typed on/once/waitForEvent for main-page and same-process child-frame exceptions",
+      "evaluateHandle with JSHandle or ElementHandle identity"
     ],
     "evaluation": [
       "expression strings",
@@ -76,7 +77,9 @@
       "JavaScript exception strings",
       "user exceptions cannot be reclassified by misleading error text or spoofed fields",
       "bounded error reporting for oversized and unprintable failures",
-      "distinct argument/result resource-limit and unsupported-value failures"
+      "distinct argument/result resource-limit and unsupported-value failures",
+      "nested and repeated live JSHandle arguments with graph identity",
+      "DOM Node/Document/Window reference descriptions including nested values"
     ],
     "frame": [
       "page",
@@ -85,7 +88,9 @@
       "parentFrame",
       "childFrames",
       "isDetached",
-      "same-process frame locator scopes"
+      "same-process frame locator scopes",
+      "evaluate in the same-process frame main world",
+      "evaluateHandle in the same-process frame main world"
     ],
     "response": [
       "url",
@@ -154,6 +159,18 @@
       "timeout: page default or per-call; queued expiry never mutates the page",
       "main-document fonts wait; navigation-safe original-document cleanup",
       "unmodified cross-process iframe pixels; preparation affecting these frames explicitly unsupported"
+    ],
+    "handle": [
+      "evaluate and evaluateHandle in the original execution context",
+      "jsonValue for the declared graph value classes",
+      "getProperty with one getter invocation",
+      "getProperties for enumerable own value descriptors, without invoking getters",
+      "asElement with preserved DOM subtype",
+      "toString preview",
+      "idempotent dispose and Symbol.asyncDispose",
+      "independent property-reference disposal",
+      "primitive handles across live pages and after navigation",
+      "detached DOM identity without rebinding to replacements"
     ]
   },
   "implementation": {
@@ -190,7 +207,9 @@
     "screenshots": "Page-owned serialization and caller deadlines retain preparation through cancellation. Opaque browser object identities restore only the original prepared documents; read-only geometry follows navigation. Typed screenshot replies obey the negotiated attachment bound and pixel dimensions are checked before browser capture. Unknown restoration state retires the affected page without replacing the original error. Native page-window bounds and emulated screen metrics follow the pinned reference. SPECS S4.k records the intentional suppression of expired queued preparation. Even an unmodified out-of-process capture retains the reference child-renderer evaluation dependency through temporary owned sessions. Late successful attachment replies are recovered for cleanup; a blocked renderer times out while its parent remains usable. Exact pixel fixtures establish rendering readiness because both engines can capture before an iframe first composites.",
     "screenshotsVerification": "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. See compatibility/evidence/screenshots-checkpoint-2026-10-08.json",
     "pageErrors": "Native Error name/message/stack follow pinned Chromium formatting. Original event JSON preserves exact UTF-16 through bounded Rust/Node framing; no renderer callback or retained history is added. Exceptions are routed only to live published pages by browser/session identity. Shared waits remain independent of pending evaluations and remove their listeners on settlement. Workers, out-of-process frames, context error events and pageErrors history remain outside this slice.",
-    "pageErrorVerification": "All 31 native macOS core groups pass, including 58 Rust tests and 65 lifecycle cases. Seven focused Node22/headless-shell groups and ten focused Linux amd64-emulation groups pass at the same 191 source hashes. The final three diagnostic differentials match all 20 error cases and nine lifecycle checks exactly against Playwright 1.60.0. Packed ESM/CommonJS consumers preserve Error inference, and oversized exceptions fail with ResourceLimitError and release owned resources. This is functional evidence only; a full current Linux core and native Linux/performance/release gates remain open. See compatibility/evidence/diagnostics-checkpoint-2026-10-08.json"
+    "pageErrorVerification": "All 31 native macOS core groups pass, including 58 Rust tests and 65 lifecycle cases. Seven focused Node22/headless-shell groups and ten focused Linux amd64-emulation groups pass at the same 191 source hashes. The final three diagnostic differentials match all 20 error cases and nine lifecycle checks exactly against Playwright 1.60.0. Packed ESM/CommonJS consumers preserve Error inference, and oversized exceptions fail with ResourceLimitError and release owned resources. This is functional evidence only; a full current Linux core and native Linux/performance/release gates remain open. See compatibility/evidence/diagnostics-checkpoint-2026-10-08.json",
+    "handles": "Object references remain in their original page/frame/unique context. Primitive values survive navigation and may cross live pages in the same engine. Destroyed object contexts free native slots; explicit disposal is idempotent. Property handles own separate native references and remain alive after parent or sibling disposal. New allocations are grouped privately, published only after reply encoding, and discarded on cancellation, output rejection or late caller success. At most 4096 retained or pending handles per page. Exhaustion rejects before user evaluation. Incomplete property allocation rolls back its private group. Ordinary CDP property replies retain their 8 MiB cap; application results obey negotiated bytes/depth/nodes. Cleanup has a separate 500 ms recovery budget and retires the affected page when its pending allocation cannot be recovered safely. SPECS S4.l: preserve primitive BigInt values. Pinned Playwright 1.60.0 converts its Chromium BigInt handle to undefined. Creation preview, jsonValue, argument passing and receiver evaluation are recorded separately, never counted as equal-result conformance or a speedup.",
+    "handleVerification": "All 33 native macOS core groups pass, including 62 Rust tests and 73 lifecycle cases. Ten focused Node22/headless-shell groups and thirteen focused Linux amd64-emulation groups pass at the same 199 source hashes. The three final handle differentials match nine shared groups, including ten primitive cases, and retain the S4.l BigInt difference separately. Seven native handle lifecycle/publication cases and all five caller-deadline allocation cases pass. Packed ESM/CommonJS consumers preserve nested handle inference, property types, DOM subtypes and frame evaluation. This is functional evidence only; full current Linux core, native Linux/performance and release gates remain open. See compatibility/evidence/handles-checkpoint-2026-10-08.json"
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -248,7 +267,11 @@
     "tools/extract-screenshot-preparation.mjs",
     "compatibility/m2/diagnostics.mjs",
     "tools/run-diagnostic-tests.mjs",
-    "tools/record-page-error-provenance.mjs"
+    "tools/record-page-error-provenance.mjs",
+    "compatibility/m2/handles.mjs",
+    "compatibility/m1/test_handles.py",
+    "tools/run-handle-tests.mjs",
+    "tools/record-handle-provenance.mjs"
   ],
   "limitations": [
     "No platform runtime publication or automatic driver acquisition; npm consumers provide an explicit compiled driver path",
@@ -257,7 +280,7 @@
     "Emulated Linux functional evidence does not satisfy native Linux performance gates",
     "Navigation/network support is the tested development subset; URLPattern, full header/cookie variants, routing, API requests and service-worker semantics require further conformance",
     "Screenshot masks, element capture, assertions and runner artifact policies remain unimplemented; persistent Page.keyboard down/up, sequential typing and broader keyboard APIs remain unimplemented",
-    "Cross-process child-frame routing explicitly rejects; FrameLocator, handles and broader frame/navigation conformance remain unfinished",
+    "Cross-process child-frame routing explicitly rejects; FrameLocator, cross-context ElementHandle adoption and broader frame/navigation conformance remain unfinished",
     "Native text input containing unpaired UTF-16 surrogates rejects explicitly; selector and read strings preserve those units",
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
     "Popup/dialog/console coverage remains unfinished; pageerror supports the main-page session and same-process child frames, with worker/out-of-process/context events and retained history still open",
@@ -271,6 +294,7 @@
     "The lifecycle-budget checkpoint completes the current full functional matrix under Linux amd64 emulation. Earlier incomplete runs remain historical failures, including an older blocked-pointer failure whose traceback was lost before immediate diagnostic reporting existed. The known aggregate fixture budget faults are repaired; this does not retrospectively establish the cause of every older failure. Native Linux and broader contention acceptance remain open. See compatibility/evidence/lifecycle-budget-checkpoint-2026-10-08.json",
     "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open.",
     "Screenshot preparation in out-of-process frames is not implemented; only unmodified capture is supported there. Images are limited to 32767 pixels on each axis, 16777216 total pixels and the negotiated encoded attachment bound (32 MiB by default). Screenshot cleanup has an independent bounded budget and can retire a page when restoration is uncertain. Native viewport setup changed in this implementation, so previous timing observations do not apply to this binary.",
-    "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. Native Linux, full artifact/runner coverage, platform packaging and release gates remain open."
+    "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. Native Linux, full artifact/runner coverage, platform packaging and release gates remain open.",
+    "ElementHandle-specific actions/reads remain typed unsupported; use a Locator for implemented operations. Handles can retain and evaluate Maps, functions and symbols, but jsonValue for those classes, Error/typed-array serialization, cross-context element adoption and out-of-process frame evaluation remain unsupported. Handle slots are capped at 4096 per page, including pending allocations. No new performance result applies to this binary."
   ]
 }

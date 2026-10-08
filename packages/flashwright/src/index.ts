@@ -1,10 +1,11 @@
 import { EventEmitter } from 'node:events';
+import { JSHandle, ElementHandle, receivedHandles, encodeEvaluationArgument, type Unboxed, type SmartHandle } from './handles.js';
 import { pageError } from './page-errors.js';
 import { prepareScreenshot, type PageScreenshotOptions } from './screenshots.js';
 import { writeAtomicFile } from './files.js';
 import { Keyboard, type KeyboardPressOptions } from './keyboard.js';
 import { EngineClient, retainEngine } from './client.js';
-import { failure, fromRecord, FlashwrightError } from './errors.js';
+import { failure, FlashwrightError } from './errors.js';
 import type { AssertionOptions, AssertionResult } from './assertions.js';
 import { Frame, type FrameSnapshot } from './frame.js';
 import { Request, Response, type RequestMetadata, type ResponseMetadata } from './network.js';
@@ -16,7 +17,8 @@ import { validateOptions as options } from './validation.js';
 import { prepareCookies, filterCookies, cookieFilter, prepareStorageState, decodeStorageState, writeStorageState, type Cookie, type SetCookie, type CookieFilter, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 
 export * from './errors.js';
-export { Keyboard };
+export { Keyboard, JSHandle, ElementHandle };
+export type { Unboxed, SmartHandle };
 export type { PageScreenshotOptions };
 export type { KeyboardPressOptions };
 export type { AssertionOptions, AssertionResult, ExpectedText } from './assertions.js';
@@ -372,22 +374,29 @@ export class Page extends EventEmitter<{ [Event in keyof PageEvents]: [PageEvent
   context(): BrowserContext { return this.owner; }
   isClosed(): boolean { return this.closed; }
   viewportSize(): ViewportSize | null { return this.owner.viewport ? { ...this.owner.viewport } : null; }
-  async evaluate<Result, Argument>(pageFunction: string | ((argument: Argument) => Result | Promise<Result>), argument: Argument): Promise<Result>;
+  async evaluate<Result, Argument>(pageFunction: string | ((argument: Unboxed<Argument>) => Result | Promise<Result>), argument: Argument): Promise<Result>;
   async evaluate<Result>(pageFunction: string | (() => Result | Promise<Result>)): Promise<Result>;
-  async evaluate(pageFunction: string | ((argument: unknown) => unknown), argument?: unknown): Promise<unknown> {
-    this.checkOpen('page.evaluate');
-    if (typeof pageFunction !== 'string' && typeof pageFunction !== 'function') throw failure('InvalidArgumentError', 'page.evaluate', 'expected a function or JavaScript expression string');
+  async evaluate(pageFunction: string | Function, argument?: unknown): Promise<unknown> {
+    return this.runEvaluation('page.evaluate', pageFunction, argument);
+  }
+  async evaluateHandle<Result, Argument>(pageFunction: string | ((argument: Unboxed<Argument>) => Result | Promise<Result>), argument: Argument): Promise<SmartHandle<Result>>;
+  async evaluateHandle<Result>(pageFunction: string | (() => Result | Promise<Result>)): Promise<SmartHandle<Result>>;
+  async evaluateHandle(pageFunction: string | Function, argument?: unknown): Promise<JSHandle> {
+    return this.runEvaluation('page.evaluateHandle', pageFunction, argument) as Promise<JSHandle>;
+  }
+  async runEvaluation(method: string, pageFunction: string | Function, argument?: unknown, target: { frame?: string; handle?: string } = {}): Promise<unknown> {
+    this.checkOpen(method);
+    if (typeof pageFunction !== 'string' && typeof pageFunction !== 'function') throw failure('InvalidArgumentError', method, 'expected a function or JavaScript expression string');
     const source = typeof pageFunction === 'function' ? `(${pageFunction.toString()})` : pageFunction;
-    if (source.length > 100000) throw failure('ResourceLimitError', 'page.evaluate', 'evaluation source exceeds 100000 UTF-16 units');
-    let encodedArgument: unknown;
-    try { encodedArgument = codec.encode(argument); }
-    catch (error) {
-      const details = codec.describeError(error);
-      throw fromRecord({ code: details.code, method: 'page.evaluate.argument', message: '', messageUtf16: details.messageUnits,
-        diagnostics: { stage: 'argumentSerialization', messageTruncated: details.messageTruncated }, referenceVersion: '1.60.0', browser: 'chromium' });
-    }
-    const result = await this.client.request('page.evaluate', { page: this.identifier, source: Array.from({ length: source.length }, (_, index) => source.charCodeAt(index)), isFunction: typeof pageFunction === 'function', argument: encodedArgument });
+    if (source.length > 100000) throw failure('ResourceLimitError', method, 'evaluation source exceeds 100000 UTF-16 units');
+    const encoded = encodeEvaluationArgument(argument, this.client, method);
+    const result = await this.client.request(method, { page: this.identifier, ...target, source: Array.from({ length: source.length }, (_, index) => source.charCodeAt(index)), isFunction: typeof pageFunction === 'function', ...encoded });
+    if (method.endsWith('Handle')) return receivedHandles(this, this.client, this.identifier, result)[0]!.handle;
     return codec.decode(result);
+  }
+  async runHandle(method: string, handle: string, parameters: object = {}): Promise<unknown> {
+    this.checkOpen(method);
+    return this.client.request(method, { page: this.identifier, handle, ...parameters });
   }
   close(): Promise<void> {
     if (this.closed) return this.closing ?? Promise.resolve();

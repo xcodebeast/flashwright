@@ -5,6 +5,61 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, duplex, split};
 use tokio::time::{Duration, timeout};
 
 #[tokio::test]
+async fn raw_value_replies_preserve_surrogates_without_weakening_limits_or_identity() {
+    let (host, peer) = duplex(65536);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut raw = connection
+        .start_raw_command("Runtime.getProperties", json!({}), Some("session"))
+        .unwrap();
+    let command = read_command(&mut reader).await;
+    assert_eq!(command["id"], 1);
+    let result =
+        r#"{"result":[{"name":"\ud800","value":{"type":"string","value":"\udfff\u0000"}}]}"#;
+    writer
+        .write_all(format!("{{\"id\":1,\"result\":{result}}}\0").as_bytes())
+        .await
+        .unwrap();
+    assert_eq!(raw.response().await.unwrap().get(), result);
+    let cancelled = connection
+        .start_raw_command("cancelled", json!({}), None)
+        .unwrap();
+    assert_eq!(read_command(&mut reader).await["id"], 2);
+    drop(cancelled);
+    writer
+        .write_all(b"{\"id\":2,\"result\":{\"stale\":\"\\ud800\"}}\0")
+        .await
+        .unwrap();
+    let mut oversized = connection
+        .start_raw_command("tooLarge", json!({}), None)
+        .unwrap();
+    assert_eq!(read_command(&mut reader).await["id"], 3);
+    writer
+        .write_all(
+            format!(
+                "{{\"id\":3,\"result\":{{\"description\":\"{}\"}}}}\0",
+                "x".repeat(8 * 1024 * 1024)
+            )
+            .as_bytes(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        oversized.response().await.unwrap_err().code,
+        ErrorCode::ResourceLimit
+    );
+    let mut successor = connection.start_command("next", json!({}), None).unwrap();
+    assert_eq!(read_command(&mut reader).await["id"], 4);
+    writer
+        .write_all(b"{\"id\":4,\"result\":{\"value\":42}}\0")
+        .await
+        .unwrap();
+    assert_eq!(successor.response().await.unwrap()["value"], 42);
+}
+
+#[tokio::test]
 async fn interleaved_events_and_out_of_order_replies_preserve_request_identity() {
     let (host, peer) = duplex(4096);
     let (reader, writer) = split(host);

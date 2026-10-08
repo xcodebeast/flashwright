@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { EngineClient } from '../../packages/flashwright/dist/commonjs/client.js';
 
 const allocationMethods = ['browser.launch', 'browser.newContext', 'context.newPage'];
+const handleMethods = ['page.evaluateHandle', 'frame.evaluateHandle', 'handle.evaluateHandle', 'handle.getProperty', 'handle.getProperties'];
 const deliveryScenarios = [
   ['locator.acknowledged', { inputDelivery: 'acknowledged' }],
   ['locator.notDispatched', { inputDelivery: 'notDispatched' }],
@@ -10,7 +11,7 @@ const deliveryScenarios = [
 ];
 const assertionScenarios = [['assertion.result', false], ['assertion.error', true]];
 const selectedScenario = process.argv[2];
-const scenarioNames = [...allocationMethods, ...deliveryScenarios.map(([name]) => name), ...assertionScenarios.map(([name]) => name), 'handshake.capabilityMismatch'];
+const scenarioNames = [...allocationMethods, ...handleMethods, ...deliveryScenarios.map(([name]) => name), ...assertionScenarios.map(([name]) => name), 'handshake.capabilityMismatch'];
 assert.ok(selectedScenario === undefined || scenarioNames.includes(selectedScenario), `Unknown deadline scenario: ${selectedScenario}`);
 const isSelected = name => selectedScenario === undefined || selectedScenario === name;
 
@@ -21,6 +22,15 @@ for (const method of allocationMethods) {
   try {
     await client.request('probe.ready', {});
     await assert.rejects(client.request(method, {}, 200), error => error.name === 'TimeoutError' && error.details.cleanup === 'resourceDisposedAfterLateSuccess');
+  } finally { await client.release(); }
+}
+for (const method of handleMethods) {
+  if (!isSelected(method)) continue;
+  const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  client.retain();
+  try {
+    await client.request('probe.ready', {});
+    await assert.rejects(client.request(method, {}, 200), error => error.name === 'TimeoutError' && error.details.cleanup === 'handleGroupDisposedAfterLateSuccess');
   } finally { await client.release(); }
 }
 for (const [name, parameters] of deliveryScenarios) {

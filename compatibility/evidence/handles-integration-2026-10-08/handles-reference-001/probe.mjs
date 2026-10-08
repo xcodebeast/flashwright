@@ -1,0 +1,31 @@
+import { chromium } from 'playwright';
+import { writeFile } from 'node:fs/promises';
+const browser = await chromium.launch({ executablePath: process.env.FLASHWRIGHT_BROWSER_PATH });
+const outcomes = {};
+const capture = async (label, work) => { try { outcomes[label] = {value: await work()}; } catch (error) { outcomes[label] = {name:error.name, message:error.message}; } };
+try {
+ const context=await browser.newContext(); const page=await context.newPage(); const sibling=await context.newPage();
+ const number = await page.evaluateHandle(() => 42); const object=await page.evaluateHandle(() => ({a:{x:1}, get getter(){throw new Error('getter called')}, hidden:1}));
+ await capture('number.preview', () => number.toString()); await capture('object.preview', () => object.toString());
+ await capture('number.crossPage', () => sibling.evaluate(value => value, number));
+ await capture('object.crossPage', () => sibling.evaluate(value => value, object));
+ const properties=await object.getProperties(); outcomes.properties=[...properties.keys()];
+ await number.dispose(); await object.dispose();
+ await capture('number.disposed.jsonValue', () => number.jsonValue());
+ await capture('number.disposed.argument', () => page.evaluate(value => value, number));
+ await capture('number.disposed.evaluate', () => number.evaluate(value => value+1));
+ await capture('number.disposed.properties', async () => [...(await number.getProperties()).keys()]);
+ await capture('object.disposed.jsonValue', () => object.jsonValue());
+ await capture('child.afterParentDisposal', () => properties.get('a').jsonValue());
+ const aliveNumber=await page.evaluateHandle(() => 7);const aliveObject=await page.evaluateHandle(() => ({x:2}));
+ await page.goto('data:text/html,<p>new document</p>');
+ await capture('number.navigated.jsonValue', () => aliveNumber.jsonValue());
+ await capture('number.navigated.argument', () => sibling.evaluate(value => value,aliveNumber));
+ await capture('number.navigated.evaluate', () => aliveNumber.evaluate(value => value));
+ await capture('object.navigated.jsonValue', () => aliveObject.jsonValue());
+ await capture('object.navigated.dispose', () => aliveObject.dispose());
+ await page.close();
+ await capture('number.closed.jsonValue', () => aliveNumber.jsonValue());
+ await capture('number.closed.argument', () => sibling.evaluate(value => value,aliveNumber));
+ await capture('number.closed.dispose', () => aliveNumber.dispose());
+} finally {await browser.close();await writeFile('.cache/handles-reference-001/report.json',JSON.stringify(outcomes,null,2)+'\n');}

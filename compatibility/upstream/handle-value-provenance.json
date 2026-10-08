@@ -1,0 +1,30 @@
+{
+  "referenceVersion": "1.60.0",
+  "referenceFiles": [
+    "server/isomorphic/utilityScriptSerializers.ts",
+    "server/chromium/crExecutionContext.ts",
+    "server/javascript.ts",
+    "client/jsHandle.ts"
+  ],
+  "source": "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/isomorphic/utilityScriptSerializers.ts",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/handle-value.source.js",
+  "extractSha256": "ff6f35685be38d96728092049fe27126094259ae18bc2438c4a5e1db1097f204",
+  "implementations": {
+    "packages/resident-runtime/serialization.cjs": "a064212f50c25d69d5bbfe42adba7bba6df78e3a66239f98dabe3b0ddd9fd42b",
+    "packages/resident-runtime/evaluation.cjs": "047b73f43bd3f202667f4c8db078378721fb7cb02af88fcb0668fc2d0b82140f",
+    "packages/flashwright/src/handles.ts": "df8d552dfe2467ca90e97d79df1b923ff7b2bd2069b6df5fa177344cdec55795",
+    "crates/flashwright-engine/src/handles.rs": "ae305791404de87ef86edcef32c66f26f9d59f83e7ff060d92322a7ec45bf712",
+    "crates/flashwright-engine/src/handle_values.rs": "8ba1d0c40cc84907c766104e6b16b28f9653d46cc631189722cd2aee12cd9715"
+  },
+  "relationship": "Independent native handle ownership and wire representation. DOM reference descriptions adapt the pinned serializer contract. Retained helper extracts also document primitive previews and the S4.l BigInt difference; they are not bundled as executable code.",
+  "changes": [
+    "Use the shared bounded graph codec and exact UTF-16 strings for values and property names.",
+    "Allocate new remote references in private groups, publish transactionally and clean up rejected or cancelled results.",
+    "Preserve BigInt handle values instead of the reference parseUnserializableValue fallthrough to undefined."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

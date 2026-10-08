@@ -10,6 +10,8 @@ export const requiredCapabilities = [
   'browser.launch', 'browser.close', 'browser.newContext', 'context.newPage', 'context.close',
   'page.close', 'page.evaluate', 'page.event.pageerror', 'page.screenshot', 'page.goto', 'page.waitForLoadState', 'response.body',
   'locator.run', 'assertion.run', 'keyboard.press',
+  'page.evaluateHandle', 'frame.evaluate', 'frame.evaluateHandle', 'handle.evaluate', 'handle.evaluateHandle',
+  'handle.jsonValue', 'handle.getProperty', 'handle.getProperties', 'handle.dispose', 'handle.discard',
   'context.cookies', 'context.addCookies', 'context.clearCookies', 'context.storageState',
 ];
 
@@ -320,6 +322,18 @@ export class EngineClient {
       } catch (error) {
         details.cleanup = 'driverShutdownAfterLateSuccessCleanupFailure';
         this.fail(error instanceof Error ? error : new Error(String(error)));
+      }
+    }
+    if (message.kind === 'result' && ['page.evaluateHandle', 'frame.evaluateHandle', 'handle.evaluateHandle', 'handle.getProperty', 'handle.getProperties'].includes(pending.method)) {
+      const allocation = message.value as { page?: unknown; group?: unknown } | undefined;
+      if (allocation && typeof allocation.page === 'string' && typeof allocation.group === 'string') {
+        try {
+          await this.request('handle.discard', { page: allocation.page, group: allocation.group }, 1000);
+          details.cleanup = 'handleGroupDisposedAfterLateSuccess';
+        } catch (error) {
+          details.cleanup = 'driverShutdownAfterLateSuccessCleanupFailure';
+          this.fail(error instanceof Error ? error : new Error(String(error)));
+        }
       }
     }
     const error = fromRecord(details);
