@@ -7,12 +7,26 @@
   "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
-      "require": { "types": "./dist/commonjs/index.d.ts", "default": "./dist/commonjs/index.js" }
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
-  "engines": { "node": "22.x || 24.x" },
-  "private": true
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "22.x || 24.x"
+  },
+  "private": true,
+  "optionalDependencies": {
+    "@flashwright/driver-darwin-arm64": "0.0.0",
+    "@flashwright/driver-linux-x64": "0.0.0"
+  }
 }

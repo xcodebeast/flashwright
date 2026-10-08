@@ -57,9 +57,12 @@ export class BrowserType {
     if (launchOptions.headless !== undefined && typeof launchOptions.headless !== 'boolean') throw failure('InvalidArgumentError', 'chromium.launch.headless', 'expected a boolean');
     const timeout = launchOptions.timeout ?? 30000;
     if (!Number.isFinite(timeout) || timeout < 0) throw failure('InvalidArgumentError', 'chromium.launch.timeout', 'expected a finite nonnegative number');
-    const client = retainEngine();
+    const deadline = timeout === 0 ? Infinity : performance.now() + timeout;
+    const client = retainEngine(deadline);
     try {
-      const result = await client.request('browser.launch', { executablePath, headless: launchOptions.headless ?? true }, timeout);
+      const remaining = deadline - performance.now();
+      if (remaining <= 0) throw failure('TimeoutError', 'chromium.launch', 'deadline exceeded before browser allocation');
+      const result = await client.request('browser.launch', { executablePath, headless: launchOptions.headless ?? true }, timeout === 0 ? 0 : remaining);
       const browserIdentifier = identifier(result);
       if (!result || typeof result !== 'object' || !('version' in result) || typeof result.version !== 'string') throw failure('ProtocolError', 'chromium.launch', 'driver omitted browser version');
       return new Browser(client, browserIdentifier, result.version);

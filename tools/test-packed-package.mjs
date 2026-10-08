@@ -3,15 +3,18 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
+import { resolve, join, dirname } from 'node:path';
 import { chromium } from 'playwright';
 
 const require = createRequire(import.meta.url);
 const directory = await mkdtemp(resolve('.cache/packed-consumer-'));
 const packed = JSON.parse(execFileSync('npm', ['pack', '--workspace', 'packages/flashwright', '--pack-destination', directory, '--json'], { encoding: 'utf8' }));
 const archive = join(directory, packed[0].filename);
-await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'flashwright-consumer-smoke', private: true, type: 'module', dependencies: { flashwright: `file:${archive}`, '@types/node': '24.10.1' } }, null, 2));
-execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: directory, stdio: 'pipe' });
+const runtimeArchive = process.env.FLASHWRIGHT_PACKAGED_RUNTIME_ARCHIVE;
+const runtimePackageName = `@flashwright/driver-${process.platform}-${process.arch}`;
+const dependencies = { flashwright: `file:${archive}`, '@types/node': '24.10.1', ...(runtimeArchive ? { [runtimePackageName]: `file:${resolve(runtimeArchive)}` } : {}) };
+await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'flashwright-consumer-smoke', private: true, type: 'module', dependencies }, null, 2));
+execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...(runtimeArchive ? ['--offline'] : [])], { cwd: directory, stdio: 'pipe' });
 const body = `
 const { createServer } = await import('node:http');
 const { once } = await import('node:events');
@@ -149,24 +152,37 @@ await writeFile(join(directory, 'consumer.mts'), `import { chromium, type Browse
 await writeFile(join(directory, 'consumer.cts'), `import { chromium, type Browser, type BrowserContext, type Page } from 'flashwright';\n${typeBody}`);
 execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '--noEmit', '--strict', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.mts', 'consumer.cts'], { cwd: directory, stdio: 'inherit' });
 const environment = { ...process.env, FLASHWRIGHT_DRIVER_PATH: process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/flashwright-driver'), FLASHWRIGHT_BROWSER_PATH: process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath() };
+if (runtimeArchive) {
+  delete environment.FLASHWRIGHT_DRIVER_PATH;
+  environment.PATH = `${dirname(process.execPath)}:/usr/bin:/bin`;
+  const compilerProbe = await import('node:child_process').then(({ spawnSync }) => spawnSync('cargo', ['--version'], { env: environment }));
+  assert.equal(compilerProbe.error?.code, 'ENOENT', 'Packed runtime consumers must not have Cargo available');
+}
+const runtimePackagePath = runtimeArchive ? createRequire(join(directory, 'package.json')).resolve(`${runtimePackageName}/package.json`) : undefined;
+const selectedDriver = runtimePackagePath ? join(dirname(runtimePackagePath), 'bin/flashwright-driver') : environment.FLASHWRIGHT_DRIVER_PATH;
 for (const entry of ['consumer.mjs', 'consumer.cjs']) {
   execFileSync('python3', [resolve('tools/watchdog.py'), '--timeout', '60', '--', process.execPath, join(directory, entry)], { cwd: directory, env: environment, stdio: 'inherit' });
 }
 // Deliberately skew the installed runtime hash: incompatibility must reject before launch.
-await writeFile(join(directory, 'node_modules/flashwright/dist/commonjs/runtime-version.cjs'), "exports.residentRuntimeSha256 = 'deliberately-incompatible';\n");
-await writeFile(join(directory, 'incompatible.mjs'), `import assert from 'node:assert/strict';\nimport { chromium } from 'flashwright';\nawait assert.rejects(chromium.launch(), error => error.name === 'ProtocolError' && error.message.includes('mismatch'));\n`);
+const runtimeVersionPath = join(directory, 'node_modules/flashwright/dist/commonjs/runtime-version.cjs');
+const originalRuntimeVersion = await readFile(runtimeVersionPath);
+await writeFile(runtimeVersionPath, "exports.residentRuntimeSha256 = 'deliberately-incompatible';\n");
+await writeFile(join(directory, 'incompatible.mjs'), `import assert from 'node:assert/strict';\nimport { chromium } from 'flashwright';\nawait assert.rejects(chromium.launch(), error => error.name === 'ProtocolError' && (error.message.includes('mismatch') || error.message.includes('does not match')));\n`);
 execFileSync('python3', [resolve('tools/watchdog.py'), '--timeout', '15', '--', process.execPath, join(directory, 'incompatible.mjs')], { cwd: directory, env: environment, stdio: 'inherit' });
+await writeFile(runtimeVersionPath, originalRuntimeVersion);
 const installed = JSON.parse(await readFile(join(directory, 'node_modules/flashwright/package.json'), 'utf8'));
 assert.equal(installed.version, '0.0.0');
-await mkdir('compatibility/evidence', { recursive: true });
+const reportDirectory = process.env.FLASHWRIGHT_PACKED_REPORT_DIRECTORY ?? 'compatibility/evidence';
+await mkdir(reportDirectory, { recursive: true });
 const evidence = {
   node: process.version, platform: process.platform, architecture: process.arch,
   package: packed[0].filename, archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
-  consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH,
-  driverSha256: createHash('sha256').update(await readFile(environment.FLASHWRIGHT_DRIVER_PATH)).digest('hex'),
+  consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH ?? null,
+  packagedRuntime: runtimePackagePath ? { packageName: runtimePackageName, archiveSha256: createHash('sha256').update(await readFile(runtimeArchive)).digest('hex'), manifest: JSON.parse(await readFile(join(dirname(runtimePackagePath), 'runtime.json'), 'utf8')), installation: 'offline local tarballs, lifecycle scripts disabled, Cargo absent from consumer PATH' } : null,
+  driverSha256: createHash('sha256').update(await readFile(selectedDriver)).digest('hex'),
   checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
-const destination = `compatibility/evidence/packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`;
+const destination = join(reportDirectory, `packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`);
 await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
 console.log(`Packed library consumers passed: ${destination}`);

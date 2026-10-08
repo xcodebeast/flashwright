@@ -22,7 +22,7 @@
       "pnpm": "10.23.0",
       "yarn": "4.11.0"
     },
-    "consumerPackageManagerStatus": "npm packed ESM/CommonJS development consumers verified on macOS Node 22/24 and emulated Linux Node 24; explicit driver path required. pnpm/Yarn and published runtime installation remain open."
+    "consumerPackageManagerStatus": "npm packed ESM/CommonJS development consumers verified on macOS Node 22/24 and emulated Linux Node 24. Private local platform tarballs now select the driver automatically without Cargo or a driver override. pnpm/Yarn, aliases and registry acquisition remain open."
   },
   "platforms": [
     {
@@ -263,11 +263,15 @@
       "compatibility/evidence/handles-checkpoint-2026-10-08.json",
       "compatibility/evidence/console-checkpoint-2026-10-08.json",
       "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
-      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T20-41-43.893Z/report.json"
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T20-41-43.893Z/report.json",
+      "compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T21-31-20.036Z/report.json",
+      "compatibility/evidence/platform-runtime-2026-10-08/platform-runtime-platforms-001/node22-full-chromium/report.json",
+      "compatibility/evidence/platform-runtime-2026-10-08/linux-platform-runtime-portable-059/evidence/platform-runtime-portable-linux/report.json"
     ],
-    "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "The rebuilt default comparison records median ratio 1.0672 (95% bootstrap interval 0.9919\u20131.1313), about 6.3% less complete-run time. Its confidence interval includes parity, so this final run does not establish a statistically resolved complete-run gain. The preceding identical-binary adoption comparisons show 5.3% less time against Playwright and 4.6% less time against residency off; all eighteen resident-on resource comparisons pass. The 10% complete-flow release target remains open. Failure medians and interaction/navigation observed maxima exceed the regression thresholds. The resource matrix remains bound to its pre-default binary; the assertion algorithm is unchanged. Native Linux performance, worker contention and broader release gates remain open.",
-    "sourceIdentity": "Current benchmark-tooling tree has 208 source hashes and passes all 35 native core groups. Production Rust/TypeScript source and optimized driver remain byte-for-byte unchanged from the resident-default checkpoint (233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c). The rejected initialization candidate passed 56 groups at 209 source hashes; its evidence is separate. Prior default Node22/Linux/opt-out coverage remains bound to its original 205-source snapshot. See compatibility/evidence/page-initialization-checkpoint-2026-10-08.json.",
+    "consumerRuntimePolicy": "Private exact-version macOS arm64/Linux x64 optional runtime packages are selected and verified automatically. Offline npm consumers explicitly install local library/runtime tarballs with scripts disabled and no Cargo or driver override. Registry publication/acquisition, pnpm, Yarn and aliases remain open.",
+    "performanceStatus": "The historical rebuilt-default comparison records median ratio 1.0672 (95% bootstrap interval 0.9919\u20131.1313), about 6.3% less complete-run time. Its confidence interval includes parity, so this final run does not establish a statistically resolved complete-run gain. The preceding identical-binary adoption comparisons show 5.3% less time against Playwright and 4.6% less time against residency off; all eighteen resident-on resource comparisons pass. The 10% complete-flow release target remains open. Failure medians and interaction/navigation observed maxima exceed the regression thresholds. The resource matrix remains bound to its pre-default binary; the assertion algorithm is unchanged. Native Linux performance, worker contention and broader release gates remain open. The current platform-package resolver and launch-budget changes have no new timing result.",
+    "sourceIdentity": "The current platform-runtime tree has 213 source hashes and passes 53 selected matrix groups (36 native macOS Node24, seven Node22/full Chromium, ten emulated Linux). Production Rust and the macOS optimized driver remain unchanged at 233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c; the portable Linux binary is b6a08333d12871df394ed364bbff2892954eb1efd49113009c37a556fd562ba2. The library now resolves installed platform packages and includes resolution in the launch budget. Earlier timing claims remain bound to their prior adapter snapshots. See compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -370,7 +374,69 @@
     "residentDefaultCheckpoint": "compatibility/evidence/resident-default-checkpoint-2026-10-08.json",
     "residentAssertionsDefault": true,
     "pageInitializationExperiment": "compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
-    "pageInitializationDecision": "Parallel page initialization was tested and rejected: all 56 candidate verification groups passed, but the direct eight-pair comparison did not resolve complete-run or setup benefit. Complete-run ratio 0.9973 (95% interval 0.9767\u20131.0619); setup ratio 1.0195 (0.9732\u20131.0440). Navigation median point crossed the 5% regression threshold. Wrapper-inclusive process wall improved about 1.4%, but did not justify the added concurrency. Production initialization and optimized binary were restored exactly; the current 208-source tree passes 35 native groups, 65 Rust tests and 82 lifecycle cases. The candidate patch, every observation, separate attribution and verifier corruption checks are retained."
+    "pageInitializationDecision": "Parallel page initialization was tested and rejected: all 56 candidate verification groups passed, but the direct eight-pair comparison did not resolve complete-run or setup benefit. Complete-run ratio 0.9973 (95% interval 0.9767\u20131.0619); setup ratio 1.0195 (0.9732\u20131.0440). Navigation median point crossed the 5% regression threshold. Wrapper-inclusive process wall improved about 1.4%, but did not justify the added concurrency. Production initialization and optimized binary were restored exactly; the current 208-source tree passes 35 native groups, 65 Rust tests and 82 lifecycle cases. The candidate patch, every observation, separate attribution and verifier corruption checks are retained.",
+    "platformRuntimeStatus": "Exact-version private platform packages now select the driver automatically, validate metadata and executable integrity before spawn, and preserve the ordinary launch budget. Clean offline npm ESM/CommonJS consumers run without install scripts, a driver override or Cargo. At 213 matching source hashes, 36 native macOS Node24 core groups, seven Node22/full-Chromium groups and ten emulated Linux groups pass; each platform runs the complete 82-case lifecycle suite. Package checks cover 23 macOS or 25 Linux cases, including corruption, unsupported libc, concurrent browsers and an expired lookup that cannot spawn. The selected Linux executable is built on glibc 2.31 and requires symbols through 2.30; its loader handshake passes on 2.31 and browser checks pass on Noble under emulation. The earlier glibc 2.39 artifact and its ten passing groups are retained separately. No publication, native Linux or packaged-startup performance claim.",
+    "platformRuntimeArtifacts": [
+      {
+        "report": "compatibility/evidence/platform-runtime-darwin-arm64-24.15.0-2026-10-08T21-34-58.501Z/report.json",
+        "reportSha256": "85d95091691ce59996f680f5509d334bf521c0e11625d2b133720fe34f694fb8",
+        "archive": "compatibility/evidence/platform-runtime-darwin-arm64-24.15.0-2026-10-08T21-34-58.501Z/driver-runtime.tgz",
+        "archiveSha256": "f30373b3708e31db3e8a550a36fc4334b339dae9b49bd41cb7031872cb087bfb",
+        "libraryArchive": "compatibility/evidence/platform-runtime-darwin-arm64-24.15.0-2026-10-08T21-34-58.501Z/library.tgz",
+        "libraryArchiveSha256": "f9a230e882f57fc49c8667d769aeb52f857853ba5cd9e0113938a91bc861b681",
+        "manifest": {
+          "schemaVersion": 1,
+          "packageName": "@flashwright/driver-darwin-arm64",
+          "packageVersion": "0.0.0",
+          "platform": "darwin",
+          "architecture": "arm64",
+          "protocolVersion": 5,
+          "capabilityInventoryVersion": 1,
+          "residentRuntimeSha256": "d081caf5bd22d2e8c44f19c55984b77cd0aa5f272de34f9f508d8942c7bfefa4",
+          "executablePath": "bin/flashwright-driver",
+          "executableBytes": 4698208,
+          "executableSha256": "233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c",
+          "systemLibraries": [
+            "/usr/lib/libiconv.2.dylib",
+            "/usr/lib/libSystem.B.dylib"
+          ]
+        },
+        "packageCases": 23,
+        "node": "v24.15.0"
+      },
+      {
+        "report": "compatibility/evidence/platform-runtime-2026-10-08/linux-platform-runtime-portable-059/evidence/platform-runtime-linux-x64-24.15.0-2026-10-08T21-48-25.305Z/report.json",
+        "reportSha256": "bd226056e6c63ec214581e55dc8448a80f24e83ce89a3e4620ae67f822330605",
+        "archive": "compatibility/evidence/platform-runtime-2026-10-08/linux-platform-runtime-portable-059/evidence/platform-runtime-linux-x64-24.15.0-2026-10-08T21-48-25.305Z/driver-runtime.tgz",
+        "archiveSha256": "e9874a46bccf4f861bf677c0f48efdcc43b79159b93e8033974ce9c7d4e95137",
+        "libraryArchive": "compatibility/evidence/platform-runtime-2026-10-08/linux-platform-runtime-portable-059/evidence/platform-runtime-linux-x64-24.15.0-2026-10-08T21-48-25.305Z/library.tgz",
+        "libraryArchiveSha256": "f9a230e882f57fc49c8667d769aeb52f857853ba5cd9e0113938a91bc861b681",
+        "manifest": {
+          "schemaVersion": 1,
+          "packageName": "@flashwright/driver-linux-x64",
+          "packageVersion": "0.0.0",
+          "platform": "linux",
+          "architecture": "x64",
+          "protocolVersion": 5,
+          "capabilityInventoryVersion": 1,
+          "residentRuntimeSha256": "d081caf5bd22d2e8c44f19c55984b77cd0aa5f272de34f9f508d8942c7bfefa4",
+          "executablePath": "bin/flashwright-driver",
+          "executableBytes": 5302016,
+          "executableSha256": "b6a08333d12871df394ed364bbff2892954eb1efd49113009c37a556fd562ba2",
+          "minimumGlibcVersion": "2.30",
+          "systemLibraries": [
+            "libgcc_s.so.1",
+            "libpthread.so.0",
+            "libm.so.6",
+            "libdl.so.2",
+            "libc.so.6",
+            "ld-linux-x86-64.so.2"
+          ]
+        },
+        "packageCases": 25,
+        "node": "v24.15.0"
+      }
+    ]
   },
   "pairedRuns": [
     {

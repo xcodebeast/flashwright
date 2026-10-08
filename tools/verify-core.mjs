@@ -51,6 +51,7 @@ const commands = [
   ['npm', 'run', 'test:conditions'],
   ['npm', 'run', 'test:native-runner'],
   ['npm', 'run', 'test:packed'],
+  ['npm', 'run', 'test:platform-runtime'],
   ['npm', 'run', 'test:packed-runner'],
   ['npm', 'run', 'test:migration'],
   ['npm', 'run', 'test:benchmark-contract'],
