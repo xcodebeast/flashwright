@@ -142,7 +142,10 @@ mod tests {
     fn engine() -> (Engine, mpsc::Receiver<DriverOutput>) {
         let (outgoing, messages) = mpsc::channel(16);
         let (fatal, _failure) = watch::channel(false);
-        (Engine::new(None, outgoing, fatal), messages)
+        (
+            Engine::new(None, outgoing, fatal, ResourceLimits::default()),
+            messages,
+        )
     }
 
     fn insert_page(engine: &Engine) -> Arc<PageState> {

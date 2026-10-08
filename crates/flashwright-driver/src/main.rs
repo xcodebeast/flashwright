@@ -2,10 +2,11 @@ use std::collections::HashMap;
 use std::os::fd::AsFd;
 use std::sync::Arc;
 
+mod attachments;
 mod output;
 mod pipe;
 
-use flashwright_engine::{CAPABILITIES, Engine, Operation};
+use flashwright_engine::{CAPABILITIES, Engine, Operation, OperationResult};
 use flashwright_protocol::{
     ClientMessage, DriverMessage, DriverOutput, EncodedFrame, ErrorCode, ErrorRecord, FrameError,
     FrameReader, FrameWriter, Handshake, ResourceLimits,
@@ -64,20 +65,18 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
     reader.set_maximum_bytes(limits.control_frame_bytes);
-    let (outgoing, mut messages) = mpsc::channel(limits.queued_messages);
+    let (outgoing, messages) = mpsc::channel(limits.queued_messages);
     let (fatal_sender, mut fatal) = watch::channel(false);
-    let engine = Arc::new(Engine::new(parent_liveness, outgoing.clone(), fatal_sender));
+    let engine = Arc::new(Engine::new(
+        parent_liveness,
+        outgoing.clone(),
+        fatal_sender,
+        limits.clone(),
+    ));
     let writer_limits = limits.clone();
     let mut writer_task = tokio::spawn(async move {
-        let mut writer = FrameWriter::new(output, writer_limits.control_frame_bytes);
-        while let Some(message) = messages.recv().await {
-            if output::write_output(&mut writer, message, &writer_limits).await?
-                == output::OutputDisposition::CloseStream
-            {
-                return Ok(output::OutputDisposition::CloseStream);
-            }
-        }
-        Ok::<_, FrameError>(output::OutputDisposition::Continue)
+        let writer = FrameWriter::new(output, writer_limits.control_frame_bytes);
+        output::run_writer(writer, messages, &writer_limits).await
     });
     outgoing
         .send(
@@ -108,7 +107,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     });
-    let mut operations = JoinSet::<(u64, Result<EncodedFrame, FrameError>)>::new();
+    let mut operations = JoinSet::<(u64, Result<Option<EncodedFrame>, FrameError>)>::new();
     let mut cancellations: HashMap<u64, watch::Sender<bool>> = HashMap::new();
     let mut termination =
         tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
@@ -128,7 +127,8 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                     Some(Ok((identifier, result))) => {
                         cancellations.remove(&identifier);
                         let frame = match result {
-                            Ok(frame) => frame,
+                            Ok(Some(frame)) => frame,
+                            Ok(None) => continue,
                             Err(error) => { failure = Some(error.to_string()); break; }
                         };
                         if outgoing.try_send(DriverOutput::Frame(frame)).is_err() { failure = Some("bounded output queue exhausted".to_owned()); break; }
@@ -174,10 +174,19 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         cancellations.insert(request_id, sender);
                         let engine = engine.clone();
                         let limits = limits.clone();
+                        let outgoing = outgoing.clone();
                         operations.spawn(async move {
                             let operation = Operation::new(method.clone(), deadline, receiver);
                             let result = engine.execute(&method, parameters, &operation).await;
-                            let reply = output::prepare_reply(&engine, request_id, &method, result, operation.input_delivery(), &limits).await;
+                            let result = match result {
+                                Ok(OperationResult::Binary(attachment)) => {
+                                    let reply = attachments::stream_attachment(request_id, attachment, &operation, &outgoing, &limits).await;
+                                    return (request_id, reply);
+                                }
+                                Ok(OperationResult::Value(value)) => Ok(value),
+                                Err(error) => Err(error),
+                            };
+                            let reply = output::prepare_reply(&engine, request_id, &method, result, operation.input_delivery(), &limits).await.map(Some);
                             (request_id, reply)
                         });
                     }

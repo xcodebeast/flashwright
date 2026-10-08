@@ -4,6 +4,7 @@ import { performance } from 'node:perf_hooks';
 import { Duplex } from 'node:stream';
 import { failure, fromRecord, errorMessage, type ErrorRecord } from './errors.js';
 import { residentRuntimeSha256 } from './runtime-version.cjs';
+import { AttachmentReceiver } from './attachments.js';
 
 export const requiredCapabilities = [
   'browser.launch', 'browser.close', 'browser.newContext', 'context.newPage', 'context.close',
@@ -14,7 +15,7 @@ export const requiredCapabilities = [
 
 const maximumFrameBytes = 8 * 1024 * 1024;
 const maximumPendingOperations = 1024;
-const limits = { controlFrameBytes: maximumFrameBytes, pendingOperations: maximumPendingOperations, queuedMessages: 128, valueDepth: 64, valueNodes: 100000 };
+const limits = { controlFrameBytes: maximumFrameBytes, pendingOperations: maximumPendingOperations, queuedMessages: 128, valueDepth: 64, valueNodes: 100000, binaryAttachmentBytes: 32 * 1024 * 1024, pendingAttachments: 2 };
 interface PendingRequest {
   method: string;
   resolve: (value: unknown) => void;
@@ -24,6 +25,7 @@ interface PendingRequest {
   dispatched: boolean;
   deadlineExpired: boolean;
   callSite: string | undefined;
+  binary: boolean;
 }
 export interface ObjectEvent { event: string; parameters: unknown }
 
@@ -33,12 +35,15 @@ interface Reply {
   value?: unknown;
   inputDelivery?: string;
   error?: ErrorRecord;
-  handshake?: { protocolVersion: number; packageVersion: string; capabilityInventoryVersion: number };
+  handshake?: { protocolVersion: number; packageVersion: string; capabilityInventoryVersion: number; limits: typeof limits };
   capabilities?: string[];
   residentRuntimeSha256?: string;
   target?: string;
   event?: string;
   parameters?: unknown;
+  encoding?: unknown;
+  byteLength?: unknown;
+  encodedLength?: unknown;
 }
 
 /** One asynchronous transport per worker, shared by lazily owned browsers. */
@@ -64,6 +69,8 @@ export class EngineClient {
   private readonly bufferedEvents = new Map<string, ObjectEvent[]>();
   private readonly releasedObjects = new Set<string>();
   private bufferedEventCount = 0;
+  private resourceLimits = { ...limits };
+  private attachments: AttachmentReceiver | undefined;
 
   constructor(executablePath: string) {
     this.ready = new Promise((resolve, reject) => { this.readyResolve = resolve; this.readyReject = reject; });
@@ -89,7 +96,7 @@ export class EngineClient {
     });
     const handshakeTimeout = setTimeout(() => this.fail(failure('TimeoutError', 'handshake', 'driver handshake exceeded 10 seconds')), 10000);
     this.ready.then(() => clearTimeout(handshakeTimeout), () => clearTimeout(handshakeTimeout));
-    void this.send({ kind: 'handshake', handshake: { packageVersion: '0.0.0', protocolVersion: 4, capabilityInventoryVersion: 1, limits } }).catch(error => this.fail(error));
+    void this.send({ kind: 'handshake', handshake: { packageVersion: '0.0.0', protocolVersion: 5, capabilityInventoryVersion: 1, limits } }).catch(error => this.fail(error));
   }
 
   subscribeObject(identifier: string, listener: (event: ObjectEvent) => void): () => void {
@@ -139,7 +146,7 @@ export class EngineClient {
   }
 
   /** timeout 0 means unbounded publicly; an exhausted finite budget is sent as zero remaining. */
-  async request(method: string, parameters: unknown, timeoutMilliseconds = 0): Promise<unknown> {
+  async request(method: string, parameters: unknown, timeoutMilliseconds = 0, binary = false): Promise<unknown> {
     const started = performance.now();
     const callSite = new Error().stack;
     let readinessTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -151,7 +158,7 @@ export class EngineClient {
     } finally { clearTimeout(readinessTimeout); }
     if (this.failure) throw this.failure;
     if (this.closed) throw failure('BrowserDisconnectedError', method, 'engine client is closed');
-    if (this.pending.size >= maximumPendingOperations) throw failure('ResourceLimitError', method, 'too many pending operations');
+    if (this.pending.size >= this.resourceLimits.pendingOperations) throw failure('ResourceLimitError', method, 'too many pending operations');
     const identifier = this.nextIdentifier++;
     const remaining = timeoutMilliseconds === 0 ? null : Math.max(0, Math.floor(timeoutMilliseconds - (performance.now() - started)));
     return new Promise((resolve, reject) => {
@@ -159,6 +166,7 @@ export class EngineClient {
         const pending = this.pending.get(identifier);
         if (!pending) return;
         pending.deadlineExpired = true;
+        this.attachments?.expire(identifier);
         if (!pending.dispatched) {
           this.pending.delete(identifier);
           reject(failure('TimeoutError', method, 'deadline exceeded before dispatch'));
@@ -171,7 +179,7 @@ export class EngineClient {
           this.process.kill('SIGKILL');
         }, 2000);
       }, remaining);
-      this.pending.set(identifier, { method, resolve, reject, timeout, cleanupTimeout: undefined, dispatched: false, deadlineExpired: false, callSite });
+      this.pending.set(identifier, { method, resolve, reject, timeout, cleanupTimeout: undefined, dispatched: false, deadlineExpired: false, callSite, binary });
       const message = { kind: 'command', requestId: identifier, method, parameters, timeoutMilliseconds: remaining };
       void this.send(message, () => {
         const pending = this.pending.get(identifier);
@@ -195,9 +203,13 @@ export class EngineClient {
     });
   }
 
+  requestBinary(method: string, parameters: unknown, timeoutMilliseconds = 0): Promise<Buffer> {
+    return this.request(method, parameters, timeoutMilliseconds, true) as Promise<Buffer>;
+  }
+
   private async send(message: unknown, beforeWrite?: () => unknown | null): Promise<void> {
     const body = Buffer.from(JSON.stringify(message));
-    if (body.length > maximumFrameBytes || this.queuedBytes + body.length + 4 > maximumFrameBytes * 2) {
+    if (body.length > this.resourceLimits.controlFrameBytes || this.queuedBytes + body.length + 4 > this.resourceLimits.controlFrameBytes * 2) {
       return Promise.reject(failure('ResourceLimitError', 'protocol', 'outgoing control-frame or queued-byte limit exceeded'));
     }
     const frame = Buffer.allocUnsafe(body.length + 4);
@@ -227,44 +239,69 @@ export class EngineClient {
     try {
       while (this.incoming.length >= 4) {
         const length = this.incoming.readUInt32LE(0);
-        if (length === 0 || length > maximumFrameBytes) throw failure('ProtocolError', 'protocol', 'invalid incoming frame size');
+        if (length === 0 || length > this.resourceLimits.controlFrameBytes) throw failure('ProtocolError', 'protocol', 'invalid incoming frame size');
         if (this.incoming.length < length + 4) return;
-        const message: Reply = JSON.parse(this.incoming.subarray(4, length + 4).toString('utf8'));
+        const body = this.incoming.subarray(4, length + 4);
         this.incoming = this.incoming.subarray(length + 4);
+        if (body[0] === 0) {
+          if (!this.attachments) throw failure('ProtocolError', 'protocol', 'attachment before handshake');
+          this.attachments.receive(body);
+          continue;
+        }
+        const message: Reply = JSON.parse(body.toString('utf8'));
+        if (!message || typeof message !== 'object' || Array.isArray(message)) throw failure('ProtocolError', 'protocol', 'invalid driver envelope');
         if (message.kind === 'handshake') {
           if (this.handshakeComplete) throw failure('ProtocolError', 'handshake', 'duplicate driver handshake');
           const handshake = message.handshake;
-          if (handshake?.protocolVersion !== 4 || handshake.packageVersion !== '0.0.0' || handshake.capabilityInventoryVersion !== 1 || message.residentRuntimeSha256 !== residentRuntimeSha256 || requiredCapabilities.some(method => !message.capabilities?.includes(method))) {
+          if (handshake?.protocolVersion !== 5 || handshake.packageVersion !== '0.0.0' || handshake.capabilityInventoryVersion !== 1 || message.residentRuntimeSha256 !== residentRuntimeSha256 || requiredCapabilities.some(method => !message.capabilities?.includes(method))) {
             throw failure('ProtocolError', 'handshake', 'driver/package capability mismatch');
           }
+          for (const field of Object.keys(limits) as Array<keyof typeof limits>) {
+            const value = handshake.limits?.[field];
+            if (!Number.isSafeInteger(value) || value < 1 || value > limits[field]) throw failure('ProtocolError', 'handshake', 'invalid negotiated resource limits');
+          }
+          if (handshake.limits.controlFrameBytes < 1024) throw failure('ProtocolError', 'handshake', 'control frame limit is too small');
+          this.resourceLimits = { ...handshake.limits };
+          this.attachments = new AttachmentReceiver(this.resourceLimits.binaryAttachmentBytes, this.resourceLimits.pendingAttachments);
           this.readyResolve();
           this.handshakeComplete = true;
           continue;
         }
-        if (message.kind === 'event') { this.receiveEvent(message); continue; }
         if (message.kind === 'error' && message.requestId == null) throw fromRecord(message.error!);
-        if (typeof message.requestId !== 'number') throw failure('ProtocolError', 'protocol', 'reply omitted request identity');
-        const pending = this.pending.get(message.requestId);
+        if (!this.handshakeComplete) throw failure('ProtocolError', 'handshake', 'driver message before handshake');
+        if (message.kind === 'event') { this.receiveEvent(message); continue; }
+        if (!Number.isSafeInteger(message.requestId) || message.requestId! <= 0) throw failure('ProtocolError', 'protocol', 'reply omitted request identity');
+        const requestId = message.requestId!;
+        const pending = this.pending.get(requestId);
         if (!pending) throw failure('ProtocolError', 'protocol', 'unexpected or duplicate terminal reply');
-        if (message.kind !== 'result' && !(message.kind === 'error' && message.error)) throw failure('ProtocolError', 'protocol', 'unknown terminal message');
-        this.pending.delete(message.requestId);
+        if (message.kind === 'binaryStart') {
+          if (!pending.binary) throw failure('ProtocolError', pending.method, 'unexpected binary attachment');
+          this.attachments!.begin(requestId, message.encoding, message.byteLength, message.encodedLength, pending.deadlineExpired);
+          continue;
+        }
+        if (message.kind === 'binaryResult') {
+          if (!pending.binary) throw failure('ProtocolError', pending.method, 'unexpected binary result');
+          message.value = this.attachments!.finish(requestId, message.byteLength);
+        } else if (message.kind === 'error' && message.error) this.attachments!.discard(requestId);
+        else if (message.kind !== 'result' || pending.binary) throw failure('ProtocolError', 'protocol', 'unknown or mismatched terminal message');
+        this.pending.delete(requestId);
         clearTimeout(pending.timeout);
         clearTimeout(pending.cleanupTimeout);
         if (pending.deadlineExpired) void this.rejectExpired(pending, message);
-        else if (message.kind === 'result') pending.resolve(message.value);
+        else if (message.kind === 'result' || message.kind === 'binaryResult') pending.resolve(message.value);
         else if (message.kind === 'error' && message.error) {
           const error = fromRecord(message.error);
           if (pending.callSite) error.stack += `\nCalled from:\n${pending.callSite}`;
           pending.reject(error);
         } else throw failure('ProtocolError', 'protocol', 'unknown terminal message');
       }
-    } catch (error) { this.fail(error instanceof Error ? error : new Error(String(error))); }
+    } catch (error) { this.fail(error instanceof SyntaxError ? failure('ProtocolError', 'protocol', 'invalid incoming control JSON') : error instanceof Error ? error : new Error(String(error))); }
   }
 
   private async rejectExpired(pending: PendingRequest, message: Reply): Promise<void> {
     const details: ErrorRecord = { ...message.error, code: 'TimeoutError', method: message.error?.method ?? pending.method, message: message.error ? `operation exceeded its deadline; ${errorMessage(message.error)}` : 'operation exceeded its deadline' };
     delete details.messageUtf16;
-    if (message.kind === 'result') {
+    if (message.kind === 'result' || message.kind === 'binaryResult') {
       details.inputDelivery = message.inputDelivery ?? 'uncertain';
       if (pending.method === 'assertion.run') details.diagnostics = message.value;
     }
@@ -296,6 +333,7 @@ export class EngineClient {
     this.readyReject(error);
     for (const pending of this.pending.values()) { clearTimeout(pending.timeout); clearTimeout(pending.cleanupTimeout); pending.reject(error); }
     this.pending.clear();
+    this.attachments?.clear();
     for (const listener of this.objectListeners.values()) queueMicrotask(() => listener({ event: 'transportclosed', parameters: null }));
     this.bufferedEvents.clear();
     this.bufferedEventCount = 0;

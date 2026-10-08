@@ -51,9 +51,7 @@ export class Response {
   fromServiceWorker(): boolean { return this.metadata.fromServiceWorker ?? false; }
   async body(): Promise<Buffer> {
     if (this.status() >= 300 && this.status() < 400 && this.headers().location) throw failure('ProtocolError', 'response.body', 'response body is unavailable for redirect responses');
-    const result = await this.client.request('response.body', { page: this.pageIdentifier, request: this.metadata.identifier });
-    if (!result || typeof result !== 'object' || !('body' in result) || typeof result.body !== 'string' || !('base64Encoded' in result) || typeof result.base64Encoded !== 'boolean') throw failure('ProtocolError', 'response.body', 'driver returned an invalid response body');
-    return Buffer.from(result.body, result.base64Encoded ? 'base64' : 'utf8');
+    return this.client.requestBinary('response.body', { page: this.pageIdentifier, request: this.metadata.identifier });
   }
   async text(): Promise<string> { return (await this.body()).toString('utf8'); }
   async json(): Promise<any> { return JSON.parse(await this.text()); }

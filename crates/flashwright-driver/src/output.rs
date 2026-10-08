@@ -1,17 +1,76 @@
 //! Prepare bounded terminal replies before publication; never replay completed operations.
 
 use flashwright_engine::Engine;
+use flashwright_protocol::{AttachmentFrame, AttachmentStream};
 use flashwright_protocol::{
     DriverMessage, DriverOutput, EncodedFrame, ErrorCode, ErrorRecord, FrameError, FrameWriter,
     InputDelivery, ResourceLimits,
 };
 use serde_json::Value;
+use std::collections::VecDeque;
 use tokio::io::AsyncWrite;
+use tokio::sync::mpsc;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum OutputDisposition {
     Continue,
     CloseStream,
+}
+
+/// Round-robin attachment frames while continuing to deliver other replies and events.
+pub async fn run_writer<Writer: AsyncWrite + Unpin>(
+    mut writer: FrameWriter<Writer>,
+    mut messages: mpsc::Receiver<DriverOutput>,
+    limits: &ResourceLimits,
+) -> Result<OutputDisposition, FrameError> {
+    enum Next {
+        Output(Option<DriverOutput>),
+        Attachment(Option<AttachmentFrame>),
+    }
+    let mut streams: VecDeque<AttachmentStream> = VecDeque::new();
+    let mut input_open = true;
+    loop {
+        let next = if let Some(stream) = streams.front_mut() {
+            tokio::select! {
+                message = messages.recv(), if input_open => Next::Output(message),
+                frame = stream.frames.recv() => Next::Attachment(frame),
+            }
+        } else if input_open {
+            Next::Output(messages.recv().await)
+        } else {
+            return Ok(OutputDisposition::Continue);
+        };
+        match next {
+            Next::Output(None) => input_open = false,
+            Next::Output(Some(DriverOutput::Attachment(stream))) => {
+                if streams.len() >= limits.pending_attachments {
+                    return Err(FrameError::InvalidAttachment);
+                }
+                streams.push_back(stream);
+            }
+            Next::Output(Some(output)) => {
+                if write_output(&mut writer, output, limits).await?
+                    == OutputDisposition::CloseStream
+                {
+                    return Ok(OutputDisposition::CloseStream);
+                }
+            }
+            Next::Attachment(None) => return Err(FrameError::Truncated),
+            Next::Attachment(Some(frame)) => {
+                let stream = streams.pop_front().unwrap();
+                match frame {
+                    AttachmentFrame::Data(frame) => {
+                        writer.write_frame(&frame).await?;
+                        streams.push_back(stream);
+                    }
+                    AttachmentFrame::Terminal { frame, written } => {
+                        writer.write_frame(&frame).await?;
+                        let _ = written.send(());
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn resource_error(
@@ -119,6 +178,7 @@ pub async fn write_output<Writer: AsyncWrite + Unpin>(
             return Ok(OutputDisposition::Continue);
         }
         DriverOutput::Message(message) => message,
+        DriverOutput::Attachment(_) => return Err(FrameError::InvalidAttachment),
     };
     let rejection = match &message {
         DriverMessage::Event { parameters, .. } => limits
@@ -159,7 +219,7 @@ mod tests {
     async fn rejected_values_preserve_delivery_and_successor_frames() {
         let (outgoing, _messages) = mpsc::channel(8);
         let (fatal, _failure) = watch::channel(false);
-        let engine = Engine::new(None, outgoing, fatal);
+        let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
         let limits = ResourceLimits {
             control_frame_bytes: 1024,
             ..ResourceLimits::default()

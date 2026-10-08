@@ -239,17 +239,18 @@
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T06-05-54.272Z/report.json",
       "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T06-00-52.470Z/report.json",
       "compatibility/evidence/watchdog-cleanup-2026-10-08/report.json",
-      "compatibility/evidence/output-limits-checkpoint-2026-10-08.json"
+      "compatibility/evidence/output-limits-checkpoint-2026-10-08.json",
+      "compatibility/evidence/binary-attachments-checkpoint-2026-10-08.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "All 64 ordinary launches and four separate attribution launches independently verify. Default-off complete-run ratios are 1.0138 (95% bootstrap interval 1.0008\u20131.0296) and 1.0015 (0.9858\u20131.0358), near parity. Residency-on ratios are 1.0524 (1.0421\u20131.0837) and 1.0599 (1.0442\u20131.0759), about 5.0% and 5.7% less time. Every comparison misses the 10% material target. Noop median regression is absent in all four, but its confidence interval overlaps parity in both repeats and its observed maximum regresses in the on-repeat. Failure medians regress in three comparisons, and setup observed maximum regresses in the first off comparison. All memory checks pass. Residency remains default off; native Linux, contention and release gates remain open. These performance observations apply to the immutable evaluation-helper binary, before storage and output-limit changes. The current output-limit checkpoint has no new timing claim.",
+    "performanceStatus": "All 64 ordinary launches and four separate attribution launches independently verify. Default-off complete-run ratios are 1.0138 (95% bootstrap interval 1.0008\u20131.0296) and 1.0015 (0.9858\u20131.0358), near parity. Residency-on ratios are 1.0524 (1.0421\u20131.0837) and 1.0599 (1.0442\u20131.0759), about 5.0% and 5.7% less time. Every comparison misses the 10% material target. Noop median regression is absent in all four, but its confidence interval overlaps parity in both repeats and its observed maximum regresses in the on-repeat. Failure medians regress in three comparisons, and setup observed maximum regresses in the first off comparison. All memory checks pass. Residency remains default off; native Linux, contention and release gates remain open. These performance observations apply to the immutable evaluation-helper binary, before storage and output-limit changes. The current output-limit checkpoint has no new timing claim. The subsequent binary-attachment checkpoint also has no new timing claim.",
     "sourceIdentity": "170 matching source hashes pass 54 core groups on macOS Node24 full Chromium with residency on and headless shell with residency off. Eight focused Node22 groups and 26 focused emulated Linux cases pass. The full Linux matrix remains incomplete and both broad failures are retained. Optimized macOS driver: dec9fe0d132eab0bfc00395b381eacf5d75fe8a332bc1b45aa84d3cda36e28f8.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
       "compatibility/evidence/navigation-linux-x64-24.15.0.json"
     ],
-    "applicationProtocolVersion": 4,
+    "applicationProtocolVersion": 5,
     "locatorEvidence": [
       "compatibility/evidence/locators-darwin-arm64-24.15.0.json",
       "compatibility/evidence/locators-darwin-arm64-22.22.0.json",
@@ -329,7 +330,9 @@
     "evaluationHelperNode22Evidence": "compatibility/evidence/evaluation-helper-node22-2026-10-08.txt",
     "evaluationHelperPerformanceCheckpoint": "compatibility/evidence/evaluation-helper-performance-checkpoint-2026-10-08.json",
     "watchdogCleanupCheckpoint": "compatibility/evidence/watchdog-cleanup-2026-10-08/report.json",
-    "outputLimitsCheckpoint": "compatibility/evidence/output-limits-checkpoint-2026-10-08.json"
+    "outputLimitsCheckpoint": "compatibility/evidence/output-limits-checkpoint-2026-10-08.json",
+    "binaryAttachmentsCheckpoint": "compatibility/evidence/binary-attachments-checkpoint-2026-10-08.json",
+    "binaryAttachmentsStatus": "Protocol 5 streams request-scoped raw/base64 attachments in bounded frames, validates exact offsets and terminal lengths, and retains reservations through writer acknowledgement. Response.body returns a Buffer only after complete delivery. Partial cancellation releases retained bytes and permits a successor without replay. The application defaults allow 32 MiB decoded and two active attachments; the separate browser CDP reader still caps each message at 8 MiB. Binary-attachment conformance passes 27 native core groups including 50 lifecycle cases, four focused Node22 groups plus five headless-shell binary cases, and 31 focused emulated Linux browser cases at 178 matching source hashes. The broad Linux lifecycle run exceeded its unchanged 240-second budget. Its nine-client deadline fixture also exceeded a 10-second aggregate allowance; a diagnostic rerun completed all nine cleanly in 13.847 seconds. The broad failure remains retained, and fixture budgeting/full Linux verification remain open. No new performance claim."
   },
   "pairedRuns": [
     {
