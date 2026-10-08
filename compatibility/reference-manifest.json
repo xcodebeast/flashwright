@@ -225,11 +225,15 @@
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T03-03-54.497Z/report.json",
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T03-06-47.417Z/report.json",
       "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T03-09-12.915Z/report.json",
-      "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T03-03-54.690Z/report.json"
+      "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T03-03-54.690Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T04-13-30.986Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T04-16-07.580Z/report.json",
+      "compatibility/evidence/core-darwin-arm64-24.15.0-2026-10-08T04-18-35.519Z/report.json",
+      "compatibility/evidence/core-linux-x64-24.15.0-2026-10-08T04-10-40.241Z/report.json"
     ],
     "consumerRuntimePolicy": "Development driver binary selected explicitly; no published platform artifacts yet.",
-    "performanceStatus": "Two current matched Playwright comparisons record paired complete-run ratios 1.0471 (95% interval 1.0250–1.0761) and 1.0709 (1.0537–1.0749), about 4.5% and 6.6% less time. Both miss the 10% material threshold and retain noop median/observed-maximum regressions; the first also flags failure-path median regression. Residency remains opt-in.",
-    "sourceIdentity": "158 matching source hashes pass 104 current core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 assertions, 25 lifecycle/protocol tests and 52 registry cases also pass.",
+    "performanceStatus": "The timer-group repair changes the production runtime. Current ordinary comparisons are pending under compatibility/evidence/resident-coalescing-final-profile-plan-2026-10-08.json. Historical complete-flow results remain in the retained checkpoints and do not establish acceptance for this binary. Residency remains default off.",
+    "sourceIdentity": "158 matching source hashes pass 104 current core groups on macOS Node24 headless-shell residency on/off, full Chromium on and emulated Linux Node24. Node22 assertions, 25 lifecycle/protocol tests and 54 registry cases also pass. The current optimized driver is db3b0f8f7b0fb704f08dc3fe63819cc5855592047734a733a9603a06c832f1ce.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
@@ -294,17 +298,19 @@
     "cleanupNode22Evidence": "compatibility/evidence/cleanup-attribution-node22-2026-10-07.txt",
     "residentRegistryExperiment": "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
     "residentIntegratedCheckpoint": "compatibility/evidence/resident-integrated-checkpoint-2026-10-07.json",
-    "residentNode22Evidence": "compatibility/evidence/resident-frame-pacing-node22-2026-10-08.txt",
+    "residentNode22Evidence": "compatibility/evidence/resident-coalescing-final-node22-2026-10-08.txt",
     "browserDistributionCheckpoint": "compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json",
     "asciiRuntimeCheckpoint": "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
     "residentFairnessCheckpoint": "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
     "residentInvalidationCheckpoint": "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
     "residentLoadCheckpoint": "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-    "residentResourceStatus": "All 210 ordinary launches independently verify. All nine memory and complete-time gates pass, and all six concurrent CPU gates pass. Quiet-text/1, property-only/1 and mutation-text/1 miss the 10% CPU-growth gate, with paired reference/candidate ratios 0.9047, 0.8957 and 0.8563. Fewer frame callbacks did not solve resource acceptance; controlled clocks reproduce timer fragmentation. See compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+    "residentResourceStatus": "A four-millisecond-only candidate passed conformance but retained fragmented native timer groups; its ordinary plan was superseded before timing. The repaired group invalidation passes all 54 registry cases, including staggered registration. Thirteen instrumented fixed-work diagnostics verify; four isolated concurrent quiet/property cases show 50–51 timer callbacks over about two seconds. These counts are not a CPU or speed claim. Run the predeclared full ordinary comparisons before resource acceptance.",
     "residentQueryCheckpoint": "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
     "residentQueryPerformanceCheckpoint": "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json",
     "residentFramePacingCheckpoint": "compatibility/evidence/resident-frame-pacing-checkpoint-2026-10-08.json",
-    "residentFramePacingPerformanceCheckpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json"
+    "residentFramePacingPerformanceCheckpoint": "compatibility/evidence/resident-frame-pacing-performance-checkpoint-2026-10-08.json",
+    "residentCoalescingCheckpoint": "compatibility/evidence/resident-coalescing-final-checkpoint-2026-10-08.json",
+    "residentCoalescingInitialEvidence": "compatibility/evidence/resident-coalescing-initial-exploration-2026-10-08/report.json"
   },
   "pairedRuns": [
     {

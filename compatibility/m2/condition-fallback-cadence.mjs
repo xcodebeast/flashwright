@@ -55,24 +55,24 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
       now = 120;
       await drain();
       frames.push({...checks});
-      frames.push(await advanceTimer(128));
-      now = 129;
+      frames.push(await advanceTimer(132));
+      now = 133;
       globalThis.dispatchEvent(new Event('input'));
       await drain();
       const afterEvent = {...checks};
       const afterEventSchedule = {framePending:frame !== undefined,state:registry.inspect(),deadlines:[...timers.values()].map(timer => timer.deadline)};
-      now = 145;
+      now = 149;
       await drain();
       const afterRecentEvent = {...checks};
       const short = registry.wait({token:'short',timeoutMilliseconds:25,check:() => {
         checks.short++; return {status:'observation',matches:false};
       }});
       await drain();
-      const afterNewCondition = await advanceFrame(146);
-      const afterInterval = await advanceFrame(161);
-      now = 170;
+      const afterNewCondition = await advanceFrame(150);
+      const afterInterval = await advanceFrame(165);
+      now = 174;
       // Dispatch the independent deadline timer, without advancing the fallback frame.
-      const deadline = [...timers.entries()].find(([,timer]) => timer.deadline === 170);
+      const deadline = [...timers.entries()].find(([,timer]) => timer.deadline === 174);
       if (!deadline) throw new Error('Short condition omitted its deadline timer');
       timers.delete(deadline[0]);
       deadline[1].callback();
@@ -85,10 +85,10 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
   })()`);
   assert.deepEqual(clocked.frames.map(check => check.long), [2, 3, 4, 4, 4, 5]);
   assert.equal(clocked.paced.framePending, false);
-  assert.deepEqual(clocked.paced.deadlines, [128]);
+  assert.deepEqual(clocked.paced.deadlines, [132]);
   assert.deepEqual(clocked.afterEvent, { long: 6, short: 0 });
   assert.equal(clocked.afterEventSchedule.framePending, false);
-  assert.deepEqual(clocked.afterEventSchedule.deadlines, [161]);
+  assert.deepEqual(clocked.afterEventSchedule.deadlines, [169]);
   assert.equal(clocked.afterEventSchedule.state.animationFrameRequests, clocked.paced.state.animationFrameRequests);
   assert.deepEqual(clocked.afterRecentEvent, { long: 6, short: 0 });
   assert.deepEqual(clocked.afterNewCondition, { long: 6, short: 2 });
@@ -107,6 +107,7 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
   console.log(`Resident registry: ${cases.at(-1).name}`);
 
   await verifyFallbackOwnership({ evaluate, cases, registrySource });
+  await verifyStaggeredFallback({ evaluate, cases, registrySource });
 
   await reset('<style>p { visibility:hidden }</style><p>target</p><input value="before"><div id="host"></div>');
   const tokens = [
@@ -123,7 +124,7 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
   for (const token of tokens) await finish(token);
   const late = await clean('long-pending property, CSSOM and new-shadow conditions still detect fresh state');
   assert.equal(late.mutationBatches, 0);
-  assert.ok(late.fallbackConditionsDeferred > 0);
+  assert.ok(late.timerFallbackChecks > 0);
 
   await reset('<p>before</p>', true, false, true, true);
   const mutation = await start({ selector: 'css=p', expression: 'to.have.text', request: { expectedText: [{ string: 'after' }] } });
@@ -133,6 +134,81 @@ export async function verifyConditionFallbackCadence({ reset, evaluate, page, st
   const awakened = await clean('long-pending mutation still wakes with both fallback callbacks withheld');
   assert.ok(awakened.mutationBatches > 0);
   assert.equal(awakened.fallbackChecks, 0);
+}
+
+/** Nonzero predicate duration and staggered registration create different due times.
+ * All conditions must keep progressing without one timer per tiny due subset. */
+async function verifyStaggeredFallback({ evaluate, cases, registrySource }) {
+  for (const conditionCount of [32, 128]) {
+    const samples = [];
+    for (const [checkCostMilliseconds, registrationGapMilliseconds] of [[0, 0], [0.05, 0], [0, 0.5], [0.05, 0.5]]) {
+      samples.push(await evaluate(`(async () => {
+        let now = 0;
+        let nextToken = 0;
+        const callbacks = new Map();
+        const performance = {now:() => now};
+        const schedule = (callback, deadline) => {
+          const token = ++nextToken; callbacks.set(token, {callback,deadline}); return token;
+        };
+        const requestAnimationFrame = callback => schedule(callback, Math.ceil((now + 0.0001) / 16) * 16);
+        const cancelAnimationFrame = token => callbacks.delete(token);
+        const setTimeout = (callback, delay) => schedule(callback, now + Math.max(1, delay));
+        const clearTimeout = token => callbacks.delete(token);
+        ${registrySource}
+        const registry = createConditionRegistry({instrumentation:true,observeMutations:false});
+        const checks = Array(${conditionCount}).fill(0);
+        const waits = checks.map((_, index) => {
+          const wait = registry.wait({token:'staggered-' + index,check:() => {
+            checks[index]++; now += ${checkCostMilliseconds}; return {status:'observation',matches:false};
+          }});
+          now += ${registrationGapMilliseconds};
+          return wait;
+        });
+        const drain = async () => {
+          const deadline = globalThis.performance.now() + 2000;
+          do {
+            await new Promise(resolve => globalThis.setTimeout(resolve, 0));
+            const state = registry.inspect();
+            if (!state.queuedConditions && !state.flushMicrotaskScheduled && !state.flushTaskScheduled && !state.fallbackSchedulingQueued) return;
+          } while (globalThis.performance.now() < deadline);
+          throw new Error('Staggered condition work did not drain');
+        };
+        try {
+          await drain();
+          let dispatched = 0;
+          while (true) {
+            const next = [...callbacks.entries()].sort((left,right) => left[1].deadline - right[1].deadline)[0];
+            if (!next || next[1].deadline >= 1000) break;
+            if (++dispatched > 10000) throw new Error('Unbounded fallback work');
+            callbacks.delete(next[0]);
+            now = Math.max(now, next[1].deadline);
+            next[1].callback();
+            await drain();
+          }
+          const counters = registry.inspect();
+          registry.dispose();
+          const results = await Promise.all(waits);
+          await drain();
+          return {checkCostMilliseconds:${checkCostMilliseconds},registrationGapMilliseconds:${registrationGapMilliseconds},checks,dispatched,counters,
+            results:results.map(result => result.status),callbacks:callbacks.size,final:registry.inspect()};
+        } finally { registry.dispose(); }
+      })()`));
+    }
+    for (const sample of samples) {
+      assert.ok(sample.checks.every(count => count >= 25 && count <= 40), JSON.stringify(sample.checks));
+      assert.ok(sample.counters.timerFallbackChecks <= (conditionCount === 32 ? 40 : 80), JSON.stringify(sample.counters));
+      assert.ok(sample.counters.maximumChecksBeforeYield <= 32);
+      assert.equal(sample.counters.predicateEvaluations, sample.checks.reduce((sum,count) => sum + count, 0));
+      assert.ok(sample.results.every(status => status === 'cancelled'));
+      assert.equal(sample.callbacks, 0);
+      assert.equal(sample.final.activeConditions, 0);
+      assert.equal(sample.final.fallbackSchedulingQueued, false);
+      assert.equal(sample.final.flushChannelOpen, false);
+    }
+    cases.push({ name: `${conditionCount} staggered conditions coalesce fallback timers and preserve every condition's progress`, samples,
+      scope: 'Controlled browser-realm clock, fixed frame grid and synthetic predicate duration; no real latency or CPU claim.' });
+    console.log(`Resident registry: ${cases.at(-1).name}`);
+  }
 }
 
 /** Exercise callback retirement and concurrent asynchronous checks without relying

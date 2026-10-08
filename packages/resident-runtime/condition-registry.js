@@ -213,10 +213,11 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
       cancelAnimationFrame(animationFrame);
       animationFrame = undefined;
     }
-    // Keep the existing guard while frames are active. For paced waits, move the
-    // timer after fresh event-driven checks as well as before newly due work.
+    // Allow one batch's check-start spread to become due together. Scheduling at
+    // the earliest individual timestamp fragments shared work into tiny timers.
+    // Events still check immediately; this window only delays paced fallback.
     if (needsFrames) nextDeadline = fallbackTimerDeadline ?? now + fallbackMilliseconds;
-    else if (Number.isFinite(nextDeadline)) nextDeadline = Math.max(now, nextDeadline);
+    else if (Number.isFinite(nextDeadline)) nextDeadline = Math.max(now, nextDeadline + maximumCheckMillisecondsPerTask);
     if (!Number.isFinite(nextDeadline)) {
       clearTimeout(fallbackTimer);
       fallbackTimer = fallbackTimerDeadline = undefined;
@@ -229,7 +230,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
         fallbackTimer = fallbackTimerDeadline = undefined;
         count('fallbackChecks');
         count('timerFallbackChecks');
-        invalidateFallback();
+        invalidateFallback(true);
         queueFallbackScheduling();
       }, Math.max(0, Math.min(nextDeadline - now, 2147483647)));
     }
@@ -307,10 +308,12 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     queueFlush();
   }
 
-  function invalidateFallback() {
+  /** Frames pace individual long waits. A due timer checks the pending group
+   * together so registration/check offsets do not perpetuate separate timers. */
+  function invalidateFallback(coalescePendingChecks = false) {
     const now = performance.now();
     for (const condition of conditions.values()) {
-      if (now - condition.registeredAt >= fastFallbackWindowMilliseconds &&
+      if (!coalescePendingChecks && now - condition.registeredAt >= fastFallbackWindowMilliseconds &&
           now - condition.lastCheckStartedAt < pendingFallbackIntervalMilliseconds) {
         count('fallbackConditionsDeferred');
         continue;
