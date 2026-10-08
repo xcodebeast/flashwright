@@ -51,6 +51,7 @@ const commands = [
   ['npm', 'run', 'test:migration'],
   ['npm', 'run', 'test:benchmark-contract'],
   ['npm', 'run', 'test:resident-load'],
+  ['npm', 'run', 'test:storage'],
 ];
 for (const [index, command] of commands.entries()) {
   const started = performance.now();

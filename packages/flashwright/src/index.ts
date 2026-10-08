@@ -10,6 +10,7 @@ import { performance } from 'node:perf_hooks';
 import { createValueCodec } from './serialization.cjs';
 import type { LocatorTimeoutOptions } from './locator.js';
 import { validateOptions as options } from './validation.js';
+import { prepareCookies, filterCookies, cookieFilter, prepareStorageState, decodeStorageState, writeStorageState, type Cookie, type SetCookie, type CookieFilter, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 
 export * from './errors.js';
 export { Keyboard };
@@ -19,11 +20,12 @@ export { Frame, Request, Response };
 export { Locator } from './locator.js';
 export type { LocatorOptions, TextOptions, RoleOptions, LocatorTimeoutOptions, FillOptions, SelectOption, ClickOptions, HoverOptions, CheckOptions, PressOptions, KeyboardModifier } from './locator.js';
 export type { URLMatcher };
+export type { Cookie, SetCookie, CookieFilter, StorageState, StorageStateOptions };
 const codec = createValueCodec();
 
 export interface LaunchOptions { executablePath?: string; headless?: boolean; timeout?: number }
 export interface ViewportSize { width: number; height: number }
-export interface BrowserContextOptions { viewport?: ViewportSize | null; baseURL?: string }
+export interface BrowserContextOptions { viewport?: ViewportSize | null; baseURL?: string; storageState?: StorageState | string }
 export interface NavigationOptions { timeout?: number; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit'; referer?: string }
 interface PageInitialization { identifier: string; frames: FrameSnapshot[]; mainFrame: string }
 interface PageEvents { response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page }
@@ -86,14 +88,15 @@ export class Browser extends EventEmitter {
   contexts(): BrowserContext[] { return [...this.ownedContexts]; }
   isConnected(): boolean { return !this.disconnected && !this.closing && !this.client.isClosed(); }
   async newContext(contextOptions: BrowserContextOptions = {}): Promise<BrowserContext> {
-    options('browser.newContext', contextOptions, ['viewport', 'baseURL']);
+    options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState']);
     if (contextOptions.baseURL !== undefined && typeof contextOptions.baseURL !== 'string') throw failure('InvalidArgumentError', 'browser.newContext.baseURL', 'expected a string');
     if (contextOptions.viewport !== undefined && contextOptions.viewport !== null) {
       options('browser.newContext.viewport', contextOptions.viewport, ['width', 'height']);
       if (![contextOptions.viewport.width, contextOptions.viewport.height].every(value => Number.isInteger(value) && value > 0 && value <= 0xffffffff)) throw failure('InvalidArgumentError', 'browser.newContext.viewport', 'width and height must be positive 32-bit integers');
     }
     if (!this.isConnected()) throw failure('TargetClosedError', 'browser.newContext', 'browser has been closed');
-    const result = await this.client.request('browser.newContext', { browser: this.identifier, ...(contextOptions.viewport !== undefined ? { viewport: contextOptions.viewport } : {}) });
+    const storageState = contextOptions.storageState === undefined ? undefined : await prepareStorageState(contextOptions.storageState);
+    const result = await this.client.request('browser.newContext', { browser: this.identifier, ...(contextOptions.viewport !== undefined ? { viewport: contextOptions.viewport } : {}), ...(storageState === undefined ? {} : { storageState }) });
     if (!this.isConnected()) {
       if (!this.client.isClosed()) await this.client.request('context.close', { context: identifier(result) });
       throw failure('TargetClosedError', 'browser.newContext', 'browser closed while the context was being created');
@@ -133,6 +136,34 @@ export class BrowserContext extends EventEmitter {
   navigationTimeout(): number { return this.defaultNavigationTimeout ?? this.defaultTimeout; }
   browser(): Browser { return this.owner; }
   pages(): Page[] { return [...this.ownedPages]; }
+  async cookies(urls?: string | ReadonlyArray<string>): Promise<Cookie[]> {
+    filterCookies([], urls);
+    return filterCookies(await this.client.request('context.cookies', { context: this.identifier }) as Cookie[], urls);
+  }
+  async addCookies(cookies: ReadonlyArray<SetCookie>): Promise<void> {
+    await this.client.request('context.addCookies', { context: this.identifier, cookies: prepareCookies(cookies, 'context.addCookies') });
+  }
+  async clearCookies(filter: CookieFilter = {}): Promise<void> {
+    const matches = cookieFilter(filter);
+    if (!Object.keys(filter).some(key => filter[key as keyof CookieFilter] !== undefined)) {
+      await this.client.request('context.clearCookies', { context: this.identifier });
+    } else {
+      const cookies = (await this.cookies()).filter(matches).map(cookie => ({ ...cookie, expires: 0 }));
+      if (cookies.length) await this.addCookies(cookies);
+    }
+  }
+  async storageState(storageOptions: StorageStateOptions = {}): Promise<StorageState> {
+    options('context.storageState', storageOptions, ['path', 'indexedDB']);
+    if (storageOptions.path !== undefined && typeof storageOptions.path !== 'string') throw failure('InvalidArgumentError', 'context.storageState.path', 'expected a string');
+    if (storageOptions.indexedDB !== undefined && typeof storageOptions.indexedDB !== 'boolean') throw failure('InvalidArgumentError', 'context.storageState.indexedDB', 'expected a boolean');
+    if (storageOptions.indexedDB) throw failure('UnsupportedFeatureError', 'context.storageState.indexedDB', 'IndexedDB snapshots are not implemented');
+    const state = decodeStorageState(await this.client.request('context.storageState', { context: this.identifier }) as WireStorageState);
+    if (storageOptions.path) await writeStorageState(storageOptions.path, state);
+    return state;
+  }
+  async setStorageState(_state: StorageState | string): Promise<never> {
+    throw failure('UnsupportedFeatureError', 'context.setStorageState', 'replacing state in an existing context is not implemented; create a new context with storageState');
+  }
   async newPage(): Promise<Page> { return this.createPage(false); }
   async newOwnedPage(): Promise<Page> { return this.createPage(true); }
   private async createPage(ownsContext: boolean): Promise<Page> {

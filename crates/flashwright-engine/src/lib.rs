@@ -1,6 +1,8 @@
 //! Browser object ownership and semantic operations, independent of the Node test runner.
 
 mod assertions;
+mod context_state;
+mod cookies;
 mod evaluation;
 mod events;
 mod input;
@@ -10,6 +12,7 @@ mod navigation;
 mod operation;
 mod page_state;
 mod pointer;
+mod storage;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
 
@@ -34,6 +37,10 @@ pub const CAPABILITIES: &[&str] = &[
     "browser.newContext",
     "context.newPage",
     "context.close",
+    "context.cookies",
+    "context.addCookies",
+    "context.clearCookies",
+    "context.storageState",
     "page.close",
     "page.evaluate",
     "page.goto",
@@ -66,6 +73,7 @@ struct Context {
     browser_identifier: String,
     protocol_identifier: String,
     viewport: Option<Viewport>,
+    state: Arc<context_state::ContextState>,
 }
 
 #[derive(Clone)]
@@ -144,6 +152,10 @@ impl Engine {
             }
             "browser.newContext" => self.new_context(parameters, operation).await,
             "context.newPage" => self.new_page(parameters, operation).await,
+            "context.cookies" | "context.addCookies" | "context.clearCookies" => {
+                self.context_cookies(method, parameters, operation).await
+            }
+            "context.storageState" => self.storage_state(parameters, operation).await,
             "page.goto" => self.navigate(parameters, operation).await,
             "page.waitForLoadState" => self.wait_for_load_state(parameters, operation).await,
             "response.body" => self.response_body(parameters, operation).await,
@@ -213,7 +225,15 @@ impl Engine {
         operation: &Operation,
     ) -> Result<Value, ErrorRecord> {
         let method = "browser.newContext";
-        validate_keys(method, &parameters, &["browser", "viewport"])?;
+        validate_keys(
+            method,
+            &parameters,
+            &["browser", "viewport", "storageState"],
+        )?;
+        let storage = parameters
+            .get("storageState")
+            .map(|value| storage::StorageState::parse(value.clone(), method))
+            .transpose()?;
         let browser_identifier = identifier(&parameters, "browser", method)?.to_owned();
         let browser = self.browser(&browser_identifier, method)?;
         let viewport = match parameters.get("viewport") {
@@ -242,7 +262,7 @@ impl Engine {
                 ResourceKind::Context,
             )
             .await?;
-        let result = (|| {
+        let mut result = (|| {
             let mut registry = self.registry.lock().unwrap();
             operation.check()?;
             if !registry.browsers.contains_key(&browser_identifier) {
@@ -255,10 +275,21 @@ impl Engine {
                     browser_identifier,
                     protocol_identifier: protocol_identifier.clone(),
                     viewport,
+                    state: Arc::new(context_state::ContextState::default()),
                 },
             );
             Ok(json!({ "identifier": identifier }))
         })();
+        if let (Ok(created), Some(storage)) = (&result, storage) {
+            let identifier = identifier(created, "identifier", method)?.to_owned();
+            if let Err(error) = self
+                .restore_initial_storage(&identifier, storage, operation)
+                .await
+            {
+                self.remove_context(&identifier);
+                result = Err(error);
+            }
+        }
         if let Err(mut error) = result {
             error.cleanup = Some(
                 dispose(
@@ -282,6 +313,17 @@ impl Engine {
         let method = "context.newPage";
         validate_keys(method, &parameters, &["context"])?;
         let context_identifier = identifier(&parameters, "context", method)?.to_owned();
+        self.create_page(&context_identifier, operation, true).await
+    }
+
+    async fn create_page(
+        &self,
+        context_identifier: &str,
+        operation: &Operation,
+        published: bool,
+    ) -> Result<Value, ErrorRecord> {
+        let method = "context.newPage";
+        let context_identifier = context_identifier.to_owned();
         let context = self.context(&context_identifier, method)?;
         let browser = self.browser(&context.browser_identifier, method)?;
         let target_identifier = operation
@@ -320,7 +362,7 @@ impl Engine {
             let mut document = state.state.lock().unwrap();
             // Page.enable normally supplies the initial frame; getFrameTree covers an idle about:blank.
             if document.main_frame.is_none() { document.observe("Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
-            document.published = true;
+            document.published = published;
             Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame }))
         }.await;
         if let Err(mut error) = result {
@@ -375,6 +417,9 @@ impl Engine {
     pub async fn shutdown(&self) {
         let browsers = {
             let mut registry = self.registry.lock().unwrap();
+            for context in registry.contexts.values() {
+                context.state.closed.send_replace(true);
+            }
             registry.contexts.clear();
             registry.pages.clear();
             std::mem::take(&mut registry.browsers)

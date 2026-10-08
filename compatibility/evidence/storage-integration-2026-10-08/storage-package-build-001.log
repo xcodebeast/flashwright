@@ -1,0 +1,21 @@
+packages/flashwright/src/storage.ts(50,20): error TS2352: Conversion of type '{ [x: string]: unknown; }' to type 'CanonicalCookie' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ [x: string]: unknown; }' is missing the following properties from type 'CanonicalCookie': domain, path, name, value
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/P/p/flashwright/.tools/node-v24.15.0-darwin-arm64/bin/node /Users/P/p/flashwright/node_modules/typescript/bin/tsc --project packages/flashwright/tsconfig.json --outDir packages/flashwright/dist/commonjs --module CommonJS --moduleResolution Node
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at file:///Users/P/p/flashwright/tools/build-packages.mjs:36:3 {
+  status: 2,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 94839,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v24.15.0

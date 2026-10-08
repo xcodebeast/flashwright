@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures.js';
 import assert from 'node:assert/strict';
+import { writeFile } from 'node:fs/promises';
 
 test.use({ greeting: 'custom' });
 test('extended fixtures run native browser actions and assertions', async ({ page, pageObject, greeting, browser }) => {
@@ -12,6 +13,29 @@ test('extended fixtures run native browser actions and assertions', async ({ pag
 test('fresh contexts isolate browser storage', async ({ page }) => {
   expect(await page.evaluate(() => localStorage.getItem('from-test'))).toBe(null);
   await page.evaluate(() => localStorage.setItem('from-test', 'value'));
+});
+test.describe('stored login state', () => {
+  const origin = process.env.FLASHWRIGHT_TEST_BASE_URL!;
+  test.use({ contextOptions: { storageState: { cookies: [], origins: [{ origin, localStorage: [{ name: 'fixture', value: 'context option' }] }] } } });
+  test('context options restore state before page fixture', async ({ page }) => {
+    expect(await page.evaluate(() => localStorage.getItem('fixture'))).toBe('context option');
+  });
+  test.describe('explicit state', () => {
+    test.use({ storageState: { cookies: [], origins: [{ origin, localStorage: [{ name: 'fixture', value: 'explicit option' }] }] } });
+    test('storage state option overrides context options', async ({ page }) => {
+      expect(await page.evaluate(() => localStorage.getItem('fixture'))).toBe('explicit option');
+    });
+  });
+  test.describe('file state', () => {
+    test.use({ storageState: async ({}, use, testInfo) => {
+      const path = testInfo.outputPath('state.json');
+      await writeFile(path, JSON.stringify({ cookies: [], origins: [{ origin, localStorage: [{ name: 'fixture', value: 'file option' }] }] }));
+      await use(path);
+    } });
+    test('file storage state restores through fixture override', async ({ page }) => {
+      expect(await page.evaluate(() => localStorage.getItem('fixture'))).toBe('file option');
+    });
+  });
 });
 test('soft native assertion failures reach the reporter', async ({ page }, testInfo) => {
   test.fail();
