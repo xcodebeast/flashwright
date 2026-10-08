@@ -3,6 +3,25 @@ import test from 'node:test';
 import { requireVerifiedBrowser } from './browser-identity.mjs';
 import { quantile, summarize, comparePaired } from '../benchmarks/statistics.mjs';
 import { launchArguments } from '../benchmarks/paired-contract.mjs';
+import { verifyResidentLoadInvocation } from './verify-resident-load.mjs';
+
+test('resident load invocation supports legacy and explicitly classified production samples', () => {
+  const entry = { mode: 'playwright', scenario: { workload: 'quiet-text', conditionCount: 1 }, launchGroup: 0 };
+  const legacy = ['/runtime/node', 'benchmarks/resident-load-sample.mjs', 'playwright', 'quiet-text', '1', '0'];
+  verifyResidentLoadInvocation(legacy, entry, undefined);
+  verifyResidentLoadInvocation([...legacy, 'comparison'], entry, 2);
+  assert.throws(() => verifyResidentLoadInvocation(legacy, entry, 2));
+  assert.throws(() => verifyResidentLoadInvocation([...legacy, 'comparison'], entry, undefined));
+  assert.throws(() => verifyResidentLoadInvocation([...legacy, 'functional-conformance'], entry, 2));
+  assert.throws(() => verifyResidentLoadInvocation([...legacy, 'comparison', 'extra'], entry, 2));
+  assert.throws(() => verifyResidentLoadInvocation(['/runtime/node', '--unexpected', ...legacy.slice(1), 'comparison'], entry, 2));
+  assert.throws(() => verifyResidentLoadInvocation([...legacy, 'comparison'], entry, 3));
+  for (const altered of [{ ...entry, mode: 'flashwright-on' }, { ...entry, launchGroup: 1 },
+    { ...entry, scenario: { workload: 'property-only', conditionCount: 1 } },
+    { ...entry, scenario: { workload: 'quiet-text', conditionCount: 128 } }]) {
+    assert.throws(() => verifyResidentLoadInvocation([...legacy, 'comparison'], altered, 2));
+  }
+});
 
 test('statistics preserve independent-launch units and do not invent tail estimates', () => {
   const policy = { seed: 1, bootstrapReplicates: 1000, confidenceLevel: 0.95, minimumSamplesForP95: 200, minimumSamplesForP99: 1000 };

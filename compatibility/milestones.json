@@ -31,7 +31,8 @@
         "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
       ],
       "completed": [
         "Pinned Playwright, Chromium, Node, TypeScript and npm baseline graph",
@@ -130,7 +131,8 @@
         "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
         "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
       ]
     },
     {
@@ -228,7 +230,8 @@
         "compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json",
         "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
         "Additional popup/dialog/action completion cases and broader keyboard APIs",
@@ -252,7 +255,8 @@
         "Reproduced timer starvation from 128 pending complete predicates, replaced the unbounded microtask sweep with a fair bounded queue, and verified all message ports and queued work are released. Two current matched headless-shell Playwright comparisons show paired complete-run ratios 1.1303 (1.0547–1.1719) and 1.0515 (1.0090–1.0734), about 11.5% and 4.9% less time respectively. Delayed assertion ratios are 2.420 and 2.394. Only the first snapshot passes the configured 10% material threshold; the larger setup advantage did not repeat. Noop/failure median regressions remain in both; the replication also flags noop/assertion observed maxima. The material target remains open. Residency stays opt-in, with broader release gates still open.",
         "Original deterministic font fixture and separately owned lifecycle targets prove invalidation paths using real browser scheduling and explicitly labeled lifecycle fault injection. Public font/animation assertion differentials and integrated flush-resource cleanup pass. All changes are compatibility fixtures; the measured production binary is unchanged.",
         "Measured quiet/property/mutation workloads at 1/32/128 conditions on native M3 Pro macOS with corrected process-tree accounting. All 162 launches and 52 current core groups pass. Residency reduces complete time 10.7–13.2% against Playwright for these cases but fails seven CPU and three memory gates; at 32 conditions it uses 1.97–2.18x CPU and 15.9–19.3% more peak memory. Default remains off.",
-        "Implemented synchronous selector sharing and fallback pacing with full predicates and immediate mutation/event wakeups. Current 104 core groups, Node22 focused checks and all 49 registry cases pass. Instrumented exploration is retained separately; current production comparisons remain pending."
+        "Implemented synchronous selector sharing and fallback pacing with full predicates and immediate mutation/event wakeups. The 104-group platform checkpoint and Node22 checks pass. The subsequent 210-launch production plan is complete and independently verified; detailed outcomes are in compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json.",
+        "Current sustained-load matrix passes all nine memory and complete-time gates and seven CPU gates. Property-only/1 and mutation-text/1 remain over the CPU budget. Two eight-pair Playwright comparisons show paired complete-run ratios 1.0580 and 1.0548, with delayed assertion ratios 2.503 and 2.393; both miss the 10% complete-flow target and retain noop/failure median regressions. Default remains off."
       ],
       "evidence": [
         "compatibility/evidence/resident-registry-checkpoint-2026-10-07.json",
@@ -269,10 +273,11 @@
         "compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-invalidation-checkpoint-2026-10-08.json",
         "compatibility/evidence/resident-load-checkpoint-2026-10-08.json",
-        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json"
+        "compatibility/evidence/resident-query-checkpoint-2026-10-08.json",
+        "compatibility/evidence/resident-query-performance-checkpoint-2026-10-08.json"
       ],
       "remaining": [
-        "Run the predeclared sustained-load and complete-flow comparisons for selector sharing and paced fallback. Resolve resource or latency regressions before default enablement; retain both independent complete-flow snapshots.",
+        "Reduce remaining single-condition CPU overhead, including frame wakeups that continue when predicates are deferred. Preserve full reads, mutation/event responsiveness and deadline ownership; repeat the matched resource and complete-flow gates after production changes.",
         "Broaden document/ownership/concurrent assertion conformance and the remaining M2 API/runner/artifact surface.",
         "Complete S12 invalidation/resource gates and evaluate S10 CBOR with equivalent-work off/on measurements.",
         "Improve complete flows and setup using measured critical paths; native Linux, contention, consumer installation and release gates remain open."
@@ -291,6 +296,6 @@
       "status": "not_started"
     }
   ],
-  "nextImplementation": "Run the predeclared production comparison plan in compatibility/evidence/resident-query-profile-plan-2026-10-08.json using the current 158-source conformance checkpoint. Independently verify all results, keep every attempted sample, and resolve remaining resource or complete-flow regressions. Keep residency default off and continue unfinished M2, transport, native Linux, contention, installation and release gates.",
+  "nextImplementation": "Diagnose the remaining single-condition resident CPU overhead using the current 210-launch checkpoint. The registry still wakes each frame even when full predicates are deferred; measure and optimize wakeup scheduling without weakening correctness or deadlines. Keep residency default off. Continue complete-flow/short-call/failure improvements and unfinished M2, transport, native Linux, contention, installation and release gates.",
   "releaseStatus": "Experimental runnable core; no release-supported capability or fastest-engine claim."
 }
