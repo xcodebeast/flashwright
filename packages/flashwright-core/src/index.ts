@@ -35,7 +35,7 @@ import { prepareElementResolution, type WaitForSelectorOptions, type WaitForSele
 import { currentRunnerContextDefaults } from './runner-context-defaults.js';
 import { prepareInputFiles, fileInputSelector, type InputFiles, type FrameSetInputFilesOptions, type SetInputFilesOptions } from './file-inputs.js';
 export type { FilePayload, InputFiles, SetInputFilesOptions, FrameSetInputFilesOptions } from './file-inputs.js';
-import { beginRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext, assertRunnerContextCloseAllowed } from './runner-lifecycle.js';
+import { beginRunnerContextCreation, completeRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext, assertRunnerContextCloseAllowed } from './runner-lifecycle.js';
 import { registerPublicBrowser } from './public-browsers.js';
 import { prepareCookies, filterCookies, cookieFilter, prepareStorageState, decodeStorageState, writeStorageState, type Cookie, type SetCookie, type CookieFilter, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 
@@ -146,43 +146,45 @@ export class Browser extends EventEmitter {
   contexts(): BrowserContext[] { return [...this.ownedContexts]; }
   isConnected(): boolean { return !this.disconnected && !this.closing && !this.client.isClosed(); }
   async newContext(contextOptions: BrowserContextOptions = {}): Promise<BrowserContext> {
-    const runnerGeneration = beginRunnerContextCreation();
-    const runnerDefaults = currentRunnerContextDefaults();
-    if (runnerDefaults && contextOptions && typeof contextOptions === 'object' && !Array.isArray(contextOptions)) {
-      contextOptions = { ...runnerDefaults.contextOptions, ...contextOptions };
-    }
-    options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState', 'screen', 'userAgent', 'deviceScaleFactor', 'isMobile', 'hasTouch', 'defaultBrowserType', 'ignoreHTTPSErrors', 'javaScriptEnabled']);
-    const deviceOptions = prepareDeviceOptions(contextOptions);
-    const contextSettings = prepareContextSettings(contextOptions);
-    if (contextOptions.baseURL !== undefined && typeof contextOptions.baseURL !== 'string') throw failure('InvalidArgumentError', 'browser.newContext.baseURL', 'expected a string');
-    if (contextOptions.viewport !== undefined && contextOptions.viewport !== null) {
-      options('browser.newContext.viewport', contextOptions.viewport, ['width', 'height']);
-      if (![contextOptions.viewport.width, contextOptions.viewport.height].every(value => Number.isInteger(value) && value > 0 && value <= 0xffffffff)) throw failure('InvalidArgumentError', 'browser.newContext.viewport', 'width and height must be positive 32-bit integers');
-    }
-    if (!this.isConnected()) throw failure('TargetClosedError', 'browser.newContext', 'browser has been closed');
-    const storageState = contextOptions.storageState === undefined ? undefined : await prepareStorageState(contextOptions.storageState);
-    const result = await this.client.request('browser.newContext', {
-      browser: this.identifier, ...deviceOptions, ...contextSettings,
-      ...(contextOptions.viewport !== undefined ? { viewport: contextOptions.viewport } : {}),
-      ...(storageState === undefined ? {} : { storageState }),
-    });
-    if (!this.isConnected()) {
-      if (!this.client.isClosed()) await this.client.request('context.close', { context: identifier(result) });
-      throw failure('TargetClosedError', 'browser.newContext', 'browser closed while the context was being created');
-    }
-    const context = new BrowserContext(this.client, identifier(result), this, contextOptions.viewport === undefined ? { width: 1280, height: 720 } : contextOptions.viewport, contextOptions.baseURL);
-    if (runnerDefaults) {
-      context.setDefaultTimeout(runnerDefaults.actionTimeout);
-      context.setDefaultNavigationTimeout(runnerDefaults.navigationTimeout);
-    }
-    this.ownedContexts.add(context);
-    context.once('close', () => this.ownedContexts.delete(context));
+    const runnerCreation = beginRunnerContextCreation();
     try {
-      const enrollment = didCreateRunnerContext(context, runnerGeneration);
-      if (enrollment) await enrollment;
-    }
-    catch (error) { await context.close().catch(() => {}); throw error; }
-    return context;
+      const runnerDefaults = currentRunnerContextDefaults();
+      if (runnerDefaults && contextOptions && typeof contextOptions === 'object' && !Array.isArray(contextOptions)) {
+        contextOptions = { ...runnerDefaults.contextOptions, ...contextOptions };
+      }
+      options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState', 'screen', 'userAgent', 'deviceScaleFactor', 'isMobile', 'hasTouch', 'defaultBrowserType', 'ignoreHTTPSErrors', 'javaScriptEnabled']);
+      const deviceOptions = prepareDeviceOptions(contextOptions);
+      const contextSettings = prepareContextSettings(contextOptions);
+      if (contextOptions.baseURL !== undefined && typeof contextOptions.baseURL !== 'string') throw failure('InvalidArgumentError', 'browser.newContext.baseURL', 'expected a string');
+      if (contextOptions.viewport !== undefined && contextOptions.viewport !== null) {
+        options('browser.newContext.viewport', contextOptions.viewport, ['width', 'height']);
+        if (![contextOptions.viewport.width, contextOptions.viewport.height].every(value => Number.isInteger(value) && value > 0 && value <= 0xffffffff)) throw failure('InvalidArgumentError', 'browser.newContext.viewport', 'width and height must be positive 32-bit integers');
+      }
+      if (!this.isConnected()) throw failure('TargetClosedError', 'browser.newContext', 'browser has been closed');
+      const storageState = contextOptions.storageState === undefined ? undefined : await prepareStorageState(contextOptions.storageState);
+      const result = await this.client.request('browser.newContext', {
+        browser: this.identifier, ...deviceOptions, ...contextSettings,
+        ...(contextOptions.viewport !== undefined ? { viewport: contextOptions.viewport } : {}),
+        ...(storageState === undefined ? {} : { storageState }),
+      });
+      if (!this.isConnected()) {
+        if (!this.client.isClosed()) await this.client.request('context.close', { context: identifier(result) });
+        throw failure('TargetClosedError', 'browser.newContext', 'browser closed while the context was being created');
+      }
+      const context = new BrowserContext(this.client, identifier(result), this, contextOptions.viewport === undefined ? { width: 1280, height: 720 } : contextOptions.viewport, contextOptions.baseURL);
+      if (runnerDefaults) {
+        context.setDefaultTimeout(runnerDefaults.actionTimeout);
+        context.setDefaultNavigationTimeout(runnerDefaults.navigationTimeout);
+      }
+      this.ownedContexts.add(context);
+      context.once('close', () => this.ownedContexts.delete(context));
+      try {
+        const enrollment = didCreateRunnerContext(context, runnerCreation);
+        if (enrollment) await enrollment;
+      }
+      catch (error) { await context.close().catch(() => {}); throw error; }
+      return context;
+    } finally { completeRunnerContextCreation(runnerCreation); }
   }
   async newPage(contextOptions: BrowserContextOptions = {}): Promise<Page> {
     const context = await this.newContext(contextOptions);
