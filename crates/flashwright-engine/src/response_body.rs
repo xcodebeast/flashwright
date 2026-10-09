@@ -366,7 +366,7 @@ mod tests {
         assert_ne!(command["id"], successor_command["id"]);
         fixture.peer.reply(&successor_command).await;
         let attachment = successor.await.unwrap();
-        assert_eq!(attachment.bytes, b"successor bytes");
+        assert_eq!(attachment.bytes.as_slice(), b"successor bytes");
         assert_eq!(fixture.slots.available_permits(), 0);
         drop(attachment);
         assert_eq!(fixture.slots.available_permits(), 1);

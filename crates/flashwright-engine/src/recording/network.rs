@@ -499,7 +499,7 @@ mod collection_tests {
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(transfer.bytes, b"a");
+        assert_eq!(transfer.bytes.as_slice(), b"a");
         assert!(
             engine
                 .take_network_resource(identity.clone(), &operation)

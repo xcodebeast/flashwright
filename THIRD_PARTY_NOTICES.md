@@ -18,8 +18,22 @@ The assertion wrapper calls the pinned injected matcher predicates and adapts ex
 
 Cookie URL rewriting and filtering adapt the pinned network helpers. [Cookie helper provenance](compatibility/upstream/cookie-helpers-provenance.json) records the retained extract, hashes and validation changes under the same Apache-2.0 license and notice.
 
+The native API cookie jar adapts the pinned cookie store and response-cookie parsing rules. [API cookie provenance](compatibility/upstream/api-request-cookies-provenance.json) records complete retained source sections and native ownership changes under the same Apache-2.0 license and notice.
+
+Native API cookie expiry adapts the V8 date-string grammar retained in Node 22.22.0. [Date parser provenance](compatibility/upstream/api-request-date-provenance.json) records the complete upstream files, hashes and Rust translation. The original V8 [BSD license and attribution](compatibility/upstream/LICENSE.v8-date-parser) are retained and must accompany redistributed binaries containing this parser.
+
 Snapshot reconstruction and HAR trace-entry conventions adapt the pinned viewer and recorder contracts. [Snapshot provenance](compatibility/upstream/snapshot-provenance.json) and [network trace provenance](compatibility/upstream/network-trace-provenance.json) retain the exact source extracts, implementation hashes and changes under the same Apache-2.0 license and notice. The native collector and resource ownership are independently implemented.
 
 ## L2 Other dependencies
 
 Cargo.lock and bun.lock pin the development dependency graphs. Their upstream license files remain in the installed packages. Release packaging must generate and verify the complete notices for the binaries and JavaScript packages it actually distributes, as required by SPECS.md S18.i
+
+## L3 Native API request transport
+
+The native API transport uses Hyper 1.11.1 under the MIT license. The complete published crate is retained in [vendor/hyper](vendor/hyper), including its [license](vendor/hyper/LICENSE). [Transport provenance](vendor/hyper-provenance.json) records the published archive checksum, retained file checksums and a three-file patch. The patch adds an opt-in bounded copy of initial HTTP/1 response fields for original field order, casing and reason-phrase bytes; it does not change HTTP framing or TLS.
+
+Hyper Util 0.1.20 is also retained in full in [vendor/hyper-util](vendor/hyper-util), including its [MIT license](vendor/hyper-util/LICENSE). [Connection custody provenance](vendor/hyper-util-provenance.json) records the published archive, retained files and four-file opt-in patch. The patch carries an opaque lifetime guard outside the complete HTTP dispatcher future so its memory allowance survives teardown, and a separate guard through the final pool-table drop. Its explicit `cancel_unused_connects` option drops a losing speculative connection when pool reuse wins, preserving request-scoped cancellation. Its explicit `without_upgrades` option keeps upgrade I/O and buffered bytes inside that guarded task; the default upgrade behavior is unchanged.
+
+Cargo.lock pins Hyper Rustls, Rustls, Tokio and the remaining transport dependencies. Their licenses must also be included in the complete binary release notices required by S18.i.
+
+The response decoder uses unmodified flate2 1.1.10 (MIT or Apache-2.0), zlib-rs 0.6.8 (Zlib), and brotli-decompressor 5.0.3 (published BSD-3-Clause/MIT metadata; the retained license contains the BSD three-clause terms). [Decoder provenance](compatibility/upstream/api-request-decoder-provenance.json) records archive checksums, reviewed source identities, selected features and retained license files. Flashwright implements its own bounded allocation and cancellation wrapper. These notices supplement the complete dependency notices required for binary releases.

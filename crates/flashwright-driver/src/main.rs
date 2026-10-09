@@ -160,6 +160,11 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         if let Some(sender) = cancellations.remove(&request_id) { let _ = sender.send(true); }
                         inputs.expire(request_id);
                     }
+                    ClientMessage::ApiDateResult { context, lookup, milliseconds } => {
+                        if let Err(error) = engine.resolve_api_dates(&context, &lookup, milliseconds) {
+                            failure = Some(error.message.to_string()); break;
+                        }
+                    }
                     ClientMessage::InputEnd { request_id, aborted } => {
                         if let Err(error) = inputs.finish(request_id, aborted) {
                             failure = Some(error.to_string()); break;

@@ -260,6 +260,260 @@ mod tests {
     use tokio::sync::{mpsc, watch};
 
     #[tokio::test]
+    async fn native_api_post_redirect_cookie_auth_and_binary_response_use_real_dispatch() {
+        use flashwright_engine::Operation;
+        use flashwright_protocol::InputAttachment;
+        use std::sync::Arc;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        let server = tokio::spawn(async move {
+            for turn in 0..3 {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                let mut head = Vec::new();
+                while !head.ends_with(b"\r\n\r\n") {
+                    head.push(socket.read_u8().await.unwrap());
+                    assert!(head.len() < 8192);
+                }
+                let head = String::from_utf8(head).unwrap();
+                let normalized = head.to_ascii_lowercase();
+                assert!(normalized.contains("x-shared: call\r\n"));
+                assert!(normalized.contains("user-agent: explicit-agent\r\n"));
+                match turn {
+                    0 => {
+                        assert!(head.starts_with("POST /redirect HTTP/1.1\r\n"));
+                        assert!(normalized.contains("content-length: 4\r\n"));
+                        let mut body = [0; 4];
+                        socket.read_exact(&mut body).await.unwrap();
+                        assert_eq!(&body, b"data");
+                        socket.write_all(b"HTTP/1.1 302 Found\r\nLocation: /auth\r\nSet-Cookie: session=redirect; Path=/; HttpOnly\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await.unwrap();
+                    }
+                    1 => {
+                        assert!(head.starts_with("GET /auth HTTP/1.1\r\n"));
+                        assert!(normalized.contains("cookie: session=redirect\r\n"));
+                        assert!(!normalized.contains("authorization:"));
+                        assert!(!normalized.contains("content-type:"));
+                        socket.write_all(b"HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Basic realm=test\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await.unwrap();
+                    }
+                    _ => {
+                        assert!(head.starts_with("GET /auth HTTP/1.1\r\n"));
+                        assert!(head.contains("authorization: Basic dXNlcjpwYXNz\r\n"));
+                        assert!(normalized.contains("cookie: session=redirect\r\n"));
+                        socket.write_all(b"HTTP/1.1 200 Custom\r\nX-Mixed: first\r\nx-mIXED: second\r\nContent-Length: 7\r\nConnection: close\r\n\r\nfinal\x00\xff").await.unwrap();
+                    }
+                }
+            }
+        });
+        let (outgoing, _messages) = mpsc::channel(8);
+        let (fatal, _failure) = watch::channel(false);
+        let limits = ResourceLimits::default();
+        let engine = Arc::new(Engine::new(None, outgoing, fatal, limits.clone()));
+        let (_cancel, cancellation) = watch::channel(false);
+        let operation = |method: &str| {
+            Operation::new(
+                method.into(),
+                Some(tokio::time::Instant::now() + std::time::Duration::from_secs(5)),
+                cancellation.clone(),
+            )
+        };
+        let result = engine.execute("apiRequest.newContext", json!({"userAgent":"explicit-agent","extraHTTPHeaders":[{"name":"x-shared","value":"context"}],"httpCredentials":{"username":"user","password":"pass","origin":origin}}), &operation("apiRequest.newContext")).await.unwrap();
+        let context = result.value().unwrap()["identifier"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        drop(
+            prepare_operation_reply(
+                &engine,
+                1,
+                "apiRequest.newContext",
+                Ok(result),
+                InputDelivery::Acknowledged,
+                &limits,
+            )
+            .await
+            .unwrap(),
+        );
+        let input_budget = Arc::new(tokio::sync::Semaphore::new(4));
+        let fetch = operation("apiRequest.fetch");
+        fetch
+            .attach_input(InputAttachment {
+                bytes: Arc::new(b"data".to_vec()),
+                reservation: input_budget.clone().try_acquire_many_owned(4).unwrap(),
+            })
+            .unwrap();
+        let result = engine.execute("apiRequest.fetch", json!({"context":context,"url":format!("{origin}/redirect"),"method":"POST","headers":[{"name":"x-shared","value":"call"},{"name":"content-type","value":"text/plain"}],"hasBody":true}), &fetch).await.unwrap();
+        let metadata = result.value().unwrap().clone();
+        assert_eq!(metadata["status"], 200);
+        assert_eq!(metadata["statusText"], "Custom");
+        assert_eq!(metadata["url"], format!("{origin}/auth"));
+        assert_eq!(metadata["bodyLength"], 7);
+        assert_eq!(
+            metadata["headers"][0],
+            json!({"name":"X-Mixed","value":"first"})
+        );
+        let response = metadata["identifier"].as_str().unwrap();
+        drop(
+            prepare_operation_reply(
+                &engine,
+                2,
+                "apiRequest.fetch",
+                Ok(result),
+                InputDelivery::Acknowledged,
+                &limits,
+            )
+            .await
+            .unwrap(),
+        );
+        drop(fetch);
+        assert_eq!(input_budget.available_permits(), 4);
+        let body = engine
+            .execute(
+                "apiResponse.body",
+                json!({"context":context,"response":response}),
+                &operation("apiResponse.body"),
+            )
+            .await
+            .unwrap();
+        let OperationResult::Binary(body) = body else {
+            panic!("body must use binary attachment")
+        };
+        assert_eq!(body.bytes.as_slice(), b"final\x00\xff");
+        let original_bytes = Arc::downgrade(&body.bytes);
+        let storage = engine
+            .execute(
+                "apiRequest.storageState",
+                json!({"context":context}),
+                &operation("apiRequest.storageState"),
+            )
+            .await
+            .unwrap();
+        assert_eq!(storage.value().unwrap()["cookies"][0]["value"], "redirect");
+        drop(storage);
+        engine
+            .execute(
+                "apiRequest.dispose",
+                json!({"context":context}),
+                &operation("apiRequest.dispose"),
+            )
+            .await
+            .unwrap();
+        assert!(original_bytes.upgrade().is_some());
+        assert!(
+            matches!(engine.execute("apiResponse.body", json!({"context":context,"response":response}), &operation("apiResponse.body")).await, Err(error) if error.code == ErrorCode::TargetClosed)
+        );
+        drop(body);
+        assert!(original_bytes.upgrade().is_none());
+        server.await.unwrap();
+        engine.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn api_snapshot_publication_uses_original_owner_and_retains_tree_through_frame_drop() {
+        use flashwright_engine::Operation;
+        use std::sync::Arc;
+        let (outgoing, _messages) = mpsc::channel(8);
+        let (fatal, _failure) = watch::channel(false);
+        let limits = ResourceLimits::default();
+        let engine = Arc::new(Engine::new(None, outgoing, fatal, limits.clone()));
+        let (_cancel, cancellation) = watch::channel(false);
+        let create = Operation::new("apiRequest.newContext".into(), None, cancellation.clone());
+        let result = engine.execute("apiRequest.newContext", json!({
+            "storageState": { "cookies": [], "origins": [{ "origin": "https://example.test", "localStorage": [{"name": [107], "value": [118]}] }] }
+        }), &create).await.unwrap();
+        let identifier = result.value().unwrap()["identifier"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        let snapshot_operation =
+            Operation::new("apiRequest.storageState".into(), None, cancellation.clone());
+        assert!(
+            matches!(engine.execute("apiRequest.storageState", json!({"context":identifier}), &snapshot_operation).await,
+            Err(error) if error.code == ErrorCode::TargetClosed)
+        );
+        drop(
+            prepare_operation_reply(
+                &engine,
+                1,
+                "apiRequest.newContext",
+                Ok(result),
+                InputDelivery::Acknowledged,
+                &limits,
+            )
+            .await
+            .unwrap(),
+        );
+        let snapshot = engine
+            .execute(
+                "apiRequest.storageState",
+                json!({"context":identifier}),
+                &snapshot_operation,
+            )
+            .await
+            .unwrap();
+        let OperationResult::RetainedValue(value) = &snapshot else {
+            panic!("snapshot must carry original custody")
+        };
+        let original = Arc::downgrade(value);
+        let frame = prepare_operation_reply(
+            &engine,
+            2,
+            "apiRequest.storageState",
+            Ok(snapshot),
+            InputDelivery::Acknowledged,
+            &limits,
+        )
+        .await
+        .unwrap();
+        let late = engine
+            .execute(
+                "apiRequest.storageState",
+                json!({"context":identifier}),
+                &snapshot_operation,
+            )
+            .await
+            .unwrap();
+        let dispose = Operation::new("apiRequest.dispose".into(), None, cancellation);
+        engine
+            .execute(
+                "apiRequest.dispose",
+                json!({"context":identifier}),
+                &dispose,
+            )
+            .await
+            .unwrap();
+        let rejected = prepare_operation_reply(
+            &engine,
+            3,
+            "apiRequest.storageState",
+            Ok(late),
+            InputDelivery::Acknowledged,
+            &limits,
+        )
+        .await
+        .unwrap();
+        engine.shutdown().await;
+        assert!(original.upgrade().is_some());
+        let (producer, consumer) = duplex(16 * 1024);
+        let mut writer = FrameWriter::new(producer, limits.control_frame_bytes);
+        writer.write_frame(&frame).await.unwrap();
+        writer.write_frame(&rejected).await.unwrap();
+        drop(writer);
+        let mut reader = FrameReader::new(consumer, limits.control_frame_bytes);
+        let result = reader.read::<Value>().await.unwrap().unwrap();
+        assert_eq!(
+            result["value"]["origins"][0]["localStorage"][0]["value"],
+            json!([118])
+        );
+        assert_eq!(
+            reader.read::<Value>().await.unwrap().unwrap()["error"]["code"],
+            "TargetClosedError"
+        );
+        assert!(original.upgrade().is_some());
+        drop(frame);
+        assert!(original.upgrade().is_none());
+    }
+
+    #[tokio::test]
     async fn rejected_values_preserve_delivery_and_successor_frames() {
         let (outgoing, _messages) = mpsc::channel(8);
         let (fatal, _failure) = watch::channel(false);

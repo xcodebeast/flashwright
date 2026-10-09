@@ -15,8 +15,19 @@ impl Engine {
         ) -> Result<Prepared, ErrorRecord>,
     ) -> Result<Prepared, ErrorRecord> {
         match result {
+            OperationResult::RetainedValue(value) => {
+                value.prepare(|value, custody| prepare(value, Some(custody)))
+            }
             OperationResult::RetainedDiagnostics(value) => {
                 value.prepare(|value, custody| prepare(value, Some(custody)))
+            }
+            OperationResult::Value(value)
+                if matches!(method, "apiRequest.newContext" | "apiRequest.fetch") =>
+            {
+                self.api_requests
+                    .prepare_publication(method, value, |value, custody| {
+                        prepare(value, Some(custody))
+                    })
             }
             OperationResult::Value(value) => {
                 self.prepare_publication(method, value, |value| prepare(value, None))
@@ -125,6 +136,21 @@ impl Engine {
         method: &str,
         result: &Value,
     ) -> Option<&'static str> {
+        if method == "apiRequest.newContext" {
+            return result["identifier"].as_str().map(|identifier| {
+                self.api_requests.dispose_context(identifier);
+                "resourceDisposed"
+            });
+        }
+        if method == "apiRequest.fetch" {
+            return result["context"]
+                .as_str()
+                .zip(result["identifier"].as_str())
+                .map(|(context, response)| {
+                    self.api_requests.dispose_response(context, response);
+                    "resourceDisposed"
+                });
+        }
         if matches!(method, "page.addInitScript" | "context.addInitScript") {
             return self.discard_init_script(result).await;
         }

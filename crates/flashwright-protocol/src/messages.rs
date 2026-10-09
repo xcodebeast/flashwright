@@ -238,6 +238,11 @@ pub enum ClientMessage {
         #[serde(rename = "requestId")]
         request_id: u64,
     },
+    ApiDateResult {
+        context: String,
+        lookup: String,
+        milliseconds: Vec<Option<f64>>,
+    },
     InputEnd {
         #[serde(rename = "requestId")]
         request_id: u64,
@@ -318,6 +323,8 @@ impl DriverMessage {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ErrorCode {
+    #[serde(rename = "Error")]
+    Request,
     #[serde(rename = "UnsupportedFeatureError")]
     UnsupportedFeature,
     #[serde(rename = "InvalidArgumentError")]

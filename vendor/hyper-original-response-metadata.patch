@@ -1,0 +1,145 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -67,6 +67,7 @@
+ from = "capi/include/hyper.h"
+ 
+ [features]
++original-response-metadata = []
+ capi = []
+ client = [
+     "dep:want",
+--- a/src/ext/mod.rs
++++ b/src/ext/mod.rs
+@@ -132,6 +132,81 @@
+ impl fmt::Debug for Protocol {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         self.inner.fmt(f)
++    }
++}
++
++/// Original HTTP/1 response fields, retaining wire order and name casing.
++///
++/// Present only with `original-response-metadata` and `preserve_header_case(true)`.
++/// Values use the existing parser's whitespace/folding normalization. This is not
++/// a raw wire transcript. Trailers are excluded. The owned copy contains only the
++/// parsed status line and header block, never the receive buffer's body read-ahead.
++#[cfg(all(
++    feature = "original-response-metadata",
++    feature = "client",
++    feature = "http1"
++))]
++#[derive(Clone, Debug)]
++pub struct OriginalResponseHeaders {
++    block: Bytes,
++    fields: Vec<(std::ops::Range<usize>, std::ops::Range<usize>)>,
++}
++
++#[cfg(all(
++    feature = "original-response-metadata",
++    feature = "client",
++    feature = "http1"
++))]
++impl OriginalResponseHeaders {
++    /// Maximum copied status line and header block length.
++    pub const MAX_BLOCK_BYTES: usize = 256 * 1024;
++    /// Maximum retained initial response field count.
++    pub const MAX_FIELDS: usize = 1024;
++
++    pub(crate) fn new(block: &[u8], count: usize) -> Self {
++        Self {
++            block: Bytes::copy_from_slice(block),
++            fields: Vec::with_capacity(count),
++        }
++    }
++
++    pub(crate) fn append(&mut self, name: std::ops::Range<usize>, value: std::ops::Range<usize>) {
++        self.fields.push((name, value));
++    }
++
++    /// Iterates over original name bytes and parser-normalized value bytes.
++    pub fn iter(&self) -> impl ExactSizeIterator<Item = (&[u8], &[u8])> + '_ {
++        self.fields
++            .iter()
++            .map(|(name, value)| (&self.block[name.clone()], &self.block[value.clone()]))
++    }
++
++    /// Byte length of the compact owned status line and header block.
++    pub fn block_len(&self) -> usize {
++        self.block.len()
++    }
++
++    /// Original validated reason bytes, including Latin-1 text that httparse's
++    /// string view intentionally replaces with an empty string.
++    pub fn reason_phrase(&self) -> &[u8] {
++        let line = self
++            .block
++            .split(|byte| *byte == b'\n')
++            .find(|line| !line.is_empty() && *line != b"\r")
++            .unwrap_or_default();
++        let line = line.strip_suffix(b"\r").unwrap_or(line);
++        // HTTP/1.x and its first delimiter have already been validated. Preserve
++        // every reason byte after the three status digits and one space.
++        let Some(mut status) = line.get(9..) else {
++            return b"";
++        };
++        while let Some(rest) = status.strip_prefix(b" ") {
++            status = rest;
++        }
++        status
++            .get(3..)
++            .and_then(|tail| tail.strip_prefix(b" "))
++            .unwrap_or_default()
+     }
+ }
+ 
+--- a/src/proto/h1/role.rs
++++ b/src/proto/h1/role.rs
+@@ -1052,6 +1052,14 @@
+                 ) {
+                     Ok(httparse::Status::Complete(len)) => {
+                         trace!("Response.parse Complete({})", len);
++                        #[cfg(feature = "original-response-metadata")]
++                        if ctx.preserve_header_case
++                            && (len > crate::ext::OriginalResponseHeaders::MAX_BLOCK_BYTES
++                                || res.headers.len()
++                                    > crate::ext::OriginalResponseHeaders::MAX_FIELDS)
++                        {
++                            return Err(crate::error::Parse::TooLarge);
++                        }
+                         let status = StatusCode::from_u16(res.code.expect("httparse completed"))?;
+ 
+                         let reason = {
+@@ -1097,6 +1105,10 @@
+             }
+ 
+             let slice = slice.freeze();
++            #[cfg(feature = "original-response-metadata")]
++            let mut original_headers = ctx
++                .preserve_header_case
++                .then(|| crate::ext::OriginalResponseHeaders::new(&slice, headers_len));
+ 
+             let mut headers = ctx.cached_headers.take().unwrap_or_default();
+ 
+@@ -1121,6 +1133,11 @@
+                 let header = unsafe { header.assume_init_ref() };
+                 let name = header_name!(&slice[header.name.0..header.name.1]);
+                 let value = header_value!(slice.slice(header.value.0..header.value.1));
++                #[cfg(feature = "original-response-metadata")]
++                if let Some(original_headers) = &mut original_headers {
++                    original_headers
++                        .append(header.name.0..header.name.1, header.value.0..header.value.1);
++                }
+ 
+                 if let header::CONNECTION = name {
+                     // keep_alive was previously set to default for Version
+@@ -1146,6 +1163,10 @@
+             }
+ 
+             let mut extensions = http::Extensions::default();
++            #[cfg(feature = "original-response-metadata")]
++            if let Some(original_headers) = original_headers {
++                extensions.insert(original_headers);
++            }
+ 
+             if let Some(header_case_map) = header_case_map {
+                 extensions.insert(header_case_map);
