@@ -11,7 +11,7 @@ export interface FrameSnapshot { identifier: string; parent: string | null; name
 
 /** Identity is stable while the frame's document and URL can change. */
 export class Frame extends LocatorScope {
-  static { instrumentTraceMethods(this.prototype, 'Frame', frame => tracePageOwner(frame.owner), { evaluate: { method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, waitForSelector: { parameters: ['selector', 'options'] }, setInputFiles: { parameters: ['selector', 'files', 'options'] } }); }
+  static { instrumentTraceMethods(this.prototype, 'Frame', frame => tracePageOwner(frame.owner), { runAssertion: { method: 'expect', apiName: 'frame._expect', parameters: ['selector', 'options', 'timeout'] }, evaluate: { method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, waitForSelector: { parameters: ['selector', 'options'] }, setInputFiles: { parameters: ['selector', 'files', 'options'] } }); }
 
   private detached = false;
   async setInputFiles(selector: string, files: InputFiles, options: FrameSetInputFilesOptions = {}): Promise<void> {

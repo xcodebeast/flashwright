@@ -15,6 +15,7 @@ export interface AssertionOptions {
   expectedValue?: { checked?: boolean; indeterminate?: boolean };
   expressionArg?: string;
   useInnerText?: boolean;
+  pseudo?: 'before' | 'after';
 }
 export interface AssertionResult {
   observed: boolean;

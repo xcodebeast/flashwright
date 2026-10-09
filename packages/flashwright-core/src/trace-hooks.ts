@@ -4,7 +4,7 @@ import type { Tracing, TraceCall } from './tracing.js';
 export interface TraceCallMetadata { readonly context: string; readonly generation: string; readonly recording?: string; readonly call?: string }
 interface CallScope { internal: boolean; traceCall?: TraceCallMetadata }
 export interface TraceOwner { tracing: Tracing; pageId?: string; selector?: string }
-export interface TraceMethod { className?: string; method?: string; parameters?: readonly string[] }
+export interface TraceMethod { className?: string; method?: string; apiName?: string; parameters?: readonly string[] }
 let activeChunks = 0;
 const scope = new AsyncLocalStorage<CallScope>();
 let pageOwnerResolver: ((page: object) => TraceOwner | undefined) | undefined;
@@ -29,7 +29,7 @@ export function instrumentTraceMethods<Owner extends object>(prototype: Owner, c
       if (!activeChunks || scope.getStore()?.internal) return original.apply(this, arguments_);
       const owner = ownerFor(this);
       if (!owner) return original.apply(this, arguments_);
-      const call: TraceCall | undefined = owner.tracing.begin(configuration.className ?? className, configuration.method ?? name, `${publicClassName === 'BrowserContext' ? 'browserContext' : publicClassName.toLowerCase()}.${name}`, owner, configuration.parameters ?? [], arguments_);
+      const call: TraceCall | undefined = owner.tracing.begin(configuration.className ?? className, configuration.method ?? name, configuration.apiName ?? `${publicClassName === 'BrowserContext' ? 'browserContext' : publicClassName.toLowerCase()}.${name}`, owner, configuration.parameters ?? [], arguments_);
       if (!call) return original.apply(this, arguments_);
       let result: unknown;
       try { result = scope.run({ internal: true, ...(call.nativeTrace ? { traceCall: call.nativeTrace } : {}) }, () => original.apply(this, arguments_)); }

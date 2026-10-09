@@ -88,6 +88,7 @@ export class Locator extends LocatorScope {
       const owner = tracePageOwner(locator.page());
       return owner ? { ...owner, selector: locator.selector } : undefined;
     }, {
+        runAssertion: { method: 'expect', apiName: 'locator._expect', parameters: ['options', 'timeout'] },
         elementHandle: { method: 'waitForSelector', parameters: ['options'] },
         evaluate: { method: 'evaluateExpression', parameters: ['expression', 'arg', 'options'] },
         evaluateHandle: { method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] },

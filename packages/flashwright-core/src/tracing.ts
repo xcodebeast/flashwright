@@ -6,7 +6,7 @@ import { validateOptions } from './validation.js';
 import { TraceWriter } from './trace-writer.js';
 import { TraceResources } from './trace-resources.js';
 import { TraceDiagnosticChannel, type TraceDiagnostic } from './trace-diagnostics.js';
-import { tracePreview, serializedTracePreview, traceStack, traceError } from './trace-preview.js';
+import { tracePreview, serializedTracePreview, traceStack, traceError, traceBooleanField } from './trace-preview.js';
 import { traceChunkOpened, traceChunkClosed, type TraceOwner, type TraceCallMetadata } from './trace-hooks.js';
 import { pageError } from './page-errors.js';
 import { remotePreview } from './console.js';
@@ -14,12 +14,13 @@ import { TraceFilmstripChannel, sampleTraceClock } from './trace-filmstrip.js';
 import { NativeTraceRecording, type NativeTraceChunk } from './trace-recording.js';
 import { TraceSnapshotChannel } from './trace-snapshots.js';
 import { TraceNetworkChannel } from './trace-network.js';
+import { beginRunnerAction, type RunnerAction } from './runner-actions.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
 interface TraceChunk { identifier: string; writer: TraceWriter; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; accepting: boolean }
-export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; nativeTrace?: TraceCallMetadata }
+export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
 const processIdentity = randomUUID();
 let nextCall = 0;
 let nextContext = 0;
@@ -260,14 +261,30 @@ export class Tracing {
       if (owner.selector !== undefined) parameters.selector = owner.selector;
       for (let index = 0; index < parameterNames.length; index++) parameters[parameterNames[index]!] = values[index];
       const preview = tracePreview(parameters, 16384) as Record<string, unknown>;
+      if (className === 'Frame' && method === 'expect') {
+        const isNot = traceBooleanField(values[parameterNames.indexOf('options')], 'isNot');
+        if (isNot !== undefined) call.assertionIsNot = isNot;
+        // Project the already-safe preview, never the application's option object.
+        const assertion = preview.options;
+        if (assertion && typeof assertion === 'object' && !Array.isArray(assertion)) {
+          for (const name of ['expression', 'isNot', 'expectedText', 'expectedNumber', 'expectedValue', 'expressionArg', 'useInnerText', 'pseudo']) {
+            if (Object.hasOwn(assertion, name)) preview[name] = (assertion as Record<string, unknown>)[name];
+          }
+          delete preview.options;
+        }
+        if (isNot !== undefined) preview.isNot = isNot;
+        preview.expectedValue = { value: serializedTracePreview(preview.expectedValue), handles: [] };
+      }
       const argumentIndex = parameterNames.indexOf('arg');
       if (call.evaluates && argumentIndex !== -1) {
         preview.arg = { value: serializedTracePreview(values[argumentIndex]), handles: [] };
         preview.isFunction = typeof values[parameterNames.indexOf('expression')] === 'function';
       }
       const stack = traceStack();
+      const runnerAction = beginRunnerAction({ className, method, apiName: title, parameters: preview, stack });
+      if (runnerAction) call.runnerAction = runnerAction;
       if (this.includeSources) chunk.writer.referenceSources(stack);
-      chunk.writer.append({ type: 'before', callId: call.identifier, startTime: performance.now(), class: className, method, title, params: preview, pageId: owner.pageId === undefined ? undefined : this.pageIdentity(owner.pageId), stack,
+      chunk.writer.append({ type: 'before', callId: call.identifier, stepId: call.runnerAction?.stepId, startTime: performance.now(), class: className, method, title: call.runnerAction?.title ?? title, params: preview, pageId: owner.pageId === undefined ? undefined : this.pageIdentity(owner.pageId), stack,
         ...(call.nativeTrace?.recording ? { beforeSnapshot: `before@${call.identifier}` } : {}) });
     } catch (error) { chunk.writer.fail(error); }
     return call;
@@ -280,14 +297,23 @@ export class Tracing {
       call.chunk.filmstrip?.activity(call.pageId);
       await call.chunk.channel?.fence();
       if (!call.chunk.accepting) return;
+      const preview = failed ? undefined : tracePreview(value);
+      const assertionFailed = call.assertionIsNot !== undefined && traceBooleanField(value, 'matches') === call.assertionIsNot;
       call.chunk.writer.append({ type: 'after', callId: call.identifier, endTime: performance.now(),
         ...(call.nativeTrace?.recording ? { afterSnapshot: `after@${call.identifier}` } : {}),
-        ...(failed ? { error: traceError(error) } : { result: { value: call.evaluates ? serializedTracePreview(value) : tracePreview(value) } }) });
+        ...(failed ? { error: traceError(error) } : {
+          result: { value: call.evaluates ? serializedTracePreview(value) : preview },
+          ...(assertionFailed ? { error: { name: 'Expect', message: 'Expect failed' } } : {}),
+        }) });
       if (call.nativeTrace?.recording && call.pageId) await this.client.request('context.trace.snapshot.after', {
         context: call.nativeTrace.context, recording: call.nativeTrace.recording, chunk: call.nativeTrace.generation, call: call.identifier, page: call.pageId,
       }, 2000);
     } catch (captureError) { call.chunk.writer.fail(captureError); }
-    finally { this.calls.delete(call); }
+    finally {
+      try { call.runnerAction?.complete(failed ? error : undefined); }
+      catch (captureError) { call.chunk.writer.fail(captureError); }
+      finally { this.calls.delete(call); }
+    }
   }
   completeSynchronously(call: TraceCall, error: unknown): void {
     void this.complete(call, undefined, error, true);

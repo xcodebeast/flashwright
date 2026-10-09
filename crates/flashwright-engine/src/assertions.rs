@@ -28,6 +28,17 @@ const EXPRESSIONS: &[&str] = &[
     "to.have.title",
     "to.have.attribute",
     "to.have.attribute.value",
+    "to.have.class",
+    "to.have.class.array",
+    "to.contain.class",
+    "to.contain.class.array",
+    "to.have.css",
+    "to.have.id",
+    "to.have.values",
+    "to.have.role",
+    "to.have.accessible.name",
+    "to.have.accessible.description",
+    "to.have.accessible.error.message",
 ];
 
 struct AssertionRequest {

@@ -1,0 +1,94 @@
+{
+  "status": "passed-focused-development-checkpoint-full-core-incomplete",
+  "sources": 462,
+  "driverSha256": "5cb56d8d94641860d295a076c51675c7c403b032d88a8469cb3a61ba47b5ee04",
+  "sourceArchiveSha256": "0d4deb5be24cdfc63321cf90362152c62f729769aa00596bb6e71fe18028d0ce",
+  "deltaArchiveSha256": "013ff75b618e049d97b193f5496010fd3eba35fe43098b839283e13619dc092d",
+  "hostReportSha256": "4648645c4454b577ea6964d224587ecbe02643bb5e703756be43aa6613606599",
+  "browserReportSha256": "45ef05ef5873fead7ccea808168d3d81f0e62968f47ac6db5e859bcf69d5c6e2",
+  "focusedAuditSha256": "d97dda2c445494a5db5571c7380e2b00ae91a269104455f761a9e9da4482df6b",
+  "peerAuditSha256": "180ead3bd52b62c55073f70909f001768803807d6be775c5ab8619427bfc2dd6",
+  "hostGroups": 17,
+  "browserGroups": 5,
+  "cleanFocusedWatchdogs": 22,
+  "nativeWorkspaceTests": 243,
+  "nativeIgnoredTests": 1,
+  "manualRunnerPairs": 2,
+  "packedMatcherModes": 4,
+  "packedCombinedTraces": 2,
+  "lifecycleRerunSha256": "2e5e3b817b7e0cdfb6af1f5d5d394298c5380645a91a31c483c0f4c301c155a3",
+  "schemaVersion": 1,
+  "referenceVersion": "1.60.0",
+  "platform": "darwin-arm64",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "methods": [
+    "toHaveClass",
+    "toContainClass",
+    "toHaveCSS",
+    "toHaveId",
+    "toHaveValues",
+    "toHaveRole",
+    "toHaveAccessibleName",
+    "toHaveAccessibleDescription",
+    "toHaveAccessibleErrorMessage"
+  ],
+  "peerMatcherValidation": {
+    "hostDispatchCasesPerRuntime": 48,
+    "hostRuntimes": [
+      "Bun 1.4.2",
+      "Node 22.22.0",
+      "Node 24.15.0"
+    ],
+    "browserGroupsPerConfiguration": 15,
+    "browserConfigurations": 7,
+    "cleanWatchdogs": 22,
+    "packedModuleModes": [
+      "ESM",
+      "CommonJS"
+    ],
+    "receiptSha256": "504217200a75aa19f6f889fecbeb52e337337e3c10ad11a7c20b677d78de9208"
+  },
+  "scope": [
+    "Nine common locator matchers reuse the pinned predicate semantics through the independent native assertion path. Class arrays, CSS before/after pseudo-elements, multiple selected values, exact roles and accessible text support their tested defaults, negation, configured/per-call timeouts and runner reporting.",
+    "The private asynchronous context observer waits for enrollment before publication, preserves the originating scope through late allocation and closure, rejects recursive lifecycle operations and releases retired observer references.",
+    "The private action observer associates admitted trace calls with pinned runner step IDs. Expect wrappers own matcher completion; mapped locations, safe previews, original completion ownership and pinned trace-model parent/clock merging pass controlled checks on Bun and Node22/24.",
+    "Manual assertion traces retain top-level predicate options and exact failed-negation metadata even when diagnostic text is truncated. Paired real runner archives pass on headless shell and full Chrome.",
+    "Packed alias ESM/CommonJS consumers pass the shared matcher corpus on both browser builds. Combined manual snapshots, network resources, filmstrips, source files and runner screenshots also pass on full Chrome."
+  ],
+  "partialCoreRuns": [
+    {
+      "status": "failed",
+      "passedGroups": 71,
+      "expectedGroups": 112,
+      "reportSha256": "0feaeb69d9554b82c68f105e92af64b084ec84575ba13c7b43ff2bd3e594ebcb",
+      "failedCommand": "tools/run-lifecycle-tests.mjs",
+      "watchdogSha256": "7e6dc0d0569a3ad7996588dd25020fa470592066e6f3818c036fbbaae63ae024",
+      "remainingObservedProcesses": []
+    },
+    {
+      "status": "failed",
+      "passedGroups": 34,
+      "expectedGroups": 112,
+      "reportSha256": "8407b26dce6cacab03898d4ba4334aff1021af702b09847f749c4098aaba0da7",
+      "failedCommand": "compatibility/m1/client-request-order.mjs",
+      "watchdogSha256": "12ee52fb69f2dce3f1294675fb4778503fb4a3fbf624a283ecd2ad0c9227dea2",
+      "remainingObservedProcesses": []
+    }
+  ],
+  "retainedFailures": [
+    "The first full attempt passed 71 groups, then failed guardian cleanup and renderer-close deadlines in the lifecycle module. An unchanged seven-case lifecycle rerun also missed guardian deadlines. All observed owned processes eventually exited.",
+    "The second full attempt passed 34 groups, then an unchanged one-second request-order probe expired before the fixture driver accepted it. The outer watchdog observed a scheduling gap near three seconds while the shared host was heavily loaded. No owned processes remained.",
+    "Current and previous-checkpoint drivers each passed two controlled guardian comparisons. A later seven-case lifecycle run passed with existing ownership diagnostics enabled and unchanged deadlines. These observations support contention as a possibility; they do not establish the exact cause of every earlier failure.",
+    "Two initial peer reference-fixture attempts were corrected: a synchronous validation throw needed an async wrapper, and page-close assertion rejection text differed from the expected substring. Both attempts remain retained."
+  ],
+  "limitations": [
+    "This is focused development acceptance, not a complete 112-group core pass. The previous 104-group full checkpoint and later public snapshot follow-up keep their original scope and binary identities.",
+    "Automatic runner trace policies remain rejected. The private boundaries do not establish final runner archive assembly, aggregate resource limits, retention policies or automatic viewer acceptance.",
+    "toHaveJSProperty, toBeInViewport, screenshot/ARIA snapshot assertions and other unimplemented matchers remain unsupported. The production cache eligibility whitelist is unchanged.",
+    "No new performance measurement, native Linux result or release support claim.",
+    "The custom toHaveRole declaration currently accepts string, broader than the pinned role literal union. Positive consumer type checks do not establish identical role-type rejection or runtime coverage of every ARIA role."
+  ]
+}

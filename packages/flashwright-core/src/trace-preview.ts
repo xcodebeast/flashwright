@@ -3,6 +3,13 @@ import { callerLocations, type CallerLocation } from './call-sites.js';
 
 const truncated = '[Truncated]';
 
+/** Semantic control bits cannot be recovered from a size-limited diagnostic preview. */
+export function traceBooleanField(value: unknown, name: string): boolean | undefined {
+  if (!value || typeof value !== 'object' || types.isProxy(value)) return undefined;
+  const descriptor = Object.getOwnPropertyDescriptor(value, name);
+  return descriptor && 'value' in descriptor && typeof descriptor.value === 'boolean' ? descriptor.value : undefined;
+}
+
 /** Trace previews never call application accessors, toJSON, iterators or proxy traps. */
 export function tracePreview(value: unknown, maximumBytes = 32768, preserveNonFiniteNumbers = false): unknown {
   let remaining = Math.floor(maximumBytes / 6) - 64;
