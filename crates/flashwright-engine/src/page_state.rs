@@ -30,6 +30,7 @@ pub(crate) enum PagePurpose {
 pub(crate) struct PageState {
     pub purpose: PagePurpose,
     pub routing_registered: std::sync::atomic::AtomicBool,
+    pub snapshot_session_destroyed: std::sync::atomic::AtomicBool,
     pub state: Mutex<DocumentState>,
     pub changed: watch::Sender<u64>,
     pub locator_realms: tokio::sync::Mutex<HashMap<String, super::locators::LocatorRealm>>,
@@ -65,6 +66,7 @@ pub(crate) struct DocumentState {
     pub sequence: u64,
     pub published: bool,
     pub console_enabled: bool,
+    pub dialog_open: bool,
     pub initial_events: Vec<Value>,
     initial_event_bytes: usize,
 }
@@ -119,6 +121,7 @@ impl Default for PageState {
         Self {
             purpose: PagePurpose::Public,
             routing_registered: std::sync::atomic::AtomicBool::new(false),
+            snapshot_session_destroyed: std::sync::atomic::AtomicBool::new(false),
             state: Mutex::new(DocumentState {
                 idle_since: Some(Instant::now()),
                 ..Default::default()
@@ -368,6 +371,8 @@ impl DocumentState {
         };
         let mut observation = NetworkObservation::new(event, &mut network_events);
         match method {
+            "Page.javascriptDialogOpening" => self.dialog_open = true,
+            "Page.javascriptDialogClosed" => self.dialog_open = false,
             "Runtime.executionContextCreated" => {
                 let description = &parameters["context"];
                 let is_default = description["auxData"]["isDefault"] == true;

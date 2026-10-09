@@ -31,10 +31,12 @@ mod operation;
 mod page_state;
 mod pointer;
 mod publication;
+mod recording;
 mod response_body;
 mod routing;
 mod routing_state;
 mod screenshots;
+mod snapshots;
 mod storage;
 mod trace_diagnostics;
 pub use operation::Operation;
@@ -140,6 +142,8 @@ pub struct Engine {
     maximum_attachment_bytes: usize,
     maximum_control_frame_bytes: usize,
     filmstrip_budget: OnceLock<Arc<filmstrip::FrameBudget>>,
+    snapshot_sessions: Arc<snapshots::SnapshotSessions>,
+    snapshot_budget: OnceLock<Arc<snapshots::SnapshotBudget>>,
 }
 
 pub enum OperationResult {
@@ -205,6 +209,8 @@ impl Engine {
             maximum_attachment_bytes: limits.binary_attachment_bytes,
             maximum_control_frame_bytes: limits.control_frame_bytes,
             filmstrip_budget: OnceLock::new(),
+            snapshot_sessions: Arc::new(snapshots::SnapshotSessions::default()),
+            snapshot_budget: OnceLock::new(),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
@@ -249,6 +255,8 @@ impl Engine {
         if let Some(result) = self.execute_control(method, &parameters, operation) {
             return result.map(OperationResult::Value);
         }
+        self.snapshot_before_operation(method, &parameters, operation)
+            .await;
         if method == "page.screenshot" {
             return self
                 .screenshot(parameters, operation)
@@ -258,6 +266,12 @@ impl Engine {
         if method == "context.trace.filmstrip.take" {
             return self
                 .take_filmstrip_frame(parameters, operation)
+                .await
+                .map(OperationResult::Binary);
+        }
+        if method == "context.trace.snapshot.take" {
+            return self
+                .take_snapshot(parameters, operation)
                 .await
                 .map(OperationResult::Binary);
         }
@@ -323,6 +337,9 @@ impl Engine {
                 Ok(result)
             }
             "browser.newContext" => self.new_context(parameters, operation).await,
+            "context.trace.snapshot.after" => {
+                self.snapshot_after_operation(parameters, operation).await
+            }
             "context.trace.filmstrip.start" => self.start_filmstrip(parameters, operation).await,
             "context.trace.filmstrip.seal" | "context.trace.filmstrip.dispose" => {
                 self.finish_filmstrip(method, parameters, operation).await
@@ -674,9 +691,27 @@ impl Engine {
 
     async fn close_browser(&self, identifier: &str) -> Result<(), ErrorRecord> {
         if let Some(browser) = self.remove_browser(identifier) {
-            browser.close().await?;
+            self.begin_browser_cleanup(identifier.to_owned(), browser)
+                .await
+                .map_err(|error| {
+                    ErrorRecord::new(ErrorCode::Protocol, "browser.close", error.to_string())
+                })??;
         }
         Ok(())
+    }
+
+    /// Cleanup proof outlives cancellation of the foreground browser-close waiter.
+    fn begin_browser_cleanup(
+        &self,
+        identifier: String,
+        browser: Arc<Chromium>,
+    ) -> tokio::task::JoinHandle<Result<(), ErrorRecord>> {
+        let sessions = self.snapshot_sessions.clone();
+        tokio::spawn(async move {
+            let result = browser.close().await;
+            sessions.browser_cleanup_finished(&identifier, &result);
+            result
+        })
     }
 
     pub async fn shutdown(&self) {
@@ -692,10 +727,13 @@ impl Engine {
             std::mem::take(&mut registry.browsers)
         };
         let mut closing = tokio::task::JoinSet::new();
-        for browser in browsers.into_values() {
+        for (identifier, browser) in browsers {
+            let cleanup = self.begin_browser_cleanup(identifier, browser.browser);
             closing.spawn(async move {
-                if let Err(error) = browser.browser.close().await {
-                    eprintln!("flashwright cleanup: {}", error.message);
+                match cleanup.await {
+                    Ok(Ok(())) => {}
+                    Ok(Err(error)) => eprintln!("flashwright cleanup: {}", error.message),
+                    Err(error) => eprintln!("flashwright cleanup task: {error}"),
                 }
             });
         }

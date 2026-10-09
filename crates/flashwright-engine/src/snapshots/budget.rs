@@ -1,0 +1,589 @@
+//! Snapshot grants remain owned by the worker until browser completion is known.
+
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex};
+use tokio::sync::watch;
+
+const MAXIMUM_DOCUMENTS: usize = 128;
+const MAXIMUM_CONTEXT_DOCUMENTS: usize = 32;
+const MAXIMUM_EVALUATIONS: usize = 2;
+const MAXIMUM_PAYLOAD_BYTES: usize = 16 * 1024 * 1024;
+const MAXIMUM_CONTEXT_PAYLOAD_BYTES: usize = 8 * 1024 * 1024;
+const MAXIMUM_PAYLOADS: usize = 128;
+const MAXIMUM_CONTEXT_PAYLOADS: usize = 64;
+pub(super) const MAXIMUM_REPLY_BYTES: usize = 4 * 1024 * 1024;
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) struct CacheGrant {
+    pub bytes: usize,
+    pub nodes: usize,
+    pub attributes: usize,
+    pub sheets: usize,
+}
+
+impl CacheGrant {
+    const ENGINE: Self = Self {
+        bytes: 32 * 1024 * 1024,
+        nodes: 100000,
+        attributes: 400000,
+        sheets: 4096,
+    };
+    const GENERATION: Self = Self {
+        bytes: 2 * 1024 * 1024,
+        nodes: 12500,
+        attributes: 50000,
+        sheets: 512,
+    };
+
+    fn available_generation(used: Self) -> Self {
+        Self {
+            bytes: Self::GENERATION
+                .bytes
+                .min((Self::ENGINE.bytes - used.bytes) / 2),
+            nodes: Self::GENERATION
+                .nodes
+                .min((Self::ENGINE.nodes - used.nodes) / 2),
+            attributes: Self::GENERATION
+                .attributes
+                .min((Self::ENGINE.attributes - used.attributes) / 2),
+            sheets: Self::GENERATION
+                .sheets
+                .min((Self::ENGINE.sheets - used.sheets) / 2),
+        }
+    }
+
+    fn reserve_pair(&mut self, generation: Self) {
+        self.bytes += 2 * generation.bytes;
+        self.nodes += 2 * generation.nodes;
+        self.attributes += 2 * generation.attributes;
+        self.sheets += 2 * generation.sheets;
+    }
+
+    fn release_pair(&mut self, generation: Self) {
+        self.bytes -= 2 * generation.bytes;
+        self.nodes -= 2 * generation.nodes;
+        self.attributes -= 2 * generation.attributes;
+        self.sheets -= 2 * generation.sheets;
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum AdmissionError {
+    DocumentLimit,
+    DocumentBusy,
+    EvaluationLimit,
+    PayloadLimit,
+    EvaluationPending,
+    PayloadAlreadyTaken,
+    PayloadExceedsReservation,
+    InvalidContext,
+    InvalidDocument,
+    DocumentAlreadyOwned,
+}
+
+#[derive(Clone, Hash, PartialEq, Eq)]
+struct DocumentIdentity {
+    context: String,
+    session: String,
+    unique_context: String,
+}
+
+#[derive(Default)]
+struct ContextUsage {
+    documents: usize,
+    payloads: usize,
+    payload_bytes: usize,
+}
+
+#[derive(Default)]
+struct Usage {
+    documents: usize,
+    evaluations: usize,
+    payloads: usize,
+    payload_bytes: usize,
+    cache: CacheGrant,
+    contexts: HashMap<String, ContextUsage>,
+    owners: HashSet<DocumentIdentity>,
+}
+
+pub(crate) struct SnapshotBudget {
+    usage: Mutex<Usage>,
+    available: watch::Sender<()>,
+}
+
+impl Default for SnapshotBudget {
+    fn default() -> Self {
+        Self {
+            usage: Mutex::new(Usage::default()),
+            available: watch::channel(()).0,
+        }
+    }
+}
+
+struct DocumentAccount {
+    budget: Arc<SnapshotBudget>,
+    context: String,
+    identity: DocumentIdentity,
+    generation: CacheGrant,
+    busy: Mutex<bool>,
+}
+
+/// The worker retains this owner through factory release or original-realm destruction.
+pub(super) struct DocumentReservation {
+    account: Arc<DocumentAccount>,
+}
+
+/// Waiting callers do not own this guard: the independently running worker does.
+pub(super) struct CaptureReservation {
+    account: Arc<DocumentAccount>,
+    evaluating: bool,
+    evaluation_settled: bool,
+    owns_document_capture: bool,
+    payload: Option<PayloadReservation>,
+}
+
+/// A prepared payload can outlive the browser cache transaction and its caller.
+pub(crate) struct PayloadReservation {
+    account: Arc<DocumentAccount>,
+    bytes: usize,
+}
+
+impl SnapshotBudget {
+    pub(crate) fn changes(&self) -> watch::Receiver<()> {
+        self.available.subscribe()
+    }
+
+    pub(crate) fn owns_document(&self, context: &str, session: &str, unique_context: &str) -> bool {
+        self.usage.lock().unwrap().owners.iter().any(|owner| {
+            owner.context == context
+                && owner.session == session
+                && owner.unique_context == unique_context
+        })
+    }
+
+    /// Fixed two-generation grants bound capture growth without mutation-time accounting.
+    /// Cache pressure may reduce any optional cache dimension all the way to zero.
+    pub(super) fn reserve_document(
+        self: &Arc<Self>,
+        context: &str,
+        session: &str,
+        unique_context: &str,
+    ) -> Result<DocumentReservation, AdmissionError> {
+        if context.is_empty() || context.len() > 64 {
+            return Err(AdmissionError::InvalidContext);
+        }
+        if session.is_empty()
+            || session.len() > 256
+            || unique_context.is_empty()
+            || unique_context.len() > 256
+        {
+            return Err(AdmissionError::InvalidDocument);
+        }
+        let identity = DocumentIdentity {
+            context: context.into(),
+            session: session.into(),
+            unique_context: unique_context.into(),
+        };
+        let mut usage = self.usage.lock().unwrap();
+        if usage.owners.contains(&identity) {
+            return Err(AdmissionError::DocumentAlreadyOwned);
+        }
+        if usage.documents == MAXIMUM_DOCUMENTS
+            || usage
+                .contexts
+                .get(context)
+                .is_some_and(|context| context.documents == MAXIMUM_CONTEXT_DOCUMENTS)
+        {
+            return Err(AdmissionError::DocumentLimit);
+        }
+        let generation = CacheGrant::available_generation(usage.cache);
+        usage.cache.reserve_pair(generation);
+        usage.documents += 1;
+        usage.owners.insert(identity.clone());
+        usage.contexts.entry(context.into()).or_default().documents += 1;
+        Ok(DocumentReservation {
+            account: Arc::new(DocumentAccount {
+                budget: self.clone(),
+                context: context.into(),
+                identity,
+                generation,
+                busy: Mutex::new(false),
+            }),
+        })
+    }
+}
+
+impl DocumentReservation {
+    pub(super) fn generation_grant(&self) -> CacheGrant {
+        self.account.generation
+    }
+
+    /// Charge queued work before waiting for its document and evaluation slot.
+    pub(super) fn reserve_capture(&self) -> Result<CaptureReservation, AdmissionError> {
+        let mut usage = self.account.budget.usage.lock().unwrap();
+        let context = &usage.contexts[&self.account.context];
+        if usage.payloads == MAXIMUM_PAYLOADS
+            || usage.payload_bytes + MAXIMUM_REPLY_BYTES > MAXIMUM_PAYLOAD_BYTES
+            || context.payloads == MAXIMUM_CONTEXT_PAYLOADS
+            || context.payload_bytes + MAXIMUM_REPLY_BYTES > MAXIMUM_CONTEXT_PAYLOAD_BYTES
+        {
+            return Err(AdmissionError::PayloadLimit);
+        }
+        usage.payloads += 1;
+        usage.payload_bytes += MAXIMUM_REPLY_BYTES;
+        let context = usage.contexts.get_mut(&self.account.context).unwrap();
+        context.payloads += 1;
+        context.payload_bytes += MAXIMUM_REPLY_BYTES;
+        Ok(CaptureReservation {
+            account: self.account.clone(),
+            evaluating: false,
+            evaluation_settled: false,
+            owns_document_capture: false,
+            payload: Some(PayloadReservation {
+                account: self.account.clone(),
+                bytes: MAXIMUM_REPLY_BYTES,
+            }),
+        })
+    }
+}
+
+impl CaptureReservation {
+    pub(super) fn admission_changes(&self) -> watch::Receiver<()> {
+        self.account.budget.available.subscribe()
+    }
+
+    /// Subscribe before checking so a completed transaction cannot lose its wakeup.
+    pub(super) fn begin_evaluation(&mut self) -> Result<(), AdmissionError> {
+        if self.evaluating || self.evaluation_settled || self.owns_document_capture {
+            return Err(AdmissionError::DocumentBusy);
+        }
+        let mut busy = self.account.busy.lock().unwrap();
+        if *busy {
+            return Err(AdmissionError::DocumentBusy);
+        }
+        let mut usage = self.account.budget.usage.lock().unwrap();
+        if usage.evaluations == MAXIMUM_EVALUATIONS {
+            return Err(AdmissionError::EvaluationLimit);
+        }
+        usage.evaluations += 1;
+        *busy = true;
+        self.evaluating = true;
+        self.owns_document_capture = true;
+        Ok(())
+    }
+
+    /// Release the document before acknowledging a settled decision to its caller.
+    pub(super) fn transaction_finished(&mut self) -> Result<(), AdmissionError> {
+        if self.evaluating {
+            return Err(AdmissionError::EvaluationPending);
+        }
+        if self.owns_document_capture {
+            *self.account.busy.lock().unwrap() = false;
+            self.owns_document_capture = false;
+            self.account.budget.available.send_replace(());
+        }
+        Ok(())
+    }
+
+    /// Only an original reply, prevented dispatch, or confirmed owner destruction permits this.
+    /// A host timeout and object-group release while evaluation is pending do not.
+    pub(super) fn evaluation_finished(&mut self) {
+        if self.evaluating {
+            self.account.budget.usage.lock().unwrap().evaluations -= 1;
+            self.evaluating = false;
+            self.evaluation_settled = true;
+            self.account.budget.available.send_replace(());
+        }
+    }
+
+    /// Account DATA plus its retained metadata allowance before handing it to publication.
+    pub(super) fn take_payload(
+        &mut self,
+        retained_bytes: usize,
+    ) -> Result<PayloadReservation, AdmissionError> {
+        if !self.evaluation_settled {
+            return Err(AdmissionError::EvaluationPending);
+        }
+        let payload = self
+            .payload
+            .as_mut()
+            .ok_or(AdmissionError::PayloadAlreadyTaken)?;
+        if retained_bytes > payload.bytes {
+            return Err(AdmissionError::PayloadExceedsReservation);
+        }
+        let released = payload.bytes - retained_bytes;
+        let mut usage = self.account.budget.usage.lock().unwrap();
+        usage.payload_bytes -= released;
+        usage
+            .contexts
+            .get_mut(&self.account.context)
+            .unwrap()
+            .payload_bytes -= released;
+        payload.bytes = retained_bytes;
+        Ok(self.payload.take().unwrap())
+    }
+}
+
+impl Drop for CaptureReservation {
+    fn drop(&mut self) {
+        self.evaluation_finished();
+        self.transaction_finished()
+            .expect("evaluation was marked finished");
+    }
+}
+
+impl Drop for PayloadReservation {
+    fn drop(&mut self) {
+        let mut usage = self.account.budget.usage.lock().unwrap();
+        usage.payloads -= 1;
+        usage.payload_bytes -= self.bytes;
+        let context = usage.contexts.get_mut(&self.account.context).unwrap();
+        context.payloads -= 1;
+        context.payload_bytes -= self.bytes;
+    }
+}
+
+impl Drop for DocumentAccount {
+    fn drop(&mut self) {
+        let mut usage = self.budget.usage.lock().unwrap();
+        usage.documents -= 1;
+        usage.owners.remove(&self.identity);
+        usage.cache.release_pair(self.generation);
+        let context = usage.contexts.get_mut(&self.context).unwrap();
+        context.documents -= 1;
+        if context.documents == 0 {
+            debug_assert_eq!(context.payloads, 0);
+            debug_assert_eq!(context.payload_bytes, 0);
+            usage.contexts.remove(&self.context);
+        }
+        drop(usage);
+        self.budget.available.send_replace(());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn document(
+        budget: &Arc<SnapshotBudget>,
+        context: &str,
+    ) -> Result<DocumentReservation, AdmissionError> {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        static NEXT_DOCUMENT: AtomicUsize = AtomicUsize::new(1);
+        budget.reserve_document(
+            context,
+            "session",
+            &format!("document-{}", NEXT_DOCUMENT.fetch_add(1, Ordering::Relaxed)),
+        )
+    }
+
+    fn started(document: &DocumentReservation) -> CaptureReservation {
+        let mut capture = document.reserve_capture().unwrap();
+        capture.begin_evaluation().unwrap();
+        capture
+    }
+
+    fn empty(budget: &SnapshotBudget) {
+        let usage = budget.usage.lock().unwrap();
+        assert_eq!(usage.documents, 0);
+        assert_eq!(usage.evaluations, 0);
+        assert_eq!(usage.payloads, 0);
+        assert_eq!(usage.payload_bytes, 0);
+        assert_eq!(usage.cache, CacheGrant::default());
+        assert!(usage.contexts.is_empty());
+        assert!(usage.owners.is_empty());
+    }
+
+    #[test]
+    fn cache_pressure_reduces_optional_grants_without_rejecting_documents() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let documents: Vec<_> = (0..10)
+            .map(|_| document(&budget, "context").unwrap())
+            .collect();
+        assert_eq!(documents[0].generation_grant(), CacheGrant::GENERATION);
+        assert_eq!(documents[4].generation_grant().nodes, 0);
+        assert_eq!(documents[4].generation_grant().sheets, 0);
+        assert_eq!(documents[7].generation_grant().bytes, 2 * 1024 * 1024);
+        assert_eq!(documents[8].generation_grant(), CacheGrant::default());
+        let mut uncached = started(&documents[8]);
+        uncached.evaluation_finished();
+        drop(uncached);
+        drop(documents);
+        empty(&budget);
+    }
+
+    #[test]
+    fn document_and_context_limits_rollback_without_unbounded_namespace_growth() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let mut documents = Vec::new();
+        for context in 0..4 {
+            for _ in 0..MAXIMUM_CONTEXT_DOCUMENTS {
+                documents.push(document(&budget, &context.to_string()).unwrap());
+            }
+            assert!(matches!(
+                document(&budget, &context.to_string()),
+                Err(AdmissionError::DocumentLimit)
+            ));
+        }
+        assert!(matches!(
+            document(&budget, "new-context"),
+            Err(AdmissionError::DocumentLimit)
+        ));
+        assert_eq!(budget.usage.lock().unwrap().contexts.len(), 4);
+        assert!(matches!(
+            document(&budget, &"x".repeat(65)),
+            Err(AdmissionError::InvalidContext)
+        ));
+        documents.clear();
+        empty(&budget);
+        drop(document(&budget, "replacement").unwrap());
+        empty(&budget);
+    }
+
+    #[test]
+    fn pending_evaluation_keeps_every_credit_after_its_document_handle_is_dropped() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let first = document(&budget, "first").unwrap();
+        let second = document(&budget, "second").unwrap();
+        let third = document(&budget, "third").unwrap();
+        let mut first_capture = started(&first);
+        let second_capture = started(&second);
+        let mut same_document = first.reserve_capture().unwrap();
+        assert!(matches!(
+            same_document.begin_evaluation(),
+            Err(AdmissionError::DocumentBusy)
+        ));
+        drop(same_document);
+        let mut third_capture = third.reserve_capture().unwrap();
+        assert!(matches!(
+            third_capture.begin_evaluation(),
+            Err(AdmissionError::EvaluationLimit)
+        ));
+        assert!(matches!(
+            first_capture.take_payload(1024),
+            Err(AdmissionError::EvaluationPending)
+        ));
+        drop(first);
+        drop(second);
+        assert_eq!(budget.usage.lock().unwrap().evaluations, 2);
+        assert_eq!(budget.usage.lock().unwrap().documents, 3);
+        first_capture.evaluation_finished();
+        third_capture.begin_evaluation().unwrap();
+        drop(first_capture);
+        drop(second_capture);
+        drop(third_capture);
+        drop(third);
+        empty(&budget);
+    }
+
+    #[test]
+    fn prepared_data_outlives_transaction_but_cannot_release_a_successor_charge() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let document = document(&budget, "context").unwrap();
+        let mut capture = started(&document);
+        capture.evaluation_finished();
+        assert!(matches!(
+            capture.take_payload(MAXIMUM_REPLY_BYTES + 1),
+            Err(AdmissionError::PayloadExceedsReservation)
+        ));
+        let payload = capture.take_payload(65536).unwrap();
+        assert!(matches!(
+            capture.take_payload(1),
+            Err(AdmissionError::PayloadAlreadyTaken)
+        ));
+        let mut successor = document.reserve_capture().unwrap();
+        assert!(matches!(
+            successor.begin_evaluation(),
+            Err(AdmissionError::DocumentBusy)
+        ));
+        capture.transaction_finished().unwrap();
+        successor.begin_evaluation().unwrap();
+        drop(capture);
+        assert_eq!(
+            budget.usage.lock().unwrap().payload_bytes,
+            MAXIMUM_REPLY_BYTES + 65536
+        );
+        drop(payload);
+        let mut blocked_successor = document.reserve_capture().unwrap();
+        assert!(matches!(
+            blocked_successor.begin_evaluation(),
+            Err(AdmissionError::DocumentBusy)
+        ));
+        drop(blocked_successor);
+        assert_eq!(
+            budget.usage.lock().unwrap().payload_bytes,
+            MAXIMUM_REPLY_BYTES
+        );
+        drop(document);
+        assert_eq!(budget.usage.lock().unwrap().documents, 1);
+        drop(successor);
+        empty(&budget);
+    }
+
+    #[test]
+    fn completed_evaluations_keep_pending_payload_bytes_charged_by_context_and_engine() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let documents: Vec<_> = ["first", "first", "first", "second", "second", "third"]
+            .iter()
+            .map(|context| document(&budget, context).unwrap())
+            .collect();
+        let mut captures = Vec::new();
+        for index in [0, 1, 3, 4] {
+            let mut capture = started(&documents[index]);
+            capture.evaluation_finished();
+            captures.push(capture);
+        }
+        assert!(matches!(
+            documents[2].reserve_capture(),
+            Err(AdmissionError::PayloadLimit)
+        ));
+        assert!(matches!(
+            documents[5].reserve_capture(),
+            Err(AdmissionError::PayloadLimit)
+        ));
+        let reduced = captures[0].take_payload(0).unwrap();
+        let replacement = documents[2].reserve_capture().unwrap();
+        assert_eq!(
+            budget.usage.lock().unwrap().payload_bytes,
+            MAXIMUM_PAYLOAD_BYTES
+        );
+        drop(replacement);
+        drop(reduced);
+        drop(captures);
+        drop(documents);
+        empty(&budget);
+    }
+
+    #[test]
+    fn original_document_identity_stays_reserved_across_chunk_and_payload_lifetimes() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let original = budget
+            .reserve_document("context", "session", "main-unique")
+            .unwrap();
+        let mut capture = started(&original);
+        capture.evaluation_finished();
+        let payload = capture.take_payload(65536).unwrap();
+        drop(capture);
+        drop(original);
+        assert!(matches!(
+            budget.reserve_document("context", "session", "main-unique"),
+            Err(AdmissionError::DocumentAlreadyOwned)
+        ));
+        let other_session = budget
+            .reserve_document("context", "other-session", "main-unique")
+            .unwrap();
+        let other_document = budget
+            .reserve_document("context", "session", "new-main-unique")
+            .unwrap();
+        drop(payload);
+        drop(
+            budget
+                .reserve_document("context", "session", "main-unique")
+                .unwrap(),
+        );
+        drop(other_session);
+        drop(other_document);
+        empty(&budget);
+    }
+}

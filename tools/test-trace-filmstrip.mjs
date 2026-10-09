@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 const { TraceFilmstripChannel, sampleTraceClock } = require('../packages/flashwright-core/dist/commonjs/trace-filmstrip.js');
 const { TraceResources } = require('../packages/flashwright-core/dist/commonjs/trace-resources.js');
 const { TraceWriter } = require('../packages/flashwright-core/dist/commonjs/trace-writer.js');
+const { tryAcquireTraceTransfer } = require('../packages/flashwright-core/dist/commonjs/trace-transfers.js');
 const checks = [];
 const deferred = () => { let resolve; const promise = new Promise(fulfill => { resolve = fulfill; }); return { promise, resolve }; };
 const jpeg = Buffer.from([255, 216, 0, 255, 217]);
@@ -37,6 +38,28 @@ function poll(channel) {
   channel.polling = work;
   return work.finally(() => { if (channel.polling === work) channel.polling = undefined; });
 }
+await check('snapshot or network ingestion shares filmstrip capacity through its original context lease', async () => {
+  const driver = new Driver();
+  const state = await fixture(driver, 'context');
+  const releaseSnapshot = tryAcquireTraceTransfer(driver, 'context');
+  const releaseNetwork = tryAcquireTraceTransfer(driver, 'other-context');
+  try {
+    assert.equal(typeof releaseSnapshot, 'function');
+    assert.equal(typeof releaseNetwork, 'function');
+    driver.frames.set('context', [metadata()]);
+    await poll(state.channel);
+    assert.equal(driver.calls.filter(call => call.method.endsWith('.take')).length, 0);
+    releaseSnapshot();
+    await poll(state.channel);
+    assert.equal(driver.calls.filter(call => call.method.endsWith('.take')).length, 1);
+    const successor = tryAcquireTraceTransfer(driver, 'context');
+    assert.equal(typeof successor, 'function');
+    releaseSnapshot();
+    assert.equal(tryAcquireTraceTransfer(driver, 'context'), undefined);
+    assert.equal(tryAcquireTraceTransfer(driver, 'third-context'), undefined);
+    successor();
+  } finally { releaseSnapshot?.(); releaseNetwork?.(); await state.dispose(); }
+});
 await check('clock calibration retains a containing interval and performs exactly three bounded requests', async () => {
   const driver = new Driver();
   const before = performance.now();

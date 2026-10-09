@@ -332,7 +332,9 @@ fn original_trace_call_metadata_is_optional_bounded_and_strict() {
         assert!(
             flashwright_protocol::TraceCall {
                 context,
-                generation: "original".into()
+                generation: "original".into(),
+                recording: None,
+                call: None
             }
             .validate("locator.run")
             .is_err()
@@ -341,9 +343,35 @@ fn original_trace_call_metadata_is_optional_bounded_and_strict() {
     assert!(
         flashwright_protocol::TraceCall {
             context: "context".into(),
-            generation: String::new()
+            generation: String::new(),
+            recording: None,
+            call: None
         }
         .validate("locator.run")
         .is_err()
     );
+}
+
+#[test]
+fn snapshot_call_metadata_is_paired_bounded_and_preserves_public_identity() {
+    let mut value = serde_json::json!({"context":"context","generation":"original-chunk","recording":"original-recording","call":"public-call"});
+    let metadata: flashwright_protocol::TraceCall = serde_json::from_value(value.clone()).unwrap();
+    metadata.validate("locator.run").unwrap();
+    assert_eq!(serde_json::to_value(metadata).unwrap(), value);
+    value.as_object_mut().unwrap().remove("call");
+    assert!(
+        serde_json::from_value::<flashwright_protocol::TraceCall>(value.clone())
+            .unwrap()
+            .validate("locator.run")
+            .is_err()
+    );
+    for call in [String::new(), "x".repeat(65), "unicode-é".into()] {
+        value["call"] = serde_json::json!(call);
+        assert!(
+            serde_json::from_value::<flashwright_protocol::TraceCall>(value.clone())
+                .unwrap()
+                .validate("locator.run")
+                .is_err()
+        );
+    }
 }

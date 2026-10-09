@@ -381,6 +381,42 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     return 'success';
   }
 
+  async function mutationReadiness(element, request) {
+    if (!element || element.ownerDocument !== document || !element.isConnected) return 'error:notconnected';
+    if (request.force) return undefined;
+    const states = request.action === 'fill' ? ['visible', 'enabled', 'editable'] : ['visible', 'enabled'];
+    return injected.checkElementStates(element, states);
+  }
+
+  /** Capture can await browser work; recheck this retained node immediately before mutation. */
+  async function mutateElement(element, request, deadline) {
+    if (expired(deadline)) return { status: 'expired' };
+    const readiness = await mutationReadiness(element, request);
+    if (readiness) return actionResult(readiness);
+    if (element.ownerDocument !== document || !element.isConnected) return retry('error:notconnected');
+    if (expired(deadline)) return { status: 'expired' };
+    if (request.action === 'fill') {
+      const result = injected.fill(element, request.value);
+      if (result === 'needsinput') return { status: 'needsinput', textUnits: codec.encode(request.value).units };
+      return actionResult(result);
+    }
+    const result = injected.selectOptions(element, request.values);
+    return Array.isArray(result) ? succeeded(result) : actionResult(result);
+  }
+
+  /** The action owns this selector result; later snapshot work cannot resolve a replacement. */
+  async function resolveMutationElement(units, deadline) {
+    try {
+      if (expired(deadline)) return { outcome: 'success', value: false };
+      const request = decodeRequest(units);
+      const element = injected.querySelector(injected.parseSelector(request.selector), document, true);
+      const readiness = await mutationReadiness(element, request);
+      return { outcome: 'success', value: readiness || expired(deadline) ? false : element };
+    } catch (error) {
+      return { outcome: 'exception', failure: JSON.stringify({ outcome: 'exception', stage: 'execution', error: codec.describeError(error, false) }) };
+    }
+  }
+
   async function run(request, deadline) {
     const expired = () => deadline !== null && Date.now() >= deadline;
     if (expired()) return { status: 'expired' };
@@ -423,6 +459,8 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
 
   return {
     resolveElement,
+    resolveMutationElement,
+    mutateCapturedElement: (element, units, deadline) => safely(() => mutateElement(element, decodeRequest(units), deadline)),
     resolveFileInput, validateFileInput, createFileUpload, beginUploadFile, appendUploadFile, finishUploadFile, assignFileUpload,
     resolveLocatorElement: (units, deadline) => resolveElement(codec.encode(decodeRequest(units).selector).units, true, 'attached', deadline),
     prepareElementAction: (element, action, force, deadline, token) => safely(() => prepareElementAction(element, action, force, deadline, token)),

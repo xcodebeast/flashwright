@@ -10,6 +10,8 @@ Private macOS arm64 and Linux x64 runtime packages now launch automatically afte
 
 The [routing checkpoint](compatibility/evidence/routing-checkpoint-2026-10-09.json) records 94 fresh core groups, a 16-group frame-lifetime follow-up, and seven response-status checks. Page/context routing now supports ordered callbacks, fallback, continue, fulfill, abort and removal, with exact body checks through 32 MiB. The expanded 43-case routing corpus passes on Bun and Node 22/24, including full Chrome under Bun. Fulfillment preserves pinned status text, including unassigned codes; body reads reject all 3xx statuses consistently. API request fixtures and DOM/network trace recording remain open; this checkpoint adds no speed claim.
 
+The [snapshot foundation checkpoint](compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json) passes 99 fresh core groups. Private traces replay DOM, form values and same-process child frames in the pinned offline viewer on headless shell and full Chrome. One recording owner now preserves chunk boundaries, original document ownership and late cleanup across snapshot phases. Public `snapshots: true` remains unsupported until network-resource replay passes; automatic runner tracing and performance acceptance remain open.
+
 [SPECS.md](SPECS.md) defines the implementation and release gates. [Milestones](compatibility/milestones.json) track completed evidence and remaining work. [Reference manifest](compatibility/reference-manifest.json) records exact versions, retained runs and platform limitations
 
 ## R2 Development

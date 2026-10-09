@@ -83,6 +83,7 @@ struct PointerOptions {
 
 struct PointerAction<'operation> {
     engine: &'operation Engine,
+    page_identifier: String,
     page: Page,
     browser: Arc<Chromium>,
     frame: String,
@@ -163,6 +164,7 @@ impl Engine {
         }
         PointerAction {
             engine: self,
+            page_identifier: identifier(&parameters, "page", &method)?.to_owned(),
             page,
             browser,
             frame: identifier(&parameters, "frame", &method)?.to_owned(),
@@ -436,6 +438,19 @@ impl PointerAttempt<'_, '_> {
             let alignment = ["", "end", "center", "start"][retry_count % 4];
             self.runtime(&self.realm, "function(token, alignment) { globalThis.__flashwrightLocatorRuntime.scrollPointer(token, alignment); return true; }", json!([{ "value": self.token }, { "value": alignment }]), true).await?;
         }
+        self.action
+            .engine
+            .capture_snapshot_phase(
+                &self.action.page_identifier,
+                &self.action.page,
+                recording::SnapshotPhase::Input,
+                Some(snapshots::SnapshotNode {
+                    object_identifier: object.into(),
+                    context: self.realm.context.clone(),
+                }),
+                self.action.operation,
+            )
+            .await;
         let Some(point) = self.clickable_point(object).await? else {
             return self.geometry_failure(
                 "Element is outside of the viewport or has no visible content quad",

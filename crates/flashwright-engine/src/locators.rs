@@ -4,6 +4,10 @@ use super::*;
 use flashwright_protocol::InputDelivery;
 use tokio::time::sleep;
 
+mod traced_mutation;
+
+pub(crate) const LOCATOR_WORLD_NAME: &str = "__flashwright_locator_world__";
+
 const INJECTED_RUNTIME: &str =
     include_str!("../../../packages/resident-runtime/playwright-injected.js");
 const LOCATOR_RUNTIME: &str = include_str!("../../../packages/resident-runtime/locator-runtime.js");
@@ -136,10 +140,27 @@ impl Engine {
                 .await;
             let result = match realm {
                 Ok(realm) => {
-                    self.locator_attempt(
-                        &page, &browser, &realm, &request, action, operation, &method,
-                    )
-                    .await
+                    if ["fill", "selectOption"].contains(&action)
+                        && operation
+                            .trace_call()
+                            .is_some_and(|trace| trace.recording.is_some())
+                    {
+                        self.traced_locator_mutation(
+                            identifier(&parameters, "page", &method)?,
+                            &page,
+                            &browser,
+                            &realm,
+                            &request,
+                            operation,
+                            &method,
+                        )
+                        .await
+                    } else {
+                        self.locator_attempt(
+                            &page, &browser, &realm, &request, action, operation, &method,
+                        )
+                        .await
+                    }
                 }
                 Err(error) => Err(error),
             };
@@ -259,9 +280,16 @@ impl Engine {
         if let Some(realm) = realms.get(frame_identifier) {
             return Ok(realm.clone());
         }
-        let created = operation.wait(page.state.while_alive(method, browser.connection.call(
-            "Page.createIsolatedWorld", json!({ "frameId": frame_identifier, "worldName": "__flashwright_locator_world__" }), Some(&page.session_identifier),
-        ))).await?;
+        let created = operation
+            .wait(page.state.while_alive(
+                method,
+                browser.connection.call(
+                    "Page.createIsolatedWorld",
+                    json!({ "frameId": frame_identifier, "worldName": LOCATOR_WORLD_NAME }),
+                    Some(&page.session_identifier),
+                ),
+            ))
+            .await?;
         let context_identifier = created["executionContextId"]
             .as_u64()
             .ok_or_else(|| invalid(method, "Chromium omitted isolated context identity"))?;

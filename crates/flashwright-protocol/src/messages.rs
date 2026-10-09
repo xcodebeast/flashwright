@@ -181,10 +181,26 @@ impl Handshake {
 pub struct TraceCall {
     pub context: String,
     pub generation: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recording: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub call: Option<String>,
 }
 
 impl TraceCall {
     pub fn validate(&self, method: &str) -> Result<(), ErrorRecord> {
+        if self.recording.is_some() != self.call.is_some()
+            || [&self.recording, &self.call]
+                .into_iter()
+                .flatten()
+                .any(|value| value.is_empty() || value.len() > 64 || !value.is_ascii())
+        {
+            return Err(ErrorRecord::new(
+                ErrorCode::InvalidArgument,
+                method,
+                "snapshot trace metadata requires both recording and public call identities of 1 to 64 ASCII bytes",
+            ));
+        }
         if self.context.is_empty()
             || self.context.len() > 64
             || self.generation.is_empty()

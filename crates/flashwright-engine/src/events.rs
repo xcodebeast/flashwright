@@ -89,9 +89,12 @@ impl Engine {
             };
             if event.method == "Flashwright.disconnected" {
                 if let Some(browser) = engine.remove_browser(&identifier) {
+                    let cleanup = engine.begin_browser_cleanup(identifier.clone(), browser);
                     tokio::spawn(async move {
-                        if let Err(error) = browser.close().await {
-                            eprintln!("flashwright cleanup: {}", error.message);
+                        match cleanup.await {
+                            Ok(Ok(())) => {}
+                            Ok(Err(error)) => eprintln!("flashwright cleanup: {}", error.message),
+                            Err(error) => eprintln!("flashwright cleanup task: {error}"),
                         }
                     });
                 }
@@ -117,6 +120,8 @@ impl Engine {
         let relevant = matches!(
             event.method.as_str(),
             "Page.frameAttached"
+                | "Page.javascriptDialogOpening"
+                | "Page.javascriptDialogClosed"
                 | "Page.fileChooserOpened"
                 | "Runtime.executionContextCreated"
                 | "Runtime.executionContextDestroyed"
@@ -138,6 +143,7 @@ impl Engine {
                 | "Network.loadingFinished"
                 | "Network.loadingFailed"
                 | "Target.targetDestroyed"
+                | "Target.detachedFromTarget"
                 | "Target.targetCrashed"
                 | "Inspector.targetCrashed"
                 | "Inspector.detached"
@@ -166,6 +172,8 @@ impl Engine {
         };
         let pages: Vec<_> = {
             let registry = self.registry.lock().unwrap();
+            self.snapshot_sessions
+                .observe(browser_identifier, &event.method, &parameters);
             registry
                 .pages
                 .iter()
@@ -174,10 +182,32 @@ impl Engine {
                         .contexts
                         .get(&page.context_identifier)
                         .is_some_and(|context| context.browser_identifier == browser_identifier)
-                        && (event.session_identifier.as_deref() == Some(&page.session_identifier)
-                            || parameters["targetId"].as_str() == Some(&page.target_identifier))
+                        && match event.method.as_str() {
+                            "Target.targetDestroyed" => {
+                                parameters["targetId"].as_str() == Some(&page.target_identifier)
+                            }
+                            "Target.detachedFromTarget" => {
+                                parameters["sessionId"].as_str() == Some(&page.session_identifier)
+                            }
+                            _ => {
+                                event.session_identifier.as_deref()
+                                    == Some(&page.session_identifier)
+                                    || parameters["targetId"].as_str()
+                                        == Some(&page.target_identifier)
+                            }
+                        }
                 })
-                .map(|(identifier, page)| (identifier.clone(), page.clone()))
+                .map(|(identifier, page)| {
+                    if matches!(
+                        event.method.as_str(),
+                        "Target.targetDestroyed" | "Target.detachedFromTarget"
+                    ) {
+                        page.state
+                            .snapshot_session_destroyed
+                            .store(true, Ordering::Release);
+                    }
+                    (identifier.clone(), page.clone())
+                })
                 .collect()
         };
         for (identifier, page) in pages {
@@ -227,6 +257,10 @@ impl Engine {
                         .context(&page.context_identifier, "context.storageState")
                         .ok();
                     let mut state = page.state.state.lock().unwrap();
+                    let mut recording_state = context
+                        .as_ref()
+                        .filter(|context| context.state.recording_enabled.load(Ordering::Acquire))
+                        .map(|context| context.state.recording.lock().unwrap());
                     let events = state.observe_event(
                         crate::network_observer::NetworkEvent {
                             method: &event.method,
@@ -238,6 +272,13 @@ impl Engine {
                         },
                         None,
                     );
+                    if let Some(recording) = recording_state
+                        .as_mut()
+                        .and_then(|state| state.active_mut())
+                    {
+                        recording.observed_group(event.sequence);
+                    }
+                    drop(recording_state);
                     if let Some(error) = state.failure.as_ref().filter(|error| {
                         matches!(error.method.as_ref(), "network.observe" | "route.observe")
                     }) {
@@ -429,6 +470,114 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn snapshot_terminal_session_events_survive_public_registry_removal() {
+        let (outgoing, _messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = Arc::new(Engine::new(
+            None,
+            outgoing,
+            fatal,
+            ResourceLimits::default(),
+        ));
+        for (method, parameters) in [
+            ("Target.targetDestroyed", json!({"targetId":"target"})),
+            ("Target.detachedFromTarget", json!({"sessionId":"session"})),
+        ] {
+            let session = engine
+                .snapshot_sessions
+                .register("browser", "target", "session")
+                .unwrap();
+            assert!(engine.registry.lock().unwrap().pages.is_empty());
+            let event = || Event {
+                sequence: 1,
+                received_at: std::time::Instant::now(),
+                method: method.into(),
+                session_identifier: Some("session".into()),
+                parameters: Some(serde_json::value::to_raw_value(&parameters).unwrap()),
+            };
+            engine.handle_event("other-browser", event()).unwrap();
+            assert!(!*session.destruction().borrow());
+            engine.handle_event("browser", event()).unwrap();
+            assert!(*session.destruction().borrow());
+        }
+    }
+
+    #[test]
+    fn terminal_event_before_or_after_enrollment_cannot_lose_session_proof() {
+        for terminal_first in [true, false] {
+            let (outgoing, _messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            let state = Arc::new(PageState::default());
+            state.state.lock().unwrap().published = true;
+            let page = Page {
+                context_identifier: "context".into(),
+                target_identifier: "target".into(),
+                session_identifier: "session".into(),
+                state,
+            };
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native-context".into(),
+                    viewport: None,
+                    devices: crate::devices::DeviceOptions::default(),
+                    settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: true,
+                },
+            );
+            engine
+                .registry
+                .lock()
+                .unwrap()
+                .pages
+                .insert("page".into(), page.clone());
+            let terminal = || Event {
+                sequence: 1,
+                received_at: std::time::Instant::now(),
+                method: "Target.detachedFromTarget".into(),
+                session_identifier: None,
+                parameters: Some(
+                    serde_json::value::to_raw_value(
+                        &json!({"sessionId":"session","targetId":"target"}),
+                    )
+                    .unwrap(),
+                ),
+            };
+            let lease = if terminal_first {
+                None
+            } else {
+                Some(engine.snapshot_session("page", &page).unwrap())
+            };
+            engine.handle_event("browser", terminal()).unwrap();
+            // Ordinary page removal may follow later; its registry presence cannot admit a late lease.
+            assert!(engine.registry.lock().unwrap().pages.contains_key("page"));
+            assert!(page.state.state.lock().unwrap().failure.is_none());
+            assert!(
+                page.state
+                    .snapshot_session_destroyed
+                    .load(Ordering::Acquire)
+            );
+            assert!(matches!(
+                engine.snapshot_session("page", &page),
+                Err(snapshots::SnapshotFailure::Unavailable(
+                    snapshots::SnapshotUnavailable::OriginalDocumentChanged
+                ))
+            ));
+            if let Some(lease) = lease {
+                assert!(*lease.destruction().borrow());
+            }
+        }
+    }
 
     #[test]
     fn exceptions_preserve_utf16_and_follow_published_page_session_ownership() {

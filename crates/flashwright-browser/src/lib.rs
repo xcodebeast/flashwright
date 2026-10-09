@@ -2,6 +2,7 @@
 
 pub mod chromium;
 pub mod connection;
+pub mod snapshot_reply;
 pub mod supervision;
 pub mod values;
 
