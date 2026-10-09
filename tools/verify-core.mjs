@@ -55,6 +55,7 @@ const commands = [
   [process.execPath, 'tools/record-network-trace-provenance.mjs', '--check'],
   [process.execPath, 'tools/test-manual-tracing.mjs'],
   [process.execPath, 'tools/test-trace-resources.mjs'],
+  [process.execPath, 'tools/test-trace-archive.mjs'],
   [process.execPath, 'tools/test-trace-filmstrip.mjs'],
   [process.execPath, 'tools/test-trace-snapshot-record.mjs', join(destination, 'snapshot-record')],
   [process.execPath, 'tools/test-trace-snapshots.mjs'],
