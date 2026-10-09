@@ -6,14 +6,15 @@
   "license": "MIT",
   "licenseFile": "hyper-util/LICENSE",
   "patch": "hyper-util-connection-custody.patch",
-  "patchSha256": "aff47a60f84fff82414787d2ac9b391b13331b4851a0eff38765452b85c0db7a",
+  "patchSha256": "d4b646a53a510dde0782d536842ed0ee99750dee3d47ee280a604333d853adde",
   "changes": [
     "Add opt-in connection-custody feature and Connected::with_custody for an opaque shared lifetime guard.",
     "Keep the guard outside the complete HTTP/1 or HTTP/2 dispatcher future, dropping that future before the guard. Existing connection metadata retains the same guard; response extensions do not receive it.",
     "Connectors remain responsible for handshake and upgraded-I/O custody. Flashwright separately wraps its TLS connector future and stream; this patch does not bound allocations or change protocol handling.",
     "Add explicit Connected::without_upgrades under the same opt-in feature. It uses the ordinary Hyper HTTP/1 Connection future so upgraded I/O and read-ahead never escape the guarded dispatcher; default automatic upgrade behavior is unchanged. Upgrade responses are still delivered, and awaiting upgrade returns the existing manual-upgrade error.",
     "Add opt-in Builder::pool_custody, retaining a distinct opaque allocation guard as the final PoolInner field. Pool hash-table spare capacity remains owned after all connections/waiters leave, until the actual final pool allocation drop; external callers supply their independent bounded pool reservation.",
-    "Add opt-in Builder::cancel_unused_connects, cancelling a losing started connector when pool reuse wins instead of moving it into a detached background task. The default upstream policy remains unchanged."
+    "Add opt-in Builder::cancel_unused_connects, cancelling a losing started connector when pool reuse wins instead of moving it into a detached background task. The default upstream policy remains unchanged.",
+    "Forward connection-custody to Hyper and clone the original Connected custody into each returned Incoming before releasing the pooled connection; this covers response-head extraction and queued body data after dispatcher exit in the native API consumer."
   ],
   "files": [
     {
@@ -42,7 +43,7 @@
     },
     {
       "path": "hyper-util/Cargo.toml",
-      "sha256": "f200c42cf428871a1f9412d8e3a5eb7cc5f2c76297f60112a486e604efbb8b1e"
+      "sha256": "0c6f29761b706e79a305073b730a620cd2bd4decab2206bd9ef34071bb9edd90"
     },
     {
       "path": "hyper-util/Cargo.toml.orig",
@@ -70,7 +71,7 @@
     },
     {
       "path": "hyper-util/src/client/legacy/client.rs",
-      "sha256": "a97685f3b74860cff315c6a72a4e7095153865c85aa83f2b01363e7d29ac6051"
+      "sha256": "907c1260e15ae11cc14c873ad58abef046fecb6deefd3080ccb420f8b8a4faeb"
     },
     {
       "path": "hyper-util/src/client/legacy/connect/capture.rs",

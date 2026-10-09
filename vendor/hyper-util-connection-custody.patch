@@ -4,7 +4,7 @@
  ]
  
  [features]
-+connection-custody = []
++connection-custody = ["hyper/connection-custody"]
  __internal_happy_eyeballs_tests = []
  client = [
      "hyper/client",
@@ -43,7 +43,22 @@
      set_host: bool,
      ver: Ver,
  }
-@@ -425,6 +444,13 @@
+@@ -340,6 +359,14 @@
+             }
+         };
+ 
++        // Transfer custody before releasing the pooled connection. Response heads
++        // can reuse its cached request HeaderMap, and queued body frames can also
++        // outlive the dispatcher after the socket closes.
++        #[cfg(feature = "connection-custody")]
++        if let Some(custody) = &pooled.conn_info.custody {
++            res.body_mut().retain_custody(custody.clone());
++        }
++
+         // If the Connector included 'extra' info, add to Response...
+         if let Some(extra) = &pooled.conn_info.extra {
+             extra.set(res.extensions_mut());
+@@ -425,6 +452,13 @@
              // If it has, let it finish and insert back into the pool,
              // so as to not waste the socket...
              Either::Left((Ok(checked_out), connecting)) => {
@@ -57,7 +72,7 @@
                  // This depends on the `select` above having the correct
                  // order, such that if the checkout future were ready
                  // immediately, the connect future will never have been
-@@ -549,10 +575,15 @@
+@@ -549,10 +583,15 @@
                                      trace!(
                                          "http2 handshake complete, spawning background dispatcher task"
                                      );
@@ -77,7 +92,7 @@
  
                                      // Wait for 'conn' to ready up before we
                                      // declare this tx as usable
-@@ -581,8 +612,15 @@
+@@ -581,8 +620,15 @@
                                      // Spawn the connection task in the background using the executor.
                                      // The task manages the HTTP/1.1 connection, including upgrades (e.g., WebSocket).
                                      // Errors are sent via err_tx to ensure they can be checked if the sender (tx) fails.
@@ -95,7 +110,7 @@
                                              .map_err(|e| {
                                                  // Log the connection error at debug level for diagnostic purposes.
                                                  debug!("client connection error: {:?}", e);
-@@ -592,8 +630,13 @@
+@@ -592,8 +638,13 @@
                                                  // (e.g., if the receiver is dropped, which is handled later).
                                                  let _ =err_tx.send(e);
                                              })
@@ -111,7 +126,7 @@
                                      // Log that the client is waiting for the connection to be ready.
                                      // Readiness indicates the sender (tx) can accept a request without blocking.
                                      trace!("waiting for connection to be ready");
-@@ -1020,6 +1063,8 @@
+@@ -1020,6 +1071,8 @@
      h2_builder: hyper::client::conn::http2::Builder<Exec>,
      pool_config: pool::Config,
      pool_timer: Option<timer::Timer>,
@@ -120,7 +135,7 @@
  }
  
  impl Builder {
-@@ -1032,6 +1077,8 @@
+@@ -1032,6 +1085,8 @@
          Self {
              client_config: Config {
                  retry_canceled_requests: true,
@@ -129,7 +144,7 @@
                  set_host: true,
                  ver: Ver::Auto,
              },
-@@ -1045,8 +1092,25 @@
+@@ -1045,8 +1100,25 @@
                  max_idle_per_host: usize::MAX,
              },
              pool_timer: None,
@@ -157,7 +172,7 @@
      /// Set an optional timeout for idle sockets being kept-alive.
      /// A `Timer` is required for this to take effect. See `Builder::pool_timer`
      ///
-@@ -1590,6 +1654,11 @@
+@@ -1590,6 +1662,11 @@
      {
          let exec = self.exec.clone();
          let timer = self.pool_timer.clone();
@@ -169,7 +184,7 @@
          Client {
              config: self.client_config,
              exec: exec.clone(),
-@@ -1598,7 +1667,7 @@
+@@ -1598,7 +1675,7 @@
              #[cfg(feature = "http2")]
              h2_builder: self.h2_builder.clone(),
              connector,

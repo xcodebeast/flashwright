@@ -51,6 +51,9 @@ type TrailersSender = oneshot::Sender<HeaderMap>;
 #[must_use = "streams do nothing unless polled"]
 pub struct Incoming {
     kind: Kind,
+    // Drop queued frames and trailers before their original memory allowance.
+    #[cfg(feature = "connection-custody")]
+    custody: Option<std::sync::Arc<dyn fmt::Debug + Send + Sync>>,
 }
 
 enum Kind {
@@ -137,7 +140,19 @@ impl Incoming {
     }
 
     fn new(kind: Kind) -> Incoming {
-        Incoming { kind }
+        Incoming {
+            kind,
+            #[cfg(feature = "connection-custody")]
+            custody: None,
+        }
+    }
+
+    /// Retain the transport's original allowance until this body is dropped.
+    /// Consumers must keep this body alive while using any response-head or frame
+    /// allocations that depend on the same allowance, including after end-of-stream.
+    #[cfg(feature = "connection-custody")]
+    pub fn retain_custody(&mut self, custody: std::sync::Arc<dyn fmt::Debug + Send + Sync>) {
+        self.custody = Some(custody);
     }
 
     #[allow(dead_code)]
