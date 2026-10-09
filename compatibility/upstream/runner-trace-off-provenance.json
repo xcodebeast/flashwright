@@ -1,0 +1,38 @@
+{
+  "referenceVersion": "1.60.0",
+  "distribution": "node_modules/playwright/lib/worker/workerProcessEntry.js",
+  "distributionSha256": "0f7b9c0a004787e0bef22a95ea38a4fa9d8879d4be52d8fad07795eddb93cc51",
+  "methods": {
+    "resolveParametersForFunction": "1dc14ea320cf468929a169c7a08da576cc58b0f4d92929554a21d00641431345",
+    "startIfNeeded": "7e54480eb59943305851829fe3b3d68706df895add8c410606910ee276f83614",
+    "traceOptions": "9c326bb6aadd21a26ec929e8189f3bf2bfc37988be40cb10d1ed56dfb1c820a3",
+    "stopIfNeeded": "08bff5512b32c5efb1544973b2563317bd98597ea2f77a65c7280034cb9f392a",
+    "appendForError": "65f6346dedd5b520ae3e453e4a167333aaac996e20001a8a9d65565d57e5d767",
+    "appendStdioToTrace": "dc376a9eaacd7923daf8f07b057c62b72d16f0f27e4a34dd5a2a0daeeca27140",
+    "appendBeforeActionForStep": "066874165a26da4034c3b1f1f5b98df162037a950d4a84c4214f93d54fd20499",
+    "appendAfterActionForStep": "1aa9ec7df0ff05ce7ebd259a1ed1b0939cd1e532fa1b0f03fbc29377053f8132",
+    "_appendTraceEvent": "cfa8ed789b5eeaef0775a99094502a09caf03fe91587ea2d0c3663b0a22219b6"
+  },
+  "implementation": {
+    "packages/flashwright-runner/src/index.ts": "9cfd9f781500b987b473b6ab0451b6b847d387ad2898d8e7f7c3e7c0dd992a5b",
+    "packages/flashwright-runner/src/runner-trace-off.ts": "a97810b24ad8bfa9ec828b9d29b35a250e0b15b80c71707bd2581c0f3ffadc0e",
+    "compatibility/m2/runner-trace-off/trace-off.spec.cjs": "24dedbff654fa95aab9715bccf2b8f72842f65c561a30688b3293e6bc46ab11d",
+    "compatibility/m2/runner-trace-off/reporter.cjs": "f2029441ffe7d71374b49b8a05599312d2d508e114df54309ccd5303c4996d0f",
+    "compatibility/m2/runner-trace-off/playwright.config.cjs": "0a6321c38df83c2910e7c8863cdeb0c898c1125645dc6b35af21e2a37f3254aa",
+    "tools/run-runner-trace-off-tests.mjs": "40b65004ce7c0758a152ba3312bf9ae3e8b7e2030148a8cd33c5ac57a2caf468"
+  },
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/testTracing.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/fixtureRunner.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/workerMain.ts"
+  ],
+  "relationship": "Independent per-attempt adaptation of the pinned TestTracing instance. The first zero-dependency worker and all-hooks test fixtures disable unused append methods and clear the internal prefix when traceOptions is undefined. Reporter steps, attachments, errors and stdio retain their upstream owners. No global prototype or module-resolution mutation.",
+  "exclusions": [
+    "Automatic enabled tracing remains unsupported.",
+    "Manual browser-context tracing is independent.",
+    "No performance or release claim."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

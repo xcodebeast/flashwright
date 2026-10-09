@@ -170,7 +170,8 @@
       "configured context and timeout defaults apply to manual contexts/pages and separately launched native browsers during the runner scope; explicit options override defaults",
       "direct and alias ESM/CommonJS packages share canonical core and runner identities without global resolver or prototype mutation",
       "screenshot off/on/only-on-failure/on-first-failure with fullPage/omitBackground, manual contexts, early-close retention, retries and bounded failure diagnostics",
-      "ignoreHTTPSErrors/javaScriptEnabled through individual fixture options and contextOptions; manual and separately launched contexts inherit defaults, explicit values override"
+      "ignoreHTTPSErrors/javaScriptEnabled through individual fixture options and contextOptions; manual and separately launched contexts inherit defaults, explicit values override",
+      "Disabled trace attempts retain no internal TestTracing event history after the first worker/test boundary; public reporter steps, attachments, output, retries, skips and early fixture failures remain intact."
     ],
     "keyboard": [
       "page.keyboard.press shares the pinned 212-key native chord implementation",
@@ -688,6 +689,13 @@
         "normalizedEvidence": "compatibility/evidence/common-matchers-checkpoint-2026-10-09.json",
         "scope": "Nine common locator matchers and private runner lifecycle/trace-step boundaries pass focused verification. Fresh 112-group verification remains incomplete after two retained failures under shared-host contention; no automatic runner tracing or new performance claim."
       }
+    },
+    "disabledRunnerTracingFollowUp": {
+      "groups": 15,
+      "sourceEntries": 470,
+      "reportSha256": "8c913ba8f9c865bcca91618e009f5b4a6847d0e9363869abbcc00ec91644d4a8",
+      "normalizedEvidence": "compatibility/evidence/runner-trace-off-checkpoint-2026-10-09.json",
+      "scope": "Per-attempt trace-off journal suppression passes Bun/Node22/Node24 reporter and fixture checks plus focused browser/packed regressions. Automatic trace collection remains unsupported; the115-group core is not rerun."
     }
   },
   "migrationDiagnostics": [

@@ -76,6 +76,8 @@ const commands = [
   [process.execPath, 'tools/record-runner-defaults-provenance.mjs', '--check'],
   [process.execPath, 'tools/test-runner-integration.mjs'],
   [process.execPath, 'tools/record-runner-trace-boundaries-provenance.mjs', '--check'],
+  [process.execPath, 'tools/record-runner-trace-off-provenance.mjs', '--check'],
+  [process.execPath, 'tools/run-runner-trace-off-tests.mjs'],
   [process.execPath, 'tools/test-runner-artifact-lifecycle.mjs'],
   [process.execPath, 'tools/test-runner-trace-steps.mjs'],
   [process.execPath, 'tools/record-common-matcher-provenance.mjs', '--check'],
