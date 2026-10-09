@@ -59,6 +59,33 @@ try {
       report.cases[`${operation}-${size}`] = { ...expected, serverCount };
     }
   }
+  for (const status of [200, 204, 300, 301, 304, 306, 399, 400, 500, 599]) {
+    const pathname = `/status-${status}`, bytes = Buffer.from([0, 1, 127, 128, 255, 13, 10]);
+    await page.route('**' + pathname, route => route.fulfill({ status, contentType: 'application/octet-stream', body: bytes }));
+    const [response, fetched] = await Promise.all([
+      page.waitForResponse('**' + pathname),
+      page.evaluate(async pathname => { const response = await fetch(pathname); return { status: response.status, statusText: response.statusText, bytes: [...new Uint8Array(await response.arrayBuffer())] }; }, pathname),
+    ]);
+    assert.deepEqual(fetched, { status, statusText: response.statusText(), bytes: [...bytes] });
+    if (status === 399 || status === 599) assert.equal(response.statusText(), 'Unknown');
+    if (status === 306) assert.equal(response.statusText(), 'Switch Proxy');
+    let publicBody;
+    if (status >= 300 && status < 400) {
+      await assert.rejects(response.body(), error => {
+        assert.equal(error.name, 'Error');
+        assert.match(error.message, /Response body is unavailable for redirect responses$/);
+        publicBody = { error: error.name, reason: 'Response body is unavailable for redirect responses' };
+        return true;
+      });
+    } else {
+      const body = await response.body(); assert.deepEqual(body, bytes);
+      publicBody = { bytes: body.length, sha256: hash(body) };
+    }
+    const serverCount = requests.filter(request => request.url === pathname).length;
+    assert.equal(serverCount, 0);
+    report.cases[`response-status-${status}`] = { status: response.status(), fetched, publicBody, serverCount };
+    await page.unrouteAll({ behavior: 'wait' });
+  }
   const bodyPath = join(directory, 'response.json'); await writeFile(bodyPath, '{"fromFile":"exact"}');
   await page.route('**/file', route => route.fulfill({ path: bodyPath, headers: { 'Set-Cookie': 'first=one; Path=/\nsecond=two; Path=/', 'X-File': 'yes' } }));
   report.cases.file = await page.evaluate(async () => {
