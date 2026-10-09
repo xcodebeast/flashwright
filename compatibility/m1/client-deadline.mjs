@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { resolve } from 'node:path';
-import { EngineClient } from '../../packages/flashwright/dist/commonjs/client.js';
+import { createRuntimeFixture } from '../../tools/runtime-fixture.mjs';
+const fixtureExecutable = createRuntimeFixture('compatibility/m1/reply-race-driver.mjs');
+import { EngineClient } from '../../packages/flashwright-core/dist/commonjs/client.js';
 
-const allocationMethods = ['browser.launch', 'browser.newContext', 'context.newPage'];
-const handleMethods = ['page.evaluateHandle', 'frame.evaluateHandle', 'handle.evaluateHandle', 'handle.getProperty', 'handle.getProperties'];
+const allocationMethods = ['browser.launch', 'browser.newContext', 'context.newPage', 'page.addInitScript', 'context.addInitScript'];
+const handleMethods = ['page.evaluateHandle', 'frame.evaluateHandle', 'handle.evaluateHandle', 'handle.getProperty', 'handle.getProperties', 'frame.waitForSelector'];
 const deliveryScenarios = [
   ['locator.acknowledged', { inputDelivery: 'acknowledged' }],
   ['locator.notDispatched', { inputDelivery: 'notDispatched' }],
@@ -17,7 +18,7 @@ const isSelected = name => selectedScenario === undefined || selectedScenario ==
 
 for (const method of allocationMethods) {
   if (!isSelected(method)) continue;
-  const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  const client = new EngineClient(fixtureExecutable);
   client.retain();
   try {
     await client.request('probe.ready', {});
@@ -26,7 +27,7 @@ for (const method of allocationMethods) {
 }
 for (const method of handleMethods) {
   if (!isSelected(method)) continue;
-  const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  const client = new EngineClient(fixtureExecutable);
   client.retain();
   try {
     await client.request('probe.ready', {});
@@ -35,7 +36,7 @@ for (const method of handleMethods) {
 }
 for (const [name, parameters] of deliveryScenarios) {
   if (!isSelected(name)) continue;
-  const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  const client = new EngineClient(fixtureExecutable);
   client.retain();
   try {
     await client.request('probe.ready', {});
@@ -53,7 +54,7 @@ for (const [name, parameters] of deliveryScenarios) {
 }
 for (const [name, error] of assertionScenarios) {
   if (!isSelected(name)) continue;
-  const client = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  const client = new EngineClient(fixtureExecutable);
   client.retain();
   const observation = { status: 'observation', matches: true, received: { kind: 'string', units: [0xD800, 0, 0xDC00] }, diagnosticTruncated: false };
   try {
@@ -68,7 +69,7 @@ for (const [name, error] of assertionScenarios) {
 }
 if (isSelected('handshake.capabilityMismatch')) {
   process.env.FLASHWRIGHT_TEST_OMIT_CAPABILITY = 'keyboard.press';
-  const incompatible = new EngineClient(resolve('compatibility/m1/reply-race-driver.mjs'));
+  const incompatible = new EngineClient(fixtureExecutable);
   delete process.env.FLASHWRIGHT_TEST_OMIT_CAPABILITY;
   incompatible.retain();
   try { await assert.rejects(incompatible.request('browser.launch', {}), error => error.name === 'ProtocolError' && error.message.includes('mismatch')); }

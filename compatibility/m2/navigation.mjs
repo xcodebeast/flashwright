@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -13,10 +14,18 @@ for (let index = 0; index < largeBinary.length; index++) largeBinary[index] = in
 const largeBodies = new Map([['/large-binary', largeBinary], ['/escaped-text', Buffer.alloc(2 * 1024 * 1024)]]);
 const bodyRequests = new Map();
 function nextRequest(path) { return new Promise(resolve => requestObservers.set(path, resolve)); }
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
   const url = new URL(request.url, 'http://fixture');
   requestObservers.get(url.pathname)?.();
   requestObservers.delete(url.pathname);
+  if (url.pathname === '/post-body') {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    bodyRequests.set(request.url, (bodyRequests.get(request.url) ?? 0) + 1);
+    response.setHeader('content-type', 'application/json');
+    response.end(JSON.stringify({ bytes: [...Buffer.concat(chunks)] }));
+    return;
+  }
   if (largeBodies.has(url.pathname)) {
     bodyRequests.set(url.pathname, (bodyRequests.get(url.pathname) ?? 0) + 1);
     response.setHeader('content-type', url.pathname === '/escaped-text' ? 'text/plain; charset=utf-8' : 'application/octet-stream');
@@ -83,6 +92,26 @@ async function run(name, chromium) {
     const binaryResponse = page.waitForResponse('**/binary');
     await page.evaluate(async () => { await fetch('/binary'); });
     assert.deepEqual(await (await binaryResponse).body(), Buffer.from([0, 128, 255, 1]));
+    result.requestBodies = [];
+    for (const [label, bytes] of [
+      ['binary', [...Buffer.from(Array.from({ length: 256 }, (_, index) => index))]],
+      ['utf8', [...Buffer.from('é😃\0body')]],
+      ['empty', []],
+    ]) {
+      const path = '/post-body?case=' + label;
+      const count = bodyRequests.get(path) ?? 0;
+      const observedRequest = page.waitForEvent('request', { predicate: request => request.url().endsWith(path) });
+      const observedResponse = page.waitForResponse(response => response.url().endsWith(path));
+      await page.evaluate(async ({ path, bytes }) => { await (await fetch(path, { method: 'POST', body: new Uint8Array(bytes) })).arrayBuffer(); }, { path, bytes });
+      const request = await observedRequest;
+      const response = await observedResponse;
+      assert.equal(response.request(), request);
+      assert.deepEqual(request.postDataBuffer(), bytes.length ? Buffer.from(bytes) : null);
+      assert.equal(request.postData(), bytes.length ? Buffer.from(bytes).toString('utf8') : null);
+      assert.deepEqual(await response.json(), { bytes });
+      assert.equal(bodyRequests.get(path) - count, 1);
+      result.requestBodies.push({ label, bytes: [...(request.postDataBuffer() ?? [])], text: request.postData(), requests: 1 });
+    }
     result.largeBodies = [];
     for (const [path, expected] of largeBodies) {
       const count = bodyRequests.get(path) ?? 0;
@@ -164,8 +193,8 @@ try {
   outcomes.reference = await run('reference', referenceChromium);
   outcomes.flashwright = await run('flashwright', flashwrightChromium);
   await mkdir('compatibility/evidence', { recursive: true });
-  const evidence = { fixture: 'compatibility/m2/navigation.mjs', fixtureSha256: createHash('sha256').update(await readFile('compatibility/m2/navigation.mjs')).digest('hex'), reference: '1.60.0', node: process.version, platform: process.platform, architecture: process.arch, outcomes };
-  const destination = 'compatibility/evidence/navigation-' + process.platform + '-' + process.arch + '-' + process.versions.node + '.json';
+  const evidence = { fixture: 'compatibility/m2/navigation.mjs', fixtureSha256: createHash('sha256').update(await readFile('compatibility/m2/navigation.mjs')).digest('hex'), reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch, outcomes };
+  const destination = 'compatibility/evidence/navigation-' + process.platform + '-' + process.arch + '-' + runtimeArtifactLabel + '.json';
   await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
   assert.deepEqual(outcomes.flashwright, outcomes.reference);
   console.log('Navigation differential passed: ' + destination);

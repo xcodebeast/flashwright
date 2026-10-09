@@ -5,6 +5,43 @@ use flashwright_browser::connection::Event;
 use flashwright_protocol::DriverMessage;
 
 impl Engine {
+    /// Publish startup diagnostics with their page, preserving order without exposing failed allocations.
+    pub(crate) fn page_diagnostic(
+        &self,
+        identifier: &str,
+        page: &Page,
+        event: &str,
+        parameters: Value,
+    ) {
+        let trace_context = if event == "pageerror" {
+            self.context(&page.context_identifier, "context.trace").ok()
+        } else {
+            None
+        };
+        let mut state = page.state.state.lock().unwrap();
+        if page.state.purpose != PagePurpose::Public || state.failure.is_some() {
+            return;
+        }
+        if let Some(context) = trace_context
+            && context.state.trace_enabled.load(Ordering::Relaxed)
+            && let Some(raw) = parameters["exceptionJson"].as_str()
+        {
+            context.state.trace_diagnostics.lock().unwrap().capture(
+                identifier,
+                state.published,
+                "pageerror",
+                raw,
+            );
+        }
+        if state.published {
+            self.emit(identifier, event, parameters);
+        } else if let Err(error) = state.buffer_initial_event(event, parameters) {
+            state.failure = Some(error);
+            state.sequence += 1;
+            page.state.changed.send_replace(state.sequence);
+        }
+    }
+
     pub(crate) fn emit(&self, target: &str, event: &str, parameters: Value) {
         if self
             .outgoing
@@ -73,9 +110,14 @@ impl Engine {
         browser_identifier: &str,
         event: Event,
     ) -> Result<(), ErrorRecord> {
+        if event.method == "Page.screencastFrame" {
+            self.receive_filmstrip_frame(browser_identifier, &event);
+            return Ok(());
+        }
         let relevant = matches!(
             event.method.as_str(),
             "Page.frameAttached"
+                | "Page.fileChooserOpened"
                 | "Runtime.executionContextCreated"
                 | "Runtime.executionContextDestroyed"
                 | "Runtime.executionContextsCleared"
@@ -89,6 +131,10 @@ impl Engine {
                 | "Page.lifecycleEvent"
                 | "Network.requestWillBeSent"
                 | "Network.responseReceived"
+                | "Network.requestWillBeSentExtraInfo"
+                | "Network.responseReceivedExtraInfo"
+                | "Network.requestServedFromCache"
+                | "Fetch.requestPaused"
                 | "Network.loadingFinished"
                 | "Network.loadingFailed"
                 | "Target.targetDestroyed"
@@ -165,18 +211,38 @@ impl Engine {
                         return Err(error);
                     }
                 }
+                "Page.fileChooserOpened" => {
+                    self.file_chooser_event(&identifier, &page, &parameters)?
+                }
                 "Runtime.exceptionThrown" => {
-                    let state = page.state.state.lock().unwrap();
-                    if state.published && state.failure.is_none() {
-                        self.emit(&identifier, "pageerror", parameters.clone());
-                    }
+                    self.page_diagnostic(&identifier, &page, "pageerror", parameters.clone());
                 }
                 _ => {
+                    if event.method == "Fetch.requestPaused"
+                        && page.state.purpose != PagePurpose::Public
+                    {
+                        continue;
+                    }
                     let context = self
                         .context(&page.context_identifier, "context.storageState")
                         .ok();
                     let mut state = page.state.state.lock().unwrap();
-                    let events = state.observe(&event.method, &parameters);
+                    let events = state.observe_event(
+                        crate::network_observer::NetworkEvent {
+                            method: &event.method,
+                            parameters: &parameters,
+                            ingress: crate::network_observer::NetworkIngress {
+                                sequence: event.sequence,
+                                received_at: event.received_at,
+                            },
+                        },
+                        None,
+                    );
+                    if let Some(error) = state.failure.as_ref().filter(|error| {
+                        matches!(error.method.as_ref(), "network.observe" | "route.observe")
+                    }) {
+                        return Err(error.clone());
+                    }
                     if matches!(
                         event.method.as_str(),
                         "Runtime.executionContextCreated"
@@ -189,14 +255,9 @@ impl Engine {
                             .evaluation_runtimes
                             .lock()
                             .unwrap()
-                            .retain(|_, runtime| {
-                                state.main_worlds.get(&runtime.context.frame_identifier)
-                                    == Some(&runtime.context)
-                            });
+                            .retain(|_, runtime| state.context_is_alive(&runtime.context));
                         page.state.handles.lock().unwrap().retain(|_, handle| {
-                            handle.primitive.is_some()
-                                || state.main_worlds.get(&handle.context.frame_identifier)
-                                    == Some(&handle.context)
+                            handle.primitive.is_some() || state.context_is_alive(&handle.context)
                         });
                     }
                     if state.published
@@ -206,6 +267,16 @@ impl Engine {
                         && let Err(error) = context.state.visit(origin)
                     {
                         state.failure = Some(error);
+                    }
+                    if event.method == "Page.frameDetached"
+                        && parameters["reason"] == "swap"
+                        && !page.state.init_scripts.lock().unwrap().is_empty()
+                    {
+                        state.failure = Some(ErrorRecord::new(
+                            ErrorCode::UnsupportedFeature,
+                            "addInitScript",
+                            "init scripts in out-of-process child frames are not implemented",
+                        ));
                     }
                     if state.published
                         && event.method == "Page.frameDetached"
@@ -218,12 +289,27 @@ impl Engine {
                             "storage collection from out-of-process child frames is not implemented",
                         ));
                     }
-                    if state.published {
-                        for (name, parameters) in events {
+                    for (name, parameters) in events {
+                        if state.published {
                             self.emit(&identifier, name, parameters);
+                        } else if page.state.purpose == PagePurpose::Public
+                            && matches!(
+                                name,
+                                "request"
+                                    | "route"
+                                    | "response"
+                                    | "requestfinished"
+                                    | "requestfailed"
+                            )
+                            && let Err(error) = state.buffer_initial_event(name, parameters)
+                        {
+                            state.failure = Some(error);
                         }
                     }
                     page.state.changed.send_replace(state.sequence);
+                    let routing_actions = state.interception.take_actions();
+                    drop(state);
+                    self.dispatch_routing_actions(&identifier, &page, routing_actions)?;
                 }
             }
         }
@@ -237,11 +323,33 @@ impl Engine {
         error: ErrorRecord,
         event: &str,
     ) {
+        self.registry
+            .lock()
+            .unwrap()
+            .init_scripts
+            .retain(|_, script| script.page_identifier.as_deref() != Some(identifier));
+        page.state.init_scripts.lock().unwrap().clear();
+        let trace_context = self.context(&page.context_identifier, "context.trace").ok();
         let mut state = page.state.state.lock().unwrap();
         if event == "crash" && state.failure.is_some() {
             return;
         }
+        if !state.published
+            && let Some(context) = &trace_context
+        {
+            if let Some(capture) = context.state.filmstrip.lock().unwrap().as_ref() {
+                capture.discard_unpublished(identifier);
+            }
+            context
+                .state
+                .trace_diagnostics
+                .lock()
+                .unwrap()
+                .discard_unpublished_page(identifier);
+        }
         state.failure = Some(error);
+        state.interception.clear();
+        page.state.file_chooser.lock().unwrap().cancel();
         page.state.handles.lock().unwrap().clear();
         page.state.evaluation_runtimes.lock().unwrap().clear();
         state.sequence += 1;
@@ -273,12 +381,16 @@ impl Engine {
                         .map(|page| (identifier, page))
                 })
                 .collect();
+            registry
+                .init_scripts
+                .retain(|_, script| script.context_identifier != identifier);
             (registry.contexts.remove(identifier), pages)
         };
         for (identifier, page) in pages {
             self.finish_page(&identifier, &page, error.clone(), "close");
         }
         if let Some(context) = &context {
+            context.state.close_trace();
             context.state.closed.send_replace(Some(error));
             if context.published {
                 self.emit(identifier, "close", Value::Null);
@@ -334,6 +446,8 @@ mod tests {
                 browser_identifier: "browser".into(),
                 protocol_identifier: "native-context".into(),
                 viewport: None,
+                devices: crate::devices::DeviceOptions::default(),
+                settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
                 state: Arc::new(context_state::ContextState::default()),
                 published: true,
             },
@@ -350,6 +464,7 @@ mod tests {
         );
         let exception = r#"{"exceptionDetails":{"text":"Uncaught","exception":{"description":"Error: \ud800\u0000\udfff"}}}"#;
         let event = |session: &str| Event {
+            received_at: std::time::Instant::now(),
             sequence: 1,
             method: "Runtime.exceptionThrown".into(),
             session_identifier: Some(session.into()),
@@ -382,6 +497,7 @@ mod tests {
             .handle_event(
                 "browser",
                 Event {
+                    received_at: std::time::Instant::now(),
                     sequence: 2,
                     method: "Runtime.exceptionThrown".into(),
                     session_identifier: Some("session".into()),
@@ -390,6 +506,83 @@ mod tests {
             )
             .unwrap();
         assert!(messages.try_recv().is_err());
+    }
+
+    #[test]
+    fn unpublished_public_pages_keep_joined_request_before_route_and_storage_stays_private() {
+        for purpose in [PagePurpose::Public, PagePurpose::Storage] {
+            let (outgoing, mut messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native".into(),
+                    viewport: None,
+                    devices: Default::default(),
+                    settings: context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: true,
+                },
+            );
+            let state = Arc::new(PageState {
+                purpose,
+                ..Default::default()
+            });
+            state.state.lock().unwrap().interception.enabled = purpose == PagePurpose::Public;
+            engine.registry.lock().unwrap().pages.insert(
+                "page".into(),
+                Page {
+                    context_identifier: "context".into(),
+                    target_identifier: "target".into(),
+                    session_identifier: "session".into(),
+                    state: state.clone(),
+                },
+            );
+            for (sequence, method, parameters) in [
+                (
+                    1,
+                    "Network.requestWillBeSent",
+                    json!({"requestId":"network","type":"Fetch","request":{"url":"https://example.test/early","method":"GET","headers":{}}}),
+                ),
+                (
+                    2,
+                    "Fetch.requestPaused",
+                    json!({"requestId":"fetch","networkId":"network","request":{"url":"https://example.test/early","method":"GET","headers":{}}}),
+                ),
+            ] {
+                engine
+                    .handle_event(
+                        "browser",
+                        Event {
+                            received_at: std::time::Instant::now(),
+                            sequence,
+                            method: method.into(),
+                            session_identifier: Some("session".into()),
+                            parameters: Some(serde_json::value::to_raw_value(&parameters).unwrap()),
+                        },
+                    )
+                    .unwrap();
+            }
+            assert!(messages.try_recv().is_err());
+            let state = state.state.lock().unwrap();
+            let names: Vec<_> = state
+                .initial_events
+                .iter()
+                .map(|event| event["event"].as_str().unwrap())
+                .collect();
+            if purpose == PagePurpose::Public {
+                assert_eq!(names, ["request", "route"]);
+            } else {
+                assert!(names.is_empty());
+            }
+        }
     }
 
     #[tokio::test]
@@ -410,6 +603,8 @@ mod tests {
                 browser_identifier: "browser".into(),
                 protocol_identifier: "native-context".into(),
                 viewport: None,
+                devices: crate::devices::DeviceOptions::default(),
+                settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
                 state: context.clone(),
                 published: false,
             },

@@ -1,3 +1,5 @@
+import { requireBun, bunVersion } from '../tools/bun-toolchain.mjs';
+import { runtimeMetadata } from '../tools/javascript-runtime.mjs';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import { createReadStream } from 'node:fs';
@@ -50,9 +52,10 @@ const metadata = {
   purpose: 'Reference baseline only; no Flashwright speed claim',
   platform: process.platform, architecture: process.arch, operatingSystem: os.version(), release: os.release(),
   cpu: os.cpus()[0]?.model, logicalProcessors: os.cpus().length, totalMemoryBytes: os.totalmem(),
-  node: process.version, playwright: JSON.parse(await readFile('node_modules/playwright/package.json', 'utf8')).version,
+  ...runtimeMetadata, playwright: JSON.parse(await readFile('node_modules/playwright/package.json', 'utf8')).version,
   typescript: JSON.parse(await readFile('node_modules/typescript/package.json', 'utf8')).version,
-  npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(),
+  packageManager: `bun@${bunVersion}`,
+  packageManagerExecutable: requireBun(),
   rust: (() => { try { return execFileSync('rustc', ['--version'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return null; } })(),
   browser: { executablePath, sha256: await hashFile(executablePath), revision: '1223', version: configuration.browserVersion, flagsSource: 'Each raw launch retains DEBUG=pw:browser actual launch flags.' },
   environmentClass: process.env.FLASHWRIGHT_ENVIRONMENT_CLASS ?? 'native',

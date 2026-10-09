@@ -1,3 +1,4 @@
+import { reportRuntime } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { requireVerifiedBrowser } from './browser-identity.mjs';
 import { readEngineConfiguration } from './engine-configuration.mjs';
@@ -19,6 +20,7 @@ for (const [path, digest] of Object.entries(summary.retainedFileHashes)) assert.
 const verification = await read(metadata.verification.path);
 assert.equal(hash(await readFile(metadata.verification.path)), metadata.verification.sha256);
 assert.equal(verification.status, 'passed');
+assert.deepEqual(reportRuntime(verification), reportRuntime(metadata));
 // Historical snapshots predate browser binding; new producers always require it.
 if (metadata.verificationBrowserBound) requireVerifiedBrowser(verification, metadata.browser);
 assert.equal(verification.sourceChangedDuringVerification, false);

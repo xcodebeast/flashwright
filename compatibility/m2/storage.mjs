@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -9,11 +10,11 @@ import { chromium as flashwrightChromium } from 'flashwright';
 import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { identifyBrowser } from '../../tools/browser-identity.mjs';
 
-const destination = `compatibility/evidence/storage-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}`;
+const destination = `compatibility/evidence/storage-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
 const hash = value => createHash('sha256').update(value).digest('hex');
 const report = {
-  reference: '1.60.0', node: process.version, platform: process.platform, architecture: process.arch,
+  reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()),
   driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, serviceWorkerObservations: {}, candidateChecks: [], status: 'running',
   scope: 'Basic cookie and HTTP(S) localStorage state differential. IndexedDB and existing-context replacement remain unsupported. No performance claim.',

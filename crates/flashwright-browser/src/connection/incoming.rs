@@ -11,6 +11,8 @@ use serde_json::value::RawValue;
 use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::sync::oneshot;
 
+mod request_event;
+
 use super::{
     ConnectionState, MAXIMUM_CONTROL_BYTES, Reply, disconnected, dispatch_event, fail_connection,
     protocol_error,
@@ -231,6 +233,7 @@ impl FrameBuffer {
 }
 
 fn receive_message(state: &Arc<ConnectionState>, message: &[u8]) -> Result<(), ErrorRecord> {
+    let received_at = std::time::Instant::now();
     let envelope: Envelope<'_> =
         serde_json::from_slice(message).map_err(|error| protocol_error(error.to_string()))?;
     if let Some(identifier) = envelope.id {
@@ -240,15 +243,31 @@ fn receive_message(state: &Arc<ConnectionState>, message: &[u8]) -> Result<(), E
             reply.sender.complete(&envelope, message.len());
         }
     } else if let Some(method) = envelope.method {
-        if message.len() > MAXIMUM_CONTROL_BYTES {
-            return Err(resource_error("CDP event exceeds control-message limit"));
-        }
+        let parameters = if message.len() > MAXIMUM_CONTROL_BYTES {
+            if !matches!(
+                method.as_ref(),
+                "Network.requestWillBeSent" | "Fetch.requestPaused"
+            ) {
+                return Err(resource_error("CDP event exceeds control-message limit"));
+            }
+            let parameters = envelope
+                .params
+                .ok_or_else(|| protocol_error("browser omitted request event parameters".into()))?;
+            let overhead = message.len() - parameters.get().len();
+            let maximum_bytes = MAXIMUM_CONTROL_BYTES.checked_sub(overhead).ok_or_else(|| {
+                resource_error("CDP event envelope exceeds control-message limit")
+            })?;
+            Some(request_event::project(parameters, maximum_bytes)?)
+        } else {
+            envelope.params.map(RawValue::to_owned)
+        };
         // Opaque event JSON preserves escaped lone UTF-16 surrogates.
         dispatch_event(
             state,
             method.into_owned(),
             envelope.session_identifier.map(Cow::into_owned),
-            envelope.params.map(RawValue::to_owned),
+            parameters,
+            received_at,
         )?;
     } else {
         return Err(protocol_error(
@@ -299,6 +318,62 @@ pub(super) async fn read_messages<Reader: AsyncRead + Unpin>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn oversized_request_events_keep_bytes_and_wire_order_within_control_admission() {
+        let (stream, _peer) = tokio::io::duplex(64);
+        let (reader, writer) = tokio::io::split(stream);
+        let connection = crate::connection::Connection::new(reader, writer);
+        let mut events = connection.subscribe();
+        for (index, method) in ["Network.requestWillBeSent", "Fetch.requestPaused"]
+            .into_iter()
+            .enumerate()
+        {
+            let message = serde_json::to_vec(&serde_json::json!({"method":method,"sessionId":"original-session","params":{
+                "requestId":"original-owner","request":{"postData":"\0".repeat(2 * 1024 * 1024),"postDataEntries":[{"bytes":"AP8="}],"headers":{"X-Original":"kept"}}
+            }})).unwrap();
+            assert!(message.len() > MAXIMUM_CONTROL_BYTES);
+            let before_receipt = std::time::Instant::now();
+            receive_message(&connection.inner, &message).unwrap();
+            let event = events.try_recv().unwrap();
+            assert!(event.received_at >= before_receipt);
+            assert!(event.received_at <= std::time::Instant::now());
+            assert_eq!(event.sequence, index as u64 + 1);
+            assert_eq!(event.method, method);
+            assert_eq!(
+                event.session_identifier.as_deref(),
+                Some("original-session")
+            );
+            let raw = event.parameters.unwrap();
+            assert!(raw.get().len() < MAXIMUM_CONTROL_BYTES);
+            let parameters: Value = serde_json::from_str(raw.get()).unwrap();
+            assert!(parameters["request"].get("postData").is_none());
+            assert_eq!(parameters["request"]["postDataEntries"][0]["bytes"], "AP8=");
+            assert_eq!(parameters["request"]["headers"]["X-Original"], "kept");
+            assert_eq!(parameters["requestId"], "original-owner");
+        }
+    }
+
+    #[tokio::test]
+    async fn projection_does_not_admit_oversized_entries_envelopes_or_unrelated_events() {
+        let (stream, _peer) = tokio::io::duplex(64);
+        let (reader, writer) = tokio::io::split(stream);
+        let connection = crate::connection::Connection::new(reader, writer);
+        let mut events = connection.subscribe();
+        let large = "a".repeat(MAXIMUM_CONTROL_BYTES);
+        for message in [
+            serde_json::json!({"method":"Network.requestWillBeSent","params":{"request":{"postData":"discarded","postDataEntries":[{"bytes":large}]}}}),
+            serde_json::json!({"method":"Fetch.requestPaused","sessionId":large,"params":{"request":{"postData":"discarded"}}}),
+            serde_json::json!({"method":"Runtime.consoleAPICalled","params":{"request":{"postData":large}}}),
+        ] {
+            let bytes = serde_json::to_vec(&message).unwrap();
+            assert_eq!(
+                receive_message(&connection.inner, &bytes).unwrap_err().code,
+                ErrorCode::ResourceLimit
+            );
+            assert!(events.try_recv().is_err());
+        }
+    }
 
     #[test]
     fn screenshot_shape_requires_canonical_base64_within_the_decoded_bound() {

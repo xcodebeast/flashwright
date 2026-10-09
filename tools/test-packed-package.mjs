@@ -1,3 +1,7 @@
+import { installPackedConsumer } from './install-packed-consumer.mjs';
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
+import { tmpdir } from 'node:os';
+import { packConsumerPackages } from './packed-artifacts.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -7,22 +11,42 @@ import { resolve, join, dirname } from 'node:path';
 import { chromium } from 'playwright';
 
 const require = createRequire(import.meta.url);
-const directory = await mkdtemp(resolve('.cache/packed-consumer-'));
-const packed = JSON.parse(execFileSync('npm', ['pack', '--workspace', 'packages/flashwright', '--pack-destination', directory, '--json'], { encoding: 'utf8' }));
-const archive = join(directory, packed[0].filename);
+const directory = await mkdtemp(join(tmpdir(), 'flashwright-packed-consumer-'));
+const { archives, dependencies: packageDependencies } = await packConsumerPackages(directory);
+const archive = archives.flashwright;
 const runtimeArchive = process.env.FLASHWRIGHT_PACKAGED_RUNTIME_ARCHIVE;
 const runtimePackageName = `@flashwright/driver-${process.platform}-${process.arch}`;
-const dependencies = { flashwright: `file:${archive}`, '@types/node': '24.10.1', ...(runtimeArchive ? { [runtimePackageName]: `file:${resolve(runtimeArchive)}` } : {}) };
+const dependencies = { ...packageDependencies, '@types/node': '24.10.1', ...(runtimeArchive ? { [runtimePackageName]: '0.0.0' } : {}) };
 await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'flashwright-consumer-smoke', private: true, type: 'module', dependencies }, null, 2));
-execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', ...(runtimeArchive ? ['--offline'] : [])], { cwd: directory, stdio: 'pipe' });
+const installation = await installPackedConsumer(directory, [...Object.values(archives), ...(runtimeArchive ? [resolve(runtimeArchive)] : [])]);
 const body = `
 const { createServer } = await import('node:http');
 const { once } = await import('node:events');
 const server = createServer((_request, response) => response.end('<title>Packed consumer</title><h1>real HTTP</h1><label>Name<input></label><button onclick="this.textContent=String(event.isTrusted)">Click</button><label><input type="checkbox">Check</label>'));
 server.listen(0, '127.0.0.1');
 await once(server, 'listening');
-const browser = await chromium.launch();
+const browser = await chromium.launch({ slowMo: 0 });
 try {
+  const disabled = await browser.newContext({ javaScriptEnabled: false, ignoreHTTPSErrors: true });
+  try {
+    const disabledPage = await disabled.newPage();
+    await disabledPage.goto('http://127.0.0.1:' + server.address().port);
+    await disabledPage.getByRole('button', { name: 'Click' }).click();
+    assert.equal(await disabledPage.getByRole('button').textContent(), 'Click');
+    assert.equal(await disabledPage.evaluate(() => 42), 42);
+  } finally { await disabled.close(); }
+  const scriptedContext = await browser.newContext();
+  const contextScript = await scriptedContext.addInitScript(value => { globalThis.contextSeed = value; }, { text: 'packed context' });
+  const scriptedPage = await scriptedContext.newPage();
+  assert.deepEqual(await scriptedPage.evaluate(() => globalThis.contextSeed), { text: 'packed context' });
+  const pageScript = await scriptedPage.addInitScript({ content: 'globalThis.pageSeed = "packed page";' });
+  assert.equal(await scriptedPage.evaluate(() => globalThis.pageSeed), undefined);
+  await scriptedPage.goto('http://127.0.0.1:' + server.address().port);
+  assert.deepEqual(await scriptedPage.evaluate(() => [globalThis.contextSeed, globalThis.pageSeed]), [{ text: 'packed context' }, 'packed page']);
+  await contextScript.dispose(); await pageScript[Symbol.asyncDispose]();
+  await scriptedPage.goto('http://127.0.0.1:' + server.address().port);
+  assert.deepEqual(await scriptedPage.evaluate(() => [globalThis.contextSeed, globalThis.pageSeed]), [undefined, undefined]);
+  await scriptedContext.close();
   const page = await browser.newPage();
   assert.equal(await page.evaluate(value => value.answer, { answer: 42 }), 42);
   const parentHandle = await page.evaluateHandle(() => ({ child: { answer: 42 } }));
@@ -38,6 +62,22 @@ try {
   const response = await page.goto('http://127.0.0.1:' + server.address().port);
   assert.equal(response.status(), 200);
   assert.equal(await page.title(), 'Packed consumer');
+  const routedRequests = [];
+  await page.context().route('**/packed-route', async (route, request) => {
+    routedRequests.push(request);
+    assert.equal(request.headerValue('x-packed') instanceof Promise, true);
+    assert.equal(await request.headerValue('x-packed'), 'yes');
+    await route.fulfill({ json: { packed: true } });
+  });
+  const routing = await page.route('**/packed-route', async (route, request) => {
+    routedRequests.push(request);
+    await route.fallback({ headers: { ...request.headers(), 'X-Packed': 'yes' } });
+  });
+  assert.deepEqual(await page.evaluate(() => fetch('/packed-route').then(response => response.json())), { packed: true });
+  assert.equal(routedRequests.length, 2);
+  assert.equal(routedRequests[0], routedRequests[1]);
+  assert.equal(routedRequests[0].frame(), page.mainFrame());
+  await routing.dispose(); await page.context().unrouteAll({ behavior: 'wait' });
   const consoleEvent = page.context().waitForEvent('console');
   await page.evaluate(() => console.log('packed console', { answer: 42 }));
   const consoleMessage = await consoleEvent;
@@ -53,11 +93,46 @@ try {
   assert.equal(error.message, 'packed page error');
   assert.match(await response.text(), /real HTTP/);
   assert.equal(await page.getByRole('heading').textContent(), 'real HTTP');
+  const selectedHeading = await page.waitForSelector('h1', { strict: true });
+  assert.equal(await selectedHeading.evaluate(element => element.textContent), 'real HTTP');
+  await selectedHeading.dispose();
+  assert.equal(await page.getByRole('heading').evaluate(element => element.ownerDocument === document), true);
+  const evaluatedHeading = await page.getByRole('heading').evaluateHandle(element => element);
+  assert.equal(await evaluatedHeading.evaluate(element => element.textContent), 'real HTTP');
+  await evaluatedHeading.dispose();
+  assert.equal(await page.waitForSelector('#missing', { state: 'hidden' }), null);
   await page.getByLabel('Name').fill('packed input');
   assert.equal(await page.getByLabel('Name').inputValue(), 'packed input');
   await page.getByLabel('Name').press('ControlOrMeta+A');
   await page.keyboard.press('z');
   assert.equal(await page.getByLabel('Name').inputValue(), 'z');
+  await page.getByLabel('Name').pressSequentially('A+');
+  await page.keyboard.type('é😃');
+  assert.equal(await page.getByLabel('Name').inputValue(), 'zA+é😃');
+  await page.getByLabel('Name').selectText();
+  const selectedName = await page.getByLabel('Name').elementHandle();
+  assert.equal(await selectedName.evaluate(element => element.selectionEnd), 'zA+é😃'.length);
+  await selectedName.scrollIntoViewIfNeeded();
+  await selectedName.selectText({ force: true });
+  await page.getByLabel('Name').scrollIntoViewIfNeeded();
+  assert.equal(await selectedName.evaluate(element => element.selectionStart), 0);
+  await selectedName.dispose();
+  await page.evaluate(() => { const input = document.createElement('input'); input.id = 'packed-file'; input.type = 'file'; document.body.append(input); });
+  await page.setInputFiles('#packed-file', { name: 'packed.txt', mimeType: '', buffer: Buffer.from([0, 255, 65]) });
+  const packedFile = await page.locator('#packed-file').elementHandle();
+  assert.deepEqual(await packedFile.evaluate(async input => [input.files[0].name, input.files[0].type, [...new Uint8Array(await input.files[0].arrayBuffer())]]), ['packed.txt', 'text/plain', [0, 255, 65]]);
+  await packedFile.setInputFiles([]);
+  assert.equal(await packedFile.evaluate(input => input.files.length), 0);
+  const chooserOpened = page.waitForEvent('filechooser');
+  await page.locator('#packed-file').click();
+  const chooser = await chooserOpened;
+  assert.equal(chooser.page(), page); assert.equal(chooser.isMultiple(), false);
+  assert.equal(chooser.element(), chooser.element());
+  await chooser.setFiles({ name: 'choice.txt', mimeType: '', buffer: Buffer.from('chosen') });
+  assert.equal(await packedFile.evaluate(async input => input.files[0].text()), 'chosen');
+  await chooser.element().dispose();
+  await packedFile.evaluate(input => input.remove());
+  await packedFile.dispose();
   await page.getByRole('button', { name: 'Click' }).click();
   assert.equal(await page.getByRole('button').textContent(), 'true');
   await page.getByLabel('Check', { exact: true }).check();
@@ -82,10 +157,17 @@ await writeFile(join(directory, 'consumer.mjs'), `import assert from 'node:asser
 await writeFile(join(directory, 'consumer.cjs'), `const assert = require('node:assert/strict');\nconst { chromium } = require('flashwright');\n(async () => { ${body} })().catch(error => { console.error(error); process.exitCode = 1; });`);
 const typeBody = `
 async function example(): Promise<number> {
-  const browser: Browser = await chromium.launch();
+  const browser: Browser = await chromium.launch({ slowMo: 0 });
   try {
-    const context: BrowserContext = await browser.newContext();
+    const context: BrowserContext = await browser.newContext({ ignoreHTTPSErrors: true, javaScriptEnabled: false });
+    // @ts-expect-error Context settings preserve boolean option types.
+    await browser.newContext({ javaScriptEnabled: 'false' });
     const page: Page = await context.newPage();
+    const registration: import('flashwright').Disposable = await context.addInitScript(({ name }: { name: string }) => { window.name = name; }, { name: 'packed' });
+    await registration.dispose(); await registration[Symbol.asyncDispose]();
+    await page.addInitScript({ content: 'window.name = "packed";' });
+    // @ts-expect-error Init-script function arguments preserve their value type.
+    await page.addInitScript((value: string) => { window.name = value; }, 42);
     const handle: import('flashwright').JSHandle<{ answer: number }> = await page.evaluateHandle(() => ({ answer: 42 }));
     const answer: number = await page.evaluate(({ nested }) => nested[0].answer, { nested: [handle] });
     const property: import('flashwright').JSHandle<number> = await handle.getProperty('answer');
@@ -94,6 +176,20 @@ async function example(): Promise<number> {
     const unboxedElement: import('flashwright').ElementHandle<HTMLButtonElement> = element.asElement();
     const notElement: null = handle.asElement();
     const frameHandle: import('flashwright').JSHandle<number> = await page.mainFrame().evaluateHandle(() => 42);
+    const selectedInput: import('flashwright').ElementHandle<HTMLInputElement> = await page.waitForSelector('input');
+    await selectedInput.selectText({ force: true, timeout: 100 });
+    const chooser: import('flashwright').FileChooser = await page.waitForEvent('filechooser');
+    const chooserElement: import('flashwright').ElementHandle<HTMLInputElement> = chooser.element();
+    await chooser.setFiles([]); void chooserElement;
+    const upload: import('flashwright').FilePayload = { name: 'packed.txt', mimeType: '', buffer: Buffer.from('packed') };
+    await selectedInput.setInputFiles(upload, { noWaitAfter: true });
+    await page.mainFrame().setInputFiles('input', [upload], { strict: false, timeout: 100 });
+    // @ts-expect-error File upload requires a Buffer.
+    await page.setInputFiles('input', { name: 'file', mimeType: '', buffer: 'text' });
+    await selectedInput.scrollIntoViewIfNeeded({ timeout: 100 });
+    const locatorValue: number = await page.locator('button').evaluate((element, value) => value.answer, handle);
+    const locatorHandle: import('flashwright').JSHandle<number> = await page.locator('button').evaluateHandle((element, value) => value.answer, handle);
+    void selectedInput; void locatorValue; void locatorHandle;
     // @ts-expect-error Handle arguments preserve their underlying value type.
     await page.evaluate(value => value.missing, handle);
     // @ts-expect-error Element handles preserve their DOM subtype.
@@ -137,6 +233,11 @@ async function example(): Promise<number> {
     await locator.press('Enter', pressOptions);
     const keyboard: import('flashwright').Keyboard = page.keyboard;
     await keyboard.press('Enter', { delay: 1 });
+    await locator.pressSequentially('typed', { timeout: 100, delay: 1, noWaitAfter: false });
+    await keyboard.type('é😃', { delay: 1 });
+    const selectTextOptions: import('flashwright').SelectTextOptions = { force: false, timeout: 100 };
+    await locator.selectText(selectTextOptions);
+    await locator.scrollIntoViewIfNeeded({ timeout: 100 });
     await locator.click(options);
     await locator.dblclick({ delay: 5 });
     await locator.hover({ force: true });
@@ -164,7 +265,8 @@ for (const entry of ['consumer.mjs', 'consumer.cjs']) {
   execFileSync('python3', [resolve('tools/watchdog.py'), '--timeout', '60', '--', process.execPath, join(directory, entry)], { cwd: directory, env: environment, stdio: 'inherit' });
 }
 // Deliberately skew the installed runtime hash: incompatibility must reject before launch.
-const runtimeVersionPath = join(directory, 'node_modules/flashwright/dist/commonjs/runtime-version.cjs');
+const corePackagePath = createRequire(join(directory, 'package.json')).resolve('@flashwright/core/package.json');
+const runtimeVersionPath = join(dirname(corePackagePath), 'dist/commonjs/runtime-version.cjs');
 const originalRuntimeVersion = await readFile(runtimeVersionPath);
 await writeFile(runtimeVersionPath, "exports.residentRuntimeSha256 = 'deliberately-incompatible';\n");
 await writeFile(join(directory, 'incompatible.mjs'), `import assert from 'node:assert/strict';\nimport { chromium } from 'flashwright';\nawait assert.rejects(chromium.launch(), error => error.name === 'ProtocolError' && (error.message.includes('mismatch') || error.message.includes('does not match')));\n`);
@@ -175,14 +277,15 @@ assert.equal(installed.version, '0.0.0');
 const reportDirectory = process.env.FLASHWRIGHT_PACKED_REPORT_DIRECTORY ?? 'compatibility/evidence';
 await mkdir(reportDirectory, { recursive: true });
 const evidence = {
-  node: process.version, platform: process.platform, architecture: process.arch,
-  package: packed[0].filename, archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
+  installation, ...runtimeMetadata, platform: process.platform, architecture: process.arch,
+  package: archive.slice(directory.length + 1),
+  implementationArchives: Object.fromEntries(await Promise.all(Object.entries(archives).filter(([name]) => name !== 'flashwright').map(async ([name, path]) => [name, { archive: path, sha256: createHash('sha256').update(await readFile(path)).digest('hex') }]))), archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
   consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH ?? null,
   packagedRuntime: runtimePackagePath ? { packageName: runtimePackageName, archiveSha256: createHash('sha256').update(await readFile(runtimeArchive)).digest('hex'), manifest: JSON.parse(await readFile(join(dirname(runtimePackagePath), 'runtime.json'), 'utf8')), installation: 'offline local tarballs, lifecycle scripts disabled, Cargo absent from consumer PATH' } : null,
   driverSha256: createHash('sha256').update(await readFile(selectedDriver)).digest('hex'),
-  checks: ['npm packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  checks: ['Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
-const destination = join(reportDirectory, `packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`);
+const destination = join(reportDirectory, `packed-library-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`);
 await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
 console.log(`Packed library consumers passed: ${destination}`);

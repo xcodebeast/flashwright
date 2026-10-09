@@ -224,3 +224,126 @@ fn utf16_diagnostics_and_structured_diagnostics_share_the_value_budget() {
         ErrorCode::ResourceLimit
     );
 }
+
+#[tokio::test]
+async fn raw_client_chunks_and_controls_share_fragmented_framing() {
+    use flashwright_protocol::ClientFrame;
+    let (producer, consumer) = duplex(7);
+    let writer = tokio::spawn(async move {
+        let mut writer = FrameWriter::new(producer, 1024);
+        writer.write(&json!({"kind":"command","requestId":1,"method":"upload","parameters":{},"timeoutMilliseconds":null,"inputByteLength":4})).await.unwrap();
+        writer
+            .write_frame(&EncodedFrame::attachment_chunk(1, 0, &[0, 255, 128, 13], 1024).unwrap())
+            .await
+            .unwrap();
+        writer
+            .write(&json!({"kind":"cancel","requestId":1}))
+            .await
+            .unwrap();
+        writer
+            .write(&json!({"kind":"inputEnd","requestId":1,"aborted":true}))
+            .await
+            .unwrap();
+    });
+    let mut reader = FrameReader::new(consumer, 1024);
+    assert!(matches!(
+        reader.read_client_frame().await.unwrap(),
+        Some(ClientFrame::Message(ClientMessage::Command {
+            input_byte_length: Some(4),
+            ..
+        }))
+    ));
+    match reader.read_client_frame().await.unwrap().unwrap() {
+        ClientFrame::Attachment {
+            request_id,
+            offset,
+            bytes,
+        } => {
+            assert_eq!((request_id, offset), (1, 0));
+            assert_eq!(bytes, [0, 255, 128, 13]);
+        }
+        other => panic!("unexpected frame: {other:?}"),
+    }
+    assert!(matches!(
+        reader.read_client_frame().await.unwrap(),
+        Some(ClientFrame::Message(ClientMessage::Cancel {
+            request_id: 1
+        }))
+    ));
+    assert!(matches!(
+        reader.read_client_frame().await.unwrap(),
+        Some(ClientFrame::Message(ClientMessage::InputEnd {
+            request_id: 1,
+            aborted: true
+        }))
+    ));
+    assert!(reader.read_client_frame().await.unwrap().is_none());
+    writer.await.unwrap();
+}
+
+#[tokio::test]
+async fn invalid_client_chunk_identity_or_size_poison_the_stream() {
+    for (identifier, payload_length) in [
+        (0_u64, 1_usize),
+        (9_007_199_254_740_992, 1),
+        (1, 0),
+        (1, 65537),
+    ] {
+        let mut body = vec![0; 13 + payload_length];
+        body[1..9].copy_from_slice(&identifier.to_le_bytes());
+        let mut framed = (body.len() as u32).to_le_bytes().to_vec();
+        framed.extend(body);
+        let mut reader = FrameReader::new(framed.as_slice(), 128 * 1024);
+        assert!(matches!(
+            reader.read_client_frame().await,
+            Err(FrameError::InvalidAttachment)
+        ));
+        assert!(matches!(
+            reader.read_client_frame().await,
+            Err(FrameError::Invalidated)
+        ));
+    }
+}
+
+#[test]
+fn original_trace_call_metadata_is_optional_bounded_and_strict() {
+    let mut value = json!({"kind":"command","requestId":1,"method":"locator.run","parameters":{},"timeoutMilliseconds":1000});
+    let command: ClientMessage = serde_json::from_value(value.clone()).unwrap();
+    assert!(
+        serde_json::to_value(command)
+            .unwrap()
+            .get("traceCall")
+            .is_none()
+    );
+    value["traceCall"] = json!({"context":"context","generation":"original-chunk"});
+    let command: ClientMessage = serde_json::from_value(value.clone()).unwrap();
+    let ClientMessage::Command {
+        trace_call: Some(trace_call),
+        ..
+    } = command
+    else {
+        panic!("missing original call metadata");
+    };
+    trace_call.validate("locator.run").unwrap();
+    assert_eq!(trace_call.generation, "original-chunk");
+    value["traceCall"]["inferred"] = json!(true);
+    assert!(serde_json::from_value::<ClientMessage>(value).is_err());
+    for context in [String::new(), "x".repeat(65), "é".repeat(33)] {
+        assert!(
+            flashwright_protocol::TraceCall {
+                context,
+                generation: "original".into()
+            }
+            .validate("locator.run")
+            .is_err()
+        );
+    }
+    assert!(
+        flashwright_protocol::TraceCall {
+            context: "context".into(),
+            generation: String::new()
+        }
+        .validate("locator.run")
+        .is_err()
+    );
+}

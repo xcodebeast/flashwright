@@ -12,6 +12,6 @@ export async function sourceManifest() {
       }
     } else manifest[path] = createHash('sha256').update(await readFile(path)).digest('hex');
   }
-  for (const root of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'package-lock.json', 'tsconfig.json', 'crates', 'packages', 'tools', 'compatibility/m1', 'compatibility/m2', 'compatibility/migration-projects', 'benchmarks']) await visit(root);
+  for (const root of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'bun.lock', 'tsconfig.json', 'crates', 'packages', 'tools', 'compatibility/m1', 'compatibility/m2', 'compatibility/migration-projects', 'benchmarks']) await visit(root);
   return manifest;
 }

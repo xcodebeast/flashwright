@@ -1,4 +1,4 @@
-//! Native key chords using the pinned reference layout and platform editing commands.
+//! Native key chords and sequential typing with owned input delivery and cancellation cleanup.
 
 use super::input::dispatch_input;
 use super::locators::{check_exception, context_was_destroyed, retry_reason};
@@ -40,6 +40,36 @@ struct KeyboardOptions {
     delay: Option<f64>,
     #[serde(default)]
     no_wait_after: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct TypingOptions {
+    text_units: Vec<u16>,
+    delay: Option<f64>,
+}
+
+enum KeyboardSequence {
+    Chord(Vec<String>),
+    Text(String),
+}
+
+/// Decode the entire sequence before focusing so unsupported text cannot partially mutate a page.
+fn typing_text(units: &[u16], method: &str) -> Result<String, ErrorRecord> {
+    if units.len() > 100000 {
+        return Err(ErrorRecord::new(
+            ErrorCode::ResourceLimit,
+            method,
+            "text exceeds 100000 UTF-16 units",
+        ));
+    }
+    String::from_utf16(units).map_err(|_| {
+        ErrorRecord::new(
+            ErrorCode::UnsupportedFeature,
+            method,
+            "native text input containing unpaired UTF-16 surrogates is not implemented",
+        )
+    })
 }
 
 /// Resolve every token before focus or input so a malformed chord cannot leave held modifiers.
@@ -265,7 +295,70 @@ fn validate_delay(delay: Option<f64>, method: &str) -> Result<(), ErrorRecord> {
     Ok(())
 }
 
+/// Preserve the pinned code-point loop: key pairs for layout characters, insertion for other text.
+async fn type_text(
+    text: &str,
+    delay: Option<f64>,
+    page: &Page,
+    browser: &Chromium,
+    operation: &Operation,
+    method: &str,
+) -> Result<(), ErrorRecord> {
+    for character in text.chars() {
+        operation.check()?;
+        let character = character.to_string();
+        if layout().keys.contains_key(&character) {
+            press_chord(&[character], delay, page, browser, operation, method).await?;
+        } else {
+            if let Some(delay) = delay.filter(|delay| *delay > 0.0) {
+                operation
+                    .wait(page.state.while_alive(method, async {
+                        sleep(Duration::from_secs_f64(delay / 1000.0)).await;
+                        Ok(())
+                    }))
+                    .await?;
+            }
+            dispatch_input(
+                page,
+                browser,
+                "Input.insertText",
+                json!({ "text": character }),
+                operation,
+                method,
+            )
+            .await
+            .result?;
+        }
+    }
+    Ok(())
+}
+
 impl Engine {
+    /// Page typing holds native input ownership for the whole sequence without changing focus.
+    pub(crate) async fn type_page_text(
+        &self,
+        parameters: Value,
+        operation: &Operation,
+    ) -> Result<Value, ErrorRecord> {
+        let method = "keyboard.type";
+        validate_keys(method, &parameters, &["page", "textUnits", "delay"])?;
+        let units: Vec<u16> = parse(method, parameters["textUnits"].clone())?;
+        let text = typing_text(&units, method)?;
+        let delay: Option<f64> = parse(method, parameters["delay"].clone())?;
+        validate_delay(delay, method)?;
+        let page = self.page(identifier(&parameters, "page", method)?, method)?;
+        let context = self.context(&page.context_identifier, method)?;
+        let browser = self.browser(&context.browser_identifier, method)?;
+        let _input_lock = operation
+            .wait(
+                page.state
+                    .while_alive(method, async { Ok(page.state.native_input.lock().await) }),
+            )
+            .await?;
+        type_text(&text, delay, &page, &browser, operation, method).await?;
+        Ok(Value::Null)
+    }
+
     /// Page keyboard input uses the existing focus and has no locator or navigation waiting phase.
     pub(crate) async fn press_page_key(
         &self,
@@ -303,16 +396,34 @@ impl Engine {
         parameters: Value,
         operation: &Operation,
     ) -> Result<Value, ErrorRecord> {
-        let method = "locator.press";
+        let sequential = parameters["action"] == "pressSequentially";
+        let method = if sequential {
+            "locator.pressSequentially"
+        } else {
+            "locator.press"
+        };
         if parameters.get("pointer").is_some() {
             return Err(invalid(
                 method,
                 "pointer settings require a pointer operation",
             ));
         }
-        let options: KeyboardOptions = parse(method, parameters["keyboard"].clone())?;
-        validate_delay(options.delay, method)?;
-        let keys = chord(&options.key_units, method)?;
+        let (sequence, delay, wait_after) = if sequential {
+            let options: TypingOptions = parse(method, parameters["keyboard"].clone())?;
+            (
+                KeyboardSequence::Text(typing_text(&options.text_units, method)?),
+                options.delay,
+                false,
+            )
+        } else {
+            let options: KeyboardOptions = parse(method, parameters["keyboard"].clone())?;
+            (
+                KeyboardSequence::Chord(chord(&options.key_units, method)?),
+                options.delay,
+                !options.no_wait_after,
+            )
+        };
+        validate_delay(delay, method)?;
         let page = self.page(identifier(&parameters, "page", method)?, method)?;
         let context = self.context(&page.context_identifier, method)?;
         let browser = self.browser(&context.browser_identifier, method)?;
@@ -340,8 +451,9 @@ impl Engine {
             let before = page
                 .input_sequence_start(&browser, operation, method)
                 .await?;
+            page.trace_before_input(operation);
             let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
-                "executionContextId": realm.context,
+                "uniqueContextId": realm.context.unique_identifier,
                 "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.prepareKeyboard(request, deadline); }",
                 "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }],
                 "returnByValue": true, "awaitPromise": true, "userGesture": true,
@@ -369,9 +481,16 @@ impl Engine {
             };
             match result["status"].as_str() {
                 Some("success") => {
-                    press_chord(&keys, options.delay, &page, &browser, operation, method).await?;
+                    match &sequence {
+                        KeyboardSequence::Chord(keys) => {
+                            press_chord(keys, delay, &page, &browser, operation, method).await?
+                        }
+                        KeyboardSequence::Text(text) => {
+                            type_text(text, delay, &page, &browser, operation, method).await?
+                        }
+                    }
                     drop(input_lock);
-                    if !options.no_wait_after {
+                    if wait_after {
                         page.complete_input(&browser, before, operation, method)
                             .await?;
                     }

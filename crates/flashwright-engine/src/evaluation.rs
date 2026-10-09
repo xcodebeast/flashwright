@@ -100,9 +100,7 @@ impl Engine {
                     .state
                     .lock()
                     .unwrap()
-                    .main_worlds
-                    .get(&prepared.runtime.context.frame_identifier)
-                    == Some(&prepared.runtime.context)
+                    .context_is_alive(&prepared.runtime.context)
                 {
                     // Shared helper preparation never terminates application JavaScript.
                     let _ = timeout(
@@ -229,6 +227,20 @@ impl Engine {
         frame: Option<&str>,
         operation: &Operation,
     ) -> Result<Arc<EvaluationRuntime>, ErrorRecord> {
+        let context = self
+            .evaluation_context(page, browser, frame, operation)
+            .await?;
+        self.context_evaluation_runtime(page, browser, &context)
+    }
+
+    /// Resolve original-context ownership without installing a main-world helper.
+    pub(crate) async fn evaluation_context(
+        &self,
+        page: &Page,
+        browser: &Chromium,
+        frame: Option<&str>,
+        operation: &Operation,
+    ) -> Result<ExecutionContext, ErrorRecord> {
         operation
             .wait(
                 page.state
@@ -236,7 +248,7 @@ impl Engine {
             )
             .await?;
         let mut changes = page.state.changed.subscribe();
-        let context = operation
+        operation
             .wait(async {
                 loop {
                     {
@@ -267,11 +279,10 @@ impl Engine {
                     changes.changed().await.map_err(|_| closed(METHOD))?;
                 }
             })
-            .await?;
-        self.context_evaluation_runtime(page, browser, &context)
+            .await
     }
 
-    /// Console handles retain a context without installing a renderer helper until evaluated.
+    /// Retained handles install a shared helper lazily in their exact original world.
     pub(crate) fn context_evaluation_runtime(
         &self,
         page: &Page,
@@ -280,12 +291,12 @@ impl Engine {
     ) -> Result<Arc<EvaluationRuntime>, ErrorRecord> {
         let state = page.state.state.lock().unwrap();
         state.check(METHOD)?;
-        if state.main_worlds.get(&context.frame_identifier) != Some(context) {
+        if !state.context_is_alive(context) {
             return Err(context_destroyed());
         }
         let mut cached = page.state.evaluation_runtimes.lock().unwrap();
         if let Some(runtime) = cached
-            .get(&context.frame_identifier)
+            .get(&context.unique_identifier)
             .filter(|runtime| runtime.context == *context)
         {
             return Ok(runtime.clone());
@@ -295,7 +306,7 @@ impl Engine {
             context: context.clone(),
             outcome,
         });
-        cached.insert(context.frame_identifier.clone(), runtime.clone());
+        cached.insert(context.unique_identifier.clone(), runtime.clone());
         let page = page.clone();
         let browser = browser.clone();
         let context = context.clone();
@@ -393,11 +404,13 @@ pub(crate) fn evaluation_result(method: &str, response: &Value) -> Result<Value,
 }
 
 pub(crate) fn context_destroyed() -> ErrorRecord {
-    ErrorRecord::new(
+    let mut error = ErrorRecord::new(
         ErrorCode::Evaluation,
         METHOD,
         "Execution context was destroyed, most likely because of a navigation",
-    )
+    );
+    error.execution_context_destroyed = true;
+    error
 }
 
 async fn initialize_runtime(
@@ -435,14 +448,7 @@ async fn initialize_runtime(
     page.state
         .while_alive(METHOD, browser.connection.synchronize_events())
         .await?;
-    let current = page
-        .state
-        .state
-        .lock()
-        .unwrap()
-        .main_worlds
-        .get(&context.frame_identifier)
-        == Some(context);
+    let current = page.state.state.lock().unwrap().context_is_alive(context);
     if !current {
         // A late preparation reply still owns its object, even after the caller or
         // document has changed. Release that exact handle, never a successor helper.

@@ -75,7 +75,7 @@ impl Engine {
         .await?;
         let state = page.state.state.lock().unwrap();
         Ok(
-            json!({ "response": loader.and_then(|loader| state.response_by_loader.get(loader)), "frames": state.frame_snapshot() }),
+            json!({ "response": loader.and_then(|loader| state.response_for_loader(loader)), "frames": state.frame_snapshot() }),
         )
     }
 
@@ -101,7 +101,7 @@ impl Engine {
         Ok(Value::Null)
     }
 
-    async fn wait_for_document(
+    pub(super) async fn wait_for_document(
         page: &Page,
         frame_identifier: &str,
         loader: Option<&str>,
@@ -211,69 +211,9 @@ impl Engine {
                 .await?;
         }
     }
-
-    pub(crate) async fn response_body(
-        &self,
-        parameters: Value,
-        operation: &Operation,
-    ) -> Result<BinaryAttachment, ErrorRecord> {
-        let method = "response.body";
-        validate_keys(method, &parameters, &["page", "request"])?;
-        let page = self.page(identifier(&parameters, "page", method)?, method)?;
-        let context = self.context(&page.context_identifier, method)?;
-        let browser = self.browser(&context.browser_identifier, method)?;
-        let request_identifier = identifier(&parameters, "request", method)?;
-        let mut changes = page.state.changed.subscribe();
-        loop {
-            {
-                let state = page.state.state.lock().unwrap();
-                state.check(method)?;
-                let request = state.requests.get(request_identifier).ok_or_else(|| {
-                    ErrorRecord::new(
-                        ErrorCode::ResourceLimit,
-                        method,
-                        "response is outside the bounded retained request history",
-                    )
-                })?;
-                if let Some(error) = &request.failure {
-                    return Err(ErrorRecord::new(ErrorCode::Navigation, method, error));
-                }
-                if request.finished {
-                    break;
-                }
-            }
-            operation
-                .wait(async { changes.changed().await.map_err(|_| closed(method)) })
-                .await?;
-        }
-        let reservation = operation
-            .wait(page.state.while_alive(method, async {
-                self.attachment_slots
-                    .clone()
-                    .acquire_owned()
-                    .await
-                    .map_err(|_| closed(method))
-            }))
-            .await?;
-        let payload = operation
-            .wait(page.state.while_alive(
-                method,
-                browser.connection.response_body(
-                    request_identifier,
-                    &page.session_identifier,
-                    self.maximum_attachment_bytes,
-                ),
-            ))
-            .await
-            .map_err(|mut error| {
-                error.method = method.into();
-                error
-            })?;
-        Ok(BinaryAttachment::from_payload(payload, reservation))
-    }
 }
 
-fn load_state<'value>(
+pub(super) fn load_state<'value>(
     parameters: &'value Value,
     field: &str,
     allow_commit: bool,

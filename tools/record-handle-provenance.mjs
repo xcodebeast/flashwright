@@ -15,7 +15,7 @@ const retainedSource = names.map(name => {
 }).join('\n\n') + '\n';
 assert.ok(retainedSource.includes('ref: <Node>'));
 const hash = value => createHash('sha256').update(value).digest('hex');
-const implementationPaths = ['packages/resident-runtime/serialization.cjs', 'packages/resident-runtime/evaluation.cjs', 'packages/flashwright/src/handles.ts', 'crates/flashwright-engine/src/handles.rs', 'crates/flashwright-engine/src/handle_values.rs'];
+const implementationPaths = ['packages/resident-runtime/serialization.cjs', 'packages/resident-runtime/evaluation.cjs', 'packages/flashwright-core/src/handles.ts', 'crates/flashwright-engine/src/handles.rs', 'crates/flashwright-engine/src/handle_allocation.rs', 'crates/flashwright-engine/src/handle_values.rs'];
 const implementations = Object.fromEntries(await Promise.all(implementationPaths.map(async path => [path, hash(await readFile(path))])));
 const retainedExtract = 'compatibility/upstream/handle-value.source.js';
 const outputs = {

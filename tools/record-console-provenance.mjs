@@ -15,7 +15,7 @@ const extracts = names.map(name => {
 });
 const retainedSource = extracts.join('\n\n') + '\n';
 const hash = value => createHash('sha256').update(value).digest('hex');
-const implementationPaths = ['packages/flashwright/src/console.ts', 'packages/flashwright/src/handles.ts', 'crates/flashwright-engine/src/console.rs'];
+const implementationPaths = ['packages/flashwright-core/src/console.ts', 'packages/flashwright-core/src/subscribed-events.ts', 'packages/flashwright-core/src/handles.ts', 'crates/flashwright-engine/src/console.rs'];
 const implementations = Object.fromEntries(await Promise.all(implementationPaths.map(async path => [path, hash(await readFile(path))])));
 const retainedExtract = 'compatibility/upstream/console.source.js';
 const nodeTypesPath = 'node_modules/@types/node/events.d.ts';

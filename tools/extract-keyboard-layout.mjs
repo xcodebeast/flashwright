@@ -33,7 +33,7 @@ const outputs = {
     distributionPath, distributionSha256: hash(distribution), retainedExtract, extractSha256: hash(retainedSource),
     destination, generatedSha256: hash(data),
     extraction: 'Retain the pinned US layout, aliases, macOS editing commands and pure layout builder; evaluate only that extract to generate immutable key descriptions.',
-    changes: ['Ported chord parsing, modifier state, native key event fields and macOS editing-command selection into Rust with owned cancellation cleanup', 'Share chord dispatch between locator.press and page.keyboard.press while preserving locator focus, timeout and navigation barriers separately'],
+    changes: ['Ported chord parsing, modifier state, native key event fields and macOS editing-command selection into Rust with owned cancellation cleanup', 'Share chord dispatch between locator.press and page.keyboard.press while preserving locator focus, timeout and navigation barriers separately', 'Sequential typing shares key-pair dispatch for layout characters and uses native insertion for other Unicode code points; typing does not inherit the press navigation barrier'],
     license: 'Apache-2.0', licensePath: 'compatibility/upstream/LICENSE.playwright', noticePath: 'compatibility/upstream/NOTICE.playwright',
   }, null, 2) + '\n',
 };

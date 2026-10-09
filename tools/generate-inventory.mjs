@@ -91,7 +91,7 @@ const inventory = {
 const serialized = JSON.stringify(inventory, null, 2) + '\n';
 const destination = 'compatibility/capabilities.json';
 if (process.argv.includes('--check')) {
-  if (await readFile(destination, 'utf8') !== serialized) throw new Error('Capability inventory differs from pinned declarations. Run npm run inventory and review changes.');
+  if (await readFile(destination, 'utf8') !== serialized) throw new Error('Capability inventory differs from pinned declarations. Run bun run inventory and review changes.');
 } else {
   await writeFile(destination, serialized);
 }

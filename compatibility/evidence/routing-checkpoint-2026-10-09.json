@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "status": "verified macOS development checkpoint; not release or performance acceptance",
+  "referenceVersion": "1.60.0",
+  "platform": "darwin-arm64",
+  "driverSha256": "96d06201527d364e6f965fcc6466a47ebb91f32acfdfe1f3bd2aa4c263af8d9a",
+  "integratedCore": {
+    "groups": 94,
+    "sourceEntries": 405,
+    "reportSha256": "52007e89dc188e1fb8bc65717ba50f21de972614df5d13816940387cfa5b5210",
+    "sourceArchiveSha256": "74e7d0d537a0ad78c5f32e17e214a7f08832586e6f3e57d2952f726778e31827",
+    "scope": "Every group ran fresh under Bun1.4.2, including32shared routing cases, native lifecycle/resource checks, types and packed consumers. The later frame-lifetime change is covered separately below."
+  },
+  "frameLifetimeFollowUp": {
+    "groups": 16,
+    "sourceEntries": 405,
+    "reportSha256": "1a818b95fddbc9aba24f14a2209faae8ac25f5255c65cb7a55de28d76a3fb0bf",
+    "sourceArchiveSha256": "4c92c44ca6a43a7a352346a6d35b93dbc02da0a99d006e1355e48028df1da7bc",
+    "changedSourceSha256": {
+      "compatibility/m2/routing-payloads.mjs": "ee3c31e88170ed894f066edbaaca7374be2d612f16cacef321feb15afcd224f3",
+      "packages/flashwright-core/src/network.ts": "0f685e879ed06edc826f35a18c1a74dcc175b45d3c547d8b42f8f1325ea0e860",
+      "tools/record-routing-provenance.mjs": "29aa35f52a3c3ad27f6628a79e3b11010d3a8b4e4101a2b66726796b32cca152",
+      "tools/test-network-references.mjs": "1904b4f59156aaf23f645c4810964ef16103e296847798749bf72fa0327ddff2"
+    },
+    "scope": "Original Frame identity survives iframe detach, identifier reuse and page close. Host references/routing/history and33shared routing cases pass on Bun1.4.2 and Node22.22.0/24.15.0. FullChrome routing, packed ESM/CommonJS consumers and strict types also pass.",
+    "comparisons": [
+      {
+        "sha256": "0339a91ee8f69c258f534917280f16a33efe88e152078e7330dcc08464d7fbad",
+        "runtime": {
+          "name": "bun",
+          "version": "1.4.2"
+        },
+        "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+        "cases": 33
+      },
+      {
+        "sha256": "e8b90912c9b7b1f936632524430667c404596686967760a242d676eb4da97302",
+        "runtime": {
+          "name": "node",
+          "version": "22.22.0"
+        },
+        "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+        "cases": 33
+      },
+      {
+        "sha256": "97607da5d4fcfaf7e7a1222f86b380eb349c5b42b5e0cf822de26acc1cdc0800",
+        "runtime": {
+          "name": "node",
+          "version": "24.15.0"
+        },
+        "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+        "cases": 33
+      },
+      {
+        "sha256": "b2e9b19ad9df478b877b4cc19ce79c836737c59fc4887c0e53111263d0e88e0d",
+        "runtime": {
+          "name": "bun",
+          "version": "1.4.2"
+        },
+        "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+        "cases": 33
+      }
+    ],
+    "cleanWatchdogs": 48
+  },
+  "covered": [
+    "Page/context route registration, precedence, fallback, times, removal and callback ownership",
+    "Continue and fulfill byte preservation at0,65537,4MiB and32MiB, server/browser hashes and HTTP request counts",
+    "Browser-cookie preservation, redirects, response headers, JSON and bounded file fulfillment",
+    "Completed request history bounds, redirect-chain retention and original Frame identity"
+  ],
+  "retainedFailures": [
+    {
+      "scope": "Initial public build test fixture",
+      "outcome": "A test emitted response after finished; corrected its event ordering without a production change."
+    },
+    {
+      "scope": "Initial Node differential",
+      "outcome": "Pinned Bun and Node expose different already-handled operation prefixes. The comparator accepts those two exact forms and still asserts class and substantive error."
+    },
+    {
+      "scope": "Initial integrated core filmstrip check",
+      "outcome": "The earliest image can precede stable viewport geometry. An80-context diagnostic and both filmstrip profiles verified the test-only correction; stable geometry, archive and viewer checks remain."
+    }
+  ],
+  "provenance": {
+    "generators": 24,
+    "allPassed": true,
+    "reportSha256": "e8b0f13d8e46e4b6208071285985016aa5fc0693b36874c88555651de0268869"
+  },
+  "intentionalDifferences": [
+    "Target closure uses the explicit TargetClosedError class; the pinned reference rejects with Error."
+  ],
+  "limitations": [
+    "Focused follow-up is not another full94-group core execution.",
+    "Raw reports, source archives and process observations are retained locally; this normalized record is not a self-contained reproduction archive.",
+    "No Linux refresh, release package-manager coverage, API request fixture, Route.fetch, APIResponse fulfillment, CDPSession or DOM/network trace recording acceptance.",
+    "Original request event admission is separate from the32MiB continuation/fulfillment body limit.",
+    "No new performance result or fastest-framework claim."
+  ]
+}

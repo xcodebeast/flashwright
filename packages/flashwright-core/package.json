@@ -1,0 +1,49 @@
+{
+  "name": "@flashwright/core",
+  "version": "0.0.0",
+  "description": "Canonical browser library implementation for Flashwright public facades",
+  "type": "module",
+  "main": "./dist/commonjs/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
+    },
+    "./package.json": "./package.json",
+    "./runner-integration": {
+      "import": {
+        "types": "./dist/esm/runner-integration.d.ts",
+        "default": "./dist/esm/runner-integration.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/runner-integration.d.ts",
+        "default": "./dist/commonjs/runner-integration.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "22.x || 24.x"
+  },
+  "private": true,
+  "optionalDependencies": {
+    "@flashwright/driver-darwin-arm64": "0.0.0",
+    "@flashwright/driver-linux-x64": "0.0.0"
+  },
+  "typesVersions": {
+    "*": {
+      "runner-integration": [
+        "dist/commonjs/runner-integration.d.ts"
+      ]
+    }
+  }
+}

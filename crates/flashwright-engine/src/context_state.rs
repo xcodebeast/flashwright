@@ -8,8 +8,14 @@ pub(crate) const MAXIMUM_STORAGE_ORIGINS: usize = 1024;
 
 pub(crate) struct ContextState {
     pub origins: Mutex<BTreeSet<String>>,
+    pub routing_registered: std::sync::atomic::AtomicBool,
+    pub trace_enabled: std::sync::atomic::AtomicBool,
+    pub trace_diagnostics: Mutex<crate::trace_diagnostics::TraceDiagnostics>,
+    pub filmstrip: Mutex<Option<Arc<crate::filmstrip::Filmstrip>>>,
+    pub filmstrip_closed: std::sync::atomic::AtomicBool,
     pub console_enabled: std::sync::atomic::AtomicBool,
     pub storage_failure: Mutex<Option<ErrorRecord>>,
+    pub page_configuration: tokio::sync::RwLock<()>,
     pub storage_operations: tokio::sync::Mutex<()>,
     pub closed: watch::Sender<Option<ErrorRecord>>,
 }
@@ -18,8 +24,14 @@ impl Default for ContextState {
     fn default() -> Self {
         Self {
             origins: Mutex::new(BTreeSet::new()),
+            routing_registered: std::sync::atomic::AtomicBool::new(false),
+            trace_enabled: std::sync::atomic::AtomicBool::new(false),
+            trace_diagnostics: Mutex::new(crate::trace_diagnostics::TraceDiagnostics::default()),
+            filmstrip: Mutex::new(None),
+            filmstrip_closed: std::sync::atomic::AtomicBool::new(false),
             console_enabled: std::sync::atomic::AtomicBool::new(false),
             storage_failure: Mutex::new(None),
+            page_configuration: tokio::sync::RwLock::new(()),
             storage_operations: tokio::sync::Mutex::new(()),
             closed: watch::channel(None).0,
         }
@@ -27,6 +39,15 @@ impl Default for ContextState {
 }
 
 impl ContextState {
+    pub(crate) fn close_trace(&self) {
+        self.filmstrip_closed.store(true, Ordering::Release);
+        if let Some(capture) = self.filmstrip.lock().unwrap().take() {
+            capture.close();
+        }
+        self.trace_enabled.store(false, Ordering::Relaxed);
+        self.trace_diagnostics.lock().unwrap().close();
+    }
+
     pub fn visit(&self, origin: &str) -> Result<(), ErrorRecord> {
         if !origin.starts_with("http://") && !origin.starts_with("https://") {
             if !["null", "://", ""].contains(&origin) {

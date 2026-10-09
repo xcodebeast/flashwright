@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -9,13 +10,13 @@ import { chromium as flashwrightChromium, ConsoleMessage, JSHandle } from 'flash
 import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { identifyBrowser } from '../../tools/browser-identity.mjs';
 
-const destination = `compatibility/evidence/console-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}`;
+const destination = `compatibility/evidence/console-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
 const report = {
   schemaVersion: 1, reference: '1.60.0', sources: await sourceManifest(),
   browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()),
   driverSha256: createHash('sha256').update(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)).digest('hex'),
-  node: process.version, platform: process.platform, architecture: process.arch, outcomes: {}, referenceDifferences: {}, status: 'running',
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch, outcomes: {}, referenceDifferences: {}, status: 'running',
   scope: 'Live page/context console delivery, argument ownership, message diagnostics, main-world same-process frames and listener lifecycle. Workers, out-of-process frames and console history remain outside this slice. No performance claim.',
 };
 await writeFile(join(destination, 'report.json'), JSON.stringify(report, null, 2) + '\n');

@@ -14,7 +14,7 @@ const retainedSource = names.map(name => {
   return declaration.getText(parsed);
 }).join('\n\n') + '\n';
 const hash = value => createHash('sha256').update(value).digest('hex');
-const destination = 'packages/flashwright/src/page-errors.ts';
+const destination = 'packages/flashwright-core/src/page-errors.ts';
 const retainedExtract = 'compatibility/upstream/page-error.source.js';
 const outputs = {
   [retainedExtract]: retainedSource,

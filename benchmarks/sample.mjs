@@ -89,8 +89,8 @@ finally {
   const cleanupPhase = phaseStart();
   try { await browser?.close(); } catch (error) { result.failures.push(error.stack); }
   phaseEnd('browser.cleanup', cleanupPhase);
-  await server.close();
-  await stopProfileClock?.();
+  try { await server.close(); } catch (error) { result.failures.push(String(error.stack ?? error)); }
+  try { await stopProfileClock?.(); } catch (error) { result.failures.push(String(error.stack ?? error)); }
   result.cleanupMilliseconds = performance.now() - cleanupStarted;
   result.completeMilliseconds = performance.now() - started;
   result.backend = server.counts;

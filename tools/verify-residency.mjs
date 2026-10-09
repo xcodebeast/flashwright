@@ -1,3 +1,4 @@
+import { reportRuntime } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { requireVerifiedBrowser } from './browser-identity.mjs';
 import { createHash } from 'node:crypto';
@@ -26,6 +27,7 @@ for (const mode of Object.keys(launches)) {
   assert.equal(hash(bytes), verification.sha256);
   const report = JSON.parse(bytes);
   assert.equal(report.status, 'passed');
+  assert.deepEqual(reportRuntime(report), reportRuntime(metadata));
   // Historical snapshots predate browser binding; new producers always require it.
   if (metadata.verificationBrowserBound) requireVerifiedBrowser(report, metadata.browser);
   assert.equal(report.sourceChangedDuringVerification, false);

@@ -2,9 +2,10 @@
 
 use std::future::Future;
 use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::{Arc, OnceLock};
 
 use flashwright_browser::{Chromium, Connection};
-use flashwright_protocol::{ErrorCode, ErrorRecord, InputDelivery};
+use flashwright_protocol::{ErrorCode, ErrorRecord, InputDelivery, TraceCall};
 use serde_json::{Value, json};
 use tokio::sync::watch;
 use tokio::time::{Duration, Instant, sleep_until, timeout};
@@ -16,6 +17,8 @@ pub struct Operation {
     deadline: Option<Instant>,
     cancellation: watch::Receiver<bool>,
     input_delivery: AtomicU8,
+    input_attachment: OnceLock<Arc<flashwright_protocol::InputAttachment>>,
+    trace_call: Option<TraceCall>,
 }
 
 pub(crate) trait ResourceOwner: Sync {
@@ -75,7 +78,46 @@ impl Operation {
             deadline,
             cancellation,
             input_delivery: AtomicU8::new(0),
+            input_attachment: OnceLock::new(),
+            trace_call: None,
         }
+    }
+
+    /// Completed request bytes remain owned through execution and terminal publication.
+    pub fn attach_input(
+        &self,
+        attachment: flashwright_protocol::InputAttachment,
+    ) -> Result<(), ErrorRecord> {
+        self.input_attachment
+            .set(Arc::new(attachment))
+            .map_err(|_| {
+                ErrorRecord::new(
+                    ErrorCode::Protocol,
+                    &self.method,
+                    "binary input was supplied more than once",
+                )
+            })
+    }
+
+    pub fn input_attachment(&self) -> Option<&[u8]> {
+        self.input_attachment
+            .get()
+            .map(|attachment| attachment.bytes.as_slice())
+    }
+
+    /// A browser writer keeps both bytes and admission credits until its complete frame is sent.
+    pub fn shared_input_attachment(&self) -> Option<Arc<flashwright_protocol::InputAttachment>> {
+        self.input_attachment.get().cloned()
+    }
+
+    /// Keep trace provenance fixed through delayed dispatch, retries and cleanup.
+    pub fn with_trace_call(mut self, trace_call: Option<TraceCall>) -> Self {
+        self.trace_call = trace_call;
+        self
+    }
+
+    pub(crate) fn trace_call(&self) -> Option<&TraceCall> {
+        self.trace_call.as_ref()
     }
 
     /// Delivery progress survives successful completion and cannot erase an uncertain dispatch.

@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -133,7 +134,7 @@ try {
  assert.deepEqual(outcomes.flashwright, outcomes.reference);
  await mkdir('compatibility/evidence', { recursive: true });
  const hash = value => createHash('sha256').update(value).digest('hex');
- const destination = `compatibility/evidence/keyboard-${process.platform}-${process.arch}-${process.versions.node}.json`;
- await writeFile(destination, JSON.stringify({ reference: '1.60.0', node: process.version, platform: process.platform, architecture: process.arch, fixtureSha256: hash(await readFile(new URL(import.meta.url))), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes, scope: 'Experimental native keyboard differential; no performance claim.' }, null, 2) + '\n');
+ const destination = `compatibility/evidence/keyboard-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
+ await writeFile(destination, JSON.stringify({ reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch, fixtureSha256: hash(await readFile(new URL(import.meta.url))), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes, scope: 'Experimental native keyboard differential; no performance claim.' }, null, 2) + '\n');
  console.log(`Keyboard differential evidence: ${destination}`);
 } finally { for (const response of heldResponses.values()) response.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

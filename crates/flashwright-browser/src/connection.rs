@@ -2,13 +2,15 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, Weak};
 
-use flashwright_protocol::{BinaryPayload, ErrorCode, ErrorRecord};
+use flashwright_protocol::{BinaryPayload, ErrorCode, ErrorRecord, InputAttachment};
+use serde::Serialize;
 use serde_json::value::RawValue;
 use serde_json::{Value, json};
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task::AbortHandle;
 
+pub mod fetch_body;
 mod incoming;
 use incoming::{BinaryReplyKind, ReplySender, read_messages};
 
@@ -36,6 +38,7 @@ struct ConnectionState {
 #[derive(Clone, Debug)]
 pub struct Event {
     pub sequence: u64,
+    pub received_at: std::time::Instant,
     pub method: String,
     pub session_identifier: Option<String>,
     pub parameters: Option<Box<RawValue>>,
@@ -49,7 +52,9 @@ struct PendingReplies {
 
 struct OutgoingCommand {
     identifier: u64,
+    /// Complete control frame, or the JSON prefix of a typed input-body frame.
     bytes: Vec<u8>,
+    input: Option<Arc<dyn fetch_body::FetchBodySource>>,
 }
 
 struct PendingReply {
@@ -279,6 +284,18 @@ impl Connection {
             .remove(0))
     }
 
+    /// Typed parameters can retain exact JSON string escapes without materializing a Unicode-scalar Value.
+    pub fn start_typed_command<Parameters: Serialize>(
+        &self,
+        method: &str,
+        parameters: Parameters,
+        session: Option<&str>,
+    ) -> Result<Command, ErrorRecord> {
+        Ok(self
+            .start_serializable_commands(method, vec![parameters], session)?
+            .remove(0))
+    }
+
     /// Keep browser value descriptions as JSON until their UTF-16 fields are decoded.
     /// These replies obey the same control-frame bound as ordinary structured replies.
     pub fn start_raw_command(
@@ -315,6 +332,15 @@ impl Connection {
         &self,
         method: &str,
         parameters: Vec<Value>,
+        session: Option<&str>,
+    ) -> Result<Vec<Command>, ErrorRecord> {
+        self.start_serializable_commands(method, parameters, session)
+    }
+
+    fn start_serializable_commands<Parameters: Serialize>(
+        &self,
+        method: &str,
+        parameters: Vec<Parameters>,
         session: Option<&str>,
     ) -> Result<Vec<Command>, ErrorRecord> {
         if parameters.len() > MAXIMUM_PENDING {
@@ -400,16 +426,26 @@ impl Connection {
     }
 }
 
-fn encode_command(
+fn encode_command<Parameters: Serialize>(
     identifier: u64,
     method: &str,
-    parameters: Value,
+    parameters: Parameters,
     session: Option<&str>,
 ) -> Result<OutgoingCommand, ErrorRecord> {
-    let mut command = json!({ "id": identifier, "method": method, "params": parameters });
-    if let Some(session) = session {
-        command["sessionId"] = json!(session);
+    #[derive(Serialize)]
+    struct Envelope<'text, Parameters: Serialize> {
+        id: u64,
+        method: &'text str,
+        params: Parameters,
+        #[serde(rename = "sessionId", skip_serializing_if = "Option::is_none")]
+        session: Option<&'text str>,
     }
+    let command = Envelope {
+        id: identifier,
+        method,
+        params: parameters,
+        session,
+    };
     let mut bytes =
         serde_json::to_vec(&command).map_err(|error| protocol_error(error.to_string()))?;
     bytes.push(0);
@@ -420,7 +456,11 @@ fn encode_command(
             "CDP command exceeds control-message limit",
         ));
     }
-    Ok(OutgoingCommand { identifier, bytes })
+    Ok(OutgoingCommand {
+        identifier,
+        bytes,
+        input: None,
+    })
 }
 
 fn disconnected() -> ErrorRecord {
@@ -442,6 +482,7 @@ fn dispatch_event(
     method: String,
     session_identifier: Option<String>,
     parameters: Option<Box<RawValue>>,
+    received_at: std::time::Instant,
 ) -> Result<(), ErrorRecord> {
     let handler = state.event_handler.lock().unwrap();
     if method != "Flashwright.disconnected"
@@ -452,13 +493,17 @@ fn dispatch_event(
     let sequence = state.received_event_sequence.fetch_add(1, Ordering::AcqRel) + 1;
     let event = Event {
         sequence,
+        received_at,
         method,
         session_identifier,
         parameters,
     };
     // Secondary temporary waiters do not own engine state. Avoid copying opaque
     // parameters when no such waiter is active.
-    let secondary = (state.events.receiver_count() != 0).then(|| event.clone());
+    // Bulk private filmstrip data must not consume unrelated storage-waiter slots
+    // or acquire a second, unaccounted image owner in the broadcast buffer.
+    let secondary = (state.events.receiver_count() != 0 && event.method != "Page.screencastFrame")
+        .then(|| event.clone());
     if let Some(handler) = handler.as_ref() {
         handler(event)?;
     }
@@ -478,7 +523,13 @@ fn fail_connection(state: &ConnectionState, error: ErrorRecord) {
         pending.closed = Some(error.clone());
         std::mem::take(&mut pending.replies)
     };
-    let _ = dispatch_event(state, "Flashwright.disconnected".to_owned(), None, None);
+    let _ = dispatch_event(
+        state,
+        "Flashwright.disconnected".to_owned(),
+        None,
+        None,
+        std::time::Instant::now(),
+    );
     for (_, reply) in replies {
         reply.sender.fail(error.clone());
     }
@@ -510,7 +561,7 @@ async fn write_messages<Writer: AsyncWrite + Unpin>(
             if !should_dispatch {
                 continue;
             }
-            if let Err(error) = writer.write_all(&command.bytes).await {
+            if let Err(error) = command.write_to(&mut writer).await {
                 if let Some(state) = state.upgrade() {
                     fail_connection(&state, protocol_error(error.to_string()));
                 }

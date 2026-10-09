@@ -1,4 +1,4 @@
-import { createServer } from 'node:http';
+import { createHttpFixture } from '../tools/http-fixture.mjs';
 import { setTimeout } from 'node:timers/promises';
 
 /** Execute in the application realm using native timers and a real HTTP request. */
@@ -47,7 +47,7 @@ export async function startResidentLoadFixture(configuration, scenario) {
     taskIntervalMilliseconds: configuration.taskIntervalMilliseconds, mutationsPerTask: scenario.workload === 'mutation-text' ? configuration.mutationsPerTask : 0 });
   const document = `<!doctype html><meta charset="utf-8"><title>Resident load fixture</title><link rel="icon" href="data:,"><div id="noise"></div>${element.repeat(configuration.elementCount)}<script>(${installApplicationWorkload})(${settings});</script>`;
   const counts = { documents: 0, backendRequests: 0, otherRequests: 0 };
-  const server = createServer(async (request, response) => {
+  const { server, close: closeServer } = createHttpFixture(async (request, response) => {
     try {
       if (request.url === '/fixture') {
         counts.documents++;
@@ -63,5 +63,5 @@ export async function startResidentLoadFixture(configuration, scenario) {
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
   return { origin: `http://127.0.0.1:${server.address().port}`, counts,
-    close: () => new Promise((resolve, reject) => { server.closeAllConnections(); server.close(error => error ? reject(error) : resolve()); }) };
+    close: () => closeServer() };
 }

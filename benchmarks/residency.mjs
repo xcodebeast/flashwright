@@ -1,3 +1,4 @@
+import { runtimeMetadata, reportRuntime, javascriptRuntime } from '../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { identifyBrowser, requireVerifiedBrowser } from '../tools/browser-identity.mjs';
 import { createHash, randomUUID } from 'node:crypto';
@@ -28,7 +29,7 @@ for (const [mode, variable] of Object.entries({ off: 'FLASHWRIGHT_BASELINE_VERIF
   assert.equal(report.status, 'passed');
   requireVerifiedBrowser(report, browserIdentity);
   assert.equal(report.sourceChangedDuringVerification, false);
-  assert.equal(report.node, process.version);
+  assert.deepEqual(reportRuntime(report), javascriptRuntime);
   assert.equal(report.platform, process.platform);
   assert.equal(report.architecture, process.arch);
   assert.equal(report.driverSha256, driverSha256);
@@ -48,7 +49,7 @@ for (const mode of Object.keys(modes)) await mkdir(join(destination, mode));
 const metadata = {
   verificationBrowserBound: true,
   kind: 'resident-assertion-off-on', configuration, sources, modes, verification,
-  node: process.version, platform: process.platform, architecture: process.arch,
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   operatingSystem: os.version(), release: os.release(), cpu: os.cpus()[0]?.model,
   logicalProcessors: os.cpus().length, totalMemoryBytes: os.totalmem(), initialLoadAverage: os.loadavg(),
   driver: { path: driverPath, sha256: driverSha256 },

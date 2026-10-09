@@ -4,6 +4,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
   const retry = reason => ({ status: 'retry', reason: codec.encode(String(reason)) });
   const pointerAttempts = new Map();
   const completedPointers = new Map();
+  const elementActions = new Map();
   let selectorPrefixes;
   const conditions = createConditionRegistry({ instrumentation: conditionInstrumentation,
     runSynchronousBatch: selectorBatchCache ? runReadOnlyAssertionBatch : undefined });
@@ -70,6 +71,40 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       };
       animationFrame = requestAnimationFrame(sample);
     });
+  }
+
+  /** Captured actions never query a replacement, and cancellation owns every pending frame callback. */
+  function cancelElementAction(token) {
+    const attempt = elementActions.get(token);
+    if (!attempt) return false;
+    elementActions.delete(token);
+    attempt.cancelStability?.();
+    return true;
+  }
+
+  async function prepareElementAction(element, action, force, deadline, token) {
+    if (expired(deadline)) return { status: 'expired' };
+    if (elementActions.size >= 16) return { status: 'resourceLimit' };
+    const attempt = { element, deadline };
+    elementActions.set(token, attempt);
+    try {
+      if (action === 'scrollIntoViewIfNeeded') {
+        const stable = await checkStability(attempt);
+        if (stable === 'error:notconnected') return { status: 'detached' };
+        if (['error:expired', 'error:cancelled'].includes(stable)) return { status: 'expired' };
+        if (stable !== 'done') return actionResult(stable);
+        return expired(deadline) ? { status: 'expired' } : { status: 'ready' };
+      }
+      if (action !== 'selectText') throw new Error('Unknown captured element action');
+      if (!force) {
+        const result = await injected.checkElementStates(element, ['visible']);
+        if (result === 'error:notconnected') return { status: 'detached' };
+        if (result) return actionResult(result);
+      }
+      if (expired(deadline)) return { status: 'expired' };
+      const selected = injected.selectText(element);
+      return selected === 'error:notconnected' ? { status: 'detached' } : actionResult(selected);
+    } finally { cancelElementAction(token); }
   }
 
   async function preparePointer(units, deadline, token, settings) {
@@ -275,6 +310,77 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     return retry(typeof result === 'string' ? result : `element is not ${result.missingState}`);
   }
 
+  /** Keep the selected node in its private allocation group until native adoption completes. */
+  function resolveElement(selectorUnits, strict, state, deadline) {
+    try {
+      let value = false;
+      if (!expired(deadline)) {
+        const selector = codec.decode({ kind: 'string', units: selectorUnits });
+        const element = injected.querySelector(injected.parseSelector(selector), document, strict);
+        const visible = !!element && injected.elementState(element, 'visible').matches;
+        const matches = state === 'attached' ? !!element : state === 'detached' ? !element : state === 'visible' ? visible : !visible;
+        if (matches) value = state === 'hidden' || state === 'detached' ? null : element;
+      }
+      return { outcome: 'success', value };
+    } catch (error) {
+      return { outcome: 'exception', failure: JSON.stringify({ outcome: 'exception', stage: 'execution', error: codec.describeError(error, false) }) };
+    }
+  }
+
+  /** Label retargeting preserves captured nodes, including detached file inputs. */
+  function resolveFileInput(node, multiple, connected, deadline) {
+    try {
+      if (expired(deadline)) return { outcome: 'success', value: false };
+      const element = injected.retarget(node, 'follow-label');
+      if (!element || (connected && !element.isConnected)) return { outcome: 'success', value: false };
+      const status = validateFileInput(element, multiple, connected, deadline);
+      return { outcome: 'success', value: status === 'ready' ? element : status };
+    } catch (error) {
+      return { outcome: 'exception', failure: JSON.stringify({ outcome: 'exception', stage: 'execution', error: codec.describeError(error, false) }) };
+    }
+  }
+
+  /** Validation is repeated in the final renderer task before any file or event mutation. */
+  function validateFileInput(element, multiple, connected, deadline) {
+    if (expired(deadline)) return 'expired';
+    if (connected && !element.isConnected) return 'detached';
+    if (element.nodeName !== 'INPUT') throw injected.createStacklessError('Node is not an HTMLInputElement');
+    if (element.type !== 'file') throw injected.createStacklessError('Not an input[type=file] element');
+    if (element.webkitdirectory) return 'directory';
+    if (multiple && !element.multiple) throw injected.createStacklessError('Non-multiple file input can only accept single file');
+    return 'ready';
+  }
+
+  /** Private staging holds at most one mutable file buffer; completed Files own their bytes. */
+  function createFileUpload() { return { files: [], pending: undefined }; }
+  function beginUploadFile(upload, name, mimeType, length) {
+    if (upload.pending) throw new Error('Upload already has a pending file');
+    upload.pending = { name: codec.decode({ kind: 'string', units: name }), mimeType: codec.decode({ kind: 'string', units: mimeType }), bytes: new Uint8Array(length), offset: 0 };
+  }
+  function appendUploadFile(upload, encoded) {
+    const pending = upload.pending;
+    const chunk = atob(encoded);
+    if (!pending || pending.offset + chunk.length > pending.bytes.length) throw new Error('Invalid upload chunk');
+    for (let index = 0; index < chunk.length; index++) pending.bytes[pending.offset + index] = chunk.charCodeAt(index);
+    pending.offset += chunk.length;
+  }
+  function finishUploadFile(upload) {
+    const pending = upload.pending;
+    if (!pending || pending.offset !== pending.bytes.length) throw new Error('Incomplete upload file');
+    upload.files.push(new File([pending.bytes], pending.name, { type: pending.mimeType }));
+    upload.pending = undefined;
+  }
+  function assignFileUpload(element, upload, connected, deadline) {
+    const status = validateFileInput(element, upload.files.length > 1, connected, deadline);
+    if (status !== 'ready') return status;
+    const transfer = new DataTransfer();
+    for (const file of upload.files) transfer.items.add(file);
+    element.files = transfer.files;
+    element.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+    return 'success';
+  }
+
   async function run(request, deadline) {
     const expired = () => deadline !== null && Date.now() >= deadline;
     if (expired()) return { status: 'expired' };
@@ -316,6 +422,11 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
   }
 
   return {
+    resolveElement,
+    resolveFileInput, validateFileInput, createFileUpload, beginUploadFile, appendUploadFile, finishUploadFile, assignFileUpload,
+    resolveLocatorElement: (units, deadline) => resolveElement(codec.encode(decodeRequest(units).selector).units, true, 'attached', deadline),
+    prepareElementAction: (element, action, force, deadline, token) => safely(() => prepareElementAction(element, action, force, deadline, token)),
+    cancelElementAction,
     assertion: (units, deadline, expression, isNot) => safely(() => assertion(units, deadline, expression, isNot)),
     waitForAssertion: (units, deadline, expression, isNot, token) => safely(() => waitForAssertion(units, deadline, expression, isNot, token)),
     cancelAssertion(token) {

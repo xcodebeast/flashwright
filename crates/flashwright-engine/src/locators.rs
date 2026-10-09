@@ -12,8 +12,9 @@ const CONDITION_REGISTRY: &str =
 
 #[derive(Clone)]
 pub(crate) struct LocatorRealm {
-    loader: String,
-    pub context: u64,
+    pub loader: String,
+    pub context: page_state::ExecutionContext,
+    pub main_context: page_state::ExecutionContext,
 }
 
 impl Engine {
@@ -25,11 +26,24 @@ impl Engine {
         validate_keys(
             "locator.run",
             &parameters,
-            &["page", "frame", "action", "request", "pointer", "keyboard"],
+            &[
+                "page", "frame", "action", "request", "pointer", "keyboard", "element",
+            ],
         )?;
         let action = identifier(&parameters, "action", "locator.run")?;
         let method = format!("locator.{action}");
-        if action == "press" {
+        if ["selectText", "scrollIntoViewIfNeeded"].contains(&action) {
+            return self
+                .run_element_action(&method, parameters, operation)
+                .await;
+        }
+        if parameters.get("element").is_some() {
+            return Err(invalid(
+                &method,
+                "element settings require a captured element operation",
+            ));
+        }
+        if ["press", "pressSequentially"].contains(&action) {
             return self
                 .run_locator_keyboard(parameters, operation)
                 .await
@@ -209,6 +223,9 @@ impl Engine {
         operation: &Operation,
         method: &str,
     ) -> Result<LocatorRealm, ErrorRecord> {
+        let main_context = self
+            .evaluation_context(page, browser, Some(frame_identifier), operation)
+            .await?;
         let mut realms = operation
             .wait(async { Ok(page.state.locator_realms.lock().await) })
             .await?;
@@ -220,7 +237,12 @@ impl Engine {
                     .frames
                     .get(identifier)
                     .is_some_and(|frame| frame.loader == realm.loader)
+                    && state.main_worlds.get(identifier) == Some(&realm.main_context)
+                    && state.context_is_alive(&realm.context)
             });
+            if state.main_worlds.get(frame_identifier) != Some(&main_context) {
+                return Err(evaluation::context_destroyed());
+            }
             let frame = state
                 .frames
                 .get(frame_identifier)
@@ -240,18 +262,38 @@ impl Engine {
         let created = operation.wait(page.state.while_alive(method, browser.connection.call(
             "Page.createIsolatedWorld", json!({ "frameId": frame_identifier, "worldName": "__flashwright_locator_world__" }), Some(&page.session_identifier),
         ))).await?;
-        let context = created["executionContextId"]
+        let context_identifier = created["executionContextId"]
             .as_u64()
             .ok_or_else(|| invalid(method, "Chromium omitted isolated context identity"))?;
+        let context = page
+            .state
+            .state
+            .lock()
+            .unwrap()
+            .execution_contexts
+            .get(&context_identifier)
+            .filter(|context| context.frame_identifier == frame_identifier)
+            .cloned()
+            .ok_or_else(evaluation::context_destroyed)?;
+        let realm = LocatorRealm {
+            loader,
+            context,
+            main_context,
+        };
+        if !super::element_resolution::same_document(page, &realm, &realm.main_context) {
+            return Err(evaluation::context_destroyed());
+        }
         let expression = format!(
             "(() => {{ if (globalThis.__flashwrightLocatorRuntime) return true; const module = {{}}; {INJECTED_RUNTIME}; const exports = {{}}; {VALUE_CODEC}; {CONDITION_REGISTRY}; {LOCATOR_RUNTIME}; const injected = new (module.exports.InjectedScript())(globalThis, {{isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]}}); Object.defineProperty(globalThis, '__flashwrightLocatorRuntime', {{value:createLocatorRuntime(injected, exports.createValueCodec(), {{conditionInstrumentation:{}}})}}); return true; }})()",
             self.condition_instrumentation,
         );
         let initialized = operation.wait(page.state.while_alive(method, browser.connection.call(
-            "Runtime.evaluate", json!({ "expression": expression, "contextId": context, "returnByValue": true }), Some(&page.session_identifier),
+            "Runtime.evaluate", json!({ "expression": expression, "uniqueContextId": realm.context.unique_identifier, "returnByValue": true }), Some(&page.session_identifier),
         ))).await?;
         check_exception(&initialized, method)?;
-        let realm = LocatorRealm { loader, context };
+        if !super::element_resolution::same_document(page, &realm, &realm.main_context) {
+            return Err(evaluation::context_destroyed());
+        }
         realms.insert(frame_identifier.to_owned(), realm.clone());
         Ok(realm)
     }
@@ -267,8 +309,11 @@ impl Engine {
         operation: &Operation,
         method: &str,
     ) -> Result<Value, ErrorRecord> {
+        if ["fill", "selectOption", "focus", "blur"].contains(&action) {
+            page.trace_before_input(operation);
+        }
         let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
-            "executionContextId": realm.context, "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.run(request, deadline); }",
+            "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.run(request, deadline); }",
             "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }], "returnByValue": true, "awaitPromise": true,
             "userGesture": true,
         }), Some(&page.session_identifier))?;
@@ -277,6 +322,7 @@ impl Engine {
             .await;
         let result = result.map_err(|mut error| {
             if ["fill", "selectOption", "focus", "blur"].contains(&action)
+                && !context_was_not_found(&error)
                 && !command.prevent_dispatch()
             {
                 error.input_delivery = InputDelivery::Uncertain;
@@ -358,17 +404,30 @@ async fn input_command(
         .result
 }
 
+/// Recognize native retirement evidence without retrying an application-thrown lookalike.
 pub(crate) fn context_was_destroyed(error: &ErrorRecord) -> bool {
-    error.browser_error_code.is_some()
-        && [
-            "Cannot find context",
-            "Execution context was destroyed",
-            "Cannot find object with given id",
-            "Inspected target navigated or closed",
-            "No frame for given id",
-        ]
-        .iter()
-        .any(|message| error.message.contains(message))
+    error.execution_context_destroyed
+        || context_was_not_found(error)
+        || error.browser_error_code.is_some()
+            && [
+                "Cannot find context",
+                "Execution context was destroyed",
+                "Cannot find object with given id",
+                "Inspected target navigated or closed",
+                "No frame for given id",
+            ]
+            .iter()
+            .any(|message| error.message.contains(message))
+}
+
+/// A rejected context lookup proves that Chromium never entered the requested function.
+fn context_was_not_found(error: &ErrorRecord) -> bool {
+    (error.browser_error_code == Some(-32602)
+        && error.message.contains("uniqueContextId not found"))
+        || (error.browser_error_code == Some(-32000)
+            && error
+                .message
+                .contains("Cannot find context with specified id"))
 }
 
 pub(crate) fn check_exception(result: &Value, method: &str) -> Result<(), ErrorRecord> {
@@ -394,4 +453,45 @@ pub(crate) fn retry_reason(result: &Value, method: &str) -> Result<String, Error
             Err(error) => format!("\\u{:04X}", error.unpaired_surrogate()),
         })
         .collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn retired_worlds_are_distinct_from_application_errors_and_other_protocol_failures() {
+        let native = evaluation::context_destroyed();
+        assert!(context_was_destroyed(&native));
+        let application = ErrorRecord::new(
+            ErrorCode::Evaluation,
+            "page.evaluate",
+            native.message.to_string(),
+        );
+        assert!(!context_was_destroyed(&application));
+        let transmitted = serde_json::to_value(&native).unwrap();
+        assert!(transmitted.get("executionContextDestroyed").is_none());
+        assert!(!context_was_destroyed(
+            &serde_json::from_value(transmitted).unwrap()
+        ));
+
+        let mut browser = ErrorRecord::new(
+            ErrorCode::Protocol,
+            "chromium",
+            r#"{"code":-32602,"message":"uniqueContextId not found"}"#,
+        );
+        assert!(!context_was_destroyed(&browser));
+        browser.browser_error_code = Some(-32602);
+        assert!(context_was_destroyed(&browser));
+        assert!(context_was_not_found(&browser));
+        browser.message = "Invalid parameters for uniqueContextId".into();
+        assert!(!context_was_destroyed(&browser));
+        browser.browser_error_code = Some(-32000);
+        browser.message = "Cannot find context with specified id".into();
+        assert!(context_was_destroyed(&browser));
+        assert!(context_was_not_found(&browser));
+        browser.message = "Execution context was destroyed".into();
+        assert!(context_was_destroyed(&browser));
+        assert!(!context_was_not_found(&browser));
+    }
 }

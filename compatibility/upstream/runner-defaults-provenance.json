@@ -1,0 +1,23 @@
+{
+  "referenceVersion": "1.60.0",
+  "source": "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts",
+  "distributionPath": "node_modules/playwright/lib/index.js",
+  "distributionSha256": "36faa53b7c6fa8f76788f2bcfa21d72edc22e5f528c45328b71d07e215d79a32",
+  "retainedExtract": "compatibility/upstream/runner-defaults.source.txt",
+  "extractSha256": "0298dde9f2776f80071e291792cf560e025e687445735e377fbbda68bef0b019",
+  "implementation": {
+    "packages/flashwright-core/src/runner-context-defaults.ts": "d08895fcc86f081eaac01220495307ebdf81817cacc3bc6e0d8b725a78f9d4a5",
+    "packages/flashwright-core/src/runner-integration.ts": "8b2c24fb47286b27d29e5896bfaf2baaffaca35ebbe59d14e68c999ae2a4e7c8",
+    "packages/flashwright-runner/src/index.ts": "c3623586358f5a92d5d8739188096168f2fdbc0b3ea6fb691537e49a6259706d"
+  },
+  "relationship": "The adapter preserves pinned combined-options precedence, explicit-property suppression of inherited defaults and all-hooks-included lifecycle. Native context creation and versioned canonical scope ownership are independent implementations.",
+  "changes": [
+    "Apply only implemented native context options; reject unsupported options explicitly.",
+    "Use one canonical-core scope instead of upstream client instrumentation.",
+    "Capture options and timeouts at context invocation; restore scope on runner teardown.",
+    "Keep the boundary private to canonical core; preserve mixed ESM/CommonJS identity."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

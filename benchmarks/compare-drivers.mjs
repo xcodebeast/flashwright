@@ -1,3 +1,4 @@
+import { runtimeMetadata } from '../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -24,7 +25,7 @@ const destination = resolve('benchmarks/results', `${new Date().toISOString().re
 await mkdir(destination, { recursive: true });
 const metadata = {
   kind: 'paired-driver-comparison', schemaVersion: 1, configuration, sources: await sourceManifest(),
-  node: process.version, platform: process.platform, architecture: process.arch,
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   operatingSystem: os.version(), release: os.release(), cpu: os.cpus()[0]?.model,
   logicalProcessors: os.cpus().length, totalMemoryBytes: os.totalmem(), initialLoadAverage: os.loadavg(),
   browser: { ...browser, launchPolicy }, engineConfiguration: readEngineConfiguration(), drivers: {}, verification: {},

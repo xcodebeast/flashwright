@@ -1,0 +1,45 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/file-chooser.source.txt",
+  "extractSha256": "52fd8e86f2aa74fe6d073411dd50696eb8414d9b7b662a3cbf5d180c6fe5f040",
+  "implementation": {
+    "crates/flashwright-engine/src/file_chooser.rs": "9068e9777e00159e900f0f322d7ae013c507bc3ae89e027a793ffe239650d200",
+    "crates/flashwright-engine/src/handles.rs": "a3d2a0044785b95d7fd567a06c1e10067de36667999176493073ee7ccd634f81",
+    "crates/flashwright-engine/src/handle_allocation.rs": "b77181b231d71abed9a6159703543d5b1882fb81cad7dc01b54dddf7cb4e8613",
+    "crates/flashwright-engine/src/console.rs": "5b961a9c8677346c1d580d4e0ae2df2899b38f13c84a6499e4efccbc2659c8fa",
+    "crates/flashwright-engine/src/events.rs": "11fe9a00db6937a8bc48f3c452049240ee32b21704880c85783674976e39950f",
+    "crates/flashwright-engine/src/page_state.rs": "3790003120ab8a0e1ae222f95df7592655dfcb40793e789749c2184da6fc9e80",
+    "crates/flashwright-engine/src/publication.rs": "73109257ad692092a8d05c42c5d5dc94a9769b298e8da8acda74424ba22b4243",
+    "packages/flashwright-core/src/file-chooser.ts": "ec9124ab294e073f3694dafaee61a676af09bdfdf1578eb69c9abf190c505c57",
+    "packages/flashwright-core/src/subscribed-events.ts": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8",
+    "packages/flashwright-core/src/client.ts": "88c01293b16f93a7a5af572d3c9ecdef3783fd05609a85e4506f592f3186d31a",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c"
+  },
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/fileChooser.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/page.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crPage.ts"
+  ],
+  "relationship": "Independent bounded chooser adoption follows original utility-world identity, actual input multiplicity, listener-driven native interception and FileChooser delegation. Generic EventEmitter types retain console-provenance.json attribution.",
+  "changes": [
+    "Await interception acknowledgement through a per-page host readiness gate while unrelated pages and closure can progress.",
+    "Serial adoption preserves browser event order with16 pending events per page,128 per engine and existing4096 public handle reservations per page.",
+    "Listener removal cancels unpublished adoption; S4.n records the measured pinned race difference for removal and later subscription.",
+    "Require the receipt main-world identity and listener generation during atomic publication of a utility-world handle.",
+    "Unobserved chooser groups share console background release ownership, bounded at4096 queued or pending remote references per page without interrupting later application work.",
+    "Utility-world console calls preserve original-context argument handles; out-of-process frames remain unsupported."
+  ],
+  "verification": [
+    "compatibility/m1/chooser-subscription.mjs",
+    "compatibility/m1/test_file_chooser.py",
+    "compatibility/m2/file-chooser.mjs",
+    "compatibility/m2/runner/file-input-types.ts",
+    "tools/test-packed-package.mjs",
+    "tools/run-manual-trace-tests.mjs"
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

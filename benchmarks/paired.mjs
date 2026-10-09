@@ -1,3 +1,5 @@
+import { requireBun, bunVersion } from '../tools/bun-toolchain.mjs';
+import { runtimeMetadata, reportRuntime, javascriptRuntime } from '../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { identifyBrowser, requireVerifiedBrowser } from '../tools/browser-identity.mjs';
 import { execFileSync } from 'node:child_process';
@@ -29,7 +31,7 @@ assert.equal(engineConfiguration.conditionInstrumentation, false, 'Production ti
 assert.equal(verification.status, 'passed');
 requireVerifiedBrowser(verification, browserIdentity);
 assert.equal(verification.sourceChangedDuringVerification, false);
-assert.equal(verification.node, process.version);
+assert.deepEqual(reportRuntime(verification), javascriptRuntime);
 assert.equal(verification.platform, process.platform);
 assert.equal(verification.architecture, process.arch);
 assert.deepEqual(verification.sources, sources, 'Reverify changed source files before timing');
@@ -50,10 +52,11 @@ const metadata = {
   purpose: 'Paired engineering profile of seven implemented real-Chromium flows; incomplete product compatibility and single-worker coverage do not establish an overall fastest-engine claim.',
   platform: process.platform, architecture: process.arch, operatingSystem: os.version(), release: os.release(),
   cpu: os.cpus()[0]?.model, logicalProcessors: os.cpus().length, totalMemoryBytes: os.totalmem(),
-  node: process.version, rust: execFileSync('rustc', ['--version'], { encoding: 'utf8' }).trim(),
+  ...runtimeMetadata, rust: execFileSync('rustc', ['--version'], { encoding: 'utf8' }).trim(),
   playwright: JSON.parse(await readFile('node_modules/playwright/package.json', 'utf8')).version,
   typescript: JSON.parse(await readFile('node_modules/typescript/package.json', 'utf8')).version,
-  npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(),
+  packageManager: `bun@${bunVersion}`,
+  packageManagerExecutable: requireBun(),
   driver: { path: driverPath, sha256: driverSha256 },
   browser: { ...browserIdentity, revision: '1223', launchPolicy },
   verification: { path: resolve(verificationPath), sha256: hash(await readFile(verificationPath)) },
@@ -65,7 +68,7 @@ const metadata = {
     protocolCrossings: null, payloadBytes: null, residentEvaluations: null, discoveryVisits: null,
     resources: 'Each engine launch is independently sampled by the same external descendant-tree watchdog; short-lived or already-reparented children may be missed.',
     observations: 'One final untimed page evaluation per ordinary workload records native input outcomes; it remains included in workload/launch totals. Setup records completed context creations.',
-    timing: 'Per-call samples include semantic verification. Complete workload/launch totals include preparation, warmup and cleanup. Process wall time also includes Node imports and the sampling wrapper.',
+    timing: 'Per-call samples include semantic verification. Complete workload/launch totals include preparation, warmup and cleanup. Process wall time also includes JavaScript runtime imports and the sampling wrapper.',
     detectionLag: 'Upper bound includes the existing post-assertion browser evaluation.',
   },
   limitations: ['Single worker; no contention sweep or native Linux release acceptance', 'Shared development host, not exclusive benchmark hardware', 'Internal protocol/evaluation accounting remains uninstrumented in these timings', 'Only the named fixtures and retained samples support conclusions; broad replacement and release gates remain open'],

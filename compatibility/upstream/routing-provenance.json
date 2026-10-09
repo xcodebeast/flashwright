@@ -1,0 +1,42 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/network.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crNetworkManager.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/network.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/page.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/browserContext.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/routing.source.txt",
+  "extractSha256": "4af78e0167aa733cec0a0930890e3adfa7e4bbfc7f55e282344d76782a7ace9f",
+  "implementation": {
+    "crates/flashwright-browser/src/connection.rs": "b49e2d9e129474a16ff48f0caedef22f7bcaefd07bf2237dd2c9d89bd43cd25c",
+    "crates/flashwright-browser/src/connection/fetch_body.rs": "19402270baffd5f059899e9a99bcdec737ca5d6212c8464a0ac9763979fa7b32",
+    "crates/flashwright-engine/src/routing.rs": "cf0d5c9e821807ee54d9671fe0166309aa19d8a6d9817e373c9d409daa89117c",
+    "crates/flashwright-engine/src/routing_state.rs": "cf67b6e0c782de43ccfe26f31dfe932c8247efedfe4afe21e605fbe533b279df",
+    "crates/flashwright-engine/src/network_state.rs": "1e85b5d1d7c9caac972da4deaa4b5cabc0afc888d06b679d5c1600493b1cb7ce",
+    "crates/flashwright-engine/src/network_request.rs": "3f83f43344cbae7cf023da12a22610c25af36d472c1e36e0c871b689d60ce84c",
+    "crates/flashwright-engine/src/network_observer.rs": "ac270b5ee0401be30c3bbab5b2fa4fc6fd63fdbbcf7a0ac74f9752f7737f4568",
+    "crates/flashwright-engine/src/page_state.rs": "3790003120ab8a0e1ae222f95df7592655dfcb40793e789749c2184da6fc9e80",
+    "crates/flashwright-engine/src/context_state.rs": "faf926d41b4613fe2a81c435cb3010a361b524d4a5f5e2e7ea49b81fa20a08d0",
+    "crates/flashwright-engine/src/events.rs": "11fe9a00db6937a8bc48f3c452049240ee32b21704880c85783674976e39950f",
+    "crates/flashwright-engine/src/lib.rs": "81aa04cd3ed683bf09b776b6954a4c4b2645ea228bc1af568dedfbe1d45e5185",
+    "packages/flashwright-core/src/routing.ts": "5cd5c10c18458fc88841e56c1928c758556434351dc3dd1232028d8e68c43cf2",
+    "packages/flashwright-core/src/network.ts": "0f685e879ed06edc826f35a18c1a74dcc175b45d3c547d8b42f8f1325ea0e860",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c",
+    "packages/flashwright-core/src/engine-contract.ts": "9e196d33eef44007dea7f49ead25f1c538e135b317467774b95a66d0a20e756e"
+  },
+  "relationship": "Independent native interception and host callback ownership follow the pinned precedence, registration, continuation, removal and header contracts. No upstream browser driver is used for candidate routing.",
+  "changes": [
+    "Immutable occurrence joins and bounded shared native pause/body ownership replace upstream channel objects.",
+    "Only typed Fetch body fields use the bounded binary-input writer; generic control limits remain unchanged.",
+    "Host history evicts whole redirect chains and accounts for lazy body/header growth. External user references remain valid.",
+    "Callback scopes prevent a removed handler from claiming a later handling stage. User registration async context and original error stacks are preserved.",
+    "Route.fetch and APIResponse-backed fulfillment remain unsupported. Original request observation has independent event limits; 32 MiB output bodies do not establish 32 MiB original-request or redirect observation."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

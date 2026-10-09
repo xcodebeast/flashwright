@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -26,9 +27,9 @@ missingRequest.backend.backendRequests--;
 assert.throws(() => verifyLaunch(missingRequest, configuration, launchPolicy, executablePath));
 const changedPolicy = { ...launchPolicy, headless: launchPolicy.headless.filter(argument => argument !== '--allow-pre-commit-input') };
 assert.throws(() => verifyLaunch(results.flashwright, configuration, changedPolicy, executablePath));
-const evidencePath = `compatibility/evidence/benchmark-contract-${process.platform}-${process.arch}-${process.versions.node}.json`;
+const evidencePath = `compatibility/evidence/benchmark-contract-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
 await writeFile(evidencePath, JSON.stringify({
-  node: process.version, platform: process.platform, architecture: process.arch,
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   driverSha256: createHash('sha256').update(await readFile(driverPath)).digest('hex'),
   scope: 'Functional harness validation for the seven shared benchmark flows and actual matched launch arguments. This single pair is not performance evidence.',
   checks: ['matched actual launch arguments', 'native trusted input and application outcomes', 'real backend and document request counts', 'owned process cleanup', 'reject omitted trusted input', 'reject omitted backend request', 'reject unmatched browser policy'],

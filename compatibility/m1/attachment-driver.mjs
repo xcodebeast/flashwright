@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // A deliberately faulty protocol peer for public client framing/cancellation tests.
-import { requiredCapabilities } from '../../packages/flashwright/dist/commonjs/client.js';
-import { residentRuntimeSha256 } from '../../packages/flashwright/dist/commonjs/runtime-version.cjs';
+import { requiredCapabilities } from '../../packages/flashwright-core/dist/commonjs/client.js';
+import { residentRuntimeSha256 } from '../../packages/flashwright-core/dist/commonjs/runtime-version.cjs';
 
 function frame(body) {
   const header = Buffer.alloc(4); header.writeUInt32LE(body.length);

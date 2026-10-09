@@ -1,0 +1,50 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/file-inputs.source.txt",
+  "extractSha256": "ff988c807167bf674391b356b6f7d3c2f15ed6c6bb8b227b7e9e8ac383f09762",
+  "implementation": {
+    "crates/flashwright-engine/src/file_inputs.rs": "438fd8955954e633e705e9e6ef46810f77b1472219b064a0ba0b073981e1602b",
+    "crates/flashwright-protocol/src/attachment.rs": "03fc130ae16e0119fda996dbcceca50f8b38a6a90f06cede3281fab1f1b73856",
+    "packages/resident-runtime/locator-runtime.js": "44f0ddf64823710ba1879d1c1e12b583e3c8d6ffc7287f79b7f3fd8375dfc3e6",
+    "packages/flashwright-core/src/file-inputs.ts": "65679b54717632b473cee2bd972d72d9ef72ba693ff3f4b2309a19f1c126c6c2",
+    "packages/flashwright-core/src/file-mime-types.ts": "a75cf3905e5197b5a4f699f1725ba8962e6be73304bad4eb4d6908464b1e1a58",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c",
+    "packages/flashwright-core/src/frame.ts": "94065793d92f0a970421aa74fe4f865df4dffa528354081eb760af927e2e2b93",
+    "packages/flashwright-core/src/locator.ts": "e687a32f4240fc1ca0e49f6e95fba12b534e5d8f02bb067f633779f6f8f8e6ac",
+    "packages/flashwright-core/src/handles.ts": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7"
+  },
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/elementHandle.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/fileUploadUtils.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/dom.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crPage.ts"
+  ],
+  "relationship": "Independent native file assignment preserves label targeting, individual local paths, File/DataTransfer payload and event contracts. The MIME lookup/database is transformed from the pinned mime distribution. Existing injected selector helpers retain selector-provenance attribution.",
+  "changes": [
+    "Stream bounded raw payload input and stage renderer bytes in private 256 KiB chunks without enlarging control frames.",
+    "Keep one native action deadline and private object-group cleanup without public handle allocations.",
+    "Reject non-file inputs explicitly; directory uploads are unsupported and aggregate payload admission is 32 MiB.",
+    "Captured elements retain original nodes; only read-only locator resolution retries and uncertain assignments are never replayed."
+  ],
+  "mime": {
+    "distributionPath": "node_modules/playwright-core/lib/utilsBundle.js",
+    "sha256": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "generator": "tools/generate-file-mime-types.mjs",
+    "license": "MIT",
+    "licensePath": "compatibility/upstream/LICENSE.mime",
+    "licenseSha256": "8f2658c03422c408b2b2ce4d151decc3b1a6fd3d86e5ca9433777bccdcdf75a2",
+    "licenseSource": "https://github.com/broofa/mime/blob/v3.0.0/LICENSE"
+  },
+  "verification": [
+    "compatibility/m2/file-inputs.mjs",
+    "compatibility/m1/test_file_inputs.py",
+    "compatibility/m2/runner/file-input-types.ts",
+    "tools/test-packed-package.mjs",
+    "tools/run-manual-trace-tests.mjs"
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

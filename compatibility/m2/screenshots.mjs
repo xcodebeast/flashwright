@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -14,9 +15,9 @@ const require = createRequire(import.meta.url);
 // The pinned reference distribution provides test-only image decoders, never browser commands.
 const { PNG, jpegjs } = require(resolve('node_modules/playwright-core/lib/utilsBundle.js'));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const destination = `compatibility/evidence/screenshots-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}`;
+const destination = `compatibility/evidence/screenshots-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
-const report = { schemaVersion: 1, reference: '1.60.0', sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), node: process.version, platform: process.platform, architecture: process.arch, outcomes: {}, referenceDifferences: {}, candidateChecks: [], status: 'running', scope: 'Page screenshot pixels, dimensions, options, files and preparation cleanup. No performance claim.' };
+const report = { schemaVersion: 1, reference: '1.60.0', sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), ...runtimeMetadata, platform: process.platform, architecture: process.arch, outcomes: {}, referenceDifferences: {}, candidateChecks: [], status: 'running', scope: 'Page screenshot pixels, dimensions, options, files and preparation cleanup. No performance claim.' };
 await writeFile(join(destination, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 const fontBytes = await readFile('compatibility/m2/fixtures/zero-advance.ttf');
 const fontWaiters = new Map();

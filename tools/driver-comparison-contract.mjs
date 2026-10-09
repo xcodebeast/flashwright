@@ -1,3 +1,4 @@
+import { reportRuntime } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { requireVerifiedBrowser } from './browser-identity.mjs';
 
@@ -9,7 +10,8 @@ export function verifyDriverComparisonCore(report, metadata, variant) {
   assert.equal(report.status, 'passed');
   assert.equal(report.sourceChangedDuringVerification, false);
   requireVerifiedBrowser(report, metadata.browser);
-  for (const field of ['node', 'platform', 'architecture']) assert.equal(report[field], metadata[field]);
+  assert.deepEqual(reportRuntime(report), reportRuntime(metadata));
+  for (const field of ['platform', 'architecture']) assert.equal(report[field], metadata[field]);
   assert.equal(report.driverSha256, metadata.drivers[variant].sha256);
   assert.deepEqual(report.engineConfiguration, metadata.engineConfiguration);
   assert.equal(report.engineConfiguration.conditionInstrumentation, false);
@@ -18,7 +20,7 @@ export function verifyDriverComparisonCore(report, metadata, variant) {
   if (variant === 'candidate') assert.deepEqual(report.sources, metadata.sources);
   const sharedSources = name => !comparisonOnlySources.has(name) && (
     name.startsWith('packages/') || name.startsWith('benchmarks/') || name.startsWith('crates/flashwright-protocol/') ||
-    ['package.json', 'package-lock.json', 'tsconfig.json', 'tools/watchdog.py', 'tools/engine-configuration.mjs',
+    ['package.json', 'package-lock.json', 'bun.lock', 'tools/javascript-runtime.mjs', 'tools/bun-toolchain.mjs', 'tsconfig.json', 'tools/watchdog.py', 'tools/engine-configuration.mjs',
       'crates/flashwright-browser/src/chromium-launch-policy.json'].includes(name)
   );
   const names = new Set([...Object.keys(report.sources), ...Object.keys(metadata.sources)]);

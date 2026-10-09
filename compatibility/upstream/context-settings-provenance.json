@@ -1,0 +1,30 @@
+{
+  "referenceVersion": "1.60.0",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crPage.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/page.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts"
+  ],
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/context-settings.source.txt",
+  "extractSha256": "5dcb0eb9511b616a622f528dfb3e3a384cdd35bcf00b29f5208963329ba0eb1f",
+  "implementation": {
+    "crates/flashwright-engine/src/context_settings.rs": "ab527e711ac51c364fcc4072c613913730b180d36f6b0a5046b5905a8cbb3cc6",
+    "crates/flashwright-engine/src/lib.rs": "81aa04cd3ed683bf09b776b6954a4c4b2645ea228bc1af568dedfbe1d45e5185",
+    "packages/flashwright-core/src/context-settings.ts": "e36568ea18bce08ccec00d52c2b3a3ffb10882804628c20719dc7b2445b51302",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c",
+    "packages/flashwright-runner/src/index.ts": "c3623586358f5a92d5d8739188096168f2fdbc0b3ea6fb691537e49a6259706d"
+  },
+  "relationship": "Independent native context policy follows the pinned opt-in certificate bypass, opt-out JavaScript execution and explicit light/normal-accessibility media defaults before public page use. Private storage pages retain independent execution settings.",
+  "changes": [
+    "Validate booleans at both host and native allocation boundaries.",
+    "Apply sequential owned initialization commands under the existing cancellation and allocation cleanup contract.",
+    "Forward runner settings through the canonical context-default boundary; explicit undefined/false/true retains precedence.",
+    "Explicit slowMo:0 selects ordinary execution; nonzero values remain typed unsupported.",
+    "Set default media features before user init scripts so operating-system dark and higher-contrast preferences do not change application CSS. Explicit media overrides remain unsupported."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

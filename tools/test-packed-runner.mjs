@@ -1,7 +1,11 @@
+import { createHttpFixture } from './http-fixture.mjs';
+import { installPackedConsumer } from './install-packed-consumer.mjs';
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
+import { tmpdir } from 'node:os';
+import { packConsumerPackages } from './packed-artifacts.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { createRequire } from 'node:module';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -9,14 +13,10 @@ import { resolve, join } from 'node:path';
 import { chromium } from 'playwright';
 
 const require = createRequire(import.meta.url);
-const directory = await mkdtemp(resolve('.cache/packed-runner-'));
-const archives = {};
-for (const name of ['flashwright', 'flashwright-test']) {
-  const packed = JSON.parse(execFileSync('npm', ['pack', '--workspace', `packages/${name}`, '--pack-destination', directory, '--json'], { encoding: 'utf8' }));
-  archives[name] = join(directory, packed[0].filename);
-}
-await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'flashwright-packed-runner-consumer', private: true, type: 'module', dependencies: { flashwright: `file:${archives.flashwright}`, '@flashwright/test': `file:${archives['flashwright-test']}`, '@types/node': '24.10.1' } }, null, 2));
-execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: directory, stdio: 'pipe' });
+const directory = await mkdtemp(join(tmpdir(), 'flashwright-packed-runner-'));
+const { archives, dependencies } = await packConsumerPackages(directory, { runner: true });
+await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'flashwright-packed-runner-consumer', private: true, type: 'module', dependencies: { ...dependencies, '@types/node': '24.10.1' } }, null, 2));
+const installation = await installPackedConsumer(directory, Object.values(archives));
 
 await writeFile(join(directory, 'poison.cjs'), `
 const upstream = require('flashwright-upstream-runner/test');
@@ -99,7 +99,7 @@ export default defineConfig({ testDir: '.', testMatch: '*.spec.*', workers: 1, t
  reporter: [['list'], ['json', { outputFile: 'report.json' }]] });
 `);
 
-const server = createServer((_request, response) => response.end('<title>Packed adapter</title><h1>Packed runner</h1><form onsubmit="event.preventDefault();document.querySelector(\'output\').textContent=\'Saved \'+document.querySelector(\'input\').value"><label>Name<input></label></form><output role="status">Ready</output>'));
+const { server, close: closeServer } = createHttpFixture((_request, response) => response.end('<title>Packed adapter</title><h1>Packed runner</h1><form onsubmit="event.preventDefault();document.querySelector(\'output\').textContent=\'Saved \'+document.querySelector(\'input\').value"><label>Name<input></label></form><output role="status">Ready</output>'));
 server.listen(0, '127.0.0.1'); await once(server, 'listening');
 const environment = { ...process.env, FLASHWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:' + server.address().port, FLASHWRIGHT_DRIVER_PATH: process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/flashwright-driver'), FLASHWRIGHT_BROWSER_PATH: process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath() };
 async function run(arguments_, expectedCode = 0) {
@@ -114,12 +114,12 @@ try {
   const report = JSON.parse(await readFile(join(directory, 'report.json'), 'utf8'));
   assert.equal(report.stats.expected, 3); assert.equal(report.stats.unexpected, 0);
   const hash = value => createHash('sha256').update(value).digest('hex');
-  const evidence = { node: process.version, platform: process.platform, architecture: process.arch, consumerDirectory: directory,
+  const evidence = { installation, ...runtimeMetadata, platform: process.platform, architecture: process.arch, consumerDirectory: directory,
     archives: Object.fromEntries(await Promise.all(Object.entries(archives).map(async ([name, archive]) => [name, { archive, sha256: hash(await readFile(archive)) }]))),
     driverSha256: hash(await readFile(environment.FLASHWRIGHT_DRIVER_PATH)), report,
     checks: ['fresh packed library and adapter install', 'ESM and CommonJS share public class and runner identities', 'mixed-module native assertions', 'NodeNext import/require declarations and fixture generics', 'reporter type subpath', 'ESM, CommonJS and TypeScript runner files', 'nested context options and fixture overrides', 'installed CLI and interactive-mode rejection', 'upstream browser/request methods poisoned'],
     remaining: ['platform runtime distribution', 'pnpm/Yarn and aliases', 'artifact hooks and full runner configuration parity'] };
-  const destination = `compatibility/evidence/packed-runner-${process.platform}-${process.arch}-${process.versions.node}.json`;
+  const destination = `compatibility/evidence/packed-runner-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
   await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
   console.log(`Packed runner consumers passed: ${destination}`);
-} finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
+} finally { await closeServer(); }

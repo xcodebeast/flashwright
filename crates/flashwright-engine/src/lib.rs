@@ -2,35 +2,54 @@
 
 mod assertions;
 mod console;
+mod context_settings;
 mod context_state;
 mod cookies;
+mod devices;
+mod element_actions;
+mod element_resolution;
 mod evaluation;
 mod events;
+mod file_chooser;
+mod file_inputs;
+mod filmstrip;
+mod handle_allocation;
 mod handle_values;
 mod handles;
+mod history_navigation;
+mod init_scripts;
 mod input;
 mod keyboard;
 mod locators;
 mod navigation;
+mod navigation_waits;
+mod network_headers;
+mod network_observer;
+mod network_request;
+mod network_state;
 mod operation;
 mod page_state;
 mod pointer;
 mod publication;
+mod response_body;
+mod routing;
+mod routing_state;
 mod screenshots;
 mod storage;
+mod trace_diagnostics;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
 
 use std::collections::HashMap;
 use std::os::fd::OwnedFd;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use flashwright_browser::{Chromium, LaunchOptions};
 use flashwright_protocol::{
     BinaryAttachment, DriverOutput, ErrorCode, ErrorRecord, ResourceLimits,
 };
-use page_state::PageState;
+use page_state::{PagePurpose, PageState};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use tokio::sync::{mpsc, watch};
@@ -42,17 +61,28 @@ pub const CAPABILITIES: &[&str] = &[
     "browser.launch",
     "browser.close",
     "browser.newContext",
+    "browser.newContext.deviceEmulation",
+    "browser.newContext.ignoreHTTPSErrors",
+    "browser.newContext.javaScriptEnabled",
     "context.newPage",
     "context.close",
     "context.cookies",
     "context.addCookies",
     "context.clearCookies",
     "context.storageState",
+    "page.addInitScript",
+    "context.addInitScript",
+    "initScript.dispose",
     "page.close",
     "page.evaluate",
     "page.evaluateHandle",
     "frame.evaluate",
     "frame.evaluateHandle",
+    "frame.waitForSelector",
+    "frame.setInputFiles",
+    "elementHandle.setInputFiles",
+    "elementHandle.selectText",
+    "elementHandle.scrollIntoViewIfNeeded",
     "handle.evaluate",
     "handle.evaluateHandle",
     "handle.jsonValue",
@@ -61,15 +91,38 @@ pub const CAPABILITIES: &[&str] = &[
     "handle.dispose",
     "handle.discard",
     "page.event.pageerror",
+    "page.navigation.capture",
+    "page.navigation.next",
+    "page.navigation.complete",
     "page.console.subscribe",
+    "page.fileChooser.subscribe",
     "context.console.subscribe",
+    "context.trace.start",
+    "context.trace.pull",
+    "context.trace.stop",
+    "context.trace.filmstrip.clock",
+    "context.trace.filmstrip.activity",
+    "context.trace.filmstrip.pull",
+    "context.trace.filmstrip.start",
+    "context.trace.filmstrip.seal",
+    "context.trace.filmstrip.dispose",
+    "context.trace.filmstrip.take",
     "page.screenshot",
     "page.goto",
+    "page.reload",
+    "page.goBack",
+    "page.goForward",
     "page.waitForLoadState",
     "response.body",
+    "response.body.occurrence",
+    "request.postData.bytes",
+    "network.request.references",
+    "network.routing",
+    "network.headers",
     "locator.run",
     "assertion.run",
     "keyboard.press",
+    "keyboard.type",
 ];
 
 pub struct Engine {
@@ -81,7 +134,12 @@ pub struct Engine {
     resident_assertions: bool,
     condition_instrumentation: bool,
     attachment_slots: Arc<tokio::sync::Semaphore>,
+    file_chooser_slots: Arc<tokio::sync::Semaphore>,
+    network_budget: Arc<tokio::sync::Semaphore>,
+    routing_budget: Arc<routing_state::EngineRoutingBudget>,
     maximum_attachment_bytes: usize,
+    maximum_control_frame_bytes: usize,
+    filmstrip_budget: OnceLock<Arc<filmstrip::FrameBudget>>,
 }
 
 pub enum OperationResult {
@@ -94,6 +152,7 @@ struct Registry {
     browsers: HashMap<String, Browser>,
     contexts: HashMap<String, Context>,
     pages: HashMap<String, Page>,
+    init_scripts: HashMap<String, Arc<init_scripts::InitScript>>,
 }
 
 struct Browser {
@@ -106,6 +165,8 @@ struct Context {
     browser_identifier: String,
     protocol_identifier: String,
     viewport: Option<Viewport>,
+    devices: devices::DeviceOptions,
+    settings: context_settings::ContextSettings,
     state: Arc<context_state::ContextState>,
     published: bool,
 }
@@ -133,8 +194,17 @@ impl Engine {
         limits: ResourceLimits,
     ) -> Self {
         Self {
+            file_chooser_slots: Arc::new(tokio::sync::Semaphore::new(
+                file_chooser::MAXIMUM_CHOOSERS,
+            )),
             attachment_slots: Arc::new(tokio::sync::Semaphore::new(limits.pending_attachments)),
+            network_budget: Arc::new(tokio::sync::Semaphore::new(
+                network_state::ENGINE_NETWORK_BYTES,
+            )),
+            routing_budget: Arc::new(routing_state::EngineRoutingBudget::default()),
             maximum_attachment_bytes: limits.binary_attachment_bytes,
+            maximum_control_frame_bytes: limits.control_frame_bytes,
+            filmstrip_budget: OnceLock::new(),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
@@ -161,12 +231,33 @@ impl Engine {
         operation: &Operation,
     ) -> Result<OperationResult, ErrorRecord> {
         operation.check()?;
+        if operation.input_attachment().is_some()
+            && !matches!(
+                method,
+                "frame.setInputFiles"
+                    | "elementHandle.setInputFiles"
+                    | "route.continue"
+                    | "route.fulfill"
+            )
+        {
+            return Err(ErrorRecord::new(
+                ErrorCode::UnsupportedFeature,
+                method,
+                "this operation does not accept binary input",
+            ));
+        }
         if let Some(result) = self.execute_control(method, &parameters, operation) {
             return result.map(OperationResult::Value);
         }
         if method == "page.screenshot" {
             return self
                 .screenshot(parameters, operation)
+                .await
+                .map(OperationResult::Binary);
+        }
+        if method == "context.trace.filmstrip.take" {
+            return self
+                .take_filmstrip_frame(parameters, operation)
                 .await
                 .map(OperationResult::Binary);
         }
@@ -187,6 +278,9 @@ impl Engine {
         parameters: Value,
         operation: &Operation,
     ) -> Result<Value, ErrorRecord> {
+        if method == "network.headers" {
+            return self.network_headers(parameters, operation).await;
+        }
         operation.check()?;
         match method {
             "browser.launch" => {
@@ -229,16 +323,47 @@ impl Engine {
                 Ok(result)
             }
             "browser.newContext" => self.new_context(parameters, operation).await,
+            "context.trace.filmstrip.start" => self.start_filmstrip(parameters, operation).await,
+            "context.trace.filmstrip.seal" | "context.trace.filmstrip.dispose" => {
+                self.finish_filmstrip(method, parameters, operation).await
+            }
+            "page.addInitScript" | "context.addInitScript" => {
+                self.add_init_script(method, parameters, operation).await
+            }
+            "initScript.dispose" => self.dispose_init_script(parameters, operation).await,
+            "page.route.setEnabled" | "context.route.setEnabled" => {
+                self.set_routing(method, parameters, operation).await
+            }
+            "route.continue" | "route.fulfill" | "route.abort" => {
+                self.handle_route(method, parameters, operation).await
+            }
             "context.newPage" => self.new_page(parameters, operation).await,
             "context.cookies" | "context.addCookies" | "context.clearCookies" => {
                 self.context_cookies(method, parameters, operation).await
             }
             "context.storageState" => self.storage_state(parameters, operation).await,
             "page.goto" => self.navigate(parameters, operation).await,
+            "page.navigation.next" => self.next_navigation(parameters, operation).await,
+            "page.navigation.complete" => self.finish_navigation_wait(parameters, operation).await,
+            "page.reload" | "page.goBack" | "page.goForward" => {
+                self.navigate_history(method, parameters, operation).await
+            }
             "page.waitForLoadState" => self.wait_for_load_state(parameters, operation).await,
             "locator.run" => self.run_locator(parameters, operation).await,
+            "page.fileChooser.subscribe" => {
+                self.set_file_chooser_subscription(parameters, operation)
+                    .await
+            }
+            "frame.waitForSelector" => self.wait_for_selector(parameters, operation).await,
+            "frame.setInputFiles" | "elementHandle.setInputFiles" => {
+                self.set_input_files(method, parameters, operation).await
+            }
+            "elementHandle.selectText" | "elementHandle.scrollIntoViewIfNeeded" => {
+                self.run_element_action(method, parameters, operation).await
+            }
             "assertion.run" => self.run_assertion(parameters, operation).await,
             "keyboard.press" => self.press_page_key(parameters, operation).await,
+            "keyboard.type" => self.type_page_text(parameters, operation).await,
             "page.evaluate" | "frame.evaluate" | "handle.evaluate" => self
                 .evaluate(method, parameters, operation)
                 .await
@@ -323,7 +448,19 @@ impl Engine {
         validate_keys(
             method,
             &parameters,
-            &["browser", "viewport", "storageState"],
+            &[
+                "browser",
+                "viewport",
+                "storageState",
+                "screen",
+                "userAgent",
+                "userAgentMetadata",
+                "deviceScaleFactor",
+                "isMobile",
+                "hasTouch",
+                "ignoreHTTPSErrors",
+                "javaScriptEnabled",
+            ],
         )?;
         let storage = parameters
             .get("storageState")
@@ -349,6 +486,8 @@ impl Engine {
                 "viewport dimensions must be positive integers",
             ));
         }
+        let devices = devices::DeviceOptions::parse(&parameters, viewport.as_ref())?;
+        let settings = context_settings::ContextSettings::parse(&parameters)?;
         let protocol_identifier = operation
             .allocate(
                 browser.as_ref(),
@@ -370,6 +509,8 @@ impl Engine {
                     browser_identifier,
                     protocol_identifier: protocol_identifier.clone(),
                     viewport,
+                    devices,
+                    settings,
                     state: Arc::new(context_state::ContextState::default()),
                     published: false,
                 },
@@ -409,17 +550,24 @@ impl Engine {
         let method = "context.newPage";
         validate_keys(method, &parameters, &["context"])?;
         let context_identifier = identifier(&parameters, "context", method)?.to_owned();
-        self.create_page(&context_identifier, operation).await
+        self.create_page(&context_identifier, PagePurpose::Public, operation)
+            .await
     }
 
     async fn create_page(
         &self,
         context_identifier: &str,
+        purpose: PagePurpose,
         operation: &Operation,
     ) -> Result<Value, ErrorRecord> {
         let method = "context.newPage";
         let context_identifier = context_identifier.to_owned();
         let context = self.context(&context_identifier, method)?;
+        let _initialization = operation
+            .wait(context.state.while_alive(method, async {
+                Ok(context.state.page_configuration.read().await)
+            }))
+            .await?;
         let browser = self.browser(&context.browser_identifier, method)?;
         let target_identifier = operation
             .allocate(
@@ -433,23 +581,45 @@ impl Engine {
         let result = async {
             let session = operation.wait(browser.connection.call("Target.attachToTarget", json!({ "targetId": target_identifier, "flatten": true }), None)).await?;
             let session_identifier = string_field(&session, "sessionId")?;
-            let state = Arc::new(PageState::default());
+            let mut document = page_state::DocumentState::with_network_budget(self.network_budget.clone());
+            document.interception = routing_state::RequestInterception::new(self.routing_budget.clone());
+            let state = Arc::new(PageState { purpose, state: Mutex::new(document), ..PageState::default() });
             let page = Page { context_identifier: context_identifier.clone(), target_identifier: target_identifier.clone(), session_identifier: session_identifier.clone(), state: state.clone() };
             {
                 let mut registry = self.registry.lock().unwrap();
                 if !registry.contexts.contains_key(&context_identifier) { return Err(closed(method)); }
-                registry.pages.insert(page_identifier.clone(), page);
+                registry.pages.insert(page_identifier.clone(), page.clone());
             }
             operation.wait(browser.connection.call("Page.enable", json!({}), Some(&session_identifier))).await?;
             operation.wait(browser.connection.call("Page.setLifecycleEventsEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;
             operation.wait(browser.connection.call("Network.enable", json!({}), Some(&session_identifier))).await?;
             operation.wait(browser.connection.call("Runtime.enable", json!({}), Some(&session_identifier))).await?;
             operation.wait(browser.connection.call("Log.enable", json!({}), Some(&session_identifier))).await?;
+            if purpose == PagePurpose::Public {
+                if context.settings.ignore_https_errors {
+                    operation.wait(browser.connection.call("Security.setIgnoreCertificateErrors", json!({"ignore":true}), Some(&session_identifier))).await?;
+                }
+                if !context.settings.javascript_enabled {
+                    operation.wait(browser.connection.call("Emulation.setScriptExecutionDisabled", json!({"value":true}), Some(&session_identifier))).await?;
+                }
+                operation.wait(browser.connection.call("Emulation.setEmulatedMedia", context_settings::default_media_parameters(), Some(&session_identifier))).await?;
+            }
             // Match the reference's page focus/visibility policy so fresh frame checks
             // keep running when another page becomes the browser's active tab.
             operation.wait(browser.connection.call("Emulation.setFocusEmulationEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;
-            if let Some(viewport) = context.viewport {
-                configure_viewport(&browser, &viewport, &session_identifier, operation).await?;
+            if let Some(viewport) = &context.viewport {
+                configure_viewport(&browser, viewport, &context.devices, &session_identifier, operation).await?;
+            }
+            if context.devices.has_touch {
+                operation.wait(browser.connection.call("Emulation.setTouchEmulationEnabled", json!({"enabled":true}), Some(&session_identifier))).await?;
+            }
+            if !context.devices.user_agent.is_empty() {
+                operation.wait(browser.connection.call("Emulation.setUserAgentOverride", context.devices.user_agent_override(), Some(&session_identifier))).await?;
+            }
+            if purpose == PagePurpose::Public {
+                self.configure_page_routing(&page_identifier, &page, &browser, context.state.routing_registered.load(Ordering::Acquire), operation).await?;
+                self.initialize_page_scripts(&page_identifier, &page, &browser, operation).await?;
+                self.initialize_page_filmstrip(&page_identifier, &page, &context, &browser);
             }
             let tree = operation.wait(browser.connection.call("Page.getFrameTree", json!({}), Some(&session_identifier))).await?;
             let registry = self.registry.lock().unwrap();
@@ -458,7 +628,7 @@ impl Engine {
             let mut document = state.state.lock().unwrap();
             // Page.enable normally supplies the initial frame; getFrameTree covers an idle about:blank.
             if document.main_frame.is_none() { document.observe("Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
-            Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame }))
+            Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame, "navigationSequence":document.sequence }))
         }.await;
         if let Err(mut error) = result {
             self.registry.lock().unwrap().pages.remove(&page_identifier);
@@ -513,10 +683,12 @@ impl Engine {
         let browsers = {
             let mut registry = self.registry.lock().unwrap();
             for context in registry.contexts.values() {
+                context.state.close_trace();
                 context.state.closed.send_replace(Some(closed("context")));
             }
             registry.contexts.clear();
             registry.pages.clear();
+            registry.init_scripts.clear();
             std::mem::take(&mut registry.browsers)
         };
         let mut closing = tokio::task::JoinSet::new();
@@ -589,6 +761,7 @@ fn closed(method: &str) -> ErrorRecord {
 async fn configure_viewport(
     browser: &Chromium,
     viewport: &Viewport,
+    devices: &devices::DeviceOptions,
     session: &str,
     operation: &Operation,
 ) -> Result<(), ErrorRecord> {
@@ -642,7 +815,11 @@ async fn configure_viewport(
         }
         Ok::<(), ErrorRecord>(())
     };
-    let metrics = browser.connection.call("Emulation.setDeviceMetricsOverride", json!({"width":viewport.width,"height":viewport.height,"screenWidth":viewport.width,"screenHeight":viewport.height,"deviceScaleFactor":1,"mobile":false,"screenOrientation":{"angle":0,"type":"landscapePrimary"}}), Some(session));
+    let metrics = browser.connection.call(
+        "Emulation.setDeviceMetricsOverride",
+        devices.metrics(viewport),
+        Some(session),
+    );
     operation
         .wait(async {
             tokio::try_join!(bounds, metrics)?;

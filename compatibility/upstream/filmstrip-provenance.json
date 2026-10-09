@@ -1,0 +1,79 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/screencast.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/trace/recorder/tracing.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crPage.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/filmstrip.source.txt",
+  "extractSha256": "49426cfee7487b2d20899514c0aed02b2ab4c73adbe644f2bce56410ffe60102",
+  "implementation": {
+    "crates/flashwright-engine/src/filmstrip.rs": "30e8e4662d9aa1bd8cdd3adbc3e87867a098a1a361e8ef23d0c35145f22115d9",
+    "crates/flashwright-engine/src/filmstrip/frame_store.rs": "538831997b2765025c9a06ca2b2a09856b5885b0148eae05db527ea82f8aad0d",
+    "crates/flashwright-engine/src/filmstrip/page_capture.rs": "4fc2bd7fa73116ffb4789ceaaf802deda1af57d39ad13e4f58a6ffe1eceb3a77",
+    "crates/flashwright-engine/src/operation.rs": "ba54a150cc35518d5e9a54b8ce724241cd58536bfc84d1bddbb45bf5c76697ba",
+    "crates/flashwright-engine/src/input.rs": "359ce7ed0b97397412868ccd04fcbea3f6bdd8216b85785c1a9476aa8ed74381",
+    "crates/flashwright-engine/src/keyboard.rs": "dce758e18480b4a87aa5a97fcb7eed0ff01319b2b73fe250e57dc957766403d7",
+    "crates/flashwright-engine/src/locators.rs": "03ddf87b50bc98f18b76f0f13852423db334afa2ce51c6dadf9319997403b029",
+    "crates/flashwright-engine/src/pointer.rs": "c0ff1b944809487ee9d0fda7f3ffb0b8ffb05a0cbfc93ed5adeda853081d9abf",
+    "crates/flashwright-engine/src/handle_allocation.rs": "b77181b231d71abed9a6159703543d5b1882fb81cad7dc01b54dddf7cb4e8613",
+    "crates/flashwright-engine/src/element_actions.rs": "890306648f7859e48fa6d4922239e8c85091c174f2d5ee54969a58a384a89792",
+    "crates/flashwright-engine/src/file_inputs.rs": "438fd8955954e633e705e9e6ef46810f77b1472219b064a0ba0b073981e1602b",
+    "crates/flashwright-engine/src/context_state.rs": "faf926d41b4613fe2a81c435cb3010a361b524d4a5f5e2e7ea49b81fa20a08d0",
+    "crates/flashwright-engine/src/page_state.rs": "3790003120ab8a0e1ae222f95df7592655dfcb40793e789749c2184da6fc9e80",
+    "crates/flashwright-engine/src/events.rs": "11fe9a00db6937a8bc48f3c452049240ee32b21704880c85783674976e39950f",
+    "crates/flashwright-engine/src/publication.rs": "73109257ad692092a8d05c42c5d5dc94a9769b298e8da8acda74424ba22b4243",
+    "crates/flashwright-engine/src/lib.rs": "81aa04cd3ed683bf09b776b6954a4c4b2645ea228bc1af568dedfbe1d45e5185",
+    "crates/flashwright-browser/src/connection.rs": "b49e2d9e129474a16ff48f0caedef22f7bcaefd07bf2237dd2c9d89bd43cd25c",
+    "crates/flashwright-protocol/src/messages.rs": "49fc239c19ebdff40ee2ea0d243d8c224e4f75623b9b16abae5db8f9e2b79e0d",
+    "crates/flashwright-driver/src/main.rs": "c9d9019c3a1e1653487d89d27e4f7c038b331fa0755d310a72fc032a327e4331",
+    "packages/flashwright-core/src/trace-filmstrip.ts": "71397b6f548ae27a75aaf3af81f7fb557702c90b5afbfbe81648bb576a4c0bb6",
+    "packages/flashwright-core/src/tracing.ts": "3ef17dcf49c4f60c30fcb26afcf27e4e5776d65d8d9239fd2a35f2caf0c28e33",
+    "packages/flashwright-core/src/trace-hooks.ts": "77c1982b02bc8b06d342ccad55a41e582dc2afb89f45ae3951fd4dcb5672fbdf",
+    "packages/flashwright-core/src/trace-resources.ts": "ae84e09da6e26bbd86a8cb9d879cc920dbc63f58c5733d72886d0a4720368926",
+    "packages/flashwright-core/src/client.ts": "88c01293b16f93a7a5af572d3c9ecdef3783fd05609a85e4506f592f3186d31a",
+    "packages/flashwright-core/src/engine-contract.ts": "9e196d33eef44007dea7f49ead25f1c538e135b317467774b95a66d0a20e756e"
+  },
+  "relationship": "Independent native capture owners and bounded frame transfer implement the pinned screencast geometry, JPEG quality, activity and ACK behavior. The pinned browser backend and recorder do not execute Flashwright commands; its loader/viewer are conformance consumers.",
+  "scope": [
+    "Manual screenshots:true only, independently composable with sources:true and existing action/console tracing.",
+    "Existing and newly published public pages, multiple pages, closed pages and independent chunks.",
+    "Quality90 JPEG, longest-side800/even requested dimensions, 200ms pending-ACK throttle and500ms before/input/after activity."
+  ],
+  "ownership": [
+    "Original context/generation provenance survives native delayed dispatch and cannot activate a newer chunk.",
+    "Frame tokens are opaque and single-consumption; metadata claims retain native queue bytes until an attachment slot is reserved.",
+    "Start/ACK/stop have one owner; uncertain stop retains a quarantined owner through a late reply or page closure.",
+    "Per-request expected image length is checked before host attachment allocation; transfer slots remain owned through resource ingestion."
+  ],
+  "limits": [
+    "4MiB per decoded JPEG;128 frames/16MiB encoded per native context;32MiB encoded across an engine;128 page capture owners.",
+    "At most min(2,negotiated) native binary transfers and two host transfer-through-ingest owners per engine, one host owner per context.",
+    "Existing trace/source resource, archive, deadline and atomic publication bounds apply; overload fails export while preserving ordinary browser outcomes."
+  ],
+  "differences": [
+    "Native monotonic arrival timestamps are mapped into the host action clock with a recorded per-chunk request/response interval and uncertainty; compositor wall time remains independent.",
+    "Images use content-SHA256 JPEG archive aliases instead of timestamp-based aliases.",
+    "CDP device dimensions and JPEG dimensions are retained separately, including full Chrome surface changes around page creation/closure. Exact frame counts or sampled transient sizes are not equated across independent runs.",
+    "Private screencast frames bypass unrelated broadcast subscribers, including storage interception."
+  ],
+  "exclusions": [
+    "DOM snapshots, network playback, video and automatic runner tracing policies remain unsupported.",
+    "Manual trace and local development evidence do not establish full diagnostic parity, all-platform support or a performance claim."
+  ],
+  "verification": [
+    "tools/test-trace-filmstrip.mjs",
+    "tools/test-attachments.mjs",
+    "tools/test-native-filmstrip.mjs",
+    "compatibility/m1/test_filmstrip.py",
+    "tools/run-trace-filmstrip-tests.mjs",
+    "tools/test-trace-filmstrip-viewer.mjs",
+    "tools/test-packed-filmstrip.mjs",
+    "cargo test --workspace --locked"
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

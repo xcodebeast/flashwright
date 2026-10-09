@@ -1,0 +1,42 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/locator.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/dom.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crPage.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/element-actions.source.txt",
+  "extractSha256": "83144405dbd09e85c2663b63f9e1109943ab6b5bb0e25aee17a57c47e491ff71",
+  "implementation": {
+    "crates/flashwright-engine/src/element_actions.rs": "890306648f7859e48fa6d4922239e8c85091c174f2d5ee54969a58a384a89792",
+    "crates/flashwright-engine/src/element_resolution.rs": "916510053ff8d227b7b4032e5387baaa5c723def9d4e65a9ab76139ca8c1ed10",
+    "crates/flashwright-engine/src/handle_values.rs": "982d20383d6f43d617a8d8ea538e58f6faf7ee0297c10c1b679d14dd1036d849",
+    "crates/flashwright-engine/src/handles.rs": "a3d2a0044785b95d7fd567a06c1e10067de36667999176493073ee7ccd634f81",
+    "crates/flashwright-engine/src/handle_allocation.rs": "b77181b231d71abed9a6159703543d5b1882fb81cad7dc01b54dddf7cb4e8613",
+    "crates/flashwright-engine/src/locators.rs": "03ddf87b50bc98f18b76f0f13852423db334afa2ce51c6dadf9319997403b029",
+    "packages/resident-runtime/locator-runtime.js": "44f0ddf64823710ba1879d1c1e12b583e3c8d6ffc7287f79b7f3fd8375dfc3e6",
+    "packages/flashwright-core/src/locator.ts": "e687a32f4240fc1ca0e49f6e95fba12b534e5d8f02bb067f633779f6f8f8e6ac",
+    "packages/flashwright-core/src/handles.ts": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c"
+  },
+  "relationship": "Independent native captured-node operation follows the pinned locator capture, selection, fresh stability and Chromium scroll contract. Selection and element states use the already pinned injected runtime with selector-provenance.json attribution.",
+  "changes": [
+    "Fuse locator capture and action into one native deadline and private object group without consuming a public handle slot.",
+    "Borrowed ElementHandle operations adopt a same-document utility alias and retain the original handle.",
+    "Keep the captured node across read-only retries, release input ownership between retries and never replay uncertain selection or scroll effects.",
+    "Use explicit cancellation for fresh animation-frame stability, bounded reply recovery and owned group cleanup.",
+    "Only same-process frames are supported; public cross-context handle adoption remains unsupported."
+  ],
+  "verification": [
+    "compatibility/m1/test_element_actions.py",
+    "compatibility/m2/element-actions.mjs",
+    "compatibility/m2/runner/element-action-types.ts",
+    "tools/test-packed-package.mjs",
+    "tools/run-manual-trace-tests.mjs"
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

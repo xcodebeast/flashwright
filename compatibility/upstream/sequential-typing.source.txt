@@ -1,0 +1,66 @@
+// locator.pressSequentially
+async pressSequentially(text2, options2 = {}) {
+        return await this.type(text2, options2);
+      }
+
+// locator.type
+async type(text2, options2 = {}) {
+        return await this._frame.type(this._selector, text2, { strict: true, ...options2 });
+      }
+
+// element._type
+async _type(progress2, text2, options2) {
+        progress2.log(`elementHandle.type("${text2}")`);
+        await this._beforeNonPointerAction(progress2);
+        const result2 = await this._focus(
+          progress2,
+          true
+          /* resetSelectionIfNotFocused */
+        );
+        if (result2 !== "done")
+          return result2;
+        await this._page.keyboard.type(progress2, text2, options2);
+        return "done";
+      }
+
+// keyboard.type
+async type(progress2, text2, options2) {
+        const delay = options2 && options2.delay || void 0;
+        for (const char of text2) {
+          if (usKeyboardLayout.has(char)) {
+            await this.press(progress2, char, { delay });
+          } else {
+            if (delay)
+              await progress2.wait(delay);
+            await this.insertText(progress2, char);
+          }
+        }
+      }
+
+// keyboard.press
+async press(progress2, key, options2 = {}) {
+        function split(keyString) {
+          const keys = [];
+          let building = "";
+          for (const char of keyString) {
+            if (char === "+" && building) {
+              keys.push(building);
+              building = "";
+            } else {
+              building += char;
+            }
+          }
+          keys.push(building);
+          return keys;
+        }
+        const tokens = split(key);
+        key = tokens[tokens.length - 1];
+        for (let i = 0; i < tokens.length - 1; ++i)
+          await this.down(progress2, tokens[i]);
+        await this.down(progress2, key);
+        if (options2.delay)
+          await progress2.wait(options2.delay);
+        await this.up(progress2, key);
+        for (let i = tokens.length - 2; i >= 0; --i)
+          await this.up(progress2, tokens[i]);
+      }

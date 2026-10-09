@@ -229,6 +229,7 @@ impl Engine {
                 &frames,
                 &remote_frames,
                 context.viewport.as_ref(),
+                context.devices.device_scale_factor,
                 self.maximum_attachment_bytes,
             )
             .await;
@@ -416,6 +417,7 @@ impl Capture<'_> {
         frames: &[String],
         remote_frames: &[String],
         viewport: Option<&Viewport>,
+        configured_device_scale: f64,
         maximum_bytes: usize,
     ) -> Result<BinaryPayload, ErrorRecord> {
         let viewport_size = match viewport {
@@ -468,7 +470,7 @@ impl Capture<'_> {
             rectangle.height = (rectangle.height / visual_scale + 0.001).floor();
         }
         let device_scale = if viewport.is_some() {
-            1.0
+            configured_device_scale
         } else {
             let ratio = number(&metrics["contentSize"], "width")?
                 / number(&metrics["cssContentSize"], "width")?;

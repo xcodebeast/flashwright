@@ -20,6 +20,22 @@ pub(crate) struct RemoteObject {
 }
 
 #[derive(Deserialize)]
+pub(crate) struct DescribedNode {
+    pub node: NodeIdentity,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct NodeIdentity {
+    pub backend_node_id: u64,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct ResolvedNode {
+    pub object: RemoteObject,
+}
+
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct RemoteProperties {
     pub result: Vec<RemoteProperty>,
