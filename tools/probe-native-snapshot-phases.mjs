@@ -42,7 +42,7 @@ async function fixture() {
   const pull = () => client.request('context.trace.snapshot.pull', identity, 3000);
   async function consume(metadata, ingest = true) {
     const parameters = { ...identity, capture: metadata.capture };
-    const bytes = await client.requestBinary('context.trace.snapshot.take', parameters, 3000, metadata.byteLength);
+    const bytes = await client.requestTraceAttachment('context.trace.snapshot.take', parameters, 3000, metadata.byteLength);
     assert.equal(bytes.length, metadata.byteLength);
     const data = JSON.parse(bytes.toString('utf8'));
     assert.equal(typeof data.url, 'string');
@@ -111,7 +111,7 @@ try {
       assert.deepEqual((await state.pull()).snapshots, []);
       for (const [index, metadata] of original.snapshots.entries()) {
         if (index > 0) await state.consume(metadata, false);
-        await assert.rejects(state.client.requestBinary('context.trace.snapshot.take', { ...state.identity, capture: metadata.capture }, 3000, metadata.byteLength));
+        await assert.rejects(state.client.requestTraceAttachment('context.trace.snapshot.take', { ...state.identity, capture: metadata.capture }, 3000, metadata.byteLength));
         await state.client.request('context.trace.snapshot.ingested', { ...state.identity, capture: metadata.capture, success: true }, 3000);
       }
       const deadline = performance.now() + 3000;

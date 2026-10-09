@@ -38,6 +38,8 @@ for (const name of selectedFunctions) assert.ok(snippets.has(name), `Missing ref
 for (const [owner, methods] of selectedClasses) for (const method of methods) assert.ok(snippets.has(`${owner}.${method}`), `Missing reference: ${owner}.${method}`);
 const extract = [...snippets].map(([name, snippet]) => `// ${name}: ${distributionPath}:${snippet.firstLine}-${snippet.lastLine}\n${snippet.text}`).join('\n\n') + '\n';
 const implementationPaths = [
+  'packages/flashwright-core/src/trace-admission.ts', 'packages/flashwright-core/src/operation-admission.ts', 'packages/flashwright-core/src/client.ts',
+  'packages/flashwright-core/src/attachments.ts', 'crates/flashwright-protocol/src/admission.rs', 'crates/flashwright-protocol/src/lib.rs',
   'packages/flashwright-core/src/trace-network-entry.ts', 'packages/flashwright-core/src/trace-network.ts',
   'packages/flashwright-core/src/trace-recording.ts', 'packages/flashwright-core/src/trace-writer.ts', 'packages/flashwright-core/src/trace-archive.ts', 'packages/flashwright-core/src/tracing.ts',
   'crates/flashwright-engine/src/recording.rs', 'crates/flashwright-engine/src/recording/network.rs',

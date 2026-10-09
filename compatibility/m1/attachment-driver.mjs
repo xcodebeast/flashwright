@@ -20,6 +20,7 @@ process.stdin.on('end', () => process.exit(0));
 let incoming = Buffer.alloc(0);
 let starts = 0;
 let cancellations = 0;
+const collectionAttempts = [];
 process.stdin.on('data', bytes => {
   incoming = Buffer.concat([incoming, bytes]);
   while (incoming.length >= 4 && incoming.length >= incoming.readUInt32LE(0) + 4) {
@@ -36,7 +37,15 @@ process.stdin.on('data', bytes => {
       message({ kind: 'result', requestId: request.requestId, value: 42 }); continue;
     }
     if (request.method === 'observations') { message({ kind: 'result', requestId: request.requestId, value: { starts, cancellations } }); continue; }
+    if (request.method === 'collection.observations') { message({ kind: 'result', requestId: request.requestId, value: collectionAttempts }); continue; }
     const { encoding = 'raw', scenario } = request.parameters;
+    if (request.method.startsWith('context.trace.')) collectionAttempts.push({ method: request.method, parameters: request.parameters, timeoutMilliseconds: request.timeoutMilliseconds });
+    if (scenario === 'always-busy' || scenario === 'busy-then-transfer' && collectionAttempts.length <= 2) {
+      message({ kind: 'result', requestId: request.requestId, value: null }); continue;
+    }
+    if (scenario === 'collection-error') {
+      message({ kind: 'error', requestId: request.requestId, error: { code: 'ResourceLimitError', method: request.method, message: 'original byte limit' } }); continue;
+    }
     if (scenario === 'json') { frame(Buffer.from('{invalid')); continue; }
     if (scenario === 'large') {
       const byteLength = 9 * 1024 * 1024;
@@ -46,14 +55,14 @@ process.stdin.on('data', bytes => {
       message({ kind: 'binaryResult', requestId: request.requestId, byteLength, inputDelivery: 'notDispatched' });
       continue;
     }
-    const payload = Buffer.from([0, 128, 255, 1, 2]);
+    const payload = scenario === 'empty-control-result' ? Buffer.alloc(0) : Buffer.from([0, 128, 255, 1, 2]);
     const encoded = encoding === 'base64' ? Buffer.from(payload.toString('base64')) : payload;
-    const start = { kind: 'binaryStart', requestId: request.requestId, encoding, byteLength: scenario === 'oversize' ? 33554433 : 5, encodedLength: encoded.length };
+    const start = { kind: 'binaryStart', requestId: request.requestId, encoding, byteLength: scenario === 'oversize' ? 33554433 : payload.length, encodedLength: encoded.length };
     message(start);
     starts++;
     if (scenario === 'oversize') continue;
     if (scenario === 'duplicate') { message(start); continue; }
-    if (scenario === 'control-result') { message({ kind: 'result', requestId: request.requestId, value: null }); continue; }
+    if (scenario === 'control-result' || scenario === 'empty-control-result') { message({ kind: 'result', requestId: request.requestId, value: null }); continue; }
     data(scenario === 'identity' ? 999 : request.requestId, scenario === 'offset' ? 1 : 0, encoded.subarray(0, 4));
     if (scenario === 'eof') { process.exit(0); }
     if (scenario === 'cancel' || scenario === 'offset' || scenario === 'identity') continue;

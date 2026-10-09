@@ -39,6 +39,9 @@ impl Engine {
         parameters: &Value,
         operation: &Operation,
     ) -> Option<Result<Value, ErrorRecord>> {
+        if matches!(method, "page.dialog.subscribe" | "context.dialog.subscribe") {
+            return Some(self.dialog_control(method, parameters, operation));
+        }
         if matches!(
             method,
             "context.trace.recording.start"

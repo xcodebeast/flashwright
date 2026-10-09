@@ -15,7 +15,7 @@ const { sourceMapSupport } = upstreamRequire('playwright-core/lib/utilsBundle') 
 runnerIntegration.installSourcePositionMapper(1, position => sourceMapSupport.mapSourcePosition(position));
 
 export type { TestInfo, WorkerInfo, TestType, Fixtures, FullConfig, FullProject, PlaywrightTestConfig, ExpectMatcherState, MatcherReturnType } from 'flashwright-upstream-runner/test';
-export type { Browser, BrowserContext, Page, Locator } from '@flashwright/core';
+export type { Browser, BrowserContext, Page, Locator, Dialog } from '@flashwright/core';
 export { errors } from '@flashwright/core';
 export { defineConfig } from 'flashwright-upstream-runner/test';
 export { devices } from '@flashwright/core';

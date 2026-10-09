@@ -44,13 +44,38 @@ fn protocol(message: &str) -> ErrorRecord {
 }
 
 impl SnapshotArchive {
-    pub(crate) fn metadata(&self, capture: &str) -> Result<SnapshotMetadata, ErrorRecord> {
+    pub(crate) fn validate_owner(&self, capture: &str) -> Result<(), ErrorRecord> {
         self.check()?;
-        self.entries
+        if self
+            .entries
             .values()
-            .find(|entry| entry.metadata.capture == capture)
-            .map(|entry| entry.metadata.clone())
-            .ok_or_else(|| protocol("snapshot has no original DATA owner"))
+            .any(|entry| entry.metadata.capture == capture)
+        {
+            Ok(())
+        } else {
+            Err(protocol("snapshot has no original DATA owner"))
+        }
+    }
+
+    pub(crate) fn transfer_byte_length(&self, capture: &str) -> Result<usize, ErrorRecord> {
+        self.check()?;
+        let entry = self
+            .entries
+            .values()
+            .next()
+            .ok_or_else(|| protocol("snapshot DATA has no original owner"))?;
+        if entry.metadata.capture != capture {
+            return Err(protocol(
+                "snapshot DATA must follow predecessor ingestion order",
+            ));
+        }
+        if !entry.committed || !entry.announced {
+            return Err(protocol("snapshot DATA was not announced after commit"));
+        }
+        if entry.payload.is_none() {
+            return Err(protocol("snapshot DATA was already transferred"));
+        }
+        Ok(entry.metadata.byte_length)
     }
 
     pub(crate) fn is_empty(&self) -> bool {
@@ -169,20 +194,12 @@ impl SnapshotArchive {
         &mut self,
         capture: &str,
     ) -> Result<(BinaryPayload, Arc<PayloadReservation>), ErrorRecord> {
-        self.check()?;
+        self.transfer_byte_length(capture)?;
         let entry = self
             .entries
             .values_mut()
             .next()
-            .ok_or_else(|| protocol("snapshot DATA has no original owner"))?;
-        if entry.metadata.capture != capture {
-            return Err(protocol(
-                "snapshot DATA must follow predecessor ingestion order",
-            ));
-        }
-        if !entry.committed || !entry.announced {
-            return Err(protocol("snapshot DATA was not announced after commit"));
-        }
+            .expect("validated original snapshot");
         let payload = entry
             .payload
             .take()

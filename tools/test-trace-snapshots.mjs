@@ -27,7 +27,7 @@ class Driver {
     if (method.endsWith('.status')) return { ...parameters, accepting: false, snapshotPending: false };
     return null;
   }
-  async requestBinary(method, parameters) { this.calls.push({ method, parameters }); return Buffer.from(this.bytes); }
+  async requestTraceAttachment(method, parameters) { this.calls.push({ method, parameters }); return Buffer.from(this.bytes); }
 }
 async function fixture(driver = new Driver()) {
   const resources = await TraceResources.create();

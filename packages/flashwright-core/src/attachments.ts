@@ -70,5 +70,6 @@ export class AttachmentReceiver {
   }
 
   discard(requestId: number): void { this.active.delete(requestId); }
+  has(requestId: number): boolean { return this.active.has(requestId); }
   clear(): void { this.active.clear(); }
 }

@@ -276,22 +276,13 @@ impl crate::Engine {
         &self,
         parameters: Value,
         operation: &crate::Operation,
-    ) -> Result<flashwright_protocol::BinaryAttachment, ErrorRecord> {
-        use crate::{closed, identifier, invalid, validate_keys};
+    ) -> Result<Option<flashwright_protocol::BinaryAttachment>, ErrorRecord> {
+        use crate::{identifier, invalid, validate_keys};
         let method = "context.trace.network.take";
         validate_keys(method, &parameters, &["context", "recording", "token"])?;
         let context = self.context(identifier(&parameters, "context", method)?, method)?;
         let identity = identifier(&parameters, "recording", method)?;
         let token = identifier(&parameters, "token", method)?;
-        let reservation = operation
-            .wait(context.state.while_alive(method, async {
-                self.attachment_slots
-                    .clone()
-                    .acquire_owned()
-                    .await
-                    .map_err(|_| closed(method))
-            }))
-            .await?;
         operation.check()?;
         let mut owner = context.state.recording.lock().unwrap();
         let recording = owner.get_mut(identity)?;
@@ -304,7 +295,15 @@ impl crate::Engine {
             .ok_or_else(|| invalid(method, "network recording is disabled"))?;
         network
             .resources
+            .validate_take(token, self.maximum_attachment_bytes)
+            .map_err(recording_error)?;
+        let Some(reservation) = self.try_trace_attachment(method)? else {
+            return Ok(None);
+        };
+        network
+            .resources
             .take(token, reservation, self.maximum_attachment_bytes)
+            .map(Some)
             .map_err(recording_error)
     }
 }
@@ -388,5 +387,157 @@ impl super::TraceRecording {
             self.fail(recording_error(error));
         }
         events
+    }
+}
+
+#[cfg(test)]
+mod collection_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn attachment_pressure_never_waits_or_consumes_an_original_network_resource() {
+        let (outgoing, _messages) = tokio::sync::mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let mut engine = crate::Engine::new(
+            None,
+            outgoing,
+            fatal,
+            flashwright_protocol::ResourceLimits::default(),
+        );
+        let context = Arc::new(crate::context_state::ContextState::default());
+        engine.registry.lock().unwrap().contexts.insert(
+            "context".into(),
+            crate::Context {
+                browser_identifier: "browser".into(),
+                protocol_identifier: "native-context".into(),
+                viewport: None,
+                devices: crate::devices::DeviceOptions::default(),
+                settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                state: context.clone(),
+                published: true,
+            },
+        );
+        let cancellation = watch::channel(false).0;
+        let operation =
+            crate::Operation::new("collection-probe".into(), None, cancellation.subscribe());
+        engine
+            .recording_control(
+                "context.trace.recording.start",
+                &json!({"context":"context","recording":"recording","network":true}),
+                &operation,
+            )
+            .unwrap();
+        let token = {
+            let mut state = context.recording.lock().unwrap();
+            state
+                .get_mut("recording")
+                .unwrap()
+                .network
+                .as_mut()
+                .unwrap()
+                .resources
+                .request(&json!(["YQ=="]), false)
+                .unwrap()
+                .unwrap()
+                .token
+        };
+        let identity = json!({"context":"context","recording":"recording","token":token});
+        let held = engine
+            .attachment_slots
+            .clone()
+            .try_acquire_many_owned(2)
+            .unwrap();
+        assert!(
+            engine
+                .take_network_resource(identity.clone(), &operation)
+                .await
+                .is_err(),
+            "unannounced resources must fail even under pressure"
+        );
+        engine
+            .network_trace_control(
+                "context.trace.network.pull",
+                &json!({"context":"context","recording":"recording"}),
+                &operation,
+            )
+            .unwrap();
+        for _ in 0..3 {
+            assert!(
+                engine
+                    .take_network_resource(identity.clone(), &operation)
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
+        }
+        let mut stale = identity.clone();
+        stale["token"] = json!("unknown-original");
+        assert!(
+            engine
+                .take_network_resource(stale, &operation)
+                .await
+                .is_err()
+        );
+        engine.maximum_attachment_bytes = 0;
+        assert_eq!(
+            engine
+                .take_network_resource(identity.clone(), &operation)
+                .await
+                .unwrap_err()
+                .code,
+            ErrorCode::ResourceLimit
+        );
+        engine.maximum_attachment_bytes = 32 * 1024 * 1024;
+        assert!(
+            engine
+                .network_trace_control("context.trace.network.ingested", &identity, &operation)
+                .is_err()
+        );
+        drop(held);
+        let transfer = engine
+            .take_network_resource(identity.clone(), &operation)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(transfer.bytes, b"a");
+        assert!(
+            engine
+                .take_network_resource(identity.clone(), &operation)
+                .await
+                .is_err()
+        );
+        engine
+            .network_trace_control("context.trace.network.ingested", &identity, &operation)
+            .unwrap();
+        drop(transfer);
+        let token = {
+            let mut state = context.recording.lock().unwrap();
+            let resources = &mut state
+                .get_mut("recording")
+                .unwrap()
+                .network
+                .as_mut()
+                .unwrap()
+                .resources;
+            let token = resources
+                .request(&json!(["Yg=="]), false)
+                .unwrap()
+                .unwrap()
+                .token;
+            resources.pull();
+            token
+        };
+        engine.attachment_slots.close();
+        assert_eq!(
+            engine
+                .take_network_resource(
+                    json!({"context":"context","recording":"recording","token":token}),
+                    &operation
+                )
+                .await
+                .unwrap_err()
+                .code,
+            ErrorCode::TargetClosed
+        );
     }
 }

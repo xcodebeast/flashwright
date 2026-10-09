@@ -39,10 +39,11 @@ class Operations {
   async outer(value) { return this.inner(value); }
   async inner(value) { return value; }
   async wait(promise) { return promise; }
+  async eventWait(promise) { return promise; }
   async callback(callback) { return runTraceUserCallback(callback); }
   async reject(error) { throw error; }
 }
-instrumentTraceMethods(Operations.prototype, 'Page', owner => ({ tracing: owner.tracing, pageId: 'page' }), { outer: { parameters: ['value'] }, inner: { parameters: ['value'] }, wait: {}, callback: {}, reject: {} });
+instrumentTraceMethods(Operations.prototype, 'Page', owner => ({ tracing: owner.tracing, pageId: 'page' }), { outer: { parameters: ['value'] }, inner: { parameters: ['value'] }, wait: {}, eventWait: { completion: 'independent' }, callback: {}, reject: {} });
 
 async function events(path) {
   verifiedArchives.add(path);
@@ -58,6 +59,30 @@ async function events(path) {
 }
 
 try {
+  await check('event delivery finishes before diagnostics while export retains and drains original completion', async () => {
+    const driver = new DiagnosticDriver();
+    const gate = deferred();
+    const request = driver.request.bind(driver);
+    driver.request = async (method, parameters) => {
+      if (method === 'context.trace.pull') await gate.promise;
+      return request(method, parameters);
+    };
+    const tracing = new Tracing(driver, 'context', null);
+    const operations = new Operations(tracing);
+    await tracing.start();
+    assert.equal(await operations.eventWait(Promise.resolve(42)), 42);
+    assert.equal(tracing.calls.size, 1);
+    const path = join(directory, 'independent-event-completion.zip');
+    let exported = false;
+    const exportWork = tracing.stop({ path }).then(() => { exported = true; });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(exported, false);
+    gate.resolve(); await exportWork;
+    const archive = await events(path);
+    assert.equal(archive.actions.length, 1); assert.equal(archive.actions[0].method, 'eventWait');
+    assert.ok(archive.actions[0].endTime > 0); assert.equal(tracing.calls.size, 0);
+    assert.equal(traceRecordingActive(), false);
+  });
   await check('callback can open a new chunk after its triggering call outlives the old chunk', async () => {
     class CallbackOperations extends EventEmitter {
       constructor(tracing) { super(); this.tracing = tracing; }

@@ -571,7 +571,10 @@ impl Engine {
                         })
                 })
                 .transpose()?;
-            owner.original_chunk(chunk)?.snapshots.metadata(capture)?;
+            owner
+                .original_chunk(chunk)?
+                .snapshots
+                .validate_owner(capture)?;
             if !success {
                 owner.fail(ErrorRecord::new(
                     ErrorCode::Protocol,
@@ -595,7 +598,7 @@ impl Engine {
         &self,
         parameters: Value,
         operation: &Operation,
-    ) -> Result<BinaryAttachment, ErrorRecord> {
+    ) -> Result<Option<BinaryAttachment>, ErrorRecord> {
         let method = "context.trace.snapshot.take";
         validate_keys(
             method,
@@ -606,20 +609,11 @@ impl Engine {
         let recording = identifier(&parameters, "recording", method)?;
         let chunk = identifier(&parameters, "chunk", method)?;
         let capture = identifier(&parameters, "capture", method)?;
-        let reservation = operation
-            .wait(context.state.while_alive(method, async {
-                self.attachment_slots
-                    .clone()
-                    .acquire_owned()
-                    .await
-                    .map_err(|_| closed(method))
-            }))
-            .await?;
         operation.check()?;
         let mut state = context.state.recording.lock().unwrap();
         let owner = state.get_mut(recording)?;
         let original = owner.original_chunk(chunk)?;
-        if original.snapshots.metadata(capture)?.byte_length > self.maximum_attachment_bytes {
+        if original.snapshots.transfer_byte_length(capture)? > self.maximum_attachment_bytes {
             let error = ErrorRecord::new(
                 ErrorCode::ResourceLimit,
                 method,
@@ -628,9 +622,24 @@ impl Engine {
             owner.fail(error.clone());
             return Err(error);
         }
+        let Some(reservation) = self.try_trace_attachment(method)? else {
+            return Ok(None);
+        };
         let (payload, bytes) = original.snapshots.take(capture)?;
         let mut attachment = BinaryAttachment::from_payload(payload, reservation);
         attachment.retain_byte_reservation(bytes);
-        Ok(attachment)
+        Ok(Some(attachment))
+    }
+
+    /// Never hold recovery admission while a renderer-dependent transfer owns every permit.
+    fn try_trace_attachment(
+        &self,
+        method: &str,
+    ) -> Result<Option<tokio::sync::OwnedSemaphorePermit>, ErrorRecord> {
+        match self.attachment_slots.clone().try_acquire_owned() {
+            Ok(reservation) => Ok(Some(reservation)),
+            Err(tokio::sync::TryAcquireError::NoPermits) => Ok(None),
+            Err(tokio::sync::TryAcquireError::Closed) => Err(closed(method)),
+        }
     }
 }

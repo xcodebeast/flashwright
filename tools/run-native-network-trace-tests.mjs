@@ -37,7 +37,7 @@ try{
   for(let attempts=0;attempts<1000;attempts++){
    const batch=await command('network.pull');
    for(const resource of batch.resources){
-    const data=await client.requestBinary('context.trace.network.take',{...identity,token:resource.token},5000,resource.byteLength);
+    const data=await client.requestTraceAttachment('context.trace.network.take',{...identity,token:resource.token},5000,resource.byteLength);
     assert.equal(data.length,resource.byteLength);assert.ok(!resources.has(resource.token));
     resources.set(resource.token,{...resource,data,alias:hash(data)});
     await command('network.ingested',{token:resource.token});

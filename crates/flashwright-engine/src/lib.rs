@@ -7,6 +7,7 @@ mod context_state;
 mod cookies;
 mod devices;
 mod diagnostic_sessions;
+mod dialogs;
 mod element_actions;
 mod element_resolution;
 mod evaluation;
@@ -40,6 +41,7 @@ mod screenshots;
 mod snapshots;
 mod storage;
 mod trace_diagnostics;
+pub use dialogs::PreparedDialogHandling;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
 
@@ -98,6 +100,10 @@ pub const CAPABILITIES: &[&str] = &[
     "page.navigation.next",
     "page.navigation.complete",
     "page.console.subscribe",
+    "page.dialog.subscribe",
+    "context.dialog.subscribe",
+    "dialog.accept",
+    "dialog.dismiss",
     "page.fileChooser.subscribe",
     "context.console.subscribe",
     "context.trace.start",
@@ -142,8 +148,10 @@ pub struct Engine {
     routing_budget: Arc<routing_state::EngineRoutingBudget>,
     maximum_attachment_bytes: usize,
     maximum_control_frame_bytes: usize,
+    maximum_pending_operations: usize,
     filmstrip_budget: OnceLock<Arc<filmstrip::FrameBudget>>,
     diagnostic_sessions: Arc<diagnostic_sessions::DiagnosticSessions>,
+    dialog_budget: Arc<dialogs::DialogBudget>,
     snapshot_budget: OnceLock<Arc<snapshots::SnapshotBudget>>,
     trace_network_budget: OnceLock<Arc<recording::network::NetworkBudget>>,
 }
@@ -210,8 +218,10 @@ impl Engine {
             routing_budget: Arc::new(routing_state::EngineRoutingBudget::default()),
             maximum_attachment_bytes: limits.binary_attachment_bytes,
             maximum_control_frame_bytes: limits.control_frame_bytes,
+            maximum_pending_operations: limits.pending_operations,
             filmstrip_budget: OnceLock::new(),
             diagnostic_sessions: Arc::new(diagnostic_sessions::DiagnosticSessions::default()),
+            dialog_budget: dialogs::DialogBudget::engine(),
             snapshot_budget: OnceLock::new(),
             trace_network_budget: OnceLock::new(),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
@@ -258,6 +268,12 @@ impl Engine {
         if let Some(result) = self.execute_control(method, &parameters, operation) {
             return result.map(OperationResult::Value);
         }
+        if let Some(prepared) = self.prepare_dialog_handling(method, &parameters, operation) {
+            return prepared?
+                .finish(operation)
+                .await
+                .map(OperationResult::Value);
+        }
         self.snapshot_before_operation(method, &parameters, operation)
             .await;
         if method == "page.screenshot" {
@@ -276,13 +292,18 @@ impl Engine {
             return self
                 .take_network_resource(parameters, operation)
                 .await
-                .map(OperationResult::Binary);
+                .map(|attachment| match attachment {
+                    Some(attachment) => OperationResult::Binary(attachment),
+                    None => OperationResult::Value(Value::Null),
+                });
         }
         if method == "context.trace.snapshot.take" {
-            return self
-                .take_snapshot(parameters, operation)
-                .await
-                .map(OperationResult::Binary);
+            return self.take_snapshot(parameters, operation).await.map(
+                |attachment| match attachment {
+                    Some(attachment) => OperationResult::Binary(attachment),
+                    None => OperationResult::Value(Value::Null),
+                },
+            );
         }
         if method == "response.body" {
             return self

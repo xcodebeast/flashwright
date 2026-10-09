@@ -901,9 +901,29 @@ async fn accepted_snapshot_data_retains_native_credits_until_host_ingestion_ackn
         let mut acknowledgement = identity.clone();
         acknowledgement["success"] = json!(true);
         assert!(control("context.trace.snapshot.ingested", &acknowledgement).is_err());
+        let held_transfers = engine
+            .attachment_slots
+            .clone()
+            .try_acquire_many_owned(2)
+            .unwrap();
+        for _ in 0..3 {
+            assert!(
+                engine
+                    .take_snapshot(identity.clone(), &operation)
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
+        }
+        let mut unknown = identity.clone();
+        unknown["capture"] = json!("not-the-original-capture");
+        assert!(engine.take_snapshot(unknown, &operation).await.is_err());
+        assert!(control("context.trace.snapshot.ingested", &acknowledgement).is_err());
+        drop(held_transfers);
         let payload = engine
             .take_snapshot(identity.clone(), &operation)
             .await
+            .unwrap()
             .unwrap();
         assert_eq!(
             payload.decoded_length,
@@ -911,12 +931,10 @@ async fn accepted_snapshot_data_retains_native_credits_until_host_ingestion_ackn
         );
         assert!(engine.take_snapshot(identity, &operation).await.is_err());
         fixture.finish().await;
-        assert!(matches!(
-            fixture
-                .budget
-                .reserve_document("context", "session", "main-original"),
-            Err(AdmissionError::DocumentAlreadyOwned)
-        ));
+        let successor = fixture
+            .budget
+            .reserve_document("context", "session", "main-original")
+            .unwrap();
         let stop = json!({"context":"context","recording":"recording"});
         assert!(control("context.trace.recording.stop", &stop).is_err());
         let immutable_host_data: Value = serde_json::from_slice(&payload.bytes).unwrap();
@@ -941,6 +959,11 @@ async fn accepted_snapshot_data_retains_native_credits_until_host_ingestion_ackn
             Err(AdmissionError::DocumentAlreadyOwned)
         ));
         drop(payload);
+        assert!(
+            fixture
+                .budget
+                .owns_document("context", "session", "main-original")
+        );
         assert_eq!(
             control("context.trace.chunk.status", &parameters).unwrap()["snapshotPending"],
             false
@@ -951,13 +974,91 @@ async fn accepted_snapshot_data_retains_native_credits_until_host_ingestion_ackn
         } else {
             stopped.unwrap();
         }
-        drop(
-            fixture
+        drop(successor);
+        assert!(
+            !fixture
                 .budget
-                .reserve_document("context", "session", "main-original")
-                .unwrap(),
+                .owns_document("context", "session", "main-original")
         );
     }
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_dialog_retired_worker_releases_its_claim_before_payload_ingestion() {
+    let mut fixture = Fixture::new();
+    let capturing = fixture.capture(false);
+    fixture.install().await;
+    fixture.captured(1).await;
+    let captured = capturing.await.unwrap().unwrap();
+    let committed = tokio::spawn(captured.decision.commit());
+    let command = fixture.command("Runtime.callFunctionOn").await;
+    fixture
+        .reply(
+            &command,
+            json!({"result":{"type":"object","value":{
+                "snapshotNumber":1,"cache":{"bytes":0,"nodes":0,"attributes":0,"sheets":0}
+            }}}),
+        )
+        .await;
+    fixture.release("_decision_").await;
+    committed.await.unwrap().unwrap();
+    fixture
+        .page
+        .state
+        .state
+        .lock()
+        .unwrap()
+        .observe("Page.javascriptDialogOpening", &json!({}));
+    fixture.page.state.changed.send_replace(1);
+    let release = fixture.command("Runtime.releaseObjectGroup").await;
+    assert!(
+        fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+    fixture.reply(&release, json!({})).await;
+    timeout(Duration::from_secs(1), fixture.document.wait_finished())
+        .await
+        .unwrap();
+    assert!(
+        !fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+    fixture
+        .page
+        .state
+        .state
+        .lock()
+        .unwrap()
+        .observe("Page.javascriptDialogClosed", &json!({}));
+    fixture.document = Arc::new(
+        SnapshotDocument::start(
+            "successor",
+            fixture.page.clone(),
+            fixture.realm.clone(),
+            fixture.connection.clone(),
+            &fixture.budget,
+            SessionLifetime::controlled("target", "session", fixture.destruction.clone()),
+        )
+        .unwrap(),
+    );
+    drop(captured.reservation);
+    assert!(
+        fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+    fixture.document.close();
+    timeout(Duration::from_secs(1), fixture.document.wait_finished())
+        .await
+        .unwrap();
+    assert!(
+        !fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+    fixture.assert_no_command().await;
 }
 
 #[tokio::test(start_paused = true)]

@@ -51,7 +51,7 @@ class OwnedDriverCase(unittest.TestCase):
         self.driver = subprocess.Popen([os.environ["FLASHWRIGHT_DRIVER_PATH"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0, env=environment)
         self.addCleanup(self.release_owned_browser)
         self.identifier = 0
-        self.send({"kind": "handshake", "handshake": {"packageVersion": "0.0.0", "protocolVersion": 6, "capabilityInventoryVersion": 1, "limits": self.limits}})
+        self.send({"kind": "handshake", "handshake": {"packageVersion": "0.0.0", "protocolVersion": 7, "capabilityInventoryVersion": 1, "limits": self.limits}})
         handshake = self.receive()
         runtime_digest = hashlib.sha256()
         for name in Path("packages/resident-runtime/sources.txt").read_text().splitlines():

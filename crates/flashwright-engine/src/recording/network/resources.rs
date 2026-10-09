@@ -260,15 +260,14 @@ impl NetworkResources {
             .collect()
     }
 
-    pub(super) fn take(
-        &mut self,
+    pub(super) fn validate_take(
+        &self,
         token: &str,
-        transfer: OwnedSemaphorePermit,
         maximum_bytes: usize,
-    ) -> Result<BinaryAttachment, JournalError> {
+    ) -> Result<(), JournalError> {
         let entry = self
             .entries
-            .get_mut(token)
+            .get(token)
             .ok_or(JournalError::Protocol("unknown original network resource"))?;
         if !entry.announced {
             return Err(JournalError::Protocol("network resource was not announced"));
@@ -278,6 +277,25 @@ impl NetworkResources {
                 "network resource exceeds negotiated attachment limit",
             ));
         }
+        if entry.payload.is_none() {
+            return Err(JournalError::Protocol(
+                "network resource was already transferred",
+            ));
+        }
+        Ok(())
+    }
+
+    pub(super) fn take(
+        &mut self,
+        token: &str,
+        transfer: OwnedSemaphorePermit,
+        maximum_bytes: usize,
+    ) -> Result<BinaryAttachment, JournalError> {
+        self.validate_take(token, maximum_bytes)?;
+        let entry = self
+            .entries
+            .get_mut(token)
+            .expect("validated original network resource");
         let payload = entry.payload.take().ok_or(JournalError::Protocol(
             "network resource was already transferred",
         ))?;

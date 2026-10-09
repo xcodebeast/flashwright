@@ -170,7 +170,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                             failure = Some("request identifiers must be strictly increasing positive JavaScript-safe integers".to_owned()); break;
                         }
                         last_identifier = request_id;
-                        let validation = if operations.len() >= limits.pending_operations {
+                        let validation = if !flashwright_protocol::admits_operation(operations.len(), limits.pending_operations, &method) {
                             Err(ErrorRecord::new(ErrorCode::ResourceLimit, &method, "pending operation limit exceeded"))
                         } else { limits.validate_value(&parameters).and_then(|()| trace_call.as_ref().map_or(Ok(()), |trace_call| trace_call.validate(&method))) };
                         let prepared_input = if let Some(length) = input_byte_length {
@@ -201,6 +201,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         cancellations.insert(request_id, sender);
                         let operation = Operation::new(method.clone(), deadline, receiver).with_trace_call(trace_call);
                         let control_result = if input.is_none() { engine.execute_control(&method, &parameters, &operation) } else { None };
+                        let dialog_handling = if input.is_none() { engine.prepare_dialog_handling(&method, &parameters, &operation) } else { None };
                         let engine = engine.clone();
                         let limits = limits.clone();
                         let outgoing = outgoing.clone();
@@ -211,6 +212,9 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                                         input.await.map_err(|_| ErrorRecord::new(ErrorCode::Cancelled, &method, "binary input transfer aborted"))
                                     }).await?;
                                     operation.attach_input(attachment)?;
+                                }
+                                if let Some(prepared) = dialog_handling {
+                                    return prepared?.finish(&operation).await.map(OperationResult::Value);
                                 }
                                 match control_result {
                                     Some(result) => result.map(OperationResult::Value),

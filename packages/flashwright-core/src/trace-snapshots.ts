@@ -86,7 +86,7 @@ export class TraceSnapshotChannel {
       }
       const metadata = this.pending.shift()!;
       const parameters = { ...this.identity, capture: metadata.capture };
-      const bytes = await this.client.requestBinary('context.trace.snapshot.take', parameters, 2000, metadata.byteLength);
+      const bytes = await this.client.requestTraceAttachment('context.trace.snapshot.take', parameters, 2000, metadata.byteLength, this.cancellation.signal);
       this.cancellation.signal.throwIfAborted();
       if (!Buffer.isBuffer(bytes) || bytes.length !== metadata.byteLength || bytes.length > maximumDataBytes) throw protocol('snapshot attachment length changed');
       const snapshot = await this.prepare(bytes, metadata);
