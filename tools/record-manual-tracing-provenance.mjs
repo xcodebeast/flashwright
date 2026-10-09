@@ -52,6 +52,7 @@ for (const path of [
   'packages/flashwright-core/src/subscribed-events.ts', 'packages/flashwright-core/src/file-chooser.ts',
   'packages/flashwright-core/src/init-scripts.ts', 'packages/flashwright-core/src/waits.ts',
   'packages/flashwright-core/src/navigation-waiter.ts', 'packages/flashwright-core/src/engine-contract.ts',
+  'packages/flashwright-runner/src/artifact-errors.ts',
   'packages/flashwright-core/src/runner-integration.ts', 'packages/flashwright-runner/src/screenshot-recorder.ts', 'packages/flashwright-runner/src/index.ts',
 ]) implementation[path] = hash(await readFile(path));
 const outputs = {
