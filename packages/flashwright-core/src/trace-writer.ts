@@ -6,6 +6,7 @@ import { failure } from './errors.js';
 import { TraceResources, maximumSourceBytes, type TraceResource } from './trace-resources.js';
 import { prepareSnapshotRecord } from './trace-snapshot-record.js';
 import { SealedTraceArchive, type TraceArchiveEntry } from './trace-archive.js';
+import type { TraceStorageLease } from './trace-storage-budget.js';
 
 const maximumEvents = 100000;
 const maximumBytes = 64 * 1024 * 1024;
@@ -34,15 +35,20 @@ export class TraceWriter {
   private sourcePathBytes = 0;
   private sealed = false;
   private disposal: Promise<void> | undefined;
-  private constructor(readonly directory: string, private readonly file: FileHandle, private readonly resources: TraceResources, private readonly releaseResources: () => void) {}
+  private constructor(readonly directory: string, private readonly file: FileHandle, private readonly resources: TraceResources, private readonly releaseResources: () => void, private readonly storage: TraceStorageLease) {}
   static async create(resources: TraceResources): Promise<TraceWriter> {
     const release = resources.acquire();
     let directory: string | undefined;
+    let storage: TraceStorageLease | undefined;
     try {
+      storage = resources.storageBudget.acquire(2);
       directory = await mkdtemp(join(tmpdir(), 'flashwright-trace-'));
-      return new TraceWriter(directory, await open(join(directory, 'trace.trace'), 'wx', 0o600), resources, release);
+      return new TraceWriter(directory, await open(join(directory, 'trace.trace'), 'wx', 0o600), resources, release, storage);
     } catch (error) {
-      try { if (directory) await rm(directory, { recursive: true, force: true }); }
+      try {
+        if (directory) await rm(directory, { recursive: true, force: true });
+        storage?.release();
+      } catch { /* Failed removal keeps the original storage reservation. */ }
       finally { release(); }
       throw error;
     }
@@ -81,12 +87,13 @@ export class TraceWriter {
       if (++this.events > maximumEvents || encoded.length > maximumEventBytes || this.bytes + this.networkBytes + encoded.length > maximumBytes || this.queuedBytes + encoded.length > maximumQueuedBytes) {
         throw failure('ResourceLimitError', 'tracing', 'trace exceeds its event, stream or pending-write limit');
       }
+      const releaseQueue = this.storage.reserveWrite(encoded.length);
       this.bytes += encoded.length;
       this.queuedBytes += encoded.length;
       this.writes = this.writes.then(async () => {
         try { if (!this.failure) { await this.file.writeFile(encoded); this.streamHash.update(encoded); } }
         catch (error) { this.fail(error); }
-        finally { this.queuedBytes -= encoded.length; }
+        finally { this.queuedBytes -= encoded.length; releaseQueue(); }
       });
     } catch (error) { this.fail(error); }
   }
@@ -99,6 +106,7 @@ export class TraceWriter {
       signal.throwIfAborted();
       const record = prepareSnapshotRecord(event);
       if (this.events + 1 > maximumEvents || this.bytes + this.networkBytes + record.byteLength > maximumBytes) throw failure('ResourceLimitError', 'tracing.snapshot', 'trace exceeds its event or stream limit');
+      this.storage.retain(record.byteLength);
       this.events++;
       this.bytes += record.byteLength;
       this.snapshotPending = true;
@@ -129,6 +137,7 @@ export class TraceWriter {
       signal.throwIfAborted();
       const encoded = Buffer.from(JSON.stringify(event) + '\n');
       if (this.events + 1 > maximumEvents || encoded.length > 2 * 1024 * 1024 || this.bytes + this.networkBytes + encoded.length > maximumBytes || this.queuedBytes + encoded.length > maximumQueuedBytes) throw failure('ResourceLimitError', 'tracing.network', 'network record exceeds the trace stream or queued-write allowance');
+      const releaseQueue = this.storage.reserveWrite(encoded.length);
       this.events++; this.networkBytes += encoded.length; this.queuedBytes += encoded.length;
       this.writes = this.writes.then(async () => {
         try {
@@ -140,7 +149,7 @@ export class TraceWriter {
           this.networkHash.update(encoded);
           signal.throwIfAborted();
         } catch (error) { this.fail(error); }
-        finally { this.queuedBytes -= encoded.length; }
+        finally { this.queuedBytes -= encoded.length; releaseQueue(); }
       });
       return this.writes.then(() => { if (this.failure) throw this.failure; });
     } catch (error) { this.fail(error); return Promise.reject(error); }
@@ -183,7 +192,7 @@ export class TraceWriter {
       { name: 'trace.network', byteLength: this.networkBytes, contentHash: this.networkHash.digest('hex'), ...(this.networkFile ? { path: join(this.directory, 'trace.network') } : {}) },
       ...[...this.aliases].map(([name, resource]) => ({ name, ...resource })),
     ];
-    const archive = new SealedTraceArchive(entries, () => this.removeFiles());
+    const archive = new SealedTraceArchive(entries, () => this.removeFiles(), this.resources.storageBudget);
     this.releaseArchiveResources = this.resources.acquireArchive();
     this.releaseResources();
     this.transferred = true;
@@ -206,11 +215,15 @@ export class TraceWriter {
     this.removingFiles ??= (async () => {
       let originalFailure: unknown;
       let failed = false;
-      try {
-        await this.writes;
-        try { await Promise.all([this.file.close(), this.networkFile?.close()]); }
-        finally { await rm(this.directory, { recursive: true, force: true }); }
-      } catch (error) { originalFailure = error; failed = true; }
+      const settle = async (work: Promise<unknown>): Promise<boolean> => {
+        try { await work; return true; }
+        catch (error) { if (!failed) { originalFailure = error; failed = true; } return false; }
+      };
+      await settle(this.writes);
+      const closed = await settle(this.file.close());
+      const networkClosed = !this.networkFile || await settle(this.networkFile.close());
+      const removed = await settle(rm(this.directory, { recursive: true, force: true }));
+      if (closed && networkClosed && removed) this.storage.release();
       // Unfinished user calls may retain a disposed chunk; release its bounded metadata now.
       this.sourcePaths.clear();
       this.aliases.clear();

@@ -480,6 +480,11 @@
       "checkpoint": "compatibility/evidence/runner-owned-lifecycle-checkpoint-2026-10-09.json",
       "scope": "Private version8 original-attempt claims before asynchronous context creation;31 focused groups,26 controls per runtime,78 independent checks,16 native ZIPs,56 screenshot case pairs and8 context-default pairs.",
       "limitations": "Automatic coordinator and public policies remain disabled. Aggregate capture admission, API enrollment and full timeout/interruption integration remain unfinished; no new full-core or performance acceptance."
+    },
+    "sharedTraceStorage": {
+      "checkpoint": "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
+      "scope": "Shared canonical-host trace storage and queued-capture admission, original file/reader custody and failed-cleanup quarantine. All 57 focused groups pass, including 19 storage controls per runtime, native archives, actual viewer and packed consumers.",
+      "limitations": "Separate JavaScript worker isolates have separate allowances. Native/per-attempt aggregate admission and automatic policies remain open; no new full-core or performance acceptance."
     }
   },
   "testSources": [
@@ -691,7 +696,8 @@
     "tools/test-runner-trace-finalizer.mjs",
     "tools/run-runner-trace-finalizer-tests.mjs",
     "compatibility/m2/runner-trace-finalizer/finalizer.spec.cjs",
-    "compatibility/m2/runner-trace-finalizer/playwright.config.cjs"
+    "compatibility/m2/runner-trace-finalizer/playwright.config.cjs",
+    "tools/test-trace-storage-budget.mjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",

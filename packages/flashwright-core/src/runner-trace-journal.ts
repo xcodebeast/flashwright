@@ -6,6 +6,7 @@ import { types } from 'node:util';
 import { failure } from './errors.js';
 import { SealedTraceArchive } from './trace-archive.js';
 import { TraceResources, maximumSourceBytes, type TraceResource } from './trace-resources.js';
+import { traceStorageBudget, type TraceStorageBudget, type TraceStorageLease } from './trace-storage-budget.js';
 import { encodeRunnerRecord, maximumRunnerRecordBytes, runnerTraceErrorMessage, runnerTraceField, runnerTraceInvalid, runnerTraceLimit, runnerTraceParameters, snapshotRunnerRecord } from './runner-trace-record.js';
 
 const maximumStreamBytes = 64 * 1024 * 1024;
@@ -51,11 +52,14 @@ export class RunnerTraceJournal {
   private file: FileHandle | undefined;
   private resources: TraceResources | undefined;
   private readonly initialization: Promise<void>;
+  private readonly storage: TraceStorageLease;
 
   private constructor(
     private readonly context: Record<string, unknown>,
     private readonly options: RunnerTraceJournalOptions,
+    private readonly budget: TraceStorageBudget,
   ) {
+    this.storage = budget.acquire(2);
     this.initialization = this.initialize();
     const initialized = this.initialization.catch(error => { this.fail(error); });
     this.writes = initialized;
@@ -63,17 +67,17 @@ export class RunnerTraceJournal {
   }
 
   /** Admission starts synchronously; filesystem initialization has the same cleanup owner. */
-  static begin(context: unknown, options: RunnerTraceJournalOptions): RunnerTraceJournal {
+  static begin(context: unknown, options: RunnerTraceJournalOptions, budget = traceStorageBudget): RunnerTraceJournal {
     const snapshot = snapshotRunnerRecord(context);
     if (snapshot.type !== 'context-options' || snapshot.origin !== 'testRunner' || snapshot.version !== 8) throw runnerTraceInvalid('expected the original version-8 runner context record');
     const attachments = runnerTraceField(options, 'attachments');
     const sources = runnerTraceField(options, 'sources');
     if (typeof attachments !== 'boolean' || typeof sources !== 'boolean') throw runnerTraceInvalid('invalid runner journal options');
-    return new RunnerTraceJournal(snapshot, { attachments, sources });
+    return new RunnerTraceJournal(snapshot, { attachments, sources }, budget);
   }
 
-  static async create(context: unknown, options: RunnerTraceJournalOptions): Promise<RunnerTraceJournal> {
-    const journal = RunnerTraceJournal.begin(context, options);
+  static async create(context: unknown, options: RunnerTraceJournalOptions, budget = traceStorageBudget): Promise<RunnerTraceJournal> {
+    const journal = RunnerTraceJournal.begin(context, options, budget);
     try {
       await journal.initialization;
       return journal;
@@ -89,7 +93,7 @@ export class RunnerTraceJournal {
   }
 
   private async initialize(): Promise<void> {
-    this.resources = await TraceResources.create();
+    this.resources = await TraceResources.create(this.budget);
     this.cancellation.signal.throwIfAborted();
     this.directoryPath = await mkdtemp(join(tmpdir(), 'flashwright-runner-trace-'));
     this.cancellation.signal.throwIfAborted();
@@ -149,25 +153,31 @@ export class RunnerTraceJournal {
       for (const attachment of pending) attachmentBytes += attachment.length;
       if (this.queuedAttachments + pending.length > 128 || this.queuedAttachmentBytes + attachmentBytes > maximumQueuedAttachmentBytes) throw runnerTraceLimit('runner trace exceeds 128 queued bodies or 32 MiB of attachment copies');
       if (record.type === 'before' && this.options.sources) this.referenceSources(record.stack);
-      for (const attachment of pending) {
-        const bytes = Buffer.allocUnsafe(attachment.length);
-        Uint8Array.prototype.set.call(bytes, attachment.original);
-        const alias = createHash('sha1').update(bytes).digest('hex');
-        attachment.metadata.sha1 = alias;
-        this.captureBody(bytes, alias);
-      }
-      const encoded = encodeRunnerRecord(record);
-      this.events++;
-      this.streamBytes += measured;
-      this.queuedBytes += measured;
-      this.writes = this.writes.then(async () => {
-        try {
-          if (this.failure || this.cancellation.signal.aborted) return;
-          await this.file!.writeFile(encoded);
-          this.journalHash.update(encoded);
-        } catch (error) { this.fail(error); }
-        finally { this.queuedBytes -= measured; }
-      });
+      const releaseWrite = this.storage.reserveWrite(measured);
+      try {
+        for (const attachment of pending) {
+          const releaseBody = this.budget.queue(attachment.length);
+          try {
+            const bytes = Buffer.allocUnsafe(attachment.length);
+            Uint8Array.prototype.set.call(bytes, attachment.original);
+            const alias = createHash('sha1').update(bytes).digest('hex');
+            attachment.metadata.sha1 = alias;
+            this.captureBody(bytes, alias, releaseBody);
+          } catch (error) { releaseBody(); throw error; }
+        }
+        const encoded = encodeRunnerRecord(record);
+        this.events++;
+        this.streamBytes += measured;
+        this.queuedBytes += measured;
+        this.writes = this.writes.then(async () => {
+          try {
+            if (this.failure || this.cancellation.signal.aborted) return;
+            await this.file!.writeFile(encoded);
+            this.journalHash.update(encoded);
+          } catch (error) { this.fail(error); }
+          finally { this.queuedBytes -= measured; releaseWrite(); }
+        });
+      } catch (error) { releaseWrite(); this.storage.remove(measured); throw error; }
     } catch (error) { this.fail(error); }
   }
 
@@ -217,7 +227,7 @@ export class RunnerTraceJournal {
     return result;
   }
 
-  private captureBody(bytes: Buffer, alias: string): void {
+  private captureBody(bytes: Buffer, alias: string, releaseQueue: () => void): void {
     this.queuedAttachments++;
     this.queuedAttachmentBytes += bytes.length;
     this.captures = this.captures.then(async () => {
@@ -226,7 +236,7 @@ export class RunnerTraceJournal {
         const resource = await this.resources!.captureBytes(bytes, this.cancellation.signal);
         this.addAlias(`resources/${alias}`, resource);
       } catch (error) { this.fail(error); }
-      finally { this.queuedAttachments--; this.queuedAttachmentBytes -= bytes.length; }
+      finally { this.queuedAttachments--; this.queuedAttachmentBytes -= bytes.length; releaseQueue(); }
     });
   }
 
@@ -272,6 +282,7 @@ export class RunnerTraceJournal {
       this.assertPreparing(signal);
       const encoded = encodeRunnerRecord(snapshotRunnerRecord(record));
       if (bytes + encoded.length > maximumStreamBytes) throw runnerTraceLimit('final runner stream exceeds 64 MiB');
+      this.storage.retain(encoded.length);
       bytes += encoded.length;
       await this.output!.writeFile(encoded);
       hash.update(encoded);
@@ -300,11 +311,12 @@ export class RunnerTraceJournal {
     await this.output.close();
     await this.file!.close();
     await rm(join(this.directory, 'events.jsonl'));
+    this.storage.remove(this.streamBytes, 1);
     this.assertPreparing(signal);
     const archive = new SealedTraceArchive([
       { name: 'test.trace', path: join(this.directory, 'test.trace'), byteLength: bytes, contentHash: hash.digest('hex') },
       ...Array.from(this.aliases, ([name, resource]) => ({ name, ...resource })),
-    ], () => this.removeFiles());
+    ], () => this.removeFiles(), this.budget);
     this.transferred = true;
     this.sourcePaths.clear();
     this.aliases.clear();
@@ -348,6 +360,7 @@ export class RunnerTraceJournal {
 
   private async resourceSha1(resource: TraceResource, signal: AbortSignal): Promise<string> {
     const file = await open(resource.path, 'r');
+    let failed = false;
     try {
       const buffer = Buffer.allocUnsafe(65536);
       const hash = createHash('sha1');
@@ -362,7 +375,11 @@ export class RunnerTraceJournal {
       }
       if (bytes !== resource.byteLength) throw runnerTraceInvalid('runner resource changed during hashing');
       return hash.digest('hex');
-    } finally { await file.close(); }
+    } catch (error) { failed = true; throw error; }
+    finally {
+      try { await this.resources!.closeReader(file); }
+      catch (error) { if (!failed) throw error; }
+    }
   }
 
   private assertAppendOpen(): void {
@@ -393,12 +410,14 @@ export class RunnerTraceJournal {
       await Promise.all([this.writes, this.captures]);
       let originalFailure: unknown;
       let failed = false;
-      const settle = async (work: Promise<unknown>): Promise<void> => {
-        try { await work; } catch (error) { if (!failed) { originalFailure = error; failed = true; } }
+      const settle = async (work: Promise<unknown>): Promise<boolean> => {
+        try { await work; return true; }
+        catch (error) { if (!failed) { originalFailure = error; failed = true; } return false; }
       };
-      if (this.file) await settle(this.file.close());
-      if (this.output) await settle(this.output.close());
-      if (this.directoryPath) await settle(rm(this.directoryPath, { recursive: true, force: true }));
+      const inputClosed = !this.file || await settle(this.file.close());
+      const outputClosed = !this.output || await settle(this.output.close());
+      const removed = !this.directoryPath || await settle(rm(this.directoryPath, { recursive: true, force: true }));
+      if (inputClosed && outputClosed && removed) this.storage.release();
       if (this.resources) await settle(this.resources.dispose());
       this.sourcePaths.clear();
       this.aliases.clear();

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StringDecoder } from 'node:string_decoder';
 import { failure } from './errors.js';
+import { traceStorageBudget, TraceFileCustody, type TraceStorageBudget, type TraceStorageLease } from './trace-storage-budget.js';
 
 export const maximumSourceBytes = 8 * 1024 * 1024;
 const maximumResourceBytes = 16 * 1024 * 1024;
@@ -30,15 +31,18 @@ export class TraceResources {
   private disposal: Promise<void> | undefined;
   private activeDrained: (() => void) | undefined;
   private drained: (() => void) | undefined;
+  private readonly files = new TraceFileCustody();
 
-  private constructor(readonly directory: string) {}
+  private constructor(readonly directory: string, readonly storageBudget: TraceStorageBudget, private readonly storage: TraceStorageLease) {}
 
-  static async create(): Promise<TraceResources> {
-    return new TraceResources(await mkdtemp(join(tmpdir(), 'flashwright-trace-resources-')));
+  static async create(budget = traceStorageBudget): Promise<TraceResources> {
+    const storage = budget.acquire();
+    try { return new TraceResources(await mkdtemp(join(tmpdir(), 'flashwright-trace-resources-')), budget, storage); }
+    catch (error) { storage.release(); throw error; }
   }
 
   acquire(): () => void {
-    if (this.closing) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
+    if (this.closing || this.files.uncertain) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
     this.activeLeases++;
     let released = false;
     return () => {
@@ -51,7 +55,7 @@ export class TraceResources {
 
   /** Sealed archives retain bytes without keeping a retired recording's active work alive. */
   acquireArchive(): () => Promise<void> {
-    if (this.closing) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
+    if (this.closing || this.files.uncertain) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
     this.archiveLeases++;
     let releaseWork: Promise<void> | undefined;
     return () => {
@@ -66,6 +70,9 @@ export class TraceResources {
 
   owns(resource: TraceResource): boolean { return this.resources.get(resource.contentHash) === resource; }
 
+  /** Private resource readers share the store's original file and byte custody. */
+  closeReader(file: FileHandle): Promise<void> { return this.files.close(file); }
+
   /** Nonblocking open closes the pathname-to-FIFO race; only regular files are read. */
   async captureFile(path: string, signal: AbortSignal, maximumBytes = maximumResourceBytes, encoding?: 'utf8'): Promise<TraceResource | undefined> {
     this.assertCaptureOpen(signal);
@@ -79,6 +86,7 @@ export class TraceResources {
     let temporary: FileHandle | undefined;
     let temporaryPath: string | undefined;
     let reservedBytes = 0;
+    let failed = false;
     try {
       try { source = await open(path, constants.O_RDONLY | constants.O_NONBLOCK); }
       catch (error) {
@@ -90,6 +98,7 @@ export class TraceResources {
       const before = await source.stat({ bigint: true });
       if (!before.isFile()) return undefined;
       if (before.size > BigInt(maximumBytes)) throw failure('ResourceLimitError', 'tracing.resources', 'resource exceeds its byte limit');
+      this.storage.retain(0, 1);
       temporaryPath = join(this.directory, `${randomUUID()}.tmp`);
       temporary = await open(temporaryPath, 'wx', 0o600);
       const hash = createHash('sha256');
@@ -100,6 +109,7 @@ export class TraceResources {
         if (reservedBytes + bytes.length > maximumResourceBytes || this.bytes + bytes.length > maximumRecordingBytes) {
           throw failure('ResourceLimitError', 'tracing.resources', 'resource or recording byte limit exceeded');
         }
+        this.storage.retain(bytes.length);
         reservedBytes += bytes.length;
         this.bytes += bytes.length;
         hash.update(bytes);
@@ -129,15 +139,10 @@ export class TraceResources {
       if (publication.stored) { temporaryPath = undefined; reservedBytes = 0; }
       this.assertCaptureOpen(signal);
       return publication.resource;
-    } finally {
-      try { await temporary?.close(); }
-      finally {
-        try { if (temporaryPath) await rm(temporaryPath, { force: true }); }
-        finally {
-          try { await source?.close(); }
-          finally { this.bytes -= reservedBytes; this.ingests--; this.notifyDrained(); }
-        }
-      }
+    } catch (error) { failed = true; throw error; }
+    finally {
+      try { await this.cleanupIngest(temporary, temporaryPath, reservedBytes, source); }
+      catch (error) { if (!failed) throw error; }
     }
   }
 
@@ -148,11 +153,13 @@ export class TraceResources {
     if (bytes.length > maximumResourceBytes || this.bytes + bytes.length > maximumRecordingBytes) {
       throw failure('ResourceLimitError', 'tracing.resources', 'resource or recording byte limit exceeded');
     }
+    this.storage.retain(bytes.length, 1);
     this.ingests++;
     this.bytes += bytes.length;
     let reservedBytes = bytes.length;
     let temporaryPath: string | undefined = join(this.directory, `${randomUUID()}.tmp`);
     let temporary: FileHandle | undefined;
+    let failed = false;
     try {
       const contentHash = createHash('sha256').update(bytes).digest('hex');
       temporary = await open(temporaryPath, 'wx', 0o600);
@@ -164,13 +171,31 @@ export class TraceResources {
       if (publication.stored) { temporaryPath = undefined; reservedBytes = 0; }
       this.assertCaptureOpen(signal);
       return publication.resource;
-    } finally {
-      try { await temporary?.close(); }
-      finally {
-        try { if (temporaryPath) await rm(temporaryPath, { force: true }); }
-        finally { this.bytes -= reservedBytes; this.ingests--; this.notifyDrained(); }
-      }
+    } catch (error) { failed = true; throw error; }
+    finally {
+      try { await this.cleanupIngest(temporary, temporaryPath, reservedBytes); }
+      catch (error) { if (!failed) throw error; }
     }
+  }
+
+  /** A duplicate or failed ingest returns credit only after both handle and pathname custody end. */
+  private async cleanupIngest(temporary: FileHandle | undefined, path: string | undefined, bytes: number, source?: FileHandle): Promise<void> {
+    let originalFailure: unknown;
+    let failed = false;
+    const settle = async (work: Promise<unknown>): Promise<boolean> => {
+      try { await work; return true; }
+      catch (error) { if (!failed) { originalFailure = error; failed = true; } return false; }
+    };
+    const closed = !temporary || await settle(this.files.close(temporary));
+    const removed = path === undefined || await settle(rm(path, { force: true }));
+    if (path !== undefined && closed && removed) {
+      this.storage.remove(bytes, 1);
+      this.bytes -= bytes;
+    }
+    if (source) await settle(this.files.close(source));
+    this.ingests--;
+    this.notifyDrained();
+    if (failed) throw originalFailure;
   }
 
   /** Shared publication keeps file and binary ingests from exposing unfinished blobs. */
@@ -212,7 +237,9 @@ export class TraceResources {
     this.closing = true;
     this.disposal = (async () => {
       if (this.activeLeases || this.archiveLeases || this.ingests) await new Promise<void>(resolve => { this.drained = resolve; });
+      await this.files.settle();
       await rm(this.directory, { recursive: true, force: true });
+      this.storage.release();
       this.resources.clear();
       this.bytes = 0;
     })();
@@ -228,6 +255,6 @@ export class TraceResources {
 
   private assertCaptureOpen(signal: AbortSignal): void {
     signal.throwIfAborted();
-    if (this.closing) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
+    if (this.closing || this.files.uncertain) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
   }
 }
