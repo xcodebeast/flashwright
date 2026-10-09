@@ -1,5 +1,4 @@
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { runnerGlobals, upstreamRequire } from './upstream-runtime.js';
 import { runnerIntegration } from '@flashwright/core/runner-integration';
 import type { TestInfo } from 'flashwright-upstream-runner/test';
 
@@ -23,8 +22,6 @@ interface PinnedTestInfo extends TestInfo {
   }): PinnedStep;
 }
 
-const upstreamRequire = createRequire(require.resolve('flashwright-upstream-runner/package.json'));
-const globals = upstreamRequire(join(dirname(upstreamRequire.resolve('flashwright-upstream-runner/package.json')), 'lib/globals.js')) as { currentTestInfo(): TestInfo | undefined };
 const { utils, iso } = upstreamRequire('playwright-core/lib/coreBundle') as {
   utils: { currentZone(): { data(name: 'stepZone'): PinnedStep | undefined } };
   iso: {
@@ -38,7 +35,7 @@ const { utils, iso } = upstreamRequire('playwright-core/lib/coreBundle') as {
 export function installTraceSteps(testInfo: TestInfo): () => void {
   return runnerIntegration.installActionObserver(2, {
     begin(metadata) {
-      if (globals.currentTestInfo() !== testInfo) return undefined;
+      if (runnerGlobals.currentTestInfo() !== testInfo) return undefined;
       const parent = utils.currentZone().data('stepZone');
       if (parent?.category === 'expect' && ['locator._expect', 'frame._expect'].includes(metadata.apiName)) {
         return { stepId: parent.stepId, title: parent.shortTitle ?? parent.title, complete() {} };

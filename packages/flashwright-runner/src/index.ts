@@ -1,5 +1,5 @@
-import * as upstream from 'flashwright-upstream-runner/test';
-import { createRequire } from 'node:module';
+import { upstreamRequire, runnerHooks } from './upstream-runtime.js';
+import type * as PinnedRunner from 'flashwright-upstream-runner/test';
 import { runnerIntegration } from '@flashwright/core/runner-integration';
 import { chromium, failure, type Browser, type BrowserContext, type Page, type LaunchOptions, type BrowserContextOptions, type ViewportSize } from '@flashwright/core';
 import type { PlaywrightTestOptions, PlaywrightWorkerOptions, ExpectMatcherState } from 'flashwright-upstream-runner/test';
@@ -8,16 +8,21 @@ import { screenshotPolicy } from './screenshot-policy.js';
 import { ScreenshotLifecycle } from './screenshot-recorder.js';
 import { discardDisabledRunnerTrace } from './runner-trace-off.js';
 
+const upstream: typeof PinnedRunner = upstreamRequire('./test.js');
+
 // The pinned runner's transformed files need its map registry, even when Bun
 // exposes structured call sites independently of Error.prepareStackTrace.
-const upstreamRequire = createRequire(require.resolve('flashwright-upstream-runner/package.json'));
 const { sourceMapSupport } = upstreamRequire('playwright-core/lib/utilsBundle') as { sourceMapSupport: { mapSourcePosition: Parameters<typeof runnerIntegration.installSourcePositionMapper>[1] } };
 runnerIntegration.installSourcePositionMapper(1, position => sourceMapSupport.mapSourcePosition(position));
+runnerHooks.installTraceStart(testInfo => {
+  discardDisabledRunnerTrace(testInfo);
+  return false;
+});
 
 export type { TestInfo, WorkerInfo, TestType, Fixtures, FullConfig, FullProject, PlaywrightTestConfig, ExpectMatcherState, MatcherReturnType } from 'flashwright-upstream-runner/test';
 export type { Browser, BrowserContext, Page, Locator, Dialog } from '@flashwright/core';
 export { errors } from '@flashwright/core';
-export { defineConfig } from 'flashwright-upstream-runner/test';
+export const defineConfig = upstream.defineConfig;
 export { devices } from '@flashwright/core';
 
 function unsupportedOptions(options: object): void {

@@ -46,7 +46,7 @@ function validateClocks(records) {
 try {
   for (const engine of ['playwright', 'flashwright']) {
     const folder = join(destination, engine); await mkdir(folder);
-    const child = spawn('python3', ['tools/watchdog.py', '--timeout', '90', '--report-directory', join(folder, 'watchdog'), '--', process.execPath, 'node_modules/playwright/cli.js', 'test', '--config', join(destination, 'playwright.config.cjs')], {
+    const child = spawn('python3', ['tools/watchdog.py', '--timeout', '90', '--report-directory', join(folder, 'watchdog'), '--', process.execPath, engine === 'playwright' ? 'node_modules/playwright/cli.js' : 'packages/flashwright-runner/dist/upstream/cli.js', 'test', '--config', join(destination, 'playwright.config.cjs')], {
       stdio: 'inherit', env: { ...process.env, FLASHWRIGHT_ADOPTION_ENGINE: engine, FLASHWRIGHT_ADOPTION_OUTPUT: join(folder, 'output'), FLASHWRIGHT_ADOPTION_RESULTS: join(folder, 'results.json'), FLASHWRIGHT_ADOPTION_EVENTS: join(folder, 'events.jsonl'), FLASHWRIGHT_ADOPTION_MODULE: resolve('packages/flashwright-runner/dist/commonjs/runner-trace-journal.js') },
     });
     const exitCode = await new Promise((complete, reject) => { child.on('error', reject); child.on('close', complete); });

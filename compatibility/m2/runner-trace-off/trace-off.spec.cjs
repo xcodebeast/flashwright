@@ -8,7 +8,7 @@ const base = process.env.FLASHWRIGHT_TRACE_OFF_ENGINE === 'playwright'
   : upstream.test;
 const upstreamPath = process.env.FLASHWRIGHT_TRACE_OFF_ENGINE === 'playwright'
   ? require.resolve('playwright/package.json')
-  : createRequire(createRequire(require.resolve('@flashwright/test')).resolve('@flashwright/runner/package.json')).resolve('flashwright-upstream-runner/package.json');
+  : join(dirname(createRequire(require.resolve('@flashwright/test')).resolve('@flashwright/runner/package.json')), 'dist/upstream/package.json');
 const upstreamRequire = createRequire(upstreamPath);
 const globals = upstreamRequire(join(dirname(upstreamPath), 'lib/globals.js'));
 const record = (phase, information = globals.currentTestInfo()) => {

@@ -1,0 +1,32 @@
+{
+  "referenceVersion": "1.60.0",
+  "manifestPath": "compatibility/upstream/runner-runtime-manifest.json",
+  "manifestSha256": "db9666f7b22be84f1bc63e976439e051ef0824e1ac524f0cd9eaa058360d5b34",
+  "sourceFileCount": 62,
+  "sourceWorkerSha256": "0f7b9c0a004787e0bef22a95ea38a4fa9d8879d4be52d8fad07795eddb93cc51",
+  "adaptedWorkerSha256": "3f9cc024f19f4d9f72cc8599bfadda44289b4908a16824cdbbaa6e9511538a13",
+  "implementation": {
+    "tools/build-runner-runtime.mjs": "6d988293669e09e38e3a5cdf7890f375076e088ce2ee10b114221d6040571df5",
+    "tools/build-packages.mjs": "eb5382cd393316ed2a8a8c4345d5fab952f66b18e81d6ea4301e9c8c12f6c32d",
+    "packages/flashwright-runner/runner-hooks.cjs": "a1fa9b84cf16ee30ab7556d56ebb42b3965bb6c8f404b382cb35c6b3322436aa",
+    "packages/flashwright-runner/src/upstream-runtime.ts": "2da403f1cc37c8bad6f323f43a770e86ec5318e91cc8308a217653c88fa4b6c3",
+    "packages/flashwright-runner/src/index.ts": "8b6908de84b29e15c8e14a895b8a3bb76ef75f93be3d35c3a0e3c3a9dad0dffa",
+    "packages/flashwright-runner/src/runner-trace-off.ts": "92d69a9d23d92050413b9749803322cd52a56c9e9a8cd1ca36615e6a42085cc6",
+    "packages/flashwright-runner/src/runner-trace-journal.ts": "cdf76bc5a8bd485e5f9c89910a1b4f8a814a90d3292f8fcbd45755839cd7ed68",
+    "packages/flashwright-runner/src/trace-steps.ts": "2cee123968b208e16f288dee0a50387fd8632007d43d5fc806581f05c52620de",
+    "packages/flashwright-runner/cli.cjs": "1a42cbf318d9c2730beff5752c55120e5b0886279056ea4abce42effa9203ce4",
+    "packages/flashwright-runner/package.json": "4a7dcf1229d0ebefa232c309dafd8fb69b67d1cb57bf25409510724cc9797d9a",
+    "tools/test-owned-runner-runtime.mjs": "5a4074e84295915e17d24668b526c2e14007b4577289a123c0395a2fc128e4d6",
+    "tools/run-runner-trace-start-tests.mjs": "86e30dda90fff3a3ef6037489212d225a9970d4dbbb9da2db419c8331a52805c",
+    "compatibility/m2/runner-trace-start/start.spec.cjs": "13a92212299f1b524740c2fc91fa2099183cec81c3a390421237f43c277674e6",
+    "compatibility/m2/runner-trace-start/playwright.config.cjs": "eff0df98cd8eaa5eb81b62ad5abdfa8b280e3ee73fbd05cf2fbd1c5d3985c6a1"
+  },
+  "relationship": "The canonical runner ships its own checksum-pinned Playwright runtime tree. All files except the worker bundle are byte-identical; the bundle imports one local hook module and calls it after capture-policy normalization, before live writes or fixtures. Package name, exports, version, relative worker/loader paths and upstream notices stay intact. CLI, test exports and private globals use only this owned runtime; no prototype, module-resolution or require-cache mutation.",
+  "contract": "A single synchronous boolean callback sees the exact original TestInfo, including off attempts and skipped attempts that reach final trace stop without fixtures. True takes ownership and suppresses original live allocation; false or no callback preserves it. Promise results reject synchronously and their rejections are observed. Adapter capture failures belong in bounded admission diagnostics, not thrown callback errors. Final attempt export retains the existing original-instance finalizer.",
+  "currentScope": "Public trace-off collection is disabled at this earlier boundary. Enabled automatic traces remain unsupported by public fixture validation. Private capture tests adopt the journal at the one-context-record prefix, preserve policies/retries/expected outcomes/modifiers/skipped final stop, and reject live before filesystem work.",
+  "dependencyNote": "The isolated original dependency continues supplying public declaration types and build input. playwright-core is also a direct exact runtime dependency so the owned copy resolves it under nested package-manager layouts. The plain library does not load this runtime.",
+  "source": "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/testTracing.ts",
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "modificationNotice": "packages/flashwright-runner/dist/upstream/NOTICE.flashwright"
+}

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, copyFile, writeFile, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { buildRunnerRuntime } from './build-runner-runtime.mjs';
 
 const require = createRequire(import.meta.url);
 const compiler = require.resolve('typescript/bin/tsc');
@@ -41,6 +42,7 @@ for (const name of ['flashwright-core', 'flashwright-runner']) {
   const destination = `${packageDirectory}/dist/commonjs`;
   await rm(`${packageDirectory}/dist`, { recursive: true, force: true });
   await mkdir(destination, { recursive: true });
+  if (name === 'flashwright-runner') await buildRunnerRuntime(`${packageDirectory}/dist/upstream`);
   execFileSync(process.execPath, [compiler, '--project', `${packageDirectory}/tsconfig.json`, '--outDir', destination, '--module', 'CommonJS', '--moduleResolution', 'Node'], { stdio: 'inherit' });
   await writeFile(`${destination}/package.json`, '{"type":"commonjs"}\n');
   if (name === 'flashwright-core') {

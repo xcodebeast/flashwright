@@ -5,7 +5,8 @@ import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { chromium as referenceChromium } from 'playwright';
-import { expect as referenceExpect } from 'flashwright-upstream-runner/test';
+// The owned copy keeps this pinned expect implementation byte-identical.
+import { expect as referenceExpect } from '../../packages/flashwright-runner/dist/upstream/test.mjs';
 import { chromium as flashwrightChromium } from 'flashwright';
 import { expect as flashwrightExpect } from '@flashwright/test';
 

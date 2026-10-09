@@ -2,17 +2,29 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /** The same test bodies run under preferred imports and package-manager aliases. */
-export async function writeConsumerFixtures(directory, { aliases, libraryOnly }) {
+export async function writeConsumerFixtures(directory, { aliases, libraryOnly, packageIdentities }) {
   const library = aliases ? 'playwright' : 'flashwright';
   const runner = aliases ? '@playwright/test' : '@flashwright/test';
   const common = `
 const assert = require('node:assert/strict');
 const { createRequire } = require('node:module');
 const { spawnSync } = require('node:child_process');
+const { readFileSync } = require('node:fs');
+const { createHash } = require('node:crypto');
+const { dirname, join } = require('node:path');
+const packageIdentities = ${JSON.stringify(packageIdentities)};
+function verifyPackage(name, manifestPath) {
+  for (const [path, expected] of Object.entries(packageIdentities[name])) {
+    const actual = createHash('sha256').update(readFileSync(join(dirname(manifestPath), path))).digest('hex');
+    assert.equal(actual, expected, name + '/' + path + ' installed bytes differ from the packaged build');
+  }
+}
 const library = require('${library}');
 const libraryPath = require.resolve('${library}');
 const libraryRequire = createRequire(libraryPath);
 const corePath = libraryRequire.resolve('@flashwright/core');
+verifyPackage('flashwright', require.resolve('${library}/package.json'));
+verifyPackage('@flashwright/core', libraryRequire.resolve('@flashwright/core/package.json'));
 assert.ok(libraryPath.startsWith(process.env.FLASHWRIGHT_CONSUMER_ROOT + '/'));
 assert.ok(corePath.startsWith(process.env.FLASHWRIGHT_CONSUMER_ROOT + '/'));
 assert.equal(spawnSync('cargo', ['--version']).error?.code, 'ENOENT');
@@ -26,6 +38,8 @@ const runner = require('${runner}');
 const runnerRequire = createRequire(require.resolve('${runner}'));
 const implementationPath = runnerRequire.resolve('@flashwright/runner');
 const implementationRequire = createRequire(implementationPath);
+verifyPackage('@flashwright/test', require.resolve('${runner}/package.json'));
+verifyPackage('@flashwright/runner', runnerRequire.resolve('@flashwright/runner/package.json'));
 const runnerCore = implementationRequire('@flashwright/core');
 for (const name of ['Page', 'Locator', 'chromium', 'errors', 'TimeoutError']) assert.equal(library[name], runnerCore[name], name);
 assert.equal(corePath, implementationRequire.resolve('@flashwright/core'));
@@ -61,7 +75,8 @@ console.log('Consumer identity, native input, isolated ownership and cleanup pas
 const { createRequire } = require('node:module');
 const runnerRequire = createRequire(require.resolve('${runner}'));
 const implementationRequire = createRequire(runnerRequire.resolve('@flashwright/runner'));
-const upstream = implementationRequire('flashwright-upstream-runner/test');
+const { dirname, join } = require('node:path');
+const upstream = implementationRequire(join(dirname(implementationRequire.resolve('@flashwright/runner/package.json')), 'dist/upstream/test.js'));
 for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
   for (const method of ['launch', 'launchPersistentContext', 'connect', 'connectOverCDP']) browser[method] = async () => { throw new Error('Forbidden upstream browser backend entered'); };
 }

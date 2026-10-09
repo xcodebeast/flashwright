@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
-const { adoptRunnerTraceJournal } = require('../packages/flashwright-runner/dist/commonjs/runner-trace-journal.js');
+const { adoptRunnerTraceJournal, adoptRunnerTraceAtStart } = require('../packages/flashwright-runner/dist/commonjs/runner-trace-journal.js');
 const { TraceResources } = require('../packages/flashwright-core/dist/commonjs/trace-resources.js');
 const report = { status: 'running', checks: [] };
 const fixture = '_setupWorkerTraceJournal';
@@ -31,6 +31,34 @@ async function contents(journal) {
   } finally { reader.release(); await archive.dispose(); }
 }
 {
+  await check('owned startup admits only the original context before any hook or fixture', async () => {
+    const information = testInfo();
+    information._tracing._traceEvents.length = 1;
+    const admission = adoptRunnerTraceAtStart(information);
+    try {
+      assert.equal(admission.failure, undefined);
+      assert.equal(adoptRunnerTraceJournal(fixture, information), admission);
+      assert.equal(information._tracing._traceEvents.length, 0);
+      information._tracing.appendBeforeActionForStep({ stepId: 'modifier', category: 'hook', title: 'skip modifier', params: {}, stack: [] });
+      const result = await contents(admission.journal);
+      assert.deepEqual(result.records.map(record => record.type), ['context-options', 'before']);
+    } finally { await admission.journal.dispose(); }
+    const late = adoptRunnerTraceAtStart(testInfo());
+    assert.equal(late.failure.name, 'ProtocolError');
+    assert.equal(late.journal, undefined);
+  });
+
+  await check('owned live rejection opens no journal and replaces every allocation caller', async () => {
+    const information = testInfo();
+    information._tracing._traceEvents.length = 1;
+    information._tracing.traceOptions = () => ({ sources: true, attachments: true, live: true });
+    const admission = adoptRunnerTraceAtStart(information);
+    assert.equal(admission.failure.name, 'UnsupportedFeatureError');
+    assert.equal(admission.journal, undefined);
+    information._tracing.appendStdioToTrace('stdout', Buffer.from('discarded'));
+    assert.equal(information._tracing._traceEvents.length, 0);
+  });
+
   await check('all five original appenders are replaced synchronously before blocked initialization', async () => {
     const original = TraceResources.create; const entered = deferred(); const release = deferred();
     TraceResources.create = async () => { entered.resolve(); await release.promise; return original.call(TraceResources); };

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { copyFile, mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { once } from 'node:events';
 import { dirname, join, resolve } from 'node:path';
 import { chromium } from 'playwright';
@@ -17,6 +17,28 @@ import { identifyBrowser } from './browser-identity.mjs';
 import { sourceManifest } from './source-manifest.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+
+/** Check installed payloads as well as tarballs; private versions are reused between runs. */
+async function packageIdentities() {
+  const identities = {};
+  for (const directory of ['flashwright-core', 'flashwright', 'flashwright-runner', 'flashwright-test']) {
+    const root = resolve('packages', directory);
+    const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+    const files = { 'package.json': hash(await readFile(join(root, 'package.json'))) };
+    const visit = async relative => {
+      for (const entry of await readdir(join(root, relative), { withFileTypes: true })) {
+        const path = join(relative, entry.name);
+        if (entry.isDirectory()) await visit(path);
+        else files[path] = hash(await readFile(join(root, path)));
+      }
+    };
+    await visit('dist');
+    if (manifest.files.includes('cli.cjs')) files['cli.cjs'] = hash(await readFile(join(root, 'cli.cjs')));
+    identities[manifest.name] = files;
+  }
+  return identities;
+}
+
 const sources = await sourceManifest();
 const destination = resolve(`compatibility/evidence/consumer-matrix-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(destination, { recursive: true });
@@ -71,6 +93,7 @@ try {
   ];
   const artifactsDirectory = join(destination, 'artifacts'); await mkdir(artifactsDirectory);
   const { archives } = await packConsumerPackages(artifactsDirectory, { runner: true });
+  report.packageIdentities = await packageIdentities();
   await run('pack checked platform executable', [process.execPath, 'tools/pack-driver-runtime.mjs', '--driver', driver, '--destination', join(working, 'runtime')]);
   const runtime = JSON.parse(await readFile(join(working, 'runtime/report.json'), 'utf8'));
   const runtimeArchive = join(artifactsDirectory, 'driver-runtime.tgz'); await copyFile(runtime.archive, runtimeArchive);
@@ -120,8 +143,9 @@ try {
         // Fresh private fixture versions have no public registry age; other packages retain Yarn's gates.
         await writeFile(join(directory, '.yarnrc.yml'), `nodeLinker: ${manager.linker}\nnpmRegistryServer: ${JSON.stringify(registry.url)}\nunsafeHttpWhitelist:\n  - 127.0.0.1\nnpmPreapprovedPackages: ${JSON.stringify(registry.packageDescriptors)}\nenableScripts: false\nenableTelemetry: false\nenableGlobalCache: false\nglobalFolder: ${JSON.stringify(join(directory, '.yarn/global'))}\npnpEnableEsmLoader: true\n`);
       }
-      await writeConsumerFixtures(consumer, { aliases, libraryOnly });
-      const consumerEnvironment = { ...environment, PATH: `${dirname(manager.name === 'bun' ? requireBun() : process.execPath)}:/usr/bin:/bin`, FLASHWRIGHT_CONSUMER_ROOT: await realpath(directory) };
+      await writeConsumerFixtures(consumer, { aliases, libraryOnly, packageIdentities: report.packageIdentities });
+      const consumerEnvironment = { ...environment, PATH: `${dirname(manager.name === 'bun' ? requireBun() : process.execPath)}:/usr/bin:/bin`, FLASHWRIGHT_CONSUMER_ROOT: await realpath(directory),
+        BUN_INSTALL_CACHE_DIR: join(directory, 'bun-install-cache'), npm_config_cache: join(directory, 'npm-cache') };
       const options = { cwd: directory, env: consumerEnvironment };
       const version = (await run(`${label} manager identity`, [...manager.command, '--version'], options)).trim();
       assert.equal(version, manager.packageManager.split('@').at(-1));

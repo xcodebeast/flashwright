@@ -21,11 +21,11 @@ function visit(node) {
 visit(parsed);
 for (const name of names) assert(methods[name], `Missing pinned runner contract ${name}`);
 const implementation = {};
-for (const path of ['packages/flashwright-runner/src/index.ts', 'packages/flashwright-runner/src/runner-trace-off.ts', 'compatibility/m2/runner-trace-off/trace-off.spec.cjs', 'compatibility/m2/runner-trace-off/reporter.cjs', 'compatibility/m2/runner-trace-off/playwright.config.cjs', 'tools/run-runner-trace-off-tests.mjs']) implementation[path] = hash(await readFile(path));
+for (const path of ['packages/flashwright-runner/src/index.ts', 'packages/flashwright-runner/src/upstream-runtime.ts', 'packages/flashwright-runner/runner-hooks.cjs', 'tools/build-runner-runtime.mjs', 'packages/flashwright-runner/src/runner-trace-off.ts', 'compatibility/m2/runner-trace-off/trace-off.spec.cjs', 'compatibility/m2/runner-trace-off/reporter.cjs', 'compatibility/m2/runner-trace-off/playwright.config.cjs', 'tools/run-runner-trace-off-tests.mjs']) implementation[path] = hash(await readFile(path));
 const output = JSON.stringify({
   referenceVersion: '1.60.0', distribution, distributionSha256: hash(source), methods, implementation,
   sources: ['https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/testTracing.ts', 'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/fixtureRunner.ts', 'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/workerMain.ts'],
-  relationship: 'Independent per-attempt adaptation of the pinned TestTracing instance. The first zero-dependency worker and all-hooks test fixtures disable unused append methods and clear the internal prefix when traceOptions is undefined. Reporter steps, attachments, errors and stdio retain their upstream owners. No global prototype or module-resolution mutation.',
+  relationship: 'Independent per-attempt adaptation of the pinned TestTracing instance. The owned synchronous worker startup hook disables unused append methods and clears the context prefix when traceOptions is undefined; zero-dependency worker and all-hooks fixtures retain idempotent checks. Reporter steps, attachments, errors and stdio retain their upstream owners. No global prototype or module-resolution mutation. Owned runtime provenance records the narrowly modified worker bundle.',
   exclusions: ['Automatic enabled tracing remains unsupported.', 'Manual browser-context tracing is independent.', 'No performance or release claim.'],
   license: 'Apache-2.0', licensePath: 'compatibility/upstream/LICENSE.playwright', noticePath: 'compatibility/upstream/NOTICE.playwright',
 }, null, 2) + '\n';

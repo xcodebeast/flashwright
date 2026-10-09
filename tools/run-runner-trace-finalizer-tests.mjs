@@ -39,9 +39,8 @@ try {
   await mkdir(fixtureDirectory, { recursive: true });
   for (const name of ['finalizer.spec.cjs', 'playwright.config.cjs']) await writeFile(join(fixtureDirectory, name), await readFile(`compatibility/m2/runner-trace-finalizer/${name}`));
   const consumerRequire = createRequire(join(workingDirectory, 'package.json'));
-  const upstreamDirectory = dirname(consumerRequire.resolve('flashwright-upstream-runner/package.json'));
   const modules = consumer ? join(dirname(consumerRequire.resolve('@flashwright/runner/package.json')), 'dist/commonjs') : resolve('packages/flashwright-runner/dist/commonjs');
-  const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '60', '--report-directory', join(destination, 'watchdog'), '--', process.execPath, join(upstreamDirectory, 'cli.js'), 'test', '--config', join(fixtureDirectory, 'playwright.config.cjs')], {
+  const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '60', '--report-directory', join(destination, 'watchdog'), '--', process.execPath, join(modules, '../upstream/cli.js'), 'test', '--config', join(fixtureDirectory, 'playwright.config.cjs')], {
     cwd: workingDirectory, stdio: 'inherit', env: { ...process.env, FLASHWRIGHT_FINALIZER_MODULES: modules, FLASHWRIGHT_FINALIZER_OUTPUT: join(destination, 'output'), FLASHWRIGHT_FINALIZER_RESULTS: join(destination, 'results.json'), FLASHWRIGHT_FINALIZER_EVENTS: join(destination, 'events.jsonl') },
   });
   report.exitCode = await new Promise((complete, reject) => { child.on('error', reject); child.on('close', complete); });

@@ -8,8 +8,8 @@ import { performance } from 'node:perf_hooks';
 import vm from 'node:vm';
 
 const require = createRequire(resolve('packages/flashwright-runner/package.json'));
-const upstreamRequire = createRequire(require.resolve('flashwright-upstream-runner/package.json'));
-const globals = upstreamRequire(join(dirname(upstreamRequire.resolve('flashwright-upstream-runner/package.json')), 'lib/globals.js'));
+const upstreamRequire = createRequire(resolve('packages/flashwright-runner/dist/upstream/package.json'));
+const globals = upstreamRequire('./lib/globals.js');
 const { utils, iso } = upstreamRequire('playwright-core/lib/coreBundle');
 const { installTraceSteps } = require(resolve('packages/flashwright-runner/dist/commonjs/trace-steps.js'));
 const { runnerIntegration } = require('@flashwright/core/runner-integration');
@@ -25,7 +25,7 @@ const start = worker.indexOf('var TestTracing = class {');
 const end = worker.indexOf('async function mergeTraceFiles(', start);
 assert(start > 0 && end > start);
 const PinnedTracing = vm.runInNewContext(`${worker.slice(start, end)}\nTestTracing;`, {
-  process: { platform: process.platform }, Date, Buffer,
+  process: { platform: process.platform }, Date, Buffer, flashwrightTraceHooks: { onTraceStart: undefined },
   import_path2: { default: path }, import_coreBundle: { getPlaywrightVersion: () => '1.60.0' },
   monotonicTime2: () => performance.now() + 1000, version: 8, traceOrdinal: 0,
 }, { timeout: 1000 });
