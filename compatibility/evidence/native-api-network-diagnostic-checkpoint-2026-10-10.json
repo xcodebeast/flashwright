@@ -1,0 +1,121 @@
+{
+  "status": "passed-scoped-network-diagnostic",
+  "scope": "Internal standalone API transport error formatting and typed classification. No aggregate memory-bound, public API, platform/package or performance acceptance.",
+  "identitiesSha256": "7a545742ee51e2eaa26accd287f596f80a6188ffd8ff2232ccb323f19b6b63ac",
+  "sourceArchiveSha256": "96554f614e1f5f9871d7ec301678e0b13197cecb9302b572b6828878c46b4af4",
+  "sourceFiles": 97,
+  "frozenHostFiles": 248,
+  "nativeDriverSha256": "384cb9112ef83ab5ecb547d51679ea1ffb508f751dd00621eda52753f510b2a8",
+  "requirements": {
+    "section": "S14",
+    "paragraph": "Native API transport failures preserve original typed resource/lifecycle errors and connection-reset retry classification before rendering diagnostics. Render only the deepest transport cause, limiting its message to 4 KiB of valid UTF-8 with an explicit ellipsis when truncated. Stop formatting at that limit instead of constructing a larger string first. This limit is separate from the response-body preview used by failOnStatusCode.",
+    "sha256": "c7e829464d8f7c6fde598c36430df98106370f9cab62ca5477c821a4e10d6c63"
+  },
+  "implementation": {
+    "crates/flashwright-engine/src/api_requests/exchange.rs": "63daf49efbcc5330c1f30654fc202bf60cefd78a6163f3a552a9fdb345935c61",
+    "crates/flashwright-engine/src/api_requests/mod.rs": "084dfb442020da497474cbef3171641ef5a666a25bddaf4c0385b7f5c590b87f",
+    "crates/flashwright-engine/src/api_requests/network_diagnostic.rs": "9b088a108505231a9c5c199546075e9119c263be6ac90d5f981075e6015df39a"
+  },
+  "verification": {
+    "api-units-002": {
+      "exitCode": 0,
+      "cleanProcessTree": true,
+      "watchdogSha256": "fa3ed091502ce20180a6f418e6fc3ac3bd2b265dcc94ad5baa5058fabeb68ae5",
+      "logSha256": "067947d018a1a30ea0ee94eac43306f8397023611d717f43cef13e3e02e9b3a8"
+    },
+    "clippy-002": {
+      "exitCode": 0,
+      "cleanProcessTree": true,
+      "watchdogSha256": "161abe5a685916e051d59e23c5f1651ed130cd002c7bb57532c5bd6cdd52565e",
+      "logSha256": "ebebfb1146a0ed8c5700cae1b9266f9902c61bf13b9310cfb131c7e3c6ad35d6"
+    },
+    "release-build-002": {
+      "exitCode": 0,
+      "cleanProcessTree": true,
+      "watchdogSha256": "4b76496b33308d1bfe622e51d118312b219aaa75611c8b3dc151d0c7d56d7b78",
+      "logSha256": "4e8caf6942759aefaf8319b4148f88eddec0ea317cb6a9a6aa4b47028a864671"
+    }
+  },
+  "nativeApiTests": 99,
+  "behaviorGroups": [
+    {
+      "runtime": "bun",
+      "group": "common",
+      "checks": 12,
+      "reportSha256": "c7117e28a3bea16c02625dde874e2c774899aa11823cb728b6653a49c6b6b61d",
+      "watchdogSha256": "15c4205616deb742914f2c45d7c54a25c0fc27dbd587edcd407d507ba11de787"
+    },
+    {
+      "runtime": "bun",
+      "group": "tls",
+      "checks": 5,
+      "reportSha256": "a9fcffa57f90280b0e0d4e12117851aea6d0e30db65b15507610265a95519ed0",
+      "watchdogSha256": "2ef69a5d56bf4a68ee9da646f880bd0024c1a5b21575fe6ea79fdc3a5f4c7282"
+    },
+    {
+      "runtime": "bun",
+      "group": "auth",
+      "checks": 5,
+      "reportSha256": "9b8961b14c7655df78c0558b819ce12cedba3bb09e5f24935e0003da335ed3b8",
+      "watchdogSha256": "7ac38e061022d051fa23295d8bbacbb08d3ac1b310f269bd174e37788d04e014"
+    },
+    {
+      "runtime": "node22",
+      "group": "common",
+      "checks": 12,
+      "reportSha256": "66e5d82e2bd925f218de1fa0902f2a11ea245c3127fdd43c0608a0f14ff0ddc9",
+      "watchdogSha256": "f649de7add89d33bb53c77d80e229240579ebc4d391b319b90ccb156d5b53b8c"
+    },
+    {
+      "runtime": "node22",
+      "group": "tls",
+      "checks": 5,
+      "reportSha256": "279907b9d5028d77961b4d231c0672751a064ba72de61a8e732d0b847c9b1300",
+      "watchdogSha256": "7834bb4e0615f99d72e0321d1d0d1fb41c647025e1160f8b737217faa2f6c6cf"
+    },
+    {
+      "runtime": "node22",
+      "group": "auth",
+      "checks": 5,
+      "reportSha256": "59f5c99798dd674af2cdd63f4dbd096334cb0214ce4ba65d95b1b3a730b26fb0",
+      "watchdogSha256": "0f0c5b9d41772688389c12fc2c5646ccbffa34368855e1ffd78b07de7cd092f5"
+    },
+    {
+      "runtime": "node24",
+      "group": "common",
+      "checks": 12,
+      "reportSha256": "f1c959fe1e29bd67f419a897164f263c31cad735e3999c13a2280295d7118e34",
+      "watchdogSha256": "1982b1137853f01ff9c1df282df92833d8173c1fe7ac838c35f2587edeba1868"
+    },
+    {
+      "runtime": "node24",
+      "group": "tls",
+      "checks": 5,
+      "reportSha256": "a4332294476147d6d06085736c188b8350a70313ad19b62e0d46c1f433ad744b",
+      "watchdogSha256": "73086f0e070e9a708e80ee8b3c7b460a6d673582038a433b0fe579f38f348743"
+    },
+    {
+      "runtime": "node24",
+      "group": "auth",
+      "checks": 5,
+      "reportSha256": "4643df361aace00d118f8a864c39f5c7953774e735a05bfa642003df2f46c8d4",
+      "watchdogSha256": "7fec7639a134202ab193f68543a2668aed86ac9016dcc0f815a7e1ed2c3c1654"
+    }
+  ],
+  "formatLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "independentReviewSha256": "967fbdafc683a83cdd8cb1c29a95548fc43cac68965946c520ab7b971e5af710",
+  "reviewFinding": "Resolved immediate I/O custom payload omission by inspecting get_ref before source. Standard io::Error::source skips that payload. Context closure remains separately protected by biased owner checks; this receipt does not claim a demonstrated public closure regression.",
+  "regressionCases": [
+    "Only deepest error cause is formatted; discarded wrapper Display implementations panic if invoked.",
+    "Immediate I/O-wrapped ResourceLimit and TargetClosed retain original code, method, text and non-retry status.",
+    "Nested I/O ConnectionReset retains retry classification.",
+    "One-, two-, three- and four-byte UTF-8 characters stop rendering before million-item diagnostics complete.",
+    "Empty, small and exact-4096-byte diagnostics retain original text; overflow carries ellipsis within4096bytes."
+  ],
+  "priorCheckpointSha256": "e7590946dbbeb59343409d47b03731d5f9b5d7e2ac425f413850b13206bcfccd",
+  "limitations": [
+    "TLS certificate diagnostic construction and cloning can allocate before Display; their aggregate sizing remains open.",
+    "Pinned error Display implementations stream large contexts; small IP-address text and fixed expected-message joins still allocate before or during rendering.",
+    "The frozen TypeScript host is copied from the prior API checkpoint and does not cover concurrent runner edits."
+  ]
+}
