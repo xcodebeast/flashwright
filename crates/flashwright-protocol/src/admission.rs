@@ -23,6 +23,8 @@ pub fn is_recovery_operation(method: &str) -> bool {
             | "page.close"
             | "context.close"
             | "browser.close"
+            | "apiRequest.dispose"
+            | "apiResponse.dispose"
     )
 }
 
@@ -69,6 +71,8 @@ mod tests {
                 "page.close",
                 "context.close",
                 "browser.close",
+                "apiRequest.dispose",
+                "apiResponse.dispose",
             ] {
                 assert!(admits_operation(ordinary, total, method));
                 assert!(!admits_operation(total, total, method));
@@ -84,6 +88,8 @@ mod tests {
         assert!(admits_operation(0, 1, "browser.launch"));
         assert!(!is_recovery_operation("dialog.accept.extra"));
         assert!(!is_recovery_operation("page.console.subscribe.extra"));
+        assert!(!is_recovery_operation("apiRequest.dispose.extra"));
+        assert!(!is_recovery_operation("apiResponse.body"));
         assert!(!is_recovery_operation("page.evaluate"));
         assert!(!is_recovery_operation("context.trace.stop"));
     }

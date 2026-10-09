@@ -37,6 +37,7 @@ export class PageCrashedError extends FlashwrightError {}
 
 export function fromRecord(record: ErrorRecord): FlashwrightError {
   const constructors: Record<string, new (record: ErrorRecord) => FlashwrightError> = {
+    Error: FlashwrightError,
     UnsupportedFeatureError, InvalidArgumentError, TimeoutError, TargetClosedError,
     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,
   };

@@ -92,7 +92,7 @@ impl BinaryPayload {
 /// The reservation stays owned until the writer acknowledges the terminal frame.
 #[derive(Debug)]
 pub struct BinaryAttachment {
-    pub bytes: Vec<u8>,
+    pub bytes: Arc<Vec<u8>>,
     pub encoding: AttachmentEncoding,
     pub decoded_length: usize,
     pub reservation: OwnedSemaphorePermit,
@@ -120,9 +120,33 @@ impl BinaryAttachment {
         Ok(Self::from_payload(payload, reservation))
     }
 
+    /// Transfer retained raw bytes and their custody without copying the allocation.
+    pub fn from_shared_raw<Reservation: std::fmt::Debug + Send + Sync + 'static>(
+        bytes: Arc<Vec<u8>>,
+        byte_reservation: Arc<Reservation>,
+        maximum_decoded_bytes: usize,
+        reservation: OwnedSemaphorePermit,
+        method: &str,
+    ) -> Result<Self, ErrorRecord> {
+        if bytes.len() > maximum_decoded_bytes {
+            return Err(ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                method,
+                "binary attachment exceeds negotiated byte limit",
+            ));
+        }
+        Ok(Self {
+            decoded_length: bytes.len(),
+            bytes,
+            encoding: AttachmentEncoding::Raw,
+            reservation,
+            byte_reservations: vec![byte_reservation],
+        })
+    }
+
     pub fn from_payload(payload: BinaryPayload, reservation: OwnedSemaphorePermit) -> Self {
         Self {
-            bytes: payload.bytes,
+            bytes: Arc::new(payload.bytes),
             encoding: payload.encoding,
             decoded_length: payload.decoded_length,
             reservation,
@@ -224,6 +248,50 @@ pub fn append_base64(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shared_transfer_keeps_original_bytes_and_charge_until_its_last_owner_drops() {
+        let slots = Arc::new(tokio::sync::Semaphore::new(1));
+        let budget = Arc::new(tokio::sync::Semaphore::new(64));
+        let charge = Arc::new(budget.clone().try_acquire_many_owned(32).unwrap());
+        let bytes = Arc::new(vec![42; 32]);
+        let attachment = BinaryAttachment::from_shared_raw(
+            bytes.clone(),
+            charge.clone(),
+            64,
+            slots.clone().try_acquire_owned().unwrap(),
+            "test",
+        )
+        .unwrap();
+        assert!(Arc::ptr_eq(&attachment.bytes, &bytes));
+        drop(bytes);
+        drop(charge);
+        assert_eq!(budget.available_permits(), 32);
+        assert_eq!(slots.available_permits(), 0);
+        assert_eq!(attachment.bytes.as_slice(), &[42; 32]);
+        drop(attachment);
+        assert_eq!(budget.available_permits(), 64);
+        assert_eq!(slots.available_permits(), 1);
+    }
+
+    #[test]
+    fn rejected_shared_transfer_returns_both_reservations_without_copying() {
+        let slots = Arc::new(tokio::sync::Semaphore::new(1));
+        let budget = Arc::new(tokio::sync::Semaphore::new(64));
+        let charge = Arc::new(budget.clone().try_acquire_many_owned(32).unwrap());
+        let bytes = Arc::new(vec![42; 32]);
+        let result = BinaryAttachment::from_shared_raw(
+            bytes.clone(),
+            charge,
+            31,
+            slots.clone().try_acquire_owned().unwrap(),
+            "test",
+        );
+        assert_eq!(result.unwrap_err().code, ErrorCode::ResourceLimit);
+        assert_eq!(Arc::strong_count(&bytes), 1);
+        assert_eq!(budget.available_permits(), 64);
+        assert_eq!(slots.available_permits(), 1);
+    }
 
     #[test]
     fn encoded_chunks_match_rfc_vectors_and_binary_bytes() {

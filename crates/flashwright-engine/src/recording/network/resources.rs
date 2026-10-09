@@ -359,7 +359,7 @@ mod tests {
         let transfer = resources
             .take(&metadata.token, slot.acquire_owned().await.unwrap(), 16)
             .unwrap();
-        assert_eq!(transfer.bytes, vec![0, 255, 0, 128]);
+        assert_eq!(transfer.bytes.as_slice(), &[0, 255, 0, 128]);
         resources.clear();
         assert_eq!(engine.bytes.available_permits(), ENGINE_BYTES - 4);
         drop(transfer);

@@ -141,6 +141,36 @@ export class EngineClient {
 
   private receiveEvent(message: Reply): void {
     if (typeof message.target !== 'string' || typeof message.event !== 'string') throw failure('ProtocolError', 'event', 'event omitted object identity or name');
+    if (message.event === 'apiRequest.localDates') {
+      if (!/^[A-Za-z0-9_-]{1,64}$/.test(message.target) || !message.parameters || typeof message.parameters !== 'object' || Array.isArray(message.parameters)) {
+        throw failure('ProtocolError', 'event', 'invalid local date conversion event identity or parameters');
+      }
+      const parameters = message.parameters as Record<string, unknown>;
+      if (Object.keys(parameters).some(name => name !== 'lookup' && name !== 'dates') || typeof parameters.lookup !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(parameters.lookup) || !Array.isArray(parameters.dates) || parameters.dates.length === 0 || parameters.dates.length > 1024) {
+        throw failure('ProtocolError', 'event', 'invalid local date conversion lookup or date count');
+      }
+      const milliseconds = parameters.dates.map((components: unknown) => {
+        if (!Array.isArray(components) || components.length !== 7 || !components.every(component => typeof component === 'number' && Number.isInteger(component))) {
+          throw failure('ProtocolError', 'event', 'local date conversion requires seven integer components');
+        }
+        const [year, month, day, hour, minute, second, millisecond] = components;
+        if (year < -271822 || year > 275761 || month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 24 || minute < 0 || minute > 59 || second < 0 || second > 59 || millisecond < 0 || millisecond > 999 || hour === 24 && (minute !== 0 || second !== 0 || millisecond !== 0)) {
+          throw failure('ProtocolError', 'event', 'local date conversion component is outside its range');
+        }
+        const formattedYear = year >= 0 && year <= 9999 ? String(year).padStart(4, '0') : `${year < 0 ? '-' : '+'}${String(Math.abs(year)).padStart(6, '0')}`;
+        const formattedMonth = String(month).padStart(2, '0');
+        const formattedDay = String(day).padStart(2, '0');
+        const formattedHour = String(hour).padStart(2, '0');
+        const formattedMinute = String(minute).padStart(2, '0');
+        const formattedSecond = String(second).padStart(2, '0');
+        const formattedMillisecond = String(millisecond).padStart(3, '0');
+        const localDateString = `${formattedYear}-${formattedMonth}-${formattedDay}T${formattedHour}:${formattedMinute}:${formattedSecond}.${formattedMillisecond}`;
+        const convertedMilliseconds = new Date(localDateString).getTime();
+        return Number.isFinite(convertedMilliseconds) ? convertedMilliseconds : null;
+      });
+      void this.send({ kind: 'apiDateResult', context: message.target, lookup: parameters.lookup, milliseconds }).catch(error => this.fail(error));
+      return;
+    }
     if (this.releasedObjects.has(message.target)) return;
     const event = { event: message.event, parameters: message.parameters };
     const listener = this.objectListeners.get(message.target);
@@ -249,7 +279,7 @@ export class EngineClient {
     const subscriptionControl = isSubscriptionControl(method);
     const dialogHandling = isDialogHandling(method);
     const controlTicket = subscriptionControl || dialogHandling ? this.eventControls.reserve(method, this.resourceLimits.queuedMessages) : undefined;
-    const ownerClosure = ['page.close', 'context.close', 'browser.close'].includes(method);
+    const ownerClosure = ['page.close', 'context.close', 'browser.close', 'apiRequest.dispose', 'apiResponse.dispose'].includes(method);
     const controlPredecessor = controlTicket ? controlTicket.predecessor : ownerClosure ? undefined : this.eventControls.predecessor();
     const controlAdmission = subscriptionControl ? new AbortController() : undefined;
     try {
@@ -555,6 +585,24 @@ export class EngineClient {
         this.fail(error instanceof Error ? error : new Error(String(error)));
       }
     }
+    if (message.kind === 'result' && ['apiRequest.newContext', 'apiRequest.fetch'].includes(pending.method)) {
+      try {
+        const allocation = message.value as { identifier?: unknown; context?: unknown } | undefined;
+        const response = pending.method === 'apiRequest.fetch';
+        if (!allocation || typeof allocation.identifier !== 'string' || !allocation.identifier || response && (typeof allocation.context !== 'string' || !allocation.context)) {
+          throw failure('ProtocolError', pending.method, 'late API response omitted its original owner or response identity');
+        }
+        if (response) await this.request('apiResponse.dispose', { context: allocation.context, response: allocation.identifier }, 1000);
+        else {
+          await this.request('apiRequest.dispose', { context: allocation.identifier }, 1000);
+          this.forgetObject(allocation.identifier);
+        }
+        details.cleanup = 'resourceDisposedAfterLateSuccess';
+      } catch (error) {
+        details.cleanup = 'driverShutdownAfterLateSuccessCleanupFailure';
+        this.fail(error instanceof Error ? error : new Error(String(error)));
+      }
+    }
     if (message.kind === 'result' && ['page.evaluateHandle', 'frame.evaluateHandle', 'handle.evaluateHandle', 'handle.getProperty', 'handle.getProperties', 'frame.waitForSelector'].includes(pending.method)) {
       const allocation = message.value as { page?: unknown; group?: unknown } | undefined;
       if (allocation && typeof allocation.page === 'string' && typeof allocation.group === 'string') {
@@ -591,10 +639,10 @@ export class EngineClient {
 }
 
 let implicitClient: EngineClient | undefined;
-export function retainEngine(deadline = Infinity): EngineClient {
+export function retainEngine(deadline = Infinity, method = 'chromium.launch'): EngineClient {
   if (!implicitClient || implicitClient.isClosed()) {
     const executablePath = resolveDriverExecutable();
-    if (performance.now() >= deadline) throw failure('TimeoutError', 'chromium.launch', 'deadline exceeded while resolving the driver');
+    if (performance.now() >= deadline) throw failure('TimeoutError', method, 'deadline exceeded while resolving the driver');
     implicitClient = new EngineClient(executablePath);
   }
   implicitClient.retain();

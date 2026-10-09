@@ -1,0 +1,270 @@
+{
+  "status": "passed-scoped-internal-transport-checkpoint",
+  "scope": "Internal standalone API implementation checkpoint. This records development behavior and lifecycle checks, not supported public API, an accepted aggregate connection-memory bound, package/platform support or performance claims. Earlier date/status checkpoints use their own recorded source and driver identities.",
+  "sourceArchiveSha256": "a3f758571017b5347b671c68c2b989530d905f1d5fea94c768718d3bb3a318fa",
+  "identitiesSha256": "761d8804b5e9fa3a25cb60b643fc4d2619931faec80145d045e8ffbdd302c156",
+  "nativeDriverSha256": "991b4e00ef9b557c984f432c311cdc2b176b466e3f22aae0c757b4a4fbf9d28e",
+  "sourceFiles": 95,
+  "frozenHostFiles": 248,
+  "verification": {
+    "nativeAPI": {
+      "watchdogSha256": "028e0ca26ece573247dd0ed5a0d642c245b58462580e85a28fc5a1721eba1eab",
+      "logSha256": "f212095e8dd914258590328e954bc4fa981be35d963d83d5b1f178c2e49c07ea",
+      "exitCode": 0,
+      "cleanProcessTree": true
+    },
+    "driverProtocol": {
+      "watchdogSha256": "592c5754ff3c24d71fddcc08b24749bf43c4680242a9760f11d01e40a0626f05",
+      "logSha256": "f996c08f4aaac26b39e938e7497589480c1af0346682b50bda6cf95aeb8b19b3",
+      "exitCode": 0,
+      "cleanProcessTree": true
+    },
+    "clippy": {
+      "watchdogSha256": "69b9f6ffa873490efce197f3b07bb11e76050bfd6cd4e3886789a8f69d25a0cb",
+      "logSha256": "b89db2f3cf4865dc3ac38ff45d27336314f17672305d032ccfd115bf387447ed",
+      "exitCode": 0,
+      "cleanProcessTree": true
+    },
+    "releaseBuild": {
+      "watchdogSha256": "1f8646b214136e8c557fed47139b16067c7990fdb29b610db6ef429eb83ac7b7",
+      "logSha256": "da10a5e2262488f4566df6a65a6a1c6cd13b6c4b17cd0d9e6ab38bf87a272edd",
+      "exitCode": 0,
+      "cleanProcessTree": true
+    },
+    "coreTypes": {
+      "watchdogSha256": "72893d0657a2ceafb72b0975005b66a4a4c7453bdd916baacb547230fb002b87",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exitCode": 0,
+      "cleanProcessTree": true
+    },
+    "format": {
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "behaviorGroups": [
+    {
+      "runtime": "bun",
+      "group": "common",
+      "checks": 12,
+      "status": "passed",
+      "reportSha256": "702ed20be90ea9e58198025ff28402c81f006a982fdd1cccfd7e52cc562274ba",
+      "watchdogSha256": "deab308d8fda41400ff411f19ecde818b5cd632cb84403f511ea92af4872f05b",
+      "cases": [
+        "base URL and query object append versus encoded replacement",
+        "common verbs, body bytes, JSON string and header precedence",
+        "form serialization and multipart empty-string observation",
+        "standalone cookie isolation and storage state round trip",
+        "redirect method rules, cookie update and cross-origin authorization removal",
+        "status policy distinguishes ok from failOnStatusCode",
+        "Basic authentication defaults to challenge and supports always",
+        "response decompression, raw duplicate headers, body ownership and metadata after disposal",
+        "header array aliasing observation",
+        "response-body timeout and explicit connection-reset retries keep the original deadline",
+        "context disposal cancels an original request and preserves its sibling",
+        "context true TLS ignore policy with per-call false observation"
+      ]
+    },
+    {
+      "runtime": "bun",
+      "group": "tls",
+      "checks": 5,
+      "status": "passed",
+      "reportSha256": "da977008a0285d6ae9c30ab1c44066cfa539633a890c48d2e124bd7222fa1150",
+      "watchdogSha256": "810aba875685d14965d8e7e98c90fe9054abe9a6ceb0d89d1b7aacbf437c9e26",
+      "cases": [
+        "certificate v1 TLSv1.2 strict rejection and explicit ignore",
+        "certificate v1 TLSv1.3 strict rejection and explicit ignore",
+        "certificate v3 TLSv1.2 strict rejection and explicit ignore",
+        "certificate v3 TLSv1.3 strict rejection and explicit ignore",
+        "response body abort never retries a POST after response headers"
+      ]
+    },
+    {
+      "runtime": "bun",
+      "group": "auth",
+      "checks": 5,
+      "status": "passed",
+      "reportSha256": "6e93daf7283d41712067cb56d3623e511acf2433da471923a1d9190dccc609df",
+      "watchdogSha256": "40ac3b4a835cf35ba9ba0f7badc2a7f69836c4e856fbc1d0aa561998fceddd67",
+      "cases": [
+        "URL credentials fall back to context credentials",
+        "empty authorization allows challenge",
+        "reset retry preserves authenticated original headers",
+        "reset preserves original cookie across challenge",
+        "redirect child authentication stays separate on retry"
+      ]
+    },
+    {
+      "runtime": "node22",
+      "group": "common",
+      "checks": 12,
+      "status": "passed",
+      "reportSha256": "79a6ae828c4abb17d0e0fb0b1d754c63169ad2181dffbc09764a8049ca5ce8f6",
+      "watchdogSha256": "6758856a38d0e82aa37ec4981a94d0fdde12b070b4c41593ad27af102f5e0d22",
+      "cases": [
+        "base URL and query object append versus encoded replacement",
+        "common verbs, body bytes, JSON string and header precedence",
+        "form serialization and multipart empty-string observation",
+        "standalone cookie isolation and storage state round trip",
+        "redirect method rules, cookie update and cross-origin authorization removal",
+        "status policy distinguishes ok from failOnStatusCode",
+        "Basic authentication defaults to challenge and supports always",
+        "response decompression, raw duplicate headers, body ownership and metadata after disposal",
+        "header array aliasing observation",
+        "response-body timeout and explicit connection-reset retries keep the original deadline",
+        "context disposal cancels an original request and preserves its sibling",
+        "context true TLS ignore policy with per-call false observation"
+      ]
+    },
+    {
+      "runtime": "node22",
+      "group": "tls",
+      "checks": 5,
+      "status": "passed",
+      "reportSha256": "3af6c6627bb7dbbf809398e2e614680561c86c858e56f1de233137ff027a22cf",
+      "watchdogSha256": "81970728eab6d98eee853280d0ae8a74286d88d407c8efa4aacbb3af976d15c7",
+      "cases": [
+        "certificate v1 TLSv1.2 strict rejection and explicit ignore",
+        "certificate v1 TLSv1.3 strict rejection and explicit ignore",
+        "certificate v3 TLSv1.2 strict rejection and explicit ignore",
+        "certificate v3 TLSv1.3 strict rejection and explicit ignore",
+        "response body abort never retries a POST after response headers"
+      ]
+    },
+    {
+      "runtime": "node22",
+      "group": "auth",
+      "checks": 5,
+      "status": "passed",
+      "reportSha256": "7e290654a7403a654a9d5485168563795513c41a0aeb52f2b265f65c3b02fb75",
+      "watchdogSha256": "4ef12c090cdad2a79ed9ff90745039aa4b0b7c33e1b4324762c543d4b199fd8b",
+      "cases": [
+        "URL credentials fall back to context credentials",
+        "empty authorization allows challenge",
+        "reset retry preserves authenticated original headers",
+        "reset preserves original cookie across challenge",
+        "redirect child authentication stays separate on retry"
+      ]
+    },
+    {
+      "runtime": "node24",
+      "group": "common",
+      "checks": 12,
+      "status": "passed",
+      "reportSha256": "1df0f742b9cdef56bdc6a38d7f80a5d72b39649b33566db63938d27cd2e1f527",
+      "watchdogSha256": "554edd574f9979a7312bc10d96e4e3d9dd5d1cf2d895158edc4a9fceec149072",
+      "cases": [
+        "base URL and query object append versus encoded replacement",
+        "common verbs, body bytes, JSON string and header precedence",
+        "form serialization and multipart empty-string observation",
+        "standalone cookie isolation and storage state round trip",
+        "redirect method rules, cookie update and cross-origin authorization removal",
+        "status policy distinguishes ok from failOnStatusCode",
+        "Basic authentication defaults to challenge and supports always",
+        "response decompression, raw duplicate headers, body ownership and metadata after disposal",
+        "header array aliasing observation",
+        "response-body timeout and explicit connection-reset retries keep the original deadline",
+        "context disposal cancels an original request and preserves its sibling",
+        "context true TLS ignore policy with per-call false observation"
+      ]
+    },
+    {
+      "runtime": "node24",
+      "group": "tls",
+      "checks": 5,
+      "status": "passed",
+      "reportSha256": "58bae6078f33f367fbcfe6c18bd677c58bf748e985a441cb6aa744f961e4cce3",
+      "watchdogSha256": "9f3f6201d04648672deaa5df839b86f02ebc1ffa37a31d599c1ceb5d8868437c",
+      "cases": [
+        "certificate v1 TLSv1.2 strict rejection and explicit ignore",
+        "certificate v1 TLSv1.3 strict rejection and explicit ignore",
+        "certificate v3 TLSv1.2 strict rejection and explicit ignore",
+        "certificate v3 TLSv1.3 strict rejection and explicit ignore",
+        "response body abort never retries a POST after response headers"
+      ]
+    },
+    {
+      "runtime": "node24",
+      "group": "auth",
+      "checks": 5,
+      "status": "passed",
+      "reportSha256": "93be0a19164f9085eaa312a7d8d761f4d6a52751863d290e4d9314ddc34a2b0c",
+      "watchdogSha256": "a22969f69ce9196f0e51186949418bf7f043e10675d9a78a77eab0526b30a1bd",
+      "cases": [
+        "URL credentials fall back to context credentials",
+        "empty authorization allows challenge",
+        "reset retry preserves authenticated original headers",
+        "reset preserves original cookie across challenge",
+        "redirect child authentication stays separate on retry"
+      ]
+    }
+  ],
+  "candidateChecks": 66,
+  "nativeApiTests": 95,
+  "driverTests": 16,
+  "protocolUnitTests": 9,
+  "protocolFramingTests": 18,
+  "tlsBackpressure": {
+    "iterations": 128,
+    "unguardedQueuedBytesBefore": 65624,
+    "unguardedQueuedBytesAfter": 69080,
+    "guardedQueuedBytesBefore": 65624,
+    "guardedQueuedBytesAfter": 65624,
+    "bothWriteModes": true,
+    "readsProgress": true,
+    "resumedPayloadVerified": true,
+    "method": "Actual Rustls and Tokio Rustls, authenticated peer key updates and plaintext, deterministic blocked client write. Same committed test asserts the unguarded underlying-stream control and guarded implementation."
+  },
+  "sourceQualification": "Production source and frozen driver unchanged after nine host groups; the final test adds an explicit unguarded control. All95nativeAPItests rerun; a fresh release build confirmed identical driver bytes. The frozen host is the previously accepted local-date bridge build, not a fresh combined runner build.",
+  "knownOpen": [
+    "Complete HTTP/TLS requested-layout allowance and aggregate acceptance",
+    "Browser-attached API cookie integration and runner request fixture",
+    "Public capability, installed package and supported-platform acceptance",
+    "Matched performance evidence and complete release gate"
+  ],
+  "privateReceiptSha256": "dd8d5755ae351d3d78f1737e5357d5d00b7bbbc66e494d29640f8725a8227341",
+  "independentReviewSha256": [
+    "7c5487251afd01b83effe620e0458a07759b5192b158b016941d59644b9254d2",
+    "e88cd6c021bd8872831b02ad81d2cdfcf89d01d52df910b5d694790733e814aa"
+  ],
+  "vendorReconstructionSha256": "eec6113581890f2f4bacef0136a199053bbb2a7c7372a426213cd0b3fdbfb603",
+  "implementation": {
+    "crates/flashwright-engine/src/api_requests/allocation.rs": "b298e285f995e3bce6bbc26994210f596d022ad32c9de4f102eb58022cd7523e",
+    "crates/flashwright-engine/src/api_requests/budget.rs": "38648180c4c2e077de84911dbcff45d78bfbcb45b3c451ca73a4e25005365d8e",
+    "crates/flashwright-engine/src/api_requests/certificate_key.rs": "28cbf6af9dee6fd92ade3a6ecb9c42180fbd4abbb08180e85687f1524d9bd3dd",
+    "crates/flashwright-engine/src/api_requests/connection_custody.rs": "a39e381cdbe968ff21d354159fa6aeb776a632de39a8c3bd40f523aa5b04d371",
+    "crates/flashwright-engine/src/api_requests/connection_races.rs": "51c644353769325d5ee6edc29472b7676f2b06018472bf9d18f0b5a01ed4ce7d",
+    "crates/flashwright-engine/src/api_requests/connector.rs": "6873936e999f364b4033e01eaa96db0379edab378597f16c7847f60d81e94dd2",
+    "crates/flashwright-engine/src/api_requests/cookie_date.rs": "b1bf2a308c1151a05cc8f9f0f14b6824a85896ff3d15243d44f691682a926abe",
+    "crates/flashwright-engine/src/api_requests/cookie_date_parser.rs": "0398748e3cc1cd500e8c5933419f9c31cabda5aebeaece3a635bd393d5eab8f0",
+    "crates/flashwright-engine/src/api_requests/cookie_jar.rs": "cdf8bdeaa1227a2cdf231db4b7a92eb7421f1ca679f6ffd792847ab60cb61055",
+    "crates/flashwright-engine/src/api_requests/exchange.rs": "0b8fc06f02ecabe9530deb03148e4df01d14f73447fc4c031aad9793b771c598",
+    "crates/flashwright-engine/src/api_requests/fetch.rs": "c34c7faa123bda2afe5039afd3e95fb498852acddff69ee371085fdb7ca62530",
+    "crates/flashwright-engine/src/api_requests/local_dates.rs": "7264b4127522d3e433e9826817f97630a7bbc5715700ec0b4a9c1c2422418e8f",
+    "crates/flashwright-engine/src/api_requests/mod.rs": "a9b6a1ae1b6c602ebac472b875a8a0014d3cc89c3f23bdeffe9bae10ce7e1f66",
+    "crates/flashwright-engine/src/api_requests/options.rs": "b1d954849e494961b3cae18d653cde5b1a149415caadbfd2447f516cf8df04e8",
+    "crates/flashwright-engine/src/api_requests/registry.rs": "264a2f35f22a6e6bb9f88eec1145321f383bcd52484f9c5cd0f5173c3a06f3b5",
+    "crates/flashwright-engine/src/api_requests/resolver.rs": "897f5f157ca84b7af378566eefad01e9791cbe0c6e3b3cf0abf1f9c3df391f3e",
+    "crates/flashwright-engine/src/api_requests/response_decoder.rs": "4b3977675e046076f0aa3ff2becb8a2d7caf751fa4bf2764485b30db7771dabc",
+    "crates/flashwright-engine/src/api_requests/tls.rs": "536c83c7e4d72eef423a9765be390208df64db5011db031ec1c0ec5c95a5fe03",
+    "crates/flashwright-engine/src/api_requests/tls_backpressure.rs": "e9e8336b1a1d2cfa0fb17ab9cd6e511d78b4b054a3d7450e669c13d4e7db3f39",
+    "crates/flashwright-engine/src/api_requests/transport_error.rs": "f020cc36a677ef3bf22838fbd4a955200bdd913874f31816080d79d3405639d8"
+  },
+  "earlierAcceptedComponentCheckpoints": [
+    {
+      "component": "Common native fetch semantics",
+      "receiptSha256": "1579833e93e8db636bc25292f1e60a0594cebca8f83a26d60d7b09b59edfa4ea"
+    },
+    {
+      "component": "Cookie date grammar and original-host local timezone bridge",
+      "receiptSha256": "6ca77be20fef565a8d86d16196491ec8242092ca6187bc68ee6e3b10dca75b3c",
+      "candidateChecks": 4893
+    },
+    {
+      "component": "Exact status-error UTF16 preview",
+      "receiptSha256": "56499c849f384d82b81638a66db79cde4347b4ca22a56d71b05727a0a4fda66d",
+      "candidateAndReferenceChecks": 54
+    }
+  ]
+}

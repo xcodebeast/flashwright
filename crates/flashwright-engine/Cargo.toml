@@ -12,8 +12,28 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 
+bytes = "=1.12.1"
+flate2 = { version = "=1.1.10", default-features = false, features = ["zlib-rs"] }
+zlib-rs = { version = "=0.6.8", default-features = false, features = ["rust-allocator"] }
+brotli-decompressor = "=5.0.3"
+http = "=1.5.0"
+http-body-util = "=0.1.5"
+hyper = { version = "=1.11.1", features = ["client", "http1", "original-response-metadata"] }
+hyper-rustls = { version = "=0.27.9", default-features = false, features = ["http1", "ring", "tls12", "webpki-tokio"] }
+hyper-util = { version = "=0.1.20", features = ["client", "client-legacy", "http1", "tokio", "connection-custody"] }
+rustls = { version = "=0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-webpki = { version = "=0.103.15", default-features = false, features = ["ring", "std"] }
+tower-service = "=0.3.3"
+webpki-roots = "=1.0.9"
+url = "=2.5.8"
+percent-encoding = "=2.3.2"
+
 [build-dependencies]
 sha2 = "=0.10.9"
+
+[dev-dependencies]
+tokio-rustls = { version = "=0.26.6", default-features = false, features = ["ring", "tls12"] }
+zlib-rs = { version = "=0.6.8", default-features = false, features = ["rust-allocator", "__internal-api", "__internal-test"] }
 
 [lints]
 workspace = true

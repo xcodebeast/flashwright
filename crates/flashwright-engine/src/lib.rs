@@ -1,5 +1,6 @@
 //! Browser object ownership and semantic operations, independent of the Node test runner.
 
+mod api_requests;
 mod assertions;
 mod console;
 mod context_settings;
@@ -41,6 +42,7 @@ mod screenshots;
 mod snapshots;
 mod storage;
 mod trace_diagnostics;
+pub use api_requests::RetainedValue;
 pub use dialogs::PreparedDialogHandling;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
@@ -156,10 +158,12 @@ pub struct Engine {
     snapshot_budget: OnceLock<Arc<snapshots::SnapshotBudget>>,
     trace_network_budget: OnceLock<Arc<recording::network::NetworkBudget>>,
     trace_diagnostic_budget: OnceLock<Arc<tokio::sync::Semaphore>>,
+    api_requests: api_requests::RequestRegistry,
 }
 
 pub enum OperationResult {
     Value(Value),
+    RetainedValue(Arc<RetainedValue>),
     RetainedDiagnostics(Arc<RetainedDiagnostics>),
     Binary(BinaryAttachment),
 }
@@ -168,6 +172,7 @@ impl OperationResult {
     pub fn value(&self) -> Option<&Value> {
         match self {
             Self::Value(value) => Some(value),
+            Self::RetainedValue(value) => Some(value.value()),
             Self::RetainedDiagnostics(value) => Some(value.value()),
             Self::Binary(_) => None,
         }
@@ -238,6 +243,7 @@ impl Engine {
             snapshot_budget: OnceLock::new(),
             trace_network_budget: OnceLock::new(),
             trace_diagnostic_budget: OnceLock::new(),
+            api_requests: api_requests::RequestRegistry::default(),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
@@ -268,6 +274,7 @@ impl Engine {
             && !matches!(
                 method,
                 "frame.setInputFiles"
+                    | "apiRequest.fetch"
                     | "elementHandle.setInputFiles"
                     | "route.continue"
                     | "route.fulfill"
@@ -278,6 +285,21 @@ impl Engine {
                 method,
                 "this operation does not accept binary input",
             ));
+        }
+        if method == "apiRequest.fetch" {
+            return self
+                .api_fetch(parameters, operation)
+                .await
+                .map(OperationResult::Value);
+        }
+        if method == "apiResponse.body" {
+            return self
+                .api_response_body(parameters, operation)
+                .await
+                .map(OperationResult::Binary);
+        }
+        if method.starts_with("apiRequest.") || method.starts_with("apiResponse.") {
+            return self.api_request_control(method, parameters, operation);
         }
         if let Some(result) = self.execute_diagnostic_control(method, &parameters, operation) {
             return result;
@@ -762,6 +784,7 @@ impl Engine {
     }
 
     pub async fn shutdown(&self) {
+        self.api_requests.shutdown();
         let browsers = {
             let mut registry = self.registry.lock().unwrap();
             for context in registry.contexts.values() {

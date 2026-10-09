@@ -1,0 +1,271 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -46,6 +46,7 @@
+ ]
+ 
+ [features]
++connection-custody = []
+ __internal_happy_eyeballs_tests = []
+ client = [
+     "hyper/client",
+--- a/src/client/legacy/client.rs
++++ b/src/client/legacy/client.rs
+@@ -28,6 +28,23 @@
+ use crate::common::{lazy as hyper_lazy, timer, Exec, Lazy, SyncWrapper};
+ 
+ type BoxSendFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
++
++/// Drop the entire protocol future before returning connector allocation credits.
++#[cfg(feature = "connection-custody")]
++struct CustodiedConnection<ConnectionFuture> {
++    future: Pin<Box<ConnectionFuture>>,
++    _custody: Option<std::sync::Arc<dyn fmt::Debug + Send + Sync>>,
++}
++
++#[cfg(feature = "connection-custody")]
++impl<ConnectionFuture: Future> Future for CustodiedConnection<ConnectionFuture> {
++    type Output = ConnectionFuture::Output;
++
++    fn poll(mut self: Pin<&mut Self>, context: &mut task::Context<'_>) -> Poll<Self::Output> {
++        self.future.as_mut().poll(context)
++    }
++}
++
+ 
+ /// A Client to make outgoing HTTP requests.
+ ///
+@@ -48,6 +65,8 @@
+ #[derive(Clone, Copy, Debug)]
+ struct Config {
+     retry_canceled_requests: bool,
++    #[cfg(feature = "connection-custody")]
++    cancel_unused_connects: bool,
+     set_host: bool,
+     ver: Ver,
+ }
+@@ -425,6 +444,13 @@
+             // If it has, let it finish and insert back into the pool,
+             // so as to not waste the socket...
+             Either::Left((Ok(checked_out), connecting)) => {
++                #[cfg(feature = "connection-custody")]
++                if self.config.cancel_unused_connects {
++                    // A request-scoped connector must not become detached work merely
++                    // because another request returned a reusable connection first.
++                    drop(connecting);
++                    return Ok(checked_out);
++                }
+                 // This depends on the `select` above having the correct
+                 // order, such that if the checkout future were ready
+                 // immediately, the connect future will never have been
+@@ -549,10 +575,15 @@
+                                     trace!(
+                                         "http2 handshake complete, spawning background dispatcher task"
+                                     );
+-                                    executor.execute(
+-                                        conn.map_err(|e| debug!("client connection error: {}", e))
+-                                            .map(|_| ()),
+-                                    );
++                                    let connection_task = conn
++                                        .map_err(|e| debug!("client connection error: {}", e))
++                                        .map(|_| ());
++                                    #[cfg(feature = "connection-custody")]
++                                    let connection_task = CustodiedConnection {
++                                        future: Box::pin(connection_task),
++                                        _custody: connected.custody.clone(),
++                                    };
++                                    executor.execute(connection_task);
+ 
+                                     // Wait for 'conn' to ready up before we
+                                     // declare this tx as usable
+@@ -581,8 +612,15 @@
+                                     // Spawn the connection task in the background using the executor.
+                                     // The task manages the HTTP/1.1 connection, including upgrades (e.g., WebSocket).
+                                     // Errors are sent via err_tx to ensure they can be checked if the sender (tx) fails.
+-                                    executor.execute(
+-                                        conn.with_upgrades()
++                                    #[cfg(feature = "connection-custody")]
++                                    let conn = if connected.automatic_upgrades {
++                                        Either::Left(conn.with_upgrades())
++                                    } else {
++                                        Either::Right(conn)
++                                    };
++                                    #[cfg(not(feature = "connection-custody"))]
++                                    let conn = conn.with_upgrades();
++                                    let connection_task = conn
+                                             .map_err(|e| {
+                                                 // Log the connection error at debug level for diagnostic purposes.
+                                                 debug!("client connection error: {:?}", e);
+@@ -592,8 +630,13 @@
+                                                 // (e.g., if the receiver is dropped, which is handled later).
+                                                 let _ =err_tx.send(e);
+                                             })
+-                                            .map(|_| ()),
+-                                    );
++                                            .map(|_| ());
++                                    #[cfg(feature = "connection-custody")]
++                                    let connection_task = CustodiedConnection {
++                                        future: Box::pin(connection_task),
++                                        _custody: connected.custody.clone(),
++                                    };
++                                    executor.execute(connection_task);
+                                     // Log that the client is waiting for the connection to be ready.
+                                     // Readiness indicates the sender (tx) can accept a request without blocking.
+                                     trace!("waiting for connection to be ready");
+@@ -1020,6 +1063,8 @@
+     h2_builder: hyper::client::conn::http2::Builder<Exec>,
+     pool_config: pool::Config,
+     pool_timer: Option<timer::Timer>,
++    #[cfg(feature = "connection-custody")]
++    pool_custody: Option<std::sync::Arc<dyn fmt::Debug + Send + Sync>>,
+ }
+ 
+ impl Builder {
+@@ -1032,6 +1077,8 @@
+         Self {
+             client_config: Config {
+                 retry_canceled_requests: true,
++                #[cfg(feature = "connection-custody")]
++                cancel_unused_connects: false,
+                 set_host: true,
+                 ver: Ver::Auto,
+             },
+@@ -1045,8 +1092,25 @@
+                 max_idle_per_host: usize::MAX,
+             },
+             pool_timer: None,
+-        }
+-    }
++            #[cfg(feature = "connection-custody")]
++            pool_custody: None,
++        }
++    }
++    /// Retain external allocation custody through the pool's actual final table drop.
++    #[cfg(feature = "connection-custody")]
++    pub fn pool_custody(&mut self, custody: std::sync::Arc<dyn fmt::Debug + Send + Sync>) -> &mut Self {
++        self.pool_custody = Some(custody);
++        self
++    }
++
++    /// Cancel a losing connect when pool reuse wins, instead of finishing it in a
++    /// detached task. Defaults to false, preserving the upstream pooling policy.
++    #[cfg(feature = "connection-custody")]
++    pub fn cancel_unused_connects(&mut self, enabled: bool) -> &mut Self {
++        self.client_config.cancel_unused_connects = enabled;
++        self
++    }
++
+     /// Set an optional timeout for idle sockets being kept-alive.
+     /// A `Timer` is required for this to take effect. See `Builder::pool_timer`
+     ///
+@@ -1590,6 +1654,11 @@
+     {
+         let exec = self.exec.clone();
+         let timer = self.pool_timer.clone();
++        let pool = pool::Pool::new(self.pool_config, exec.clone(), timer);
++        #[cfg(feature = "connection-custody")]
++        if let Some(custody) = &self.pool_custody {
++            pool.retain_custody(custody.clone());
++        }
+         Client {
+             config: self.client_config,
+             exec: exec.clone(),
+@@ -1598,7 +1667,7 @@
+             #[cfg(feature = "http2")]
+             h2_builder: self.h2_builder.clone(),
+             connector,
+-            pool: pool::Pool::new(self.pool_config, exec, timer),
++            pool,
+         }
+     }
+ }
+--- a/src/client/legacy/connect/mod.rs
++++ b/src/client/legacy/connect/mod.rs
+@@ -103,6 +103,10 @@
+     pub(super) is_proxied: bool,
+     pub(super) extra: Option<Extra>,
+     pub(super) poisoned: PoisonPill,
++    #[cfg(feature = "connection-custody")]
++    pub(super) custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
++    #[cfg(feature = "connection-custody")]
++    pub(super) automatic_upgrades: bool,
+ }
+ 
+ #[derive(Clone)]
+@@ -153,7 +157,31 @@
+             is_proxied: false,
+             extra: None,
+             poisoned: PoisonPill::healthy(),
+-        }
++            #[cfg(feature = "connection-custody")]
++            custody: None,
++            #[cfg(feature = "connection-custody")]
++            automatic_upgrades: true,
++        }
++    }
++
++    /// Retain connector allocation custody through the complete connection task.
++    ///
++    /// The connector must separately preserve this custody during its handshake and
++    /// in any upgraded I/O it hands out. It is not inserted into response extensions.
++    #[cfg(feature = "connection-custody")]
++    pub fn with_custody(mut self, custody: Arc<dyn fmt::Debug + Send + Sync>) -> Self {
++        self.custody = Some(custody);
++        self
++    }
++
++    /// Keep HTTP/1 upgrade I/O and read-ahead inside the guarded dispatcher.
++    ///
++    /// Upgrade responses are still delivered, but awaiting their upgrade returns
++    /// Hyper's manual-upgrade error instead of transferring the transport.
++    #[cfg(feature = "connection-custody")]
++    pub fn without_upgrades(mut self) -> Self {
++        self.automatic_upgrades = false;
++        self
+     }
+ 
+     /// Set whether the connected transport is to an HTTP proxy.
+@@ -230,6 +258,10 @@
+             is_proxied: self.is_proxied,
+             extra: self.extra.clone(),
+             poisoned: self.poisoned.clone(),
++            #[cfg(feature = "connection-custody")]
++            custody: self.custody.clone(),
++            #[cfg(feature = "connection-custody")]
++            automatic_upgrades: self.automatic_upgrades,
+         }
+     }
+ }
+--- a/src/client/legacy/pool.rs
++++ b/src/client/legacy/pool.rs
+@@ -99,6 +99,9 @@
+     exec: Exec,
+     timer: Option<Timer>,
+     timeout: Option<Duration>,
++    // Drop retained table capacity before its external allocation custody.
++    #[cfg(feature = "connection-custody")]
++    custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
+ }
+ 
+ // This is because `Weak::new()` *allocates* space for `T`, even if it
+@@ -135,12 +138,21 @@
+                 exec,
+                 timer,
+                 timeout: config.idle_timeout,
++                #[cfg(feature = "connection-custody")]
++                custody: None,
+             })))
+         } else {
+             None
+         };
+ 
+         Pool { inner }
++    }
++
++    #[cfg(feature = "connection-custody")]
++    pub(crate) fn retain_custody(&self, custody: Arc<dyn fmt::Debug + Send + Sync>) {
++        if let Some(inner) = &self.inner {
++            inner.lock().unwrap().custody = Some(custody);
++        }
+     }
+ 
+     pub(crate) fn is_enabled(&self) -> bool {

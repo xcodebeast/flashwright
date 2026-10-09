@@ -1,0 +1,49 @@
+{
+  "reference": "Playwright 1.60.0",
+  "upstream": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/cookieStore.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/fetch.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/network.ts"
+  ],
+  "distributionSource": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/api-request-cookies.source.js",
+  "extractSha256": "28f5391c83133ca5a9d01c1cb584bb36d07f9a2c37848d882cdfe7f0eac19916",
+  "sections": [
+    {
+      "name": "cookieStore",
+      "startLine": 14051,
+      "endLine": 14231,
+      "sha256": "620f3576514dc660d21590782341cb3f19e75305d6a984b95c0481dcb5e62928"
+    },
+    {
+      "name": "parseCookie",
+      "startLine": 25668,
+      "endLine": 25684,
+      "sha256": "7a71737254fb9ed03b15a41fa1f6e2682a2808823541f38a83d66b98b72b05de"
+    },
+    {
+      "name": "responseCookies",
+      "startLine": 25869,
+      "endLine": 25900,
+      "sha256": "481c4661f061ea48b579a1d0a7385356ac7985ef3a7947d038d28bcdb075fd0f"
+    },
+    {
+      "name": "localhost",
+      "startLine": 13431,
+      "endLine": 13433,
+      "sha256": "e1febe67a96df227a65bc76b5360180b673e29745784dfb443c14532b7543081"
+    }
+  ],
+  "implementation": "crates/flashwright-engine/src/api_requests/cookie_jar.rs",
+  "implementationSha256": "cdf8bdeaa1227a2cdf231db4b7a92eb7421f1ca679f6ffd792847ab60cb61055",
+  "license": "Apache-2.0",
+  "licenseFile": "compatibility/upstream/LICENSE.playwright",
+  "noticeFile": "compatibility/upstream/NOTICE.playwright",
+  "changes": [
+    "Adapt cookie matching, ordered attributes, defaults, expiry and name-group insertion order to a bounded native jar.",
+    "Add independent paired memory custody for cookies, backing vectors and outgoing headers; preserve old live cookies on failed replacement admission.",
+    "Accept normalized borrowed URL parts and share attribute parsing with the native date classifier and bounded host local-time conversion. Browser-attached cookie integration remains separate.",
+    "Preserve repeated trailing-slash path behavior: append one slash only when the URL path lacks a trailing slash."
+  ]
+}

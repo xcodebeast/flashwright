@@ -13,7 +13,7 @@ export function isTraceCollectionTake(method: string): boolean {
 
 /** Keep the total negotiated bound while leaving capacity for modal handling and owner closure. */
 export function operationAdmissionLimit(method: string, total: number): number {
-  if (['dialog.accept', 'dialog.dismiss', 'page.dialog.subscribe', 'context.dialog.subscribe', 'page.console.subscribe', 'context.console.subscribe', 'page.close', 'context.close', 'browser.close'].includes(method)) return total;
+  if (['dialog.accept', 'dialog.dismiss', 'page.dialog.subscribe', 'context.dialog.subscribe', 'page.console.subscribe', 'context.console.subscribe', 'page.close', 'context.close', 'browser.close', 'apiRequest.dispose', 'apiResponse.dispose'].includes(method)) return total;
   if (isTraceCollection(method)) return total;
   return total < minimumDialogPendingOperations ? total : total - Math.min(maximumRecoveryReserve, total - 1);
 }
