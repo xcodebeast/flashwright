@@ -68,6 +68,8 @@ const commands = [
   [process.execPath, 'tools/test-trace-archive.mjs'],
   [process.execPath, 'tools/test-trace-archive-assembly.mjs'],
   [process.execPath, 'tools/test-runner-trace-journal.mjs'],
+  [process.execPath, 'tools/test-runner-trace-adoption.mjs'],
+  [process.execPath, 'tools/run-runner-trace-adoption-tests.mjs'],
   [process.execPath, 'tools/run-runner-trace-journal-reference.mjs'],
   [process.execPath, 'tools/test-runner-trace-archives.mjs'],
   [process.execPath, 'tools/test-trace-filmstrip.mjs'],

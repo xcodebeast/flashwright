@@ -374,6 +374,23 @@ async stopIfNeeded() {
     this._testInfo.attachments.push({ name: "trace", path: tracePath, contentType: "application/zip" });
   }
 
+// TestTracing.appendBeforeActionForStep
+appendBeforeActionForStep(options2) {
+    this._appendTraceEvent({
+      type: "before",
+      callId: options2.stepId,
+      stepId: options2.stepId,
+      parentId: options2.parentId,
+      startTime: monotonicTime2(),
+      class: "Test",
+      method: options2.category,
+      title: options2.title,
+      params: Object.fromEntries(Object.entries(options2.params || {}).map(([name, value]) => [name, generatePreview(value)])),
+      stack: options2.stack,
+      group: options2.group
+    });
+  }
+
 // TestTracing.appendAfterActionForStep
 appendAfterActionForStep(callId, error, attachments = [], annotations) {
     this._appendTraceEvent({
@@ -394,6 +411,14 @@ appendStdioToTrace(type, chunk) {
       text: typeof chunk === "string" ? chunk : void 0,
       base64: typeof chunk === "string" ? void 0 : chunk.toString("base64")
     });
+  }
+
+// TestTracing._formatError
+_formatError(error) {
+    const parts = [error.message || String(error.value)];
+    if (error.cause)
+      parts.push("[cause]: " + this._formatError(error.cause));
+    return parts.join("\n");
   }
 
 // serializeAttachments
@@ -430,4 +455,18 @@ function generatePreview(value, visited = /* @__PURE__ */ new Set()) {
   if (typeof value === "object")
     return "Object";
   return String(value);
+}
+
+// filteredStackTrace
+function filteredStackTrace(rawStack) {
+  const frames = [];
+  for (const line of rawStack) {
+    const frame = parseStackFrame(line, import_path.default.sep, !!process.env.PWDEBUGIMPL);
+    if (!frame || !frame.file)
+      continue;
+    if (!filterStackFile(frame.file))
+      continue;
+    frames.push(frame);
+  }
+  return frames;
 }

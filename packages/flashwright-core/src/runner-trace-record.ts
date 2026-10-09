@@ -62,7 +62,7 @@ export function snapshotRunnerRecord(event: unknown): Record<string, unknown> {
       for (let index = 0; index < length; index++) {
         if (index) reserve(1);
         const item = runnerTraceField(value, String(index));
-        array[index] = item === undefined ? (reserve(4), null) : visit(item, depth + 1);
+        array[index] = item === undefined ? (visit(undefined, depth + 1), reserve(4), null) : visit(item, depth + 1);
       }
       result = array;
     } else {
@@ -74,7 +74,7 @@ export function snapshotRunnerRecord(event: unknown): Record<string, unknown> {
         if (!Object.hasOwn(value, name)) continue;
         if (++count > 10000) throw runnerTraceLimit('runner trace object exceeds 10000 fields');
         const item = runnerTraceField(value, name);
-        if (item === undefined) continue;
+        if (item === undefined) { visit(undefined, depth + 1); continue; }
         if (written++) reserve(1);
         reserve(stringBytes(name, remaining) + 1);
         object[name] = visit(item, depth + 1);
@@ -93,4 +93,69 @@ export function encodeRunnerRecord(record: Record<string, unknown>): Buffer {
   const text = JSON.stringify(record) + '\n';
   if (Buffer.byteLength(text) > maximumRunnerRecordBytes) throw runnerTraceLimit('runner trace record exceeds 256 KiB');
   return Buffer.from(text);
+}
+
+/** Match ordinary pinned parameter previews with bounded traversal and no caller code execution. */
+export function runnerTraceParameters(parameters: unknown): Record<string, string> {
+  const output: Record<string, string> = Object.create(null);
+  if (parameters === undefined || parameters === null) return output;
+  if (typeof parameters !== 'object' || types.isProxy(parameters) || ![Object.prototype, null].includes(Object.getPrototypeOf(parameters))) throw runnerTraceInvalid('runner parameters must be ordinary data properties');
+  let remaining = 5000;
+  let values = 0;
+  const text = (value: string): string => {
+    const length = Math.min(value.length, Math.max(0, remaining));
+    remaining -= length;
+    return length === value.length ? value : value.slice(0, length) + '[Truncated]';
+  };
+  const preview = (value: unknown, visited: Set<unknown>, depth: number): string => {
+    if (remaining <= 0 || ++values > 1000 || depth > 8) return '[Truncated]';
+    if (visited.has(value)) return '';
+    visited.add(value);
+    remaining -= 16;
+    if (typeof value === 'string') return text(value);
+    if (typeof value === 'number' || typeof value === 'boolean' || value === null || value === undefined) return text(String(value));
+    if (typeof value === 'bigint') return text(value > 10n ** 1000n || value < -(10n ** 1000n) ? '[BigInt]' : String(value));
+    if (typeof value === 'symbol') return '[Symbol]';
+    if (types.isProxy(value)) return '[Proxy]';
+    if (typeof value === 'function') return '[Function]';
+    if (!Array.isArray(value)) return 'Object';
+    const length = runnerTraceField(value, 'length') as number;
+    const parts: string[] = [];
+    let index = 0;
+    for (; index < Math.min(length, 100) && remaining > 0; index++) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+      parts.push(!descriptor ? '' : 'value' in descriptor ? preview(descriptor.value, visited, depth + 1) : '[Accessor]');
+    }
+    if (index < length) parts.push('[Truncated]');
+    return '[' + parts.join(', ') + ']';
+  };
+  let count = 0;
+  for (const name in parameters) {
+    if (!Object.hasOwn(parameters, name)) continue;
+    if (++count > 100 || name.length > 256) throw runnerTraceLimit('runner parameter names exceed their count or length limit');
+    remaining -= name.length;
+    const descriptor = Object.getOwnPropertyDescriptor(parameters, name)!;
+    output[name] = 'value' in descriptor ? preview(descriptor.value, new Set(), 0) : '[Accessor]';
+  }
+  return output;
+}
+
+/** Error formatting has a separate bounded traversal before string concatenation or stack parsing. */
+export function runnerTraceErrorMessage(error: unknown): string {
+  let remaining = 32768;
+  const seen = new Set<unknown>();
+  const parts: string[] = [];
+  for (let depth = 0; error; depth++) {
+    if (depth >= 16 || seen.has(error)) throw runnerTraceLimit('runner error cause chain exceeds its depth or repeats');
+    seen.add(error);
+    const message = runnerTraceField(error, 'message');
+    const value = runnerTraceField(error, 'value');
+    if (message !== undefined && typeof message !== 'string' || value !== undefined && typeof value !== 'string') throw runnerTraceInvalid('runner error message and value must be strings');
+    const text = message || String(value);
+    if (text.length + (depth ? 10 : 0) > remaining) throw runnerTraceLimit('runner error message exceeds 32768 characters');
+    remaining -= text.length + (depth ? 10 : 0);
+    parts.push((depth ? '[cause]: ' : '') + text);
+    error = runnerTraceField(error, 'cause');
+  }
+  return parts.join('\n');
 }

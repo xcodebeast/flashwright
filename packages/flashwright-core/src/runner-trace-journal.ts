@@ -6,7 +6,7 @@ import { types } from 'node:util';
 import { failure } from './errors.js';
 import { SealedTraceArchive } from './trace-archive.js';
 import { TraceResources, maximumSourceBytes, type TraceResource } from './trace-resources.js';
-import { encodeRunnerRecord, maximumRunnerRecordBytes, runnerTraceField, runnerTraceInvalid, runnerTraceLimit, snapshotRunnerRecord } from './runner-trace-record.js';
+import { encodeRunnerRecord, maximumRunnerRecordBytes, runnerTraceErrorMessage, runnerTraceField, runnerTraceInvalid, runnerTraceLimit, runnerTraceParameters, snapshotRunnerRecord } from './runner-trace-record.js';
 
 const maximumStreamBytes = 64 * 1024 * 1024;
 const maximumQueuedBytes = 4 * 1024 * 1024;
@@ -47,32 +47,85 @@ export class RunnerTraceJournal {
   private sealed = false;
   private transferred = false;
   private output: FileHandle | undefined;
+  private directoryPath: string | undefined;
+  private file: FileHandle | undefined;
+  private resources: TraceResources | undefined;
+  private readonly initialization: Promise<void>;
 
   private constructor(
-    readonly directory: string,
-    private readonly file: FileHandle,
-    private readonly resources: TraceResources,
     private readonly context: Record<string, unknown>,
     private readonly options: RunnerTraceJournalOptions,
-  ) {}
+  ) {
+    this.initialization = this.initialize();
+    const initialized = this.initialization.catch(error => { this.fail(error); });
+    this.writes = initialized;
+    this.captures = initialized;
+  }
 
-  static async create(context: unknown, options: RunnerTraceJournalOptions): Promise<RunnerTraceJournal> {
+  /** Admission starts synchronously; filesystem initialization has the same cleanup owner. */
+  static begin(context: unknown, options: RunnerTraceJournalOptions): RunnerTraceJournal {
     const snapshot = snapshotRunnerRecord(context);
     if (snapshot.type !== 'context-options' || snapshot.origin !== 'testRunner' || snapshot.version !== 8) throw runnerTraceInvalid('expected the original version-8 runner context record');
     const attachments = runnerTraceField(options, 'attachments');
     const sources = runnerTraceField(options, 'sources');
     if (typeof attachments !== 'boolean' || typeof sources !== 'boolean') throw runnerTraceInvalid('invalid runner journal options');
-    const resources = await TraceResources.create();
-    let directory: string | undefined;
+    return new RunnerTraceJournal(snapshot, { attachments, sources });
+  }
+
+  static async create(context: unknown, options: RunnerTraceJournalOptions): Promise<RunnerTraceJournal> {
+    const journal = RunnerTraceJournal.begin(context, options);
     try {
-      directory = await mkdtemp(join(tmpdir(), 'flashwright-runner-trace-'));
-      const file = await open(join(directory, 'events.jsonl'), 'wx+', 0o600);
-      return new RunnerTraceJournal(directory, file, resources, snapshot, { attachments, sources });
+      await journal.initialization;
+      return journal;
     } catch (error) {
-      try { if (directory) await rm(directory, { recursive: true, force: true }); }
-      finally { await resources.dispose(); }
+      await journal.dispose().catch(() => {});
       throw error;
     }
+  }
+
+  get directory(): string {
+    if (this.directoryPath === undefined) throw runnerTraceInvalid('runner journal directory is not initialized');
+    return this.directoryPath;
+  }
+
+  private async initialize(): Promise<void> {
+    this.resources = await TraceResources.create();
+    this.cancellation.signal.throwIfAborted();
+    this.directoryPath = await mkdtemp(join(tmpdir(), 'flashwright-runner-trace-'));
+    this.cancellation.signal.throwIfAborted();
+    this.file = await open(join(this.directoryPath, 'events.jsonl'), 'wx+', 0o600);
+    this.cancellation.signal.throwIfAborted();
+  }
+
+  /** Replace the pinned caller before its recursive preview generation can run. */
+  appendBeforeAction(options: unknown, timestamp: number): void {
+    if (this.failure) return;
+    try {
+      this.assertAppendOpen();
+      const stepId = runnerTraceField(options, 'stepId');
+      this.append({
+        type: 'before', callId: stepId, stepId, parentId: runnerTraceField(options, 'parentId'), startTime: timestamp,
+        class: 'Test', method: runnerTraceField(options, 'category'), title: runnerTraceField(options, 'title'),
+        params: runnerTraceParameters(runnerTraceField(options, 'params')),
+        stack: runnerTraceField(options, 'stack'), group: runnerTraceField(options, 'group'),
+      });
+    } catch (error) { this.fail(error); }
+  }
+
+  appendAfterAction(callId: unknown, error: unknown, attachments: readonly unknown[] | undefined, annotations: unknown, timestamp: number): void {
+    this.append({ type: 'after', callId, endTime: timestamp, annotations, error }, attachments);
+  }
+
+  /** Only bounded stack text reaches the pinned parser supplied by the runner adapter. */
+  appendError(error: unknown, parseStack: (stack: string) => unknown[]): void {
+    if (this.failure) return;
+    try {
+      this.assertAppendOpen();
+      const stack = runnerTraceField(error, 'stack');
+      if (stack !== undefined && typeof stack !== 'string') throw runnerTraceInvalid('runner error stack must be a string');
+      if (stack && stack.length > 32768) throw runnerTraceLimit('runner error stack exceeds 32768 characters');
+      this.append({ type: 'error', message: runnerTraceErrorMessage(error), stack: parseStack(stack ?? '') });
+    } catch (error) { this.fail(error); }
   }
 
   /** The adapter passes normalized records; body attachments take their snapshot at this call. */
@@ -110,7 +163,7 @@ export class RunnerTraceJournal {
       this.writes = this.writes.then(async () => {
         try {
           if (this.failure || this.cancellation.signal.aborted) return;
-          await this.file.writeFile(encoded);
+          await this.file!.writeFile(encoded);
           this.journalHash.update(encoded);
         } catch (error) { this.fail(error); }
         finally { this.queuedBytes -= measured; }
@@ -170,7 +223,7 @@ export class RunnerTraceJournal {
     this.captures = this.captures.then(async () => {
       try {
         if (this.failure || this.cancellation.signal.aborted) return;
-        const resource = await this.resources.captureBytes(bytes, this.cancellation.signal);
+        const resource = await this.resources!.captureBytes(bytes, this.cancellation.signal);
         this.addAlias(`resources/${alias}`, resource);
       } catch (error) { this.fail(error); }
       finally { this.queuedAttachments--; this.queuedAttachmentBytes -= bytes.length; }
@@ -228,7 +281,7 @@ export class RunnerTraceJournal {
       if (record.type === 'after' && Array.isArray(record.attachments)) {
         for (const attachment of record.attachments as Record<string, unknown>[]) {
           if (typeof attachment.path !== 'string' || !attachment.path) continue;
-          const resource = await this.resources.captureFile(attachment.path, signal);
+          const resource = await this.resources!.captureFile(attachment.path, signal);
           if (!resource) continue;
           const alias = await this.resourceSha1(resource, signal);
           this.addAlias(`resources/${alias}`, resource);
@@ -241,11 +294,11 @@ export class RunnerTraceJournal {
     }
     for (const path of this.sourcePaths) {
       this.assertPreparing(signal);
-      const resource = await this.resources.captureFile(path, signal, maximumSourceBytes, 'utf8');
+      const resource = await this.resources!.captureFile(path, signal, maximumSourceBytes, 'utf8');
       if (resource) this.addAlias(`resources/src@${createHash('sha1').update(path).digest('hex')}.txt`, resource);
     }
     await this.output.close();
-    await this.file.close();
+    await this.file!.close();
     await rm(join(this.directory, 'events.jsonl'));
     this.assertPreparing(signal);
     const archive = new SealedTraceArchive([
@@ -267,7 +320,7 @@ export class RunnerTraceJournal {
     let events = 0;
     for (;;) {
       this.assertPreparing(signal);
-      const { bytesRead } = await this.file.read(buffer, 0, buffer.length, offset);
+      const { bytesRead } = await this.file!.read(buffer, 0, buffer.length, offset);
       if (!bytesRead) break;
       offset += bytesRead;
       if (offset > this.streamBytes) throw runnerTraceInvalid('runner journal changed before finalization');
@@ -343,10 +396,10 @@ export class RunnerTraceJournal {
       const settle = async (work: Promise<unknown>): Promise<void> => {
         try { await work; } catch (error) { if (!failed) { originalFailure = error; failed = true; } }
       };
-      await settle(this.file.close());
+      if (this.file) await settle(this.file.close());
       if (this.output) await settle(this.output.close());
-      await settle(rm(this.directory, { recursive: true, force: true }));
-      await settle(this.resources.dispose());
+      if (this.directoryPath) await settle(rm(this.directoryPath, { recursive: true, force: true }));
+      if (this.resources) await settle(this.resources.dispose());
       this.sourcePaths.clear();
       this.aliases.clear();
       if (failed) throw originalFailure;
