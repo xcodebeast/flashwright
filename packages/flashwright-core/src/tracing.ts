@@ -15,7 +15,7 @@ import { NativeTraceRecording, type NativeTraceChunk } from './trace-recording.j
 import { TraceSnapshotChannel } from './trace-snapshots.js';
 import { TraceNetworkChannel } from './trace-network.js';
 import { beginRunnerAction, type RunnerAction } from './runner-actions.js';
-import { registerRunnerTraceOwner, type RunnerTraceChunk } from './runner-trace-archives.js';
+import { registerRunnerTraceOwner, type RunnerTraceChunk, type RunnerTraceRecording } from './runner-trace-archives.js';
 import type { SealedTraceArchive } from './trace-archive.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
@@ -31,7 +31,7 @@ let nextContext = 0;
 /** Manual action tracing owns context diagnostics and independent, bounded archive chunks. */
 export class Tracing {
   private readonly traceContext = `${processIdentity}@context-${++nextContext}`;
-  private recording = false;
+  private recording: RunnerTraceRecording | undefined;
   private resources: TraceResources | undefined;
   private includeSources = false;
   private includeScreenshots = false;
@@ -47,22 +47,30 @@ export class Tracing {
   private retiringChunk: TraceChunk | undefined;
   private exportCancellation: AbortController | undefined;
   constructor(private readonly client: EngineClient, private readonly context: string, private readonly viewport: { width: number; height: number } | null) {
-    registerRunnerTraceOwner(this, () => this.chunk?.runner);
+    registerRunnerTraceOwner(this, {
+      currentChunk: () => this.chunk?.runner,
+      currentRecording: () => this.recording,
+      startRecording: options => this.beginRecording(options),
+    });
   }
 
   start(options: TracingStartOptions = {}): Promise<void> {
-    return this.control(async () => {
+    return this.beginRecording(options).then(() => {});
+  }
+
+  private beginRecording(options: TracingStartOptions): Promise<RunnerTraceRecording> {
+    return this.control(() => {
       validateOptions('tracing.start', options, ['name', 'title', 'screenshots', 'snapshots', 'sources']);
       for (const key of ['screenshots', 'snapshots', 'sources'] as const) {
         if (options[key] !== undefined && typeof options[key] !== 'boolean') throw failure('InvalidArgumentError', `tracing.start.${key}`, 'expected a boolean');
       }
       validateChunkOptions(options);
-      await this.startRecording(options);
+      return this.startRecording(options);
     });
   }
 
   /** One recording retains snapshot and network ownership across independently exported chunks. */
-  private async startRecording(options: TracingStartOptions): Promise<void> {
+  private async startRecording(options: TracingStartOptions): Promise<RunnerTraceRecording> {
     if (this.recording) throw failure('InvalidArgumentError', 'tracing.start', 'tracing is already started');
     this.resources = await TraceResources.create();
     this.includeSources = options.sources ?? false;
@@ -77,7 +85,9 @@ export class Tracing {
         });
       }
       await this.openChunk(options);
-      this.recording = true;
+      if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing.start', 'context closed before recording publication');
+      this.recording = this.createRunnerRecording();
+      return this.recording;
     } catch (error) {
       const resources = this.resources;
       const native = this.nativeRecording;
@@ -108,8 +118,44 @@ export class Tracing {
     return this.control(async () => {
       validateStopOptions(options);
       try { await this.finishChunk({ kind: 'file', path: options.path }, true); }
-      finally { this.recording = false; }
+      finally { this.recording = undefined; }
     });
+  }
+  /** A runner cannot reuse a manual replacement or erase an unexpected active chunk. */
+  private createRunnerRecording(): RunnerTraceRecording {
+    const assertCurrent = () => {
+      if (this.recording !== recording) throw failure('InvalidArgumentError', 'runner.tracing', 'the original trace recording is no longer current');
+      if (this.chunk) throw failure('InvalidArgumentError', 'runner.tracing', 'the original trace recording still has an active chunk');
+    };
+    const recording: RunnerTraceRecording = Object.freeze({
+      startChunk: (options: TracingChunkOptions = {}) => this.control(async () => {
+        assertCurrent();
+        validateOptions('tracing.startChunk', options, ['name', 'title']);
+        validateChunkOptions(options);
+        await this.openChunk(options);
+        if (this.ownerIsClosed || !this.chunk) throw failure('TargetClosedError', 'runner.tracing', 'context closed before chunk publication');
+        return this.chunk.runner;
+      }),
+      stop: () => this.control(async () => {
+        assertCurrent();
+        try {
+          await this.discardAndSettle(true);
+        } finally { this.recording = undefined; }
+      }),
+    });
+    return recording;
+  }
+
+  /** Private disposal returns only after its original cleanup, even beyond the public grace. */
+  private async settleRunnerCleanup(): Promise<void> {
+    while (this.cleanup) await this.cleanup;
+    if (this.cleanupFailure) throw this.cleanupFailure;
+  }
+
+  private async discardAndSettle(retireRecording = false): Promise<void> {
+    try { await this.finishChunk({ kind: 'file', path: undefined }, retireRecording); }
+    catch (error) { await this.settleRunnerCleanup().catch(() => {}); throw error; }
+    await this.settleRunnerCleanup();
   }
   private async control<Value>(callback: () => Promise<Value>): Promise<Value> {
     if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing', 'context has been closed');
@@ -125,7 +171,10 @@ export class Tracing {
     if (!this.resources) throw failure('ProtocolError', 'tracing', 'recording resource owner is unavailable');
     const writer = await TraceWriter.create(this.resources);
     const identifier = randomUUID();
-    const runner = Object.freeze({ takeArchive: (signal?: AbortSignal) => this.takeRunnerArchive(identifier, signal) });
+    const runner = Object.freeze({
+      takeArchive: (signal?: AbortSignal) => this.takeRunnerArchive(identifier, signal),
+      discard: () => this.discardRunnerChunk(identifier),
+    });
     const chunk: TraceChunk = { identifier, writer, runner, accepting: false };
     try {
       if (this.nativeRecording) {
@@ -163,6 +212,13 @@ export class Tracing {
       const archive = await this.finishChunk({ kind: 'runner', signal });
       if (!archive) throw failure('ProtocolError', 'runner.tracing', 'sealed trace archive is unavailable');
       return archive;
+    });
+  }
+
+  private discardRunnerChunk(identifier: string): Promise<void> {
+    return this.control(async () => {
+      if (this.chunk?.identifier !== identifier) throw failure('InvalidArgumentError', 'runner.tracing', 'the original trace chunk is no longer current');
+      await this.discardAndSettle();
     });
   }
 
@@ -225,7 +281,9 @@ export class Tracing {
     let originalFailure: unknown;
     let failed = false;
     try { await Promise.race([work, expired, interrupted]); }
-    catch (error) { originalFailure = error; failed = true; }
+    // Native retirement can fail before the writer reaches its own failure check.
+    // Preserve the earlier capture error while cleanup still owns the native failure.
+    catch (error) { originalFailure = chunk.writer.failure ?? error; failed = true; }
     finally {
       clearTimeout(timer);
       cancellation.signal.removeEventListener('abort', interrupt);
@@ -437,7 +495,7 @@ export class Tracing {
   }
   ownerClosed(): void {
     this.ownerIsClosed = true;
-    this.recording = false;
+    this.recording = undefined;
     this.nativeRecording = undefined;
     const network = this.network;
     this.network = undefined;

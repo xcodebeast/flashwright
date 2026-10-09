@@ -39,6 +39,7 @@ const assembly = runnerIntegration.createTraceArchiveAssembly(4);
 const admitted = new Set();
 let combined;
 const handles = new Map();
+const recordings = new Map();
 let browser;
 let registration;
 
@@ -69,22 +70,26 @@ try {
   const closedMarkers = new Map();
   registration = runnerIntegration.installAsyncContextLifecycle(2, {
     async didCreateContext(context) {
-      await context.tracing.start({ screenshots: true, snapshots: true, sources: true, title: 'Private runner handoff' });
+      const recording = await runnerIntegration.startTraceRecording(7, context.tracing, { screenshots: true, snapshots: true, sources: true, title: 'Private runner handoff' });
+      assert.equal(runnerIntegration.currentTraceRecording(7, context.tracing), recording);
+      recordings.set(context, recording);
       const handle = runnerIntegration.currentTraceChunk(3, context.tracing);
       assert.ok(handle); handles.set(context, handle);
     },
     async willCloseContext(context) {
       if (handles.has(context)) await retain(context, closedMarkers.get(context));
+      await recordings.get(context)?.stop();
+      recordings.delete(context);
     },
   });
   await registration.ready;
   await capture(surviving, 'surviving-first');
   const original = handles.get(surviving);
   await retain(surviving, 'surviving-first');
-  await surviving.tracing.startChunk({ title: 'Successor chunk' });
-  const successor = runnerIntegration.currentTraceChunk(3, surviving.tracing);
+  const successor = await recordings.get(surviving).startChunk({ title: 'Successor chunk' });
   handles.set(surviving, successor);
   await assert.rejects(original.takeArchive(), /original trace chunk is no longer current/);
+  await assert.rejects(original.discard(), /original trace chunk is no longer current/);
   assert.equal(runnerIntegration.currentTraceChunk(3, surviving.tracing), successor);
   report.checks.push('existing context adoption and original handle rejection preserve the successor');
 
@@ -92,12 +97,20 @@ try {
   await capture(early, 'early-close');
   closedMarkers.set(early, 'early-close');
   await early.close();
+  const discarded = await browser.newContext();
+  await capture(discarded, 'discarded');
+  await handles.get(discarded).discard();
+  handles.delete(discarded);
+  assert.equal(runnerIntegration.currentTraceChunk(3, discarded.tracing), undefined);
+  await discarded.close();
+  report.checks.push('exact discard retires native snapshot, network and filmstrip collectors without an archive');
   await capture(surviving, 'surviving-second');
   closedMarkers.set(surviving, 'surviving-second');
   await surviving.close();
   await registration.dispose(); registration = undefined;
   await browser.close(); browser = undefined;
   assert.equal(handles.size, 0);
+  assert.equal(recordings.size, 0);
   assert.equal(retained.length, 3);
   report.checks.push('explicit closure seals the original chunks before native contexts and browser retire');
 
