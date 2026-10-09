@@ -22,9 +22,12 @@ export class TraceResources {
   private readonly publishing = new Map<string, Promise<TraceResource>>();
   private bytes = 0;
   private ingests = 0;
-  private leases = 0;
+  private activeLeases = 0;
+  private archiveLeases = 0;
   private closing = false;
+  private retirement: Promise<void> | undefined;
   private disposal: Promise<void> | undefined;
+  private activeDrained: (() => void) | undefined;
   private drained: (() => void) | undefined;
 
   private constructor(readonly directory: string) {}
@@ -35,13 +38,28 @@ export class TraceResources {
 
   acquire(): () => void {
     if (this.closing) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
-    this.leases++;
+    this.activeLeases++;
     let released = false;
     return () => {
       if (released) return;
       released = true;
-      this.leases--;
+      this.activeLeases--;
       this.notifyDrained();
+    };
+  }
+
+  /** Sealed archives retain bytes without keeping a retired recording's active work alive. */
+  acquireArchive(): () => Promise<void> {
+    if (this.closing) throw failure('TargetClosedError', 'tracing.resources', 'resource recording is closed');
+    this.archiveLeases++;
+    let releaseWork: Promise<void> | undefined;
+    return () => {
+      if (releaseWork) return releaseWork;
+      this.archiveLeases--;
+      this.notifyDrained();
+      releaseWork = this.closing && !this.archiveLeases && !this.activeLeases && !this.ingests
+        ? this.disposal! : Promise.resolve();
+      return releaseWork;
     };
   }
 
@@ -166,11 +184,22 @@ export class TraceResources {
     return { resource, stored: true };
   }
 
+  /** Retire active capture; a retained archive owns cleanup after this boundary returns. */
+  retire(): Promise<void> {
+    if (this.retirement) return this.retirement;
+    const disposal = this.dispose();
+    this.retirement = (async () => {
+      if (this.activeLeases || this.ingests) await new Promise<void>(resolve => { this.activeDrained = resolve; });
+      if (!this.archiveLeases) await disposal;
+    })();
+    return this.retirement;
+  }
+
   dispose(): Promise<void> {
     if (this.disposal) return this.disposal;
     this.closing = true;
     this.disposal = (async () => {
-      if (this.leases || this.ingests) await new Promise<void>(resolve => { this.drained = resolve; });
+      if (this.activeLeases || this.archiveLeases || this.ingests) await new Promise<void>(resolve => { this.drained = resolve; });
       await rm(this.directory, { recursive: true, force: true });
       this.resources.clear();
       this.bytes = 0;
@@ -179,7 +208,10 @@ export class TraceResources {
   }
 
   private notifyDrained(): void {
-    if (!this.leases && !this.ingests) this.drained?.();
+    if (!this.activeLeases && !this.ingests) {
+      this.activeDrained?.();
+      if (!this.archiveLeases) this.drained?.();
+    }
   }
 
   private assertCaptureOpen(signal: AbortSignal): void {
