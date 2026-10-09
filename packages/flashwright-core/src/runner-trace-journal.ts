@@ -152,7 +152,7 @@ export class RunnerTraceJournal {
       let attachmentBytes = 0;
       for (const attachment of pending) attachmentBytes += attachment.length;
       if (this.queuedAttachments + pending.length > 128 || this.queuedAttachmentBytes + attachmentBytes > maximumQueuedAttachmentBytes) throw runnerTraceLimit('runner trace exceeds 128 queued bodies or 32 MiB of attachment copies');
-      if (record.type === 'before' && this.options.sources) this.referenceSources(record.stack);
+      if (record.type === 'before' && this.options.sources) this.retainSourcePaths(record.stack);
       const releaseWrite = this.storage.reserveWrite(measured);
       try {
         for (const attachment of pending) {
@@ -240,15 +240,27 @@ export class RunnerTraceJournal {
     });
   }
 
-  private referenceSources(stack: unknown): void {
+  /** Library actions share final source reads without adding synthetic runner events. */
+  referenceSources(stack: unknown): void {
+    if (this.failure || !this.options.sources) return;
+    try {
+      this.assertAppendOpen();
+      this.retainSourcePaths(stack);
+    } catch (error) { this.fail(error); }
+  }
+
+  private retainSourcePaths(stack: unknown): void {
     if (stack === undefined) return;
-    if (!Array.isArray(stack)) throw runnerTraceInvalid('runner stack must be an array');
-    for (let index = 0; index < stack.length; index++) {
-      const file = runnerTraceField(stack[index], 'file');
+    if (types.isProxy(stack) || !Array.isArray(stack)) throw runnerTraceInvalid('runner stack must be an ordinary array');
+    const length = runnerTraceField(stack, 'length') as number;
+    if (length > 10000) throw runnerTraceLimit('runner source stack exceeds 10000 entries');
+    for (let index = 0; index < length; index++) {
+      const file = runnerTraceField(runnerTraceField(stack, String(index)), 'file');
       if (typeof file !== 'string') throw runnerTraceInvalid('runner source path must be a string');
+      if (file.length > 32768) throw runnerTraceLimit('runner source path exceeds 32768 characters');
       if (this.sourcePaths.has(file)) continue;
       const bytes = Buffer.byteLength(file);
-      if (file.length > 32768 || this.sourcePaths.size >= 4096 || this.sourcePathBytes + bytes > 1024 * 1024) throw runnerTraceLimit('runner source path count or metadata limit exceeded');
+      if (this.sourcePaths.size >= 4096 || this.sourcePathBytes + bytes > 1024 * 1024) throw runnerTraceLimit('runner source path count or metadata limit exceeded');
       this.sourcePaths.add(file);
       this.sourcePathBytes += bytes;
     }

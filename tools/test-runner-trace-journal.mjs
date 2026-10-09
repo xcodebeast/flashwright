@@ -44,7 +44,7 @@ async function readArchive(journal, timeout = 12345) {
 
 try {
   await check('journal factory enforces its private version without exposing a public constructor', async () => {
-    assert.equal(runnerIntegration.version, 9);
+    assert.equal(runnerIntegration.version, 10);
     assert.throws(() => runnerIntegration.createTraceJournal(4, context(), { sources: false, attachments: false }), { name: 'ProtocolError' });
     assert.equal('RunnerTraceJournal' in require('../packages/flashwright-core/dist/commonjs/index.js'), false);
     const value = await runnerIntegration.createTraceJournal(5, context(), { sources: false, attachments: false });
@@ -178,6 +178,83 @@ try {
     assert.equal(attachments[2].base64, '');
     assert.equal(result.names.some(name => name.endsWith(hash('not embedded'))), false);
   }));
+
+  await check('source-only admission shares final reads and deduplication without adding runner events', () => journal(async value => {
+    const first = join(directory, 'source-only-caller.ts'); const helper = join(directory, 'source-only-helper.ts');
+    await filesystem.writeFile(first, 'old caller'); await filesystem.writeFile(helper, 'old helper');
+    const stack = [{ file: first }, { file: helper }];
+    value.referenceSources(stack); value.referenceSources(stack);
+    stack[0].file = join(directory, 'mutated-path.ts');
+    value.append({ type: 'before', callId: 'shared-source', stack: [{ file: first }] });
+    assert.equal(value.events, 1); assert.equal(value.sourcePaths.size, 2);
+    const reads = [];
+    const capture = value.resources.captureFile.bind(value.resources);
+    value.resources.captureFile = (...arguments_) => { reads.push(arguments_[0]); return capture(...arguments_); };
+    await filesystem.writeFile(first, 'final caller'); await filesystem.writeFile(helper, 'final helper');
+    const result = await readArchive(value);
+    assert.deepEqual(result.records.map(record => record.type), ['context-options', 'before']);
+    assert.deepEqual(reads, [first, helper]);
+    assert.equal(result.contents[`resources/src@${hash(first)}.txt`].toString(), 'final caller');
+    assert.equal(result.contents[`resources/src@${hash(helper)}.txt`].toString(), 'final helper');
+  }));
+
+  await check('source-only admission works during initialization and discarded or disabled sources perform no reads', async () => {
+    const entered = deferred(); const release = deferred(); const original = TraceResources.create;
+    TraceResources.create = async (...arguments_) => { const resources = await original.apply(TraceResources, arguments_); resources.captureFile = async () => { throw Error('discard read a source'); }; entered.resolve(); await release.promise; return resources; };
+    let value;
+    try {
+      value = RunnerTraceJournal.begin(context(), { sources: true, attachments: false });
+      value.referenceSources([{ file: 'initializing-source.ts' }]);
+      assert.equal(value.sourcePaths.size, 1); assert.equal(value.events, 0);
+      await entered.promise;
+      const disposal = value.dispose(); release.resolve(); await disposal;
+      assert.equal(value.sourcePaths.size, 0);
+    } finally { release.resolve(); TraceResources.create = original; await value?.dispose(); }
+    await journal(async disabled => {
+      let invoked = 0;
+      const stack = new Proxy([], { get() { invoked++; throw Error('disabled input read'); } });
+      disabled.referenceSources(stack);
+      assert.equal(invoked, 0); assert.equal(disabled.sourcePaths.size, 0);
+      const result = await readArchive(disabled);
+      assert.deepEqual(result.names, ['test.trace']);
+    }, { sources: false, attachments: false });
+  });
+
+  await check('source-only admission rejects accessors, proxies, excessive input and closed journals without caller effects', async () => {
+    let invoked = 0;
+    const accessor = [{ get file() { invoked++; throw Error('file getter'); } }];
+    const indexed = []; Object.defineProperty(indexed, '0', { get() { invoked++; throw Error('index getter'); } });
+    const proxy = new Proxy([], { getOwnPropertyDescriptor() { invoked++; throw Error('proxy descriptor'); } });
+    const cases = [[accessor, 'ProtocolError'], [indexed, 'ProtocolError'], [proxy, 'ProtocolError'], [new Array(10001), 'ResourceLimitError'], [[{ file: 'x'.repeat(32769) }], 'ResourceLimitError']];
+    for (const [stack, name] of cases) await journal(async value => {
+      value.referenceSources(stack);
+      assert.equal(value.failure.name, name);
+      await assert.rejects(value.takeArchive(1, signal()), error => error === value.failure);
+    });
+    assert.equal(invoked, 0);
+    await journal(async value => {
+      const archive = await value.takeArchive(1, signal());
+      try {
+        value.referenceSources([{ file: 'late.ts' }]);
+        assert.equal(value.failure.name, 'ProtocolError'); assert.equal(value.sourcePaths.size, 0);
+      } finally { await archive.dispose(); }
+    });
+  });
+
+  await check('source-only paths share cumulative path count and byte limits with ordinary journal stacks', async () => {
+    await journal(async value => {
+      for (let index = 0; index < 4096; index++) value.referenceSources([{ file: `source-${index}.ts` }]);
+      assert.equal(value.failure, undefined); assert.equal(value.sourcePaths.size, 4096);
+      value.append({ type: 'before', callId: 'overflow', stack: [{ file: 'one-more.ts' }] });
+      assert.equal(value.failure.name, 'ResourceLimitError'); assert.equal(value.sourcePaths.size, 4096);
+    });
+    await journal(async value => {
+      const file = 'x'.repeat(32760);
+      for (let index = 0; index < 33; index++) value.referenceSources([{ file: file + index }]);
+      assert.equal(value.failure.name, 'ResourceLimitError'); assert.equal(value.sourcePaths.size, 32);
+      assert(value.sourcePathBytes <= 1024 * 1024);
+    });
+  });
 
   await check('runner source UTF-8 decoding matches Buffer decoding across chunk boundaries and preserves binary attachment bytes', () => journal(async value => {
     const bytes = Buffer.concat([Buffer.alloc(65535, 120), Buffer.from([0xf0, 0x9f, 0x98, 0x80, 0xff, 0xc0, 0xe2])]);

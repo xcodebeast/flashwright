@@ -1,4 +1,5 @@
 import { failure } from './errors.js';
+import { types } from 'node:util';
 import type { TraceLocation } from './trace-preview.js';
 
 export interface RunnerActionMetadata {
@@ -35,8 +36,17 @@ export function installRunnerActionObserver(candidate: RunnerActionObserver): ()
   };
 }
 
-export function beginRunnerAction(metadata: RunnerActionMetadata): RunnerAction | undefined {
-  const action = observer?.begin(metadata);
+/** Snapshot a private chunk's callback before asynchronous startup can publish actions. */
+export function captureRunnerActionObserver(candidate: RunnerActionObserver): RunnerActionObserver {
+  if (!candidate || typeof candidate !== 'object' || types.isProxy(candidate)) throw failure('ProtocolError', 'runner.integration', 'invalid chunk action observer');
+  const descriptor = Object.getOwnPropertyDescriptor(candidate, 'begin');
+  if (!descriptor || !('value' in descriptor) || typeof descriptor.value !== 'function') throw failure('ProtocolError', 'runner.integration', 'invalid chunk action observer');
+  const begin = descriptor.value as RunnerActionObserver['begin'];
+  return Object.freeze({ begin: (metadata: RunnerActionMetadata) => begin.call(candidate, metadata) });
+}
+
+export function beginRunnerAction(metadata: RunnerActionMetadata, boundObserver?: RunnerActionObserver): RunnerAction | undefined {
+  const action = (boundObserver ?? observer)?.begin(metadata);
   if (action && (typeof action.stepId !== 'string' || !action.stepId || action.stepId.length > 1024 || typeof action.complete !== 'function' || action.title !== undefined && (typeof action.title !== 'string' || action.title.length > 16384))) {
     throw failure('ProtocolError', 'runner.integration', 'invalid runner action identity or completion owner');
   }

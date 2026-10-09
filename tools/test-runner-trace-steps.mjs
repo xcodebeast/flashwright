@@ -11,7 +11,7 @@ const require = createRequire(resolve('packages/flashwright-runner/package.json'
 const upstreamRequire = createRequire(resolve('packages/flashwright-runner/dist/upstream/package.json'));
 const globals = upstreamRequire('./lib/globals.js');
 const { utils, iso } = upstreamRequire('playwright-core/lib/coreBundle');
-const { installTraceSteps } = require(resolve('packages/flashwright-runner/dist/commonjs/trace-steps.js'));
+const { installTraceSteps, createOwnedTraceSteps } = require(resolve('packages/flashwright-runner/dist/commonjs/trace-steps.js'));
 const { runnerIntegration } = require('@flashwright/core/runner-integration');
 const { Tracing } = require(resolve('packages/flashwright-core/dist/commonjs/tracing.js'));
 const { instrumentTraceMethods, runTraceInternal, runTraceUserCallback } = require(resolve('packages/flashwright-core/dist/commonjs/trace-hooks.js'));
@@ -33,11 +33,13 @@ const PinnedTracing = vm.runInNewContext(`${worker.slice(start, end)}\nTestTraci
 function information() {
   const calls = [];
   const testInfo = {
-    retry: 0, status: 'passed', expectedStatus: 'passed', calls,
+    retry: 0, status: 'passed', expectedStatus: 'passed', calls, _stepMap: new Map(),
     _addStep(data) {
       const step = { ...data, stepId: `step-${calls.length + 1}`, completions: [] };
       calls.push(step);
+      this._stepMap.set(step.stepId, step);
       const parent = utils.currentZone().data('stepZone');
+      step.parentId = parent?.stepId;
       this._tracing.appendBeforeActionForStep({ ...data, stepId: step.stepId, parentId: parent?.stepId, stack: data.location ? [data.location] : [] });
       step.complete = result => {
         step.completions.push(result);
@@ -271,6 +273,172 @@ try {
       await withTrace(async (tracing, operations) => { await tracing.start(); await operations.value(5); });
       assert.equal(first.calls.length, 0); assert.equal(second.calls.length, 0);
     } finally { uninstall(); globals.setCurrentTestInfo(undefined); }
+  });
+
+  await check('bound observer validation runs before native or resource startup without invoking caller code', async () => {
+    let invoked = 0;
+    const accessor = { get begin() { invoked++; throw Error('accessor invoked'); } };
+    const proxy = new Proxy({}, { getOwnPropertyDescriptor() { invoked++; throw Error('proxy invoked'); } });
+    await withTrace(async tracing => {
+      assert.throws(() => runnerIntegration.startTraceRecordingWithActions(9, tracing, {}, {}), { name: 'ProtocolError' });
+      assert.throws(() => runnerIntegration.startTraceRecordingWithActions(10, {}, {}, {}), { name: 'ProtocolError' });
+      for (const observer of [undefined, {}, accessor, proxy]) {
+        await assert.rejects(runnerIntegration.startTraceRecordingWithActions(10, tracing, {}, observer), { name: 'ProtocolError' });
+        assert.equal(tracing.resources, undefined);
+        assert.equal(tracing.chunk, undefined);
+      }
+      assert.equal(invoked, 0);
+    });
+  });
+
+  await check('each bound callback is captured before its first accepting action and before startup resolves', async () => {
+    let legacyCalls = 0;
+    const uninstall = runnerIntegration.installActionObserver(2, { begin() { legacyCalls++; } });
+    try {
+      await withTrace(async (tracing, operations) => {
+        const admitted = [];
+        const first = { begin() { admitted.push('first'); return { stepId: 'first', complete() {} }; } };
+        const second = { begin() { admitted.push('second'); return { stepId: 'second', complete() {} }; } };
+        const originalOpen = tracing.openChunk.bind(tracing);
+        let phase = 0;
+        tracing.openChunk = async (...arguments_) => {
+          await originalOpen(...arguments_);
+          assert.equal(tracing.chunk.accepting, true);
+          assert.equal(await operations.value(++phase), phase);
+        };
+        const pending = runnerIntegration.startTraceRecordingWithActions(10, tracing, {}, first);
+        first.begin = () => { throw Error('mutated first callback'); };
+        const recording = await pending;
+        assert.equal(Object.isFrozen(recording), true);
+        assert.equal(recording.recording, runnerIntegration.currentTraceRecording(7, tracing));
+        assert.deepEqual(admitted, ['first']);
+        await runnerIntegration.currentTraceChunk(3, tracing).discard();
+        await assert.rejects(recording.startChunk(), { name: 'ProtocolError' });
+        const next = recording.startChunk(second);
+        second.begin = () => { throw Error('mutated second callback'); };
+        await (await next).discard();
+        await recording.stop();
+        assert.deepEqual(admitted, ['first', 'second']);
+        assert.equal(legacyCalls, 0);
+      });
+    } finally { uninstall(); }
+  });
+
+  await check('declining bound observers never fall back and manual replacements preserve legacy ownership', async () => {
+    let legacyCalls = 0;
+    let boundCalls = 0;
+    const uninstall = runnerIntegration.installActionObserver(2, { begin() { legacyCalls++; } });
+    try {
+      await withTrace(async (tracing, operations) => {
+        const recording = await runnerIntegration.startTraceRecordingWithActions(10, tracing, {}, { begin() { boundCalls++; } });
+        const first = runnerIntegration.currentTraceChunk(3, tracing);
+        assert.equal(await operations.value(1), 1);
+        assert.equal(boundCalls, 1); assert.equal(legacyCalls, 0);
+        await tracing.startChunk();
+        const manual = runnerIntegration.currentTraceChunk(3, tracing);
+        assert.equal(await operations.value(2), 2);
+        assert.equal(boundCalls, 1); assert.equal(legacyCalls, 1);
+        await assert.rejects(first.discard(), /original trace chunk/);
+        await assert.rejects(recording.startChunk({ begin() {} }), /active chunk/);
+        await assert.rejects(recording.stop(), /active chunk/);
+        assert.equal(runnerIntegration.currentTraceChunk(3, tracing), manual);
+        await tracing.stop(); await tracing.start();
+        const replacement = runnerIntegration.currentTraceChunk(3, tracing);
+        await assert.rejects(recording.startChunk({ begin() {} }), /original trace recording/);
+        await assert.rejects(recording.stop(), /original trace recording/);
+        assert.equal(runnerIntegration.currentTraceChunk(3, tracing), replacement);
+      });
+    } finally { uninstall(); }
+  });
+
+  await check('bound original steps close before journal sealing and late completions release their call custody', async () => {
+    const first = information(); const second = information();
+    const firstSources = []; const secondSources = [];
+    const firstSteps = createOwnedTraceSteps(first, { referenceSources: stack => firstSources.push(stack) });
+    const secondSteps = createOwnedTraceSteps(second, { referenceSources: stack => secondSources.push(stack) });
+    globals.setCurrentTestInfo(first);
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    const uninstall = installTraceSteps(second);
+    try {
+      await withTrace(async (tracing, operations) => {
+        const recording = await runnerIntegration.startTraceRecordingWithActions(10, tracing, { sources: false }, firstSteps.observer);
+        const unfinished = operations.wait(gate);
+        const originalCall = [...tracing.calls][0];
+        assert.equal(first.calls.length, 1);
+        firstSteps.close(); firstSteps.close();
+        globals.setCurrentTestInfo(second);
+        await operations.value('closed original chunk');
+        assert.equal(first.calls.length, 1); assert.equal(second.calls.length, 0);
+        assert.equal(firstSources.length, 1);
+        await runnerIntegration.currentTraceChunk(3, tracing).discard();
+        await recording.startChunk(secondSteps.observer);
+        assert.equal(await operations.value(2), 2);
+        release(1); assert.equal(await unfinished, 1);
+        assert.equal(first.calls[0].completions.length, 0);
+        assert.equal(second.calls.length, 1); assert.equal(second.calls[0].completions.length, 1);
+        assert.equal(secondSources.length, 1);
+        assert.equal(tracing.calls.size, 0);
+        assert.equal(originalCall.runnerAction, undefined);
+        await runnerIntegration.currentTraceChunk(3, tracing).discard(); await recording.stop();
+      });
+    } finally { release(); firstSteps.close(); secondSteps.close(); uninstall(); globals.setCurrentTestInfo(undefined); }
+  });
+
+  await check('bound source references include full expect stacks and never move into the current successor', async () => {
+    const first = information(); const second = information();
+    const sources = [];
+    const steps = createOwnedTraceSteps(first, { referenceSources: stack => sources.push(stack.map(frame => frame.file)) });
+    const metadata = { className: 'Frame', method: 'expect', apiName: 'locator._expect', parameters: {}, stack: [{ file: 'caller.ts', line: 1, column: 1 }, { file: 'helper.ts', line: 2, column: 1 }] };
+    let completed = 0;
+    const parent = { category: 'expect', stepId: 'original-expect', title: 'expect.toHaveText', complete() { completed++; } };
+    first._stepMap.set(parent.stepId, parent);
+    try {
+      globals.setCurrentTestInfo(first);
+      const action = utils.currentZone().with('stepZone', parent).run(() => steps.observer.begin(metadata));
+      assert.equal(action.stepId, parent.stepId); action.complete(undefined);
+      assert.equal(completed, 0); assert.equal(first.calls.length, 0);
+      globals.setCurrentTestInfo(second);
+      assert.equal(steps.observer.begin(metadata), undefined);
+      assert.deepEqual(sources, [['caller.ts', 'helper.ts'], ['caller.ts', 'helper.ts']]);
+      assert.equal(second.calls.length, 0);
+      steps.close(); assert.equal(steps.observer.begin(metadata), undefined);
+      assert.equal(sources.length, 2);
+    } finally { steps.close(); globals.setCurrentTestInfo(undefined); }
+  });
+
+  await check('owned successor steps reject retained parents from an older expect or ordinary step zone', async () => {
+    const first = information(); const second = information();
+    const steps = createOwnedTraceSteps(second, { referenceSources() {} });
+    globals.setCurrentTestInfo(second);
+    try {
+      for (const category of ['expect', 'test.step']) {
+        const oldParent = { category, stepId: 'reused-step-id', title: 'old parent', complete() { throw Error('old parent completed'); } };
+        first._stepMap.set(oldParent.stepId, oldParent);
+        second._stepMap.set(oldParent.stepId, { ...oldParent, title: 'different current identity' });
+        const metadata = { className: 'Frame', method: category === 'expect' ? 'expect' : 'click', apiName: category === 'expect' ? 'locator._expect' : 'locator.click', parameters: {}, stack: [] };
+        const action = utils.currentZone().with('stepZone', oldParent).run(() => steps.observer.begin(metadata));
+        assert.notEqual(action.stepId, oldParent.stepId);
+        assert.equal(second.calls.at(-1).parentId, undefined);
+        action.complete(undefined);
+      }
+      assert.equal(first.calls.length, 0); assert.equal(second.calls.length, 2);
+      assert(second.calls.every(call => call.completions.length === 1));
+    } finally { steps.close(); globals.setCurrentTestInfo(undefined); }
+  });
+
+  await check('bound observer faults preserve public action outcomes and remain with the original chunk', async () => {
+    for (const mode of ['begin', 'complete', 'identity']) {
+      const original = new Error(`bound ${mode} failure`);
+      await withTrace(async (tracing, operations) => {
+        await runnerIntegration.startTraceRecordingWithActions(10, tracing, {}, { begin() {
+          if (mode === 'begin') throw original;
+          return { stepId: mode === 'identity' ? '' : 'owned', complete() { if (mode === 'complete') throw original; } };
+        } });
+        assert.equal(await operations.value(17), 17);
+        await assert.rejects(runnerIntegration.currentTraceChunk(3, tracing).takeArchive(), error => mode === 'identity' ? error.name === 'ProtocolError' : error === original);
+      });
+    }
   });
   report.status = 'passed';
 } catch (error) {

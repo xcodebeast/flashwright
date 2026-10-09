@@ -1,6 +1,7 @@
 import { failure } from './errors.js';
 import type { SealedTraceArchive } from './trace-archive.js';
 import type { TracingChunkOptions, TracingStartOptions } from './tracing.js';
+import type { RunnerActionObserver } from './runner-actions.js';
 
 export interface RunnerTraceChunk {
   /** Seal this exact chunk and transfer its immutable files to the caller. */
@@ -16,10 +17,19 @@ export interface RunnerTraceRecording {
   stop(): Promise<void>;
 }
 
+export interface RunnerTraceRecordingWithActions {
+  /** Exact v7 identity, preserved across this recording's explicitly owned chunks. */
+  readonly recording: RunnerTraceRecording;
+  /** Each attempt supplies its own observer before the new chunk can accept actions. */
+  startChunk(observer: RunnerActionObserver, options?: TracingChunkOptions): Promise<RunnerTraceChunk>;
+  stop(): Promise<void>;
+}
+
 interface RunnerTraceOwner {
   currentChunk(): RunnerTraceChunk | undefined;
   currentRecording(): RunnerTraceRecording | undefined;
   startRecording(options: TracingStartOptions): Promise<RunnerTraceRecording>;
+  startRecordingWithActions(options: TracingStartOptions, observer: RunnerActionObserver): Promise<RunnerTraceRecordingWithActions>;
 }
 
 const traceOwners = new WeakMap<object, RunnerTraceOwner>();
@@ -38,3 +48,4 @@ function traceOwner(owner: object): RunnerTraceOwner {
 export function currentRunnerTraceChunk(owner: object): RunnerTraceChunk | undefined { return traceOwner(owner).currentChunk(); }
 export function currentRunnerTraceRecording(owner: object): RunnerTraceRecording | undefined { return traceOwner(owner).currentRecording(); }
 export function startRunnerTraceRecording(owner: object, options: TracingStartOptions): Promise<RunnerTraceRecording> { return traceOwner(owner).startRecording(options); }
+export function startRunnerTraceRecordingWithActions(owner: object, options: TracingStartOptions, observer: RunnerActionObserver): Promise<RunnerTraceRecordingWithActions> { return traceOwner(owner).startRecordingWithActions(options, observer); }
