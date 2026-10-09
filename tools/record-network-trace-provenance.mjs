@@ -39,7 +39,7 @@ for (const [owner, methods] of selectedClasses) for (const method of methods) as
 const extract = [...snippets].map(([name, snippet]) => `// ${name}: ${distributionPath}:${snippet.firstLine}-${snippet.lastLine}\n${snippet.text}`).join('\n\n') + '\n';
 const implementationPaths = [
   'packages/flashwright-core/src/trace-network-entry.ts', 'packages/flashwright-core/src/trace-network.ts',
-  'packages/flashwright-core/src/trace-recording.ts', 'packages/flashwright-core/src/trace-writer.ts', 'packages/flashwright-core/src/tracing.ts',
+  'packages/flashwright-core/src/trace-recording.ts', 'packages/flashwright-core/src/trace-writer.ts', 'packages/flashwright-core/src/trace-archive.ts', 'packages/flashwright-core/src/tracing.ts',
   'crates/flashwright-engine/src/recording.rs', 'crates/flashwright-engine/src/recording/network.rs',
   'crates/flashwright-engine/src/recording/network/journal.rs', 'crates/flashwright-engine/src/recording/network/observer.rs',
   'crates/flashwright-engine/src/recording/network/ownership.rs', 'crates/flashwright-engine/src/recording/network/resources.rs',

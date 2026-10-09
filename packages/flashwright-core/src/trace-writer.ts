@@ -1,19 +1,17 @@
-import { open, mkdtemp, rm, mkdir, rename, type FileHandle } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
+import { open, mkdtemp, rm, type FileHandle } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
-import { createHash, randomUUID } from 'node:crypto';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { failure } from './errors.js';
 import { TraceResources, maximumSourceBytes, type TraceResource } from './trace-resources.js';
 import { prepareSnapshotRecord } from './trace-snapshot-record.js';
+import { SealedTraceArchive, type TraceArchiveEntry } from './trace-archive.js';
 
 const maximumEvents = 100000;
 const maximumBytes = 64 * 1024 * 1024;
 const maximumQueuedBytes = 4 * 1024 * 1024;
 const maximumEventBytes = 256 * 1024;
-const maximumArchiveBytes = 512 * 1024 * 1024;
 const maximumAliases = 8192;
-interface ArchiveEntry { name: string; path?: string; byteLength: number; contentHash?: string }
 
 /** One chunk owns its stream and every pending write until cleanup settles. */
 export class TraceWriter {
@@ -25,7 +23,11 @@ export class TraceWriter {
   private queuedBytes = 0;
   private snapshotPending = false;
   private writes: Promise<void> = Promise.resolve();
-  private archiveCleanup: Promise<void> | undefined;
+  private readonly streamHash = createHash('sha256');
+  private readonly networkHash = createHash('sha256');
+  private preparingArchive: Promise<SealedTraceArchive> | undefined;
+  private transferred = false;
+  private removingFiles: Promise<void> | undefined;
   private readonly sourcePaths = new Set<string>();
   private readonly aliases = new Map<string, TraceResource>();
   private sourcePathBytes = 0;
@@ -81,7 +83,7 @@ export class TraceWriter {
       this.bytes += encoded.length;
       this.queuedBytes += encoded.length;
       this.writes = this.writes.then(async () => {
-        try { if (!this.failure) await this.file.writeFile(encoded); }
+        try { if (!this.failure) { await this.file.writeFile(encoded); this.streamHash.update(encoded); } }
         catch (error) { this.fail(error); }
         finally { this.queuedBytes -= encoded.length; }
       });
@@ -107,6 +109,7 @@ export class TraceWriter {
             if (this.failure) throw this.failure;
             signal.throwIfAborted();
             await this.file.writeFile(bytes);
+            this.streamHash.update(bytes);
             written += bytes.length;
           }
           signal.throwIfAborted();
@@ -133,6 +136,7 @@ export class TraceWriter {
           this.networkFile ??= await open(join(this.directory, 'trace.network'), 'wx', 0o600);
           signal.throwIfAborted();
           await this.networkFile.writeFile(encoded);
+          this.networkHash.update(encoded);
           signal.throwIfAborted();
         } catch (error) { this.fail(error); }
         finally { this.queuedBytes -= encoded.length; }
@@ -142,28 +146,63 @@ export class TraceWriter {
   }
   fail(error: unknown): void { this.failure ??= error; }
   async finish(path: string | undefined, signal: AbortSignal, beginCommit: () => void = () => {}): Promise<void> {
+    if (path === undefined) { await this.sealStream(signal); return; }
+    const archive = await this.takeArchive(signal);
+    try { await archive.export(path, signal, beginCommit); }
+    catch (error) { await archive.dispose().catch(() => {}); throw error; }
+    await archive.dispose();
+  }
+
+  /** The caller takes sole cleanup ownership after complete, uncancelled manifest preparation. */
+  takeArchive(signal: AbortSignal): Promise<SealedTraceArchive> {
+    if (this.preparingArchive || this.sealed || this.disposal) return Promise.reject(failure('ProtocolError', 'tracing.archive', 'chunk has already been sealed or disposed'));
+    this.preparingArchive = this.prepareArchive(signal);
+    return this.preparingArchive;
+  }
+
+  private async sealStream(signal: AbortSignal): Promise<void> {
     this.sealed = true;
     await this.writes;
     await Promise.all([this.file.close(), this.networkFile?.close()]);
     if (this.failure) throw this.failure;
     signal.throwIfAborted();
-    if (path === undefined) return;
+  }
+
+  private async prepareArchive(signal: AbortSignal): Promise<SealedTraceArchive> {
+    await this.sealStream(signal);
     for (const sourcePath of this.sourcePaths) {
+      if (this.disposal) throw failure('TargetClosedError', 'tracing.archive', 'writer was disposed during archive preparation');
       const resource = await this.resources.captureFile(sourcePath, signal, maximumSourceBytes);
       if (resource) this.addAlias(`resources/src@${createHash('sha1').update(sourcePath).digest('hex')}.txt`, resource);
     }
-    const entries: ArchiveEntry[] = [
-      { name: 'trace.trace', path: join(this.directory, 'trace.trace'), byteLength: this.bytes },
-      { name: 'trace.network', byteLength: this.networkBytes, ...(this.networkFile ? { path: join(this.directory, 'trace.network') } : {}) },
+    signal.throwIfAborted();
+    if (this.disposal) throw failure('TargetClosedError', 'tracing.archive', 'writer was disposed during archive preparation');
+    const entries: TraceArchiveEntry[] = [
+      { name: 'trace.trace', path: join(this.directory, 'trace.trace'), byteLength: this.bytes, contentHash: this.streamHash.digest('hex') },
+      { name: 'trace.network', byteLength: this.networkBytes, contentHash: this.networkHash.digest('hex'), ...(this.networkFile ? { path: join(this.directory, 'trace.network') } : {}) },
       ...[...this.aliases].map(([name, resource]) => ({ name, ...resource })),
     ];
-    await exportArchive(entries, path, signal, beginCommit, cleanup => { this.archiveCleanup = cleanup; void cleanup.catch(() => {}); });
+    const archive = new SealedTraceArchive(entries, () => this.removeFiles());
+    this.transferred = true;
+    this.sourcePaths.clear();
+    this.aliases.clear();
+    return archive;
   }
+
   dispose(): Promise<void> {
     this.sealed = true;
     this.disposal ??= (async () => {
+      await this.preparingArchive?.catch(() => {});
+      if (!this.transferred) await this.removeFiles();
+      else await this.removingFiles;
+    })();
+    return this.disposal;
+  }
+
+  private removeFiles(): Promise<void> {
+    this.removingFiles ??= (async () => {
       await this.writes;
-      try { await this.archiveCleanup; await Promise.all([this.file.close(), this.networkFile?.close()]); }
+      try { await Promise.all([this.file.close(), this.networkFile?.close()]); }
       finally {
         try { await rm(this.directory, { recursive: true, force: true }); }
         finally {
@@ -174,99 +213,6 @@ export class TraceWriter {
         }
       }
     })();
-    return this.disposal;
-  }
-}
-
-const checksumTable = Uint32Array.from({ length: 256 }, (_, value) => {
-  for (let bit = 0; bit < 8; bit++) value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
-  return value >>> 0;
-});
-
-/** Export a fixed manifest with bounded ZIP metadata and verified immutable resources. */
-async function exportArchive(entries: readonly ArchiveEntry[], destination: string, signal: AbortSignal, beginCommit: () => void, ownCleanup: (cleanup: Promise<void>) => void): Promise<void> {
-  const centralBytes = entries.reduce((total, entry) => total + 46 + Buffer.byteLength(entry.name), 0);
-  const archiveBytes = 22 + entries.reduce((total, entry) => total + 92 + 2 * Buffer.byteLength(entry.name) + entry.byteLength, 0);
-  if (entries.length > maximumAliases + 2 || centralBytes > 4 * 1024 * 1024 || archiveBytes > maximumArchiveBytes) {
-    throw failure('ResourceLimitError', 'tracing', 'archive entry, byte or central-directory limit exceeded');
-  }
-  signal.throwIfAborted();
-  await mkdir(dirname(destination), { recursive: true });
-  const temporary = `${destination}.${randomUUID()}.tmp`;
-  const archive = await open(temporary, 'wx', 0o600);
-  let offset = 0;
-  const centralDirectory: Buffer[] = [];
-  const write = async (bytes: Buffer): Promise<void> => {
-    signal.throwIfAborted();
-    await archive.writeFile(bytes);
-    offset += bytes.length;
-  };
-  try {
-    for (const entry of entries) {
-      const nameBytes = Buffer.from(entry.name);
-      const localOffset = offset;
-      const header = Buffer.alloc(30);
-      header.writeUInt32LE(0x04034b50, 0);
-      header.writeUInt16LE(20, 4);
-      header.writeUInt16LE(8, 6);
-      header.writeUInt16LE(33, 12);
-      header.writeUInt16LE(nameBytes.length, 26);
-      await write(Buffer.concat([header, nameBytes]));
-      let checksum = 0xffffffff;
-      let size = 0;
-      const contentHash = entry.contentHash ? createHash('sha256') : undefined;
-      if (entry.path !== undefined) {
-        for await (const part of createReadStream(entry.path, { highWaterMark: 65536, signal })) {
-          const bytes = part as Buffer;
-          for (const byte of bytes) checksum = checksumTable[(checksum ^ byte) & 255]! ^ (checksum >>> 8);
-          size += bytes.length;
-          if (size > entry.byteLength) throw failure('ProtocolError', 'tracing', 'archive input grew after sealing');
-          contentHash?.update(bytes);
-          await write(bytes);
-        }
-      }
-      if (size !== entry.byteLength || contentHash && contentHash.digest('hex') !== entry.contentHash) {
-        throw failure('ProtocolError', 'tracing', 'archive input changed after sealing');
-      }
-      checksum = (checksum ^ 0xffffffff) >>> 0;
-      const descriptor = Buffer.alloc(16);
-      descriptor.writeUInt32LE(0x08074b50, 0);
-      descriptor.writeUInt32LE(checksum, 4);
-      descriptor.writeUInt32LE(size, 8);
-      descriptor.writeUInt32LE(size, 12);
-      await write(descriptor);
-      const central = Buffer.alloc(46);
-      central.writeUInt32LE(0x02014b50, 0);
-      central.writeUInt16LE(20, 4);
-      central.writeUInt16LE(20, 6);
-      central.writeUInt16LE(8, 8);
-      central.writeUInt16LE(33, 14);
-      central.writeUInt32LE(checksum, 16);
-      central.writeUInt32LE(size, 20);
-      central.writeUInt32LE(size, 24);
-      central.writeUInt16LE(nameBytes.length, 28);
-      central.writeUInt32LE(localOffset, 42);
-      centralDirectory.push(Buffer.concat([central, nameBytes]));
-    }
-    const centralOffset = offset;
-    for (const record of centralDirectory) await write(record);
-    const footer = Buffer.alloc(22);
-    footer.writeUInt32LE(0x06054b50, 0);
-    footer.writeUInt16LE(entries.length, 8);
-    footer.writeUInt16LE(entries.length, 10);
-    footer.writeUInt32LE(offset - centralOffset, 12);
-    footer.writeUInt32LE(centralOffset, 16);
-    await write(footer);
-    await archive.close();
-    signal.throwIfAborted();
-    // Once rename is dispatched, cancellation cannot honestly promise that the
-    // destination remains untouched. The controller awaits its definitive result.
-    beginCommit();
-    await rename(temporary, destination);
-  } finally {
-    ownCleanup((async () => {
-      try { await archive.close(); }
-      finally { await rm(temporary, { force: true }); }
-    })());
+    return this.removingFiles;
   }
 }

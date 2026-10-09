@@ -48,7 +48,7 @@ const implementationPaths = [
   'packages/resident-runtime/snapshot-runtime.js', 'packages/resident-runtime/sources.txt',
   'packages/flashwright-core/src/trace-snapshot-record.ts', 'packages/flashwright-core/src/trace-snapshots.ts',
   'packages/flashwright-core/src/trace-recording.ts', 'packages/flashwright-core/src/trace-hooks.ts',
-  'packages/flashwright-core/src/trace-transfers.ts', 'packages/flashwright-core/src/trace-writer.ts',
+  'packages/flashwright-core/src/trace-transfers.ts', 'packages/flashwright-core/src/trace-writer.ts', 'packages/flashwright-core/src/trace-archive.ts',
   'packages/flashwright-core/src/tracing.ts', 'crates/flashwright-browser/src/snapshot_reply.rs',
   'crates/flashwright-engine/src/recording.rs', 'crates/flashwright-engine/src/recording/documents.rs',
   'crates/flashwright-engine/src/recording/phases.rs', 'crates/flashwright-engine/src/snapshots/archive.rs',
