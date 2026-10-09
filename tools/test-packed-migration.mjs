@@ -50,7 +50,8 @@ execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '--projec
 // The preload runs in the runner and every worker without editing corpus fixture/test logic.
 await writeFile(join(directory, 'poison.cjs'), `
 const { appendFileSync } = require('node:fs');
-const upstream = require('flashwright-upstream-runner/test');
+const { dirname, join } = require('node:path');
+const upstream = require(join(dirname(require.resolve('@flashwright/runner/package.json')), 'dist/upstream/test.js'));
 for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
   for (const method of ['launch', 'launchPersistentContext', 'connect', 'connectOverCDP']) browser[method] = async () => { throw new Error('Forbidden upstream browser backend entered'); };
 }

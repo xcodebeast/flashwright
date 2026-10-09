@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
 const { appendFileSync } = require('node:fs');
 const { dirname, join } = require('node:path');
-const { _baseTest: base, expect } = require('playwright/test');
-const globals = require(join(dirname(require.resolve('playwright/package.json')), 'lib/globals.js'));
 const candidate = process.env.FLASHWRIGHT_ADOPTION_ENGINE === 'flashwright';
+const runtime = candidate ? join(dirname(process.env.FLASHWRIGHT_ADOPTION_MODULE), '../upstream') : dirname(require.resolve('playwright/package.json'));
+const { _baseTest: base, expect } = require(join(runtime, 'test.js'));
+const globals = require(join(runtime, 'lib/globals.js'));
 const { adoptRunnerTraceJournal } = candidate ? require(process.env.FLASHWRIGHT_ADOPTION_MODULE) : {};
 const { installRunnerTraceFinalizer } = candidate ? require(join(dirname(process.env.FLASHWRIGHT_ADOPTION_MODULE), 'runner-trace-finalizer.js')) : {};
 

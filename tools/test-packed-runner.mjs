@@ -19,7 +19,8 @@ await writeFile(join(directory, 'package.json'), JSON.stringify({ name: 'flashwr
 const installation = await installPackedConsumer(directory, Object.values(archives));
 
 await writeFile(join(directory, 'poison.cjs'), `
-const upstream = require('flashwright-upstream-runner/test');
+const { dirname, join } = require('node:path');
+const upstream = require(join(dirname(require.resolve('@flashwright/runner/package.json')), 'dist/upstream/test.js'));
 for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
   for (const method of ['launch', 'launchPersistentContext', 'connect', 'connectOverCDP']) browser[method] = async () => { throw new Error('Forbidden upstream browser backend entered'); };
 }

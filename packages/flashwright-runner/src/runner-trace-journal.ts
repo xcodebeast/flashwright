@@ -1,5 +1,5 @@
-import { createRequire } from 'node:module';
 import { dirname, join, sep } from 'node:path';
+import { runnerGlobals, upstreamDirectory, upstreamRequire } from './upstream-runtime.js';
 import { types } from 'node:util';
 import { failure } from '@flashwright/core';
 import { runnerIntegration } from '@flashwright/core/runner-integration';
@@ -24,10 +24,7 @@ export interface RunnerJournalAdmission {
   readonly failure?: unknown;
 }
 
-const upstreamRequire = createRequire(require.resolve('flashwright-upstream-runner/package.json'));
-const upstreamDirectory = dirname(upstreamRequire.resolve('flashwright-upstream-runner/package.json'));
 const coreDirectory = dirname(upstreamRequire.resolve('playwright-core/package.json'));
-const globals = upstreamRequire(join(upstreamDirectory, 'lib/globals.js')) as { currentTestInfo(): TestInfo | undefined };
 const { iso } = upstreamRequire('playwright-core/lib/coreBundle') as {
   iso: { monotonicTime(): number; parseStackFrame(line: string, separator: string, showInternals: boolean): { file?: string } | undefined };
 };
@@ -73,7 +70,21 @@ function parseErrorStack(stack: string): unknown[] {
 }
 
 /** Replace all allocation-producing callers synchronously; the coordinator owns final stop and disposal. */
-export function adoptRunnerTraceJournal(fixture: string, testInfo: TestInfo | undefined = globals.currentTestInfo()): RunnerJournalAdmission | undefined {
+export function adoptRunnerTraceJournal(fixture: string, testInfo: TestInfo | undefined = runnerGlobals.currentTestInfo()): RunnerJournalAdmission | undefined {
+  return adoptJournal(testInfo, tracing => initialRecords(tracing, fixture, testInfo?.status === 'skipped' && testInfo.expectedStatus === 'skipped'));
+}
+
+/** The owned worker calls this after policy normalization and before any fixture or live write. */
+export function adoptRunnerTraceAtStart(testInfo: TestInfo): RunnerJournalAdmission | undefined {
+  return adoptJournal(testInfo, tracing => {
+    const events = tracing._traceEvents;
+    if (types.isProxy(events) || !Array.isArray(events) || events.length !== 1 || events[0] !== tracing._contextCreatedEvent || field(events[0], 'type') !== 'context-options')
+      throw failure('ProtocolError', 'runner.tracing', 'user work preceded the owned runner trace boundary');
+    return [];
+  });
+}
+
+function adoptJournal(testInfo: TestInfo | undefined, prefixRecords: (tracing: PinnedTracing) => unknown[]): RunnerJournalAdmission | undefined {
   if (!testInfo) throw failure('ProtocolError', 'runner.tracing', 'the pinned fixture boundary has no current test');
   const tracing = (testInfo as TestInfo & { _tracing: PinnedTracing })._tracing;
   const existing = admitted.get(tracing);
@@ -83,9 +94,9 @@ export function adoptRunnerTraceJournal(fixture: string, testInfo: TestInfo | un
   let journal: Journal | undefined;
   let admissionFailure: unknown;
   try {
-    const prefix = initialRecords(tracing, fixture, testInfo.status === 'skipped' && testInfo.expectedStatus === 'skipped');
+    const prefix = prefixRecords(tracing);
     if (field(options, 'live') || tracing._liveTraceFile) throw failure('UnsupportedFeatureError', 'test.use.trace.live', 'live runner traces are not implemented');
-    journal = runnerIntegration.beginTraceJournal(6, tracing._contextCreatedEvent, { sources: field(options, 'sources') as boolean, attachments: field(options, 'attachments') as boolean });
+    journal = runnerIntegration.beginTraceJournal(6, tracing._contextCreatedEvent, { sources: Boolean(field(options, 'sources')), attachments: Boolean(field(options, 'attachments')) });
     for (const event of prefix) journal.append(event);
   } catch (error) { admissionFailure = error; }
   tracing.appendForError = journal ? error => journal.appendError(error, parseErrorStack) : discard;

@@ -1,6 +1,6 @@
 import { test as base, expect } from '@flashwright/test';
 import type { Page } from 'flashwright';
-import * as upstream from 'flashwright-upstream-runner/test';
+import * as upstream from 'playwright-core';
 
 for (const browserType of [upstream.chromium, upstream.firefox, upstream.webkit]) {
   const forbidden = async () => { throw new Error('Forbidden upstream browser backend entered'); };

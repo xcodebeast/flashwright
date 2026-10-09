@@ -37,7 +37,8 @@ try {
   report.packages = Object.fromEntries(await Promise.all(Object.entries(archives).map(async ([name, path]) => [name, { path, sha256: hash(await readFile(path)) }])));
   await copyFile('compatibility/m2/dialog-fixture.mjs', join(consumer, 'dialog-fixture.mjs'));
   await writeFile(join(consumer, 'poison.cjs'), `
-const upstream = require('flashwright-upstream-runner/test');
+const { dirname, join } = require('node:path');
+const upstream = require(join(dirname(require.resolve('@flashwright/runner/package.json')), 'dist/upstream/test.js'));
 for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
   for (const method of ['launch', 'launchPersistentContext', 'connect', 'connectOverCDP']) browser[method] = async () => { throw new Error('Forbidden upstream browser backend entered'); };
 }
