@@ -718,6 +718,8 @@ mod tests {
                 flashwright_protocol::TraceCall {
                     context: context.into(),
                     generation: generation.into(),
+                    recording: None,
+                    call: None,
                 },
             )));
         }
@@ -725,6 +727,8 @@ mod tests {
         let original = operation().with_trace_call(Some(flashwright_protocol::TraceCall {
             context: "context".into(),
             generation: "generation".into(),
+            recording: None,
+            call: None,
         }));
         page.trace_before_input(&original);
         assert_eq!(

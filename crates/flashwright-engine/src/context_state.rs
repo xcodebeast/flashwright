@@ -11,6 +11,9 @@ pub(crate) struct ContextState {
     pub routing_registered: std::sync::atomic::AtomicBool,
     pub trace_enabled: std::sync::atomic::AtomicBool,
     pub trace_diagnostics: Mutex<crate::trace_diagnostics::TraceDiagnostics>,
+    pub recording: Mutex<crate::recording::RecordingState>,
+    pub recording_enabled: std::sync::atomic::AtomicBool,
+    pub snapshot_enrollment: tokio::sync::Mutex<()>,
     pub filmstrip: Mutex<Option<Arc<crate::filmstrip::Filmstrip>>>,
     pub filmstrip_closed: std::sync::atomic::AtomicBool,
     pub console_enabled: std::sync::atomic::AtomicBool,
@@ -27,6 +30,9 @@ impl Default for ContextState {
             routing_registered: std::sync::atomic::AtomicBool::new(false),
             trace_enabled: std::sync::atomic::AtomicBool::new(false),
             trace_diagnostics: Mutex::new(crate::trace_diagnostics::TraceDiagnostics::default()),
+            recording: Mutex::new(crate::recording::RecordingState::default()),
+            recording_enabled: std::sync::atomic::AtomicBool::new(false),
+            snapshot_enrollment: tokio::sync::Mutex::new(()),
             filmstrip: Mutex::new(None),
             filmstrip_closed: std::sync::atomic::AtomicBool::new(false),
             console_enabled: std::sync::atomic::AtomicBool::new(false),
@@ -46,6 +52,8 @@ impl ContextState {
         }
         self.trace_enabled.store(false, Ordering::Relaxed);
         self.trace_diagnostics.lock().unwrap().close();
+        self.recording.lock().unwrap().close();
+        self.recording_enabled.store(false, Ordering::Release);
     }
 
     pub fn visit(&self, origin: &str) -> Result<(), ErrorRecord> {

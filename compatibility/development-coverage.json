@@ -572,7 +572,20 @@
     "compatibility/m2/routing-lifecycle.mjs",
     "compatibility/m2/routing-errors.mjs",
     "compatibility/m2/routing-payloads.mjs",
-    "compatibility/m2/runner/routing-types.ts"
+    "compatibility/m2/runner/routing-types.ts",
+    "crates/flashwright-browser/tests/snapshot_connection.rs",
+    "crates/flashwright-engine/src/recording/tests.rs",
+    "crates/flashwright-engine/src/snapshots/document/tests.rs",
+    "tools/test-snapshot-runtime.mjs",
+    "tools/test-snapshot-css.mjs",
+    "tools/test-snapshot-custom-elements.mjs",
+    "tools/test-trace-snapshot-record.mjs",
+    "tools/test-trace-snapshots.mjs",
+    "tools/test-trace-recording-lifecycle.mjs",
+    "tools/test-traced-locator-mutation.mjs",
+    "tools/probe-native-snapshot-phases.mjs",
+    "tools/probe-snapshot-trace-integration.mjs",
+    "tools/probe-snapshot-trace-viewer.mjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
@@ -600,20 +613,21 @@
     "Console/error history, worker and out-of-process frame console delivery, and async removeAllListeners behavior remain outside this slice. Async listener-removal options reject explicitly. Console references share the 4096 public handle limit and require disposal; unobserved references use a separate bounded background queue. Native Linux and new performance claims remain open.",
     "Trace source/resource browser and filesystem checks currently cover macOS arm64/Bun1.4.2. Node22/24 caller mapping is separately verified, but this does not establish source-feature runtime/platform release coverage. Source-enabled archives include referenced framework frames and charge repeated aliases; old artifact-off timings do not measure their cost.",
     "File uploads and chooser lifecycle pass native macOS shell/full-Chrome checks and focused Node22/24 consumers. Directory uploads, webkitdirectory and out-of-process chooser frames remain unsupported. Admission is limited to 4096 files, 1 MiB UTF-16 metadata and 32 MiB in-memory bytes; the latter is narrower than the reference 50 MiB cap. S4.m and S4.n separately record invalid-input rejection and cancellation of unpublished chooser adoption. These differences are not equal-result performance evidence.",
-    "Integrated manual filmstrip/source/upload/screenshot packed consumers pass on macOS/Bun and focused Node22/24. Browser corpus and actual viewer checks cover headless shell and full Chrome on this host. Native Linux, full automatic traces, timing under these artifacts and release package-manager coverage remain open."
+    "Integrated manual filmstrip/source/upload/screenshot packed consumers pass on macOS/Bun and focused Node22/24. Browser corpus and actual viewer checks cover headless shell and full Chrome on this host. Native Linux, full automatic traces, timing under these artifacts and release package-manager coverage remain open.",
+    "The private DOM snapshot foundation passes99 integrated macOS/Bun core groups and a29-group focused foundation batch with Node22/24 hosts and actual pinned offline viewer on shell/full Chrome. Public snapshots:true still rejects. External resources, out-of-process frames, broader custom-element states and automatic runner tracing remain outside this acceptance; see compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json."
   ],
   "verifiedCheckpoint": {
     "status": "experimental native macOS development checkpoint; not release support",
-    "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T11-57-55.428Z/report.json",
-    "groups": 94,
-    "sourceEntries": 405,
+    "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T12-54-25.407Z/report.json",
+    "groups": 99,
+    "sourceEntries": 437,
     "runtime": {
       "name": "bun",
       "version": "1.4.2"
     },
-    "driverSha256": "96d06201527d364e6f965fcc6466a47ebb91f32acfdfe1f3bd2aa4c263af8d9a",
-    "scope": "All94 development core groups ran fresh on405 unchanged sources. Public route registration/callbacks/overrides and bounded native interception integrate with existing navigation, handles, input, runner and manual tracing/filmstrip foundations. Shared32-case routing corpus also passes Bun fullChrome and Node22/24 shell; packed ESM/CommonJS routing and types pass. Initial core001 stopped on an earliest-filmstrip-frame geometry assumption; a retained80-context diagnostic and both complete filmstrip profiles justify the test-only correction in this checkpoint. A subsequent Request.frame detached-child lifetime fix passes16focused groups and33shared routing cases; it is explicitly separate from this full-core freeze. API requests, DOM/network trace recording, broader migration, Linux and release/performance gates remain open. A later seven-group406-source follow-up verifies43routing cases and fixes3xx response body rejection and missing fulfillment reason phrases; it does not replace this frozen full-core receipt.",
-    "reportSha256": "52007e89dc188e1fb8bc65717ba50f21de972614df5d13816940387cfa5b5210"
+    "driverSha256": "2a1e20618d9a1bd2449312acef9277724a16ba2a8f9e6e4a413631e59217504a",
+    "scope": "All99 development core groups ran fresh on437 unchanged source inputs after importing the private native snapshot/common recording foundation and current43-case routing corpus. The separately verified29-group foundation batch covers Node22/24 host ownership and actual pinned offline DOM/forms/child-frame viewer on shell/full Chrome. Public snapshots remain rejected. Network-resource replay, automatic runner tracing, API requests, broader migration, Linux and release/performance gates remain open.",
+    "reportSha256": "c96f9ad61226a6279201fefb801e5e01114e35999467ea50f47ae110b2cbac04"
   },
   "migrationDiagnostics": [
     {

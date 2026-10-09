@@ -11,6 +11,8 @@ use serde_json::value::RawValue;
 use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::sync::oneshot;
 
+use crate::snapshot_reply::{SnapshotReply, SnapshotReplyAdmission, decode_snapshot_reply};
+
 mod request_event;
 
 use super::{
@@ -25,6 +27,10 @@ const RETAINED_BUFFER_BYTES: usize = 64 * 1024;
 pub(super) enum ReplySender {
     Value(oneshot::Sender<Reply>),
     Raw(oneshot::Sender<Reply<Box<RawValue>>>),
+    Snapshot {
+        sender: oneshot::Sender<Reply<SnapshotReply>>,
+        admission: SnapshotReplyAdmission,
+    },
     Binary {
         kind: BinaryReplyKind,
         sender: oneshot::Sender<Reply<BinaryPayload>>,
@@ -98,15 +104,26 @@ impl ReplySender {
             Self::Binary { sender, .. } => {
                 let _ = sender.send(Err(error));
             }
+            Self::Snapshot { sender, .. } => {
+                let _ = sender.send(Err(error));
+            }
         }
     }
 
     fn complete(self, envelope: &Envelope<'_>, frame_bytes: usize) {
         if let Some(error) = envelope.error {
-            if frame_bytes > MAXIMUM_CONTROL_BYTES {
-                self.fail(resource_error(
+            let (maximum_error_bytes, limit_message) = match &self {
+                Self::Snapshot { admission, .. } => (
+                    admission.maximum_wrapper_bytes(),
+                    "snapshot CDP error reply exceeds its admitted envelope limit",
+                ),
+                _ => (
+                    MAXIMUM_CONTROL_BYTES,
                     "CDP error reply exceeds control-message limit",
-                ));
+                ),
+            };
+            if frame_bytes > maximum_error_bytes {
+                self.fail(resource_error(limit_message));
                 return;
             }
             let mut record = protocol_error(error.get().to_owned());
@@ -117,6 +134,13 @@ impl ReplySender {
             return;
         }
         match self {
+            Self::Snapshot { sender, admission } => {
+                let result = envelope
+                    .result
+                    .ok_or_else(|| protocol_error("browser omitted the snapshot result".into()))
+                    .and_then(|result| decode_snapshot_reply(result, frame_bytes, admission));
+                let _ = sender.send(result);
+            }
             Self::Raw(sender) => {
                 let result = if frame_bytes > MAXIMUM_CONTROL_BYTES {
                     Err(resource_error("CDP reply exceeds control-message limit"))

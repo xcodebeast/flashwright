@@ -120,6 +120,15 @@ impl Operation {
         self.trace_call.as_ref()
     }
 
+    /// Diagnostic work shares the original deadline and cancellation; it never extends the action.
+    pub(crate) fn snapshot_allowance(&self) -> (Instant, watch::Receiver<bool>) {
+        let ceiling = Instant::now() + Duration::from_secs(2);
+        (
+            self.deadline.unwrap_or(ceiling).min(ceiling),
+            self.cancellation.clone(),
+        )
+    }
+
     /// Delivery progress survives successful completion and cannot erase an uncertain dispatch.
     pub fn input_delivery(&self) -> InputDelivery {
         match self.input_delivery.load(Ordering::Relaxed) {

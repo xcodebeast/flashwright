@@ -3,9 +3,9 @@ import type { EngineClient } from './client.js';
 import { failure } from './errors.js';
 import type { TraceResources } from './trace-resources.js';
 import type { TraceWriter } from './trace-writer.js';
+import { traceTransferAvailable, tryAcquireTraceTransfer } from './trace-transfers.js';
 
 const maximumFrameBytes = 4 * 1024 * 1024;
-const transferOwners = new WeakMap<EngineClient, { active: number }>();
 export interface TraceClock { nativeTime: number; hostBefore: number; hostAfter: number; offset: number; uncertainty: number }
 interface FrameMetadata { token: number; page: string; width: number; height: number; timestamp: number; frameSwapWallTime: number; byteLength: number }
 
@@ -26,7 +26,6 @@ export async function sampleTraceClock(client: EngineClient, context: string): P
 
 /** One context collector retains its engine transfer slot through immutable resource ingestion. */
 export class TraceFilmstripChannel {
-  private readonly owners: { active: number };
   private readonly cancellation = new AbortController();
   private readonly releaseResources: () => void;
   private pending: FrameMetadata[] = [];
@@ -48,8 +47,6 @@ export class TraceFilmstripChannel {
     private readonly writer: TraceWriter,
     private readonly pageIdentity: (page: string) => string,
   ) {
-    this.owners = transferOwners.get(client) ?? { active: 0 };
-    transferOwners.set(client, this.owners);
     this.releaseResources = resources.acquire();
   }
 
@@ -78,7 +75,7 @@ export class TraceFilmstripChannel {
 
   private async poll(): Promise<void> {
     try {
-      for (let consumed = 0; consumed < 128 && !this.stopping && this.owners.active < 2; consumed++) {
+      for (let consumed = 0; consumed < 128 && !this.stopping && traceTransferAvailable(this.client, this.context); consumed++) {
         if (await this.drain()) break;
       }
     }
@@ -88,8 +85,8 @@ export class TraceFilmstripChannel {
   /** No transfer waiter list: a busy engine leaves frames in the bounded native queue. */
   private async drain(): Promise<boolean> {
     if (this.closed || this.failed || this.cancellation.signal.aborted) return true;
-    if (this.owners.active >= 2) return false;
-    this.owners.active++;
+    const releaseTransfer = tryAcquireTraceTransfer(this.client, this.context);
+    if (!releaseTransfer) return false;
     try {
       if (!this.pending.length) {
         const reply = await this.client.request('context.trace.filmstrip.pull', this.parameters(), 2000);
@@ -109,7 +106,7 @@ export class TraceFilmstripChannel {
       this.writer.append({ type: 'screencast-frame', pageId: this.pageIdentity(frame.page), sha1: name, width: frame.width, height: frame.height, timestamp: frame.timestamp + this.clock.offset, frameSwapWallTime: frame.frameSwapWallTime });
       if (this.writer.failure) throw this.writer.failure;
       return false;
-    } finally { this.owners.active--; }
+    } finally { releaseTransfer(); }
   }
 
   private validateFrames(reply: unknown): FrameMetadata[] {

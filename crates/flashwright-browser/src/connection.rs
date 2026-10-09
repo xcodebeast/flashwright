@@ -10,6 +10,8 @@ use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task::AbortHandle;
 
+use crate::snapshot_reply::{SnapshotReply, SnapshotReplyAdmission};
+
 pub mod fetch_body;
 mod incoming;
 use incoming::{BinaryReplyKind, ReplySender, read_messages};
@@ -282,6 +284,36 @@ impl Connection {
         Ok(self
             .start_commands(method, vec![parameters], session)?
             .remove(0))
+    }
+
+    /// Snapshot callers retain the command and their remote object group through uncertain completion.
+    pub fn start_snapshot_capture(
+        &self,
+        parameters: Value,
+        session: &str,
+        admission: SnapshotReplyAdmission,
+    ) -> Result<Command<SnapshotReply>, ErrorRecord> {
+        let method = "Runtime.callFunctionOn";
+        let identifier = self.inner.next_identifier.fetch_add(1, Ordering::Relaxed);
+        let outgoing = encode_command(identifier, method, parameters, Some(session))?;
+        let (sender, receiver) = oneshot::channel();
+        let command = Command {
+            identifier,
+            state: self.inner.clone(),
+            receiver,
+        };
+        self.register_commands(
+            vec![outgoing],
+            vec![(
+                identifier,
+                PendingReply {
+                    sender: ReplySender::Snapshot { sender, admission },
+                    dispatch_started: false,
+                },
+            )],
+            method,
+        )?;
+        Ok(command)
     }
 
     /// Typed parameters can retain exact JSON string escapes without materializing a Unicode-scalar Value.

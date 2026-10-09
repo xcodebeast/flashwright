@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Tracing, TraceCall } from './tracing.js';
 
-export interface TraceCallMetadata { readonly context: string; readonly generation: string }
+export interface TraceCallMetadata { readonly context: string; readonly generation: string; readonly recording?: string; readonly call?: string }
 interface CallScope { internal: boolean; traceCall?: TraceCallMetadata }
 export interface TraceOwner { tracing: Tracing; pageId?: string; selector?: string }
 export interface TraceMethod { className?: string; method?: string; parameters?: readonly string[] }

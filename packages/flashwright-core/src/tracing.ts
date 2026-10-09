@@ -11,11 +11,13 @@ import { traceChunkOpened, traceChunkClosed, type TraceOwner, type TraceCallMeta
 import { pageError } from './page-errors.js';
 import { remotePreview } from './console.js';
 import { TraceFilmstripChannel, sampleTraceClock } from './trace-filmstrip.js';
+import { NativeTraceRecording, type NativeTraceChunk } from './trace-recording.js';
+import { TraceSnapshotChannel } from './trace-snapshots.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
-interface TraceChunk { identifier: string; writer: TraceWriter; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; accepting: boolean }
+interface TraceChunk { identifier: string; writer: TraceWriter; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; snapshots?: TraceSnapshotChannel; accepting: boolean }
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; nativeTrace?: TraceCallMetadata }
 const processIdentity = randomUUID();
 let nextCall = 0;
@@ -28,6 +30,8 @@ export class Tracing {
   private resources: TraceResources | undefined;
   private includeSources = false;
   private includeScreenshots = false;
+  private includeSnapshots = false;
+  private nativeRecording: NativeTraceRecording | undefined;
   private ownerIsClosed = false;
   private controlling = false;
   private chunk: TraceChunk | undefined;
@@ -46,18 +50,35 @@ export class Tracing {
         if (key === 'snapshots' && options[key]) throw failure('UnsupportedFeatureError', `tracing.start.${key}`, 'manual tracing does not yet capture DOM snapshots');
       }
       validateChunkOptions(options);
-      if (this.recording) throw failure('InvalidArgumentError', 'tracing.start', 'tracing is already started');
-      this.resources = await TraceResources.create();
-      this.includeSources = options.sources ?? false;
-      this.includeScreenshots = options.screenshots ?? false;
-      try { await this.openChunk(options); this.recording = true; }
-      catch (error) {
-        const resources = this.resources;
-        this.resources = undefined;
-        await this.waitForCleanup(resources?.dispose() ?? Promise.resolve());
-        throw error;
-      }
+      await this.startRecording(options);
     });
+  }
+
+  /** Public validation keeps snapshots disabled until native/network/viewer acceptance is complete. */
+  private async startRecording(options: TracingStartOptions): Promise<void> {
+    if (this.recording) throw failure('InvalidArgumentError', 'tracing.start', 'tracing is already started');
+    this.resources = await TraceResources.create();
+    this.includeSources = options.sources ?? false;
+    this.includeScreenshots = options.screenshots ?? false;
+    this.includeSnapshots = options.snapshots ?? false;
+    try {
+      if (this.includeSnapshots) {
+        this.nativeRecording = new NativeTraceRecording(this.client, this.context);
+        await this.nativeRecording.start();
+      }
+      await this.openChunk(options);
+      this.recording = true;
+    } catch (error) {
+      const resources = this.resources;
+      const native = this.nativeRecording;
+      this.resources = undefined;
+      this.nativeRecording = undefined;
+      await this.waitForCleanup((async () => {
+        try { await native?.cleanup(); }
+        finally { await resources?.dispose(); }
+      })());
+      throw error;
+    }
   }
   startChunk(options: TracingChunkOptions = {}): Promise<void> {
     return this.control(async () => {
@@ -93,18 +114,24 @@ export class Tracing {
     const writer = await TraceWriter.create(this.resources);
     const chunk: TraceChunk = { identifier: randomUUID(), writer, accepting: false };
     try {
+      if (this.nativeRecording) {
+        chunk.nativeOwner = this.nativeRecording;
+        chunk.native = await chunk.nativeOwner.startChunk(chunk.identifier);
+      }
       const clock = this.includeScreenshots ? await sampleTraceClock(this.client, this.context) : undefined;
-      writer.append({ version: 8, type: 'context-options', origin: 'library', browserName: 'chromium', playwrightVersion: '1.60.0', options: { viewport: this.viewport }, platform: process.platform, wallTime: Date.now(), monotonicTime: performance.now(), sdkLanguage: 'javascript', contextId: this.traceContext, title: options.title, testIdAttributeName: 'data-testid', ...(clock ? { flashwrightClock: clock } : {}) });
+      writer.append({ version: 8, type: 'context-options', origin: 'library', browserName: 'chromium', playwrightVersion: '1.60.0', options: { viewport: this.viewport }, platform: process.platform, wallTime: Date.now(), monotonicTime: performance.now(), sdkLanguage: 'javascript', contextId: this.traceContext, title: options.title, testIdAttributeName: 'data-testid', ...(clock ? { flashwrightClock: clock } : {}), ...(chunk.native?.clock ? { flashwrightRecordingClock: chunk.native.clock } : {}) });
       chunk.channel = await TraceDiagnosticChannel.start(this.client, this.context, chunk.identifier, diagnostic => this.diagnostic(chunk, diagnostic), error => writer.fail(error));
       if (clock) chunk.filmstrip = await TraceFilmstripChannel.start(this.client, this.context, chunk.identifier, clock, this.resources, writer, page => this.pageIdentity(page));
-      if (this.ownerIsClosed) { chunk.channel.ownerClosed(); chunk.filmstrip?.ownerClosed(); throw failure('TargetClosedError', 'tracing.start', 'context closed while starting tracing'); }
+      if (chunk.native?.clock) chunk.snapshots = new TraceSnapshotChannel(this.client, chunk.native.identity, chunk.native.clock, this.resources, writer,
+        page => this.pageIdentity(page), call => writer.append({ type: 'input', callId: call, inputSnapshot: `input@${call}` }));
+      if (this.ownerIsClosed) { chunk.channel.ownerClosed(); chunk.filmstrip?.ownerClosed(); chunk.snapshots?.ownerClosed(); throw failure('TargetClosedError', 'tracing.start', 'context closed while starting tracing'); }
       this.chunk = chunk;
       chunk.accepting = true;
       traceChunkOpened();
     } catch (error) {
       this.cleanupFailure ??= writer.failure;
       await this.waitForCleanup((async () => {
-        try { await Promise.all([chunk.channel?.stop(), chunk.filmstrip?.stop()]); }
+        try { await this.retireCollectors(chunk); }
         finally { await writer.dispose(); }
       })());
       throw error;
@@ -115,10 +142,14 @@ export class Tracing {
   }
   private async finishChunk(path: string | undefined, retireRecording = false): Promise<void> {
     const resources = retireRecording ? this.resources : undefined;
+    const nativeRecording = this.nativeRecording;
     if (retireRecording) this.resources = undefined;
     const chunk = this.chunk;
     if (!chunk) {
-      if (resources) await this.waitForCleanup(resources.dispose());
+      if (resources || retireRecording && nativeRecording) await this.waitForCleanup((async () => {
+        try { if (retireRecording) await nativeRecording?.cleanup(); }
+        finally { if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined; await resources?.dispose(); }
+      })());
       if (path !== undefined) throw failure('InvalidArgumentError', 'tracing.stopChunk', 'must start tracing before exporting');
       return;
     }
@@ -143,7 +174,7 @@ export class Tracing {
     });
     const deadline = performance.now() + 30000;
     const work = (async () => {
-      await Promise.all([chunk.channel?.stop(), chunk.filmstrip?.stop(cancellation.signal)]);
+      await this.retireCollectors(chunk, cancellation.signal);
       await chunk.writer.finish(path, cancellation.signal, () => {
         cancellation.signal.throwIfAborted();
         if (performance.now() >= deadline) throw failure('TimeoutError', 'tracing.stopChunk', 'trace preparation exceeded 30 seconds before atomic commit');
@@ -161,13 +192,29 @@ export class Tracing {
       this.retiringChunk = undefined;
       this.exportCancellation = undefined;
       const dispose = async () => {
-        try { await chunk.writer.dispose(); }
-        finally { await resources?.dispose(); }
+        try {
+          await this.retireCollectors(chunk);
+          if (retireRecording) await nativeRecording?.cleanup();
+        } finally {
+          if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined;
+          try { await chunk.writer.dispose(); }
+          finally { await resources?.dispose(); }
+        }
       };
       await this.waitForCleanup(work.then(dispose, dispose));
     }
     if (failed) throw originalFailure;
     if (this.cleanupFailure) throw this.cleanupFailure;
+  }
+
+  private async retireCollectors(chunk: TraceChunk, signal?: AbortSignal): Promise<void> {
+    try { await chunk.native?.seal(); }
+    catch (error) { chunk.writer.fail(error); chunk.snapshots?.fail(error); }
+    await Promise.all([chunk.channel?.stop(), chunk.filmstrip?.stop(signal), chunk.snapshots?.stop(signal)]);
+    if (chunk.native) {
+      await chunk.nativeOwner!.retireChunk(chunk.native, signal);
+      delete chunk.native;
+    }
   }
 
   /** Compose every cleanup owner; a newer closure cannot hide an older pending export. */
@@ -191,7 +238,8 @@ export class Tracing {
     if (!chunk?.accepting || this.ownerIsClosed || chunk.writer.failure) return undefined;
     if (this.calls.size >= 1024) { chunk.writer.fail(failure('ResourceLimitError', 'tracing', 'trace exceeds 1024 unfinished public calls')); return undefined; }
     const call: TraceCall = { identifier: `${processIdentity}@${++nextCall}`, chunk, completed: false, evaluates: method.includes('eval'), pageId: owner.pageId };
-    if (this.includeScreenshots) call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier });
+    if (this.includeScreenshots || chunk.native) call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier,
+      ...(chunk.native ? { recording: chunk.native.identity.recording, call: call.identifier } : {}) });
     this.calls.add(call);
     chunk.filmstrip?.activity(owner.pageId);
     try {
@@ -206,7 +254,8 @@ export class Tracing {
       }
       const stack = traceStack();
       if (this.includeSources) chunk.writer.referenceSources(stack);
-      chunk.writer.append({ type: 'before', callId: call.identifier, startTime: performance.now(), class: className, method, title, params: preview, pageId: owner.pageId === undefined ? undefined : this.pageIdentity(owner.pageId), stack });
+      chunk.writer.append({ type: 'before', callId: call.identifier, startTime: performance.now(), class: className, method, title, params: preview, pageId: owner.pageId === undefined ? undefined : this.pageIdentity(owner.pageId), stack,
+        ...(call.nativeTrace?.recording ? { beforeSnapshot: `before@${call.identifier}` } : {}) });
     } catch (error) { chunk.writer.fail(error); }
     return call;
   }
@@ -217,7 +266,13 @@ export class Tracing {
       if (!call.chunk.accepting) return;
       call.chunk.filmstrip?.activity(call.pageId);
       await call.chunk.channel?.fence();
-      if (call.chunk.accepting) call.chunk.writer.append({ type: 'after', callId: call.identifier, endTime: performance.now(), ...(failed ? { error: traceError(error) } : { result: { value: call.evaluates ? serializedTracePreview(value) : tracePreview(value) } }) });
+      if (!call.chunk.accepting) return;
+      call.chunk.writer.append({ type: 'after', callId: call.identifier, endTime: performance.now(),
+        ...(call.nativeTrace?.recording ? { afterSnapshot: `after@${call.identifier}` } : {}),
+        ...(failed ? { error: traceError(error) } : { result: { value: call.evaluates ? serializedTracePreview(value) : tracePreview(value) } }) });
+      if (call.nativeTrace?.recording && call.pageId) await this.client.request('context.trace.snapshot.after', {
+        context: call.nativeTrace.context, recording: call.nativeTrace.recording, chunk: call.nativeTrace.generation, call: call.identifier, page: call.pageId,
+      }, 2000);
     } catch (captureError) { call.chunk.writer.fail(captureError); }
     finally { this.calls.delete(call); }
   }
@@ -251,14 +306,16 @@ export class Tracing {
   }
   /** Explicit closure drains first, without changing screenshot hooks or the user's close result. */
   async beforeOwnerClose(): Promise<void> {
-    try { await this.waitForCleanup(Promise.all([this.chunk?.channel?.stop(), this.chunk?.filmstrip?.stop()]).then(() => {})); }
+    try { if (this.chunk) await this.waitForCleanup(this.retireCollectors(this.chunk)); }
     catch (error) { this.chunk?.writer.fail(error); }
   }
   ownerClosed(): void {
     this.ownerIsClosed = true;
     this.recording = false;
+    this.nativeRecording = undefined;
     this.retiringChunk?.channel?.ownerClosed();
     this.retiringChunk?.filmstrip?.ownerClosed();
+    this.retiringChunk?.snapshots?.ownerClosed();
     this.exportCancellation?.abort(failure('TargetClosedError', 'tracing', 'context closed during export'));
     const chunk = this.chunk;
     this.chunk = undefined;
@@ -268,10 +325,11 @@ export class Tracing {
       this.seal(chunk);
       chunk.channel?.ownerClosed();
       chunk.filmstrip?.ownerClosed();
+      chunk.snapshots?.ownerClosed();
     }
     if (chunk || resources) {
       this.ownCleanup((async () => {
-        try { await chunk?.filmstrip?.stop(); await chunk?.writer.dispose(); }
+        try { await Promise.all([chunk?.filmstrip?.stop(), chunk?.snapshots?.stop()]); await chunk?.writer.dispose(); }
         finally { await resources?.dispose(); }
       })());
     }

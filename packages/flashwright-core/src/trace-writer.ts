@@ -5,6 +5,7 @@ import { join, dirname } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { failure } from './errors.js';
 import { TraceResources, maximumSourceBytes, type TraceResource } from './trace-resources.js';
+import { prepareSnapshotRecord } from './trace-snapshot-record.js';
 
 const maximumEvents = 100000;
 const maximumBytes = 64 * 1024 * 1024;
@@ -20,6 +21,7 @@ export class TraceWriter {
   private events = 0;
   private bytes = 0;
   private queuedBytes = 0;
+  private snapshotPending = false;
   private writes: Promise<void> = Promise.resolve();
   private archiveCleanup: Promise<void> | undefined;
   private readonly sourcePaths = new Set<string>();
@@ -82,6 +84,36 @@ export class TraceWriter {
         finally { this.queuedBytes -= encoded.length; }
       });
     } catch (error) { this.fail(error); }
+  }
+  /** Serialize one admitted snapshot in event order; partial lines quarantine the whole chunk. */
+  appendSnapshot(event: unknown, signal: AbortSignal): Promise<void> {
+    try {
+      if (this.failure) throw this.failure;
+      if (this.sealed) throw failure('ProtocolError', 'tracing.snapshot', 'chunk event stream is sealed');
+      if (this.snapshotPending) throw failure('ResourceLimitError', 'tracing.snapshot', 'one snapshot record is already pending');
+      signal.throwIfAborted();
+      const record = prepareSnapshotRecord(event);
+      if (this.events + 1 > maximumEvents || this.bytes + record.byteLength > maximumBytes) throw failure('ResourceLimitError', 'tracing.snapshot', 'trace exceeds its event or stream limit');
+      this.events++;
+      this.bytes += record.byteLength;
+      this.snapshotPending = true;
+      this.writes = this.writes.then(async () => {
+        try {
+          if (this.failure) throw this.failure;
+          let written = 0;
+          for (const bytes of record.chunks()) {
+            if (this.failure) throw this.failure;
+            signal.throwIfAborted();
+            await this.file.writeFile(bytes);
+            written += bytes.length;
+          }
+          signal.throwIfAborted();
+          if (written !== record.byteLength) throw failure('ProtocolError', 'tracing.snapshot', 'snapshot length changed after admission');
+        } catch (error) { this.fail(error); }
+        finally { this.snapshotPending = false; }
+      });
+      return this.writes.then(() => { if (this.failure) throw this.failure; });
+    } catch (error) { this.fail(error); return Promise.reject(error); }
   }
   fail(error: unknown): void { this.failure ??= error; }
   async finish(path: string | undefined, signal: AbortSignal, beginCommit: () => void = () => {}): Promise<void> {

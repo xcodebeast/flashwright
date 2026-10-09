@@ -41,6 +41,24 @@ impl Engine {
     ) -> Option<Result<Value, ErrorRecord>> {
         if matches!(
             method,
+            "context.trace.recording.start"
+                | "context.trace.recording.stop"
+                | "context.trace.recording.clock"
+                | "context.trace.recording.fail"
+                | "context.trace.chunk.start"
+                | "context.trace.chunk.seal"
+                | "context.trace.chunk.status"
+        ) {
+            return Some(self.recording_control(method, parameters, operation));
+        }
+        if matches!(
+            method,
+            "context.trace.snapshot.pull" | "context.trace.snapshot.ingested"
+        ) {
+            return Some(self.snapshot_control(method, parameters, operation));
+        }
+        if matches!(
+            method,
             "context.trace.filmstrip.clock"
                 | "context.trace.filmstrip.pull"
                 | "context.trace.filmstrip.activity"
