@@ -161,6 +161,7 @@ impl Connection {
         };
         let (sender, receiver) = oneshot::channel();
         let command = Command {
+            browser_reply_received: false,
             identifier,
             state: self.inner.clone(),
             receiver,

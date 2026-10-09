@@ -18,6 +18,9 @@ class RecordingDriver {
     this.calls.push({ method, parameters });
     const intercepted = await this.intercept(method, parameters);
     if (intercepted !== undefined) return intercepted;
+    if (method === 'context.trace.recording.status') return { recording: parameters.recording, networkPending: false };
+    if (method === 'context.trace.network.pull') return { recording: parameters.recording, resources: [], pending: false };
+    if (method === 'context.trace.network.entry') return { done: true, count: 0 };
     if (method === 'context.trace.recording.clock') return { nativeTime: 1 };
     if (method === 'context.trace.chunk.seal') return { lastEventSequence: 7 };
     if (method === 'context.trace.chunk.status') return { ...parameters, accepting: false, snapshotPending: false };
@@ -58,7 +61,7 @@ try {
       assert.ok(tracing.cleanup, 'background owner must survive the foreground grace');
       await assert.rejects(start(tracing), { name: 'ResourceLimitError' });
       assert.equal(driver.recordingCalls('start').length, 1);
-      assert.deepEqual(driver.recordingCalls('stop')[0].parameters, driver.recordingCalls('start')[0].parameters);
+      assert.deepEqual(driver.recordingCalls('stop')[0].parameters, { context: driver.recordingCalls('start')[0].parameters.context, recording: driver.recordingCalls('start')[0].parameters.recording });
       const cleanup = tracing.cleanup;
       stopReleased.resolve(); await cleanup;
       await freshRecording(tracing);
@@ -80,7 +83,7 @@ try {
       await assert.rejects(start(tracing), error => error === cleanupFailure);
       assert.equal(driver.recordingCalls('start').length, 1);
       assert.equal(driver.recordingCalls('stop').length, 1);
-      assert.deepEqual(driver.recordingCalls('stop')[0].parameters, driver.recordingCalls('start')[0].parameters);
+      assert.deepEqual(driver.recordingCalls('stop')[0].parameters, { context: driver.recordingCalls('start')[0].parameters.context, recording: driver.recordingCalls('start')[0].parameters.recording });
     } finally { tracing.ownerClosed(); await tracing.cleanup; }
   });
 

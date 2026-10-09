@@ -54,7 +54,7 @@ const implementationPaths = [
   'crates/flashwright-engine/src/recording/phases.rs', 'crates/flashwright-engine/src/snapshots/archive.rs',
   'crates/flashwright-engine/src/snapshots/budget.rs', 'crates/flashwright-engine/src/snapshots/document.rs',
   'crates/flashwright-engine/src/snapshots/mod.rs', 'crates/flashwright-engine/src/snapshots/outcome.rs',
-  'crates/flashwright-engine/src/snapshots/sessions.rs',
+  'crates/flashwright-engine/src/diagnostic_sessions.rs',
 ];
 const implementation = Object.fromEntries(await Promise.all(implementationPaths.map(async path => [path, hash(await readFile(path))])));
 const licensePath = 'compatibility/upstream/LICENSE.playwright';

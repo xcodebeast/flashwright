@@ -4,7 +4,6 @@ mod archive;
 mod budget;
 mod document;
 mod outcome;
-mod sessions;
 
 pub(crate) use archive::{SnapshotArchive, SnapshotMetadata};
 pub(crate) use budget::SnapshotBudget;
@@ -13,4 +12,3 @@ pub(crate) use document::{
     SnapshotNode, SnapshotRealm,
 };
 pub(crate) use outcome::{SnapshotFailure, SnapshotUnavailable};
-pub(crate) use sessions::SnapshotSessions;

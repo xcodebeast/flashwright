@@ -172,7 +172,7 @@ impl Engine {
         };
         let pages: Vec<_> = {
             let registry = self.registry.lock().unwrap();
-            self.snapshot_sessions
+            self.diagnostic_sessions
                 .observe(browser_identifier, &event.method, &parameters);
             registry
                 .pages
@@ -203,7 +203,7 @@ impl Engine {
                         "Target.targetDestroyed" | "Target.detachedFromTarget"
                     ) {
                         page.state
-                            .snapshot_session_destroyed
+                            .diagnostic_session_destroyed
                             .store(true, Ordering::Release);
                     }
                     (identifier.clone(), page.clone())
@@ -259,25 +259,27 @@ impl Engine {
                     let mut state = page.state.state.lock().unwrap();
                     let mut recording_state = context
                         .as_ref()
-                        .filter(|context| context.state.recording_enabled.load(Ordering::Acquire))
+                        .filter(|context| {
+                            page.state.purpose == PagePurpose::Public
+                                && context.state.recording_enabled.load(Ordering::Acquire)
+                        })
                         .map(|context| context.state.recording.lock().unwrap());
-                    let events = state.observe_event(
-                        crate::network_observer::NetworkEvent {
-                            method: &event.method,
-                            parameters: &parameters,
-                            ingress: crate::network_observer::NetworkIngress {
-                                sequence: event.sequence,
-                                received_at: event.received_at,
-                            },
+                    let network_event = crate::network_observer::NetworkEvent {
+                        method: &event.method,
+                        parameters: &parameters,
+                        ingress: crate::network_observer::NetworkIngress {
+                            sequence: event.sequence,
+                            received_at: event.received_at,
                         },
-                        None,
-                    );
-                    if let Some(recording) = recording_state
+                    };
+                    let (events, body_jobs) = if let Some(recording) = recording_state
                         .as_mut()
                         .and_then(|state| state.active_mut())
                     {
-                        recording.observed_group(event.sequence);
-                    }
+                        recording.observe_page_event(&identifier, &mut state, network_event)
+                    } else {
+                        (state.observe_event(network_event, None), Vec::new())
+                    };
                     drop(recording_state);
                     if let Some(error) = state.failure.as_ref().filter(|error| {
                         matches!(error.method.as_ref(), "network.observe" | "route.observe")
@@ -350,6 +352,9 @@ impl Engine {
                     page.state.changed.send_replace(state.sequence);
                     let routing_actions = state.interception.take_actions();
                     drop(state);
+                    if let Some(context) = &context {
+                        self.dispatch_recording_bodies(context, &page, body_jobs);
+                    }
                     self.dispatch_routing_actions(&identifier, &page, routing_actions)?;
                 }
             }
@@ -387,6 +392,11 @@ impl Engine {
                 .lock()
                 .unwrap()
                 .discard_unpublished_page(identifier);
+        }
+        if let Some(context) = &trace_context
+            && let Some(recording) = context.state.recording.lock().unwrap().active_mut()
+        {
+            recording.network_page_closed(identifier);
         }
         state.failure = Some(error);
         state.interception.clear();
@@ -486,7 +496,7 @@ mod tests {
             ("Target.detachedFromTarget", json!({"sessionId":"session"})),
         ] {
             let session = engine
-                .snapshot_sessions
+                .diagnostic_sessions
                 .register("browser", "target", "session")
                 .unwrap();
             assert!(engine.registry.lock().unwrap().pages.is_empty());
@@ -541,6 +551,14 @@ mod tests {
                 .unwrap()
                 .pages
                 .insert("page".into(), page.clone());
+            page.state.state.lock().unwrap().published = false;
+            assert!(matches!(
+                engine.diagnostic_session("page", &page),
+                Err(crate::diagnostic_sessions::SessionFailure::Unavailable)
+            ));
+            let initial_body = engine.network_diagnostic_session("page", &page).unwrap();
+            assert!(initial_body.belongs_to("target", "session"));
+            page.state.state.lock().unwrap().published = true;
             let terminal = || Event {
                 sequence: 1,
                 received_at: std::time::Instant::now(),
@@ -556,7 +574,7 @@ mod tests {
             let lease = if terminal_first {
                 None
             } else {
-                Some(engine.snapshot_session("page", &page).unwrap())
+                Some(engine.diagnostic_session("page", &page).unwrap())
             };
             engine.handle_event("browser", terminal()).unwrap();
             // Ordinary page removal may follow later; its registry presence cannot admit a late lease.
@@ -564,15 +582,14 @@ mod tests {
             assert!(page.state.state.lock().unwrap().failure.is_none());
             assert!(
                 page.state
-                    .snapshot_session_destroyed
+                    .diagnostic_session_destroyed
                     .load(Ordering::Acquire)
             );
             assert!(matches!(
-                engine.snapshot_session("page", &page),
-                Err(snapshots::SnapshotFailure::Unavailable(
-                    snapshots::SnapshotUnavailable::OriginalDocumentChanged
-                ))
+                engine.diagnostic_session("page", &page),
+                Err(crate::diagnostic_sessions::SessionFailure::Unavailable)
             ));
+            assert!(*initial_body.destruction().borrow());
             if let Some(lease) = lease {
                 assert!(*lease.destruction().borrow());
             }

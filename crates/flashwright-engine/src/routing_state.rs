@@ -1000,7 +1000,7 @@ mod tests {
         state.observe("Network.requestWillBeSent", &first);
         state.observe("Network.requestWillBeSent", &second);
         state.interception.enabled = false;
-        let events = state.release_interception();
+        let events = state.release_interception(None);
         assert_eq!(events.len(), 2);
         assert_eq!(events[0].1["identifier"], "z-first");
         assert_eq!(events[1].1["identifier"], "a-second");

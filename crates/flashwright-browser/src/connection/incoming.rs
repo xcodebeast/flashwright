@@ -16,8 +16,8 @@ use crate::snapshot_reply::{SnapshotReply, SnapshotReplyAdmission, decode_snapsh
 mod request_event;
 
 use super::{
-    ConnectionState, MAXIMUM_CONTROL_BYTES, Reply, disconnected, dispatch_event, fail_connection,
-    protocol_error,
+    CommandReply, ConnectionState, MAXIMUM_CONTROL_BYTES, Reply, disconnected, dispatch_event,
+    fail_connection, protocol_error,
 };
 
 // A valid raw body can encode every byte as a six-byte JSON escape. Base64 is smaller.
@@ -25,15 +25,15 @@ const MAXIMUM_WIRE_BYTES: usize = MAXIMUM_ATTACHMENT_BYTES * 6 + 64 * 1024;
 const RETAINED_BUFFER_BYTES: usize = 64 * 1024;
 
 pub(super) enum ReplySender {
-    Value(oneshot::Sender<Reply>),
-    Raw(oneshot::Sender<Reply<Box<RawValue>>>),
+    Value(oneshot::Sender<CommandReply<Value>>),
+    Raw(oneshot::Sender<CommandReply<Box<RawValue>>>),
     Snapshot {
-        sender: oneshot::Sender<Reply<SnapshotReply>>,
+        sender: oneshot::Sender<CommandReply<SnapshotReply>>,
         admission: SnapshotReplyAdmission,
     },
     Binary {
         kind: BinaryReplyKind,
-        sender: oneshot::Sender<Reply<BinaryPayload>>,
+        sender: oneshot::Sender<CommandReply<BinaryPayload>>,
         maximum_decoded_bytes: usize,
     },
 }
@@ -96,16 +96,57 @@ impl ReplySender {
     pub(super) fn fail(self, error: ErrorRecord) {
         match self {
             Self::Value(sender) => {
-                let _ = sender.send(Err(error));
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: false,
+                });
             }
             Self::Raw(sender) => {
-                let _ = sender.send(Err(error));
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: false,
+                });
             }
             Self::Binary { sender, .. } => {
-                let _ = sender.send(Err(error));
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: false,
+                });
             }
             Self::Snapshot { sender, .. } => {
-                let _ = sender.send(Err(error));
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: false,
+                });
+            }
+        }
+    }
+
+    fn browser_error(self, error: ErrorRecord) {
+        match self {
+            Self::Value(sender) => {
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: true,
+                });
+            }
+            Self::Raw(sender) => {
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: true,
+                });
+            }
+            Self::Binary { sender, .. } => {
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: true,
+                });
+            }
+            Self::Snapshot { sender, .. } => {
+                let _ = sender.send(CommandReply {
+                    result: Err(error),
+                    browser_reply_received: true,
+                });
             }
         }
     }
@@ -123,14 +164,14 @@ impl ReplySender {
                 ),
             };
             if frame_bytes > maximum_error_bytes {
-                self.fail(resource_error(limit_message));
+                self.browser_error(resource_error(limit_message));
                 return;
             }
             let mut record = protocol_error(error.get().to_owned());
             record.browser_error_code = serde_json::from_str::<Value>(error.get())
                 .ok()
                 .and_then(|value| value["code"].as_i64());
-            self.fail(record);
+            self.browser_error(record);
             return;
         }
         match self {
@@ -139,7 +180,10 @@ impl ReplySender {
                     .result
                     .ok_or_else(|| protocol_error("browser omitted the snapshot result".into()))
                     .and_then(|result| decode_snapshot_reply(result, frame_bytes, admission));
-                let _ = sender.send(result);
+                let _ = sender.send(CommandReply {
+                    result,
+                    browser_reply_received: true,
+                });
             }
             Self::Raw(sender) => {
                 let result = if frame_bytes > MAXIMUM_CONTROL_BYTES {
@@ -150,7 +194,10 @@ impl ReplySender {
                         .map(RawValue::to_owned)
                         .ok_or_else(|| protocol_error("browser omitted the command result".into()))
                 };
-                let _ = sender.send(result);
+                let _ = sender.send(CommandReply {
+                    result,
+                    browser_reply_received: true,
+                });
             }
             Self::Value(sender) => {
                 let result = if frame_bytes > MAXIMUM_CONTROL_BYTES {
@@ -164,7 +211,10 @@ impl ReplySender {
                         })
                         .unwrap_or(Ok(Value::Null))
                 };
-                let _ = sender.send(result);
+                let _ = sender.send(CommandReply {
+                    result,
+                    browser_reply_received: true,
+                });
             }
             Self::Binary {
                 sender,
@@ -179,7 +229,10 @@ impl ReplySender {
                         decode_screenshot(envelope.result, maximum_decoded_bytes)
                     }
                 };
-                let _ = sender.send(result);
+                let _ = sender.send(CommandReply {
+                    result,
+                    browser_reply_received: true,
+                });
             }
         }
     }

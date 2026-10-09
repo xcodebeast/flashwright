@@ -142,3 +142,57 @@ async fn impossible_body_limit_is_rejected_before_command_admission() {
     reply(&mut writer, &next["id"], json!({})).await;
     successor.response().await.unwrap();
 }
+
+#[tokio::test]
+async fn local_disconnect_does_not_claim_an_original_browser_reply() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let (reader, writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut body = connection
+        .start_response_body("original", "session", 16)
+        .unwrap();
+    let _ = read_command(&mut reader).await;
+    assert!(!body.prevent_dispatch());
+    drop(reader);
+    drop(writer);
+    assert!(body.response().await.is_err());
+    assert!(!body.browser_reply_received());
+}
+
+#[tokio::test]
+async fn browser_error_and_invalid_payload_are_received_replies() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut missing = connection
+        .start_response_body("missing", "session", 16)
+        .unwrap();
+    let command = read_command(&mut reader).await;
+    let mut error = serde_json::to_vec(&json!({"id":command["id"],"error":{"code":-32000,"message":"No resource with given identifier found"}})).unwrap();
+    error.push(0);
+    writer.write_all(&error).await.unwrap();
+    assert_eq!(
+        missing.response().await.unwrap_err().browser_error_code,
+        Some(-32000)
+    );
+    assert!(missing.browser_reply_received());
+    let mut malformed = connection
+        .start_response_body("malformed", "session", 16)
+        .unwrap();
+    let command = read_command(&mut reader).await;
+    reply(
+        &mut writer,
+        &command["id"],
+        json!({"body":"AB==","base64Encoded":true}),
+    )
+    .await;
+    assert_eq!(
+        malformed.response().await.unwrap_err().code,
+        ErrorCode::Protocol
+    );
+    assert!(malformed.browser_reply_received());
+}

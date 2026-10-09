@@ -9,6 +9,18 @@ use tokio::sync::watch;
 
 const MAXIMUM_SESSIONS: usize = 128;
 
+#[derive(Debug)]
+pub(crate) enum SessionFailure {
+    Unavailable,
+    Failed(ErrorRecord),
+}
+
+impl From<ErrorRecord> for SessionFailure {
+    fn from(error: ErrorRecord) -> Self {
+        Self::Failed(error)
+    }
+}
+
 #[derive(Hash, PartialEq, Eq)]
 struct SessionIdentity {
     browser: String,
@@ -28,16 +40,16 @@ pub(crate) struct SessionLifetime {
 }
 
 #[derive(Default)]
-pub(crate) struct SnapshotSessions {
+pub(crate) struct DiagnosticSessions {
     sessions: Mutex<HashMap<SessionIdentity, Weak<SessionSignal>>>,
 }
 
 fn invalid(message: &str) -> ErrorRecord {
-    ErrorRecord::new(ErrorCode::Protocol, "tracing.snapshot", message)
+    ErrorRecord::new(ErrorCode::Protocol, "tracing.recording", message)
 }
 
 impl SessionLifetime {
-    pub(super) fn belongs_to(&self, target: &str, session: &str) -> bool {
+    pub(crate) fn belongs_to(&self, target: &str, session: &str) -> bool {
         self.signal.target == target && self.signal.session == session
     }
 
@@ -46,7 +58,7 @@ impl SessionLifetime {
     }
 
     #[cfg(test)]
-    pub(super) fn controlled(target: &str, session: &str, destroyed: watch::Sender<bool>) -> Self {
+    pub(crate) fn controlled(target: &str, session: &str, destroyed: watch::Sender<bool>) -> Self {
         Self {
             signal: Arc::new(SessionSignal {
                 target: target.into(),
@@ -57,7 +69,7 @@ impl SessionLifetime {
     }
 }
 
-impl SnapshotSessions {
+impl DiagnosticSessions {
     /// Register before asynchronous capture setup, then revalidate the original public page.
     pub(crate) fn register(
         &self,
@@ -72,7 +84,7 @@ impl SnapshotSessions {
             || session.is_empty()
             || session.len() > 256
         {
-            return Err(invalid("invalid snapshot session identity"));
+            return Err(invalid("invalid diagnostic session identity"));
         }
         let identity = SessionIdentity {
             browser: browser.into(),
@@ -83,19 +95,19 @@ impl SnapshotSessions {
         if let Some(signal) = sessions.get(&identity).and_then(Weak::upgrade) {
             if signal.target != target {
                 return Err(invalid(
-                    "snapshot session was registered for another original target",
+                    "diagnostic session was registered for another original target",
                 ));
             }
             if *signal.destroyed.borrow() {
-                return Err(invalid("snapshot session is already destroyed"));
+                return Err(invalid("diagnostic session is already destroyed"));
             }
             return Ok(SessionLifetime { signal });
         }
         if sessions.len() == MAXIMUM_SESSIONS {
             return Err(ErrorRecord::new(
                 ErrorCode::ResourceLimit,
-                "tracing.snapshot",
-                "snapshot session owners exceed 128",
+                "tracing.recording",
+                "diagnostic session owners exceed 128",
             ));
         }
         let signal = Arc::new(SessionSignal {
@@ -159,18 +171,34 @@ impl SnapshotSessions {
 
 impl crate::Engine {
     /// Registration and terminal-event observation share registry order, including events before page removal.
-    pub(crate) fn snapshot_session(
+    pub(crate) fn diagnostic_session(
         &self,
         identifier: &str,
         page: &crate::Page,
-    ) -> Result<SessionLifetime, super::SnapshotFailure> {
-        use super::{SnapshotFailure, SnapshotUnavailable};
-        let unavailable =
-            || SnapshotFailure::Unavailable(SnapshotUnavailable::OriginalDocumentChanged);
+    ) -> Result<SessionLifetime, SessionFailure> {
+        self.diagnostic_session_for_page(identifier, page, true)
+    }
+
+    /// Initial popup responses may finish before publication, while their registered public page is alive.
+    pub(crate) fn network_diagnostic_session(
+        &self,
+        identifier: &str,
+        page: &crate::Page,
+    ) -> Result<SessionLifetime, SessionFailure> {
+        self.diagnostic_session_for_page(identifier, page, false)
+    }
+
+    fn diagnostic_session_for_page(
+        &self,
+        identifier: &str,
+        page: &crate::Page,
+        require_published: bool,
+    ) -> Result<SessionLifetime, SessionFailure> {
+        let unavailable = || SessionFailure::Unavailable;
         if page.state.purpose != crate::page_state::PagePurpose::Public {
-            return Err(invalid("private pages cannot register snapshot sessions").into());
+            return Err(invalid("private pages cannot register diagnostic sessions").into());
         }
-        if !page.state.state.lock().unwrap().published {
+        if require_published && !page.state.state.lock().unwrap().published {
             return Err(unavailable());
         }
         let registry = self.registry.lock().unwrap();
@@ -190,12 +218,12 @@ impl crate::Engine {
             .ok_or_else(unavailable)?;
         if current
             .state
-            .snapshot_session_destroyed
+            .diagnostic_session_destroyed
             .load(std::sync::atomic::Ordering::Acquire)
         {
             return Err(unavailable());
         }
-        Ok(self.snapshot_sessions.register(
+        Ok(self.diagnostic_sessions.register(
             &context.browser_identifier,
             &current.target_identifier,
             &current.session_identifier,
@@ -210,7 +238,7 @@ mod tests {
 
     #[test]
     fn original_browser_target_and_session_namespace_prevent_successor_retirement() {
-        let registry = SnapshotSessions::default();
+        let registry = DiagnosticSessions::default();
         let original = registry.register("browser", "target", "session").unwrap();
         let other_browser = registry
             .register("other-browser", "target", "session")
@@ -238,7 +266,7 @@ mod tests {
 
     #[test]
     fn context_loss_connection_failure_and_lost_producer_do_not_prove_session_destruction() {
-        let registry = SnapshotSessions::default();
+        let registry = DiagnosticSessions::default();
         let lease = registry.register("browser", "target", "session").unwrap();
         let duplicate = registry.register("browser", "target", "session").unwrap();
         assert!(Arc::ptr_eq(&lease.signal, &duplicate.signal));
@@ -268,7 +296,7 @@ mod tests {
 
     #[test]
     fn successful_guardian_cleanup_only_confirms_its_original_browser() {
-        let registry = SnapshotSessions::default();
+        let registry = DiagnosticSessions::default();
         let first = registry.register("first", "target", "session").unwrap();
         let second = registry.register("second", "target", "session").unwrap();
         registry.browser_cleanup_finished("first", &Ok(()));
@@ -284,7 +312,7 @@ mod tests {
 
     #[test]
     fn capacity_counts_live_session_owners_and_reclaims_only_unowned_entries() {
-        let registry = SnapshotSessions::default();
+        let registry = DiagnosticSessions::default();
         let leases: Vec<_> = (0..MAXIMUM_SESSIONS)
             .map(|index| {
                 registry

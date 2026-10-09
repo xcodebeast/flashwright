@@ -6,6 +6,7 @@ mod context_settings;
 mod context_state;
 mod cookies;
 mod devices;
+mod diagnostic_sessions;
 mod element_actions;
 mod element_resolution;
 mod evaluation;
@@ -142,8 +143,9 @@ pub struct Engine {
     maximum_attachment_bytes: usize,
     maximum_control_frame_bytes: usize,
     filmstrip_budget: OnceLock<Arc<filmstrip::FrameBudget>>,
-    snapshot_sessions: Arc<snapshots::SnapshotSessions>,
+    diagnostic_sessions: Arc<diagnostic_sessions::DiagnosticSessions>,
     snapshot_budget: OnceLock<Arc<snapshots::SnapshotBudget>>,
+    trace_network_budget: OnceLock<Arc<recording::network::NetworkBudget>>,
 }
 
 pub enum OperationResult {
@@ -209,8 +211,9 @@ impl Engine {
             maximum_attachment_bytes: limits.binary_attachment_bytes,
             maximum_control_frame_bytes: limits.control_frame_bytes,
             filmstrip_budget: OnceLock::new(),
-            snapshot_sessions: Arc::new(snapshots::SnapshotSessions::default()),
+            diagnostic_sessions: Arc::new(diagnostic_sessions::DiagnosticSessions::default()),
             snapshot_budget: OnceLock::new(),
+            trace_network_budget: OnceLock::new(),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
@@ -266,6 +269,12 @@ impl Engine {
         if method == "context.trace.filmstrip.take" {
             return self
                 .take_filmstrip_frame(parameters, operation)
+                .await
+                .map(OperationResult::Binary);
+        }
+        if method == "context.trace.network.take" {
+            return self
+                .take_network_resource(parameters, operation)
                 .await
                 .map(OperationResult::Binary);
         }
@@ -706,7 +715,7 @@ impl Engine {
         identifier: String,
         browser: Arc<Chromium>,
     ) -> tokio::task::JoinHandle<Result<(), ErrorRecord>> {
-        let sessions = self.snapshot_sessions.clone();
+        let sessions = self.diagnostic_sessions.clone();
         tokio::spawn(async move {
             let result = browser.close().await;
             sessions.browser_cleanup_finished(&identifier, &result);

@@ -18,6 +18,8 @@ The assertion wrapper calls the pinned injected matcher predicates and adapts ex
 
 Cookie URL rewriting and filtering adapt the pinned network helpers. [Cookie helper provenance](compatibility/upstream/cookie-helpers-provenance.json) records the retained extract, hashes and validation changes under the same Apache-2.0 license and notice.
 
+Snapshot reconstruction and HAR trace-entry conventions adapt the pinned viewer and recorder contracts. [Snapshot provenance](compatibility/upstream/snapshot-provenance.json) and [network trace provenance](compatibility/upstream/network-trace-provenance.json) retain the exact source extracts, implementation hashes and changes under the same Apache-2.0 license and notice. The native collector and resource ownership are independently implemented.
+
 ## L2 Other dependencies
 
-Cargo.lock and package-lock.json pin the dependency graphs. Their upstream license files remain in the installed packages. Release packaging must generate and verify the complete notices for the binaries and JavaScript packages it actually distributes, as required by SPECS.md S18.i
+Cargo.lock and bun.lock pin the development dependency graphs. Their upstream license files remain in the installed packages. Release packaging must generate and verify the complete notices for the binaries and JavaScript packages it actually distributes, as required by SPECS.md S18.i

@@ -152,10 +152,10 @@ export class Route {
     await this.finish('fulfill', handling, { parameters: { status, statusText: responseStatusText(status), headers: entries }, body });
   }
   async fetch(): Promise<never> { throw failure('UnsupportedFeatureError', 'route.fetch', 'APIRequestContext-backed route fetching is not implemented'); }
-  private continueParameters(): { parameters: Record<string, unknown>; body?: Buffer } {
+  private continueParameters(isFallback = false): { parameters: Record<string, unknown>; body?: Buffer } {
     const overrides = this.requestValue.routeOverrides();
     const { postDataBuffer: body, headers, ...parameters } = overrides;
-    return { parameters: { ...parameters, ...(headers ? { headers: headerEntries(headers, 'route.continue') } : {}) }, ...(body !== undefined ? { body } : {}) };
+    return { parameters: { ...parameters, isFallback, ...(headers ? { headers: headerEntries(headers, 'route.continue') } : {}) }, ...(body !== undefined ? { body } : {}) };
   }
   private async finish(operation: 'continue' | 'fulfill' | 'abort', handling: Handling | undefined, prepared: { parameters: Record<string, unknown>; body?: Buffer }): Promise<void> {
     if (this.claimed) throw new Error(`${operation}: Route is already handled!`);
@@ -185,7 +185,7 @@ export class Route {
       const handled = await registry.dispatch(this, registries.slice(index + 1));
       if (handled || this.claimed || this.targetClosed || generation !== this.generation) return;
     }
-    if (!this.claimed && !this.targetClosed && generation === this.generation) await this.finish('continue', undefined, this.continueParameters()).catch(() => {});
+    if (!this.claimed && !this.targetClosed && generation === this.generation) await this.finish('continue', undefined, this.continueParameters(true)).catch(() => {});
   }
 }
 

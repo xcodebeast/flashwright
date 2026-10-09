@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "verified private network recording; public snapshots remain unsupported",
+  "referenceVersion": "1.60.0",
+  "platform": "darwin-arm64",
+  "driverSha256": "af90de1a224e0fadacea13dbab9859ccb0f23747e8038d501d72bd8375260cf0",
+  "integratedCore": {
+    "runtime": {
+      "name": "bun",
+      "version": "1.4.2"
+    },
+    "groups": 104,
+    "sourceEntries": 451,
+    "reportSha256": "779acbba1e343815178e36e7c2a15f6a62ea4232e92fa3799a38595a4e625c5e",
+    "sourceArchiveSha256": "2a5891c9d041868e33c3f20ff3b36b1238050e894fb915f322d8672184931157",
+    "deltaArchiveSha256": "aa904f8ecc6005df66bc902945106d164e0be7458813d1ff4a7f1ec49fe8e6ac",
+    "sourceAndBrowserUnchanged": true,
+    "allGroupLogsVerified": true
+  },
+  "focusedHost": {
+    "groups": 12,
+    "sourceEntries": 449,
+    "reportSha256": "a3509a9ae8ef874dd2af0ded8a86f622378af4282e5de2261da20f8b2853e686",
+    "sourceArchiveSha256": "af2a77fac7d449fa85d33f6c5052dac6d4b13c35ecabd9203be228e9adca06c9",
+    "sameDriverAsIntegratedCore": true,
+    "cleanWatchdogs": 12,
+    "verifiedArchives": 19,
+    "actualOfflineViewerCases": 16,
+    "scope": [
+      "Nine pinned HAR conversion groups, six host ownership/writer groups on Bun and Node22/24, five snapshot host regressions and five common-recording lifecycle groups.",
+      "Five live native network groups cover exact binary request/response bodies, empty/404/redirect outcomes, accepted routing decisions, immutable chunk prefixes and unfinished HTTP retirement.",
+      "Sixteen candidate cases use the actual pinned offline viewer on headless shell/full Chrome, with screenshots off/on and resources loaded before/during recording. Parent and child frames sharing resource URLs preserve separate CSSOM bodies and original frame references. The original application server is stopped before replay."
+    ]
+  },
+  "contracts": [
+    "A recording owns canonical request occurrences, raw header/timing metadata, body jobs and resources across chunk gaps. Sealed metadata versions remain immutable; only already-admitted body cells may settle.",
+    "Original request identity survives route mutations and public history eviction. Reused browser request IDs invalidate old body ownership before canonical event filtering.",
+    "Actual browser reply or exact original session destruction releases optional body-command work; cancellation, page crash and context loss alone do not prove settlement. Healthy pages are not retired for optional trace diagnostics.",
+    "Network resources share immutable host storage and archive ownership with snapshots/sources/filmstrips. Native byte charges survive binary transfer and clear only after terminal transport ownership and ingestion acknowledgement.",
+    "Missing original response bodies remain unavailable; no fallback refetch can change application traffic or substitute later bytes."
+  ],
+  "provenance": {
+    "path": "compatibility/upstream/network-trace-provenance.json",
+    "generator": "tools/record-network-trace-provenance.mjs",
+    "contracts": 25,
+    "implementationFiles": 17,
+    "referenceDistributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+  },
+  "browserSha256": {
+    "headlessShell": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+    "fullChrome": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+  },
+  "retainedFailures": [
+    "Early compile/lint attempts exposed missing command initialization, visibility and a canonical-base64 iteration lint; later locked workspace checks passed.",
+    "The first live collector batch exhausted byte credits because queued jobs reserved worst-case payloads before worker admission. Workers now acquire execution slots first and shrink reservations to actual bytes before releasing them.",
+    "The first host build caught an exact-optional-property assignment. A later controlled lifecycle fixture omitted the new recording-status reply; its watchdog was deliberately interrupted, the fixture was corrected, and the complete twelve-group batch then passed."
+  ],
+  "limitations": [
+    "Public snapshots:true remains explicitly unsupported in this checkpoint; private viewer acceptance is not public API or packed snapshot acceptance.",
+    "Out-of-process snapshot frames, unsupported custom-element states, automatic runner trace policies and video remain incomplete.",
+    "Original resources loaded before recording remain absent, matching the pinned reference cases; this is not page archival or a refetch facility.",
+    "No new performance, native Linux, release or exhaustive parity claim."
+  ]
+}
