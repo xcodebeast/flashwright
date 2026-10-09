@@ -4,16 +4,22 @@ import type { ExpectMatcherState, MatcherReturnType } from 'flashwright-upstream
 export type Text = string | RegExp;
 export interface TimeoutOptions { timeout?: number }
 export interface TextOptions extends TimeoutOptions { ignoreCase?: boolean; useInnerText?: boolean }
+export interface AccessibleTextOptions extends TimeoutOptions { ignoreCase?: boolean }
+export interface CSSOptions extends TimeoutOptions { pseudo?: 'before' | 'after' }
 
 function validate(method: string, options: object, supported: string[]): void {
   if (!options || typeof options !== 'object' || Array.isArray(options)) throw failure('InvalidArgumentError', method, 'options must be an object');
   for (const [key, value] of Object.entries(options)) {
     if (!supported.includes(key)) throw failure('UnsupportedFeatureError', `${method}.${key}`, 'assertion option is not implemented');
-    if (value !== undefined && key !== 'timeout' && typeof value !== 'boolean') throw failure('InvalidArgumentError', `${method}.${key}`, 'expected a boolean');
+    if (value === undefined || key === 'timeout') continue;
+    if (key === 'pseudo') {
+      if (value !== 'before' && value !== 'after') throw failure('InvalidArgumentError', `${method}.${key}`, 'expected before or after');
+    } else if (typeof value !== 'boolean') throw failure('InvalidArgumentError', `${method}.${key}`, 'expected a boolean');
   }
 }
-function texts(expected: Text | Text[], options: Pick<ExpectedText, 'normalizeWhiteSpace' | 'ignoreCase' | 'matchSubstring'>): ExpectedText[] {
-  return (Array.isArray(expected) ? expected : [expected]).map(value => {
+function texts(expected: Text | readonly Text[], options: Pick<ExpectedText, 'normalizeWhiteSpace' | 'ignoreCase' | 'matchSubstring'>): ExpectedText[] {
+  const values: readonly unknown[] = Array.isArray(expected) ? expected : [expected];
+  return values.map(value => {
     if (typeof value === 'string') return { string: value, ...options };
     if (value instanceof RegExp) return { regexSource: value.source, regexFlags: value.flags, ...options };
     throw failure('InvalidArgumentError', 'expect', 'expected a string or regular expression');
@@ -46,7 +52,49 @@ function textAssertion(state: ExpectMatcherState, name: string, actual: Locator,
   return assertion(state, name, actual, expected, options, { expression, expectedText, ...(options.useInnerText === undefined ? {} : { useInnerText: options.useInnerText }) });
 }
 
+/** Class lists retain their own exact/subset and element-array rules in the pinned predicate. */
+function classAssertion(state: ExpectMatcherState, actual: Locator, expected: Text | readonly Text[], options: TimeoutOptions, contains: boolean): Promise<MatcherReturnType> {
+  const name = contains ? 'toContainClass' : 'toHaveClass';
+  validate(name, options, ['timeout']);
+  const values: readonly unknown[] = Array.isArray(expected) ? expected : [expected];
+  if (contains && values.some(value => typeof value !== 'string')) throw failure('InvalidArgumentError', name, 'expected a string or array of strings');
+  const expression = `${contains ? 'to.contain.class' : 'to.have.class'}${Array.isArray(expected) ? '.array' : ''}`;
+  return assertion(state, name, actual, expected, options, { expression, expectedText: texts(expected, {}) });
+}
+
+/** Accessibility text uses pinned whitespace normalization and explicit regex case overrides. */
+function accessibleTextAssertion(state: ExpectMatcherState, name: string, expression: string, actual: Locator, expected: Text, options: AccessibleTextOptions): Promise<MatcherReturnType> {
+  validate(name, options, ['timeout', 'ignoreCase']);
+  return assertion(state, name, actual, expected, options, { expression, expectedText: texts([expected], {
+    normalizeWhiteSpace: true, ...(options.ignoreCase === undefined ? {} : { ignoreCase: options.ignoreCase }),
+  }) });
+}
+
 export const matchers = {
+  async toHaveClass(this: ExpectMatcherState, actual: Locator, expected: Text | readonly Text[], options: TimeoutOptions = {}) { return classAssertion(this, actual, expected, options, false); },
+  async toContainClass(this: ExpectMatcherState, actual: Locator, expected: string | readonly string[], options: TimeoutOptions = {}) { return classAssertion(this, actual, expected, options, true); },
+  async toHaveCSS(this: ExpectMatcherState, actual: Locator, name: string, expected: Text, options: CSSOptions = {}) {
+    validate('toHaveCSS', options, ['timeout', 'pseudo']);
+    if (typeof name !== 'string') throw failure('InvalidArgumentError', 'toHaveCSS', 'CSS property name must be a string');
+    return assertion(this, 'toHaveCSS', actual, expected, options, { expression: 'to.have.css', expressionArg: name, expectedText: texts([expected], {}), ...(options.pseudo === undefined ? {} : { pseudo: options.pseudo }) });
+  },
+  async toHaveId(this: ExpectMatcherState, actual: Locator, expected: Text, options: TimeoutOptions = {}) {
+    validate('toHaveId', options, ['timeout']);
+    return assertion(this, 'toHaveId', actual, expected, options, { expression: 'to.have.id', expectedText: texts([expected], {}) });
+  },
+  async toHaveValues(this: ExpectMatcherState, actual: Locator, expected: readonly Text[], options: TimeoutOptions = {}) {
+    validate('toHaveValues', options, ['timeout']);
+    if (!Array.isArray(expected)) throw failure('InvalidArgumentError', 'toHaveValues', 'expected an array of strings or regular expressions');
+    return assertion(this, 'toHaveValues', actual, expected, options, { expression: 'to.have.values', expectedText: texts(expected, {}) });
+  },
+  async toHaveRole(this: ExpectMatcherState, actual: Locator, expected: string, options: TimeoutOptions = {}) {
+    validate('toHaveRole', options, ['timeout']);
+    if (typeof expected !== 'string') throw failure('InvalidArgumentError', 'toHaveRole', 'expected a role string');
+    return assertion(this, 'toHaveRole', actual, expected, options, { expression: 'to.have.role', expectedText: texts([expected], {}) });
+  },
+  async toHaveAccessibleName(this: ExpectMatcherState, actual: Locator, expected: Text, options: AccessibleTextOptions = {}) { return accessibleTextAssertion(this, 'toHaveAccessibleName', 'to.have.accessible.name', actual, expected, options); },
+  async toHaveAccessibleDescription(this: ExpectMatcherState, actual: Locator, expected: Text, options: AccessibleTextOptions = {}) { return accessibleTextAssertion(this, 'toHaveAccessibleDescription', 'to.have.accessible.description', actual, expected, options); },
+  async toHaveAccessibleErrorMessage(this: ExpectMatcherState, actual: Locator, expected: Text, options: AccessibleTextOptions = {}) { return accessibleTextAssertion(this, 'toHaveAccessibleErrorMessage', 'to.have.accessible.error.message', actual, expected, options); },
   async toHaveText(this: ExpectMatcherState, actual: Locator, expected: Text | Text[], options: TextOptions = {}) { return textAssertion(this, 'toHaveText', actual, expected, options, false); },
   async toContainText(this: ExpectMatcherState, actual: Locator, expected: Text | Text[], options: TextOptions = {}) { return textAssertion(this, 'toContainText', actual, expected, options, true); },
   async toBeVisible(this: ExpectMatcherState, actual: Locator, options: TimeoutOptions & { visible?: boolean } = {}) { validate('toBeVisible', options, ['timeout', 'visible']); return stateAssertion(this, 'toBeVisible', actual, options.visible === false ? 'to.be.hidden' : 'to.be.visible', options); },

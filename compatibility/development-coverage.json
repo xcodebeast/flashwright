@@ -154,7 +154,10 @@
       "toHaveValue, toHaveAttribute presence/value, page title and URL string/regex assertions",
       "negation, configured/per-call timeouts, soft assertions and runner reporting",
       "missing-element semantics, replacement, successor documents, child frames and shadow DOM",
-      "complete predicates with bounded last-observation diagnostics, UTF-16 strings and explicit no-observation diagnostics"
+      "complete predicates with bounded last-observation diagnostics, UTF-16 strings and explicit no-observation diagnostics",
+      "toHaveClass and toContainClass scalar/array forms with tested exact-class and class-token semantics",
+      "toHaveCSS including before/after pseudo-elements, toHaveId and toHaveValues for multiple selected values",
+      "toHaveRole, toHaveAccessibleName, toHaveAccessibleDescription and toHaveAccessibleErrorMessage through the pinned predicates"
     ],
     "testRunner": [
       "native browser/context/page fixtures on the pinned isolated scheduler",
@@ -229,7 +232,8 @@
       "Filmstrips compose with source embedding, file chooser uploads and automatic runner screenshots in packed ESM/CommonJS consumers.",
       "Actual pinned viewer opens all shared shell/full-Chrome corpus archives and decodes every retained thumbnail; timed frame sampling is not required to be identical.",
       "Public snapshot export fails explicitly for out-of-process frames, unsupported custom-element states or resource limits while preserving ordinary action outcomes and any prior destination.",
-      "Public snapshot phases, original-server-off replay and packed aliased combined-artifact consumers pass the focused macOS/Bun checkpoint; controlled cleanup also passes Node22/24."
+      "Public snapshot phases, original-server-off replay and packed aliased combined-artifact consumers pass the focused macOS/Bun checkpoint; controlled cleanup also passes Node22/24.",
+      "Manual assertion records preserve top-level predicate parameters and pinned Expect failures for positive/negative mismatches, independently of truncated text previews."
     ],
     "fileInputs": [
       "Page, Frame, Locator and ElementHandle.setInputFiles accept individual local files, in-memory FilePayloads and clearing with an empty list.",
@@ -423,7 +427,9 @@
       "responseStatusReportSha256": "b74b4793fcd1e84ceba64a0f0a067932021642384489b3c6f4296475ef491a91"
     },
     "traceNetwork": "Native canonical occurrence journal, retained exact-session body jobs and bounded original resources feed the pure pinned HAR converter and sealed trace.network exports. The common recording clock, immutable resource leases and shared writer limits compose network replay with DOM snapshots, filmstrips and sources.",
-    "traceSnapshots": "Bounded queued capture intents acquire full reply bytes only at evaluation admission, preserving original deadlines and ownership through pressure/cancellation. Immutable host data precedes browser-cache commit. Archive and binary transport share byte reservations; weak transfer tracking keeps retirement pending after archive failure until terminal acknowledgement. Content failures prevent export without poisoning confirmed cleanup."
+    "traceSnapshots": "Bounded queued capture intents acquire full reply bytes only at evaluation admission, preserving original deadlines and ownership through pressure/cancellation. Immutable host data precedes browser-cache commit. Archive and binary transport share byte reservations; weak transfer tracking keeps retirement pending after archive failure until terminal acknowledgement. Content failures prevent export without poisoning confirmed cleanup.",
+    "runnerArtifactBoundaries": "Private version-2 asynchronous public-context enrollment and action-step association. Context publication/cleanup retain original scope; numeric enrollment generations do not retain retired observers. Controlled Bun/Node22/24 lifecycle and pinned trace-model checks pass. Automatic runner trace policies remain unsupported.",
+    "commonMatchers": "Nine common locator matchers use 11 pinned native predicate expressions; 48 wrapper dispatch comparisons per runtime and 15 shared browser groups per configuration. The cache eligibility whitelist is unchanged. See the focused common-matchers checkpoint for exact scope and retained full-run failures."
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -597,7 +603,16 @@
     "tools/test-trace-network-entry.mjs",
     "tools/test-trace-network.mjs",
     "crates/flashwright-engine/src/snapshots/budget.rs",
-    "crates/flashwright-engine/src/snapshots/outcome.rs"
+    "crates/flashwright-engine/src/snapshots/outcome.rs",
+    "compatibility/m2/common-matchers-fixture.mjs",
+    "compatibility/m2/common-matchers-types.ts",
+    "tools/test-common-matchers.mjs",
+    "tools/run-common-matcher-tests.mjs",
+    "tools/test-packed-common-matchers.mjs",
+    "tools/record-common-matcher-provenance.mjs",
+    "tools/test-runner-artifact-lifecycle.mjs",
+    "tools/test-runner-trace-steps.mjs",
+    "tools/record-runner-trace-boundaries-provenance.mjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
@@ -628,7 +643,8 @@
     "Integrated manual filmstrip/source/upload/screenshot packed consumers pass on macOS/Bun and focused Node22/24. Browser corpus and actual viewer checks cover headless shell and full Chrome on this host. Native Linux, full automatic traces, timing under these artifacts and release package-manager coverage remain open.",
     "The private DOM snapshot foundation passes99 integrated macOS/Bun core groups and a29-group focused foundation batch with Node22/24 hosts and actual pinned offline viewer on shell/full Chrome. Public snapshots:true was still rejected at that earlier checkpoint. This earlier checkpoint did not establish external resources, out-of-process frames, broader custom-element states or automatic runner tracing; see compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json.",
     "Private network recording and original-server-off resource replay pass104 fresh core groups and 12 same-driver focused groups, including 16 actual offline-viewer cases on shell/full Chrome. This earlier private checkpoint did not establish public API/packed acceptance. See compatibility/evidence/network-recording-checkpoint-2026-10-09.json.",
-    "Public manual snapshots now pass 21 focused groups after the 104-group private core, including 12 actual offline-viewer cases, four packed combined-artifact consumers and controlled lifecycle checks on Bun/Node22/24. Out-of-process snapshot frames and unsupported custom-element states fail export explicitly. See compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json."
+    "Public manual snapshots now pass 21 focused groups after the 104-group private core, including 12 actual offline-viewer cases, four packed combined-artifact consumers and controlled lifecycle checks on Bun/Node22/24. Out-of-process snapshot frames and unsupported custom-element states fail export explicitly. See compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json.",
+    "The common matcher/private runner boundary follow-up passes 22 focused root groups and243 native workspace tests, with one existing ignored test. Two fresh112-group core attempts remain failed after 71 and 34 passing groups. Cleanup/request-order deadlines were not widened; the exact failure causes remain unresolved. See compatibility/evidence/common-matchers-checkpoint-2026-10-09.json."
   ],
   "verifiedCheckpoint": {
     "status": "experimental native macOS development checkpoint; not release support",
@@ -651,6 +667,15 @@
       "sourceArchiveSha256": "a0f87f7bc08c293a721c5370d73bac722e4418ade9690d306cbda3c68e3f6b2d",
       "scope": "Public manual snapshots, original network resource replay, combined packed artifacts and failure/transfer custody. A focused follow-up, not a rerun of the full core.",
       "normalizedEvidence": "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json"
+    },
+    "commonMatchersFollowUp": {
+      "status": "passed-focused-development-checkpoint-full-core-incomplete",
+      "hostGroups": 17,
+      "browserGroups": 5,
+      "sourceEntries": 462,
+      "driverSha256": "5cb56d8d94641860d295a076c51675c7c403b032d88a8469cb3a61ba47b5ee04",
+      "normalizedEvidence": "compatibility/evidence/common-matchers-checkpoint-2026-10-09.json",
+      "scope": "Nine common locator matchers and private runner lifecycle/trace-step boundaries pass focused verification. Fresh 112-group verification remains incomplete after two retained failures under shared-host contention; no automatic runner tracing or new performance claim."
     }
   },
   "migrationDiagnostics": [

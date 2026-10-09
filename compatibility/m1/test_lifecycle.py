@@ -10,6 +10,7 @@ import subprocess
 import time
 import tempfile
 import unittest
+from collections import deque
 from unittest.mock import patch
 
 
@@ -78,16 +79,30 @@ class OwnedBrowserCase(unittest.TestCase):
             self.diagnostics.close()
 
     def assert_owned_processes_exit(self):
-        deadline = time.monotonic() + 8
+        started = time.monotonic()
+        deadline = started + 8
+        observations = deque(maxlen=8)
+        remaining = list(self.identities)
         while time.monotonic() < deadline:
             processes = snapshot()
             remaining = [process for process, identity in self.identities.items() if process in processes and processes[process][1] == identity]
+            observations.append({"elapsedSeconds": time.monotonic() - started, "remaining": remaining})
             if not remaining:
                 if self.profile is not None:
                     self.assertFalse(self.profile.exists(), f"guardian left the owned browser profile behind: {self.profile}\n{diagnostic_tail(self.worker)}")
                 return
             time.sleep(0.05)
-        self.fail(f"owned processes remain after cleanup: {remaining}")
+        # A scheduling pause can make the last in-budget observation stale. Keep the
+        # original failed deadline, but report a fresh observation separately.
+        processes = snapshot()
+        final_remaining = [process for process, identity in self.identities.items() if process in processes and processes[process][1] == identity]
+        details = {
+            "budgetSeconds": 8,
+            "recentObservations": list(observations),
+            "finalObservation": {"elapsedSeconds": time.monotonic() - started, "remaining": final_remaining},
+            "profileExists": self.profile is not None and self.profile.exists(),
+        }
+        self.fail(f"owned process cleanup was not observed within its deadline: {json.dumps(details)}\n{diagnostic_tail(self.worker)}")
 
     def send(self, command):
         self.worker.stdin.write(command + "\n")

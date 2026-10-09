@@ -28,10 +28,6 @@ function page(behavior) {
     return Buffer.from('complete-image');
   } };
 }
-async function until(condition) {
-  for (let attempt = 0; attempt < 1000; attempt++) { if (condition()) return; await setImmediate(); }
-  throw new Error('deterministic screenshot scheduling did not settle');
-}
 try {
   for (const mode of ['off', 'on', 'only-on-failure', 'on-first-failure']) assert.equal(screenshotPolicy(mode).mode, mode);
   assert.deepEqual(screenshotPolicy({ mode: 'on', fullPage: true, omitBackground: false }).options, { fullPage: true, omitBackground: false });
@@ -83,22 +79,29 @@ try {
   try {
     const testInfo = information();
     const releases = [];
+    let firstBatchStarted, lastBatchStarted;
+    const firstBatch = new Promise(resolve => { firstBatchStarted = resolve; });
+    const lastBatch = new Promise(resolve => { lastBatchStarted = resolve; });
     let active = 0;
     let maximumActive = 0;
     const pages = Array.from({ length: 6 }, () => page(async options => {
       assert.equal(options.caret, 'initial'); assert.ok(options.timeout > 0 && options.timeout <= 5000);
       maximumActive = Math.max(maximumActive, ++active);
-      await new Promise(resolve => releases.push(resolve)); active--;
+      await new Promise(resolve => {
+        releases.push(resolve);
+        if (releases.length === 4) firstBatchStarted();
+        if (releases.length === 6) lastBatchStarted();
+      }); active--;
     }));
     const liveContext = context(pages);
     const recorder = lifecycle.start(testInfo);
     const closing = willCloseRunnerContext(liveContext);
-    await until(() => releases.length === 4);
+    await firstBatch;
     let finished = false;
     const finishing = lifecycle.finish(recorder).then(() => { finished = true; });
     await setImmediate(); assert.equal(finished, false);
     for (const release of releases.slice()) release();
-    await until(() => releases.length === 6);
+    await lastBatch;
     assert.equal(finished, false, 'scope finalization must include queued pages, not only the first active batch');
     for (const release of releases.slice(4)) release();
     await closing; await finishing;

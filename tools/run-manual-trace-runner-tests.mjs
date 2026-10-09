@@ -57,9 +57,15 @@ try {
       assert.equal(evaluations.length, 2);
       for (const [index, action] of evaluations.entries()) assert.ok(action.stack.some(location => location.file.endsWith('tracing.spec.ts') && location.line === index + 5), `${engine}: actual TypeScript caller line`);
       assert.ok(evaluations[1].error.message.includes('original runner browser error'));
+      const assertions = entry.actions.filter(action => action.method === 'expect');
+      assert.deepEqual(assertions.map(action => action.params.expression), ['to.have.title', 'to.have.title', 'to.have.count', 'to.have.title', 'to.have.title', 'to.have.title']);
+      assert.deepEqual(assertions.map(action => action.params.isNot), [false, true, false, false, true, false]);
+      assert.deepEqual(assertions.map(action => Boolean(action.error)), [false, false, false, true, true, true]);
+      assert(assertions.every(action => !Object.hasOwn(action.params, 'options')));
+      for (const action of assertions.filter(action => action.error)) assert.deepEqual({ name: action.error.name, message: action.error.message }, { name: 'Expect', message: 'Expect failed' });
       assert.ok(entry.events.some(event => event.type === 'console' && event.text === 'runner trace diagnostic'));
       assert.equal(entry.hasSource, false);
-      report.outcomes[engine] = { stats: results.stats, manualTraceSha256: hash(await readFile(attachment.path)), callerLines: [5, 6], originalErrorPreserved: true, screenshots: 1 };
+      report.outcomes[engine] = { stats: results.stats, manualTraceSha256: hash(await readFile(attachment.path)), callerLines: [5, 6], originalErrorPreserved: true, screenshots: 1, assertionTraces: assertions.length, failedAssertionTraces: assertions.filter(action => action.error).length };
     } finally { archive.close(); }
   }
   assert.deepEqual(await sourceManifest(), report.sources);

@@ -33,7 +33,7 @@ import { prepareElementResolution, type WaitForSelectorOptions, type WaitForSele
 import { currentRunnerContextDefaults } from './runner-context-defaults.js';
 import { prepareInputFiles, fileInputSelector, type InputFiles, type FrameSetInputFilesOptions, type SetInputFilesOptions } from './file-inputs.js';
 export type { FilePayload, InputFiles, SetInputFilesOptions, FrameSetInputFilesOptions } from './file-inputs.js';
-import { didCreateRunnerContext, willCloseRunnerContext } from './runner-lifecycle.js';
+import { beginRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext, assertRunnerContextCloseAllowed } from './runner-lifecycle.js';
 import { registerPublicBrowser } from './public-browsers.js';
 import { prepareCookies, filterCookies, cookieFilter, prepareStorageState, decodeStorageState, writeStorageState, type Cookie, type SetCookie, type CookieFilter, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 
@@ -137,6 +137,7 @@ export class Browser extends EventEmitter {
   contexts(): BrowserContext[] { return [...this.ownedContexts]; }
   isConnected(): boolean { return !this.disconnected && !this.closing && !this.client.isClosed(); }
   async newContext(contextOptions: BrowserContextOptions = {}): Promise<BrowserContext> {
+    const runnerGeneration = beginRunnerContextCreation();
     const runnerDefaults = currentRunnerContextDefaults();
     if (runnerDefaults && contextOptions && typeof contextOptions === 'object' && !Array.isArray(contextOptions)) {
       contextOptions = { ...runnerDefaults.contextOptions, ...contextOptions };
@@ -167,7 +168,10 @@ export class Browser extends EventEmitter {
     }
     this.ownedContexts.add(context);
     context.once('close', () => this.ownedContexts.delete(context));
-    try { didCreateRunnerContext(context); }
+    try {
+      const enrollment = didCreateRunnerContext(context, runnerGeneration);
+      if (enrollment) await enrollment;
+    }
     catch (error) { await context.close().catch(() => {}); throw error; }
     return context;
   }
@@ -277,6 +281,7 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
     return page;
   }
   close(): Promise<void> {
+    assertRunnerContextCloseAllowed();
     if (this.closed) return this.closing ?? Promise.resolve();
     this.closing ??= (async () => {
       try {

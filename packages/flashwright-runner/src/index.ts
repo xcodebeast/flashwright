@@ -28,14 +28,9 @@ function unsupportedMatcher(name: string) {
 export const expect = upstream.expect.extend({}).extend({
   ...matchers,
   toBeInViewport: unsupportedMatcher('toBeInViewport'), toBeOK: unsupportedMatcher('toBeOK'),
-  toHaveClass: unsupportedMatcher('toHaveClass'), toContainClass: unsupportedMatcher('toContainClass'),
-  toHaveCSS: unsupportedMatcher('toHaveCSS'), toHaveId: unsupportedMatcher('toHaveId'),
-  toHaveJSProperty: unsupportedMatcher('toHaveJSProperty'), toHaveRole: unsupportedMatcher('toHaveRole'),
-  toHaveValues: unsupportedMatcher('toHaveValues'), toHaveScreenshot: unsupportedMatcher('toHaveScreenshot'),
+  toHaveJSProperty: unsupportedMatcher('toHaveJSProperty'),
+  toHaveScreenshot: unsupportedMatcher('toHaveScreenshot'),
   toMatchAriaSnapshot: unsupportedMatcher('toMatchAriaSnapshot'),
-  toHaveAccessibleName: unsupportedMatcher('toHaveAccessibleName'),
-  toHaveAccessibleDescription: unsupportedMatcher('toHaveAccessibleDescription'),
-  toHaveAccessibleErrorMessage: unsupportedMatcher('toHaveAccessibleErrorMessage'),
 });
 
 type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _validateWorkerOptions: void; _screenshotLifecycle: ScreenshotLifecycle | undefined };
