@@ -96,6 +96,8 @@ pub struct BinaryAttachment {
     pub encoding: AttachmentEncoding,
     pub decoded_length: usize,
     pub reservation: OwnedSemaphorePermit,
+    /// Native byte custody survives owner failure while the transport still holds the payload.
+    pub byte_reservations: Vec<Arc<OwnedSemaphorePermit>>,
 }
 
 impl BinaryAttachment {
@@ -116,6 +118,7 @@ impl BinaryAttachment {
             encoding: payload.encoding,
             decoded_length: payload.decoded_length,
             reservation,
+            byte_reservations: Vec::new(),
         }
     }
 }
@@ -169,6 +172,47 @@ pub fn base64_decoded_length(bytes: &[u8]) -> Option<usize> {
     Some(bytes.len() / 4 * 3 - padding)
 }
 
+/// Append one independently padded entry only after validating its entire input and output bound.
+pub fn append_base64(
+    encoded: &[u8],
+    output: &mut Vec<u8>,
+    maximum_bytes: usize,
+    method: &str,
+) -> Result<(), ErrorRecord> {
+    let length = base64_decoded_length(encoded).ok_or_else(|| {
+        ErrorRecord::new(
+            ErrorCode::Protocol,
+            method,
+            "browser returned invalid base64",
+        )
+    })?;
+    output
+        .len()
+        .checked_add(length)
+        .filter(|total| *total <= maximum_bytes)
+        .ok_or_else(|| {
+            ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                method,
+                "decoded body exceeds its byte limit",
+            )
+        })?;
+    output.reserve(length);
+    for chunk in encoded.as_chunks::<4>().0 {
+        let first = base64_value(chunk[0]).expect("validated alphabet");
+        let second = base64_value(chunk[1]).expect("validated alphabet");
+        output.push(first << 2 | second >> 4);
+        if chunk[2] != b'=' {
+            let third = base64_value(chunk[2]).expect("validated alphabet");
+            output.push(second << 4 | third >> 2);
+            if chunk[3] != b'=' {
+                output.push(third << 6 | base64_value(chunk[3]).expect("validated alphabet"));
+            }
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,6 +249,30 @@ mod tests {
             "A", "====", "A===", "A=AA", "AA A", "AA\nA", "AB==", "AAF=", "AA-_", "AA==AAAA",
         ] {
             assert_eq!(base64_decoded_length(input.as_bytes()), None, "{input}");
+        }
+    }
+
+    #[test]
+    fn independently_padded_entries_preserve_bytes_and_reject_without_mutation() {
+        let original: Vec<u8> = (0..=255).collect();
+        for entry_size in 1..=7 {
+            let mut decoded = Vec::new();
+            for entry in original.chunks(entry_size) {
+                append_base64(encode_base64(entry).as_bytes(), &mut decoded, 256, "test").unwrap();
+            }
+            assert_eq!(decoded, original);
+            for (encoded, code) in [
+                ("AB==", ErrorCode::Protocol),
+                ("AA==", ErrorCode::ResourceLimit),
+            ] {
+                assert_eq!(
+                    append_base64(encoded.as_bytes(), &mut decoded, 256, "test")
+                        .unwrap_err()
+                        .code,
+                    code
+                );
+                assert_eq!(decoded, original);
+            }
         }
     }
 }

@@ -30,7 +30,7 @@ pub(crate) enum PagePurpose {
 pub(crate) struct PageState {
     pub purpose: PagePurpose,
     pub routing_registered: std::sync::atomic::AtomicBool,
-    pub snapshot_session_destroyed: std::sync::atomic::AtomicBool,
+    pub diagnostic_session_destroyed: std::sync::atomic::AtomicBool,
     pub state: Mutex<DocumentState>,
     pub changed: watch::Sender<u64>,
     pub locator_realms: tokio::sync::Mutex<HashMap<String, super::locators::LocatorRealm>>,
@@ -121,7 +121,7 @@ impl Default for PageState {
         Self {
             purpose: PagePurpose::Public,
             routing_registered: std::sync::atomic::AtomicBool::new(false),
-            snapshot_session_destroyed: std::sync::atomic::AtomicBool::new(false),
+            diagnostic_session_destroyed: std::sync::atomic::AtomicBool::new(false),
             state: Mutex::new(DocumentState {
                 idle_since: Some(Instant::now()),
                 ..Default::default()
@@ -333,7 +333,10 @@ impl DocumentState {
         )
     }
 
-    pub(crate) fn release_interception(&mut self) -> Vec<(&'static str, Value)> {
+    pub(crate) fn release_interception(
+        &mut self,
+        observer: Option<&mut dyn NetworkObserver>,
+    ) -> Vec<(&'static str, Value)> {
         self.interception.clear();
         let event = NetworkEvent {
             method: "Fetch.disable",
@@ -345,7 +348,7 @@ impl DocumentState {
         };
         let mut events = PublicNetworkEvents {
             events: Vec::new(),
-            observer: None,
+            observer,
         };
         let mut observation = NetworkObservation::new(event, &mut events);
         if let Err(error) = self.requests.publish_pending(&mut observation) {

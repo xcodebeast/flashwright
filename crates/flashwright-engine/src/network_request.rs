@@ -8,6 +8,8 @@ struct RequestOccurrence {
     metadata: Value,
     predecessor: Option<String>,
     ingress: NetworkIngress,
+    timestamp: Option<f64>,
+    wall_time: Option<f64>,
 }
 
 pub(crate) struct RequestState {
@@ -86,6 +88,8 @@ impl RequestState {
                 metadata,
                 predecessor,
                 ingress: event.ingress,
+                timestamp: parameters["timestamp"].as_f64(),
+                wall_time: parameters["wallTime"].as_f64(),
             },
             effective_metadata: None,
             awaiting_interception: false,
@@ -122,6 +126,11 @@ impl RequestState {
     }
     pub(crate) fn ingress(&self) -> NetworkIngress {
         self.occurrence.ingress
+    }
+
+    /// Browser timing survives the delayed Fetch join without mixing it with the native clock.
+    pub(crate) fn original_browser_timing(&self) -> (Option<f64>, Option<f64>) {
+        (self.occurrence.timestamp, self.occurrence.wall_time)
     }
 
     /// An unmodified request borrows its original observation without another metadata copy.

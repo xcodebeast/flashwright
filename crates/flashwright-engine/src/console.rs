@@ -44,12 +44,22 @@ impl Engine {
             "context.trace.recording.start"
                 | "context.trace.recording.stop"
                 | "context.trace.recording.clock"
+                | "context.trace.recording.retire"
+                | "context.trace.recording.status"
                 | "context.trace.recording.fail"
                 | "context.trace.chunk.start"
                 | "context.trace.chunk.seal"
                 | "context.trace.chunk.status"
         ) {
             return Some(self.recording_control(method, parameters, operation));
+        }
+        if matches!(
+            method,
+            "context.trace.network.pull"
+                | "context.trace.network.ingested"
+                | "context.trace.network.entry"
+        ) {
+            return Some(self.network_trace_control(method, parameters, operation));
         }
         if matches!(
             method,

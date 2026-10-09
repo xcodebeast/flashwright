@@ -8,6 +8,7 @@ use std::collections::{HashMap, HashSet};
 use std::time::Instant;
 
 mod documents;
+pub(crate) mod network;
 mod phases;
 #[cfg(test)]
 mod tests;
@@ -32,6 +33,7 @@ struct TraceChunk {
     identifier: String,
     accepting: bool,
     cutoff: Option<u64>,
+    network: Option<network::SealedNetwork>,
     calls: HashMap<String, HashMap<SnapshotPhase, PhaseState>>,
     snapshots: SnapshotArchive,
     documents: HashMap<(String, String), Arc<snapshots::SnapshotDocument>>,
@@ -66,6 +68,7 @@ pub(crate) struct TraceRecording {
     chunk: Option<TraceChunk>,
     used_chunks: HashSet<String>,
     failure: Option<ErrorRecord>,
+    network: Option<network::NetworkRecording>,
 }
 
 #[derive(Default)]
@@ -122,6 +125,7 @@ impl RecordingState {
             chunk: None,
             used_chunks: HashSet::new(),
             failure: None,
+            network: None,
         });
         Ok(json!({"nativeTime":0.0}))
     }
@@ -150,6 +154,15 @@ impl RecordingState {
                 "original chunk must seal and settle before recording stop",
             ));
         }
+        if let Some(network) = recording.network.as_mut() {
+            network.close();
+            if network.pending() {
+                return Err(invalid(
+                    "context.trace.recording.stop",
+                    "original network work must settle before recording stop",
+                ));
+            }
+        }
         let failure = recording.failure.clone();
         self.recording = None;
         if let Some(error) = failure {
@@ -177,6 +190,9 @@ impl TraceRecording {
     pub(crate) fn fail(&mut self, error: ErrorRecord) {
         if self.failure.is_none() {
             self.failure = Some(error.clone());
+        }
+        if let Some(network) = self.network.as_mut() {
+            network.recording_failed(&error);
         }
         if let Some(chunk) = self.chunk.as_mut() {
             chunk.accepting = false;
@@ -221,6 +237,7 @@ impl TraceRecording {
             identifier: identifier.into(),
             accepting: true,
             cutoff: None,
+            network: None,
             calls: HashMap::new(),
             snapshots: SnapshotArchive::default(),
             documents: HashMap::new(),
@@ -234,6 +251,13 @@ impl TraceRecording {
             .as_mut()
             .filter(|chunk| chunk.identifier == identifier)
             .ok_or_else(|| invalid("context.trace.chunk.seal", "original chunk is not active"))?;
+        if chunk.cutoff.is_none() {
+            chunk.network = self
+                .network
+                .as_mut()
+                .map(network::NetworkRecording::seal)
+                .transpose()?;
+        }
         chunk.accepting = false;
         let cutoff = *chunk.cutoff.get_or_insert(self.last_event_sequence);
         chunk.retire_idle_documents();
@@ -326,6 +350,8 @@ impl Engine {
             parameters,
             if is_chunk {
                 &["context", "recording", "chunk"]
+            } else if method.ends_with(".start") {
+                &["context", "recording", "network"]
             } else if method.ends_with(".fail") {
                 &["context", "recording", "message"]
             } else {
@@ -344,7 +370,25 @@ impl Engine {
         }
         match method {
             "context.trace.recording.start" => {
+                let network = parameters
+                    .get("network")
+                    .map(|value| {
+                        value
+                            .as_bool()
+                            .ok_or_else(|| invalid(method, "network must be a boolean"))
+                    })
+                    .transpose()?
+                    .unwrap_or(false);
                 let result = state.start(identifier)?;
+                if network {
+                    let recording = state.get_mut(identifier)?;
+                    recording.network = Some(network::NetworkRecording::new(
+                        recording.epoch,
+                        self.trace_network_budget
+                            .get_or_init(|| Arc::new(network::NetworkBudget::default()))
+                            .clone(),
+                    ));
+                }
                 context
                     .state
                     .recording_enabled
@@ -363,6 +407,17 @@ impl Engine {
                         .store(false, Ordering::Release);
                 }
                 result
+            }
+            "context.trace.recording.retire" | "context.trace.recording.status" => {
+                let recording = state.get_mut(identifier)?;
+                if method.ends_with(".retire")
+                    && let Some(network) = recording.network.as_mut()
+                {
+                    network.retire();
+                }
+                Ok(
+                    json!({"recording":identifier,"networkPending":recording.network.as_ref().is_some_and(network::NetworkRecording::pending)}),
+                )
             }
             "context.trace.recording.clock" => {
                 Ok(json!({"nativeTime":state.get_mut(identifier)?.native_time(Instant::now())}))

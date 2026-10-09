@@ -64,24 +64,40 @@ struct PendingReply {
     dispatch_started: bool,
 }
 
+struct CommandReply<Output> {
+    result: Reply<Output>,
+    browser_reply_received: bool,
+}
+
 pub struct Command<Output = Value> {
     identifier: u64,
     state: Arc<ConnectionState>,
-    receiver: oneshot::Receiver<Reply<Output>>,
+    receiver: oneshot::Receiver<CommandReply<Output>>,
+    browser_reply_received: bool,
 }
 
 impl<Output> Command<Output> {
     pub async fn response(&mut self) -> Reply<Output> {
-        (&mut self.receiver).await.map_err(|_| disconnected())?
+        let reply = (&mut self.receiver).await.map_err(|_| disconnected())?;
+        self.browser_reply_received = reply.browser_reply_received;
+        reply.result
     }
 
     /// Recover a reply already received when cancellation won the caller's wait.
     pub fn try_response(&mut self) -> Option<Reply<Output>> {
         match self.receiver.try_recv() {
-            Ok(reply) => Some(reply),
+            Ok(reply) => {
+                self.browser_reply_received = reply.browser_reply_received;
+                Some(reply.result)
+            }
             Err(oneshot::error::TryRecvError::Empty) => None,
             Err(oneshot::error::TryRecvError::Closed) => Some(Err(disconnected())),
         }
+    }
+
+    /// A local transport failure ends the wait but does not prove browser completion.
+    pub fn browser_reply_received(&self) -> bool {
+        self.browser_reply_received
     }
 
     /// Atomically withdraw queued work before the writer starts any bytes.
@@ -268,6 +284,7 @@ impl Connection {
             identifier,
             state: self.inner.clone(),
             receiver,
+            browser_reply_received: false,
         };
         self.register_commands(
             vec![outgoing],
@@ -313,6 +330,7 @@ impl Connection {
             identifier,
             state: self.inner.clone(),
             receiver,
+            browser_reply_received: false,
         };
         self.register_commands(
             vec![outgoing],
@@ -355,6 +373,7 @@ impl Connection {
             identifier,
             state: self.inner.clone(),
             receiver,
+            browser_reply_received: false,
         };
         self.register_commands(
             vec![outgoing],
@@ -422,6 +441,7 @@ impl Connection {
                 identifier,
                 state: self.inner.clone(),
                 receiver,
+                browser_reply_received: false,
             });
         }
         self.register_commands(outgoing, replies, method)?;

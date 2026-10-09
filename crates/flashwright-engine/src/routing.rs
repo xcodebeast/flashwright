@@ -81,6 +81,7 @@ impl Engine {
         operation: &Operation,
     ) -> Result<(), ErrorRecord> {
         let method = "route.configure";
+        let context = self.context(&page.context_identifier, method)?;
         {
             let mut state = page.state.state.lock().unwrap();
             state.check(method)?;
@@ -89,7 +90,16 @@ impl Engine {
             }
             state.interception.enabled = enabled;
             if !enabled {
-                let events = state.release_interception();
+                let events = if context.state.recording_enabled.load(Ordering::Acquire) {
+                    let mut owner = context.state.recording.lock().unwrap();
+                    if let Some(recording) = owner.active_mut() {
+                        recording.release_network_interception(identifier, &mut state)
+                    } else {
+                        state.release_interception(None)
+                    }
+                } else {
+                    state.release_interception(None)
+                };
                 if state.published {
                     for (event, parameters) in events {
                         self.emit(identifier, event, parameters);
@@ -141,7 +151,15 @@ impl Engine {
         operation: &Operation,
     ) -> Result<Value, ErrorRecord> {
         let permitted: &[&str] = match method {
-            "route.continue" => &["page", "identifier", "identity", "url", "method", "headers"],
+            "route.continue" => &[
+                "page",
+                "identifier",
+                "identity",
+                "url",
+                "method",
+                "headers",
+                "isFallback",
+            ],
             "route.fulfill" => &[
                 "page",
                 "identifier",
@@ -176,6 +194,15 @@ impl Engine {
                 "status must be an integer between 100 and 599",
             ));
         }
+        let is_fallback = parameters
+            .get("isFallback")
+            .map(|value| {
+                value
+                    .as_bool()
+                    .ok_or_else(|| invalid(method, "isFallback must be a boolean"))
+            })
+            .transpose()?
+            .unwrap_or(false);
         let reason = if method == "route.abort" {
             abort_reason(parameters["reason"].as_str().unwrap_or("failed"))?
         } else {
@@ -192,7 +219,7 @@ impl Engine {
             let owner = state
                 .interception
                 .take_route(identity, request_identifier)?;
-            match method {
+            let action = match method {
                 "route.continue" => {
                     let parameters = ContinueRequest {
                         request_identifier: owner.fetch_identifier.clone(),
@@ -221,7 +248,18 @@ impl Engine {
                     state.interception.fulfill_route(owner, parameters, body)
                 }
                 _ => state.interception.abort_route(owner, reason.into()),
+            };
+            if context.state.recording_enabled.load(Ordering::Acquire)
+                && let Some(recording) = context.state.recording.lock().unwrap().active_mut()
+            {
+                recording.network_route_decision(
+                    page_identifier,
+                    identity,
+                    &action.command,
+                    is_fallback,
+                );
             }
+            action
         };
         let mut command = match action.start(&browser.connection, &page.session_identifier) {
             Ok(command) => command,

@@ -419,7 +419,8 @@
       "publicCheckpoint": "compatibility/evidence/routing-checkpoint-2026-10-09.json",
       "responseStatusReport": ".cache/response-status-focused-002/report.json",
       "responseStatusReportSha256": "b74b4793fcd1e84ceba64a0f0a067932021642384489b3c6f4296475ef491a91"
-    }
+    },
+    "traceNetwork": "Private native canonical occurrence journal, retained exact-session body jobs and bounded original resources feed the pure pinned HAR converter and sealed trace.network exports. The common recording clock, immutable resource leases and shared writer limits compose network replay with DOM snapshots, filmstrips and sources."
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -586,7 +587,12 @@
     "tools/probe-native-snapshot-phases.mjs",
     "tools/probe-snapshot-trace-integration.mjs",
     "tools/probe-snapshot-trace-viewer.mjs",
-    "crates/flashwright-browser/tests/response_body_command.rs"
+    "crates/flashwright-browser/tests/response_body_command.rs",
+    "tools/record-network-trace-provenance.mjs",
+    "tools/run-native-network-trace-tests.mjs",
+    "tools/run-snapshot-resource-tests.mjs",
+    "tools/test-trace-network-entry.mjs",
+    "tools/test-trace-network.mjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
@@ -615,36 +621,22 @@
     "Trace source/resource browser and filesystem checks currently cover macOS arm64/Bun1.4.2. Node22/24 caller mapping is separately verified, but this does not establish source-feature runtime/platform release coverage. Source-enabled archives include referenced framework frames and charge repeated aliases; old artifact-off timings do not measure their cost.",
     "File uploads and chooser lifecycle pass native macOS shell/full-Chrome checks and focused Node22/24 consumers. Directory uploads, webkitdirectory and out-of-process chooser frames remain unsupported. Admission is limited to 4096 files, 1 MiB UTF-16 metadata and 32 MiB in-memory bytes; the latter is narrower than the reference 50 MiB cap. S4.m and S4.n separately record invalid-input rejection and cancellation of unpublished chooser adoption. These differences are not equal-result performance evidence.",
     "Integrated manual filmstrip/source/upload/screenshot packed consumers pass on macOS/Bun and focused Node22/24. Browser corpus and actual viewer checks cover headless shell and full Chrome on this host. Native Linux, full automatic traces, timing under these artifacts and release package-manager coverage remain open.",
-    "The private DOM snapshot foundation passes99 integrated macOS/Bun core groups and a29-group focused foundation batch with Node22/24 hosts and actual pinned offline viewer on shell/full Chrome. Public snapshots:true still rejects. External resources, out-of-process frames, broader custom-element states and automatic runner tracing remain outside this acceptance; see compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json."
+    "The private DOM snapshot foundation passes99 integrated macOS/Bun core groups and a29-group focused foundation batch with Node22/24 hosts and actual pinned offline viewer on shell/full Chrome. Public snapshots:true still rejects. This earlier checkpoint did not establish external resources, out-of-process frames, broader custom-element states or automatic runner tracing; see compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json.",
+    "Private network recording and original-server-off resource replay pass104 fresh core groups and 12 same-driver focused groups, including 16 actual offline-viewer cases on shell/full Chrome. Public snapshots remain rejected pending public API/packed acceptance. See compatibility/evidence/network-recording-checkpoint-2026-10-09.json."
   ],
   "verifiedCheckpoint": {
     "status": "experimental native macOS development checkpoint; not release support",
-    "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T12-54-25.407Z/report.json",
-    "groups": 99,
-    "sourceEntries": 437,
+    "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T13-56-38.835Z/report.json",
+    "groups": 104,
+    "sourceEntries": 451,
     "runtime": {
       "name": "bun",
       "version": "1.4.2"
     },
-    "driverSha256": "2a1e20618d9a1bd2449312acef9277724a16ba2a8f9e6e4a413631e59217504a",
-    "scope": "All99 development core groups ran fresh on437 unchanged source inputs after importing the private native snapshot/common recording foundation and current43-case routing corpus. The separately verified29-group foundation batch covers Node22/24 host ownership and actual pinned offline DOM/forms/child-frame viewer on shell/full Chrome. Public snapshots remain rejected. Network-resource replay, automatic runner tracing, API requests, broader migration, Linux and release/performance gates remain open.",
-    "reportSha256": "c96f9ad61226a6279201fefb801e5e01114e35999467ea50f47ae110b2cbac04",
-    "bodyCommandFollowUp": {
-      "groups": 8,
-      "sources": 438,
-      "driverSha256": "cf3388eea62c1e306c78108c6d765ae5a0a00bf64eae6c57fec08c2da1bf9573",
-      "reportSha256": "dfff718c9ae547fef268d537ed8f2361b2382f8e6a68c3235bd03b81671a09ef",
-      "sourceArchiveSha256": "6baeb14d3862775587dc442594eadb6823d947e42224fd60321c19dc5494e05c",
-      "deltaArchiveSha256": "efaa39b2c88129c67858158800521ee372f043ded4efc32eda3e8679fbc492d2",
-      "scope": "Retained typed body-command boundary; four controlled ownership tests, strict all-target Clippy and locked workspace tests, remapped release, twelve native attachment/screenshot cases per shell/full profile plus pinned request-payload comparisons. Public body/screenshot helpers retain existing decoders and semantics. No production network collector or public snapshot acceptance.",
-      "controlledOwnershipCases": 4,
-      "nativeAttachmentCasesPerBrowserProfile": 12,
-      "browserProfiles": [
-        "headless shell",
-        "full Chrome"
-      ],
-      "cleanWatchdogs": 8
-    }
+    "driverSha256": "af90de1a224e0fadacea13dbab9859ccb0f23747e8038d501d72bd8375260cf0",
+    "scope": "All 104 development core groups ran fresh on 451 unchanged inputs. Private network recording and immutable resource replay compose with the snapshot foundation; twelve same-driver focused groups include sixteen actual pinned offline-viewer cases on shell/full Chrome and controlled Node22/24 hosts. Public snapshots, automatic runner tracing, API requests, broader migration, Linux and release/performance gates remain open.",
+    "reportSha256": "779acbba1e343815178e36e7c2a15f6a62ea4232e92fa3799a38595a4e625c5e",
+    "normalizedEvidence": "compatibility/evidence/network-recording-checkpoint-2026-10-09.json"
   },
   "migrationDiagnostics": [
     {

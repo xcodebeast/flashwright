@@ -20,6 +20,8 @@ export class TraceWriter {
   failure: unknown;
   private events = 0;
   private bytes = 0;
+  private networkBytes = 0;
+  private networkFile: FileHandle | undefined;
   private queuedBytes = 0;
   private snapshotPending = false;
   private writes: Promise<void> = Promise.resolve();
@@ -73,7 +75,7 @@ export class TraceWriter {
     if (this.sealed) { this.fail(failure('ProtocolError', 'tracing', 'chunk event stream is sealed')); return; }
     try {
       const encoded = Buffer.from(JSON.stringify(event) + '\n');
-      if (++this.events > maximumEvents || encoded.length > maximumEventBytes || this.bytes + encoded.length > maximumBytes || this.queuedBytes + encoded.length > maximumQueuedBytes) {
+      if (++this.events > maximumEvents || encoded.length > maximumEventBytes || this.bytes + this.networkBytes + encoded.length > maximumBytes || this.queuedBytes + encoded.length > maximumQueuedBytes) {
         throw failure('ResourceLimitError', 'tracing', 'trace exceeds its event, stream or pending-write limit');
       }
       this.bytes += encoded.length;
@@ -93,7 +95,7 @@ export class TraceWriter {
       if (this.snapshotPending) throw failure('ResourceLimitError', 'tracing.snapshot', 'one snapshot record is already pending');
       signal.throwIfAborted();
       const record = prepareSnapshotRecord(event);
-      if (this.events + 1 > maximumEvents || this.bytes + record.byteLength > maximumBytes) throw failure('ResourceLimitError', 'tracing.snapshot', 'trace exceeds its event or stream limit');
+      if (this.events + 1 > maximumEvents || this.bytes + this.networkBytes + record.byteLength > maximumBytes) throw failure('ResourceLimitError', 'tracing.snapshot', 'trace exceeds its event or stream limit');
       this.events++;
       this.bytes += record.byteLength;
       this.snapshotPending = true;
@@ -115,11 +117,34 @@ export class TraceWriter {
       return this.writes.then(() => { if (this.failure) throw this.failure; });
     } catch (error) { this.fail(error); return Promise.reject(error); }
   }
+  /** Network and action records share the aggregate archive stream budget and ordered write queue. */
+  appendNetwork(event: unknown, signal: AbortSignal): Promise<void> {
+    try {
+      if (this.failure) throw this.failure;
+      if (this.sealed) throw failure('ProtocolError', 'tracing.network', 'chunk event stream is sealed');
+      signal.throwIfAborted();
+      const encoded = Buffer.from(JSON.stringify(event) + '\n');
+      if (this.events + 1 > maximumEvents || encoded.length > 2 * 1024 * 1024 || this.bytes + this.networkBytes + encoded.length > maximumBytes || this.queuedBytes + encoded.length > maximumQueuedBytes) throw failure('ResourceLimitError', 'tracing.network', 'network record exceeds the trace stream or queued-write allowance');
+      this.events++; this.networkBytes += encoded.length; this.queuedBytes += encoded.length;
+      this.writes = this.writes.then(async () => {
+        try {
+          if (this.failure) throw this.failure;
+          signal.throwIfAborted();
+          this.networkFile ??= await open(join(this.directory, 'trace.network'), 'wx', 0o600);
+          signal.throwIfAborted();
+          await this.networkFile.writeFile(encoded);
+          signal.throwIfAborted();
+        } catch (error) { this.fail(error); }
+        finally { this.queuedBytes -= encoded.length; }
+      });
+      return this.writes.then(() => { if (this.failure) throw this.failure; });
+    } catch (error) { this.fail(error); return Promise.reject(error); }
+  }
   fail(error: unknown): void { this.failure ??= error; }
   async finish(path: string | undefined, signal: AbortSignal, beginCommit: () => void = () => {}): Promise<void> {
     this.sealed = true;
     await this.writes;
-    await this.file.close();
+    await Promise.all([this.file.close(), this.networkFile?.close()]);
     if (this.failure) throw this.failure;
     signal.throwIfAborted();
     if (path === undefined) return;
@@ -129,7 +154,7 @@ export class TraceWriter {
     }
     const entries: ArchiveEntry[] = [
       { name: 'trace.trace', path: join(this.directory, 'trace.trace'), byteLength: this.bytes },
-      { name: 'trace.network', byteLength: 0 },
+      { name: 'trace.network', byteLength: this.networkBytes, ...(this.networkFile ? { path: join(this.directory, 'trace.network') } : {}) },
       ...[...this.aliases].map(([name, resource]) => ({ name, ...resource })),
     ];
     await exportArchive(entries, path, signal, beginCommit, cleanup => { this.archiveCleanup = cleanup; void cleanup.catch(() => {}); });
@@ -138,7 +163,7 @@ export class TraceWriter {
     this.sealed = true;
     this.disposal ??= (async () => {
       await this.writes;
-      try { await this.archiveCleanup; await this.file.close(); }
+      try { await this.archiveCleanup; await Promise.all([this.file.close(), this.networkFile?.close()]); }
       finally {
         try { await rm(this.directory, { recursive: true, force: true }); }
         finally {

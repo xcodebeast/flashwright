@@ -20,7 +20,7 @@ use super::budget::{
     SnapshotBudget,
 };
 use super::outcome::{SnapshotFailure, SnapshotUnavailable};
-use super::sessions::SessionLifetime;
+use crate::diagnostic_sessions::SessionLifetime;
 
 const METHOD: &str = "tracing.snapshot";
 const CAPTURE_BUDGET: Duration = Duration::from_secs(2);
@@ -155,7 +155,7 @@ fn context_changed() -> SnapshotFailure {
 fn check_document(page: &Page, realm: &SnapshotRealm) -> Result<(), SnapshotFailure> {
     if page
         .state
-        .snapshot_session_destroyed
+        .diagnostic_session_destroyed
         .load(std::sync::atomic::Ordering::Acquire)
     {
         return Err(context_changed());

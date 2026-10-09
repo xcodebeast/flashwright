@@ -49,3 +49,14 @@ impl SnapshotFailure {
         }
     }
 }
+
+impl From<crate::diagnostic_sessions::SessionFailure> for SnapshotFailure {
+    fn from(error: crate::diagnostic_sessions::SessionFailure) -> Self {
+        match error {
+            crate::diagnostic_sessions::SessionFailure::Unavailable => {
+                Self::Unavailable(SnapshotUnavailable::OriginalDocumentChanged)
+            }
+            crate::diagnostic_sessions::SessionFailure::Failed(error) => Self::Failed(error),
+        }
+    }
+}

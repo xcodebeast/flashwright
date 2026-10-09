@@ -16,13 +16,13 @@ export class NativeTraceRecording {
 
   private startRequested = false;
 
-  constructor(private readonly client: EngineClient, readonly context: string) {}
+  constructor(private readonly client: EngineClient, readonly context: string, private readonly network = false) {}
 
   /** The host retains this owner before dispatch, including a start whose reply is uncertain. */
   async start(): Promise<void> {
     if (this.startRequested || this.stopped) throw failure('InvalidArgumentError', 'tracing', 'native recording start has already been requested');
     this.startRequested = true;
-    try { await this.client.request('context.trace.recording.start', { context: this.context, recording: this.identifier }, 2000); }
+    try { await this.client.request('context.trace.recording.start', { context: this.context, recording: this.identifier, ...(this.network ? { network: true } : {}) }, 2000); }
     catch (error) {
       if (error instanceof Error && ['InvalidArgumentError', 'TargetClosedError', 'BrowserDisconnectedError'].includes(error.name)) this.stopped = true;
       throw error;
@@ -62,10 +62,21 @@ export class NativeTraceRecording {
     this.chunk = undefined;
   }
 
-  async stop(): Promise<void> {
+  async stop(signal?: AbortSignal): Promise<void> {
     if (this.stopped) return;
     if (this.chunk || this.opening) throw failure('InvalidArgumentError', 'tracing', 'native chunk must retire before recording stop');
     try {
+      if (this.network) {
+        const identity = { context: this.context, recording: this.identifier };
+        await this.client.request('context.trace.recording.retire', identity, 2000);
+        for (;;) {
+          signal?.throwIfAborted();
+          const status = await this.client.request('context.trace.recording.status', identity, 2000) as { recording?: unknown; networkPending?: unknown };
+          if (!status || status.recording !== this.identifier || typeof status.networkPending !== 'boolean') throw failure('ProtocolError', 'tracing.network', 'invalid original recording settlement status');
+          if (!status.networkPending) break;
+          await new Promise<void>(resolve => setTimeout(resolve, 10));
+        }
+      }
       await this.client.request('context.trace.recording.stop', { context: this.context, recording: this.identifier }, 2000);
       this.stopped = true;
     } catch (error) {
@@ -83,7 +94,7 @@ export class NativeTraceRecording {
         this.chunk = undefined;
       }
     }
-    try { await this.stop(); }
+    try { await this.stop(signal); }
     catch (error) { if (!this.stopped) throw error; }
   }
 }
