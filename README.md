@@ -14,6 +14,8 @@ The [snapshot foundation checkpoint](compatibility/evidence/snapshot-foundation-
 
 The [common matcher checkpoint](compatibility/evidence/common-matchers-checkpoint-2026-10-09.json) adds class, CSS, ID, multiple-value, role and accessible-text assertions. It passes 22 focused root groups plus 243 native workspace tests, with one existing ignored test. Private context-enrollment and trace-step hooks prepare automatic tracing, which remains disabled. The later [full core checkpoint](compatibility/evidence/trace-archive-core-checkpoint-2026-10-09.json) passes all 113 current development groups on macOS arm64/Bun, including sealed trace archive custody and packed consumers. Earlier failures remain retained, with verified routing-close and unsupported-matcher fixture corrections. Automatic runner tracing, broader parity and release/performance gates remain open. No new speed claim follows.
 
+The [disabled-trace follow-up](compatibility/evidence/runner-trace-off-checkpoint-2026-10-09.json) stops collecting internal runner trace records when tracing is off. Fifteen focused groups preserve reporter steps, attachments, output and fixture behavior across Bun and Node22/24, with browser and packed-consumer regressions under Bun. Automatic trace collection remains unsupported; this follow-up is not a speed claim or a rerun of the expanded115-group core.
+
 [SPECS.md](SPECS.md) defines the implementation and release gates. [Milestones](compatibility/milestones.json) track completed evidence and remaining work. [Reference manifest](compatibility/reference-manifest.json) records exact versions, retained runs and platform limitations
 
 ## R2 Development

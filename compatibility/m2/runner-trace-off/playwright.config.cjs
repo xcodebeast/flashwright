@@ -1,0 +1,1 @@
+module.exports = { testDir: '.', testMatch: 'trace-off.spec.cjs', workers: 1, timeout: 10000, retries: 1, use: { trace: 'off' }, reporter: [['./reporter.cjs'], ['json', { outputFile: process.env.FLASHWRIGHT_TRACE_OFF_RESULTS }]], outputDir: process.env.FLASHWRIGHT_TRACE_OFF_OUTPUT };

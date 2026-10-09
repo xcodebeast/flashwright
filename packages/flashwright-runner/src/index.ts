@@ -6,6 +6,7 @@ import type { PlaywrightTestOptions, PlaywrightWorkerOptions, ExpectMatcherState
 import { matchers } from './matchers.js';
 import { screenshotPolicy } from './screenshot-policy.js';
 import { ScreenshotLifecycle } from './screenshot-recorder.js';
+import { discardDisabledRunnerTrace } from './runner-trace-off.js';
 
 // The pinned runner's transformed files need its map registry, even when Bun
 // exposes structured call sites independently of Error.prepareStackTrace.
@@ -33,15 +34,24 @@ export const expect = upstream.expect.extend({}).extend({
   toMatchAriaSnapshot: unsupportedMatcher('toMatchAriaSnapshot'),
 });
 
-type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _validateWorkerOptions: void; _screenshotLifecycle: ScreenshotLifecycle | undefined };
+type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _discardWorkerTraceEvents: void; _validateWorkerOptions: void; _screenshotLifecycle: ScreenshotLifecycle | undefined };
 type TestFixtures = Partial<Omit<PlaywrightTestOptions, 'contextOptions' | 'viewport' | 'actionTimeout' | 'navigationTimeout'>> & {
   page: Page; context: BrowserContext; contextOptions: BrowserContextOptions; viewport: ViewportSize | null;
   actionTimeout: number; navigationTimeout: number; _validateContextOptions: void;
-  _combinedContextOptions: BrowserContextOptions; _setupRunnerContextDefaults: void; _setupRunnerScreenshots: void;
+  _combinedContextOptions: BrowserContextOptions; _setupRunnerContextDefaults: void; _setupRunnerScreenshots: void; _discardTestTraceEvents: void;
 };
 
 /** The version-pinned root runner provides scheduling; every browser fixture below is ours. */
 export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
+  // These zero-dependency fixtures must precede options and other automatic fixtures.
+  _discardWorkerTraceEvents: [async ({}, use) => {
+    discardDisabledRunnerTrace();
+    await use();
+  }, { scope: 'worker', auto: true }],
+  _discardTestTraceEvents: [async ({}, use, testInfo) => {
+    discardDisabledRunnerTrace(testInfo);
+    await use();
+  }, { auto: 'all-hooks-included' as unknown as boolean }],
   defaultBrowserType: ['chromium', { scope: 'worker', option: true }],
   browserName: [async ({ defaultBrowserType }, use) => use(defaultBrowserType), { scope: 'worker', option: true }],
   headless: [async ({ launchOptions }, use) => use(launchOptions.headless ?? true), { scope: 'worker', option: true }],
