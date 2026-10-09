@@ -6,10 +6,13 @@
     "node_modules/playwright-core/lib/coreBundle.js": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
   },
   "implementation": {
+    "packages/flashwright-core/src/runner-trace-archives.ts": "e5715ec8c2a631925ea26a3b98f3f08b9de84d5ad68a48df314e084575dbbba3",
+    "tools/test-runner-trace-archives.mjs": "7cbe18998708615515103c8c380ae75acc484769a0a1774211f68d9121402348",
+    "tools/run-runner-trace-archive-tests.mjs": "66c561ec2ca3f1c1edbf9e01fb544af546e86a087285c2450469914457324761",
     "packages/flashwright-core/src/runner-actions.ts": "859ce02775a72cda54e7396e761c6fef1173a664c6ae0b05ef8bae09fc0adf97",
     "packages/flashwright-core/src/runner-lifecycle.ts": "85b3605a0fa43881d5ad6d62180a98a1fdcfec2f22faf0b238e47d367ea46609",
-    "packages/flashwright-core/src/runner-integration.ts": "f0b07a2bb180bb3818404dcd7417c01b46db3a4669db5ba3b82e35ed10929625",
-    "packages/flashwright-core/src/tracing.ts": "a9b90e741e359ac194cba0f5cd018691214fc908040759ad04e95bdba2a78503",
+    "packages/flashwright-core/src/runner-integration.ts": "18cfe4961d85458466b315e6d7bdb9e3d3cc6ff8296ffd9f0df8151dbfa59a64",
+    "packages/flashwright-core/src/tracing.ts": "2ebcfca7bb34c21e1694f5811ed81390fc2c749219a2682f87e024173ee05340",
     "packages/flashwright-core/src/trace-hooks.ts": "b2d6659b158d7b2c23fccdbac1e9a609671cd69948b9e35b5f62421749bc702e",
     "packages/flashwright-core/src/index.ts": "4107df9a42b5c311e05392b9f1f2b28661001ff31090fafc9c891b2aab27e2f2",
     "packages/flashwright-core/src/locator.ts": "e08f9a1869a9fa84819f467d33b6cd103dbc83d29fefdc7645e43785833d500e",
@@ -30,6 +33,7 @@
   "relationship": "Independent asynchronous host-context enrollment preserves invocation scope, publication, closure and cleanup ownership. A private version-2 action hook associates admitted library trace calls with the pinned runner step IDs. The pinned title/selector/group helpers are reused; expect-zone association follows the pinned listener and keeps matcher completion outside the core. The small title composition follows the retained renderTitle contract.",
   "scope": [
     "Controlled asynchronous enrollment and recursive lifecycle rejection; synchronous screenshots and the observer-free path remain available.",
+    "Version-3 exact-chunk handles transfer sealed archive custody after collector retirement. Stale handles cannot affect manual replacements; cancellation and unsettled cleanup retain late manifest disposal.",
     "Step identity, original completion ownership, safe parameter previews, mapped locations, internal delegation suppression and user callback reentry.",
     "Assertion records flatten safe predicate options and retain the pinned Expect failure when matches equals isNot, including standalone manual traces.",
     "Controlled actual pinned trace-loader/model alignment verifies merged step parents and clocks."

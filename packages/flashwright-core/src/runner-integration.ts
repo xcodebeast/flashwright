@@ -4,10 +4,15 @@ import { failure } from './errors.js';
 import { installRunnerContextLifecycle, installAsyncRunnerContextLifecycle, type RunnerContextLifecycle, type AsyncRunnerContextLifecycle, type RunnerContextLifecycleRegistration } from './runner-lifecycle.js';
 import { installRunnerContextDefaults, type RunnerContextDefaults } from './runner-context-defaults.js';
 import { installRunnerActionObserver, type RunnerActionObserver } from './runner-actions.js';
+import { currentRunnerTraceChunk, type RunnerTraceChunk } from './runner-trace-archives.js';
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 2,
+  version: 3,
+  currentTraceChunk(version: number, tracing: object): RunnerTraceChunk | undefined {
+    if (version !== 3) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return currentRunnerTraceChunk(tracing);
+  },
   installSourcePositionMapper(version: number, mapper: SourcePositionMapper): () => void {
     if (version !== 1) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return installSourcePositionMapper(mapper);

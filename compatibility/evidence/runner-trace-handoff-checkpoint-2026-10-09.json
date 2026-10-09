@@ -1,0 +1,54 @@
+{
+  "status": "passed-focused-development-follow-up",
+  "baseCommit": "5776b3d908a66eed438ccae91edc8397811ee1df",
+  "baseCoreCheckpoint": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+  "groups": 38,
+  "sourceFiles": 504,
+  "frozenFiles": 505,
+  "compiledCoreAndRunnerFiles": 260,
+  "cleanWatchdogs": 38,
+  "hostHandoffCasesPerRuntime": 11,
+  "browserConfigurations": 6,
+  "nativeZipCrcChecks": 18,
+  "packageTarballHashChecks": 6,
+  "hostRuntimes": [
+    "Bun 1.4.2",
+    "Node 22.22.0",
+    "Node 24.15.0"
+  ],
+  "browserBuilds": [
+    "Chromium 148.0.7778.96 headless shell",
+    "Chromium 148.0.7778.96 full Chrome"
+  ],
+  "driverSha256": "b1923b63d24ddd31e4d7760edc1814952c4ce85d01ba5d785f64849a35ddeb6d",
+  "reportSha256": "58a64c680fb35b9cfb61fd1a0149d43f414cbf8b81363b7409591f0606b8f6c4",
+  "sourceArchiveSha256": "81a98a5e8bb6fc2e3f47f24d7187640fbb8150941185f77426b0c2d1dedd00ff",
+  "rootAuditSha256": "3afddeaed1d66baad260535a6215e24f9d6a322004a616f0647505ceb1a6dc9e",
+  "independentDeadlineAuditSha256": "7079b6f1dd54197e4a62c1bc1385951e89b3c7789a1aef255a165afe83f3c508",
+  "scope": [
+    "Private version-3 integration captures a frozen handle to the exact current trace chunk. Reusing a stale handle rejects before changing a manual successor. Existing version-1 and version-2 integration methods retain their contracts.",
+    "Archive handoff waits for original collector retirement and transfers immutable stream/resource custody once. Cancellation, owner closure, preparation failure, a crossed final custody deadline or unsettled cleanup prevents transfer and retains late manifest disposal.",
+    "Real context enrollment, chunk reuse and early context closure preserve original activity. All eighteen retained archives export after browser closure with snapshots, screenshot filmstrips, sources and original network response resources; Python ZIP CRC and pinned loader checks pass.",
+    "Manual tracing, recording/resource/archive lifecycle, runner enrollment/step identity, packed private-boundary ESM/CommonJS types and runtime identities, paired manual runner traces and the existing tracing-off adapter pass the focused matrix."
+  ],
+  "retainedFinding": {
+    "preFixMatrixGroups": 38,
+    "preFixMatrixReportSha256": "659f30588273a5965f7887a862a351587ba9ad3dab629ce7e5fbfbf1919554fd",
+    "independentFindingAuditSha256": "ba03ce4ce9b6429d358e5fd3b1a5d1aff9cfa2e6af4d942f93416071a7863578",
+    "cause": "Archive preparation could finish before its deadline, but final cleanup could cross that deadline before runner custody transfer. The independent controlled-clock reproduction returned a readable archive after a 31-second advance.",
+    "correction": "Check the same monotonic deadline immediately before runner custody transfer, and retain disposal on failure. The permanent regression plus the independent rerun reject with TimeoutError and remove the original files; external cancellation preserves its original error."
+  },
+  "verification": [
+    "Build and TypeScript check; all 25 pinned provenance generators pass.",
+    "Eight focused host groups on each of three runtimes, including eleven exact-chunk handoff cases per runtime.",
+    "Six real-browser handoff groups across the same runtimes and both Chromium builds, three packed integration groups, manual-library and paired manual-runner regressions, and the actual tracing-off runner corpus.",
+    "Every final-matrix source, compiled module and driver hash remains unchanged through all 38 groups. Independent audit validates original logs, watchdogs, archive CRCs and package hashes."
+  ],
+  "limitations": [
+    "Automatic runner policies, aggregate per-test capture budgets and final multi-context runner archive assembly remain unfinished and unsupported.",
+    "This is a focused follow-up to the 126-group core checkpoint. The expanded 128-group full core was not rerun for this host-only boundary.",
+    "Pinned trace-loader validation is not a new viewer UI claim. No new native Linux, benchmark, broad parity or release claim."
+  ],
+  "independentMatrixAuditSha256": "437145c6aeed67fcd25ba1a2efd65851d8495f57c8502e9150b32b63667dd184",
+  "independentResourceHashChecks": 80
+}
