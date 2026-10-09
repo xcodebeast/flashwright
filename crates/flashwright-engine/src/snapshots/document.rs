@@ -646,19 +646,7 @@ impl DocumentWorker {
         let captured = match reply {
             SnapshotReply::Captured(captured) => captured,
             SnapshotReply::Exception(exception) => {
-                if exception.get().contains("SnapshotTargetDocumentChanged")
-                    || exception.get().contains("SnapshotFrameDocumentChanged")
-                {
-                    return Err(context_changed());
-                }
-                let code = if exception.get().contains("SnapshotResourceLimit:") {
-                    ErrorCode::ResourceLimit
-                } else if exception.get().contains("SnapshotUnsupported:") {
-                    ErrorCode::UnsupportedFeature
-                } else {
-                    ErrorCode::Evaluation
-                };
-                return Err(failure(code, "snapshot renderer rejected capture"));
+                return Err(SnapshotFailure::from_renderer_exception(&exception));
             }
         };
         if captured.token != request.options.token
@@ -824,7 +812,11 @@ impl DocumentWorker {
             self.check_request(request)?;
             match request.reservation.begin_evaluation() {
                 Ok(()) => return Ok(()),
-                Err(AdmissionError::DocumentBusy | AdmissionError::EvaluationLimit) => {}
+                Err(
+                    AdmissionError::DocumentBusy
+                    | AdmissionError::EvaluationLimit
+                    | AdmissionError::PayloadLimit,
+                ) => {}
                 Err(error) => return Err(admission(error)),
             }
             tokio::select! {

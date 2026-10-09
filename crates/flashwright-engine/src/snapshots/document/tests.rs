@@ -677,6 +677,61 @@ async fn releasing_an_evaluation_wakes_an_already_charged_capture_in_another_doc
 }
 
 #[tokio::test(start_paused = true)]
+async fn payload_pressure_waits_for_release_but_preserves_cancellation_and_the_original_deadline() {
+    for outcome in ["release", "cancel", "expire"] {
+        let budget = Arc::new(SnapshotBudget::default());
+        let documents: Vec<_> = ["first", "second"]
+            .into_iter()
+            .map(|identity| {
+                budget
+                    .reserve_document("context", "other-session", identity)
+                    .unwrap()
+            })
+            .collect();
+        let mut reservations: Vec<_> = documents
+            .iter()
+            .map(|document| {
+                let mut capture = document.reserve_capture().unwrap();
+                capture.begin_evaluation().unwrap();
+                capture.evaluation_finished();
+                capture
+            })
+            .collect();
+        let mut fixture = Fixture::with_budget(budget, "context");
+        let capturing = fixture.capture_with_budget(false, Duration::from_millis(20));
+        fixture.assert_no_command().await;
+        let expected = if outcome == "expire" {
+            advance(Duration::from_millis(25)).await;
+            ErrorCode::Timeout
+        } else {
+            if outcome == "release" {
+                reservations.pop();
+                fixture.command("Runtime.evaluate").await;
+                fixture.destruction.send_replace(true);
+            }
+            fixture.cancellation.send_replace(true);
+            ErrorCode::Cancelled
+        };
+        assert_eq!(
+            capturing
+                .await
+                .unwrap()
+                .err()
+                .unwrap()
+                .recording_error()
+                .code,
+            expected
+        );
+        timeout(Duration::from_secs(1), fixture.document.wait_finished())
+            .await
+            .unwrap();
+        drop(reservations);
+        drop(documents);
+        fixture.assert_no_command().await;
+    }
+}
+
+#[tokio::test(start_paused = true)]
 async fn close_during_discard_release_recovers_the_reply_before_releasing_the_factory() {
     let mut fixture = Fixture::new();
     let captured = fixture.capture(false);
@@ -718,162 +773,191 @@ async fn close_during_discard_release_recovers_the_reply_before_releasing_the_fa
 async fn accepted_snapshot_data_retains_native_credits_until_host_ingestion_acknowledgement() {
     use crate::recording::SnapshotPhase;
     use crate::snapshots::SnapshotMetadata;
-    let mut fixture = Fixture::new();
-    let (outgoing, _messages) = mpsc::channel(16);
-    let (fatal, _failure) = watch::channel(false);
-    let engine = crate::Engine::new(
-        None,
-        outgoing,
-        fatal,
-        flashwright_protocol::ResourceLimits::default(),
-    );
-    let context = Arc::new(crate::context_state::ContextState::default());
-    engine.registry.lock().unwrap().contexts.insert(
-        "context".into(),
-        crate::Context {
-            browser_identifier: "browser".into(),
-            protocol_identifier: "native-context".into(),
-            viewport: None,
-            devices: crate::devices::DeviceOptions::default(),
-            settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
-            state: context.clone(),
-            published: true,
-        },
-    );
-    let operation = crate::Operation::new(
-        "snapshot-probe".into(),
-        None,
-        fixture.cancellation.subscribe(),
-    );
-    let parameters = json!({"context":"context","recording":"recording","chunk":"chunk"});
-    let control = |method: &str, parameters: &Value| {
-        engine
-            .execute_control(method, parameters, &operation)
+    for fail_archive in [false, true] {
+        let mut fixture = Fixture::new();
+        let (outgoing, _messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = crate::Engine::new(
+            None,
+            outgoing,
+            fatal,
+            flashwright_protocol::ResourceLimits::default(),
+        );
+        let context = Arc::new(crate::context_state::ContextState::default());
+        engine.registry.lock().unwrap().contexts.insert(
+            "context".into(),
+            crate::Context {
+                browser_identifier: "browser".into(),
+                protocol_identifier: "native-context".into(),
+                viewport: None,
+                devices: crate::devices::DeviceOptions::default(),
+                settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                state: context.clone(),
+                published: true,
+            },
+        );
+        let operation = crate::Operation::new(
+            "snapshot-probe".into(),
+            None,
+            fixture.cancellation.subscribe(),
+        );
+        let parameters = json!({"context":"context","recording":"recording","chunk":"chunk"});
+        let control = |method: &str, parameters: &Value| {
+            engine
+                .execute_control(method, parameters, &operation)
+                .unwrap()
+        };
+        control(
+            "context.trace.recording.start",
+            &json!({"context":"context","recording":"recording"}),
+        )
+        .unwrap();
+        control("context.trace.chunk.start", &parameters).unwrap();
+        assert!(
+            context
+                .recording
+                .lock()
+                .unwrap()
+                .get_mut("recording")
+                .unwrap()
+                .admit_phase("chunk", "public-call", SnapshotPhase::Before)
+                .unwrap()
+        );
+        let capture = fixture.capture(false);
+        fixture.install().await;
+        fixture.captured(1).await;
+        let prepared = capture.await.unwrap().unwrap();
+        assert!(prepared.captured_at <= std::time::Instant::now());
+        let decision = context
+            .recording
+            .lock()
             .unwrap()
-    };
-    control(
-        "context.trace.recording.start",
-        &json!({"context":"context","recording":"recording"}),
-    )
-    .unwrap();
-    control("context.trace.chunk.start", &parameters).unwrap();
-    assert!(
+            .get_mut("recording")
+            .unwrap()
+            .accept_snapshot(
+                "chunk",
+                SnapshotMetadata {
+                    capture: "capture-token".into(),
+                    call: "public-call".into(),
+                    phase: SnapshotPhase::Before,
+                    page: "page".into(),
+                    frame: "frame".into(),
+                    is_main_frame: true,
+                    snapshot_number: 0,
+                    native_time: 0.0,
+                    byte_length: 0,
+                },
+                prepared,
+            )
+            .unwrap();
+        assert_eq!(
+            control("context.trace.snapshot.pull", &parameters).unwrap()["snapshots"],
+            json!([])
+        );
+        let mut identity = parameters.clone();
+        identity["capture"] = json!("capture-token");
+        assert!(
+            engine
+                .take_snapshot(identity.clone(), &operation)
+                .await
+                .is_err()
+        );
+        control("context.trace.chunk.seal", &parameters).unwrap();
+        let committed = tokio::spawn(decision.commit());
+        let command = fixture.command("Runtime.callFunctionOn").await;
+        fixture
+            .reply(
+                &command,
+                json!({"result":{"type":"object","value":{
+                    "snapshotNumber":1,"cache":{"bytes":0,"nodes":0,"attributes":0,"sheets":0},
+                }}}),
+            )
+            .await;
+        fixture.release("_decision_").await;
+        let result = committed.await.unwrap();
         context
             .recording
             .lock()
             .unwrap()
             .get_mut("recording")
             .unwrap()
-            .admit_phase("chunk", "public-call", SnapshotPhase::Before)
+            .snapshot_commit_finished("chunk", "capture-token", result)
+            .unwrap();
+        context
+            .recording
+            .lock()
             .unwrap()
-    );
-    let capture = fixture.capture(false);
-    fixture.install().await;
-    fixture.captured(1).await;
-    let prepared = capture.await.unwrap().unwrap();
-    assert!(prepared.captured_at <= std::time::Instant::now());
-    let decision = context
-        .recording
-        .lock()
-        .unwrap()
-        .get_mut("recording")
-        .unwrap()
-        .accept_snapshot(
-            "chunk",
-            SnapshotMetadata {
-                capture: "capture-token".into(),
-                call: "public-call".into(),
-                phase: SnapshotPhase::Before,
-                page: "page".into(),
-                frame: "frame".into(),
-                is_main_frame: true,
-                snapshot_number: 0,
-                native_time: 0.0,
-                byte_length: 0,
-            },
-            prepared,
-        )
-        .unwrap();
-    assert_eq!(
-        control("context.trace.snapshot.pull", &parameters).unwrap()["snapshots"],
-        json!([])
-    );
-    let mut identity = parameters.clone();
-    identity["capture"] = json!("capture-token");
-    assert!(
-        engine
+            .get_mut("recording")
+            .unwrap()
+            .settle_phase("chunk", "public-call", SnapshotPhase::Before)
+            .unwrap();
+        let metadata = control("context.trace.snapshot.pull", &parameters).unwrap();
+        assert_eq!(metadata["snapshots"].as_array().unwrap().len(), 1);
+        assert_eq!(metadata["snapshots"][0]["snapshotNumber"], 1);
+        assert_eq!(
+            control("context.trace.snapshot.pull", &parameters).unwrap()["snapshots"],
+            json!([])
+        );
+        let mut acknowledgement = identity.clone();
+        acknowledgement["success"] = json!(true);
+        assert!(control("context.trace.snapshot.ingested", &acknowledgement).is_err());
+        let payload = engine
             .take_snapshot(identity.clone(), &operation)
             .await
-            .is_err()
-    );
-    control("context.trace.chunk.seal", &parameters).unwrap();
-    let committed = tokio::spawn(decision.commit());
-    let command = fixture.command("Runtime.callFunctionOn").await;
-    fixture
-        .reply(
-            &command,
-            json!({"result":{"type":"object","value":{
-                "snapshotNumber":1,"cache":{"bytes":0,"nodes":0,"attributes":0,"sheets":0},
-            }}}),
-        )
-        .await;
-    fixture.release("_decision_").await;
-    let result = committed.await.unwrap();
-    context
-        .recording
-        .lock()
-        .unwrap()
-        .get_mut("recording")
-        .unwrap()
-        .snapshot_commit_finished("chunk", "capture-token", result)
-        .unwrap();
-    context
-        .recording
-        .lock()
-        .unwrap()
-        .get_mut("recording")
-        .unwrap()
-        .settle_phase("chunk", "public-call", SnapshotPhase::Before)
-        .unwrap();
-    let metadata = control("context.trace.snapshot.pull", &parameters).unwrap();
-    assert_eq!(metadata["snapshots"].as_array().unwrap().len(), 1);
-    assert_eq!(metadata["snapshots"][0]["snapshotNumber"], 1);
-    assert_eq!(
-        control("context.trace.snapshot.pull", &parameters).unwrap()["snapshots"],
-        json!([])
-    );
-    let mut acknowledgement = identity.clone();
-    acknowledgement["success"] = json!(true);
-    assert!(control("context.trace.snapshot.ingested", &acknowledgement).is_err());
-    let payload = engine
-        .take_snapshot(identity.clone(), &operation)
-        .await
-        .unwrap();
-    assert_eq!(
-        payload.decoded_length,
-        metadata["snapshots"][0]["byteLength"].as_u64().unwrap() as usize
-    );
-    assert!(engine.take_snapshot(identity, &operation).await.is_err());
-    fixture.finish().await;
-    assert!(matches!(
-        fixture
-            .budget
-            .reserve_document("context", "session", "main-original"),
-        Err(AdmissionError::DocumentAlreadyOwned)
-    ));
-    let stop = json!({"context":"context","recording":"recording"});
-    assert!(control("context.trace.recording.stop", &stop).is_err());
-    let immutable_host_data: Value = serde_json::from_slice(&payload.bytes).unwrap();
-    assert_eq!(immutable_host_data["html"][2], "retained");
-    control("context.trace.snapshot.ingested", &acknowledgement).unwrap();
-    assert!(control("context.trace.snapshot.ingested", &acknowledgement).is_err());
-    control("context.trace.recording.stop", &stop).unwrap();
-    drop(
-        fixture
-            .budget
-            .reserve_document("context", "session", "main-original")
-            .unwrap(),
-    );
+            .unwrap();
+        assert_eq!(
+            payload.decoded_length,
+            metadata["snapshots"][0]["byteLength"].as_u64().unwrap() as usize
+        );
+        assert!(engine.take_snapshot(identity, &operation).await.is_err());
+        fixture.finish().await;
+        assert!(matches!(
+            fixture
+                .budget
+                .reserve_document("context", "session", "main-original"),
+            Err(AdmissionError::DocumentAlreadyOwned)
+        ));
+        let stop = json!({"context":"context","recording":"recording"});
+        assert!(control("context.trace.recording.stop", &stop).is_err());
+        let immutable_host_data: Value = serde_json::from_slice(&payload.bytes).unwrap();
+        assert_eq!(immutable_host_data["html"][2], "retained");
+        if fail_archive {
+            control("context.trace.recording.fail", &json!({
+                "context":"context", "recording":"recording", "message":"controlled archive failure"
+            })).unwrap();
+        } else {
+            control("context.trace.snapshot.ingested", &acknowledgement).unwrap();
+        }
+        assert!(control("context.trace.snapshot.ingested", &acknowledgement).is_err());
+        assert_eq!(
+            control("context.trace.chunk.status", &parameters).unwrap()["snapshotPending"],
+            true
+        );
+        assert!(control("context.trace.recording.stop", &stop).is_err());
+        assert!(matches!(
+            fixture
+                .budget
+                .reserve_document("context", "session", "main-original"),
+            Err(AdmissionError::DocumentAlreadyOwned)
+        ));
+        drop(payload);
+        assert_eq!(
+            control("context.trace.chunk.status", &parameters).unwrap()["snapshotPending"],
+            false
+        );
+        let stopped = control("context.trace.recording.stop", &stop);
+        if fail_archive {
+            assert_eq!(stopped.unwrap_err().code, ErrorCode::Protocol);
+        } else {
+            stopped.unwrap();
+        }
+        drop(
+            fixture
+                .budget
+                .reserve_document("context", "session", "main-original")
+                .unwrap(),
+        );
+    }
 }
 
 #[tokio::test(start_paused = true)]

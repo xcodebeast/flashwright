@@ -15,7 +15,7 @@ const directory = resolve(process.argv[2]);
 const hash = value => createHash('sha256').update(value).digest('hex');
 const source = await readFile(new URL('../packages/resident-runtime/snapshot-runtime.js', import.meta.url), 'utf8');
 const cases = ['global-defined', 'global-undefined', 'failed-only', 'failed-and-defined', 'scoped-defined', 'scoped-undefined', 'scoped-mixed', 'scoped-two-definitions', 'customized-built-in', 'outside-body'];
-const report = { status: 'running', scope: 'helper serializer custom-element tests; native/public snapshots remain unsupported', sourceSha256: hash(source), captures: [], archives: [], viewer: [] };
+const report = { status: 'running', scope: 'helper serializer custom-element tests; public/native fidelity has separate acceptance', sourceSha256: hash(source), captures: [], archives: [], viewer: [] };
 await mkdir(directory);
 for (const [name, content] of [['snapshot-runtime.js', source], ['test-snapshot-custom-elements.mjs', await readFile(new URL(import.meta.url))]]) await writeFile(join(directory, name), content);
 let browser;

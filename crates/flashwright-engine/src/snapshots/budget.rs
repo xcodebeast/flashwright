@@ -148,6 +148,15 @@ pub(crate) struct PayloadReservation {
     bytes: usize,
 }
 
+impl std::fmt::Debug for PayloadReservation {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("PayloadReservation")
+            .field("bytes", &self.bytes)
+            .finish_non_exhaustive()
+    }
+}
+
 impl SnapshotBudget {
     pub(crate) fn changes(&self) -> watch::Receiver<()> {
         self.available.subscribe()
@@ -218,22 +227,16 @@ impl DocumentReservation {
         self.account.generation
     }
 
-    /// Charge queued work before waiting for its document and evaluation slot.
+    /// Bound queued intents before waiting; full reply bytes belong only to admitted evaluations.
     pub(super) fn reserve_capture(&self) -> Result<CaptureReservation, AdmissionError> {
         let mut usage = self.account.budget.usage.lock().unwrap();
         let context = &usage.contexts[&self.account.context];
-        if usage.payloads == MAXIMUM_PAYLOADS
-            || usage.payload_bytes + MAXIMUM_REPLY_BYTES > MAXIMUM_PAYLOAD_BYTES
-            || context.payloads == MAXIMUM_CONTEXT_PAYLOADS
-            || context.payload_bytes + MAXIMUM_REPLY_BYTES > MAXIMUM_CONTEXT_PAYLOAD_BYTES
-        {
+        if usage.payloads == MAXIMUM_PAYLOADS || context.payloads == MAXIMUM_CONTEXT_PAYLOADS {
             return Err(AdmissionError::PayloadLimit);
         }
         usage.payloads += 1;
-        usage.payload_bytes += MAXIMUM_REPLY_BYTES;
         let context = usage.contexts.get_mut(&self.account.context).unwrap();
         context.payloads += 1;
-        context.payload_bytes += MAXIMUM_REPLY_BYTES;
         Ok(CaptureReservation {
             account: self.account.clone(),
             evaluating: false,
@@ -241,7 +244,7 @@ impl DocumentReservation {
             owns_document_capture: false,
             payload: Some(PayloadReservation {
                 account: self.account.clone(),
-                bytes: MAXIMUM_REPLY_BYTES,
+                bytes: 0,
             }),
         })
     }
@@ -265,6 +268,19 @@ impl CaptureReservation {
         if usage.evaluations == MAXIMUM_EVALUATIONS {
             return Err(AdmissionError::EvaluationLimit);
         }
+        let context = &usage.contexts[&self.account.context];
+        if usage.payload_bytes + MAXIMUM_REPLY_BYTES > MAXIMUM_PAYLOAD_BYTES
+            || context.payload_bytes + MAXIMUM_REPLY_BYTES > MAXIMUM_CONTEXT_PAYLOAD_BYTES
+        {
+            return Err(AdmissionError::PayloadLimit);
+        }
+        usage.payload_bytes += MAXIMUM_REPLY_BYTES;
+        usage
+            .contexts
+            .get_mut(&self.account.context)
+            .unwrap()
+            .payload_bytes += MAXIMUM_REPLY_BYTES;
+        self.payload.as_mut().unwrap().bytes = MAXIMUM_REPLY_BYTES;
         usage.evaluations += 1;
         *busy = true;
         self.evaluating = true;
@@ -320,6 +336,8 @@ impl CaptureReservation {
             .unwrap()
             .payload_bytes -= released;
         payload.bytes = retained_bytes;
+        drop(usage);
+        self.account.budget.available.send_replace(());
         Ok(self.payload.take().unwrap())
     }
 }
@@ -340,6 +358,8 @@ impl Drop for PayloadReservation {
         let context = usage.contexts.get_mut(&self.account.context).unwrap();
         context.payloads -= 1;
         context.payload_bytes -= self.bytes;
+        drop(usage);
+        self.account.budget.available.send_replace(());
     }
 }
 
@@ -534,24 +554,64 @@ mod tests {
             capture.evaluation_finished();
             captures.push(capture);
         }
-        assert!(matches!(
-            documents[2].reserve_capture(),
+        let mut waiting_context = documents[2].reserve_capture().unwrap();
+        let mut waiting_engine = documents[5].reserve_capture().unwrap();
+        assert_eq!(
+            waiting_context.begin_evaluation(),
             Err(AdmissionError::PayloadLimit)
-        ));
-        assert!(matches!(
-            documents[5].reserve_capture(),
+        );
+        assert_eq!(
+            waiting_engine.begin_evaluation(),
             Err(AdmissionError::PayloadLimit)
-        ));
+        );
+        let changes = waiting_context.admission_changes();
         let reduced = captures[0].take_payload(0).unwrap();
-        let replacement = documents[2].reserve_capture().unwrap();
+        assert!(changes.has_changed().unwrap());
+        waiting_context.begin_evaluation().unwrap();
         assert_eq!(
             budget.usage.lock().unwrap().payload_bytes,
             MAXIMUM_PAYLOAD_BYTES
         );
-        drop(replacement);
+        drop(waiting_context);
+        drop(waiting_engine);
         drop(reduced);
         drop(captures);
         drop(documents);
+        empty(&budget);
+    }
+
+    #[test]
+    fn bounded_queued_intents_do_not_reserve_reply_bytes_before_evaluation() {
+        let budget = Arc::new(SnapshotBudget::default());
+        let document = document(&budget, "context").unwrap();
+        let mut queued: Vec<_> = (0..MAXIMUM_CONTEXT_PAYLOADS)
+            .map(|_| document.reserve_capture().unwrap())
+            .collect();
+        assert!(matches!(
+            document.reserve_capture(),
+            Err(AdmissionError::PayloadLimit)
+        ));
+        assert_eq!(budget.usage.lock().unwrap().payload_bytes, 0);
+        let mut retained = Vec::new();
+        for capture in &mut queued {
+            capture.begin_evaluation().unwrap();
+            assert_eq!(
+                budget.usage.lock().unwrap().payload_bytes,
+                MAXIMUM_REPLY_BYTES + retained.len() * 512
+            );
+            capture.evaluation_finished();
+            retained.push(capture.take_payload(512).unwrap());
+            capture.transaction_finished().unwrap();
+        }
+        let changes = queued[0].admission_changes();
+        retained.pop();
+        assert!(
+            changes.has_changed().unwrap(),
+            "released ingestion bytes must wake waiting captures"
+        );
+        drop(queued);
+        drop(retained);
+        drop(document);
         empty(&budget);
     }
 

@@ -7,6 +7,7 @@ use crate::recording::SnapshotPhase;
 use flashwright_protocol::{BinaryPayload, ErrorCode, ErrorRecord};
 use serde::Serialize;
 use std::collections::BTreeMap;
+use std::sync::{Arc, Weak};
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,7 +26,7 @@ pub(crate) struct SnapshotMetadata {
 struct StoredSnapshot {
     metadata: SnapshotMetadata,
     payload: Option<BinaryPayload>,
-    _payload_reservation: PayloadReservation,
+    payload_reservation: Arc<PayloadReservation>,
     committed: bool,
     announced: bool,
 }
@@ -35,6 +36,7 @@ pub(crate) struct SnapshotArchive {
     entries: BTreeMap<u64, StoredSnapshot>,
     next_sequence: u64,
     failure: Option<ErrorRecord>,
+    transfers: Vec<Weak<PayloadReservation>>,
 }
 
 fn protocol(message: &str) -> ErrorRecord {
@@ -52,7 +54,7 @@ impl SnapshotArchive {
     }
 
     pub(crate) fn is_empty(&self) -> bool {
-        self.entries.is_empty()
+        self.entries.is_empty() && self.transfers.iter().all(|owner| owner.strong_count() == 0)
     }
 
     fn check(&self) -> Result<(), ErrorRecord> {
@@ -115,7 +117,7 @@ impl SnapshotArchive {
             StoredSnapshot {
                 metadata,
                 payload: Some(prepared.captured.data),
-                _payload_reservation: prepared.reservation,
+                payload_reservation: Arc::new(prepared.reservation),
                 committed: false,
                 announced: false,
             },
@@ -163,7 +165,10 @@ impl SnapshotArchive {
         Ok(metadata)
     }
 
-    pub(crate) fn take(&mut self, capture: &str) -> Result<BinaryPayload, ErrorRecord> {
+    pub(crate) fn take(
+        &mut self,
+        capture: &str,
+    ) -> Result<(BinaryPayload, Arc<PayloadReservation>), ErrorRecord> {
         self.check()?;
         let entry = self
             .entries
@@ -178,13 +183,18 @@ impl SnapshotArchive {
         if !entry.committed || !entry.announced {
             return Err(protocol("snapshot DATA was not announced after commit"));
         }
-        entry
+        let payload = entry
             .payload
             .take()
-            .ok_or_else(|| protocol("snapshot DATA was already transferred"))
+            .ok_or_else(|| protocol("snapshot DATA was already transferred"))?;
+        // Failure can clear archive entries while a terminal transport write still owns DATA.
+        self.transfers.retain(|owner| owner.strong_count() != 0);
+        self.transfers
+            .push(Arc::downgrade(&entry.payload_reservation));
+        Ok((payload, entry.payload_reservation.clone()))
     }
 
-    /// The native charge survives take; only immutable ingestion, failure or teardown ends custody.
+    /// Ingestion releases archive custody; an active binary transfer retains its independent share.
     pub(crate) fn ingested(&mut self, capture: &str) -> Result<(), ErrorRecord> {
         self.check()?;
         let (sequence, entry) = self

@@ -12,7 +12,7 @@ const sourcePath = resolve(process.argv[2]);
 const source = JSON.parse(await readFile(sourcePath, 'utf8'));
 assert.equal(source.status, 'passed');
 const output = resolve(process.argv[3]); await mkdir(output);
-const report = { status: 'running', source: sourcePath, sourceSha256: hash(await readFile(sourcePath)), scope: 'Actual pinned offline DOM/form/frame viewer; external CSS replay is blocked pending canonical network resources', browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH), checks: [] };
+const report = { status: 'running', source: sourcePath, sourceSha256: hash(await readFile(sourcePath)), scope: 'Actual pinned offline DOM/form/frame viewer; this corpus loads resources before recording and does not claim their replay', browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH), checks: [] };
 const viewer = await server.startTraceViewerServer({ host: '127.0.0.1', allowedFileRoots: [dirname(sourcePath)] });
 const prefix = viewer.urlPrefix('precise');
 let browser;

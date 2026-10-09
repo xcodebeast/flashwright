@@ -80,7 +80,7 @@ const provenance = {
     'Native workers retain original document, session, call, phase and allocation identities across cancellation and late replies. An archive owns immutable DATA before browser-cache commit; transfer credits survive until host ingestion acknowledgement.',
     'Stream frozen snapshot JSON through bounded UTF-8 encoding buffers; use SHA-256 resource aliases accepted by the viewer instead of the reference SHA-1 digest implementation.',
     'Sample a separate signed native recording clock and map timestamps with retained uncertainty. The common recording/chunk owner seals snapshot admission independently of unfinished public calls.',
-    'The implementation is a deliberately limited private foundation: public snapshots remain unsupported. Out-of-process frames, unsupported custom-element states, external network resource replay and complete tracing parity are not established by this provenance record.',
+    'Public manual snapshots use this bounded foundation and the separately recorded native network collector. Out-of-process frames and unsupported custom-element states fail export explicitly. Runtime, packed-consumer and offline-viewer acceptance remain separate from source provenance.',
   ],
   license: 'Apache-2.0', licensePath, noticePath,
   licenseSha256: hash(await readFile(licensePath)), noticeSha256: hash(await readFile(noticePath)),

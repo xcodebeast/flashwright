@@ -17,7 +17,7 @@ await mkdir(output);
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const report = {
   status: 'running', implementation,
-  scope: 'Parent and child frames load the same resource URL but retain distinct CSSOM overrides and frame-specific HAR references. Original HTTP server stops before pinned viewer replay. Candidate uses private snapshots.',
+  scope: 'Public manual snapshots: parent and child frames load the same resource URL but retain distinct CSSOM overrides and frame-specific HAR references. Original HTTP server stops before pinned viewer replay.',
   browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH),
   toolSha256: hash(await readFile(new URL(import.meta.url))),
   pinnedDistributionSha256: hash(await readFile('node_modules/playwright-core/lib/coreBundle.js')),
@@ -58,8 +58,7 @@ function pageState() {
 }
 async function startRecording(tracing, screenshots) {
   const options = { snapshots: true, screenshots, sources: false };
-  if (implementation === 'playwright') await tracing.start(options);
-  else await tracing.control(() => tracing.startRecording(options));
+  await tracing.start(options);
 }
 async function inspectArchive(item) {
   const archive = new utils.ZipFile(item.path);

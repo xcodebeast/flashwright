@@ -215,7 +215,7 @@
       "safe disposal after console.clear invalidates console objects"
     ],
     "tracing": [
-      "Manual library tracing defaults screenshots/snapshots/sources to false. sources:true embeds referenced mapped caller files; screenshots:true records bounded native JPEG filmstrips. snapshots:true remains unsupported.",
+      "Manual library tracing defaults screenshots/snapshots/sources to false. sources:true embeds referenced mapped caller files; screenshots:true records bounded native JPEG filmstrips; snapshots:true records supported DOM/forms/shadow/same-process frames and original network resources.",
       "bounded previews never invoke application accessors/proxies/custom serialization and never replace original operation outcomes",
       "unfinished calls remain unfinished; chunk admission and late completions are isolated",
       "trace-only diagnostics own a separate bounded native queue and never allocate public console handles",
@@ -227,7 +227,9 @@
       "actual pinned viewer displays embedded TypeScript ESM/CommonJS caller source and highlighted line without workstation-source fallback",
       "Existing and newly published public pages record JPEG frames with pinned screencast sizing, metadata, activity windows and acknowledgement throttling.",
       "Filmstrips compose with source embedding, file chooser uploads and automatic runner screenshots in packed ESM/CommonJS consumers.",
-      "Actual pinned viewer opens all shared shell/full-Chrome corpus archives and decodes every retained thumbnail; timed frame sampling is not required to be identical."
+      "Actual pinned viewer opens all shared shell/full-Chrome corpus archives and decodes every retained thumbnail; timed frame sampling is not required to be identical.",
+      "Public snapshot export fails explicitly for out-of-process frames, unsupported custom-element states or resource limits while preserving ordinary action outcomes and any prior destination.",
+      "Public snapshot phases, original-server-off replay and packed aliased combined-artifact consumers pass the focused macOS/Bun checkpoint; controlled cleanup also passes Node22/24."
     ],
     "fileInputs": [
       "Page, Frame, Locator and ElementHandle.setInputFiles accept individual local files, in-memory FilePayloads and clearing with an empty list.",
@@ -301,7 +303,7 @@
     "historyNavigation": "A1024-entry main-frame navigation journal retains outcomes before CDP acknowledgments; reload excludes same-document events, and cancelled operations never replay actions.",
     "navigationWaiters": "Private navigation metadata precedes public callbacks and initializes each page allocation watermark. Synchronous driver acceptance validates the captured host sequence; bounded native journal selection and completion retain the original navigation. Finite and unbounded requests share readiness stages to preserve invocation order. Native URLPattern is available only when the runtime supplies it; waitForResponse retains its narrower matcher forms.",
     "runnerScreenshots": "Canonical weak public-browser registry and versioned context lifecycle observe each public context once, including module-created contexts. Screenshot off installs no artifact observer and sends no extra native commands. Capture batches include queue time in their five-second deadline, with four concurrent pages,1024 attempts and512MiB retained image bytes per test scope. Per-test deduplication and final outcome decide early-close retention. Bounded screenshot-error attachments preserve originating test outcomes. Trace/video remain explicitly unsupported.",
-    "manualTracing": "Public method inventory and internal-call suppression, bounded independent native diagnostic queue, native filmstrip capture owners, host pull fences and streaming ZIP writer. Manual actions, source embedding and filmstrips are integrated; DOM/network snapshots and automatic runner policy remain separate.",
+    "manualTracing": "Public method inventory and internal-call suppression, bounded native diagnostics, filmstrip and snapshot capture, original network-resource recording, host pull fences and streaming ZIP writer. Sources, snapshots/network replay and filmstrips compose through one recording and immutable chunk/resource ownership. Automatic runner tracing policy remains separate.",
     "capturedElementActions": "Native locator capture and element action share one deadline and private object group. Captured and borrowed nodes never rebind to replacements. Borrowed handles use a temporary utility alias while retaining original main-world ownership. Read-only retries release the per-page input lock; uncertain selection/scroll delivery is never replayed. Explicit cancellation removes pending fresh-frame callbacks before bounded recovery. Private actions succeed with all4096 public handle slots occupied, and blocked callback cleanup preserves sibling pages.",
     "selectorNavigationPrecheck": "Selector-handle waits and initial locator capture honor an already-pending navigation before selecting a node. A held-navigation differential proves that an old-document match cannot bypass the shared deadline.",
     "traceResources": "A recording owns immutable SHA256 blobs; chunks own fixed archive aliases and leases. Source aliases hash original mapped paths with SHA1, while equal bytes deduplicate physically. Nonblocking source opens verify regular files and detect observed mutation. In-flight reservations, concurrent publication, disposal/leases and late cleanup are bounded; precommit cancellation preserves the prior destination and dispatched rename remains definitive.",
@@ -420,7 +422,8 @@
       "responseStatusReport": ".cache/response-status-focused-002/report.json",
       "responseStatusReportSha256": "b74b4793fcd1e84ceba64a0f0a067932021642384489b3c6f4296475ef491a91"
     },
-    "traceNetwork": "Private native canonical occurrence journal, retained exact-session body jobs and bounded original resources feed the pure pinned HAR converter and sealed trace.network exports. The common recording clock, immutable resource leases and shared writer limits compose network replay with DOM snapshots, filmstrips and sources."
+    "traceNetwork": "Native canonical occurrence journal, retained exact-session body jobs and bounded original resources feed the pure pinned HAR converter and sealed trace.network exports. The common recording clock, immutable resource leases and shared writer limits compose network replay with DOM snapshots, filmstrips and sources.",
+    "traceSnapshots": "Bounded queued capture intents acquire full reply bytes only at evaluation admission, preserving original deadlines and ownership through pressure/cancellation. Immutable host data precedes browser-cache commit. Archive and binary transport share byte reservations; weak transfer tracking keeps retirement pending after archive failure until terminal acknowledgement. Content failures prevent export without poisoning confirmed cleanup."
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -592,7 +595,9 @@
     "tools/run-native-network-trace-tests.mjs",
     "tools/run-snapshot-resource-tests.mjs",
     "tools/test-trace-network-entry.mjs",
-    "tools/test-trace-network.mjs"
+    "tools/test-trace-network.mjs",
+    "crates/flashwright-engine/src/snapshots/budget.rs",
+    "crates/flashwright-engine/src/snapshots/outcome.rs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
@@ -600,7 +605,7 @@
     "Value coverage is a tested development subset, not full differential conformance with every Playwright evaluation case",
     "Emulated Linux functional evidence does not satisfy native Linux performance gates",
     "Navigation/network support is a tested development subset. Native URLPattern is recognized only where the JavaScript runtime provides it; raw request/response headers now cover tested redirects, cache, failures, Cookie and repeated Set-Cookie. Broader authentication/header/cookie variants, routing, API requests and service-worker semantics require further conformance. Uncached raw-header reads require the original live page and bounded native history; expiry reports ResourceLimitError.",
-    "Screenshot masks, element capture and screenshot assertions remain unimplemented. Runner screenshot policies and manual action traces are verified, but automatic runner tracing, DOM/network snapshots and video remain unsupported; manual source embedding is verified on macOS/Bun. Persistent Page.keyboard down/up, direct insertText and broader keyboard APIs remain unimplemented.",
+    "Screenshot masks, element capture and screenshot assertions remain unimplemented. Runner screenshot policies and manual action traces are verified, but automatic runner tracing and video remain unsupported; manual snapshots have their own bounded acceptance, and manual source embedding is verified on macOS/Bun. Persistent Page.keyboard down/up, direct insertText and broader keyboard APIs remain unimplemented.",
     "Cross-process child-frame routing explicitly rejects; FrameLocator, cross-context ElementHandle adoption and broader frame/navigation conformance remain unfinished",
     "Native text input containing unpaired UTF-16 surrogates rejects explicitly; selector and read strings preserve those units",
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
@@ -621,8 +626,9 @@
     "Trace source/resource browser and filesystem checks currently cover macOS arm64/Bun1.4.2. Node22/24 caller mapping is separately verified, but this does not establish source-feature runtime/platform release coverage. Source-enabled archives include referenced framework frames and charge repeated aliases; old artifact-off timings do not measure their cost.",
     "File uploads and chooser lifecycle pass native macOS shell/full-Chrome checks and focused Node22/24 consumers. Directory uploads, webkitdirectory and out-of-process chooser frames remain unsupported. Admission is limited to 4096 files, 1 MiB UTF-16 metadata and 32 MiB in-memory bytes; the latter is narrower than the reference 50 MiB cap. S4.m and S4.n separately record invalid-input rejection and cancellation of unpublished chooser adoption. These differences are not equal-result performance evidence.",
     "Integrated manual filmstrip/source/upload/screenshot packed consumers pass on macOS/Bun and focused Node22/24. Browser corpus and actual viewer checks cover headless shell and full Chrome on this host. Native Linux, full automatic traces, timing under these artifacts and release package-manager coverage remain open.",
-    "The private DOM snapshot foundation passes99 integrated macOS/Bun core groups and a29-group focused foundation batch with Node22/24 hosts and actual pinned offline viewer on shell/full Chrome. Public snapshots:true still rejects. This earlier checkpoint did not establish external resources, out-of-process frames, broader custom-element states or automatic runner tracing; see compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json.",
-    "Private network recording and original-server-off resource replay pass104 fresh core groups and 12 same-driver focused groups, including 16 actual offline-viewer cases on shell/full Chrome. Public snapshots remain rejected pending public API/packed acceptance. See compatibility/evidence/network-recording-checkpoint-2026-10-09.json."
+    "The private DOM snapshot foundation passes99 integrated macOS/Bun core groups and a29-group focused foundation batch with Node22/24 hosts and actual pinned offline viewer on shell/full Chrome. Public snapshots:true was still rejected at that earlier checkpoint. This earlier checkpoint did not establish external resources, out-of-process frames, broader custom-element states or automatic runner tracing; see compatibility/evidence/snapshot-foundation-checkpoint-2026-10-09.json.",
+    "Private network recording and original-server-off resource replay pass104 fresh core groups and 12 same-driver focused groups, including 16 actual offline-viewer cases on shell/full Chrome. This earlier private checkpoint did not establish public API/packed acceptance. See compatibility/evidence/network-recording-checkpoint-2026-10-09.json.",
+    "Public manual snapshots now pass 21 focused groups after the 104-group private core, including 12 actual offline-viewer cases, four packed combined-artifact consumers and controlled lifecycle checks on Bun/Node22/24. Out-of-process snapshot frames and unsupported custom-element states fail export explicitly. See compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json."
   ],
   "verifiedCheckpoint": {
     "status": "experimental native macOS development checkpoint; not release support",
@@ -634,9 +640,18 @@
       "version": "1.4.2"
     },
     "driverSha256": "af90de1a224e0fadacea13dbab9859ccb0f23747e8038d501d72bd8375260cf0",
-    "scope": "All 104 development core groups ran fresh on 451 unchanged inputs. Private network recording and immutable resource replay compose with the snapshot foundation; twelve same-driver focused groups include sixteen actual pinned offline-viewer cases on shell/full Chrome and controlled Node22/24 hosts. Public snapshots, automatic runner tracing, API requests, broader migration, Linux and release/performance gates remain open.",
+    "scope": "All 104 development core groups ran fresh on 451 unchanged inputs. Private network recording and immutable resource replay compose with the snapshot foundation; twelve same-driver focused groups include sixteen actual pinned offline-viewer cases on shell/full Chrome and controlled Node22/24 hosts. The publicSnapshotFollowUp separately accepts public manual snapshots. Automatic runner tracing, API requests, broader migration, Linux and release/performance gates remain open.",
     "reportSha256": "779acbba1e343815178e36e7c2a15f6a62ea4232e92fa3799a38595a4e625c5e",
-    "normalizedEvidence": "compatibility/evidence/network-recording-checkpoint-2026-10-09.json"
+    "normalizedEvidence": "compatibility/evidence/network-recording-checkpoint-2026-10-09.json",
+    "publicSnapshotFollowUp": {
+      "groups": 21,
+      "sourceEntries": 451,
+      "driverSha256": "0348958634b4a3994d6501a1a11a9853cad728f4686b2e7e7cdee0a7c56945a4",
+      "reportSha256": "832608ea5183e8d24227b27fb7ed90a8c8ab3e8a8d37b0382b2c940c8df6e604",
+      "sourceArchiveSha256": "a0f87f7bc08c293a721c5370d73bac722e4418ade9690d306cbda3c68e3f6b2d",
+      "scope": "Public manual snapshots, original network resource replay, combined packed artifacts and failure/transfer custody. A focused follow-up, not a rerun of the full core.",
+      "normalizedEvidence": "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json"
+    }
   },
   "migrationDiagnostics": [
     {

@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test('manual filmstrip composes with sources and runner screenshots', async ({ context, page }, testInfo) => {
-  await context.tracing.start({ screenshots: true, snapshots: false, sources: true });
+test('manual snapshots compose with filmstrip, sources and runner screenshots', async ({ context, page }, testInfo) => {
+  await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
+  await page.goto(process.env.FLASHWRIGHT_FILMSTRIP_ORIGIN!);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#network-style')!).color)).toBe('rgb(20, 40, 60)');
   const result = await page.evaluate(async () => {
     document.body.style.cssText = 'margin:0;width:100vw;height:100vh;background:rgb(240,0,0)';
     for (let index = 0; index < 4; index++) {
