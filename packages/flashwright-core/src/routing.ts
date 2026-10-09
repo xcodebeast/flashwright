@@ -7,6 +7,7 @@ import type { Request, Header } from './network.js';
 import type { Disposable } from './init-scripts.js';
 import { failure } from './errors.js';
 import { fileMimeType } from './file-mime-types.js';
+import { responseStatusText } from './response-status-text.js';
 import { runTraceUserCallback, instrumentTraceMethods, tracePageOwner } from './trace-hooks.js';
 import { validateOptions } from './validation.js';
 import { matchesURL, validateURLMatcher, type URLMatcher } from './waits.js';
@@ -148,7 +149,7 @@ export class Route {
     const entries = Object.entries(headers).flatMap(([name, value]) => name === 'set-cookie' ? value.split('\n').flatMap(value => headerEntries({ [name]: value }, 'route.fulfill')) : headerEntries({ [name]: value }, 'route.fulfill'));
     if (entries.length > 4096 || entries.reduce((bytes, entry) => bytes + (entry.name.length + entry.value.length) * 2, 0) > maximumMetadataBytes) throw failure('ResourceLimitError', 'route.fulfill', 'response headers exceed the supported allowance');
     this.checkHandling('fulfill');
-    await this.finish('fulfill', handling, { parameters: { status, headers: entries }, body });
+    await this.finish('fulfill', handling, { parameters: { status, statusText: responseStatusText(status), headers: entries }, body });
   }
   async fetch(): Promise<never> { throw failure('UnsupportedFeatureError', 'route.fetch', 'APIRequestContext-backed route fetching is not implemented'); }
   private continueParameters(): { parameters: Record<string, unknown>; body?: Buffer } {

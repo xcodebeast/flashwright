@@ -151,7 +151,7 @@ export class Response {
   request(): Request { return this.requestValue; }
   fromServiceWorker(): boolean { return this.metadata.fromServiceWorker ?? false; }
   async body(): Promise<Buffer> {
-    if (this.status() >= 300 && this.status() < 400 && this.headers().location) throw failure('ProtocolError', 'response.body', 'response body is unavailable for redirect responses');
+    if (this.status() >= 300 && this.status() < 400) throw new Error('body: Response body is unavailable for redirect responses');
     return this.client.requestBinary('response.body', { page: this.pageIdentifier, request: this.metadata.identifier, requestIdentity: this.metadata.request.identity });
   }
   async text(): Promise<string> { return (await this.body()).toString('utf8'); }
