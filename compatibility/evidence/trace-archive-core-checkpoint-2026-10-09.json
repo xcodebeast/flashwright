@@ -1,0 +1,65 @@
+{
+  "status": "passed-development-core-checkpoint",
+  "sourceCommit": "16d1deb70c8840aeecf5d2943271917423e30c29",
+  "groups": 113,
+  "sourceFiles": 464,
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "platform": "darwin",
+  "architecture": "arm64",
+  "browser": {
+    "version": "148.0.7778.96",
+    "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+    "distribution": "chromium-headless-shell"
+  },
+  "driverSha256": "5cb56d8d94641860d295a076c51675c7c403b032d88a8469cb3a61ba47b5ee04",
+  "coreReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T16-31-07.458Z/report.json",
+  "coreReportSha256": "f72b67e2111066ff7f51a4ab53fb869beaec7070b348452af33fd13737c0525c",
+  "sourceArchiveSha256": "b0a7a5077231a6a2d865cfa26e11c849138f18cdfbdcda746988b60e68254b3e",
+  "auditSha256": "4cbb0090e06ed9aecdcb90824831cea78af380bd8a4a4cbf111538202df1de69",
+  "receiptSha256": "d426a00c3aa526509d896f9b19612ab7d538530a5921af1c4751cc5ed08a8a1e",
+  "outerWatchdogSha256": "38a0f6f42f393565a9342305053fc84ed617ce6925a8e50634e614b0e2dfacf5",
+  "cleanProcessOwnership": true,
+  "allLogsAndInputHashesVerified": true,
+  "scope": [
+    "All113 development core groups pass fresh on unchanged sources and browser, including common locator matchers, public manual DOM/network snapshots and sealed archive custody.",
+    "Packed library/runner/alias consumers and the three preserved TodoMVC bodies pass in the same run.",
+    "The separate archive foundation checkpoint retains21 focused groups across Bun/Node22/Node24 and shell/full-Chrome artifacts. This full run uses macOS arm64 Bun and headless shell."
+  ],
+  "focusedFoundation": "compatibility/evidence/trace-archive-checkpoint-2026-10-09.json",
+  "retainedFailures": [
+    {
+      "correction": "routing-close",
+      "checkpoint": "compatibility/evidence/routing-close-checkpoint-2026-10-09.json",
+      "retainedFailure": {
+        "coreReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T16-03-11.607Z/report.json",
+        "coreReportSha256": "f52e112868da1838519f38d9f055f70b39d0187caa19446a1265b83e1ff1233c",
+        "passedGroups": 76,
+        "expectedGroups": 113,
+        "failedGroup": 77,
+        "failure": "Pinned Playwright routing-lifecycle closedCallback observed one original HTTP request; fixture assumed zero. Candidate lifecycle did not run.",
+        "sourcesUnchanged": true,
+        "browserUnchanged": true
+      }
+    },
+    {
+      "correction": "unsupported-matcher-fixture",
+      "checkpoint": "compatibility/evidence/native-runner-fixture-checkpoint-2026-10-09.json",
+      "retainedFailure": {
+        "coreReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T16-23-44.041Z/report.json",
+        "coreReportSha256": "23c97a88b01f63a4d40dc7ad51165c9b045f1ac08efe0bd3788ec93409cbc65a",
+        "nestedReportSha256": "d2fdc2115cb9505d697297f789e8d6640ba5763dcd79ef769a9d0cc509fa30de",
+        "passedGroups": 85,
+        "cause": "Native runner fixture still expected implemented toHaveClass to reject as UnsupportedFeatureError. The matcher instead timed out against a mismatching class. Expected timeout and retry behavior retained their intended outcomes.",
+        "watchdogSha256": "85929626e23ab6ce1dc23c4e89d018278682b178f71bd28c5c687bc5569c7836"
+      }
+    }
+  ],
+  "limitations": [
+    "Automatic runner trace policies, dialog implementation, API request fixtures and remaining practical replacement coverage stay open.",
+    "The full run includes its real pinned manual-viewer checks. Prior public snapshot and network checkpoints retain the broader DOM/network replay matrices on both browser distributions.",
+    "Native Linux, complete original-policy migration, broader package-manager coverage and release/performance gates remain open. No new speed claim."
+  ]
+}
