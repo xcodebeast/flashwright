@@ -550,6 +550,150 @@ try {
     }
     assert.equal(fixture.requests.length, 0); await fixture.browser.close();
   });
+  await check('unclaimed native and storage work publish without a retroactive attempt claim', async () => {
+    for (const phase of ['native', 'storage']) {
+      const reply = deferred();
+      const fixture = browserFixture(method => phase === 'native' && method === 'browser.newContext' ? reply.promise : undefined);
+      const originalRead = filesystem.readFile;
+      if (phase === 'storage') filesystem.readFile = async (path, ...arguments_) => path === 'unclaimed-state.json' ? reply.promise : originalRead(path, ...arguments_);
+      const creation = fixture.browser.newContext(phase === 'storage' ? { storageState: 'unclaimed-state.json' } : {});
+      let claims = 0; let closes = 0; const unclaimed = [];
+      const registration = runnerIntegration.installArtifactContextLifecycle(9, {
+        beginContextCreation() { claims++; return { async didCreateContext() {}, complete() {} }; },
+        didCreateUnclaimedContext(context) { unclaimed.push(context); },
+        async willCloseContext() { closes++; },
+      });
+      try {
+        await registration.ready;
+        reply.resolve('{"cookies":[],"origins":[]}');
+        const context = await creation;
+        await didCreateRunnerContext(context);
+        assert.deepEqual(unclaimed, [context]);
+        assert.equal(claims, 0, 'publication and repeated observation cannot fabricate an attempt');
+        await context.close(); assert.equal(closes, 1);
+        assert.deepEqual(fixture.requests.map(request => request.method), ['browser.newContext', 'context.close']);
+      } finally { reply.resolve('{"cookies":[],"origins":[]}'); filesystem.readFile = originalRead; await registration.dispose(); await fixture.browser.close(); }
+    }
+  });
+
+  await check('a retiring artifact observer ignores unclaimed publication while draining its real claim', async () => {
+    const firstReply = deferred(); const secondReply = deferred(); let creations = 0;
+    const fixture = browserFixture(method => method === 'browser.newContext' ? (++creations === 1 ? firstReply.promise : secondReply.promise) : undefined);
+    const unclaimedCreation = fixture.browser.newContext();
+    let claims = 0; let notifications = 0;
+    const registration = runnerIntegration.installArtifactContextLifecycle(9, {
+      beginContextCreation() { claims++; return { async didCreateContext() {}, complete() {} }; },
+      didCreateUnclaimedContext() { notifications++; },
+      async willCloseContext() { throw Error('unadmitted context must not reach retiring callbacks'); },
+    });
+    try {
+      await registration.ready;
+      const rejected = assert.rejects(fixture.browser.newContext(), /observer is retiring/);
+      let disposed = false; const disposal = registration.dispose().then(() => { disposed = true; });
+      firstReply.resolve(); const context = await unclaimedCreation;
+      assert.equal(disposed, false); assert.equal(notifications, 0); assert.equal(claims, 1);
+      assert.ok(fixture.browser.contexts().includes(context));
+      secondReply.resolve(); await Promise.all([rejected, disposal]);
+      await context.close();
+    } finally { firstReply.resolve(); secondReply.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('unclaimed publication survives complete observer retirement and future explicit adoption', async () => {
+    const reply = deferred(); const fixture = browserFixture(method => method === 'browser.newContext' ? reply.promise : undefined);
+    const creation = fixture.browser.newContext(); let claims = 0; let notifications = 0;
+    const observer = {
+      beginContextCreation() { claims++; return { async didCreateContext() {}, complete() {} }; },
+      didCreateUnclaimedContext() { notifications++; }, async willCloseContext() {},
+    };
+    const registration = runnerIntegration.installArtifactContextLifecycle(9, observer);
+    try {
+      await registration.ready; await registration.dispose(); reply.resolve();
+      const context = await creation; assert.equal(claims, 0); assert.equal(notifications, 0);
+      const successor = runnerIntegration.installArtifactContextLifecycle(9, observer);
+      await successor.ready; assert.equal(claims, 1, 'a later boundary explicitly adopts a settled context');
+      await context.close(); await successor.dispose();
+    } finally { reply.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('a retired observed creation cannot masquerade as an unclaimed successor context', async () => {
+    const reply = deferred(); const fixture = browserFixture(method => method === 'browser.newContext' ? reply.promise : undefined);
+    const previous = runnerIntegration.installAsyncContextLifecycle(2, { async didCreateContext() {}, async willCloseContext() {} });
+    await previous.ready;
+    const rejected = assert.rejects(fixture.browser.newContext(), /scope changed/);
+    await previous.dispose(); let notifications = 0;
+    const successor = runnerIntegration.installArtifactContextLifecycle(9, {
+      beginContextCreation() { throw Error('late old creation cannot receive a successor claim'); },
+      didCreateUnclaimedContext() { notifications++; }, async willCloseContext() { throw Error('late old creation cannot receive successor cleanup'); },
+    });
+    try {
+      await successor.ready; reply.resolve(); await rejected;
+      assert.equal(notifications, 0); assert.equal(fixture.browser.contexts().length, 0);
+    } finally { reply.resolve(); await successor.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('unclaimed notification failure preserves creation and reports its original bookkeeping error at disposal', async () => {
+    const reply = deferred(); const fixture = browserFixture(method => method === 'browser.newContext' ? reply.promise : undefined);
+    const creation = fixture.browser.newContext(); const original = Error('unclaimed bookkeeping failed');
+    const registration = runnerIntegration.installArtifactContextLifecycle(9, {
+      beginContextCreation() { throw Error('unclaimed work cannot receive a claim'); },
+      didCreateUnclaimedContext() { throw original; }, async willCloseContext() {},
+    });
+    try {
+      await registration.ready; reply.resolve(); const context = await creation;
+      assert.ok(fixture.browser.contexts().includes(context));
+      await didCreateRunnerContext(context); await context.close();
+      await assert.rejects(registration.dispose(), error => error === original);
+    } finally { reply.resolve(); await registration.dispose().catch(() => {}); await fixture.browser.close(); }
+  });
+
+  await check('invalid asynchronous unclaimed notifications retain disposal custody through fulfillment or rejection', async () => {
+    for (const reject of [false, true]) {
+      const reply = deferred(); const notification = deferred();
+      const fixture = browserFixture(method => method === 'browser.newContext' ? reply.promise : undefined);
+      const creation = fixture.browser.newContext();
+      const registration = runnerIntegration.installArtifactContextLifecycle(9, {
+        beginContextCreation() { throw Error('unclaimed work cannot receive a claim'); },
+        didCreateUnclaimedContext() { return notification.promise; }, async willCloseContext() {},
+      });
+      try {
+        await registration.ready; reply.resolve(); const context = await creation;
+        let disposed = false;
+        const disposal = assert.rejects(registration.dispose(), /must complete synchronously/).then(() => { disposed = true; });
+        await setImmediate(); assert.equal(disposed, false);
+        assert.throws(() => runnerIntegration.installContextLifecycle(1, { didCreateContext() {}, async willCloseContext() {} }), /already active/);
+        if (reject) notification.reject(Error('late invalid callback rejection')); else notification.resolve();
+        await disposal; await context.close();
+      } finally { reply.resolve(); notification.resolve(); await registration.dispose().catch(() => {}); await fixture.browser.close(); }
+    }
+  });
+
+  await check('unclaimed callbacks cannot recursively create, close or dispose and retain one observation', async () => {
+    const reply = deferred(); const fixture = browserFixture(method => method === 'browser.newContext' ? reply.promise : undefined);
+    const creation = fixture.browser.newContext(); const rejected = [];
+    let registration;
+    registration = runnerIntegration.installArtifactContextLifecycle(9, {
+      beginContextCreation() { throw Error('unclaimed work cannot receive a claim'); },
+      didCreateUnclaimedContext(context) {
+        rejected.push(assert.rejects(fixture.browser.newContext(), /creation.*recursively/));
+        rejected.push(assert.rejects(registration.dispose(), /disposal.*recursively/));
+        assert.throws(() => context.close(), /closure.*recursively/);
+        rejected.push(Promise.resolve(didCreateRunnerContext(context)));
+      },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready; reply.resolve(); const context = await creation;
+      await Promise.all(rejected); assert.equal(rejected.length, 3); assert.equal(fixture.requests.length, 1);
+      await context.close();
+    } finally { reply.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('artifact lifecycle requires its version and explicit unclaimed notification before installation', async () => {
+    const lifecycle = { beginContextCreation() { return { async didCreateContext() {}, complete() {} }; }, async willCloseContext() {} };
+    for (const [version, observer] of [[8, { ...lifecycle, didCreateUnclaimedContext() {} }], [9, lifecycle], [9, { didCreateUnclaimedContext() {}, async willCloseContext() {} }]]) {
+      assert.throws(() => runnerIntegration.installArtifactContextLifecycle(version, observer), { name: 'ProtocolError' });
+    }
+  });
   report.status = 'passed';
 } catch (error) {
   report.status = 'failed'; report.error = error.stack ?? String(error); process.exitCode = 1;

@@ -226,6 +226,7 @@ async function runnerCaptureIsInternal() {
   const outputDir = join(destination, 'runner-internal');
   await mkdir(outputDir);
   try {
+    await lifecycle.ready;
     const context = await browser.newContext();
     const page = await context.newPage();
     await context.tracing.start();
@@ -242,7 +243,7 @@ async function runnerCaptureIsInternal() {
     assert.equal(trace.actions.filter(action => action.method === 'screenshot').length, 1, 'only the explicit user screenshot is a public trace action');
     await context.close();
     return { runnerScreenshotRetained: true, publicScreenshotActions: 1, sha256: trace.sha256 };
-  } finally { lifecycle.dispose(); await browser.close(); }
+  } finally { await lifecycle.dispose(); await browser.close(); }
 }
 
 async function diagnosticOverflowIsolation() {

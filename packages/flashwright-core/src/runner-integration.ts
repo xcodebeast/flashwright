@@ -1,7 +1,7 @@
 import { runTraceInternal } from './trace-hooks.js';
 import { installSourcePositionMapper, type SourcePositionMapper } from './call-sites.js';
 import { failure } from './errors.js';
-import { installRunnerContextLifecycle, installAsyncRunnerContextLifecycle, installOwnedRunnerContextLifecycle, type RunnerContextLifecycle, type AsyncRunnerContextLifecycle, type OwnedRunnerContextLifecycle, type RunnerContextLifecycleRegistration } from './runner-lifecycle.js';
+import { installRunnerContextLifecycle, installAsyncRunnerContextLifecycle, installOwnedRunnerContextLifecycle, installArtifactContextLifecycle, type RunnerContextLifecycle, type AsyncRunnerContextLifecycle, type OwnedRunnerContextLifecycle, type ArtifactContextLifecycle, type RunnerContextLifecycleRegistration } from './runner-lifecycle.js';
 import { installRunnerContextDefaults, type RunnerContextDefaults } from './runner-context-defaults.js';
 import { installRunnerActionObserver, type RunnerActionObserver } from './runner-actions.js';
 import { currentRunnerTraceChunk, currentRunnerTraceRecording, startRunnerTraceRecording, type RunnerTraceChunk, type RunnerTraceRecording } from './runner-trace-archives.js';
@@ -11,7 +11,11 @@ import { RunnerTraceJournal, type RunnerTraceJournalOptions } from './runner-tra
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 8,
+  version: 9,
+  installArtifactContextLifecycle(version: number, lifecycle: ArtifactContextLifecycle): RunnerContextLifecycleRegistration {
+    if (version !== 9) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return installArtifactContextLifecycle(lifecycle);
+  },
   installOwnedContextLifecycle(version: number, lifecycle: OwnedRunnerContextLifecycle): RunnerContextLifecycleRegistration {
     if (version !== 8) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return installOwnedRunnerContextLifecycle(lifecycle);

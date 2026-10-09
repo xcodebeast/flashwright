@@ -2,6 +2,7 @@ import type { BrowserContext } from './index.js';
 import { failure } from './errors.js';
 import { publicBrowserContexts } from './public-browsers.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { types } from 'node:util';
 
 export interface RunnerContextLifecycle {
   didCreateContext(context: BrowserContext): void;
@@ -24,6 +25,11 @@ export interface OwnedRunnerContextLifecycle {
   willCloseContext(context: BrowserContext): Promise<void>;
 }
 
+export interface ArtifactContextLifecycle extends OwnedRunnerContextLifecycle {
+  /** Observe availability synchronously without assigning a creation to a later attempt. */
+  didCreateUnclaimedContext(context: BrowserContext): void;
+}
+
 export interface RunnerContextLifecycleRegistration {
   readonly ready: Promise<void>;
   dispose(): Promise<void>;
@@ -33,9 +39,10 @@ interface InstalledLifecycle {
   beginContextCreation?(): RunnerContextCreationOwner;
   didCreateContext(context: BrowserContext, owner?: RunnerContextCreationOwner): Promise<void> | void;
   willCloseContext(context: BrowserContext): Promise<void>;
+  didCreateUnclaimedContext?(context: BrowserContext): void;
 }
 
-type ContextCreation = number | { generation: number; owner: RunnerContextCreationOwner };
+type ContextCreation = null | number | { generation: number; owner: RunnerContextCreationOwner };
 
 let activeLifecycle: InstalledLifecycle | undefined;
 let lifecycleGeneration = 0;
@@ -46,13 +53,14 @@ const callbackScope = new AsyncLocalStorage<InstalledLifecycle>();
 /** Claim the calling scope before any native allocation or asynchronous option preparation. */
 export function beginRunnerContextCreation(): ContextCreation {
   if (callbackScope.getStore()) throw failure('ProtocolError', 'runner.integration', 'context creation cannot run recursively inside a runner lifecycle callback');
+  if (!activeLifecycle) return null;
   if (activeLifecycle?.beginContextCreation) return { generation: lifecycleGeneration, owner: activeLifecycle.beginContextCreation() };
   return lifecycleGeneration;
 }
 
 /** Native creation and failure cleanup retain the original attempt even after its public timeout. */
 export function completeRunnerContextCreation(creation: ContextCreation): void {
-  if (typeof creation !== 'number') creation.owner.complete();
+  if (creation !== null && typeof creation !== 'number') creation.owner.complete();
 }
 
 /** Artifact callbacks must return before their creator or closer can retire that context. */
@@ -101,7 +109,15 @@ export function installOwnedRunnerContextLifecycle(lifecycle: OwnedRunnerContext
   return installAsyncLifecycle(lifecycle, lifecycle.beginContextCreation);
 }
 
-function installAsyncLifecycle(lifecycle: AsyncRunnerContextLifecycle | OwnedRunnerContextLifecycle, beginCreation?: () => RunnerContextCreationOwner): RunnerContextLifecycleRegistration {
+/** Optional artifacts distinguish pre-observer creation from an original attempt's owned claim. */
+export function installArtifactContextLifecycle(lifecycle: ArtifactContextLifecycle): RunnerContextLifecycleRegistration {
+  if (!lifecycle || typeof lifecycle.beginContextCreation !== 'function' || typeof lifecycle.didCreateUnclaimedContext !== 'function') {
+    throw failure('ProtocolError', 'runner.integration', 'invalid artifact context-lifecycle observer');
+  }
+  return installAsyncLifecycle(lifecycle, lifecycle.beginContextCreation, lifecycle.didCreateUnclaimedContext);
+}
+
+function installAsyncLifecycle(lifecycle: AsyncRunnerContextLifecycle | OwnedRunnerContextLifecycle, beginCreation?: () => RunnerContextCreationOwner, unclaimedNotification?: (context: BrowserContext) => void): RunnerContextLifecycleRegistration {
   if (activeLifecycle) throw failure('ProtocolError', 'runner.integration', 'a runner context-lifecycle observer is already active');
   if (!lifecycle || typeof lifecycle.willCloseContext !== 'function' ||
       (beginCreation === undefined ? !('didCreateContext' in lifecycle) || typeof lifecycle.didCreateContext !== 'function' : typeof beginCreation !== 'function')) {
@@ -119,6 +135,20 @@ function installAsyncLifecycle(lifecycle: AsyncRunnerContextLifecycle | OwnedRun
     return work;
   };
   const installed: InstalledLifecycle = {
+    ...(unclaimedNotification ? { didCreateUnclaimedContext(context: BrowserContext) {
+      // Creation began before observation existed. Retirement cannot reject it or
+      // open new capture; a future scope can explicitly adopt the surviving context.
+      if (disposing || enrollments.has(context)) return;
+      enrollmentOwners.set(context, lifecycleGeneration);
+      enrollments.set(context, Promise.resolve());
+      try {
+        const result: unknown = callbackScope.run(installed, () => unclaimedNotification.call(lifecycle, context));
+        if (result !== undefined) {
+          if (types.isPromise(result)) own(result.then(() => {}, () => {}));
+          throw failure('ProtocolError', 'runner.integration', 'unclaimed context notification must complete synchronously without a return value');
+        }
+      } catch (error) { completionFailure ??= { error }; }
+    } } : {}),
     ...(beginCreation ? { beginContextCreation: () => {
       if (disposing) throw failure('ProtocolError', 'runner.integration', 'runner context-lifecycle observer is retiring');
       let original: RunnerContextCreationOwner | undefined = callbackScope.run(installed, () => beginCreation.call(lifecycle));
@@ -197,6 +227,11 @@ function installAsyncLifecycle(lifecycle: AsyncRunnerContextLifecycle | OwnedRun
 
 /** Undefined leaves the ordinary creation path free of an extra asynchronous stage. */
 export function didCreateRunnerContext(context: BrowserContext, creation: ContextCreation = lifecycleGeneration): Promise<void> | void {
+  if (creation === null) {
+    if (!activeLifecycle) return;
+    if (activeLifecycle.didCreateUnclaimedContext) return activeLifecycle.didCreateUnclaimedContext(context);
+    throw failure('TargetClosedError', 'browser.newContext', 'runner scope changed while the context was being created');
+  }
   const generation = typeof creation === 'number' ? creation : creation.generation;
   if (generation !== lifecycleGeneration) throw failure('TargetClosedError', 'browser.newContext', 'runner scope changed while the context was being created');
   return activeLifecycle?.didCreateContext(context, typeof creation === 'number' ? undefined : creation.owner);

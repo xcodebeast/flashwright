@@ -17,8 +17,12 @@ function information(status = 'passed', expectedStatus = 'passed') {
   const outputDir = join(root, `test-${++nextTest}`);
   return { status, expectedStatus, retry: 0, project: { outputDir: root }, outputDir, attachments: [], _onDidFinishTestFunctionCallbacks: new Set(), outputPath: name => join(outputDir, name) };
 }
-function context(pages) {
-  const result = new EventEmitter(); result.pages = () => pages; didCreateRunnerContext(result); return result;
+async function context(pages) {
+  const result = new EventEmitter();
+  result.pages = () => pages;
+  result.browser = () => ({ contexts: () => [result] });
+  await didCreateRunnerContext(result);
+  return result;
 }
 function page(behavior) {
   return { screenshot: async options => {
@@ -33,16 +37,16 @@ try {
   assert.deepEqual(screenshotPolicy({ mode: 'on', fullPage: true, omitBackground: false }).options, { fullPage: true, omitBackground: false });
   for (const invalid of [null, [], 1, false, 'unknown', {}, { mode: 'on', fullPage: 1 }]) assert.throws(() => screenshotPolicy(invalid), error => error.name === 'InvalidArgumentError');
   assert.throws(() => screenshotPolicy({ mode: 'on', mask: [] }), error => error.name === 'UnsupportedFeatureError');
-  assert.equal(willCloseRunnerContext(context([])), undefined);
+  assert.equal(willCloseRunnerContext(await context([])), undefined);
   assert.throws(() => runnerIntegration.installContextLifecycle(2, {}), error => error.name === 'ProtocolError');
   assert.throws(() => runnerIntegration.installContextLifecycle(1, {}), error => error.name === 'ProtocolError');
 
   let created = 0;
   const uninstall = runnerIntegration.installContextLifecycle(1, { didCreateContext: () => { created++; }, willCloseContext: async () => {} });
-  context([]); assert.equal(created, 1);
+  await context([]); assert.equal(created, 1);
   assert.throws(() => runnerIntegration.installContextLifecycle(1, { didCreateContext() {}, async willCloseContext() {} }), error => error.name === 'ProtocolError');
   uninstall(); uninstall();
-  assert.equal(willCloseRunnerContext(context([])), undefined);
+  assert.equal(willCloseRunnerContext(await context([])), undefined);
 
   const { Browser } = require('@flashwright/core');
   const { publicBrowserContexts } = require(resolve('packages/flashwright-core/dist/commonjs/public-browsers.js'));
@@ -77,6 +81,7 @@ try {
 
   const lifecycle = new ScreenshotLifecycle(screenshotPolicy('only-on-failure'));
   try {
+    await lifecycle.ready;
     const testInfo = information();
     const releases = [];
     let firstBatchStarted, lastBatchStarted;
@@ -93,7 +98,7 @@ try {
         if (releases.length === 6) lastBatchStarted();
       }); active--;
     }));
-    const liveContext = context(pages);
+    const liveContext = await context(pages);
     const recorder = lifecycle.start(testInfo);
     const closing = willCloseRunnerContext(liveContext);
     await firstBatch;
@@ -113,7 +118,7 @@ try {
 
     const failureInfo = information('failed');
     const originalError = new Error('original capture failure'); originalError.name = 'ExampleCaptureError';
-    const failedContext = context([page(async () => { throw originalError; })]);
+    const failedContext = await context([page(async () => { throw originalError; })]);
     const failedRecorder = lifecycle.start(failureInfo);
     await lifecycle.finish(failedRecorder);
     assert.equal(failureInfo.status, 'failed');
@@ -124,7 +129,7 @@ try {
     failedContext.emit('close');
 
     const manyErrorsInfo = information('failed');
-    const manyErrorsContext = context(Array.from({ length: 40 }, () => page(async () => { throw new Error('bounded original failure'); })));
+    const manyErrorsContext = await context(Array.from({ length: 40 }, () => page(async () => { throw new Error('bounded original failure'); })));
     const manyErrorsRecorder = lifecycle.start(manyErrorsInfo);
     await lifecycle.finish(manyErrorsRecorder);
     assert.equal(manyErrorsInfo.attachments.length, 1, 'many failed pages share a bounded diagnostic attachment');
@@ -134,7 +139,7 @@ try {
     manyErrorsContext.emit('close');
 
     const retentionInfo = information();
-    const retainedContext = context([page()]);
+    const retainedContext = await context([page()]);
     const retainedRecorder = lifecycle.start(retentionInfo);
     await willCloseRunnerContext(retainedContext); retainedContext.emit('close');
     retentionInfo.status = 'failed';
@@ -143,7 +148,7 @@ try {
     assert.equal(retentionInfo.attachments[0].name, 'screenshot');
     assert.equal(await readFile(retentionInfo.attachments[0].path, 'utf8'), 'complete-image');
     assert.ok(retentionInfo.attachments[0].path.endsWith('test-failed-1.png'));
-  } finally { lifecycle.dispose(); }
-  assert.equal(willCloseRunnerContext(context([])), undefined);
+  } finally { await lifecycle.dispose(); }
+  assert.equal(willCloseRunnerContext(await context([])), undefined);
   console.log('Screenshot policy, lifecycle identity, bounded concurrency, pending cleanup, outcome retention and error diagnostics passed.');
 } finally { await rm(root, { recursive: true, force: true }); }

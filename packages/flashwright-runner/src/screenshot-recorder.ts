@@ -17,16 +17,24 @@ export class ScreenshotLifecycle {
   private readonly contexts = new Set<BrowserContext>();
   private readonly capturedPages = new WeakMap<TestInfo, WeakSet<Page>>();
   private recorder: ScreenshotRecorder | undefined;
-  private readonly uninstall: () => void;
+  private readonly registration: ReturnType<typeof runnerIntegration.installArtifactContextLifecycle>;
+  readonly ready: Promise<void>;
 
   constructor(private readonly policy: ScreenshotPolicy) {
-    this.uninstall = runnerIntegration.installContextLifecycle(1, {
-      didCreateContext: context => {
-        this.contexts.add(context);
-        context.once('close', () => this.contexts.delete(context));
-      },
+    this.registration = runnerIntegration.installArtifactContextLifecycle(9, {
+      beginContextCreation: () => ({
+        didCreateContext: async context => { this.observe(context); },
+        complete() {},
+      }),
+      didCreateUnclaimedContext: context => { this.observe(context); },
       willCloseContext: async context => { await this.recorder?.beforeContextClose(context); },
     });
+    this.ready = this.registration.ready;
+  }
+
+  private observe(context: BrowserContext): void {
+    this.contexts.add(context);
+    context.once('close', () => this.contexts.delete(context));
   }
 
   start(testInfo: TestInfo): ScreenshotRecorder {
@@ -43,7 +51,9 @@ export class ScreenshotLifecycle {
     await recorder.finish();
   }
 
-  dispose(): void { this.uninstall(); this.contexts.clear(); }
+  async dispose(): Promise<void> {
+    try { await this.registration.dispose(); } finally { this.contexts.clear(); }
+  }
 }
 
 class ScreenshotRecorder {

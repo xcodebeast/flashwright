@@ -78,7 +78,7 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
     const policy = screenshotPolicy(screenshot);
     if (policy.mode === 'off') { await use(undefined); return; }
     const lifecycle = new ScreenshotLifecycle(policy);
-    try { await use(lifecycle); } finally { lifecycle.dispose(); }
+    try { await lifecycle.ready; await use(lifecycle); } finally { await lifecycle.dispose(); }
   }, { scope: 'worker', auto: true }],
   _setupRunnerScreenshots: [async ({ _screenshotLifecycle }, use, testInfo) => {
     if (!_screenshotLifecycle) { await use(); return; }
