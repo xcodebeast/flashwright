@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { AttachmentReceiver } from '../packages/flashwright/dist/commonjs/attachments.js';
-import { EngineClient } from '../packages/flashwright/dist/commonjs/client.js';
-import { resolve } from 'node:path';
+import { AttachmentReceiver } from '../packages/flashwright-core/dist/commonjs/attachments.js';
+import { EngineClient } from '../packages/flashwright-core/dist/commonjs/client.js';
+import { createRuntimeFixture } from './runtime-fixture.mjs';
+const fixtureExecutable = createRuntimeFixture('compatibility/m1/attachment-driver.mjs');
 
 function chunk(identifier, offset, bytes) {
   const frame = Buffer.alloc(13 + bytes.length);
@@ -69,7 +70,7 @@ test('expired attachments release bytes but still validate late chunks', () => {
 });
 
 async function clientCase(work) {
-  const client = new EngineClient(resolve('compatibility/m1/attachment-driver.mjs'));
+  const client = new EngineClient(fixtureExecutable);
   client.retain();
   try { await work(client); } finally { await client.release(); }
 }
@@ -108,5 +109,23 @@ test('client deadline discards a partial attachment and leaves its successor usa
     await assert.rejects(client.requestBinary('probe', { scenario: 'cancel' }, 250), { name: 'TimeoutError' });
     assert.equal(await client.request('control', {}), 42);
     assert.deepEqual(await client.request('observations', {}), { starts: 1, cancellations: 1 });
+  });
+});
+
+
+test('an expected binary length rejects a conflicting start before buffer allocation', async () => {
+  await clientCase(async client => {
+    assert.equal(await client.request('control', {}), 42);
+    let began = false;
+    const begin = client.attachments.begin.bind(client.attachments);
+    client.attachments.begin = (...arguments_) => { began = true; return begin(...arguments_); };
+    await assert.rejects(client.requestBinary('probe', { scenario: 'large' }, 2000, 4), { name: 'ProtocolError' });
+    assert.equal(began, false);
+  });
+  await clientCase(async client => {
+    assert.deepEqual(await client.requestBinary('probe', { encoding: 'base64' }, 2000, 5), Buffer.from([0, 128, 255, 1, 2]));
+    assert.equal(await client.request('control', {}), 42);
+    await assert.rejects(client.requestBinary('probe', {}, 2000, -1), { name: 'InvalidArgumentError' });
+    assert.equal(await client.request('control', {}), 42);
   });
 });

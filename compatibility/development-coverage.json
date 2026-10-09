@@ -8,7 +8,8 @@
       "headless",
       "timeout",
       "development driver override",
-      "automatic exact-version platform runtime selection with integrity, architecture and libc checks"
+      "automatic exact-version platform runtime selection with integrity, architecture and libc checks",
+      "explicit slowMo:0 with ordinary execution; nonzero slow motion rejects before launch"
     ],
     "browser": [
       "version",
@@ -17,7 +18,10 @@
       "newPage",
       "contexts",
       "close",
-      "newContext/newPage with cookie and HTTP(S) localStorage storageState object or file"
+      "newContext/newPage with cookie and HTTP(S) localStorage storageState object or file",
+      "newContext/newPage device emulation: screen, user agent/client hints, deviceScaleFactor, isMobile and hasTouch",
+      "143 standalone pinned device descriptors shared with the runner",
+      "newContext/newPage ignoreHTTPSErrors and javaScriptEnabled with pinned defaults and sibling isolation"
     ],
     "context": [
       "browser",
@@ -33,7 +37,11 @@
       "clearCookies with name/domain/path string or RegExp filters",
       "storageState with atomic path output and exact UTF-16 localStorage",
       "live console events including future pages and same-process child frames",
-      "waitForEvent for console, page and close"
+      "waitForEvent for console, page and close",
+      "addInitScript with function/JSON argument, source string or content/path and disposable registration",
+      "initial subscribed diagnostics delivered only after successful page publication; internal storage pages exclude user scripts",
+      "manual tracing.start/startChunk/stopChunk/stop with public actions, console/page errors, lifecycle and mapped caller locations in version-8 ZIPs",
+      "Public pages set pinned light color-scheme, no-preference reduced-motion/contrast and forced-colors:none before user init scripts. Explicit media overrides remain unsupported."
     ],
     "page": [
       "context",
@@ -61,7 +69,11 @@
       "screenshot returning a Buffer with optional atomic file output",
       "pageerror events and typed on/once/waitForEvent for main-page and same-process child-frame exceptions",
       "evaluateHandle with JSHandle or ElementHandle identity",
-      "live console events and waitForEvent(console) with native JSHandle arguments"
+      "live console events and waitForEvent(console) with native JSHandle arguments",
+      "addInitScript and idempotent disposable registration for supported frames",
+      "reload/goBack/goForward with document response, same-document/null and absent-history outcomes",
+      "waitForNavigation and waitForURL with host-observed invocation boundaries, immutable URL/response selection, shared lifecycle deadline, callback errors and close/crash cleanup",
+      "waitForSelector with strict/default-first matching, attached/detached/visible/hidden states and main-world ElementHandle results"
     ],
     "evaluation": [
       "expression strings",
@@ -94,7 +106,8 @@
       "isDetached",
       "same-process frame locator scopes",
       "evaluate in the same-process frame main world",
-      "evaluateHandle in the same-process frame main world"
+      "evaluateHandle in the same-process frame main world",
+      "waitForSelector with original same-process frame ownership across document replacement"
     ],
     "response": [
       "url",
@@ -102,7 +115,11 @@
       "statusText",
       "ok",
       "request identity",
-      "headers/headerValue for tested HTTP headers",
+      "provisional headers",
+      "allHeaders",
+      "headersArray",
+      "headerValue",
+      "headerValues",
       "binary body",
       "text",
       "json"
@@ -125,7 +142,11 @@
       "same-process nested and transformed iframe targeting, hit interception and main-frame navigation commit/failure barriers",
       "press with the pinned 212 key descriptions, key chords, modifier aliases, repeat/location fields and native text/editing events",
       "keyboard delay/noWaitAfter, focus/selection behavior, shadow/frame targeting and navigation completion",
-      "undelayed native move/press/release sequences with click counts through 100 and independently tracked delivery"
+      "undelayed native move/press/release sequences with click counts through 100 and independently tracked delivery",
+      "elementHandle/evaluate/evaluateHandle with strict attached resolution, main-world callbacks, independently owned results and temporary receiver disposal",
+      "pressSequentially validates before focus, focuses once, preserves mid-sequence focus changes and never replays delivered input; delay/timeout supported and deprecated noWaitAfter has no effect",
+      "selectText with one strict captured node, shared resolution/action timeout and visible/force semantics, including forced selection of a detached original input",
+      "scrollIntoViewIfNeeded with one strict captured node, fresh frame stability, native nested scrolling, cancellation and no-layout retries"
     ],
     "expect": [
       "toHaveText/toContainText scalar and array forms, whitespace normalization and regular expressions",
@@ -142,13 +163,18 @@
       "explicit unsupported artifact, context option and matcher errors",
       "packed CLI, reporter type subpath and ESM/CommonJS/TypeScript consumers",
       "one shared runtime and declaration identity for mixed ESM/CommonJS consumers",
-      "all three preserved TodoMVC tests type-check and run through packed packages with import/config changes only and the upstream browser backend disabled"
+      "all three preserved TodoMVC tests type-check and run through packed packages with import/config changes only and the upstream browser backend disabled",
+      "configured context and timeout defaults apply to manual contexts/pages and separately launched native browsers during the runner scope; explicit options override defaults",
+      "direct and alias ESM/CommonJS packages share canonical core and runner identities without global resolver or prototype mutation",
+      "screenshot off/on/only-on-failure/on-first-failure with fullPage/omitBackground, manual contexts, early-close retention, retries and bounded failure diagnostics",
+      "ignoreHTTPSErrors/javaScriptEnabled through individual fixture options and contextOptions; manual and separately launched contexts inherit defaults, explicit values override"
     ],
     "keyboard": [
       "page.keyboard.press shares the pinned 212-key native chord implementation",
       "existing page/shadow/child-frame focus and selection; no locator timeout or navigation barrier",
       "delay validation, complete-chord validation before effects and context-close cancellation",
-      "down/up/type/insertText reject explicitly until persistent keyboard state and sequential typing are implemented"
+      "down/up/insertText remain explicitly unsupported; persistent held-key state is a separate slice",
+      "page.keyboard.type sends native layout key pairs or Unicode insertion per code point, with delay before non-layout insertion, current browser focus and an unbounded public timeout"
     ],
     "page.screenshot": [
       "type: png or jpeg; default png or case-sensitive path inference",
@@ -174,7 +200,9 @@
       "idempotent dispose and Symbol.asyncDispose",
       "independent property-reference disposal",
       "primitive handles across live pages and after navigation",
-      "detached DOM identity without rebinding to replacements"
+      "detached DOM identity without rebinding to replacements",
+      "selectText preserves original-node identity and borrowed-handle ownership; visibility waits, force, timeout and detached forced selection follow the pinned helper",
+      "scrollIntoViewIfNeeded privately adopts the original same-document node, waits for fresh stability and owns native scrolling/cleanup without consuming a public handle slot"
     ],
     "console": [
       "type, text and pinned handle previews",
@@ -185,6 +213,45 @@
       "on/addListener/once/prependListener/prependOnceListener/off/removeListener/removeAllListeners without async policies",
       "browser log entries without argument handles",
       "safe disposal after console.clear invalidates console objects"
+    ],
+    "tracing": [
+      "Manual library tracing defaults screenshots/snapshots/sources to false. sources:true embeds referenced mapped caller files; screenshots:true records bounded native JPEG filmstrips. snapshots:true remains unsupported.",
+      "bounded previews never invoke application accessors/proxies/custom serialization and never replace original operation outcomes",
+      "unfinished calls remain unfinished; chunk admission and late completions are isolated",
+      "trace-only diagnostics own a separate bounded native queue and never allocate public console handles",
+      "actual pinned viewer validates actions, values, errors, console, caller locations, unfinished/next chunks and crash behavior",
+      "asynchronous atomic export preserves prior destination before commit; an already-dispatched rename is owned through its definitive result",
+      "structured caller capture bypasses global application stack formatters and applies pinned runner TypeScript source maps through the private integration boundary",
+      "immutable content-addressed resource storage with per-chunk source aliases, bounded streaming and recording/export ownership",
+      "source files refresh at each export; missing/non-files omit; changed-during-read files, selected read failures and resource limits fail export explicitly",
+      "actual pinned viewer displays embedded TypeScript ESM/CommonJS caller source and highlighted line without workstation-source fallback",
+      "Existing and newly published public pages record JPEG frames with pinned screencast sizing, metadata, activity windows and acknowledgement throttling.",
+      "Filmstrips compose with source embedding, file chooser uploads and automatic runner screenshots in packed ESM/CommonJS consumers.",
+      "Actual pinned viewer opens all shared shell/full-Chrome corpus archives and decodes every retained thumbnail; timed frame sampling is not required to be identical."
+    ],
+    "fileInputs": [
+      "Page, Frame, Locator and ElementHandle.setInputFiles accept individual local files, in-memory FilePayloads and clearing with an empty list.",
+      "Label targeting, strict locator resolution, captured-handle identity, exact bytes, pinned MIME inference and browser File metadata are verified.",
+      "Local paths emit trusted input/change events; buffers and clearing preserve the pinned DataTransfer/File assignment and untrusted events."
+    ],
+    "fileChooser": [
+      "Page filechooser subscriptions and waitForEvent retain one original utility-world ElementHandle, captured multiplicity and stable page/element identity.",
+      "FileChooser.setFiles delegates to the captured input; replacement does not redirect assignment.",
+      "All EventEmitter registration forms drive interception acknowledgement before subsequent page requests; sibling pages and close can progress."
+    ],
+    "request": [
+      "url",
+      "method",
+      "provisional headers",
+      "allHeaders",
+      "headersArray",
+      "headerValue",
+      "postData",
+      "postDataBuffer",
+      "resourceType",
+      "isNavigationRequest",
+      "response identity",
+      "failure"
     ]
   },
   "implementation": {
@@ -193,7 +260,7 @@
     "ownership": "Independent guardian owns the browser process group and profile. A group-exit barrier keeps the leader unreaped until every member stops. Shared shutdown completion never kills the guardian for slow profile cleanup; bounded operation cleanup reports guardianContinuingCleanup when necessary.",
     "cancellation": "withdraw queued allocation, consume dispatched allocation reply then dispose, close owned browser when allocation result cannot be recovered, dispose success arriving after caller deadline",
     "cleanupMetadata": "error details identify resource disposal, undispatched work or browser-shutdown fallback",
-    "applicationProtocolVersion": 5,
+    "applicationProtocolVersion": 6,
     "navigation": "Loader-aware event state retains bounded completion records. Received-event acknowledgement barriers synchronize input completion with navigation state; document commits detach the old child-frame subtree even if Chromium omits individual detach events.",
     "locator": "One isolated runtime per frame document with shared initialization and execution-time membership; ordinary locator operations retain host deadlines and retries, while opt-in assertions register exact-context resident conditions.",
     "input": "Native text and pointer input with method-specific actionability, fresh frame stability, hit interception, button/modifier cleanup and navigation barriers. Protocol results and errors carry operation input delivery progress, including replies crossing the caller deadline. Keyboard, pointer and fill/focus mutations share per-page input ownership. Key chords are validated before effects; interrupted keys are released or the affected page is closed. Pinned macOS editing commands preserve platform shortcuts. Page-level presses retain current focus and use an unbounded operation without locator navigation waiting. Undelayed clicks admit their whole bounded command sequence atomically, dispatch in wire order without reply barriers, and withdraw unsent commands on cancellation. Uncertain pointer delivery closes the owned page without replaying a release; the input lock remains held through disposal.",
@@ -229,7 +296,128 @@
     "guardianCleanup": "The watchdog gives newly promoted orphan owners a fresh grace interval within its unchanged total cleanup bound. Guardian diagnostic writes tolerate a closed stderr pipe instead of panicking before browser/profile cleanup. A deterministic watchdog regression, a broken-diagnostic-pipe browser case and complete real watchdog cases pass; failed earlier attempts and restorative profile recovery are retained in the checkpoint.",
     "driverComparisonEvidence": "Parallel page initialization was tested and rejected: all 56 candidate verification groups passed, but the direct eight-pair comparison did not resolve complete-run or setup benefit. Complete-run ratio 0.9973 (95% interval 0.9767\u20131.0619); setup ratio 1.0195 (0.9732\u20131.0440). Navigation median point crossed the 5% regression threshold. Wrapper-inclusive process wall improved about 1.4%, but did not justify the added concurrency. Production initialization and optimized binary were restored exactly; the current 208-source tree passes 35 native groups, 65 Rust tests and 82 lifecycle cases. The candidate patch, every observation, separate attribution and verifier corruption checks are retained. See compatibility/evidence/page-initialization-checkpoint-2026-10-08.json",
     "platformRuntime": "Exact-version private platform packages now select the driver automatically, validate metadata and executable integrity before spawn, and preserve the ordinary launch budget. Clean offline npm ESM/CommonJS consumers run without install scripts, a driver override or Cargo. At 213 matching source hashes, 36 native macOS Node24 core groups, seven Node22/full-Chromium groups and ten emulated Linux groups pass; each platform runs the complete 82-case lifecycle suite. Package checks cover 23 macOS or 25 Linux cases, including corruption, unsupported libc, concurrent browsers and an expired lookup that cannot spawn. The selected Linux executable is built on glibc 2.31 and requires symbols through 2.30; its loader handshake passes on 2.31 and browser checks pass on Noble under emulation. The earlier glibc 2.39 artifact and its ten passing groups are retained separately. No publication, native Linux or packaged-startup performance claim.",
-    "platformRuntimeEvidence": "compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json"
+    "platformRuntimeEvidence": "compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json",
+    "initialDiagnostics": "Private allocation buffers initial page errors and already-subscribed console events up to1024 records/4MiB. Reply validation precedes publication; failed page creation disposes its private diagnostics and resources.",
+    "historyNavigation": "A1024-entry main-frame navigation journal retains outcomes before CDP acknowledgments; reload excludes same-document events, and cancelled operations never replay actions.",
+    "navigationWaiters": "Private navigation metadata precedes public callbacks and initializes each page allocation watermark. Synchronous driver acceptance validates the captured host sequence; bounded native journal selection and completion retain the original navigation. Finite and unbounded requests share readiness stages to preserve invocation order. Native URLPattern is available only when the runtime supplies it; waitForResponse retains its narrower matcher forms.",
+    "runnerScreenshots": "Canonical weak public-browser registry and versioned context lifecycle observe each public context once, including module-created contexts. Screenshot off installs no artifact observer and sends no extra native commands. Capture batches include queue time in their five-second deadline, with four concurrent pages,1024 attempts and512MiB retained image bytes per test scope. Per-test deduplication and final outcome decide early-close retention. Bounded screenshot-error attachments preserve originating test outcomes. Trace/video remain explicitly unsupported.",
+    "manualTracing": "Public method inventory and internal-call suppression, bounded independent native diagnostic queue, native filmstrip capture owners, host pull fences and streaming ZIP writer. Manual actions, source embedding and filmstrips are integrated; DOM/network snapshots and automatic runner policy remain separate.",
+    "capturedElementActions": "Native locator capture and element action share one deadline and private object group. Captured and borrowed nodes never rebind to replacements. Borrowed handles use a temporary utility alias while retaining original main-world ownership. Read-only retries release the per-page input lock; uncertain selection/scroll delivery is never replayed. Explicit cancellation removes pending fresh-frame callbacks before bounded recovery. Private actions succeed with all4096 public handle slots occupied, and blocked callback cleanup preserves sibling pages.",
+    "selectorNavigationPrecheck": "Selector-handle waits and initial locator capture honor an already-pending navigation before selecting a node. A held-navigation differential proves that an old-document match cannot bypass the shared deadline.",
+    "traceResources": "A recording owns immutable SHA256 blobs; chunks own fixed archive aliases and leases. Source aliases hash original mapped paths with SHA1, while equal bytes deduplicate physically. Nonblocking source opens verify regular files and detect observed mutation. In-flight reservations, concurrent publication, disposal/leases and late cleanup are bounded; precommit cancellation preserves the prior destination and dispatched rename remains definitive.",
+    "inputAttachments": "Request-owned raw 64 KiB chunks carry explicit request identity and exact offsets. Two active attachments of at most 32 MiB are independent of output slots; validation precedes browser effects. Cancellation releases bytes and retains bounded stream-validation ownership until termination.",
+    "executionWorlds": "A bounded registry tracks numeric and unique identities across main and isolated worlds. Public handle liveness and publication use the same original-context checks; private aliases guard both original main and utility contexts. document.open preserves surviving worlds.",
+    "fileInputs": "One native action owns private utility references, transport/resolution/assignment deadline and cleanup. Local paths use DOM.setFileInputFiles; buffers stage bounded chunks before one guarded DataTransfer assignment. Uncertain assignment is never replayed.",
+    "fileChooser": "Serial generation-owned native adoption reserves public handles at enrollment, capped at 16 pending events per page and 128 per engine. Publication atomically validates document and listener generation. Unobserved chooser groups share the bounded background console release queue without interrupting later application work.",
+    "traceFilmstrip": "Native generation-owned frame queues, single-use payload tokens and independent ACK ownership retain original call/chunk attribution. Binary receivers check expected image length before allocation. Bounded asynchronous host ingestion shares immutable trace resources; capture failure fails export while preserving the public action result.",
+    "defaultMedia": "Native public-page initialization sets all four pinned media defaults before context/page init scripts, preventing operating-system dark/high-contrast preferences from changing application CSS. Shared tests cover initial pages, navigation, child frames, later pages, JavaScript-disabled pages and computed CSS in shell/full Chrome.",
+    "responseBodyOwnership": "Each retained request has an immutable occurrence identity separate from the CDP request identifier, which redirects can reuse. Response.body carries that identity through completion waiting, output-slot admission and browser reply acceptance. Retirement promptly ends queued or dispatched reads; discarded late replies cannot consume successor bytes. The required private response.body.occurrence capability preserves protocol6 framing.",
+    "requestMetadata": {
+      "status": "focused byte foundation and later fresh integrated network checkpoint verified",
+      "report": ".cache/request-metadata-focused-001/report.json",
+      "reportSha256": "0a79c87c2d115e5125fa1062a5cc14f626e4b2dca0534ded9b7003acb967e825",
+      "driverSha256": "852f075ed59a1eb402da8e79af902aaeaeaefcddd8300bcf74b566f4543ea49f",
+      "groups": 11,
+      "sourceEntries": 378,
+      "scope": "Immutable original metadata is separate from optional effective metadata. Request postDataBuffer decodes original postDataEntries lazily and preserves exact available bytes; postData uses UTF-8 decoding. Binary256, UTF8+NUL and empty POST cases pass shared navigation on Bun shell/fullChrome and Node22/24 shell. Existing event/control limits apply. This foundation is included in the later networkState checkpoint; routing and trace-network observation remain unfinished."
+    },
+    "networkState": {
+      "status": "experimental occurrence history and raw headers verified; routing and trace observer pending",
+      "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T08-36-44.784Z/report.json",
+      "reportSha256": "48193860ff3551941c0b439a3c9590223054ff01af88175bdee9f19f9300aa96",
+      "driverSha256": "14e880699a09f370e213d6af67ac32017d9002cd935cd14e3284008a9fdf1243",
+      "scope": "Immutable occurrence history separates active requests from completed retention and the latest CDP body owner. Raw request/response extra-info pairs to exact redirect occurrences across early/late arrival, with cache/no-extra-info/failed-request fallback. Host request/response identity survives 1030 completed requests, and live navigation responses survive 1030 loaded resources. Raw header casing/repetition, Cookie and Set-Cookie, empty/missing values and pinned array/index ownership pass shared browser cases. Native waiters preserve cancellation, timeout and page closure without replay. Header reads are lazy and cached; uncached reads require the original live page and retained native occurrence.",
+      "limits": {
+        "completedOccurrencesPerPage": 1024,
+        "unfinishedOccurrencesPerPage": 4096,
+        "unmatchedHeaderRecordsPerPage": 4096,
+        "liveLoaderOwnersPerPage": 1024,
+        "logicalEncodedJsonBytesPerPage": 67108864,
+        "logicalEncodedJsonBytesPerEngine": 268435456,
+        "accounting": "Logical retained JSON credits, not process RSS. Existing transport/decoder buffers remain separately bounded. Completed history may expire earlier under byte pressure."
+      },
+      "focusedScope": "Bun headless shell/full Chrome and Node22/24 headless shell header/history corpus; full Chrome native header waiter and binary transfer lifecycle cases. Nine native state/budget/header unit cases plus existing immutable body ownership races pass in the integrated core."
+    },
+    "requestEventProjection": {
+      "status": "experimental bounded request-event projection verified",
+      "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T09-10-29.169Z/report.json",
+      "reportSha256": "db84d9225968a36f1d4572b8a1d8c5054be1ac94823b14a8482f31d1f45809c3",
+      "driverSha256": "055494ad833dd978df0009df43677d9433709566741bb20523082db661134fe1",
+      "scope": "Oversized Network.requestWillBeSent and Fetch.requestPaused events omit only unused request.postData text before owning parameters. Authoritative postDataEntries and every other field remain. Projected parameters plus the original envelope must fit the ordinary 8 MiB control allowance; each inspected object is bounded to 1024 fields. Existing 192 MiB plus 64 KiB preclassification and unrelated 8 MiB event bounds remain unchanged. Small events use the existing path.",
+      "verification": "All 89 core groups ran fresh. Six native admission/order/field/byte tests, unrelated oversized console rejection and shared exact 4 MiB ASCII/all-byte/zero request bodies passed. Focused corpus passed Bun headless shell/full Chrome and Node22/24 shell with exact public buffers/text, Request/Response identity, raw content-type, server SHA256 and one HTTP request per body. Focused and integrated driver and implementation hashes match.",
+      "limitations": "No 32 MiB original-request or routing promise follows from the generic binary-input cap. File/blob bytes omitted by Chromium remain unavailable. Route continuation and fulfillment admission is a separate implementation decision; no performance claim."
+    },
+    "networkObserver": {
+      "status": "focused native observer foundation verified; recording consumer and routing pending",
+      "report": ".cache/network-observer-focused-001/report.json",
+      "reportSha256": "16bdf7edffe8b69894ef8ee4fe9161cd4b71838c679363c2a63b51aaf10ba6e1",
+      "driverSha256": "8d159c9ad764724760eb5e6ec5de999b651aa3db0e0724b486e01a416ad4327b",
+      "scope": "A native monotonic receipt time and connection event sequence accompany each browser event. Occurrences retain original ingress and optional redirect predecessor. Public lifecycle consumes synchronous canonical created/response/completion transitions; optional observers additionally receive cache, retirement, raw extra-info, exact header pairing and discard keys. Pairing remains exact after public history expires. Recorder-only extra-info projections have independent ownership/credits and cannot fail ordinary header admission. No recording observer, body job or queue is enabled by this foundation.",
+      "verification": "14 focused groups pass: strict Rust formatting/clippy, all workspace tests, release driver, Bun shell/fullChrome network-header/history, navigation and exact4MiB payload differentials, native binary occurrence and header waiter lifecycle, Node22/24 shell header corpus. Five new native tests cover redirect grouping/original/effective/predecessor/ingress, raw headers after1030 completions, independent recorder overflow, cache/reused-ID/failure ownership and orphan extra-info disposal. All eight retained differential reports match the pinned reference; all14 watchdogs are clean. JavaScript package sources are identical to the preceding fresh89 checkpoint.23 pinned-source records were regenerated.",
+      "limitations": "Native/public recording, snapshot integration, routing and API request fixtures remain unfinished. Caller must hold the recording lock across the whole event group with page-state then recording lock order and dispose page/recording namespaces on teardown. A recording mutex/clock mapping, exact cutoff and body queue are future consumer responsibilities. No performance claim.",
+      "integratedReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T10-29-38.620Z/report.json",
+      "integratedReportSha256": "b3e1d526ff40ecea1a3d24870387e288b19eea664829ba4af768a9333e9c3cab"
+    },
+    "handleAllocationSettlement": {
+      "status": "focused shared-handle and pointer lifecycle verified",
+      "report": ".cache/handle-allocation-focused-001/report.json",
+      "reportSha256": "d8f5ca8e5a52162c9d81cb39882ce077deed7df12d7754b7c924ab5e1537c98b",
+      "driverSha256": "435d26ce6e38dfbcba913911f6db690349b4722762286a86c7728933d7c5045c",
+      "scope": "Every unconsumed allocating reply is withdrawn before dispatch or retained through definitive completion before group rollback. Original-realm loss and numeric execution-context reuse cannot discharge a late alias. Shared handle and pointer work retire their owned page after bounded uncertainty; group cleanup remains session-scoped. Optional snapshot diagnostics retain a separate policy and are not merged.",
+      "verification": "21 focused groups pass: strict Rust checks/workspace tests/release, six Bun differential corpora on headless shell and full Chrome, and five native handle/element/file lifecycle suites. Five controlled-CDP tests exercise queued withdrawal, numeric reuse and delayed alias release, unsettled replies, consumed browser errors and cancellation with a delivered reply. Two supplemental pointer profiles retain separate reports after the legacy fixed evidence path overwrote the first; all23 watchdogs clean.",
+      "limitations": "No new platform, performance or snapshot coverage.",
+      "integratedReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T10-29-38.620Z/report.json",
+      "integratedReportSha256": "b3e1d526ff40ecea1a3d24870387e288b19eea664829ba4af768a9333e9c3cab"
+    },
+    "fetchBodyTransport": {
+      "status": "native typed body transport verified; public routing remains pending",
+      "focusedReport": ".cache/fetch-body-focused-002/report.json",
+      "focusedReportSha256": "e4872c5f13bb2de3d30a94d59d4b38ccf7bf170caa90b2ed8df67727cefb21b4",
+      "liveReport": ".cache/fetch-body-live-002/report.json",
+      "liveReportSha256": "9d4260167cfdc1f472afeb81f05f430d99d99793c955d8c38dd03fc4d083ef39",
+      "driverSha256": "3c26f4dde400a9a3e7ee09241a479201a4aac9dfeec20296b36e08ab0808e4a2",
+      "scope": "Only typed Fetch.continueRequest postData and Fetch.fulfillRequest body accept shared validated input attachments up to32MiB. The message retains the input reservation while queued/writing, emits at most64KiB base64 scratch, and finishes atomically or invalidates the connection. Ordinary control/reply/event limits stay8MiB. Upload input ownership shares raw bytes without another full payload copy.",
+      "verification": "Eight duplex tests cover exact fields/padding/escaping,32MiB and next-command ordering, queued and mid-write cancellation, metadata/body caps, queue rejection, broken writer and explicit close. Existing upload and binary lifecycle groups pass. A native Rust probe with Network enabled verifies continue/fulfill at0,65537,9MiB,32MiB against shell/fullChrome, checking every byte, exact1/0HTTP requests and input credit release.13 successful groups, four groups retaining the two initial compile failures,17 clean watchdogs.23 provenance generators refreshed.",
+      "limitations": "Public route callbacks/registration/joining and original large-body event delivery remain unfinished. Product checks have391sources; live verification adds only the native probe example for392sources. No speed or RSS claim.",
+      "integratedReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T10-29-38.620Z/report.json",
+      "integratedReportSha256": "b3e1d526ff40ecea1a3d24870387e288b19eea664829ba4af768a9333e9c3cab"
+    },
+    "networkRequestReferences": {
+      "status": "private compact occurrence references verified in fresh90 core",
+      "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T10-29-38.620Z/report.json",
+      "reportSha256": "b3e1d526ff40ecea1a3d24870387e288b19eea664829ba4af768a9333e9c3cab",
+      "driverSha256": "f93ca0fa5f3c13cc09f51e6494ed8d245014d34357a9a4004897f8dd8aac2568",
+      "scope": "Only the initial request event carries full metadata. Responses and terminal lifecycle events carry the immutable protocol identifier and occurrence identity under the network.request.references capability. The host resolves the existing Request and rejects missing/mismatched references before response-cache access. Canonical native recording observers still receive the complete original RequestState.",
+      "verification": "All90 core groups ran fresh on393 sources, integrating canonical observers, allocation settlement and typed Fetch transport. Seven supplemental groups cover fullChrome payload/header/navigation and Node22/24 reference/header checks; eight retained differential reports match the pinned reference and all eight external watchdogs are clean. Native4MiB tests bound response/terminal metadata to512/256bytes. Host tests cover public object identity, reused CDP identifiers, exact payload bytes and five invalid-reference cases.",
+      "limitations": "Public routing and trace-network recording remain unfinished. This removes repeated body metadata without expanding original event admission, response body availability or platform support. No performance claim."
+    },
+    "nativeInterception": {
+      "status": "private native controls verified; public Route API pending",
+      "focusedReport": ".cache/routing-native-focused-002/report.json",
+      "focusedReportSha256": "676a2812ad2ea5f2f0533a1358deb1f8c6db2c4eb29db19c86dc5364bd6ab1e0",
+      "liveReport": ".cache/routing-native-live-002/report.json",
+      "liveReportSha256": "3e4e9bdf2c495c7379bf7f47b1cfb812b429cbed16fb8492df4982c99038594b",
+      "driverSha256": "cba716cbfce9025153288e260838e1b28953bcbee48bb5d10e589837fdc29e01",
+      "scope": "Network creation retains original ingress; public Ready/Routed transitions follow bounded Fetch joining in either order. Exact pause claims, cached continuations, header-only redirects, redirect forbidden-header preservation, preflight auto-fulfillment, private storage exclusion and cache configuration are native. Route body credits share raw bytes independently of host input slots; byte/count leases survive map teardown and writing. Unpublished request/route events are buffered in order.",
+      "verification": "Ten controlled cases cover joining and header freeze, redirect identity/header ownership, preflights, no-pause terminal order, duplicate/wrong owner rejection, body/input credit separation, admission rollback, writer lifetime, metadata growth and initial-page publication. All-target workspace tests, strict lint, formatting and release pass. A private adapter passes12 real-HTTP cases per shell/fullChrome profile: exact continue/fulfill0,65537,4MiB,32MiB; abort; redirected headers/cookies; preflight; disabling a held pause; plus context propagation to new pages. All6 watchdogs clean.",
+      "limitations": "Historical native002 did not verify Cookie filtering on the initial continuation; the later public routing checkpoint fixes that discovered defect. The later public routing checkpoint is integrated in fresh94. Private adapter outcomes alone do not establish public Playwright parity or performance. Trace recording remains unfinished."
+    },
+    "publicRouting": {
+      "status": "integrated in fresh94 core; focused detached-frame follow-up verified",
+      "buildReport": ".cache/routing-public-build-003/report.json",
+      "buildReportSha256": "bd7a8bd15c7adcf112d913af1ff283e5a7b890caea0b937696f489f10dcc2f40",
+      "liveReport": ".cache/routing-public-probes-004/report.json",
+      "liveReportSha256": "5857ac9471bf47309b758b67de078702f64ebf5989556d479cd48bfbf5fc481a",
+      "driverSha256": "96d06201527d364e6f965fcc6466a47ebb91f32acfdfe1f3bd2aa4c263af8d9a",
+      "verification": "399 frozen sources, nine build/type/controlled/Rust/release groups plus six shell/full public probe groups. Ten new host cases cover callback ownership, removal, async context, times, validation, redirect-chain eviction, lazy headers and pinned overflow. First-hop Cookie filtering now preserves the browser jar. Shared report comparison matches pinned outcomes except the separately recorded typed TargetClosedError; optional CDP diagnostics excluded. Fifteen clean watchdogs. Build002 retained a test-only response-after-finish setup failure corrected in003. The frozen405-source94-group core subsequently passes, with32shared routing cases. Extended Bun shell/fullChrome, Node22/24 and packed/type checks pass. Filmstrip fixture geometry correction preserves stable-geometry/viewer checks and leaves production unchanged. The subsequent16-group focused follow-up passes33shared cases on Bun shell/fullChrome and Node22/24 shell, host reference/history/route tests on all three runtimes, strict types and packed consumers. A Request retains its original Frame across child detachment, identifier reuse and page closure.",
+      "limitations": "API requests, Route.fetch/APIResponse fulfillment, CDPSession and native trace-network recording remain unsupported. Original large request and redirect observation retain separate limits. No Linux or performance acceptance.",
+      "integratedReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T11-57-55.428Z/report.json",
+      "integratedReportSha256": "52007e89dc188e1fb8bc65717ba50f21de972614df5d13816940387cfa5b5210",
+      "extendedAudit": ".cache/routing-public-extended-audit-001.json",
+      "frameLifetimeReport": ".cache/request-frame-focused-001/report.json",
+      "frameLifetimeReportSha256": "1a818b95fddbc9aba24f14a2209faae8ac25f5255c65cb7a55de28d76a3fb0bf",
+      "publicCheckpoint": "compatibility/evidence/routing-checkpoint-2026-10-09.json"
+    }
   },
   "testSources": [
     "crates/flashwright-protocol/tests/framing.rs",
@@ -299,19 +487,98 @@
     "benchmarks/compare-drivers.mjs",
     "tools/driver-comparison-contract.mjs",
     "tools/verify-driver-comparison.mjs",
-    "packages/flashwright/src/engine-contract.ts",
-    "packages/flashwright/src/driver-runtime.ts",
+    "packages/flashwright-core/src/engine-contract.ts",
+    "packages/flashwright-core/src/driver-runtime.ts",
     "tools/pack-driver-runtime.mjs",
     "tools/test-platform-runtime.mjs",
-    "compatibility/m1/runtime-package.mjs"
+    "compatibility/m1/runtime-package.mjs",
+    "compatibility/m1/test_init_scripts.py",
+    "compatibility/m1/test_history_navigation.py",
+    "compatibility/m2/init-scripts.mjs",
+    "compatibility/m2/history-navigation.mjs",
+    "compatibility/m2/devices.mjs",
+    "tools/run-runner-defaults-tests.mjs",
+    "tools/test-packed-runner-integration.mjs",
+    "compatibility/m1/client-request-order.mjs",
+    "compatibility/m1/navigation-watermark.mjs",
+    "compatibility/m1/test_navigation_waits.py",
+    "compatibility/m2/navigation-waits.mjs",
+    "tools/test-native-url-pattern.mjs",
+    "tools/test-runner-screenshots.mjs",
+    "tools/run-runner-screenshot-tests.mjs",
+    "tools/record-runner-screenshots-provenance.mjs",
+    "compatibility/m2/runner-screenshots/artifacts.spec.ts",
+    "compatibility/m2/runner-screenshots/module-context.spec.ts",
+    "compatibility/m2/context-settings.mjs",
+    "compatibility/m2/context-settings-runner/settings.spec.ts",
+    "compatibility/m2/runner/context-settings-types.ts",
+    "compatibility/m1/test_context_settings.py",
+    "compatibility/m1/test_element_resolution.py",
+    "compatibility/m2/element-resolution.mjs",
+    "compatibility/m2/runner/element-resolution-types.ts",
+    "tools/record-element-resolution-provenance.mjs",
+    "tools/run-element-resolution-tests.mjs",
+    "compatibility/m1/test_sequential_typing.py",
+    "compatibility/m2/sequential-typing.mjs",
+    "compatibility/m2/runner/sequential-typing-types.ts",
+    "tools/record-sequential-typing-provenance.mjs",
+    "compatibility/m1/test_trace_diagnostics.py",
+    "tools/test-caller-locations.mjs",
+    "tools/test-manual-tracing.mjs",
+    "tools/run-manual-trace-tests.mjs",
+    "tools/test-manual-trace-viewer.mjs",
+    "tools/run-manual-trace-runner-tests.mjs",
+    "tools/record-manual-tracing-provenance.mjs",
+    "compatibility/m1/test_element_actions.py",
+    "compatibility/m2/element-actions.mjs",
+    "compatibility/m2/runner/element-action-types.ts",
+    "tools/record-element-action-provenance.mjs",
+    "tools/run-element-action-tests.mjs",
+    "compatibility/m2/trace-sources/playwright.config.ts",
+    "compatibility/m2/trace-sources/sources.spec.ts",
+    "compatibility/m2/trace-sources/standalone.ts",
+    "tools/run-trace-source-checks.mjs",
+    "tools/run-trace-source-tests.mjs",
+    "tools/test-trace-resources.mjs",
+    "tools/test-trace-source-viewer.mjs",
+    "compatibility/m1/test_input_attachments.py",
+    "compatibility/m1/test_file_inputs.py",
+    "compatibility/m1/test_file_chooser.py",
+    "compatibility/m1/chooser-subscription.mjs",
+    "compatibility/m2/file-inputs.mjs",
+    "compatibility/m2/file-chooser.mjs",
+    "compatibility/m2/runner/file-input-types.ts",
+    "tools/test-input-attachments.mjs",
+    "crates/flashwright-engine/src/filmstrip.rs",
+    "compatibility/m1/test_filmstrip.py",
+    "tools/test-native-filmstrip.mjs",
+    "tools/test-trace-filmstrip.mjs",
+    "tools/run-trace-filmstrip-tests.mjs",
+    "tools/test-trace-filmstrip-viewer.mjs",
+    "tools/test-packed-filmstrip.mjs",
+    "compatibility/m2/trace-filmstrip/filmstrip.spec.ts",
+    "crates/flashwright-engine/src/response_body.rs",
+    "crates/flashwright-engine/src/network_state.rs",
+    "compatibility/m1/test_network_headers.py",
+    "compatibility/m2/network-headers.mjs",
+    "crates/flashwright-browser/src/connection/incoming/request_event.rs",
+    "compatibility/m2/request-payloads.mjs",
+    "crates/flashwright-engine/src/network_observer.rs",
+    "tools/test-routing-host.mjs",
+    "tools/test-network-history.mjs",
+    "compatibility/m2/routing-reference.mjs",
+    "compatibility/m2/routing-lifecycle.mjs",
+    "compatibility/m2/routing-errors.mjs",
+    "compatibility/m2/routing-payloads.mjs",
+    "compatibility/m2/runner/routing-types.ts"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
-    "No complete runner adapter, aliases, pnpm or Yarn verification yet",
+    "The complete runner adapter remains unfinished. Canonical package aliases and npm/pnpm/Yarn installation paths have preliminary verification; the matrix must be refreshed for the current 376-source Bun checkpoint. Yarn PnP runner loading remains explicitly unsupported.",
     "Value coverage is a tested development subset, not full differential conformance with every Playwright evaluation case",
     "Emulated Linux functional evidence does not satisfy native Linux performance gates",
-    "Navigation/network support is the tested development subset; URLPattern, full header/cookie variants, routing, API requests and service-worker semantics require further conformance",
-    "Screenshot masks, element capture, assertions and runner artifact policies remain unimplemented; persistent Page.keyboard down/up, sequential typing and broader keyboard APIs remain unimplemented",
+    "Navigation/network support is a tested development subset. Native URLPattern is recognized only where the JavaScript runtime provides it; raw request/response headers now cover tested redirects, cache, failures, Cookie and repeated Set-Cookie. Broader authentication/header/cookie variants, routing, API requests and service-worker semantics require further conformance. Uncached raw-header reads require the original live page and bounded native history; expiry reports ResourceLimitError.",
+    "Screenshot masks, element capture and screenshot assertions remain unimplemented. Runner screenshot policies and manual action traces are verified, but automatic runner tracing, DOM/network snapshots and video remain unsupported; manual source embedding is verified on macOS/Bun. Persistent Page.keyboard down/up, direct insertText and broader keyboard APIs remain unimplemented.",
     "Cross-process child-frame routing explicitly rejects; FrameLocator, cross-context ElementHandle adoption and broader frame/navigation conformance remain unfinished",
     "Native text input containing unpaired UTF-16 surrogates rejects explicitly; selector and read strings preserve those units",
     "Locator coverage is an experimental tested subset; complete option/export enforcement and adversarial input/cancellation conformance remain release gates",
@@ -327,7 +594,89 @@
     "At 179 matching source hashes, all 27 native macOS core groups and all 27 emulated Linux core groups pass, including 61 lifecycle cases per platform, with four focused Node22/headless-shell groups. Real-browser tests preserve a 9 MiB all-byte binary body and 2 MiB NUL text with a JSON representation above 12 MiB. Public response-body differentials match pinned Playwright byte-for-byte with one HTTP request per body. The initial Linux launch failed before creating a container because its local image was missing; rebuilding the pinned recipe restored the environment, and a separately recorded run passed. No new performance claim; native Linux and release gates remain open.",
     "Screenshot preparation in out-of-process frames is not implemented; only unmodified capture is supported there. Images are limited to 32767 pixels on each axis, 16777216 total pixels and the negotiated encoded attachment bound (32 MiB by default). Screenshot cleanup has an independent bounded budget and can retire a page when restoration is uncertain. Native viewport setup changed in this implementation, so previous timing observations do not apply to this binary.",
     "All 29 native macOS core groups and all 29 emulated Linux core groups pass, including 57 Rust tests and 64 lifecycle cases per platform. Six focused Node22/headless-shell groups also pass. All 187 final source hashes match across this matrix. Child/parent rendering readiness makes image comparison independent of first-paint races shared by both engines. A blocked remote renderer times out and releases its temporary session without losing the parent. Screenshot differentials compare decoded pixels and dimensions, including navigation during fonts, natural viewport, unmodified cross-process frames and a 12.6 MB PNG. Per-page deadlines, exact preparation restoration, atomic files, payload limits and cancellation pass. Native window/screen metrics now match the pinned reference. No new performance claim; prior timings apply only to their recorded binaries. Native Linux, full artifact/runner coverage, platform packaging and release gates remain open.",
-    "ElementHandle-specific actions/reads remain typed unsupported; use a Locator for implemented operations. Handles can retain and evaluate Maps, functions and symbols, but jsonValue for those classes, Error/typed-array serialization, cross-context element adoption and out-of-process frame evaluation remain unsupported. Handle slots are capped at 4096 per page, including pending allocations. No new performance result applies to this binary.",
-    "Console/error history, worker and out-of-process frame console delivery, and async removeAllListeners behavior remain outside this slice. Async listener-removal options reject explicitly. Console references share the 4096 public handle limit and require disposal; unobserved references use a separate bounded background queue. Native Linux and new performance claims remain open."
+    "ElementHandle selectText, scrollIntoViewIfNeeded and setInputFiles are verified; its other specific actions/reads remain typed unsupported. Use a Locator for other implemented operations. Handles can retain and evaluate Maps, functions and symbols, but jsonValue for those classes, Error/typed-array serialization, cross-context element adoption and out-of-process frame evaluation remain unsupported. Handle slots are capped at 4096 per page, including pending allocations. No new performance result applies to this binary.",
+    "Console/error history, worker and out-of-process frame console delivery, and async removeAllListeners behavior remain outside this slice. Async listener-removal options reject explicitly. Console references share the 4096 public handle limit and require disposal; unobserved references use a separate bounded background queue. Native Linux and new performance claims remain open.",
+    "Trace source/resource browser and filesystem checks currently cover macOS arm64/Bun1.4.2. Node22/24 caller mapping is separately verified, but this does not establish source-feature runtime/platform release coverage. Source-enabled archives include referenced framework frames and charge repeated aliases; old artifact-off timings do not measure their cost.",
+    "File uploads and chooser lifecycle pass native macOS shell/full-Chrome checks and focused Node22/24 consumers. Directory uploads, webkitdirectory and out-of-process chooser frames remain unsupported. Admission is limited to 4096 files, 1 MiB UTF-16 metadata and 32 MiB in-memory bytes; the latter is narrower than the reference 50 MiB cap. S4.m and S4.n separately record invalid-input rejection and cancellation of unpublished chooser adoption. These differences are not equal-result performance evidence.",
+    "Integrated manual filmstrip/source/upload/screenshot packed consumers pass on macOS/Bun and focused Node22/24. Browser corpus and actual viewer checks cover headless shell and full Chrome on this host. Native Linux, full automatic traces, timing under these artifacts and release package-manager coverage remain open."
+  ],
+  "verifiedCheckpoint": {
+    "status": "experimental native macOS development checkpoint; not release support",
+    "report": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T11-57-55.428Z/report.json",
+    "groups": 94,
+    "sourceEntries": 405,
+    "runtime": {
+      "name": "bun",
+      "version": "1.4.2"
+    },
+    "driverSha256": "96d06201527d364e6f965fcc6466a47ebb91f32acfdfe1f3bd2aa4c263af8d9a",
+    "scope": "All94 development core groups ran fresh on405 unchanged sources. Public route registration/callbacks/overrides and bounded native interception integrate with existing navigation, handles, input, runner and manual tracing/filmstrip foundations. Shared32-case routing corpus also passes Bun fullChrome and Node22/24 shell; packed ESM/CommonJS routing and types pass. Initial core001 stopped on an earliest-filmstrip-frame geometry assumption; a retained80-context diagnostic and both complete filmstrip profiles justify the test-only correction in this checkpoint. A subsequent Request.frame detached-child lifetime fix passes16focused groups and33shared routing cases; it is explicitly separate from this full-core freeze. API requests, DOM/network trace recording, broader migration, Linux and release/performance gates remain open.",
+    "reportSha256": "52007e89dc188e1fb8bc65717ba50f21de972614df5d13816940387cfa5b5210"
+  },
+  "migrationDiagnostics": [
+    {
+      "project": "Actual Budget",
+      "upstreamCommit": "38de5cadbe8ba14576f10752b9e214fcc6be70c6",
+      "applicationBuild": "Original production browser build under Bun1.4.2, preserving app and test bodies. Two package metadata adaptations reproduce the original polyfill patch. A newly resolved Bun lock is not Yarn lock equivalence.",
+      "nativeCheckpoint": "core64, driver036d4c0e45267c3a36182452c088878d8c7c44faf7d3f527a673e3e806cf53a9",
+      "comparators": [
+        "project Playwright1.61.1",
+        "pinned Playwright1.60.0",
+        "packed Flashwright core64"
+      ],
+      "tests": [
+        "checks the page visuals",
+        "creates a new empty budget file",
+        "navigates back to start page by clicking on \"no server\" in an empty budget file"
+      ],
+      "result": "All three unchanged original onboarding bodies pass in all three consumers, with clean process ownership and source/package audits.",
+      "adaptations": [
+        "Candidate framework imports only; public ESM package mode uniformly selected after retaining project-reference Bun/CommonJS loader failure.",
+        "Original external start URL selects the built app; same pinned full Chromium and one worker.",
+        "Trace explicitly off. Original VRT environment remains unset, so the custom screenshot matcher is a no-op."
+      ],
+      "limitations": [
+        "Runtime diagnostic only, not complete migration, original artifact policy, visual assertion coverage or a timing comparison.",
+        "Standalone strict e2e check, outside the upstream app typecheck, has five shared ambient errors plus native missing API families. The application build/type commands themselves pass.",
+        "Native helper gaps at this checkpoint: Locator.evaluate, pressSequentially, selectText, scrollIntoViewIfNeeded, Page.waitForSelector, filechooser wait, FileChooser.setFiles. Later API gates do not retroactively change this consumer result."
+      ],
+      "retainedReportSha256": "480ba4a7d2415c13971fb115f1a71ebae65f3215142e27ae0716f7b8fde2dac5",
+      "publicEvidence": "Private development receipts retain exact app/source/package/resource identities. A normalized reproducible export is required before public release."
+    },
+    {
+      "project": "Actual Budget",
+      "upstreamCommit": "38de5cadbe8ba14576f10752b9e214fcc6be70c6",
+      "applicationBuild": "Original production browser build under Bun1.4.2, preserving app and test bodies. Two package metadata adaptations reproduce the original polyfill patch. A newly resolved Bun lock is not Yarn lock equivalence.",
+      "nativeCheckpoint": "core86 integrated filmstrip/media checkpoint, driver661bb632950b2d54c2caa9bb0754a8210b4f1465ffec17fcfa22b9816c1fffef",
+      "comparators": [
+        "project Playwright1.61.1",
+        "pinned Playwright1.60.0",
+        "packed Flashwright core86"
+      ],
+      "tests": [
+        "checks the page visuals",
+        "creates a new empty budget file",
+        "navigates back to start page by clicking on \"no server\" in an empty budget file",
+        "creates a new budget file by importing YNAB4 budget",
+        "creates a new budget file by importing nYNAB budget",
+        "creates a new budget file by importing Actual budget"
+      ],
+      "result": "All six unchanged original onboarding bodies pass in all three consumers, including YNAB4, nYNAB and Actual file imports. Zero skips, retries or flaky outcomes; retained source/package/browser/process audits pass.",
+      "adaptations": [
+        "Candidate framework imports only; public ESM package mode uniformly selected after retaining project-reference Bun/CommonJS loader failure.",
+        "Original external start URL selects the built app; same pinned full Chromium and one worker.",
+        "Trace explicitly off. Original VRT environment remains unset, so the custom screenshot matcher is a no-op."
+      ],
+      "typeDiagnostic": "Exactly the same five upstream ambient-type diagnostics in all three strict e2e checks; zero additional candidate API errors. This does not claim clean standalone compilation.",
+      "snapshotSizing": "A separate pinned-reference-only trace-on pass of the same six bodies produces161frame events in6archives. Largest archived event279875bytes exceeds the current256KiBordinary-event cap; largest resource4006530bytes. This is design input, not candidate snapshot or replay coverage.",
+      "limitations": [
+        "The three trace-off lanes remain a runtime diagnostic, not a complete migration, original trace-policy/visual assertion claim or timing comparison.",
+        "Original VRT remains unset, so the upstream theme screenshot matcher is a no-op.",
+        "Reference-only snapshot sizing records archive events after CSS resource aliasing; it is not an upper bound on renderer serialization."
+      ],
+      "retainedReportSha256": "83fc3a497f65a5e523ec50ec976baea26f6030c70efa08a9c9f0219a562be080",
+      "retainedFileAndResourceChecks": 1609,
+      "publicEvidence": "Private development receipts retain exact app/source/package/resource identities. A normalized reproducible export is required before public release."
+    }
   ]
 }

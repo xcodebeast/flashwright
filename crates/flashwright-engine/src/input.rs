@@ -25,6 +25,7 @@ pub(crate) async fn dispatch_input_sequence(
 ) -> InputSequenceDispatch {
     let mut deliveries = vec![InputDelivery::NotDispatched; parameters.len()];
     let commands = operation.check().and_then(|()| {
+        page.trace_before_input(operation);
         browser
             .connection
             .start_commands(method, parameters, Some(&page.session_identifier))
@@ -85,6 +86,7 @@ pub(crate) async fn dispatch_input(
     public_method: &str,
 ) -> InputDispatch {
     let command = operation.check().and_then(|()| {
+        page.trace_before_input(operation);
         browser
             .connection
             .start_command(method, parameters, Some(&page.session_identifier))

@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -8,13 +9,13 @@ import { sourceManifest } from './source-manifest.mjs';
 import { identifyBrowser } from './browser-identity.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const destination = resolve(`compatibility/evidence/platform-runtime-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}`);
+const destination = resolve(`compatibility/evidence/platform-runtime-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(destination, { recursive: true });
 const working = await mkdtemp(resolve('.cache/platform-runtime-consumer-'));
 const driver = resolve(process.env.FLASHWRIGHT_DRIVER_PATH ?? 'target/debug/flashwright-driver');
 const browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath());
 const sources = await sourceManifest();
-const report = { status: 'running', node: process.version, platform: process.platform, architecture: process.arch,
+const report = { status: 'running', ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   sources, driverSha256: hash(await readFile(driver)), browser, checks: [],
   scope: 'Private platform tarball and clean offline npm ESM/CommonJS consumers with scripts disabled, no driver override and no Cargo in consumer PATH. No publication, other package manager or performance claim.',
 };
@@ -43,11 +44,12 @@ try {
   const packedEnvironment = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', FLASHWRIGHT_BROWSER_PATH: browser.executablePath,
     FLASHWRIGHT_PACKAGED_RUNTIME_ARCHIVE: runtime.archive, FLASHWRIGHT_PACKED_REPORT_DIRECTORY: destination };
   await writeFile(join(destination, 'consumer-output.txt'), run('offline packed ESM/CommonJS consumers without Cargo or driver override', [process.execPath, 'tools/test-packed-package.mjs'], packedEnvironment));
-  const consumer = JSON.parse(await readFile(join(destination, `packed-library-${process.platform}-${process.arch}-${process.versions.node}.json`), 'utf8'));
+  const consumer = JSON.parse(await readFile(join(destination, `packed-library-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`), 'utf8'));
   assert.equal(consumer.runtimeOverride, null);
   assert.equal(consumer.driverSha256, report.driverSha256);
   assert.equal(consumer.packagedRuntime.archiveSha256, report.runtimeArchiveSha256);
   await copyFile(join(consumer.consumerDirectory, consumer.package), join(destination, 'library.tgz'));
+  for (const [name, artifact] of Object.entries(consumer.implementationArchives)) await copyFile(artifact.archive, join(destination, `${name}.tgz`));
   await copyFile('compatibility/m1/runtime-package.mjs', join(consumer.consumerDirectory, 'runtime-package.mjs'));
   const environment = { ...process.env, PATH: `${dirname(process.execPath)}:/usr/bin:/bin`, PLAYWRIGHT_SKIP_BROWSER_GC: '1', FLASHWRIGHT_BROWSER_PATH: browser.executablePath };
   delete environment.FLASHWRIGHT_DRIVER_PATH;

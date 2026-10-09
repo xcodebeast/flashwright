@@ -55,7 +55,7 @@ class BinaryBodyCase(OwnedDriverCase):
         while (response := matching_response()) is None:
             message = self.receive_frame(skip_events=False)
             self.assertEqual(message["kind"], "event", message)
-        return self.command("response.body", {"page": self.page, "request": response["identifier"]})
+        return self.command("response.body", {"page": self.page, "request": response["identifier"], "requestIdentity": response["request"]["identity"]})
 
     def receive_frame(self, skip_events=True):
         length, = struct.unpack("<I", self.read_exact(4))
@@ -106,6 +106,20 @@ class BinaryBodyCase(OwnedDriverCase):
 
 
 class BodyTransferTests(BinaryBodyCase):
+    def test_wrong_request_occurrence_cannot_read_a_body_or_consume_its_slot(self):
+        payload = bytes([0, 255, 128, 13])
+        self.payloads["/owned-body"] = ("application/octet-stream", payload)
+        original = self.fetch("/owned-body")
+        invalid = self.command("response.body", {**original["parameters"], "requestIdentity": "unrelated-occurrence"})
+        self.send(invalid)
+        result = self.receive_frame()
+        self.assertEqual(result["requestId"], invalid["requestId"])
+        self.assertEqual(result["kind"], "error", result)
+        self.assertEqual(result["error"]["code"], "ProtocolError", result)
+        self.assertIn("original request occurrence", result["error"]["message"])
+        successor = self.command("response.body", original["parameters"])
+        self.assertEqual(self.receive_attachment(successor), payload)
+
     def test_oversized_cdp_event_retains_its_resource_failure_during_browser_cleanup(self):
         command = self.command("page.evaluate", self.evaluation("console.log('x'.repeat(9 * 1024 * 1024)); 42"))
         self.send(command)

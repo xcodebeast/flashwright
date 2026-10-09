@@ -1,0 +1,216 @@
+// throttledRate
+throttledRate = 200
+
+// unthrottleDuration
+unthrottleDuration = 500
+
+// Screencast._startScreencast
+_startScreencast(size, quality) {
+        this._size = size;
+        if (!this._size) {
+          const viewport = this.page.browserContext._options.viewport || { width: 800, height: 600 };
+          const scale = Math.min(1, 800 / Math.max(viewport.width, viewport.height));
+          this._size = {
+            width: Math.floor(viewport.width * scale),
+            height: Math.floor(viewport.height * scale)
+          };
+        }
+        this._size = {
+          width: this._size.width & ~1,
+          height: this._size.height & ~1
+        };
+        this.page.delegate.startScreencast({
+          width: this._size.width,
+          height: this._size.height,
+          quality: quality ?? 90
+        });
+      }
+
+// Screencast._stopScreencast
+_stopScreencast() {
+        this._lastFrame = void 0;
+        this.page.delegate.stopScreencast();
+      }
+
+// Screencast.onScreencastFrame
+onScreencastFrame(frame, ack) {
+        this._lastFrame = frame;
+        const asyncResults = [];
+        for (const [client, disconnected] of this._clients) {
+          const result2 = client.onFrame(frame);
+          if (!result2)
+            continue;
+          asyncResults.push(Promise.race([result2.catch(() => {
+          }), disconnected]));
+        }
+        if (ack) {
+          if (!asyncResults.length)
+            ack();
+          else
+            Promise.race(asyncResults).then(ack);
+        }
+      }
+
+// ScreencastTracingRecorder.constructor
+constructor(screencast, onFrame) {
+        this._unthrottledUntil = 0;
+        this._screencast = screencast;
+        this._client = {
+          onFrame: (frame) => {
+            const time = monotonicTime();
+            if (time < this._unthrottledUntil) {
+              onFrame(frame);
+              return;
+            }
+            if (this._pendingAck)
+              return;
+            onFrame(frame);
+            this._pendingAck = new ManualPromise();
+            this._timer = setTimeout(() => this._clearPendingAck(), throttledRate);
+            return this._pendingAck;
+          },
+          gracefulClose: () => this.dispose(),
+          dispose: () => this.dispose()
+        };
+        this._screencast.addClient(this._client);
+      }
+
+// ScreencastTracingRecorder.dispose
+dispose() {
+        this._screencast.removeClient(this._client);
+        this._clearPendingAck();
+      }
+
+// ScreencastTracingRecorder.temporarilyDisableThrottling
+temporarilyDisableThrottling() {
+        this._unthrottledUntil = monotonicTime() + unthrottleDuration;
+        this._clearPendingAck();
+      }
+
+// ScreencastTracingRecorder._clearPendingAck
+_clearPendingAck() {
+        this._pendingAck?.resolve();
+        this._pendingAck = void 0;
+        if (this._timer) {
+          clearTimeout(this._timer);
+          this._timer = void 0;
+        }
+      }
+
+// Tracing._startScreencast
+_startScreencast() {
+        if (!(this._context instanceof BrowserContext))
+          return;
+        for (const page of this._context.pages())
+          this._startScreencastInPage(page);
+        this._screencastListeners.push(
+          eventsHelper.addEventListener(this._context, BrowserContext.Events.Page, this._startScreencastInPage.bind(this))
+        );
+      }
+
+// Tracing._stopScreencast
+_stopScreencast() {
+        eventsHelper.removeEventListeners(this._screencastListeners);
+        for (const recorder of this._pageTracingRecorders.values())
+          recorder.dispose();
+        this._pageTracingRecorders.clear();
+      }
+
+// Tracing._startScreencastInPage
+_startScreencastInPage(page) {
+        const prefix = page.guid;
+        const onFrame = (params2) => {
+          const suffix = Date.now();
+          const sha1 = `${prefix}-${suffix}.jpeg`;
+          const event = {
+            type: "screencast-frame",
+            pageId: page.guid,
+            sha1,
+            width: params2.viewportWidth,
+            height: params2.viewportHeight,
+            timestamp: monotonicTime(),
+            frameSwapWallTime: params2.frameSwapWallTime
+          };
+          this._appendResource(sha1, params2.buffer);
+          this._appendTraceEvent(event);
+        };
+        this._pageTracingRecorders.set(page, new ScreencastTracingRecorder(page.screencast, onFrame));
+      }
+
+// Tracing._temporarilyDisableThrottling
+_temporarilyDisableThrottling(page) {
+        if (page)
+          this._pageTracingRecorders.get(page)?.temporarilyDisableThrottling();
+      }
+
+// Tracing.onBeforeCall
+onBeforeCall(sdkObject, metadata, parentId) {
+        const event = createBeforeActionTraceEvent(metadata, parentId ?? this._currentGroupId());
+        if (!event)
+          return Promise.resolve();
+        this._temporarilyDisableThrottling(sdkObject.attribution.page);
+        if (this._shouldCaptureSnapshot(sdkObject, metadata, "before"))
+          event.beforeSnapshot = `before@${metadata.id}`;
+        this._state?.callIds.add(metadata.id);
+        this._appendTraceEvent(event);
+        return this._captureSnapshot(event.beforeSnapshot, sdkObject, metadata);
+      }
+
+// Tracing.onBeforeInputAction
+onBeforeInputAction(sdkObject, metadata) {
+        if (!this._state?.callIds.has(metadata.id))
+          return Promise.resolve();
+        const event = createInputActionTraceEvent(metadata);
+        if (!event)
+          return Promise.resolve();
+        this._temporarilyDisableThrottling(sdkObject.attribution.page);
+        if (this._shouldCaptureSnapshot(sdkObject, metadata, "input"))
+          event.inputSnapshot = `input@${metadata.id}`;
+        this._appendTraceEvent(event);
+        return this._captureSnapshot(event.inputSnapshot, sdkObject, metadata);
+      }
+
+// Tracing.onAfterCall
+onAfterCall(sdkObject, metadata) {
+        if (!this._state?.callIds.has(metadata.id))
+          return Promise.resolve();
+        this._state?.callIds.delete(metadata.id);
+        const event = createAfterActionTraceEvent(metadata);
+        if (!event)
+          return Promise.resolve();
+        this._temporarilyDisableThrottling(sdkObject.attribution.page);
+        if (this._shouldCaptureSnapshot(sdkObject, metadata, "after"))
+          event.afterSnapshot = `after@${metadata.id}`;
+        this._appendTraceEvent(event);
+        return this._captureSnapshot(event.afterSnapshot, sdkObject, metadata);
+      }
+
+// CRPage.startScreencast
+startScreencast(options2) {
+        this._mainFrameSession._client.send("Page.startScreencast", {
+          format: "jpeg",
+          quality: options2.quality,
+          maxWidth: options2.width,
+          maxHeight: options2.height
+        }).catch(() => {
+        });
+      }
+
+// CRPage.stopScreencast
+stopScreencast() {
+        this._mainFrameSession._client._sendMayFail("Page.stopScreencast").catch(() => {
+        });
+      }
+
+// FrameSession._onScreencastFrame
+_onScreencastFrame(payload) {
+        const buffer = Buffer.from(payload.data, "base64");
+        this._page.screencast.onScreencastFrame({
+          buffer,
+          frameSwapWallTime: payload.metadata.timestamp ? payload.metadata.timestamp * 1e3 : Date.now(),
+          viewportWidth: payload.metadata.deviceWidth,
+          viewportHeight: payload.metadata.deviceHeight
+        }, () => {
+          this._client._sendMayFail("Page.screencastFrameAck", { sessionId: payload.sessionId });
+        });
+      }

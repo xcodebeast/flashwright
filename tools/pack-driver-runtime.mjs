@@ -1,32 +1,35 @@
+import { requireBun } from './bun-toolchain.mjs';
+import { runtimeMetadata } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { chmod, copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { chmod, copyFile, cp, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename, dirname, join, resolve } from 'node:path';
 import { sourceManifest } from './source-manifest.mjs';
 
 const require = createRequire(import.meta.url);
-const { EngineClient } = require('../packages/flashwright/dist/commonjs/client.js');
-const { engineHandshake } = require('../packages/flashwright/dist/commonjs/engine-contract.js');
-const { driverPackageName, verifyInstalledDriver, verifyDriverHeader } = require('../packages/flashwright/dist/commonjs/driver-runtime.js');
-const { residentRuntimeSha256 } = require('../packages/flashwright/dist/commonjs/runtime-version.cjs');
+const { EngineClient } = require('../packages/flashwright-core/dist/commonjs/client.js');
+const { engineHandshake } = require('../packages/flashwright-core/dist/commonjs/engine-contract.js');
+const { driverPackageName, verifyInstalledDriver, verifyDriverHeader } = require('../packages/flashwright-core/dist/commonjs/driver-runtime.js');
+const { residentRuntimeSha256 } = require('../packages/flashwright-core/dist/commonjs/runtime-version.cjs');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const arguments_ = process.argv.slice(2);
 const options = {};
 for (let index = 0; index < arguments_.length; index += 2) {
   const name = arguments_[index];
-  assert.ok(['--driver', '--destination'].includes(name) && arguments_[index + 1] && !Object.hasOwn(options, name), 'Usage: node tools/pack-driver-runtime.mjs --driver EXECUTABLE [--destination NEW_DIRECTORY]');
+  assert.ok(['--driver', '--destination'].includes(name) && arguments_[index + 1] && !Object.hasOwn(options, name), 'Usage: bun tools/pack-driver-runtime.mjs --driver EXECUTABLE [--destination NEW_DIRECTORY]');
   options[name] = arguments_[index + 1];
 }
 assert.ok(options['--driver'], 'Pass --driver with the built executable for this host');
 const sources = await sourceManifest();
 const packageName = driverPackageName(process.platform, process.arch);
-const library = JSON.parse(await readFile('packages/flashwright/package.json', 'utf8'));
+const library = JSON.parse(await readFile('packages/flashwright-core/package.json', 'utf8'));
 assert.equal(library.version, engineHandshake.packageVersion);
 assert.equal(library.optionalDependencies[packageName], library.version);
-const destination = resolve(options['--destination'] ?? `.cache/driver-runtime-${process.platform}-${process.arch}-${randomUUID()}`);
-await mkdir(destination);
+const requestedDestination = resolve(options['--destination'] ?? `.cache/driver-runtime-${process.platform}-${process.arch}-${randomUUID()}`);
+await mkdir(requestedDestination);
+const destination = await realpath(requestedDestination);
 const directory = join(destination, 'package');
 await mkdir(join(directory, 'bin'), { recursive: true });
 const executable = join(directory, 'bin/flashwright-driver');
@@ -94,9 +97,9 @@ await writeFile(join(directory, 'provenance.json'), JSON.stringify({ schemaVersi
 const report = process.platform === 'linux' ? process.report.getReport() : undefined;
 assert.equal(verifyInstalledDriver(join(directory, 'package.json'), { platform: process.platform, architecture: process.arch, glibcVersion: report?.header.glibcVersionRuntime }), executable);
 assert.deepEqual(await sourceManifest(), sources, 'Sources changed while packaging');
-const packed = JSON.parse(commandText('npm', ['pack', directory, '--pack-destination', destination, '--ignore-scripts', '--json']))[0];
-const archive = join(destination, packed.filename);
-const receipt = { status: 'passed', kind: 'private-platform-runtime', node: process.version, platform: process.platform, architecture: process.arch,
-  archive, archiveSha256: hash(await readFile(archive)), npmIntegrity: packed.integrity, manifest, sources };
+const archive = join(destination, `${packageName.replace('@', '').replace('/', '-')}-${library.version}.tgz`);
+execFileSync(requireBun(), ['pm', 'pack', '--filename', archive, '--ignore-scripts', '--quiet'], { cwd: directory, encoding: 'utf8' });
+const receipt = { status: 'passed', kind: 'private-platform-runtime', ...runtimeMetadata, platform: process.platform, architecture: process.arch,
+  archive, archiveSha256: hash(await readFile(archive)), integrity: `sha512-${createHash('sha512').update(await readFile(archive)).digest('base64')}`, packageManager: 'bun@1.4.2', manifest, sources };
 await writeFile(join(destination, 'report.json'), JSON.stringify(receipt, null, 2) + '\n');
 console.log(JSON.stringify({ destination, archive, sha256: receipt.archiveSha256, manifest }, null, 2));

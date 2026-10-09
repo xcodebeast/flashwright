@@ -1,0 +1,106 @@
+// server.reload
+async reload(progress2, options2) {
+        return this.mainFrame().raceNavigationAction(progress2, async () => {
+          const [response2] = await Promise.all([
+            // Reload must be a new document, and should not be confused with a stray pushState.
+            this.mainFrame().waitForNavigation(progress2, true, options2),
+            progress2.race(this.delegate.reload())
+          ]);
+          return response2;
+        });
+      }
+
+// server.goBack
+async goBack(progress2, options2) {
+        return this.mainFrame().raceNavigationAction(progress2, async () => {
+          let error;
+          const waitPromise = this.mainFrame().waitForNavigation(progress2, false, options2).catch((e) => {
+            error = e;
+            return null;
+          });
+          const result2 = await progress2.race(this.delegate.goBack());
+          if (!result2) {
+            waitPromise.catch(() => {
+            });
+            return null;
+          }
+          const response2 = await waitPromise;
+          if (error)
+            throw error;
+          return response2;
+        });
+      }
+
+// server.goForward
+async goForward(progress2, options2) {
+        return this.mainFrame().raceNavigationAction(progress2, async () => {
+          let error;
+          const waitPromise = this.mainFrame().waitForNavigation(progress2, false, options2).catch((e) => {
+            error = e;
+            return null;
+          });
+          const result2 = await progress2.race(this.delegate.goForward());
+          if (!result2) {
+            waitPromise.catch(() => {
+            });
+            return null;
+          }
+          const response2 = await waitPromise;
+          if (error)
+            throw error;
+          return response2;
+        });
+      }
+
+// chromium.reload
+async reload() {
+        await this._mainFrameSession._client.send("Page.reload");
+      }
+
+// chromium.history
+async _go(delta) {
+        const history = await this._mainFrameSession._client.send("Page.getNavigationHistory");
+        const entry = history.entries[history.currentIndex + delta];
+        if (!entry)
+          return false;
+        await this._mainFrameSession._client.send("Page.navigateToHistoryEntry", { entryId: entry.id });
+        return true;
+      }
+
+// client.reload
+async reload(options2 = {}) {
+        const waitUntil = verifyLoadState("waitUntil", options2.waitUntil === void 0 ? "load" : options2.waitUntil);
+        return Response3.fromNullable((await this._channel.reload({ ...options2, waitUntil, timeout: this._timeoutSettings.navigationTimeout(options2) })).response);
+      }
+
+// client.goBack
+async goBack(options2 = {}) {
+        const waitUntil = verifyLoadState("waitUntil", options2.waitUntil === void 0 ? "load" : options2.waitUntil);
+        return Response3.fromNullable((await this._channel.goBack({ ...options2, waitUntil, timeout: this._timeoutSettings.navigationTimeout(options2) })).response);
+      }
+
+// client.goForward
+async goForward(options2 = {}) {
+        const waitUntil = verifyLoadState("waitUntil", options2.waitUntil === void 0 ? "load" : options2.waitUntil);
+        return Response3.fromNullable((await this._channel.goForward({ ...options2, waitUntil, timeout: this._timeoutSettings.navigationTimeout(options2) })).response);
+      }
+
+// frame.waitForNavigation
+async waitForNavigation(progress2, requiresNewDocument, options2) {
+        const waitUntil = verifyLifecycle("waitUntil", options2.waitUntil === void 0 ? "load" : options2.waitUntil);
+        progress2.log(`waiting for navigation until "${waitUntil}"`);
+        const navigationEvent = await helper.waitForEvent(progress2, this, _Frame.Events.InternalNavigation, (event) => {
+          if (event.error)
+            return true;
+          if (requiresNewDocument && !event.newDocument)
+            return false;
+          progress2.log(`  navigated to "${this._url}"`);
+          return true;
+        }).promise;
+        if (navigationEvent.error)
+          throw navigationEvent.error;
+        if (!this._firedLifecycleEvents.has(waitUntil))
+          await helper.waitForEvent(progress2, this, _Frame.Events.AddLifecycle, (e) => e === waitUntil).promise;
+        const request2 = navigationEvent.newDocument ? navigationEvent.newDocument.request : void 0;
+        return request2 ? request2._finalRequest().response(progress2) : null;
+      }

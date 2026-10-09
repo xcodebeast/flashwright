@@ -8,19 +8,21 @@ The development library now launches real Chromium through a persistent Rust dri
 
 Private macOS arm64 and Linux x64 runtime packages now launch automatically after integrity checks. The [packaging checkpoint](compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json) records 53 passing verification groups across native macOS Node 22/24 and emulated Linux, including clean offline npm consumers without Cargo or a driver override. The selected Linux binary requires glibc 2.30 symbols and was loader-tested on 2.31. Names remain provisional and unpublished; this checkpoint makes no new speed claim. Earlier benchmark snapshots remain tied to their recorded adapters and binaries
 
+The [routing checkpoint](compatibility/evidence/routing-checkpoint-2026-10-09.json) records 94 fresh core groups and a subsequent 16-group frame-lifetime follow-up. Page/context routing now supports ordered callbacks, fallback, continue, fulfill, abort and removal, with exact body checks through 32 MiB. The 33-case routing corpus passes on Bun and Node 22/24, including full Chrome under Bun. API request fixtures and DOM/network trace recording remain open; this checkpoint adds no speed claim.
+
 [SPECS.md](SPECS.md) defines the implementation and release gates. [Milestones](compatibility/milestones.json) track completed evidence and remaining work. [Reference manifest](compatibility/reference-manifest.json) records exact versions, retained runs and platform limitations
 
 ## R2 Development
 
-Bootstrap installs Node inside this checkout and verifies its archive against the official SHA-256 manifest. It requires Python 3.12 or later and curl. Rust is pinned by rust-toolchain.toml
+Bootstrap installs Bun 1.4.2 inside this checkout and verifies its archive against the official SHA-256 manifest. It requires Python 3.12 or later and curl. Rust is pinned by rust-toolchain.toml
 
 ```sh
 export PATH="$(python3 tools/bootstrap.py):$PATH"
-npm ci --ignore-scripts
-npm run inventory:check
-npm run typecheck
-npm run test:harness
-python3 tools/watchdog.py --timeout 60 -- npm run test:runner-boundary
+bun install --frozen-lockfile --ignore-scripts
+bun run inventory:check
+bun run typecheck
+bun run test:harness
+python3 tools/watchdog.py --timeout 60 -- bun run test:runner-boundary
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
@@ -28,26 +30,27 @@ cargo test --workspace --locked
 
 The runner probe deliberately fails one attempt to test retries and deliberately times out another test. Its wrapper checks those exact outcomes, soft failures, attachments and fixture teardown, and exits successfully only when all expectations hold. Its upstream browser and request launch methods are poisoned to detect accidental use
 
-For Node 22, use `python3 tools/bootstrap.py --version 22.22.0` when setting PATH. The copied upstream migration bodies use their own Bundler-resolution configuration. Packed library and runner consumers are checked separately with NodeNext ESM and CommonJS declarations. Both entry points share one runtime so browser class identity, error identity and runner state remain consistent in mixed consumers
+For explicit Node compatibility checks, bootstrap with `python3 tools/bootstrap.py --runtime node --version 22.22.0` (or `24.15.0`), then run `node tools/verify-core.mjs` and `node tools/test-package-managers.mjs`. These preserve Node for test execution while Bun remains the package manager. The copied upstream migration bodies use their own Bundler-resolution configuration. Packed library and runner consumers are checked separately with NodeNext ESM and CommonJS declarations. Both entry points share one runtime so browser class identity, error identity and runner state remain consistent in mixed consumers
 
 After installing the pinned browser, build and verify the core:
 
 ```sh
-PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium
-npm run verify:core
+PLAYWRIGHT_SKIP_BROWSER_GC=1 bun node_modules/playwright/cli.js install chromium
+bun run verify:core
+bun run test:package-managers
 ```
 
 Verification retains source hashes, command logs, the driver hash and results under compatibility/evidence. It includes browser isolation and value round trips, cancellation during resource creation, infinite JavaScript, stopped or killed drivers, worker death, malformed streams and blocked output. Shared Playwright/Flashwright fixtures compare navigation, response bodies, selector semantics, replacements, shadow DOM, child frames and input-event records, including all 212 pinned key descriptions and platform editing shortcuts. Fault cases verify that a timed-out date fill does not mutate the document after recovery, pointer and keyboard cancellation release held input, and a blocked input handler closes the affected page. Public objects observe browser and renderer crashes. The process guardian owns browser and temporary-profile cleanup even when the driver dies. Retrying assertion tests cover missing targets, negation, complete-value matching, bounded diagnostics, blocked renderers and context closure. Packed runner tests verify the installed CLI, fixture generics, reporter declarations and shared ESM/CommonJS identities. The renderer-crash profile cleanup repair waits for the complete owned process group and retains the guardian through slow filesystem cleanup. The [repair evidence](compatibility/evidence/profile-cleanup-repair-2026-10-07/report.json) preserves both reproduced failures, the ownership regression tests and 120 successful crash/close cycles
 
-The core suite also runs `npm run test:migration`, which installs packed packages into a fresh consumer, type-checks the retained TodoMVC tests and runs both engines against the public demo. This check needs external network access because the original fixture keeps its hardcoded URL. It compares application asset hashes before and after the runs, preserves test/fixture bodies and disables the upstream browser backend for Flashwright. Page-level keyboard presses retain existing focus and do not inherit locator timeouts or wait for navigation; their cancellation still follows page/context ownership
+The core suite also runs `bun run test:migration`, which installs packed packages into a fresh consumer, type-checks the retained TodoMVC tests and runs both engines against the public demo. This check needs external network access because the original fixture keeps its hardcoded URL. It compares application asset hashes before and after the runs, preserves test/fixture bodies and disables the upstream browser backend for Flashwright. Page-level keyboard presses retain existing focus and do not inherit locator timeouts or wait for navigation; their cancellation still follows page/context ownership
 
 To try the library from this checkout:
 
 ```sh
-npm run build
+bun run build
 export FLASHWRIGHT_DRIVER_PATH="$PWD/target/debug/flashwright-driver"
-export FLASHWRIGHT_BROWSER_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; process.stdout.write(chromium.executablePath())")"
-node --input-type=module <<'JAVASCRIPT'
+export FLASHWRIGHT_BROWSER_PATH="$(bun --eval "import { chromium } from 'playwright'; process.stdout.write(chromium.executablePath())")"
+bun - <<'JAVASCRIPT'
 import { chromium } from 'flashwright';
 const browser = await chromium.launch();
 try {
@@ -63,56 +66,61 @@ JAVASCRIPT
 An explicit driver path remains available for checkout development. Installed consumers can instead select a matching platform package automatically. Create private local tarballs for the current host after building the library and driver:
 
 ```sh
-cargo build --release --locked
-node tools/pack-driver-runtime.mjs --driver target/release/flashwright-driver --destination .cache/runtime-package
-npm pack ./packages/flashwright --pack-destination .cache --ignore-scripts
+bun tools/build-driver.mjs --release
+bun tools/pack-driver-runtime.mjs --driver target/release/flashwright-driver --destination .cache/runtime-package
+bun --cwd packages/flashwright pm pack --destination ../../.cache --ignore-scripts
+bun --cwd packages/flashwright-core pm pack --destination ../../.cache --ignore-scripts
 ```
 
-The destination must be new. In a fresh consumer, install the library tarball and the generated `flashwright-driver-darwin-arm64-0.0.0.tgz` or `flashwright-driver-linux-x64-0.0.0.tgz` together with `npm install --offline --ignore-scripts /absolute/path/to/library.tgz /absolute/path/to/runtime.tgz`. Set `FLASHWRIGHT_BROWSER_PATH` to the separately installed pinned Chromium, then use the same JavaScript example with `FLASHWRIGHT_DRIVER_PATH` unset. No Rust compiler or install script is needed in that consumer
+The destination must be new. Serve the public library, canonical core and generated platform tarball through a private npm-compatible registry, then install `flashwright@0.0.0` with Bun using that registry. The packed-consumer harness supplies an isolated local registry for verification; Bun local-file dependencies alone do not resolve this unpublished exact-version dependency graph. Set `FLASHWRIGHT_BROWSER_PATH` to the separately installed pinned Chromium, then use the same JavaScript example with `FLASHWRIGHT_DRIVER_PATH` unset. No Rust compiler or install script is needed in that consumer
 
-The package resolver checks version, protocol, resident source identity, executable architecture, size, checksum and permissions before spawning. Linux requires glibc; each artifact records its actual minimum symbol version. The packer preserves third-party notices and records the packaging workspace separately from executable identity. Packages remain private development artifacts under provisional names. Registry acquisition, browser installation tooling, aliases and the pnpm/Yarn matrix remain open. Run `npm run test:platform-runtime` for offline packed-consumer, corruption and ownership checks. [Development coverage](compatibility/development-coverage.json) describes the implemented slice; the release inventory does not yet mark it supported
+The package resolver checks version, protocol, resident source identity, executable architecture, size, checksum and permissions before spawning. Linux requires glibc; each artifact records its actual minimum symbol version. The packer preserves third-party notices and records the packaging workspace separately from executable identity. Packages remain private development artifacts under provisional names. Public registry publication and browser installation tooling remain open. Run `bun run test:platform-runtime` for packed-consumer, corruption and ownership checks. [Development coverage](compatibility/development-coverage.json) describes the implemented slice; the release inventory does not yet mark it supported
+
+Public packages forward to exact-version `@flashwright/core` and `@flashwright/runner` implementations. This keeps browser classes and runner state identical when direct imports and aliases coexist. For a private registry containing the packed graph, the alias consumer installs `playwright: npm:flashwright@0.0.0`, `@playwright/test: npm:@flashwright/test@0.0.0` and the canonical optional peer `@flashwright/test: 0.0.0`; that peer enables `playwright/test`. The command remains `flashwright test`. A library-only installation does not load the runner, and its optional test entry reports installation guidance
+
+The consumer harness serves real packed packages through a local registry and creates projects outside this checkout. It checks Bun 1.4.2 by default and npm, pnpm 10.23.0 and Yarn 4.18.1 under explicit Node compatibility runtimes with direct imports, aliases, workspaces, mixed modules and declarations. Yarn node-modules supports the runner; PnP is limited to library use and declaration checks. PnP runner execution rejects before configuration or test discovery; select `nodeLinker: node-modules` in `.yarnrc.yml` and reinstall. The inherited runner's separate loader and mixed-module discovery do not work in the tested PnP environment. These checks use private fixtures and do not publish packages
 
 Chromium's default argument lists are extracted from the pinned reference, and the shared benchmark-contract check compares actual launch logs from both engines
 
 ## R3 Browser baselines
 
-Install the pinned reference Chromium explicitly if it is absent. No npm install script downloads a browser
+Install the pinned reference Chromium explicitly if it is absent. No dependency install script downloads a browser
 
 ```sh
-PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium
-npm run baseline
-node tools/verify-baseline.mjs benchmarks/results/RETAINED_RUN_DIRECTORY
+PLAYWRIGHT_SKIP_BROWSER_GC=1 bun node_modules/playwright/cli.js install chromium
+bun run baseline
+bun tools/verify-baseline.mjs benchmarks/results/RETAINED_RUN_DIRECTORY
 ```
 
-The harness defaults to full Chromium revision 1223, verifies version 148.0.7778.96, hashes its executable, and records actual launch flags. `FLASHWRIGHT_BROWSER_PATH` selects an existing binary. New core reports bind its exact path, hash, version and distribution; benchmark admission requires that same browser. To install the pinned headless shell separately, use `PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium-headless-shell` and set the browser path to its executable. Workloads include trusted input, delayed assertions, navigation, fresh contexts, real HTTP work and expected failures. All attempts are retained. An invalid run is never used as speed evidence
+The harness defaults to full Chromium revision 1223, verifies version 148.0.7778.96, hashes its executable, and records actual launch flags. `FLASHWRIGHT_BROWSER_PATH` selects an existing binary. New core reports bind its exact path, hash, version and distribution; benchmark admission requires that same browser. To install the pinned headless shell separately, use `PLAYWRIGHT_SKIP_BROWSER_GC=1 bun node_modules/playwright/cli.js install chromium-headless-shell` and set the browser path to its executable. Workloads include trusted input, delayed assertions, navigation, fresh contexts, real HTTP work and expected failures. All attempts are retained. An invalid run is never used as speed evidence
 
 The external watchdog bounds the whole job, samples the observed process tree, and cleans up observed descendants. Its sampling limitations are recorded with the measurements. It is a disclosed job budget, not a public API timeout
 
 For paired engineering measurements, build the optimized driver and verify that exact executable first:
 
 ```sh
-cargo build --workspace --release --locked
+bun tools/build-driver.mjs --release
 export FLASHWRIGHT_DRIVER_PATH="$PWD/target/release/flashwright-driver"
-npm run verify:core
+bun run verify:core
 ```
 
-Set `FLASHWRIGHT_VERIFICATION_REPORT` to the passed report path printed by verification, then run `npm run benchmark:paired`. The harness refuses changed sources or a different driver, alternates engine order across eight independent launch pairs, and retains every attempted sample. Run `node tools/verify-paired.mjs RETAINED_RUN_DIRECTORY` on the resulting directory. Timing conclusions require a valid complete run; the one-pair `test:benchmark-contract` check only verifies behavior and the harness. A valid profile remains scoped to its seven workloads, one worker and recorded machine; it does not satisfy full preview, contention, native Linux or release gates
+Set `FLASHWRIGHT_VERIFICATION_REPORT` to the passed report path printed by verification, then run `bun run benchmark:paired`. The harness refuses changed sources or a different driver, alternates engine order across eight independent launch pairs, and retains every attempted sample. Run `bun tools/verify-paired.mjs RETAINED_RUN_DIRECTORY` on the resulting directory. Timing conclusions require a valid complete run; the one-pair `test:benchmark-contract` check only verifies behavior and the harness. A valid profile remains scoped to its seven workloads, one worker and recorded machine; it does not satisfy full preview, contention, native Linux or release gates
 
 The retained [first paired profile](benchmarks/results/2026-10-07T19-04-45.711Z-darwin-arm64-paired-3d9a92ed/summary.json) identified excess input scheduling cost. The [ordered-input profile](benchmarks/results/2026-10-07T19-50-41.891Z-darwin-arm64-paired-a4803183/summary.json) removed that interaction regression but did not meet the complete-flow material-improvement target. Shared-host conditions change between runs; use the paired comparison within each snapshot rather than historical totals to assess an engine advantage.
 
-For diagnostic protocol accounting, use `npm run benchmark:attribution` with the same verified-driver setup, then `node tools/verify-attribution.mjs RETAINED_RUN_DIRECTORY`. A byte-preserving external proxy records CDP command metadata and byte counts without argument/result payloads. Clock calibration bounds correlation between the Node workload and proxy; acknowledgement intervals are combined without double counting overlap. These instrumented timings are diagnostic evidence, separate from production speed measurements.
+For diagnostic protocol accounting, use `bun run benchmark:attribution` with the same verified-driver setup, then `bun tools/verify-attribution.mjs RETAINED_RUN_DIRECTORY`. A byte-preserving external proxy records CDP command metadata and byte counts without argument/result payloads. Clock calibration bounds correlation between the Node workload and proxy; acknowledgement intervals are combined without double counting overlap. These instrumented timings are diagnostic evidence, separate from production speed measurements.
 
 The [first attribution checkpoint](compatibility/evidence/cleanup-attribution-checkpoint-2026-10-07.json) retains four verified launches. Flashwright sent 972 browser commands per launch versus 2,363–2,444 for Playwright, despite the ordinary paired benchmark remaining near parity. The delayed assertion spent a median 23.12 ms outside browser acknowledgements in a 24.31 ms operation, consistent with the host's 20 ms retry sleep. Browser setup was dominated by creation, initialization and navigation acknowledgements. This motivated resident assertion detection. The same checkpoint includes the failed-test cleanup repair, 48 passing core checks across macOS and emulated Linux, and a clean final process/profile audit.
 
-`npm run test:conditions` exercises the resident condition registry in an isolated Chromium realm with the existing full assertion predicate. Its 57 cases cover synchronous query sharing, cache scope boundaries, callback exclusion, paced fallback, mutation and fallback detection, property/CSSOM/viewport/focus changes, shadow discovery bounds, replacement, transient and negated states, cancellation, deadlines, document replacement, mutation storms, bounded reevaluation batches, queue fairness, CSS animation, font completion/failure and real lifecycle suspension/recovery. A separate fault-injection case withholds only registry frame callbacks to verify timer fallback. Already-true conditions skip discovery; concurrent pending conditions share it. The engine uses this registry by default. Set `FLASHWRIGHT_RESIDENT_ASSERTIONS=0` to run the host-polled comparison path; `1` continues to enable residency explicitly. The registry permits 128 pending conditions per document; excess registrations return `ResourceLimitError`. This preview limit is separate from the driver pending-command budget. Host deadlines remain authoritative, and blocked-renderer cancellation retains exact-context cleanup without terminating unrelated application JavaScript.
+`bun run test:conditions` exercises the resident condition registry in an isolated Chromium realm with the existing full assertion predicate. Its 57 cases cover synchronous query sharing, cache scope boundaries, callback exclusion, paced fallback, mutation and fallback detection, property/CSSOM/viewport/focus changes, shadow discovery bounds, replacement, transient and negated states, cancellation, deadlines, document replacement, mutation storms, bounded reevaluation batches, queue fairness, CSS animation, font completion/failure and real lifecycle suspension/recovery. A separate fault-injection case withholds only registry frame callbacks to verify timer fallback. Already-true conditions skip discovery; concurrent pending conditions share it. The engine uses this registry by default. Set `FLASHWRIGHT_RESIDENT_ASSERTIONS=0` to run the host-polled comparison path; `1` continues to enable residency explicitly. The registry permits 128 pending conditions per document; excess registrations return `ResourceLimitError`. This preview limit is separate from the driver pending-command budget. Host deadlines remain authoritative, and blocked-renderer cancellation retains exact-context cleanup without terminating unrelated application JavaScript.
 
 The [integrated residency checkpoint](compatibility/evidence/resident-integrated-checkpoint-2026-10-07.json) records host cancellation and lifecycle coverage in both modes, plus the initial full-Chrome off/on and Playwright comparisons. Delayed assertions improved substantially, while full-Chrome complete runs remained near parity. That checkpoint kept residency opt-in while condition-resource gates were unresolved.
 
-To reproduce the off/on comparison, verify the same optimized executable with residency disabled and enabled. Set `FLASHWRIGHT_BASELINE_VERIFICATION_REPORT` to the disabled report and `FLASHWRIGHT_VERIFICATION_REPORT` to the enabled report, then run `npm run benchmark:residency`. Run `node tools/verify-residency.mjs RETAINED_RUN_DIRECTORY` to independently check the result. Both modes include preparation and use the same binary; diagnostic counters are disabled. A Playwright comparison uses `benchmark:paired` with `FLASHWRIGHT_RESIDENT_ASSERTIONS=1` and the matching enabled core report.
+To reproduce the off/on comparison, verify the same optimized executable with residency disabled and enabled. Set `FLASHWRIGHT_BASELINE_VERIFICATION_REPORT` to the disabled report and `FLASHWRIGHT_VERIFICATION_REPORT` to the enabled report, then run `bun run benchmark:residency`. Run `bun tools/verify-residency.mjs RETAINED_RUN_DIRECTORY` to independently check the result. Both modes include preparation and use the same binary; diagnostic counters are disabled. A Playwright comparison uses `benchmark:paired` with `FLASHWRIGHT_RESIDENT_ASSERTIONS=1` and the matching enabled core report.
 
 The [headless-shell checkpoint](compatibility/evidence/browser-distribution-checkpoint-2026-10-07.json) verifies both modes on the pinned shell distribution and closes the browser-identity gap in benchmark admission. Full Chrome and shell remain distinct result classes, with the same executable and flags used by both engines within each comparison.
 
-The [ASCII runtime checkpoint](compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json) retains 100 passing core checks at 142 identical source hashes across macOS modes/distributions and emulated Linux, plus focused Node 22 checks. A literal Unicode diagnostic character increased runtime installation cost; its JavaScript escape preserves the exact output and avoids the regression. The build now enforces ASCII resident source. The independently verified component experiment covers 360 fresh-document installations; reproduce it with `node benchmarks/runtime-installation.mjs` under the external watchdog, then `node tools/verify-runtime-installation.mjs RETAINED_DIRECTORY`.
+The [ASCII runtime checkpoint](compatibility/evidence/ascii-runtime-checkpoint-2026-10-07.json) retains 100 passing core checks at 142 identical source hashes across macOS modes/distributions and emulated Linux, plus focused Node 22 checks. A literal Unicode diagnostic character increased runtime installation cost; its JavaScript escape preserves the exact output and avoids the regression. The build now enforces ASCII resident source. The independently verified component experiment covers 360 fresh-document installations; reproduce it with `bun benchmarks/runtime-installation.mjs` under the external watchdog, then `bun tools/verify-runtime-installation.mjs RETAINED_DIRECTORY`.
 
 The [resident fairness checkpoint](compatibility/evidence/resident-fairness-checkpoint-2026-10-08.json) retains 100 passing verification groups at 142 matching source hashes across macOS modes/distributions and emulated Linux, plus focused Node 22 checks. A pre-repair reproduction ran 256 full locator rechecks before a zero-delay browser timer could run. That checkpoint introduced a fair queue yielding after eight starts or four elapsed milliseconds, checked between complete predicates. The later selector-sharing checkpoint below raises the start cap while preserving the elapsed-time budget. Cancellation closes the scheduling ports and retires queued work. One expensive synchronous predicate remains indivisible.
 
@@ -124,7 +132,7 @@ The [sustained-load checkpoint](compatibility/evidence/resident-load-checkpoint-
 
 The [CPU accounting repair](compatibility/evidence/resident-load-accounting-2026-10-08/report.json) reproduces macOS reporting zero CPU for an unreaped process after earlier positive observations. The watchdog now preserves maximum observed CPU per process identity and retains every process sample for independent recomputation. The first load matrix is retained but excluded from resource acceptance; historical watchdog CPU totals without schema version 2 have the same limitation. The corrected verifier checks raw CPU maxima, concurrent RSS, exact work, paired statistics and bundled conformance logs. Its relocation and corruption probes pass.
 
-Run `npm run test:resident-load` for functional harness checks. To reproduce the complete matrix, verify the selected optimized driver in both residency modes, set `FLASHWRIGHT_VERIFICATION_REPORT` to the residency-on report and `FLASHWRIGHT_BASELINE_VERIFICATION_REPORT` to the residency-off report, then run `npm run benchmark:resident-load`. Check the retained directory with `node tools/verify-resident-load.mjs RETAINED_DIRECTORY`. Counter diagnostics in the functional reports are explicitly separate from ordinary timing.
+Run `bun run test:resident-load` for functional harness checks. To reproduce the complete matrix, verify the selected optimized driver in both residency modes, set `FLASHWRIGHT_VERIFICATION_REPORT` to the residency-on report and `FLASHWRIGHT_BASELINE_VERIFICATION_REPORT` to the residency-off report, then run `bun run benchmark:resident-load`. Check the retained directory with `bun tools/verify-resident-load.mjs RETAINED_DIRECTORY`. Counter diagnostics in the functional reports are explicitly separate from ordinary timing.
 
 The [selector-sharing checkpoint](compatibility/evidence/resident-query-checkpoint-2026-10-08.json) records 104 passing core groups at 158 matching source hashes, plus Node 22 checks and 49 registry cases. Read-only assertions share selector work within one synchronous batch; every complete predicate still runs, and cache scope closes before a microtask, task or application callback. A 32-condition fixture performs 32 fresh predicates with one native query. The scheduler permits 32 starts within its four-millisecond budget and paces fallback after the first 100 milliseconds of a wait; mutation, event and font wakeups remain immediate. The [predeclared production comparisons](compatibility/evidence/resident-query-profile-plan-2026-10-08.json) are now complete and recorded below. Residency stayed off at that checkpoint.
 
@@ -184,8 +192,8 @@ FLASHWRIGHT_REFERENCE_DRIVER_PATH=/absolute/path/to/reference-driver \
 FLASHWRIGHT_REFERENCE_VERIFICATION_REPORT=/absolute/path/to/reference-core/report.json \
 FLASHWRIGHT_DRIVER_PATH=/absolute/path/to/candidate-driver \
 FLASHWRIGHT_VERIFICATION_REPORT=/absolute/path/to/candidate-core/report.json \
-node benchmarks/compare-drivers.mjs
-node tools/verify-driver-comparison.mjs benchmarks/results/<retained-driver-comparison>
+bun benchmarks/compare-drivers.mjs
+bun tools/verify-driver-comparison.mjs benchmarks/results/<retained-driver-comparison>
 ```
 
 ## R4 Upstream sources

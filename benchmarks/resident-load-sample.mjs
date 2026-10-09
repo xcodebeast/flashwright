@@ -80,7 +80,7 @@ try {
 finally {
   const cleanupStarted = performance.now();
   try { await browser?.close(); } catch (error) { result.failures.push(String(error.stack ?? error)); }
-  await fixture.close();
+  try { await fixture.close(); } catch (error) { result.failures.push(String(error.stack ?? error)); }
   result.cleanupMilliseconds = performance.now() - cleanupStarted;
   result.completeMilliseconds = performance.now() - started;
   result.backend = fixture.counts;

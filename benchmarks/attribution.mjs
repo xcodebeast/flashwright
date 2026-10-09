@@ -1,3 +1,4 @@
+import { runtimeMetadata, reportRuntime, javascriptRuntime } from '../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { identifyBrowser, requireVerifiedBrowser } from '../tools/browser-identity.mjs';
 import { execFileSync } from 'node:child_process';
@@ -28,7 +29,7 @@ assert.deepEqual(verification.engineConfiguration ?? readEngineConfiguration({})
 assert.equal(verification.status, 'passed');
 requireVerifiedBrowser(verification, browserIdentity);
 assert.equal(verification.sourceChangedDuringVerification, false);
-assert.equal(verification.node, process.version);
+assert.deepEqual(reportRuntime(verification), javascriptRuntime);
 assert.equal(verification.platform, process.platform);
 assert.equal(verification.architecture, process.arch);
 assert.deepEqual(verification.sources, sources);
@@ -42,7 +43,7 @@ await mkdir(destination, { recursive: true });
 const metadata = {
   verificationBrowserBound: true,
   kind: 'instrumented-protocol-attribution', schemaVersion: 1, independentLaunchPairs: 2,
-  node: process.version, platform: process.platform, architecture: process.arch,
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   operatingSystem: os.version(), release: os.release(), cpu: os.cpus()[0]?.model,
   logicalProcessors: os.cpus().length, totalMemoryBytes: os.totalmem(), initialLoadAverage: os.loadavg(),
   python: execFileSync('python3', ['--version'], { encoding: 'utf8' }).trim(),

@@ -175,6 +175,31 @@ impl Handshake {
     }
 }
 
+/// Original public-call ownership is explicit; request acceptance must not infer it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TraceCall {
+    pub context: String,
+    pub generation: String,
+}
+
+impl TraceCall {
+    pub fn validate(&self, method: &str) -> Result<(), ErrorRecord> {
+        if self.context.is_empty()
+            || self.context.len() > 64
+            || self.generation.is_empty()
+            || self.generation.len() > 64
+        {
+            return Err(ErrorRecord::new(
+                ErrorCode::InvalidArgument,
+                method,
+                "trace call context and generation must contain 1 to 64 bytes",
+            ));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
 pub enum ClientMessage {
@@ -188,10 +213,30 @@ pub enum ClientMessage {
         parameters: Value,
         #[serde(rename = "timeoutMilliseconds")]
         timeout_milliseconds: Option<u64>,
+        #[serde(rename = "inputByteLength")]
+        input_byte_length: Option<usize>,
+        #[serde(rename = "traceCall", default, skip_serializing_if = "Option::is_none")]
+        trace_call: Option<TraceCall>,
     },
     Cancel {
         #[serde(rename = "requestId")]
         request_id: u64,
+    },
+    InputEnd {
+        #[serde(rename = "requestId")]
+        request_id: u64,
+        aborted: bool,
+    },
+}
+
+/// Binary input uses the same bounded frame envelope while retaining raw bytes.
+#[derive(Debug)]
+pub enum ClientFrame {
+    Message(ClientMessage),
+    Attachment {
+        request_id: u64,
+        offset: u32,
+        bytes: Vec<u8>,
     },
 }
 
@@ -298,6 +343,9 @@ pub struct ErrorDetails {
     pub reference_version: Box<str>,
     pub browser: Box<str>,
     pub input_delivery: InputDelivery,
+    /// Native ownership evidence is never inferred from application messages or sent on the wire.
+    #[serde(skip)]
+    pub execution_context_destroyed: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -339,6 +387,7 @@ impl ErrorRecord {
             reference_version: "1.60.0".into(),
             browser: "chromium".into(),
             input_delivery: InputDelivery::NotDispatched,
+            execution_context_destroyed: false,
         }))
     }
 }

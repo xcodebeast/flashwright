@@ -1,3 +1,7 @@
+import { installPackedConsumer } from './install-packed-consumer.mjs';
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
+import { tmpdir } from 'node:os';
+import { packConsumerPackages } from './packed-artifacts.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -8,23 +12,19 @@ import { chromium } from 'playwright';
 
 const require = createRequire(import.meta.url);
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const directory = await mkdtemp(resolve('.cache/packed-migration-'));
+const directory = await mkdtemp(join(tmpdir(), 'flashwright-packed-migration-'));
 const browserPath = process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath();
 const driverPath = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/flashwright-driver');
 const provenance = JSON.parse(await readFile('compatibility/migration-projects/provenance.json', 'utf8'));
 const retainedSources = provenance.sources.filter(source => source.path.startsWith('compatibility/migration-projects/todomvc/'));
 assert.equal(retainedSources.length, 4);
 
-const archives = {};
-for (const name of ['flashwright', 'flashwright-test']) {
-  const packed = JSON.parse(execFileSync('npm', ['pack', '--workspace', `packages/${name}`, '--pack-destination', directory, '--json'], { encoding: 'utf8' }));
-  archives[name] = join(directory, packed[0].filename);
-}
+const { archives, dependencies } = await packConsumerPackages(directory, { runner: true });
 await writeFile(join(directory, 'package.json'), JSON.stringify({
   name: 'flashwright-packed-migration-consumer', private: true, type: 'module',
-  dependencies: { flashwright: `file:${archives.flashwright}`, '@flashwright/test': `file:${archives['flashwright-test']}`, '@playwright/test': '1.60.0', '@types/node': '24.10.1' },
+  dependencies: { ...dependencies, '@playwright/test': '1.60.0', '@types/node': '24.10.1' },
 }, null, 2));
-execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: directory, stdio: 'pipe' });
+const installation = await installPackedConsumer(directory, Object.values(archives));
 
 const sourceEvidence = [];
 for (const source of retainedSources) {
@@ -98,7 +98,7 @@ function testResults(report) {
 
 const poisonLog = join(directory, 'poison-log.jsonl');
 const evidence = {
-  node: process.version, platform: process.platform, architecture: process.arch, consumerDirectory: directory,
+  installation, ...runtimeMetadata, platform: process.platform, architecture: process.arch, consumerDirectory: directory,
   browserPath, browserExecutableSha256: hash(await readFile(browserPath)), driverSha256: hash(await readFile(driverPath)),
   sources: sourceEvidence,
   archives: Object.fromEntries(await Promise.all(Object.entries(archives).map(async ([name, archive]) => [name, { archive, sha256: hash(await readFile(archive)) }]))),
@@ -106,17 +106,16 @@ const evidence = {
   scope: 'Import/config-only migration of the three preserved upstream TodoMVC tests through freshly packed packages. External public demo application; functional evidence, not a matched performance comparison.',
   remaining: ['SVGOMG corpus requires frame, download and file APIs', 'offline application reproduction', 'complete preview and replacement capability gates'],
 };
-const destination = `compatibility/evidence/migration-todomvc-${process.platform}-${process.arch}-${process.versions.node}.json`;
+const destination = `compatibility/evidence/migration-todomvc-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
 try {
   evidence.applicationBefore = await applicationIdentity();
   for (const engine of ['reference', 'flashwright']) {
     const environment = { ...process.env, FLASHWRIGHT_DRIVER_PATH: driverPath, FLASHWRIGHT_BROWSER_PATH: browserPath };
     if (engine === 'flashwright') {
-      environment.NODE_OPTIONS = `${environment.NODE_OPTIONS ?? ''} --require ${JSON.stringify(join(directory, 'poison.cjs'))}`;
       environment.FLASHWRIGHT_MIGRATION_POISON_LOG = poisonLog;
     }
     const executable = engine === 'reference' ? 'playwright' : 'flashwright';
-    const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--', process.execPath, `node_modules/.bin/${executable}`, 'test', '--config', `${engine}.config.mjs`], { cwd: directory, env: environment, stdio: 'inherit' });
+    const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--', process.execPath, ...(engine === 'flashwright' ? ['--require', join(directory, 'poison.cjs')] : []), `node_modules/.bin/${executable}`, 'test', '--config', `${engine}.config.mjs`], { cwd: directory, env: environment, stdio: 'inherit' });
     const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
     const report = JSON.parse(await readFile(join(directory, `${engine}-report.json`), 'utf8'));
     evidence.runs[engine] = { code, report, tests: testResults(report) };

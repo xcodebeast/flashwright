@@ -16,7 +16,17 @@
         "default": "./dist/commonjs/index.js"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./test": {
+      "import": {
+        "types": "./dist/esm/test.d.ts",
+        "default": "./dist/esm/test.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/test.d.ts",
+        "default": "./dist/commonjs/test.js"
+      }
+    }
   },
   "files": [
     "dist"
@@ -25,8 +35,15 @@
     "node": "22.x || 24.x"
   },
   "private": true,
-  "optionalDependencies": {
-    "@flashwright/driver-darwin-arm64": "0.0.0",
-    "@flashwright/driver-linux-x64": "0.0.0"
+  "dependencies": {
+    "@flashwright/core": "0.0.0"
+  },
+  "peerDependencies": {
+    "@flashwright/test": "0.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@flashwright/test": {
+      "optional": true
+    }
   }
 }

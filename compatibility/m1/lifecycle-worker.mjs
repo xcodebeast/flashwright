@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createInterface } from 'node:readline';
-import { EngineClient } from '../../packages/flashwright/dist/commonjs/client.js';
+import { EngineClient } from '../../packages/flashwright-core/dist/commonjs/client.js';
 
 const client = new EngineClient(process.env.FLASHWRIGHT_DRIVER_PATH);
 client.retain();

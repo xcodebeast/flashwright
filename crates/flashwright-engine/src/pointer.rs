@@ -1,5 +1,6 @@
 //! Native pointer transactions: fresh readiness, retained hit guards and navigation signals.
 
+use super::handle_allocation::{release_group, wait_for_allocation};
 use super::locators::{LocatorRealm, check_exception, context_was_destroyed};
 use super::*;
 use flashwright_protocol::InputDelivery;
@@ -344,6 +345,47 @@ impl PointerAction<'_> {
 }
 
 impl PointerAttempt<'_, '_> {
+    /// Keep private node aliases and resident preparation owned until their replies settle.
+    async fn allocation_call(
+        &self,
+        realm: &LocatorRealm,
+        method: &str,
+        parameters: Value,
+        executes_user_code: bool,
+    ) -> Result<Value, ErrorRecord> {
+        let mut command = self.action.browser.connection.start_command(
+            method,
+            parameters,
+            Some(&self.action.page.session_identifier),
+        )?;
+        match wait_for_allocation(
+            &self.action.browser.connection,
+            &self.action.page,
+            &realm.context,
+            self.action.operation,
+            &mut command,
+            executes_user_code,
+        )
+        .await
+        {
+            Ok(value) => Ok(value),
+            Err(mut failure) => {
+                if failure.reply_pending {
+                    failure.error.cleanup = Some(
+                        dispose(
+                            self.action.browser.as_ref(),
+                            ResourceKind::Page,
+                            &self.action.page.target_identifier,
+                        )
+                        .await
+                        .into(),
+                    );
+                }
+                Err(failure.error)
+            }
+        }
+    }
+
     async fn runtime(
         &self,
         realm: &LocatorRealm,
@@ -351,10 +393,10 @@ impl PointerAttempt<'_, '_> {
         arguments: Value,
         return_by_value: bool,
     ) -> Result<Value, ErrorRecord> {
-        let result = self.action.call("Runtime.callFunctionOn", json!({
-            "executionContextId": realm.context, "functionDeclaration": function, "arguments": arguments,
+        let result = self.allocation_call(realm, "Runtime.callFunctionOn", json!({
+            "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": function, "arguments": arguments,
             "awaitPromise": true, "returnByValue": return_by_value, "objectGroup": self.token, "userGesture": true,
-        })).await?;
+        }), true).await?;
         check_exception(&result, &self.action.method)?;
         Ok(if return_by_value {
             result["result"]["value"].clone()
@@ -379,6 +421,7 @@ impl PointerAttempt<'_, '_> {
         if let Some(position) = self.action.options.position {
             scroll["rect"] = json!({ "x": position.x, "y": position.y, "width": 0, "height": 0 });
         }
+        self.action.page.trace_before_input(self.action.operation);
         if retry_count.is_multiple_of(4) {
             if let Err(error) = self.action.call("DOM.scrollIntoViewIfNeeded", scroll).await {
                 if error.message.contains("Node does not have a layout object") {
@@ -666,7 +709,7 @@ impl PointerAttempt<'_, '_> {
                 .action
                 .call("DOM.getFrameOwner", json!({ "frameId": child }))
                 .await?;
-            let element = self.action.call("DOM.resolveNode", json!({ "backendNodeId": owner["backendNodeId"], "executionContextId": realm.context, "objectGroup": self.token })).await?;
+            let element = self.allocation_call(&realm, "DOM.resolveNode", json!({ "backendNodeId": owner["backendNodeId"], "executionContextId": realm.context.identifier, "objectGroup": self.token }), false).await?;
             let object = string_field(&element["object"], "objectId")?;
             let result = self.runtime(&realm, "function(element, point) { return globalThis.__flashwrightLocatorRuntime.framePoint(element, point); }", json!([{ "objectId": object }, { "value": point }]), true).await?;
             if result["status"] == "transformed" {
@@ -816,7 +859,7 @@ impl PointerAttempt<'_, '_> {
                 connection.call("Input.dispatchKeyEvent", json!({ "type": "keyUp", "key": key, "code": code, "windowsVirtualKeyCode": virtual_key, "location": 1, "modifiers": modifiers }), session).await?;
             }
             if !self.completed_input || !self.navigation_can_stall() {
-                let cleared = connection.call("Runtime.callFunctionOn", json!({ "executionContextId": self.realm.context, "functionDeclaration": "function(token) { globalThis.__flashwrightLocatorRuntime.cleanupPointer(token); return true; }", "arguments": [{ "value": self.token }], "returnByValue": true }), session).await;
+                let cleared = connection.call("Runtime.callFunctionOn", json!({ "uniqueContextId": self.realm.context.unique_identifier, "functionDeclaration": "function(token) { globalThis.__flashwrightLocatorRuntime.cleanupPointer(token); return true; }", "arguments": [{ "value": self.token }], "returnByValue": true }), session).await;
                 match cleared {
                     Ok(value) => check_exception(&value, &self.action.method)?,
                     Err(error) if context_was_destroyed(&error) => {}
@@ -824,13 +867,7 @@ impl PointerAttempt<'_, '_> {
                 }
             }
             if !self.objects_released {
-                connection
-                    .call(
-                        "Runtime.releaseObjectGroup",
-                        json!({ "objectGroup": self.token }),
-                        session,
-                    )
-                    .await?;
+                release_group(connection, &self.action.page, &self.token).await?;
             }
             Ok::<(), ErrorRecord>(())
         };

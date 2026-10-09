@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -10,9 +11,9 @@ import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { identifyBrowser } from '../../tools/browser-identity.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const destination = `compatibility/evidence/diagnostics-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}`;
+const destination = `compatibility/evidence/diagnostics-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
-const report = { schemaVersion: 1, reference: '1.60.0', sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), node: process.version, platform: process.platform, architecture: process.arch, outcomes: {}, status: 'running', scope: 'Page error names, messages, exact stacks, UTF-16 and same-process event lifecycle. Workers and out-of-process frames remain outside this slice. No performance claim.' };
+const report = { schemaVersion: 1, reference: '1.60.0', sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), ...runtimeMetadata, platform: process.platform, architecture: process.arch, outcomes: {}, status: 'running', scope: 'Page error names, messages, exact stacks, UTF-16 and same-process event lifecycle. Workers and out-of-process frames remain outside this slice. No performance claim.' };
 await writeFile(join(destination, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 const scripts = new Map([
   ['ordinary', 'function innerFailure() { throw new Error("ordinary failure"); }\nfunction outerFailure() { innerFailure(); }\nouterFailure();'],

@@ -1,3 +1,4 @@
+import { runtimeMetadata } from '../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -34,7 +35,7 @@ const destination = resolve('compatibility/evidence', `runtime-installation-${ne
 await mkdir(destination, { recursive: true });
 const metadata = {
   kind: 'instrumented-runtime-component-diagnostic', schemaVersion: 2, sources, browser: browserIdentity, configuration,
-  node: process.version, platform: process.platform, architecture: process.arch,
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   sourceHashes: Object.fromEntries(await Promise.all(sourceNames.map(async name => [name, hash(await readFile(`packages/resident-runtime/${name}`))]))),
   scripts: Object.fromEntries(Object.entries(scripts).map(([name, expressions]) => [name, expressions.map((expression, index) => ({ path: `script-${name}-${index}.js`, sha256: hash(expression), utf16Units: expression.length }))])),
   scope: 'Component attribution through a direct CDP session on fresh documents. Injected-only and declarations variants omit the wrapper and are not equivalent engines or proposed fast paths. Split, combined, scoped and escaped construct the full runtime. The literal control reconstructs only the diagnostic ellipsis from its production Unicode escape. Escaped uses the equivalent ASCII source, preserving the runtime value. Every sample navigates the same real HTTP fixture to a verified new loader. Timed command intervals include Playwright CDP transport; in-renderer marks exclude parsing before the first statement. No production speed claim.',

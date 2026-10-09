@@ -7,6 +7,100 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, duplex, split};
 use tokio::time::{Duration, timeout};
 
 #[tokio::test]
+async fn private_filmstrip_burst_does_not_fill_storage_subscriber_queue() {
+    let (host, peer) = duplex(65536);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut secondary = connection.subscribe();
+    let observed_frames = Arc::new(AtomicU64::new(0));
+    let counter = observed_frames.clone();
+    connection
+        .observe_events(move |event| {
+            if event.method == "Page.screencastFrame" {
+                counter.fetch_add(1, Ordering::Relaxed);
+            }
+            Ok(())
+        })
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let mut barrier = connection
+        .start_command("barrier", json!({}), None)
+        .unwrap();
+    let command = read_command(&mut reader).await;
+    for _ in 0..600 {
+        writer.write_all(b"{\"method\":\"Page.screencastFrame\",\"sessionId\":\"page\",\"params\":{\"data\":\"AP8=\"}}\0").await.unwrap();
+    }
+    writer.write_all(b"{\"method\":\"Fetch.requestPaused\",\"sessionId\":\"storage\",\"params\":{\"requestId\":\"request\"}}\0").await.unwrap();
+    writer
+        .write_all(format!("{{\"id\":{},\"result\":{{}}}}\0", command["id"]).as_bytes())
+        .await
+        .unwrap();
+    barrier.response().await.unwrap();
+    assert_eq!(observed_frames.load(Ordering::Relaxed), 600);
+    assert_eq!(secondary.try_recv().unwrap().method, "Fetch.requestPaused");
+    assert!(secondary.try_recv().is_err());
+}
+
+#[tokio::test]
+async fn typed_parameters_preserve_every_utf16_unit_and_obey_the_outgoing_bound() {
+    use flashwright_browser::values::Utf16String;
+    use serde::{Deserialize, Serialize};
+    use serde_json::value::RawValue;
+    #[derive(Serialize)]
+    struct Parameters {
+        source: Box<RawValue>,
+    }
+    #[derive(Deserialize)]
+    struct ReceivedParameters {
+        source: Utf16String,
+    }
+    #[derive(Deserialize)]
+    struct Received {
+        id: u64,
+        params: ReceivedParameters,
+    }
+    let (host, peer) = duplex(65536);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let encoded = format!(
+        "\"{}\"",
+        (0..=u16::MAX)
+            .map(|unit| format!("\\u{unit:04x}"))
+            .collect::<String>()
+    );
+    let mut pending = connection
+        .start_typed_command(
+            "Page.addScriptToEvaluateOnNewDocument",
+            Parameters {
+                source: RawValue::from_string(encoded).unwrap(),
+            },
+            Some("session"),
+        )
+        .unwrap();
+    let mut bytes = Vec::new();
+    reader.read_until(0, &mut bytes).await.unwrap();
+    let received: Received = serde_json::from_slice(&bytes[..bytes.len() - 1]).unwrap();
+    assert_eq!(received.id, 1);
+    assert_eq!(received.params.source.0, (0..=u16::MAX).collect::<Vec<_>>());
+    writer
+        .write_all(b"{\"id\":1,\"result\":{\"identifier\":\"script\"}}\0")
+        .await
+        .unwrap();
+    assert_eq!(pending.response().await.unwrap()["identifier"], "script");
+    let oversized = RawValue::from_string(format!("\"{}\"", "x".repeat(8 * 1024 * 1024))).unwrap();
+    let rejected =
+        connection.start_typed_command("tooLarge", Parameters { source: oversized }, None);
+    assert!(matches!(rejected, Err(error) if error.code == ErrorCode::ResourceLimit));
+    let _successor = connection
+        .start_command("successor", json!({}), None)
+        .unwrap();
+    assert_eq!(read_command(&mut reader).await["method"], "successor");
+}
+
+#[tokio::test]
 async fn raw_value_replies_preserve_surrogates_without_weakening_limits_or_identity() {
     let (host, peer) = duplex(65536);
     let (reader, writer) = split(host);

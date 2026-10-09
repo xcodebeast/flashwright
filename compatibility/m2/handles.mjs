@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -7,13 +8,13 @@ import { chromium as flashwrightChromium, JSHandle, ElementHandle } from 'flashw
 import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { identifyBrowser } from '../../tools/browser-identity.mjs';
 
-const destination = `compatibility/evidence/handles-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}`;
+const destination = `compatibility/evidence/handles-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
 const report = {
   schemaVersion: 1, reference: '1.60.0', sources: await sourceManifest(),
   browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()),
   driverSha256: createHash('sha256').update(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)).digest('hex'),
-  node: process.version, platform: process.platform, architecture: process.arch,
+  ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   outcomes: {}, referenceDifferences: {}, status: 'running',
   scope: 'JSHandle lifecycle, supported value serialization, original-context evaluation and same-process frames. Element actions, cross-context element adoption and additional jsonValue classes remain unsupported. No performance claim.',
 };

@@ -1,0 +1,51 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributions": {
+    "node_modules/playwright/lib/index.js": "36faa53b7c6fa8f76788f2bcfa21d72edc22e5f528c45328b71d07e215d79a32",
+    "node_modules/playwright/lib/worker/workerProcessEntry.js": "0f7b9c0a004787e0bef22a95ea38a4fa9d8879d4be52d8fad07795eddb93cc51",
+    "node_modules/playwright-core/lib/coreBundle.js": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+  },
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/testInfo.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/browserContext.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/page.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/browser.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/runner-screenshots.source.txt",
+  "extractSha256": "fa27256d5030a4459f27f89b842300be64f6cb7f4c21923275392154297baf0e",
+  "implementation": {
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c",
+    "packages/flashwright-core/src/runner-integration.ts": "8b2c24fb47286b27d29e5896bfaf2baaffaca35ebbe59d14e68c999ae2a4e7c8",
+    "packages/flashwright-core/src/runner-lifecycle.ts": "fe3e174400de2045be46e6790ae1cd3f0603cc6a320c8fe2d57ae010d739e4ef",
+    "packages/flashwright-core/src/public-browsers.ts": "397448ef585b75985646208f122939b128d94a680080805f81486a48e24899ba",
+    "packages/flashwright-runner/src/index.ts": "c3623586358f5a92d5d8739188096168f2fdbc0b3ea6fb691537e49a6259706d",
+    "packages/flashwright-runner/src/screenshot-policy.ts": "f70c9300dff7190e7d164aa31e7f958642f27649e20e7b652e29d3cd71c4df9c",
+    "packages/flashwright-runner/src/screenshot-recorder.ts": "63631b207bb3cf930f71fbf311fdc46fc1ad81af8e176a4fdc86800a5afd45e4"
+  },
+  "relationship": "Independent native runner screenshot lifecycle follows pinned policy, outcome, retry, pre-context-close, deduplication, PNG naming and attachment behavior. Native public-context observation replaces upstream browser instrumentation. A canonical weak public-browser registry discovers contexts created before worker setup; observation is installed before enumeration and deduplicates context identities. Disconnect and finalization remove registry entries. Private prepared/storage contexts are excluded.",
+  "policies": [
+    "off",
+    "on",
+    "only-on-failure",
+    "on-first-failure"
+  ],
+  "options": [
+    "fullPage",
+    "omitBackground"
+  ],
+  "limits": [
+    "One five-second budget per capture batch, including recorder queue time; at most four captures run concurrently per scope.",
+    "At most 1024 attempted screenshots and 512 MiB retained image bytes per recording scope; overflows become explicit capture diagnostics.",
+    "Screenshot errors preserve the original outcome and retain up to 16 original error stacks, each bounded to 4096 characters, in one screenshot-error attachment with an additional-error count.",
+    "Context-close temporary files are atomically captured, conditionally retained, then removed. Ordinary individual page close and direct browser close do not gain an extra capture hook."
+  ],
+  "exclusions": [
+    "Trace and video policies remain explicitly unsupported.",
+    "Screenshot assertions, masks and broader page screenshot capabilities retain their existing boundaries.",
+    "Screenshot policy support alone does not establish original-config public-corpus completion."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

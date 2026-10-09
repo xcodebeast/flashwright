@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -25,14 +26,14 @@ for (const spec of specs) {
     assert(result.attachments.some(attachment => attachment.name === 'probe-disposed'), `Missing fixture teardown for ${spec.title}`);
   }
 }
-const destination = `compatibility/evidence/runner-boundary-${process.platform}-${process.arch}-${process.versions.node}.json`;
+const destination = `compatibility/evidence/runner-boundary-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
 await mkdir('compatibility/evidence', { recursive: true });
 const hashes = {};
 for (const source of ['compatibility/runner-boundary/adapter.ts', 'compatibility/runner-boundary/boundary.spec.ts', 'compatibility/runner-boundary/playwright.config.ts', 'tools/verify-runner-boundary.mjs', 'tools/run-runner-boundary.mjs', 'package-lock.json']) {
   hashes[source] = createHash('sha256').update(await readFile(source)).digest('hex');
 }
 await writeFile(destination, JSON.stringify({
-  verifiedAt: new Date().toISOString(), reference: '1.60.0', node: process.version,
+  verifiedAt: new Date().toISOString(), reference: '1.60.0', ...runtimeMetadata,
   platform: process.platform, architecture: process.arch, sourceHashes: hashes,
   rawReportSha256: createHash('sha256').update(raw).digest('hex'),
   checks: ['isolated upstream runner dependency identity', 'extended fixtures', 'custom option forwarding', 'worker scope', 'async custom matchers', 'negation', 'configured expect', 'soft failure status', 'steps', 'reporter attachments', 'retries', 'timeout teardown', 'upstream launch/connect/request paths poisoned'],

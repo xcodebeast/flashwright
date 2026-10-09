@@ -1,4 +1,4 @@
-import { createServer } from 'node:http';
+import { createHttpFixture } from '../tools/http-fixture.mjs';
 import { setTimeout } from 'node:timers/promises';
 
 const document = `<!doctype html><html><head><title>Flashwright baseline</title>
@@ -26,7 +26,7 @@ window.delayStatus = delay => {
 /** Use real HTTP work, retaining request counts independently of browser instrumentation. */
 export async function startFixtureServer(backendDelayMilliseconds) {
   const counts = { documents: 0, backendRequests: 0, otherRequests: 0 };
-  const server = createServer(async (request, response) => {
+  const { server, close: closeServer } = createHttpFixture(async (request, response) => {
     try {
       if (request.url === '/api/profile' && request.method === 'POST') {
         counts.backendRequests++;
@@ -52,6 +52,6 @@ export async function startFixtureServer(backendDelayMilliseconds) {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   return {
     origin: `http://127.0.0.1:${server.address().port}`, counts,
-    close: () => new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve())),
+    close: () => closeServer(),
   };
 }

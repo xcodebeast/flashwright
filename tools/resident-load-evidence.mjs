@@ -1,3 +1,4 @@
+import { reportRuntime } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -11,12 +12,13 @@ export function verifyLoadCoreReport(report, metadata, residentAssertions) {
   assert.equal(report.status, 'passed');
   assert.equal(report.sourceChangedDuringVerification, false);
   requireVerifiedBrowser(report, metadata.browser);
-  for (const field of ['node', 'platform', 'architecture']) assert.equal(report[field], metadata[field]);
+  assert.deepEqual(reportRuntime(report), reportRuntime(metadata));
+  for (const field of ['platform', 'architecture']) assert.equal(report[field], metadata[field]);
   assert.equal(report.driverSha256, metadata.driver.sha256);
   assert.deepEqual(report.sources, metadata.sources);
   assert.deepEqual(report.engineConfiguration, { residentAssertions, conditionInstrumentation: false });
   assert.ok(report.checks.length >= 26);
-  assert.ok(report.checks.some(check => check.command.join(' ') === 'npm run test:resident-load'));
+  assert.ok(report.checks.some(check => check.command.join(' ') === 'npm run test:resident-load' || (check.command.length === 2 && check.command[1] === 'tools/test-resident-load.mjs')));
   for (const check of report.checks) {
     assert.equal(check.code, 0);
     assert.equal(basename(check.log), check.log);

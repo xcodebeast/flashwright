@@ -1,0 +1,189 @@
+// SnapshotRecorder
+class SnapshotRecorder {
+  constructor(_artifactsRecorder, _mode, _name, _contentType, _extension, _doSnapshot) {
+    this._artifactsRecorder = _artifactsRecorder;
+    this._mode = _mode;
+    this._name = _name;
+    this._contentType = _contentType;
+    this._extension = _extension;
+    this._doSnapshot = _doSnapshot;
+    this._ordinal = 0;
+    this._temporary = [];
+  }
+  fixOrdinal() {
+    this._ordinal = this.testInfo.attachments.filter((a) => a.name === this._name).length;
+  }
+  shouldCaptureUponFinish() {
+    return this._mode === "on" || this._mode === "only-on-failure" && this.testInfo._isFailure() || this._mode === "on-first-failure" && this.testInfo._isFailure() && this.testInfo.retry === 0;
+  }
+  async maybeCapture() {
+    if (!this.shouldCaptureUponFinish())
+      return;
+    await Promise.all(this._artifactsRecorder._playwright._allPages().map((page) => this._snapshotPage(page, false)));
+  }
+  async persistTemporary() {
+    if (this.shouldCaptureUponFinish()) {
+      await Promise.all(this._temporary.map(async (file) => {
+        try {
+          const path2 = this._createAttachmentPath();
+          await import_fs.default.promises.rename(file, path2);
+          this._attach(path2);
+        } catch {
+        }
+      }));
+    }
+  }
+  async captureTemporary(context) {
+    if (this._mode === "on" || this._mode === "only-on-failure" || this._mode === "on-first-failure" && this.testInfo.retry === 0)
+      await Promise.all(context.pages().map((page) => this._snapshotPage(page, true)));
+  }
+  _attach(screenshotPath) {
+    this.testInfo.attachments.push({ name: this._name, path: screenshotPath, contentType: this._contentType });
+  }
+  _createAttachmentPath() {
+    const testFailed = this.testInfo._isFailure();
+    const index = this._ordinal + 1;
+    ++this._ordinal;
+    const path2 = this.testInfo.outputPath(`test-${testFailed ? "failed" : "finished"}-${index}${this._extension}`);
+    return path2;
+  }
+  _createTemporaryArtifact(...name) {
+    const file = import_path.default.join(this._artifactsRecorder._artifactsDir, ...name);
+    return file;
+  }
+  async _snapshotPage(page, temporary) {
+    if (page[this.testInfo._uniqueSymbol])
+      return;
+    page[this.testInfo._uniqueSymbol] = true;
+    try {
+      const path2 = temporary ? this._createTemporaryArtifact(createGuid() + this._extension) : this._createAttachmentPath();
+      await this._doSnapshot(page, path2);
+      if (temporary)
+        this._temporary.push(path2);
+      else
+        this._attach(path2);
+    } catch {
+    }
+  }
+  get testInfo() {
+    return this._artifactsRecorder._testInfo;
+  }
+}
+
+// ArtifactsRecorder.constructor
+constructor(playwright, artifactsDir, screenshot) {
+    this._playwright = playwright;
+    this._artifactsDir = artifactsDir;
+    const screenshotOptions = typeof screenshot === "string" ? void 0 : screenshot;
+    this._startedCollectingArtifacts = Symbol("startedCollectingArtifacts");
+    this._screenshotRecorder = new SnapshotRecorder(this, normalizeScreenshotMode(screenshot), "screenshot", "image/png", ".png", async (page, path2) => {
+      await page._wrapApiCall(async () => {
+        await page.screenshot({ ...screenshotOptions, timeout: 5e3, path: path2, caret: "initial" });
+      }, { internal: true });
+    });
+  }
+
+// ArtifactsRecorder.willStartTest
+async willStartTest(testInfo) {
+    this._testInfo = testInfo;
+    testInfo._onDidFinishTestFunctionCallbacks.add(() => this.didFinishTestFunction());
+    this._screenshotRecorder.fixOrdinal();
+    await Promise.all(this._playwright._allContexts().map((context) => this.didCreateBrowserContext(context)));
+    const existingApiRequests = Array.from(this._playwright.request._contexts);
+    await Promise.all(existingApiRequests.map((c) => this.didCreateRequestContext(c)));
+  }
+
+// ArtifactsRecorder.willCloseBrowserContext
+async willCloseBrowserContext(context) {
+    await this._stopTracing(context, context.tracing);
+    await this._screenshotRecorder.captureTemporary(context);
+    await this._takePageSnapshot(context);
+  }
+
+// ArtifactsRecorder.didFinishTestFunction
+async didFinishTestFunction() {
+    await this._screenshotRecorder.maybeCapture();
+  }
+
+// ArtifactsRecorder.didFinishTest
+async didFinishTest() {
+    await this.didFinishTestFunction();
+    const leftoverContexts = this._playwright._allContexts();
+    const leftoverApiRequests = Array.from(this._playwright.request._contexts);
+    await Promise.all(leftoverContexts.map(async (context2) => {
+      await this._stopTracing(context2, context2.tracing);
+    }).concat(leftoverApiRequests.map(async (context2) => {
+      await this._stopTracing(context2, context2.tracing);
+    })));
+    await this._screenshotRecorder.persistTemporary();
+    const context = leftoverContexts[0];
+    if (context)
+      await this._takePageSnapshot(context);
+    if (this._testInfo.errors.length > 0) {
+      const hasMatcherAriaSnapshot = this._testInfo.errors.some((e) => e.errorContext);
+      const errorContextContent = (0, import_errorContext.buildErrorContext)({
+        titlePath: this._testInfo.titlePath,
+        location: { file: this._testInfo.file, line: this._testInfo.line, column: this._testInfo.column },
+        errors: this._testInfo.errors,
+        pageSnapshot: hasMatcherAriaSnapshot ? void 0 : this._pageSnapshot
+      });
+      if (errorContextContent) {
+        const filePath = this._testInfo.outputPath("error-context.md");
+        await import_fs.default.promises.writeFile(filePath, errorContextContent, "utf8");
+        this._testInfo._attach({
+          name: "error-context",
+          contentType: "text/markdown",
+          path: filePath
+        }, void 0);
+      }
+    }
+  }
+
+// TestInfo.isFailure
+_isFailure() {
+    return this.status !== "skipped" && this.status !== this.expectedStatus;
+  }
+
+// BrowserContext.close
+async close(options2 = {}) {
+        if (this.isClosed())
+          return;
+        this._closeReason = options2.reason;
+        this._closingStatus = "closing";
+        await this.request.dispose(options2);
+        await this._instrumentation.runBeforeCloseBrowserContext(this);
+        await this.tracing._exportAllHars();
+        await this._channel.close(options2);
+        await this._closedPromise;
+      }
+
+// Page.close
+async close(options2 = {}) {
+        this._closeReason = options2.reason;
+        if (!options2.runBeforeUnload)
+          this._closeWasCalled = true;
+        try {
+          if (this._ownedContext)
+            await this._ownedContext.close();
+          else
+            await this._channel.close(options2);
+        } catch (e) {
+          if (isTargetClosedError2(e) && !options2.runBeforeUnload)
+            return;
+          throw e;
+        }
+      }
+
+// Browser.close
+async close() {
+        try {
+          if (this._shouldCloseConnectionOnClose)
+            this._connection.close();
+          else
+            await this._channel.close();
+        } catch (e) {
+          if (isTargetClosedError2(e))
+            return;
+          throw e;
+        }
+      }

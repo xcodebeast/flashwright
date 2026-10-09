@@ -1,0 +1,32 @@
+{
+  "referenceVersion": "1.60.0",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/frame.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/page.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/utils/isomorphic/urlMatch.ts"
+  ],
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/navigation-waits.source.txt",
+  "extractSha256": "e9044ad1fb99a78639bbcf7274468ef045771be5be5298d0142f867bb56df9ee",
+  "implementation": {
+    "crates/flashwright-engine/src/navigation_waits.rs": "690301888f51321a281ba3f88c533473a226e4fae2b5910c8d376628b7ffecb9",
+    "crates/flashwright-engine/src/history_navigation.rs": "3c7ff87a43debba9edb17d35c06476f0df38149f3005ce26ce265834cec26372",
+    "crates/flashwright-engine/src/page_state.rs": "3790003120ab8a0e1ae222f95df7592655dfcb40793e789749c2184da6fc9e80",
+    "packages/flashwright-core/src/navigation-waiter.ts": "c6d2ee51313bc19a2ce6b1a0237dfbe5c73501c7ee95dcc987062086998e7755",
+    "packages/flashwright-core/src/waits.ts": "836ce88e368d7929ad3b45ff74f2c745ad4be56e965041418366a29d6dd9c0ac",
+    "packages/flashwright-core/src/client.ts": "88c01293b16f93a7a5af572d3c9ecdef3783fd05609a85e4506f592f3186d31a",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c"
+  },
+  "relationship": "Independent native navigation journal and host watermark preserve the pinned host-observed boundary, URL filtering, unconditional navigation failure, nullable response and one navigation deadline. Native URLPattern recognition and conditional declaration adapt the pinned helper; existing string/glob code retains its own provenance.",
+  "changes": [
+    "Private immutable navigation events advance the host watermark before public callbacks; page allocation metadata supplies its initial value.",
+    "Acceptance-order capture validates the supplied host cursor; event selection and lifecycle completion share bounded native history without persistent waiter allocation.",
+    "Uniform client readiness promise stages preserve request invocation order for finite/unbounded timeouts, including handshake resolution.",
+    "Page closure and the same deadline cover native waits and host callback promises. User callback errors retain their identity.",
+    "URLPattern is supported only through the runtime native global for navigation/URL/frame matching. waitForResponse preserves its narrower pinned string/RegExp/Response-predicate contract."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

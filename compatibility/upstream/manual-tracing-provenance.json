@@ -1,0 +1,95 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/tracing.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/localUtils.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/trace/recorder/tracing.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/protocol/serializers.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/isomorphic/trace/traceLoader.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/manual-tracing.source.txt",
+  "extractSha256": "f2c826cbad6c5b5258a6094bee8d4c19c8e522f3b7d6436c0c3fdf632bcb9d1c",
+  "implementation": {
+    "crates/flashwright-engine/src/trace_diagnostics.rs": "f0c9eff3732a44847b2df6b51a416844974f4e3f58e6ca3b690a97d474723188",
+    "crates/flashwright-engine/src/context_state.rs": "faf926d41b4613fe2a81c435cb3010a361b524d4a5f5e2e7ea49b81fa20a08d0",
+    "crates/flashwright-engine/src/console.rs": "5b961a9c8677346c1d580d4e0ae2df2899b38f13c84a6499e4efccbc2659c8fa",
+    "crates/flashwright-engine/src/events.rs": "11fe9a00db6937a8bc48f3c452049240ee32b21704880c85783674976e39950f",
+    "crates/flashwright-engine/src/publication.rs": "73109257ad692092a8d05c42c5d5dc94a9769b298e8da8acda74424ba22b4243",
+    "crates/flashwright-engine/src/lib.rs": "81aa04cd3ed683bf09b776b6954a4c4b2645ea228bc1af568dedfbe1d45e5185",
+    "packages/flashwright-core/src/tracing.ts": "3ef17dcf49c4f60c30fcb26afcf27e4e5776d65d8d9239fd2a35f2caf0c28e33",
+    "packages/flashwright-core/src/trace-preview.ts": "27d33a226598ceff83d8f1d4455c8487926028b355f5f020e79ef9301128363b",
+    "packages/flashwright-core/src/trace-resources.ts": "ae84e09da6e26bbd86a8cb9d879cc920dbc63f58c5733d72886d0a4720368926",
+    "packages/flashwright-core/src/trace-writer.ts": "8f82962bbf5302d8f08f03e79e8e176f8d5f600140bff455f20dca838b1e0cd8",
+    "packages/flashwright-core/src/trace-diagnostics.ts": "ed7c639f658b670948b64f5c1e3e3f183e1798d8006d8ce68f547a8e512d4115",
+    "packages/flashwright-core/src/trace-hooks.ts": "77c1982b02bc8b06d342ccad55a41e582dc2afb89f45ae3951fd4dcb5672fbdf",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c",
+    "packages/flashwright-core/src/call-sites.ts": "2c4041b4e308447d7d0922de3d7911fa18e7e03d30b84ecd4a5cbfa13b338655",
+    "packages/flashwright-core/src/client.ts": "88c01293b16f93a7a5af572d3c9ecdef3783fd05609a85e4506f592f3186d31a",
+    "packages/flashwright-core/src/frame.ts": "94065793d92f0a970421aa74fe4f865df4dffa528354081eb760af927e2e2b93",
+    "packages/flashwright-core/src/locator.ts": "e687a32f4240fc1ca0e49f6e95fba12b534e5d8f02bb067f633779f6f8f8e6ac",
+    "packages/flashwright-core/src/keyboard.ts": "73b7410dcb8861721ef3840aade9901d7be48a019fb374e7749dcc0505730a31",
+    "packages/flashwright-core/src/handles.ts": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7",
+    "packages/flashwright-core/src/network.ts": "0f685e879ed06edc826f35a18c1a74dcc175b45d3c547d8b42f8f1325ea0e860",
+    "packages/flashwright-core/src/console.ts": "bc53c9fa38b91a4a6f85994fcf7e9d54f311f964f17a392040c2bb12299e2176",
+    "packages/flashwright-core/src/subscribed-events.ts": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8",
+    "packages/flashwright-core/src/file-chooser.ts": "ec9124ab294e073f3694dafaee61a676af09bdfdf1578eb69c9abf190c505c57",
+    "packages/flashwright-core/src/init-scripts.ts": "eae72392e679ad47baa2df842985318b66ad60b3f605a1f2e396f302b13a1381",
+    "packages/flashwright-core/src/waits.ts": "836ce88e368d7929ad3b45ff74f2c745ad4be56e965041418366a29d6dd9c0ac",
+    "packages/flashwright-core/src/navigation-waiter.ts": "c6d2ee51313bc19a2ce6b1a0237dfbe5c73501c7ee95dcc987062086998e7755",
+    "packages/flashwright-core/src/engine-contract.ts": "9e196d33eef44007dea7f49ead25f1c538e135b317467774b95a66d0a20e756e",
+    "packages/flashwright-core/src/runner-integration.ts": "8b2c24fb47286b27d29e5896bfaf2baaffaca35ebbe59d14e68c999ae2a4e7c8",
+    "packages/flashwright-runner/src/screenshot-recorder.ts": "63631b207bb3cf930f71fbf311fdc46fc1ad81af8e176a4fdc86800a5afd45e4",
+    "packages/flashwright-runner/src/index.ts": "c3623586358f5a92d5d8739188096168f2fdbc0b3ea6fb691537e49a6259706d"
+  },
+  "relationship": "Independent native diagnostic ownership, public API instrumentation and streaming ZIP writer implement the pinned manual trace lifecycle and version-8 action/event schema. No upstream browser backend, tracing recorder, snapshotter or HAR tracer executes browser commands. The pinned loader and actual viewer are conformance consumers only.",
+  "sourceMapping": {
+    "distributionPath": "node_modules/playwright-core/lib/utilsBundle.js",
+    "sha256": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "relationship": "The runner installs the source-map-support mapSourcePosition function from its existing pinned dependency through a private versioned boundary. Core command and trace diagnostics use structured node:util.getCallSites metadata and apply runner transforms once, without modifying or invoking global Error.prepareStackTrace."
+  },
+  "defaults": {
+    "screenshots": false,
+    "snapshots": false,
+    "sources": false
+  },
+  "scope": [
+    "Manual context.tracing.start/startChunk/stopChunk/stop.",
+    "Public API actions with caller locations, bounded parameter/result previews, original error details, concurrent and unfinished calls.",
+    "Console diagnostics, page errors and public page lifecycle independent of user console subscriptions and argument handles.",
+    "Version-8 ZIP with inline caller stacks and serialized evaluation argument/result envelopes.",
+    "Manual sources:true embeds referenced mapped caller files read at export; path-SHA1 archive aliases refer to immutable content-SHA256 recording resources."
+  ],
+  "limits": [
+    "100000 events, 64 MiB encoded content, 4 MiB queued writes and 256 KiB per event per chunk.",
+    "1024 unfinished calls per context; native diagnostics allow 1024 events, 4 MiB or half the negotiated control frame, and 64 KiB raw content per event.",
+    "4096 source paths and 1 MiB path metadata per chunk; source files at most 8 MiB, generic resources at most 16 MiB; two concurrent 64 KiB streamed ingests. Recording storage is bounded at 8192 blobs and 256 MiB including in-flight reservations; archives permit 8192 aliases, 512 MiB encoded bytes and 4 MiB central-directory data.",
+    "30-second preparation deadline, with definitive ownership of an already dispatched atomic rename; two-second foreground cleanup grace followed by retained ownership and recording quarantine."
+  ],
+  "differences": [
+    "Trace previews are bounded summaries, with explicit truncation markers and no application accessors, proxy traps or custom serialization.",
+    "Capture failure preserves the original browser operation result and fails export explicitly.",
+    "BigInt console values preserve the documented S4.l behavior.",
+    "Concurrent tracing controls reject; normal owner closure discards an unfinished recording.",
+    "Missing or non-file source paths omit content; source read errors, detected mutation and resource limits fail export rather than silently truncating sources. Nonblocking source opens preserve symlink-to-regular-file behavior without blocking on FIFO replacement."
+  ],
+  "exclusions": [
+    "Explicit snapshots:true rejects before recording starts; manual screenshots:true follows the separate filmstrip provenance and fidelity gate.",
+    "Runner tracing policies, DOM snapshots, network resources and tracing groups are not supported by this slice.",
+    "Manual trace support alone does not establish original-config public-corpus completion or full diagnostic parity."
+  ],
+  "verification": [
+    "tools/test-manual-tracing.mjs",
+    "tools/test-caller-locations.mjs",
+    "tools/run-manual-trace-tests.mjs",
+    "tools/test-manual-trace-viewer.mjs",
+    "tools/run-manual-trace-runner-tests.mjs",
+    "tools/test-trace-resources.mjs",
+    "tools/run-trace-source-tests.mjs",
+    "tools/test-trace-source-viewer.mjs"
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

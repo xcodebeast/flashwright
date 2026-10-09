@@ -3,13 +3,14 @@ use std::os::fd::AsFd;
 use std::sync::Arc;
 
 mod attachments;
+mod input_attachments;
 mod output;
 mod pipe;
 
 use flashwright_engine::{CAPABILITIES, Engine, Operation, OperationResult};
 use flashwright_protocol::{
-    ClientMessage, DriverMessage, DriverOutput, EncodedFrame, ErrorCode, ErrorRecord, FrameError,
-    FrameReader, FrameWriter, Handshake, ResourceLimits,
+    ClientFrame, ClientMessage, DriverMessage, DriverOutput, EncodedFrame, ErrorCode, ErrorRecord,
+    FrameError, FrameReader, FrameWriter, Handshake, ResourceLimits,
 };
 use tokio::sync::{mpsc, watch};
 use tokio::task::JoinSet;
@@ -100,7 +101,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     // A dedicated reader is never cancelled halfway through a control frame by another event.
     let reader_task = tokio::spawn(async move {
         loop {
-            let message = reader.read::<ClientMessage>().await;
+            let message = reader.read_client_frame().await;
             let terminal = !matches!(message, Ok(Some(_)));
             if incoming_sender.send(message).await.is_err() || terminal {
                 break;
@@ -109,6 +110,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     });
     let mut operations = JoinSet::<(u64, Result<Option<EncodedFrame>, FrameError>)>::new();
     let mut cancellations: HashMap<u64, watch::Sender<bool>> = HashMap::new();
+    let mut inputs = input_attachments::InputAttachments::new(&limits);
     let mut termination =
         tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
     let mut last_identifier = 0_u64;
@@ -126,6 +128,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                 match completed {
                     Some(Ok((identifier, result))) => {
                         cancellations.remove(&identifier);
+                        inputs.expire(identifier);
                         let frame = match result {
                             Ok(Some(frame)) => frame,
                             Ok(None) => continue,
@@ -142,27 +145,51 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                     Some(Err(error)) => { failure = Some(error.to_string()); break; }
                     _ => break,
                 };
+                let message = match message {
+                    ClientFrame::Message(message) => message,
+                    ClientFrame::Attachment { request_id, offset, bytes } => {
+                        if let Err(error) = inputs.receive(request_id, offset, &bytes) {
+                            failure = Some(error.to_string()); break;
+                        }
+                        continue;
+                    }
+                };
                 match message {
                     ClientMessage::Handshake { .. } => { failure = Some("duplicate handshake".to_owned()); break; }
                     ClientMessage::Cancel { request_id } => {
                         if let Some(sender) = cancellations.remove(&request_id) { let _ = sender.send(true); }
+                        inputs.expire(request_id);
                     }
-                    ClientMessage::Command { request_id, method, parameters, timeout_milliseconds } => {
+                    ClientMessage::InputEnd { request_id, aborted } => {
+                        if let Err(error) = inputs.finish(request_id, aborted) {
+                            failure = Some(error.to_string()); break;
+                        }
+                    }
+                    ClientMessage::Command { request_id, method, parameters, timeout_milliseconds, input_byte_length, trace_call } => {
                         if request_id <= last_identifier || request_id > 9_007_199_254_740_991 {
                             failure = Some("request identifiers must be strictly increasing positive JavaScript-safe integers".to_owned()); break;
                         }
                         last_identifier = request_id;
                         let validation = if operations.len() >= limits.pending_operations {
                             Err(ErrorRecord::new(ErrorCode::ResourceLimit, &method, "pending operation limit exceeded"))
-                        } else { limits.validate_value(&parameters) };
-                        if let Err(error) = validation {
+                        } else { limits.validate_value(&parameters).and_then(|()| trace_call.as_ref().map_or(Ok(()), |trace_call| trace_call.validate(&method))) };
+                        let prepared_input = if let Some(length) = input_byte_length {
+                            match inputs.begin(request_id, length, &method, validation) {
+                                Ok(result) => result.map(Some),
+                                Err(error) => { failure = Some(error.to_string()); break; }
+                            }
+                        } else { validation.map(|()| None) };
+                        let input = match prepared_input {
+                            Ok(input) => input,
+                            Err(error) => {
                             let frame = match output::prepare_error(request_id, error, &limits) {
                                 Ok(frame) => frame,
                                 Err(error) => { failure = Some(error.to_string()); break; }
                             };
                             if outgoing.try_send(DriverOutput::Frame(frame)).is_err() { failure = Some("bounded output queue exhausted".to_owned()); break; }
                             continue;
-                        }
+                            }
+                        };
                         let deadline = match timeout_milliseconds {
                             Some(milliseconds) => match Instant::now().checked_add(Duration::from_millis(milliseconds)) {
                                 Some(deadline) => Some(deadline),
@@ -172,16 +199,24 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         };
                         let (sender, receiver) = watch::channel(false);
                         cancellations.insert(request_id, sender);
-                        let operation = Operation::new(method.clone(), deadline, receiver);
-                        let control_result = engine.execute_control(&method, &parameters, &operation);
+                        let operation = Operation::new(method.clone(), deadline, receiver).with_trace_call(trace_call);
+                        let control_result = if input.is_none() { engine.execute_control(&method, &parameters, &operation) } else { None };
                         let engine = engine.clone();
                         let limits = limits.clone();
                         let outgoing = outgoing.clone();
                         operations.spawn(async move {
-                            let result = match control_result {
-                                Some(result) => result.map(OperationResult::Value),
-                                None => engine.execute(&method, parameters, &operation).await,
-                            };
+                            let result = async {
+                                if let Some(input) = input {
+                                    let attachment = operation.wait(async {
+                                        input.await.map_err(|_| ErrorRecord::new(ErrorCode::Cancelled, &method, "binary input transfer aborted"))
+                                    }).await?;
+                                    operation.attach_input(attachment)?;
+                                }
+                                match control_result {
+                                    Some(result) => result.map(OperationResult::Value),
+                                    None => engine.execute(&method, parameters, &operation).await,
+                                }
+                            }.await;
                             let result = match result {
                                 Ok(OperationResult::Binary(attachment)) => {
                                     let reply = attachments::stream_attachment(request_id, attachment, &operation, &outgoing, &limits).await;
@@ -199,6 +234,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     reader_task.abort();
+    drop(inputs);
     for (_, sender) in cancellations.drain() {
         let _ = sender.send(true);
     }

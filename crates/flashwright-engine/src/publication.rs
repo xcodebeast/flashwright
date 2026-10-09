@@ -11,6 +11,16 @@ impl Engine {
         result: &mut Value,
         prepare: impl FnOnce(&Value) -> Result<Prepared, ErrorRecord>,
     ) -> Result<Prepared, ErrorRecord> {
+        if matches!(method, "page.addInitScript" | "context.addInitScript") {
+            let registry = self.registry.lock().unwrap();
+            if !result["identifier"]
+                .as_str()
+                .is_some_and(|identifier| registry.init_scripts.contains_key(identifier))
+            {
+                return Err(closed(method));
+            }
+            return prepare(result);
+        }
         if matches!(
             method,
             "page.evaluateHandle"
@@ -18,8 +28,9 @@ impl Engine {
                 | "handle.evaluateHandle"
                 | "handle.getProperty"
                 | "handle.getProperties"
+                | "frame.waitForSelector"
         ) {
-            return self.prepare_handle_publication(result, prepare);
+            return self.prepare_handle_publication(result, None, prepare);
         }
         if !matches!(
             method,
@@ -60,9 +71,21 @@ impl Engine {
                 if let Some(error) = &state.failure {
                     return Err(error.clone());
                 }
-                *result = json!({ "identifier": identifier, "frames": state.frame_snapshot(), "mainFrame": state.main_frame });
+                *result = json!({ "identifier": identifier, "frames": state.frame_snapshot(), "mainFrame": state.main_frame, "initialEvents": state.initial_events, "navigationSequence": state.sequence });
                 let prepared = prepare(result)?;
+                state.initial_events.clear();
                 state.published = true;
+                if let Some(context) = registry.contexts.get(&page.context_identifier) {
+                    if let Some(capture) = context.state.filmstrip.lock().unwrap().as_ref() {
+                        capture.publish(&identifier);
+                    }
+                    context
+                        .state
+                        .trace_diagnostics
+                        .lock()
+                        .unwrap()
+                        .publish_page(&identifier);
+                }
                 Ok(prepared)
             }
             _ => unreachable!(),
@@ -76,6 +99,9 @@ impl Engine {
         method: &str,
         result: &Value,
     ) -> Option<&'static str> {
+        if matches!(method, "page.addInitScript" | "context.addInitScript") {
+            return self.discard_init_script(result).await;
+        }
         if matches!(
             method,
             "page.evaluateHandle"
@@ -83,6 +109,7 @@ impl Engine {
                 | "handle.evaluateHandle"
                 | "handle.getProperty"
                 | "handle.getProperties"
+                | "frame.waitForSelector"
         ) {
             return self.discard_handle_allocation(result).await;
         }
@@ -190,10 +217,16 @@ mod tests {
             "Page.frameNavigated",
             &json!({ "frame": { "id": "current", "url": "about:blank", "loaderId": "loader" } }),
         );
+        let page = engine.page("page", "test").unwrap();
+        engine.page_diagnostic("page", &page, "pageerror", json!({ "message": "initial" }));
         let mut result = json!({ "identifier": "page", "mainFrame": "stale", "frames": [] });
         let rejected = engine.prepare_publication("context.newPage", &mut result, |value| {
             assert_eq!(value["mainFrame"], "current");
             assert_eq!(value["frames"].as_array().unwrap().len(), 1);
+            assert_eq!(
+                value["initialEvents"][0]["parameters"]["message"],
+                "initial"
+            );
             Err::<(), _>(ErrorRecord::new(
                 ErrorCode::ResourceLimit,
                 "protocol.output",
@@ -211,11 +244,20 @@ mod tests {
     fn successful_page_publication_enables_future_lifecycle_events() {
         let (engine, mut messages) = engine();
         let state = insert_page(&engine);
+        let page = engine.page("page", "test").unwrap();
+        engine.page_diagnostic("page", &page, "console", json!({ "sequence": 1 }));
+        engine.page_diagnostic("page", &page, "pageerror", json!({ "sequence": 2 }));
+        assert!(messages.try_recv().is_err());
         let mut result = json!({ "identifier": "page" });
         engine
-            .prepare_publication("context.newPage", &mut result, |_| Ok(()))
+            .prepare_publication("context.newPage", &mut result, |value| {
+                assert_eq!(value["initialEvents"][0]["event"], "console");
+                assert_eq!(value["initialEvents"][1]["event"], "pageerror");
+                Ok(())
+            })
             .unwrap();
         assert!(state.state.lock().unwrap().published);
+        assert!(state.state.lock().unwrap().initial_events.is_empty());
         let page = engine.page("page", "test").unwrap();
         engine.finish_page("page", &page, closed("page"), "close");
         assert!(
@@ -232,6 +274,8 @@ mod tests {
                 browser_identifier: "browser".into(),
                 protocol_identifier: "native-context".into(),
                 viewport: None,
+                devices: crate::devices::DeviceOptions::default(),
+                settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
                 state: Arc::new(context_state::ContextState::default()),
                 published: false,
             },

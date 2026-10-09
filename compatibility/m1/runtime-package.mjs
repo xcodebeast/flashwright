@@ -73,7 +73,7 @@ try {
   await rejected('missing executable', () => rm(executablePath), 'cannot verify');
   await rejected('non-executable artifact', () => chmod(executablePath, 0o644), 'cannot verify');
   if (process.platform === 'linux') await rejected('unsupported glibc version', () => writeJson(manifestPath, { ...manifest, minimumGlibcVersion: '999.0' }), 'requires glibc', 'UnsupportedFeatureError');
-  const { driverPackageName } = require(join(dirname(require.resolve('flashwright/package.json')), 'dist/commonjs/driver-runtime.js'));
+  const { driverPackageName } = require(join(dirname(require.resolve('@flashwright/core/package.json')), 'dist/commonjs/driver-runtime.js'));
   for (const [platform, architecture] of [['win32', 'x64'], ['darwin', 'x64'], ['linux', 'arm64']]) {
     assert.throws(() => driverPackageName(platform, architecture), error => error.name === 'UnsupportedFeatureError' && error.message.includes(`${platform}/${architecture}`));
   }

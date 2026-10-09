@@ -1,3 +1,4 @@
+import { runtimeMetadata } from '../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -23,7 +24,7 @@ assert.equal(browser.version, configuration.browserVersion);
 const plan = residentLoadPlan(configuration);
 const metadata = {
   schemaVersion: 1, kind: 'resident-sustained-load', configuration, plan,
-  sources: await sourceManifest(), node: process.version, platform: process.platform, architecture: process.arch,
+  sources: await sourceManifest(), ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   operatingSystem: os.version(), release: os.release(), cpu: os.cpus()[0]?.model,
   logicalProcessors: os.cpus().length, totalMemoryBytes: os.totalmem(), initialLoadAverage: os.loadavg(),
   toolchains: Object.fromEntries(['rustc', 'cargo', 'npm'].map(command => [command, execFileSync(command, ['--version'], { encoding: 'utf8' }).trim()])),

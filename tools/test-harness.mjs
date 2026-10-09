@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { connect } from 'node:net';
+import { once } from 'node:events';
+import { createHttpFixture } from './http-fixture.mjs';
 import { requireVerifiedBrowser } from './browser-identity.mjs';
 import { quantile, summarize, comparePaired } from '../benchmarks/statistics.mjs';
 import { launchArguments } from '../benchmarks/paired-contract.mjs';
@@ -9,7 +12,7 @@ import { verifyDriverComparisonCore } from './driver-comparison-contract.mjs';
 test('driver comparisons require identical execution contracts across independently verified backends', () => {
   const browser = { executablePath: '/browser', sha256: 'browser-hash', version: '148.0.7778.96', distribution: 'chromium-headless-shell' };
   const sources = {
-    'packages/flashwright/src/index.ts': 'adapter', 'benchmarks/workloads/index.mjs': 'workload',
+    'packages/flashwright-core/src/index.ts': 'adapter', 'benchmarks/workloads/index.mjs': 'workload',
     'benchmarks/sample.mjs': 'sample', 'benchmarks/execute-sample.mjs': 'execution',
     'benchmarks/configurations/baseline.json': 'configuration', 'benchmarks/statistics.mjs': 'statistics',
     'tools/watchdog.py': 'resources', 'tools/engine-configuration.mjs': 'mode',
@@ -28,6 +31,8 @@ test('driver comparisons require identical execution contracts across independen
     sources: { ...sources, 'crates/flashwright-engine/src/lib.rs': 'new-backend', 'benchmarks/compare-drivers.mjs': 'new-harness' },
   };
   verifyDriverComparisonCore(report, metadata, 'reference');
+  assert.throws(() => verifyDriverComparisonCore({ ...report, node: null, runtime: { name: 'bun', version: '1.4.2' } }, metadata, 'reference'));
+  assert.throws(() => verifyDriverComparisonCore({ ...report, node: null }, { ...metadata, node: null }, 'reference'));
   verifyDriverComparisonCore({ ...report, sources: metadata.sources, driverSha256: 'candidate-driver' }, metadata, 'candidate');
   for (const name of Object.keys(sources).filter(name => name !== 'crates/flashwright-engine/src/lib.rs')) {
     assert.throws(() => verifyDriverComparisonCore(report, { ...metadata, sources: { ...metadata.sources, [name]: 'changed' } }, 'reference'), /changed shared execution source/);
@@ -102,4 +107,27 @@ test('benchmark admission binds core verification to the exact browser executabl
   assert.throws(() => requireVerifiedBrowser(report, { ...browser, sha256: 'replacement-with-same-version' }), /browser executable/);
   assert.throws(() => requireVerifiedBrowser(report, { ...browser, version: '148.0.7778.97' }), /browser version/);
   assert.throws(() => requireVerifiedBrowser(report, { ...browser, distribution: 'chromium-headless-shell' }), /browser distribution/);
+});
+
+
+test('fixture shutdown closes listening and active HTTP connections under the selected runtime', async () => {
+  const { server, close: closeServer } = createHttpFixture(() => {});
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const client = connect(server.address().port, '127.0.0.1');
+  const disconnected = once(client, 'close');
+  try {
+    await once(client, 'connect');
+    const requested = once(server, 'request');
+    client.write('GET /pending HTTP/1.1\r\nHost: localhost\r\n\r\n');
+    await requested;
+    await closeServer();
+    await disconnected;
+    assert.equal(server.listening, false);
+    assert.equal(client.destroyed, true);
+    await assert.rejects(closeServer(), { code: 'ERR_SERVER_NOT_RUNNING' });
+  } finally {
+    client.destroy();
+    if (server.listening) await closeServer();
+  }
 });

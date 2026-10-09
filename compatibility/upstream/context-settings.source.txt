@@ -1,0 +1,36 @@
+// chromium.ignoreHTTPSErrors
+if (options2.ignoreHTTPSErrors || options2.internalIgnoreHTTPSErrors)
+            promises.push(this._client.send("Security.setIgnoreCertificateErrors", { ignore: true }));
+
+// chromium.javaScriptEnabled
+if (options2.javaScriptEnabled === false)
+            promises.push(this._client.send("Emulation.setScriptExecutionDisabled", { value: true }));
+
+// page.mediaDefaults
+emulatedMedia() {
+        const contextOptions = this.browserContext._options;
+        return {
+          media: this._emulatedMedia.media || "no-override",
+          colorScheme: this._emulatedMedia.colorScheme !== void 0 ? this._emulatedMedia.colorScheme : contextOptions.colorScheme ?? "light",
+          reducedMotion: this._emulatedMedia.reducedMotion !== void 0 ? this._emulatedMedia.reducedMotion : contextOptions.reducedMotion ?? "no-preference",
+          forcedColors: this._emulatedMedia.forcedColors !== void 0 ? this._emulatedMedia.forcedColors : contextOptions.forcedColors ?? "none",
+          contrast: this._emulatedMedia.contrast !== void 0 ? this._emulatedMedia.contrast : contextOptions.contrast ?? "no-preference"
+        };
+      }
+
+// chromium.mediaDefaults
+async _updateEmulateMedia() {
+        const emulatedMedia = this._page.emulatedMedia();
+        const media = emulatedMedia.media === "no-override" ? "" : emulatedMedia.media;
+        const colorScheme = emulatedMedia.colorScheme === "no-override" ? "" : emulatedMedia.colorScheme;
+        const reducedMotion = emulatedMedia.reducedMotion === "no-override" ? "" : emulatedMedia.reducedMotion;
+        const forcedColors = emulatedMedia.forcedColors === "no-override" ? "" : emulatedMedia.forcedColors;
+        const contrast = emulatedMedia.contrast === "no-override" ? "" : emulatedMedia.contrast;
+        const features = [
+          { name: "prefers-color-scheme", value: colorScheme },
+          { name: "prefers-reduced-motion", value: reducedMotion },
+          { name: "forced-colors", value: forcedColors },
+          { name: "prefers-contrast", value: contrast }
+        ];
+        await this._client.send("Emulation.setEmulatedMedia", { media, features });
+      }

@@ -45,20 +45,58 @@ impl<Reader: AsyncRead + Unpin> FrameReader<Reader> {
 
     /// Read exactly one frame. Cancelled reads invalidate the reader to avoid desynchronization.
     pub async fn read<Message: DeserializeOwned>(&mut self) -> Result<Option<Message>, FrameError> {
+        self.read_parsed(|body| Ok(serde_json::from_slice(&body)?))
+            .await
+    }
+
+    /// A failed parse invalidates the stream just as a partial frame does.
+    async fn read_parsed<Message>(
+        &mut self,
+        parse: impl FnOnce(Vec<u8>) -> Result<Message, FrameError>,
+    ) -> Result<Option<Message>, FrameError> {
         if self.invalidated {
             return Err(FrameError::Invalidated);
         }
         self.invalidated = true;
-        let result = self.read_frame().await;
+        let result = self
+            .read_frame()
+            .await
+            .and_then(|body| body.map(parse).transpose());
         if result.is_ok() {
             self.invalidated = false;
         }
         result
     }
 
-    async fn read_frame<Message: DeserializeOwned>(
-        &mut self,
-    ) -> Result<Option<Message>, FrameError> {
+    /// Host binary chunks cannot be confused with JSON or escape negotiated framing bounds.
+    pub async fn read_client_frame(&mut self) -> Result<Option<crate::ClientFrame>, FrameError> {
+        self.read_parsed(|mut body| {
+            if body[0] != 0 {
+                return Ok(crate::ClientFrame::Message(serde_json::from_slice(&body)?));
+            }
+            let header = crate::attachment::ATTACHMENT_HEADER_BYTES;
+            if body.len() <= header
+                || body.len() > header + crate::attachment::ATTACHMENT_CHUNK_BYTES
+            {
+                return Err(FrameError::InvalidAttachment);
+            }
+            let request_id = u64::from_le_bytes(body[1..9].try_into().unwrap());
+            if request_id == 0 || request_id > 9_007_199_254_740_991 {
+                return Err(FrameError::InvalidAttachment);
+            }
+            let offset = u32::from_le_bytes(body[9..13].try_into().unwrap());
+            body.copy_within(header.., 0);
+            body.truncate(body.len() - header);
+            Ok(crate::ClientFrame::Attachment {
+                request_id,
+                offset,
+                bytes: body,
+            })
+        })
+        .await
+    }
+
+    async fn read_frame(&mut self) -> Result<Option<Vec<u8>>, FrameError> {
         let mut header = [0_u8; 4];
         if self.reader.read(&mut header[..1]).await? == 0 {
             return Ok(None);
@@ -76,7 +114,7 @@ impl<Reader: AsyncRead + Unpin> FrameReader<Reader> {
         }
         let mut body = vec![0; length];
         read_remaining(&mut self.reader, &mut body).await?;
-        Ok(Some(serde_json::from_slice(&body)?))
+        Ok(Some(body))
     }
 }
 

@@ -1,0 +1,88 @@
+// frame.waitForNavigation
+async waitForNavigation(options2 = {}) {
+        return await this._page._wrapApiCall(async () => {
+          const waitUntil = verifyLoadState("waitUntil", options2.waitUntil === void 0 ? "load" : options2.waitUntil);
+          const waiter = this._setupNavigationWaiter(options2);
+          const toUrl = typeof options2.url === "string" ? ` to "${options2.url}"` : "";
+          waiter.log(`waiting for navigation${toUrl} until "${waitUntil}"`);
+          const navigatedEvent = await waiter.waitForEvent(this._eventEmitter, "navigated", (event) => {
+            if (event.error)
+              return true;
+            waiter.log(`  navigated to "${event.url}"`);
+            return urlMatches(this._page?.context()._options.baseURL, event.url, options2.url);
+          });
+          if (navigatedEvent.error) {
+            const e = new Error(navigatedEvent.error);
+            e.stack = "";
+            await waiter.waitForPromise(Promise.reject(e));
+          }
+          if (!this._loadStates.has(waitUntil)) {
+            await waiter.waitForEvent(this._eventEmitter, "loadstate", (s) => {
+              waiter.log(`  "${s}" event fired`);
+              return s === waitUntil;
+            });
+          }
+          const request2 = navigatedEvent.newDocument ? Request2.fromNullable(navigatedEvent.newDocument.request) : null;
+          const response2 = request2 ? await waiter.waitForPromise(request2._finalRequest()._internalResponse()) : null;
+          waiter.dispose();
+          return response2;
+        }, { title: "Wait for navigation" });
+      }
+
+// frame.setupNavigationWaiter
+_setupNavigationWaiter(options2) {
+        const waiter = new Waiter(this._page, "");
+        if (this._page.isClosed())
+          waiter.rejectImmediately(this._page._closeErrorWithReason());
+        waiter.rejectOnEvent(this._page, Events.Page.Close, () => this._page._closeErrorWithReason());
+        waiter.rejectOnEvent(this._page, Events.Page.Crash, new Error("Navigation failed because page crashed!"));
+        waiter.rejectOnEvent(this._page, Events.Page.FrameDetached, new Error("Navigating frame was detached!"), (frame) => frame === this);
+        const timeout = this._page._timeoutSettings.navigationTimeout(options2);
+        waiter.rejectOnTimeout(timeout, `Timeout ${timeout}ms exceeded.`);
+        return waiter;
+      }
+
+// frame.waitForURL
+async waitForURL(url2, options2 = {}) {
+        if (urlMatches(this._page?.context()._options.baseURL, this.url(), url2))
+          return await this.waitForLoadState(options2.waitUntil, options2);
+        await this.waitForNavigation({ url: url2, ...options2 });
+      }
+
+// page.waitForResponse
+async waitForResponse(urlOrPredicate, options2 = {}) {
+        const predicate = async (response2) => {
+          if (isString(urlOrPredicate) || isRegExp(urlOrPredicate))
+            return urlMatches(this._browserContext._options.baseURL, response2.url(), urlOrPredicate);
+          return await urlOrPredicate(response2);
+        };
+        const trimmedUrl = trimUrl(urlOrPredicate);
+        const logLine = trimmedUrl ? `waiting for response ${trimmedUrl}` : void 0;
+        return await this._waitForEvent(Events.Page.Response, { predicate, timeout: options2.timeout }, logLine);
+      }
+
+// urlMatches
+function urlMatches(baseURL, urlString, match, webSocketUrl) {
+  if (match === void 0 || match === "")
+    return true;
+  if (isString(match))
+    match = new RegExp(resolveGlobToRegexPattern(baseURL, match, webSocketUrl));
+  if (isRegExp3(match)) {
+    const r = match.test(urlString);
+    return r;
+  }
+  const url2 = parseURL(urlString);
+  if (!url2)
+    return false;
+  if (isURLPattern(match))
+    return match.test(url2.href);
+  if (typeof match !== "function")
+    throw new Error("url parameter should be string, RegExp, URLPattern or function");
+  return match(url2);
+}
+
+// isURLPattern
+isURLPattern = (v) => typeof globalThis.URLPattern === "function" && v instanceof globalThis.URLPattern
+
+// Native URLPattern declaration
+type URLPattern = typeof globalThis extends { URLPattern: new (...args: any) => infer T } ? T : never;

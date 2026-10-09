@@ -1,0 +1,38 @@
+{
+  "referenceVersion": "1.60.0",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crNetworkManager.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/network.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/network.ts"
+  ],
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/network-headers.source.txt",
+  "extractSha256": "61fbe686164ee91d0c7c66241356ab3c3ac7e8526d0fe708fa4d5366dc2c014b",
+  "implementation": {
+    "crates/flashwright-browser/src/connection/incoming.rs": "ba79eac80c4d0cc4b994e6d1ccc8339907dfdcb4b853eecba0b4e8bdbe54b1b2",
+    "crates/flashwright-browser/src/connection/incoming/request_event.rs": "9c396dd9c75c63c55b5344bab2e6e2a04a2eec89faa742b3b652d08e1ce3c500",
+    "crates/flashwright-engine/src/network_request.rs": "3f83f43344cbae7cf023da12a22610c25af36d472c1e36e0c871b689d60ce84c",
+    "crates/flashwright-engine/src/network_observer.rs": "ac270b5ee0401be30c3bbab5b2fa4fc6fd63fdbbcf7a0ac74f9752f7737f4568",
+    "crates/flashwright-engine/src/network_state.rs": "1e85b5d1d7c9caac972da4deaa4b5cabc0afc888d06b679d5c1600493b1cb7ce",
+    "crates/flashwright-engine/src/network_headers.rs": "b42c3897bd7ee11310650ebc0ac9323973d422774b09b69618e916faf7eed5cd",
+    "crates/flashwright-engine/src/page_state.rs": "3790003120ab8a0e1ae222f95df7592655dfcb40793e789749c2184da6fc9e80",
+    "crates/flashwright-engine/src/events.rs": "11fe9a00db6937a8bc48f3c452049240ee32b21704880c85783674976e39950f",
+    "crates/flashwright-engine/src/lib.rs": "81aa04cd3ed683bf09b776b6954a4c4b2645ea228bc1af568dedfbe1d45e5185",
+    "packages/flashwright-core/src/network.ts": "0f685e879ed06edc826f35a18c1a74dcc175b45d3c547d8b42f8f1325ea0e860",
+    "packages/flashwright-core/src/index.ts": "7ca26aa1664da6eac328f66f78f9a0b557018f06db570267245dc2eed07ad73c",
+    "packages/flashwright-core/src/frame.ts": "94065793d92f0a970421aa74fe4f865df4dffa528354081eb760af927e2e2b93",
+    "packages/flashwright-core/src/engine-contract.ts": "9e196d33eef44007dea7f49ead25f1c538e135b317467774b95a66d0a20e756e"
+  },
+  "relationship": "Independent native occurrence history and extra-info queues follow pinned redirect ordering, cache/no-extra-info fallback and failed-request fallback. Host header indexing follows pinned case-insensitive values, repeated fields, Set-Cookie joining and header-array ownership.",
+  "changes": [
+    "Request occurrence ownership is immutable and independent of the latest Chromium identifier used for body access.",
+    "Completed history is bounded to 1024 occurrences, with current live navigation responses pinned. Active records are separately bounded at 4096; they do not expire under completed-history pressure.",
+    "Raw and queued metadata share 64 MiB per-page and 256 MiB per-engine logical encoded JSON admission credits; unmatched header records are bounded at 4096 per page.",
+    "Private network.headers reads retained occurrences lazily without another HTTP request; cancellation, timeout and page closure end pending reads. Expired history is an explicit ResourceLimitError. Cached host headers remain available after closure; uncached reads require the original live page.",
+    "Host caches completed request/response identities together and retain active request objects through completion. Routing and trace-network integration are separate pending work."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

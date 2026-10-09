@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -12,7 +13,7 @@ const configuration = JSON.parse(await readFile('benchmarks/configurations/resid
 const launchPolicy = JSON.parse(await readFile('crates/flashwright-browser/src/chromium-launch-policy.json', 'utf8'));
 const driverPath = resolve(process.env.FLASHWRIGHT_DRIVER_PATH ?? 'target/debug/flashwright-driver');
 const executablePath = process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath();
-const destination = await mkdtemp(resolve(`compatibility/evidence/resident-load-contract-${process.platform}-${process.arch}-${process.versions.node}-`));
+const destination = await mkdtemp(resolve(`compatibility/evidence/resident-load-contract-${process.platform}-${process.arch}-${runtimeArtifactLabel}-`));
 const sources = await sourceManifest();
 const launches = [];
 for (const workload of configuration.workloads) {
@@ -81,7 +82,7 @@ const files = launches.concat(diagnostic).flatMap(launch => {
   const name = `${launch.launchGroup}-${launch.scenario.workload}-${launch.scenario.conditionCount}-${launch.mode}`;
   return [`launch-${name}.json`, `resources-${name}.json`];
 });
-const report = { status: 'passed', node: process.version, platform: process.platform, architecture: process.arch,
+const report = { status: 'passed', ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   scope: 'Functional workload contract only; nine uninstrumented launches and one separate counter diagnostic, all with the explicitly labeled functional deadline. These samples cannot enter production comparisons.',
   functionalConformance: configuration.functionalConformance,
   sources, driverSha256: sha256(await readFile(driverPath)), executablePath,

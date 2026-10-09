@@ -203,7 +203,7 @@ impl Engine {
                 .push(json!({ "value": token }));
         }
         let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
-            "executionContextId": realm.context, "functionDeclaration": function, "arguments": arguments,
+            "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": function, "arguments": arguments,
             "returnByValue": true, "awaitPromise": true,
         }), Some(&page.session_identifier))?;
         match operation
@@ -280,7 +280,7 @@ async fn cancel_resident_condition(
 ) -> (Option<Value>, &'static str) {
     let result = page.state.while_alive(METHOD, async {
         let cancellation = browser.connection.call("Runtime.callFunctionOn", json!({
-            "executionContextId": realm.context,
+            "uniqueContextId": realm.context.unique_identifier,
             "functionDeclaration": "function(token) { return globalThis.__flashwrightLocatorRuntime.cancelAssertion(token); }",
             "arguments": [{ "value": token }], "returnByValue": true,
         }), Some(&page.session_identifier)).await?;

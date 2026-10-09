@@ -1,3 +1,4 @@
+import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -579,8 +580,8 @@ try {
   assert.deepEqual(finalSources, sources, 'sources changed during the registry experiment');
   const destinationDirectory = process.env.FLASHWRIGHT_CONDITION_EVIDENCE_DIRECTORY ?? 'compatibility/evidence';
   await mkdir(destinationDirectory, { recursive: true });
-  const destination = join(destinationDirectory, `resident-registry-${process.platform}-${process.arch}-${process.versions.node}-${new Date().toISOString().replaceAll(':', '-')}.json`);
-  await writeFile(destination, JSON.stringify({ status:'passed',node:process.version,platform:process.platform,architecture:process.arch,browserVersion:browser.version(),browserPath,
+  const destination = join(destinationDirectory, `resident-registry-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}.json`);
+  await writeFile(destination, JSON.stringify({ status:'passed',...runtimeMetadata,platform:process.platform,architecture:process.arch,browserVersion:browser.version(),browserPath,
     browserSha256:createHash('sha256').update(await readFile(browserPath)).digest('hex'),
     environmentClass:process.env.FLASHWRIGHT_ENVIRONMENT_CLASS ?? 'local-development-host',containerImage:process.env.FLASHWRIGHT_CONTAINER_IMAGE ?? null,sources,cases,
     sourceHashes:Object.fromEntries(sourceNames.map((name,index)=>[name,createHash('sha256').update([injectedSource,codecSource,locatorSource,registrySource][index]).digest('hex')])),

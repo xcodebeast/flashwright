@@ -44,7 +44,7 @@ await save('compatibility/upstream/selector-provenance.json', JSON.stringify({
   clientHelpers: {
     source: 'https://github.com/microsoft/playwright/tree/v1.60.0/packages/isomorphic',
     retainedExtract: retainedHelpers, extractSha256: hash(clientHelpers),
-    implementation: 'packages/flashwright/src/locator.ts',
+    implementation: 'packages/flashwright-core/src/locator.ts',
     changes: ['Adapted text, attribute and regular-expression escaping and selector composition into typed scope methods', 'Expanded local names and added development option validation', 'Read the v regular-expression flag using flags.includes for ES2022 declaration consumers'],
   },
   pointerAdaptations: {
@@ -61,7 +61,7 @@ await save('compatibility/upstream/selector-provenance.json', JSON.stringify({
   assertionAdaptations: {
     source: 'https://github.com/microsoft/playwright/tree/v1.60.0/packages',
     referenceFiles: ['injected/src/injectedScript.ts', 'isomorphic/expectUtils.ts', 'playwright/src/matchers/matchers.ts', 'playwright/src/index.ts'],
-    implementations: ['crates/flashwright-engine/src/assertions.rs', 'packages/resident-runtime/locator-runtime.js', 'packages/flashwright-test/src/matchers.ts', 'packages/flashwright-test/src/index.ts'],
+    implementations: ['crates/flashwright-engine/src/assertions.rs', 'packages/resident-runtime/locator-runtime.js', 'packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts'],
     changes: [
       'Call the unchanged injected _expectCore predicate through the isolated resident runtime, with strict single-target or array-specific resolution',
       'Own retry, cancellation and deadlines in Rust; retain the last observation with explicit bounded diagnostic truncation after evaluating the full predicate',

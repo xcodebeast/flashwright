@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Deterministic peer: withhold terminal replies until the caller cancels the operation.
 import assert from 'node:assert/strict';
-import { requiredCapabilities } from '../../packages/flashwright/dist/commonjs/client.js';
-import { residentRuntimeSha256 } from '../../packages/flashwright/dist/commonjs/runtime-version.cjs';
+import { requiredCapabilities } from '../../packages/flashwright-core/dist/commonjs/client.js';
+import { residentRuntimeSha256 } from '../../packages/flashwright-core/dist/commonjs/runtime-version.cjs';
 
 let incoming = Buffer.alloc(0);
 let allocation;
@@ -38,7 +38,7 @@ process.stdin.on('data', chunk => {
         } else {
           reply({ kind: 'result', requestId: allocation.requestId, value: null, inputDelivery: allocation.parameters.inputDelivery });
         }
-      } else if (allocation.method.endsWith('Handle') || allocation.method.startsWith('handle.')) {
+      } else if (allocation.method.endsWith('Handle') || allocation.method.startsWith('handle.') || allocation.method === 'frame.waitForSelector') {
         reply({ kind: 'result', requestId: allocation.requestId, value: { page: 'original-page', group: 'late-group', handles: [] }, inputDelivery: 'notDispatched' });
       } else {
         reply({ kind: 'result', requestId: allocation.requestId, value: { identifier: 'late-allocation' }, inputDelivery: 'notDispatched' });
@@ -50,6 +50,8 @@ process.stdin.on('data', chunk => {
         'browser.launch': ['browser.close', 'browser'],
         'browser.newContext': ['context.close', 'context'],
         'context.newPage': ['page.close', 'page'],
+        'page.addInitScript': ['initScript.dispose', 'script'],
+        'context.addInitScript': ['initScript.dispose', 'script'],
       }[allocation.method];
       if (expected) {
         assert.equal(message.method, expected[0]);

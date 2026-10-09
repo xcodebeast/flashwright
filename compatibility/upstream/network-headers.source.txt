@@ -1,0 +1,189 @@
+// ResponseExtraInfoTracker
+ResponseExtraInfoTracker = class {
+      constructor() {
+        this._requests = /* @__PURE__ */ new Map();
+      }
+      requestWillBeSentExtraInfo(event) {
+        const info = this._getOrCreateEntry(event.requestId);
+        info.requestWillBeSentExtraInfo.push(event);
+        this._patchHeaders(info, info.requestWillBeSentExtraInfo.length - 1);
+        this._checkFinished(info);
+      }
+      requestServedFromCache(event) {
+        const info = this._getOrCreateEntry(event.requestId);
+        info.servedFromCache = true;
+      }
+      servedFromCache(requestId) {
+        const info = this._requests.get(requestId);
+        return !!info?.servedFromCache;
+      }
+      responseReceivedExtraInfo(event) {
+        const info = this._getOrCreateEntry(event.requestId);
+        info.responseReceivedExtraInfo.push(event);
+        this._patchHeaders(info, info.responseReceivedExtraInfo.length - 1);
+        this._checkFinished(info);
+      }
+      processResponse(requestId, response2, hasExtraInfo) {
+        let info = this._requests.get(requestId);
+        if (!hasExtraInfo || info?.servedFromCache) {
+          response2.request().setRawRequestHeaders(null);
+          response2.setResponseHeadersSize(null);
+          response2.setRawResponseHeaders(null);
+          return;
+        }
+        info = this._getOrCreateEntry(requestId);
+        info.responses.push(response2);
+        this._patchHeaders(info, info.responses.length - 1);
+      }
+      loadingFinished(event) {
+        const info = this._requests.get(event.requestId);
+        if (!info)
+          return;
+        info.loadingFinished = event;
+        this._checkFinished(info);
+      }
+      loadingFailed(event) {
+        const info = this._requests.get(event.requestId);
+        if (!info)
+          return;
+        info.loadingFailed = event;
+        this._checkFinished(info);
+      }
+      _getOrCreateEntry(requestId) {
+        let info = this._requests.get(requestId);
+        if (!info) {
+          info = {
+            requestId,
+            requestWillBeSentExtraInfo: [],
+            responseReceivedExtraInfo: [],
+            responses: []
+          };
+          this._requests.set(requestId, info);
+        }
+        return info;
+      }
+      _patchHeaders(info, index) {
+        const response2 = info.responses[index];
+        const requestExtraInfo = info.requestWillBeSentExtraInfo[index];
+        if (response2 && requestExtraInfo) {
+          response2.request().setRawRequestHeaders(headersObjectToArray(requestExtraInfo.headers, "\n"));
+          info.requestWillBeSentExtraInfo[index] = void 0;
+        }
+        const responseExtraInfo = info.responseReceivedExtraInfo[index];
+        if (response2 && responseExtraInfo) {
+          response2.setResponseHeadersSize(responseExtraInfo.headersText?.length || 0);
+          response2.setRawResponseHeaders(headersObjectToArray(responseExtraInfo.headers, "\n"));
+          info.responseReceivedExtraInfo[index] = void 0;
+        }
+      }
+      _checkFinished(info) {
+        if (!info.loadingFinished && !info.loadingFailed)
+          return;
+        if (info.responses.length <= info.responseReceivedExtraInfo.length) {
+          this._stopTracking(info.requestId);
+          return;
+        }
+      }
+      _stopTracking(requestId) {
+        this._requests.delete(requestId);
+      }
+    }
+
+// RawHeaders
+RawHeaders = class _RawHeaders {
+      constructor(headers) {
+        this._headersMap = new MultiMap();
+        this._headersArray = headers;
+        for (const header of headers)
+          this._headersMap.set(header.name.toLowerCase(), header.value);
+      }
+      static _fromHeadersObjectLossy(headers) {
+        const headersArray = Object.entries(headers).map(([name, value2]) => ({
+          name,
+          value: value2
+        })).filter((header) => header.value !== void 0);
+        return new _RawHeaders(headersArray);
+      }
+      get(name) {
+        const values = this.getAll(name);
+        if (!values || !values.length)
+          return null;
+        return values.join(name.toLowerCase() === "set-cookie" ? "\n" : ", ");
+      }
+      getAll(name) {
+        return [...this._headersMap.get(name.toLowerCase())];
+      }
+      headers() {
+        const result2 = {};
+        for (const name of this._headersMap.keys())
+          result2[name] = this.get(name);
+        return result2;
+      }
+      headersArray() {
+        return this._headersArray;
+      }
+    }
+
+// Request.actualHeaders
+async _actualHeaders() {
+        if (this._fallbackOverrides.headers)
+          return RawHeaders._fromHeadersObjectLossy(this._fallbackOverrides.headers);
+        if (!this._actualHeadersPromise) {
+          this._actualHeadersPromise = this._wrapApiCall(async () => {
+            return new RawHeaders((await this._channel.rawRequestHeaders()).headers);
+          }, { internal: true });
+        }
+        return await this._actualHeadersPromise;
+      }
+
+// Response.actualHeaders
+async _actualHeaders() {
+        if (!this._actualHeadersPromise) {
+          this._actualHeadersPromise = (async () => {
+            return new RawHeaders((await this._channel.rawResponseHeaders()).headers);
+          })();
+        }
+        return await this._actualHeadersPromise;
+      }
+
+// Request.headersArray
+async headersArray() {
+        return (await this._actualHeaders()).headersArray();
+      }
+
+// Response.headersArray
+async headersArray() {
+        return (await this._actualHeaders()).headersArray().slice();
+      }
+
+// Request.setRawHeaders
+setRawRequestHeaders(headers) {
+        if (!this._rawRequestHeadersPromise.isDone())
+          this._rawRequestHeadersPromise.resolve(headers || this._headers);
+      }
+
+// Chromium.loadingFailed
+_onLoadingFailed(session2, event) {
+        const requestWillBeSentEvent = this._requestIdToRequestWillBeSentEvent.get(event.requestId);
+        if (requestWillBeSentEvent) {
+          this._requestIdToRequestWillBeSentEvent.delete(event.requestId);
+          this._onRequest(session2, requestWillBeSentEvent, false);
+        }
+        const request2 = this._requestIdToRequest.get(event.requestId);
+        if (!request2)
+          return;
+        const response2 = request2.request._existingResponse();
+        if (response2) {
+          response2._serverAddrFinished();
+          response2._securityDetailsFinished();
+          response2._setHttpVersion(null);
+          response2.setResponseHeadersSize(null);
+          response2.setEncodedBodySize(null);
+          response2._requestFinished(helper.secondsToRoundishMillis(event.timestamp - request2._timestamp));
+        } else {
+          request2.request.setRawRequestHeaders(null);
+        }
+        this._requestIdToRequest.delete(event.requestId);
+        request2.request._setFailureText(event.errorText);
+        this._page.frameManager.requestFailed(request2.request, event.errorText.includes("cancelled"));
+      }
