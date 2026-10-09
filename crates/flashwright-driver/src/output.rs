@@ -1,11 +1,12 @@
 //! Prepare bounded terminal replies before publication; never replay completed operations.
 
-use flashwright_engine::Engine;
+use flashwright_engine::{Engine, OperationResult};
 use flashwright_protocol::{AttachmentFrame, AttachmentStream};
 use flashwright_protocol::{
     DriverMessage, DriverOutput, EncodedFrame, ErrorCode, ErrorRecord, FrameError, FrameWriter,
     InputDelivery, ResourceLimits,
 };
+#[cfg(test)]
 use serde_json::Value;
 use std::collections::VecDeque;
 use tokio::io::AsyncWrite;
@@ -124,11 +125,31 @@ pub fn prepare_error(
     }
 }
 
+#[cfg(test)]
 pub async fn prepare_reply(
     engine: &Engine,
     request_id: u64,
     method: &str,
     result: Result<Value, ErrorRecord>,
+    delivery: InputDelivery,
+    limits: &ResourceLimits,
+) -> Result<EncodedFrame, FrameError> {
+    prepare_operation_reply(
+        engine,
+        request_id,
+        method,
+        result.map(OperationResult::Value),
+        delivery,
+        limits,
+    )
+    .await
+}
+
+pub async fn prepare_operation_reply(
+    engine: &Engine,
+    request_id: u64,
+    method: &str,
+    result: Result<OperationResult, ErrorRecord>,
     delivery: InputDelivery,
     limits: &ResourceLimits,
 ) -> Result<EncodedFrame, FrameError> {
@@ -139,26 +160,33 @@ pub async fn prepare_reply(
             return prepare_error(request_id, error, limits);
         }
     };
-    let prepared = engine.prepare_publication(method, &mut value, |value| {
+    let prepared = engine.prepare_operation_publication(method, &mut value, |value, custody| {
         limits.validate_value(value).map_err(|mut error| {
             error.method = "protocol.output".into();
             error
         })?;
-        DriverMessage::encode_result(request_id, value, delivery, limits.control_frame_bytes)
-            .map_err(|error| {
+        let mut frame =
+            DriverMessage::encode_result(request_id, value, delivery, limits.control_frame_bytes)
+                .map_err(|error| {
                 let code = if matches!(error, FrameError::TooLarge { .. }) {
                     ErrorCode::ResourceLimit
                 } else {
                     ErrorCode::Protocol
                 };
                 ErrorRecord::new(code, "protocol.output", error.to_string())
-            })
+            })?;
+        if let Some(custody) = custody {
+            frame.retain_reservation(custody);
+        }
+        Ok(frame)
     });
     match prepared {
         Ok(frame) => Ok(frame),
         Err(mut error) => {
             error.input_delivery = error.input_delivery.max(delivery);
-            if let Some(cleanup) = engine.discard_unreturned_allocation(method, &value).await {
+            if let Some(value) = value.value()
+                && let Some(cleanup) = engine.discard_unreturned_allocation(method, value).await
+            {
                 error.cleanup = Some(cleanup.into());
             }
             prepare_error(request_id, error, limits)

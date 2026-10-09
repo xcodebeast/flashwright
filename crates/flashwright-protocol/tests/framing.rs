@@ -4,6 +4,56 @@ use flashwright_protocol::{
 };
 use serde_json::{Value, json};
 use tokio::io::{AsyncWriteExt, duplex};
+
+#[tokio::test]
+async fn blocked_and_failed_frame_writes_retain_custody_until_frame_drop() {
+    use std::sync::Arc;
+    let budget = Arc::new(tokio::sync::Semaphore::new(64));
+    let charge = Arc::new(budget.clone().try_acquire_many_owned(32).unwrap());
+    let mut frame = EncodedFrame::encode(&"body".repeat(32), 1024).unwrap();
+    frame.retain_reservation(charge.clone());
+    drop(charge);
+    let (producer, consumer) = duplex(4);
+    let mut writer = FrameWriter::new(producer, 1024);
+    assert!(
+        tokio::time::timeout(
+            std::time::Duration::from_millis(10),
+            writer.write_frame(&frame)
+        )
+        .await
+        .is_err()
+    );
+    assert_eq!(budget.available_permits(), 32);
+    drop(consumer);
+    assert!(matches!(
+        writer.write_frame(&frame).await,
+        Err(FrameError::Invalidated)
+    ));
+    assert_eq!(budget.available_permits(), 32);
+    drop(frame);
+    assert_eq!(budget.available_permits(), 64);
+}
+
+#[tokio::test]
+async fn successful_frame_write_preserves_wire_bytes_and_releases_custody_on_drop() {
+    use std::sync::Arc;
+    let budget = Arc::new(tokio::sync::Semaphore::new(64));
+    let mut frame = EncodedFrame::encode(&json!({ "answer": 42 }), 1024).unwrap();
+    frame.retain_reservation(Arc::new(budget.clone().try_acquire_many_owned(32).unwrap()));
+    let (producer, consumer) = duplex(1024);
+    let mut writer = FrameWriter::new(producer, 1024);
+    writer.write_frame(&frame).await.unwrap();
+    assert_eq!(budget.available_permits(), 32);
+    drop(frame);
+    assert_eq!(budget.available_permits(), 64);
+    assert_eq!(
+        FrameReader::new(consumer, 1024)
+            .read::<serde_json::Value>()
+            .await
+            .unwrap(),
+        Some(json!({ "answer": 42 }))
+    );
+}
 use tokio::time::{Duration, timeout};
 
 #[tokio::test]

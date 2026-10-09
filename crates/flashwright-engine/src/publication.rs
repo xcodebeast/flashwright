@@ -3,6 +3,32 @@
 use super::*;
 
 impl Engine {
+    /// Serialize owner-backed values under their original publication lock and
+    /// transfer that owner's allocation credit to the encoded terminal frame.
+    pub fn prepare_operation_publication<Prepared>(
+        &self,
+        method: &str,
+        result: &mut OperationResult,
+        prepare: impl FnOnce(
+            &Value,
+            Option<Arc<dyn std::fmt::Debug + Send + Sync>>,
+        ) -> Result<Prepared, ErrorRecord>,
+    ) -> Result<Prepared, ErrorRecord> {
+        match result {
+            OperationResult::RetainedDiagnostics(value) => {
+                value.prepare(|value, custody| prepare(value, Some(custody)))
+            }
+            OperationResult::Value(value) => {
+                self.prepare_publication(method, value, |value| prepare(value, None))
+            }
+            OperationResult::Binary(_) => Err(ErrorRecord::new(
+                ErrorCode::Protocol,
+                method,
+                "binary output cannot be published as a JSON value",
+            )),
+        }
+    }
+
     /// Capture current initial page state and publish only if preparing its reply succeeds.
     /// Holding the state lock closes the gap between the initial snapshot and live events.
     pub fn prepare_publication<Prepared>(

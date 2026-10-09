@@ -16,6 +16,7 @@ const ENGINE_BYTES: usize = 256 * 1024 * 1024;
 const METHOD: &str = "tracing.network";
 
 pub(crate) struct NetworkBudget {
+    pub(super) metadata: Arc<JournalBudget>,
     pub(super) pending: Arc<JournalBudget>,
     pub(super) workers: Arc<Semaphore>,
     bytes: Arc<Semaphore>,
@@ -24,6 +25,7 @@ pub(crate) struct NetworkBudget {
 impl Default for NetworkBudget {
     fn default() -> Self {
         Self {
+            metadata: JournalBudget::new(256 * 1024 * 1024),
             pending: JournalBudget::new(4096),
             workers: Arc::new(Semaphore::new(2)),
             bytes: Arc::new(Semaphore::new(ENGINE_BYTES)),

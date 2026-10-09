@@ -18,6 +18,7 @@ pub(super) enum JournalError {
 pub(super) struct JournalBudget {
     maximum: usize,
     retained: AtomicUsize,
+    engine: Option<Arc<JournalBudget>>,
 }
 
 impl JournalBudget {
@@ -25,6 +26,16 @@ impl JournalBudget {
         Arc::new(Self {
             maximum,
             retained: AtomicUsize::new(0),
+            engine: None,
+        })
+    }
+
+    pub(super) fn recording(maximum: usize, engine: Arc<Self>) -> Arc<Self> {
+        assert!(engine.engine.is_none(), "engine allowance must be the root");
+        Arc::new(Self {
+            maximum,
+            retained: AtomicUsize::new(0),
+            engine: Some(engine),
         })
     }
 
@@ -34,6 +45,20 @@ impl JournalBudget {
     }
 
     pub(super) fn reserve(self: &Arc<Self>, bytes: usize) -> Result<Reservation, JournalError> {
+        self.admit(bytes)?;
+        if let Some(engine) = &self.engine
+            && let Err(error) = engine.admit(bytes)
+        {
+            self.retained.fetch_sub(bytes, Ordering::AcqRel);
+            return Err(error);
+        }
+        Ok(Reservation {
+            budget: self.clone(),
+            bytes,
+        })
+    }
+
+    fn admit(&self, bytes: usize) -> Result<(), JournalError> {
         self.retained
             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |retained| {
                 retained
@@ -43,10 +68,7 @@ impl JournalBudget {
             .map_err(|_| {
                 JournalError::ResourceLimit("network journal retained allowance exhausted")
             })?;
-        Ok(Reservation {
-            budget: self.clone(),
-            bytes,
-        })
+        Ok(())
     }
 }
 
@@ -58,6 +80,9 @@ pub(super) struct Reservation {
 impl Drop for Reservation {
     fn drop(&mut self) {
         self.budget.retained.fetch_sub(self.bytes, Ordering::AcqRel);
+        if let Some(engine) = &self.budget.engine {
+            engine.retained.fetch_sub(self.bytes, Ordering::AcqRel);
+        }
     }
 }
 
@@ -536,6 +561,56 @@ impl Write for ByteCounter {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn recording_and_engine_admission_roll_back_independently() {
+        let engine = JournalBudget::new(12);
+        let first = JournalBudget::recording(10, engine.clone());
+        let second = JournalBudget::recording(10, engine.clone());
+        let original = first.reserve(8).unwrap();
+        assert!(first.reserve(3).is_err());
+        assert_eq!(first.retained(), 8);
+        assert_eq!(engine.retained(), 8);
+        assert!(second.reserve(5).is_err());
+        assert_eq!(second.retained(), 0);
+        assert_eq!(engine.retained(), 8);
+        let successor = second.reserve(4).unwrap();
+        drop(original);
+        assert_eq!(first.retained(), 0);
+        assert_eq!(second.retained(), 4);
+        assert_eq!(engine.retained(), 4);
+        drop(successor);
+        assert_eq!(engine.retained(), 0);
+    }
+
+    #[test]
+    fn sealed_versions_and_original_body_work_keep_the_engine_metadata_charge() {
+        let engine = JournalBudget::new(64 * 1024);
+        let budget = JournalBudget::recording(64 * 1024, engine.clone());
+        let pending = JournalBudget::new(1);
+        let mut journal =
+            NetworkJournal::new(JournalLimits::default(), budget.clone(), pending.clone());
+        let owner = occurrence("request:1");
+        journal
+            .create(owner.clone(), &json!({"original": true}))
+            .unwrap();
+        let work = journal.complete(&owner, true).unwrap().unwrap();
+        let prefix = journal.seal().unwrap();
+        drop(journal);
+        assert!(budget.retained() > 8192);
+        assert_eq!(budget.retained(), engine.retained());
+        drop(prefix);
+        assert_eq!(budget.retained(), 8192);
+        assert_eq!(engine.retained(), 8192);
+        assert_eq!(pending.retained(), 1);
+        let successor = JournalBudget::recording(64 * 1024, engine.clone());
+        assert!(successor.reserve(64 * 1024 - 8191).is_err());
+        assert_eq!(successor.retained(), 0);
+        drop(work);
+        assert_eq!(engine.retained(), 0);
+        assert_eq!(pending.retained(), 0);
+        assert!(successor.reserve(64 * 1024).is_ok());
+    }
 
     fn occurrence(identity: &str) -> Occurrence {
         Occurrence {

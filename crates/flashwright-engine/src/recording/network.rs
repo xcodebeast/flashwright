@@ -70,7 +70,7 @@ fn wall_time() -> f64 {
 
 impl NetworkRecording {
     pub(super) fn new(epoch: Instant, engine: Arc<NetworkBudget>) -> Self {
-        let budget = JournalBudget::new(64 * 1024 * 1024);
+        let budget = JournalBudget::recording(64 * 1024 * 1024, engine.metadata.clone());
         Self {
             epoch,
             journal: NetworkJournal::new(
