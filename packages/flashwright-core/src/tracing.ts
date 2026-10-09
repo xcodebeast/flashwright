@@ -82,7 +82,7 @@ export class Tracing {
       this.nativeRecording = undefined;
       await this.waitForCleanup((async () => {
         try { await network?.stop(); await native?.cleanup(); }
-        finally { await resources?.dispose(); }
+        finally { await resources?.retire(); }
       })());
       throw error;
     }
@@ -158,7 +158,7 @@ export class Tracing {
     if (!chunk) {
       if (resources || retireRecording && nativeRecording) await this.waitForCleanup((async () => {
         try { if (retireRecording) { await network?.stop(); await nativeRecording?.cleanup(); } }
-        finally { if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined; await resources?.dispose(); }
+        finally { if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined; await resources?.retire(); }
       })());
       if (path !== undefined) throw failure('InvalidArgumentError', 'tracing.stopChunk', 'must start tracing before exporting');
       return;
@@ -208,7 +208,7 @@ export class Tracing {
         } finally {
           if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined;
           try { await chunk.writer.dispose(); }
-          finally { await resources?.dispose(); }
+          finally { await resources?.retire(); }
         }
       };
       await this.waitForCleanup(work.then(dispose, dispose));
@@ -373,7 +373,7 @@ export class Tracing {
     if (chunk || resources || network) {
       this.ownCleanup((async () => {
         try { await Promise.all([chunk?.filmstrip?.stop(), chunk?.snapshots?.stop(), network?.stop()]); await chunk?.writer.dispose(); }
-        finally { await resources?.dispose(); }
+        finally { await resources?.retire(); }
       })());
     }
     this.calls.clear();

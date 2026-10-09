@@ -27,6 +27,7 @@ export class TraceWriter {
   private readonly networkHash = createHash('sha256');
   private preparingArchive: Promise<SealedTraceArchive> | undefined;
   private transferred = false;
+  private releaseArchiveResources: (() => Promise<void>) | undefined;
   private removingFiles: Promise<void> | undefined;
   private readonly sourcePaths = new Set<string>();
   private readonly aliases = new Map<string, TraceResource>();
@@ -183,6 +184,8 @@ export class TraceWriter {
       ...[...this.aliases].map(([name, resource]) => ({ name, ...resource })),
     ];
     const archive = new SealedTraceArchive(entries, () => this.removeFiles());
+    this.releaseArchiveResources = this.resources.acquireArchive();
+    this.releaseResources();
     this.transferred = true;
     this.sourcePaths.clear();
     this.aliases.clear();
@@ -201,17 +204,22 @@ export class TraceWriter {
 
   private removeFiles(): Promise<void> {
     this.removingFiles ??= (async () => {
-      await this.writes;
-      try { await Promise.all([this.file.close(), this.networkFile?.close()]); }
-      finally {
-        try { await rm(this.directory, { recursive: true, force: true }); }
-        finally {
-          // Unfinished user calls may retain a disposed chunk; release its bounded metadata now.
-          this.sourcePaths.clear();
-          this.aliases.clear();
-          this.releaseResources();
-        }
+      let originalFailure: unknown;
+      let failed = false;
+      try {
+        await this.writes;
+        try { await Promise.all([this.file.close(), this.networkFile?.close()]); }
+        finally { await rm(this.directory, { recursive: true, force: true }); }
+      } catch (error) { originalFailure = error; failed = true; }
+      // Unfinished user calls may retain a disposed chunk; release its bounded metadata now.
+      this.sourcePaths.clear();
+      this.aliases.clear();
+      this.releaseResources();
+      try { await this.releaseArchiveResources?.(); }
+      catch (error) {
+        if (!failed) { originalFailure = error; failed = true; }
       }
+      if (failed) throw originalFailure;
     })();
     return this.removingFiles;
   }

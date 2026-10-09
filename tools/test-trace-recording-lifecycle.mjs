@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { writeFile } from 'node:fs/promises';
+import { access, readFile, writeFile } from 'node:fs/promises';
 const require = createRequire(import.meta.url);
 const { Tracing } = require('../packages/flashwright-core/dist/commonjs/tracing.js');
+const { TraceWriter } = require('../packages/flashwright-core/dist/commonjs/trace-writer.js');
 const { failure, fromRecord } = require('../packages/flashwright-core/dist/commonjs/errors.js');
 
 function deferred() {
@@ -161,6 +162,66 @@ try {
       assert.equal(driver.recordingCalls('start').length, 2);
       assert.equal(driver.recordingCalls('stop').length, 2);
     } finally { statusReleased.resolve(); tracing.ownerClosed(); await tracing.cleanup; }
+  });
+  await check('a retained sealed archive does not quarantine confirmed native retirement or a successor recording', async () => {
+    const { driver, tracing } = fixture();
+    const originalFinish = TraceWriter.prototype.finish;
+    let archive;
+    // Model the runner's private handoff at the already-drained writer boundary.
+    TraceWriter.prototype.finish = async function(_path, signal) { archive = await this.takeArchive(signal); };
+    try {
+      await start(tracing);
+      const retiredResources = tracing.resources;
+      await tracing.stop();
+      TraceWriter.prototype.finish = originalFinish;
+      assert.equal(driver.recordingCalls('stop').length, 1);
+      assert.equal(tracing.cleanup, undefined);
+      await access(retiredResources.directory);
+      await start(tracing);
+      assert.notEqual(tracing.resources, retiredResources);
+      assert.notEqual(driver.recordingCalls('start')[0].parameters.recording, driver.recordingCalls('start')[1].parameters.recording);
+      const reader = archive.acquire();
+      try {
+        const entry = reader.entries.find(entry => entry.name === 'trace.trace');
+        assert.equal(JSON.parse((await readFile(entry.path, 'utf8')).trim()).type, 'context-options');
+      } finally { reader.release(); }
+      await archive.dispose();
+      await assert.rejects(access(retiredResources.directory), { code: 'ENOENT' });
+      await access(tracing.resources.directory);
+      await tracing.stop();
+      assert.equal(driver.recordingCalls('stop').length, 2);
+    } finally {
+      TraceWriter.prototype.finish = originalFinish;
+      await archive?.dispose();
+      tracing.ownerClosed(); await tracing.cleanup;
+    }
+  });
+  await check('context closure settles active resource custody without deleting a retained chunk', async () => {
+    const { tracing } = fixture();
+    const originalFinish = TraceWriter.prototype.finish;
+    let archive;
+    TraceWriter.prototype.finish = async function(_path, signal) { archive = await this.takeArchive(signal); };
+    try {
+      await start(tracing);
+      const retainedResources = tracing.resources;
+      await tracing.stopChunk();
+      TraceWriter.prototype.finish = originalFinish;
+      await tracing.beforeOwnerClose();
+      tracing.ownerClosed();
+      await tracing.cleanup;
+      assert.equal(tracing.cleanup, undefined);
+      await assert.rejects(start(tracing), { name: 'TargetClosedError' });
+      await access(retainedResources.directory);
+      const reader = archive.acquire();
+      try { assert((await readFile(reader.entries.find(entry => entry.name === 'trace.trace').path)).length > 0); }
+      finally { reader.release(); }
+      await archive.dispose();
+      await assert.rejects(access(retainedResources.directory), { code: 'ENOENT' });
+    } finally {
+      TraceWriter.prototype.finish = originalFinish;
+      await archive?.dispose();
+      tracing.ownerClosed(); await tracing.cleanup;
+    }
   });
   report.status = 'passed';
 } catch (error) { report.status = 'failed'; report.error = error.stack ?? String(error); process.exitCode = 1; }

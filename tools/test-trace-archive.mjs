@@ -25,6 +25,147 @@ async function fixture(callback) {
 }
 
 try {
+  await check('retirement leaves shared sealed archives exportable and the final archive owns physical cleanup', async () => {
+    const resources = await TraceResources.create();
+    const writers = [await TraceWriter.create(resources), await TraceWriter.create(resources)];
+    const archives = [];
+    const originalRemove = filesystem.rm;
+    const removalEntered = deferred(); const removalReleased = deferred();
+    try {
+      const resource = await resources.captureBytes(Buffer.from('shared immutable bytes'), signal());
+      for (const [index, writer] of writers.entries()) {
+        writer.append({ chunk: index });
+        writer.addResource(`resources/${resource.contentHash}`, resource);
+        archives.push(await writer.takeArchive(signal()));
+        await writer.dispose();
+      }
+      const retirement = resources.retire();
+      assert.equal(resources.retire(), retirement);
+      assert.throws(() => resources.acquire(), { name: 'TargetClosedError' });
+      assert.throws(() => resources.acquireArchive(), { name: 'TargetClosedError' });
+      await assert.rejects(resources.captureBytes(Buffer.from('late'), signal()), { name: 'TargetClosedError' });
+      await retirement;
+      await archives[0].dispose();
+      await filesystem.access(resource.path);
+      const destination = join(directory, 'after-retirement.zip');
+      await archives[1].export(destination, signal());
+      const zip = new utils.ZipFile(destination);
+      try { assert.equal((await zip.read(`resources/${resource.contentHash}`)).toString(), 'shared immutable bytes'); }
+      finally { zip.close(); }
+      filesystem.rm = async (path, ...arguments_) => {
+        if (path === resources.directory) { removalEntered.resolve(); await removalReleased.promise; }
+        return originalRemove(path, ...arguments_);
+      };
+      let disposed = false;
+      const disposal = archives[1].dispose().then(() => { disposed = true; });
+      await removalEntered.promise;
+      assert.equal(disposed, false);
+      await filesystem.access(resource.path);
+      removalReleased.resolve(); await disposal;
+      await assert.rejects(filesystem.access(resources.directory), { code: 'ENOENT' });
+    } finally {
+      removalReleased.resolve(); filesystem.rm = originalRemove;
+      for (const archive of archives) await archive.dispose();
+      for (const writer of writers) await writer.dispose();
+      await resources.dispose();
+    }
+  });
+
+  await check('retirement waits for an active writer without making earlier archive disposal wait on it', async () => {
+    const resources = await TraceResources.create();
+    const sealedWriter = await TraceWriter.create(resources);
+    const activeWriter = await TraceWriter.create(resources);
+    const archive = await sealedWriter.takeArchive(signal());
+    const originalRemove = filesystem.rm;
+    const removalEntered = deferred(); const removalReleased = deferred();
+    filesystem.rm = async (path, ...arguments_) => {
+      if (path === resources.directory) { removalEntered.resolve(); await removalReleased.promise; }
+      return originalRemove(path, ...arguments_);
+    };
+    let retired = false;
+    const retirement = resources.retire().then(() => { retired = true; });
+    try {
+      await archive.dispose();
+      assert.equal(retired, false);
+      await activeWriter.dispose();
+      await removalEntered.promise;
+      assert.equal(retired, false);
+      removalReleased.resolve(); await retirement;
+      await assert.rejects(filesystem.access(resources.directory), { code: 'ENOENT' });
+    } finally {
+      removalReleased.resolve(); filesystem.rm = originalRemove;
+      await archive.dispose(); await sealedWriter.dispose(); await activeWriter.dispose(); await resources.dispose();
+    }
+  });
+
+  await check('an in-flight ingest retains retirement ownership after the last archive leaves', async () => {
+    const resources = await TraceResources.create(); const writer = await TraceWriter.create(resources);
+    const archive = await writer.takeArchive(signal());
+    const originalOpen = filesystem.open;
+    const entered = deferred(); const released = deferred();
+    filesystem.open = async (path, ...arguments_) => {
+      const handle = await originalOpen(path, ...arguments_);
+      if (!String(path).startsWith(resources.directory)) return handle;
+      const write = handle.writeFile.bind(handle);
+      handle.writeFile = async (...values) => { entered.resolve(); await released.promise; return write(...values); };
+      return handle;
+    };
+    const ingestion = assert.rejects(resources.captureBytes(Buffer.from('pending ingest'), signal()), { name: 'TargetClosedError' });
+    let retirement;
+    try {
+      await entered.promise;
+      let retired = false;
+      retirement = resources.retire().then(() => { retired = true; });
+      await archive.dispose();
+      assert.equal(retired, false);
+      await filesystem.access(resources.directory);
+      released.resolve(); await ingestion; await retirement;
+      await assert.rejects(filesystem.access(resources.directory), { code: 'ENOENT' });
+    } finally {
+      released.resolve(); filesystem.open = originalOpen;
+      await ingestion; await archive.dispose(); await writer.dispose(); await retirement; await resources.dispose();
+    }
+  });
+
+  await check('retirement before handoff cannot transfer an archive or strand the active writer lease', async () => {
+    const resources = await TraceResources.create(); const writer = await TraceWriter.create(resources);
+    writer.append({ original: true });
+    const retirement = resources.retire();
+    try {
+      await assert.rejects(writer.takeArchive(signal()), { name: 'TargetClosedError' });
+      await writer.dispose(); await retirement;
+      await assert.rejects(filesystem.access(resources.directory), { code: 'ENOENT' });
+    } finally { await writer.dispose(); await resources.dispose(); }
+  });
+
+  await check('the last archive exposes resource cleanup failure without replacing an earlier stream failure', async () => {
+    for (const failStream of [false, true]) {
+      const resources = await TraceResources.create(); const writer = await TraceWriter.create(resources);
+      const archive = await writer.takeArchive(signal());
+      const originalRemove = filesystem.rm;
+      const streamError = new Error('original stream cleanup failure');
+      const resourceError = new Error('resource cleanup failure');
+      await resources.retire();
+      filesystem.rm = async (path, ...arguments_) => {
+        if (failStream && path === writer.directory) throw streamError;
+        if (path === resources.directory) throw resourceError;
+        return originalRemove(path, ...arguments_);
+      };
+      try {
+        const disposal = archive.dispose();
+        assert.equal(archive.dispose(), disposal);
+        await assert.rejects(disposal, error => error === (failStream ? streamError : resourceError));
+        await assert.rejects(resources.dispose(), error => error === resourceError);
+        await assert.rejects(writer.dispose(), error => error === (failStream ? streamError : resourceError));
+      } finally {
+        filesystem.rm = originalRemove;
+        await archive.dispose().catch(() => {}); await writer.dispose().catch(() => {}); await resources.dispose().catch(() => {});
+        await filesystem.rm(writer.directory, { recursive: true, force: true });
+        await filesystem.rm(resources.directory, { recursive: true, force: true });
+      }
+    }
+  });
+
   await check('transferred manifests retain streams and resources after writer disposal', () => fixture(async ({ resources, writer, seal }) => {
     writer.append({ type: 'before', callId: 'original' });
     await writer.appendNetwork({ type: 'resource-snapshot', value: 'original' }, signal());

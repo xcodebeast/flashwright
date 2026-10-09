@@ -197,7 +197,7 @@ await check('an uncertain native start owns disposal and releases its resource l
   try {
     await assert.rejects(TraceFilmstripChannel.start(driver, 'context', 'generation', clock, resources, writer, page => page), candidate => candidate === error);
     assert.equal(driver.calls.filter(call => call.method.endsWith('.dispose')).length, 1);
-    assert.equal(resources.leases, 1);
+    assert.equal(resources.activeLeases, 1);
     assert.equal(writer.failure, undefined, 'settled startup cleanup does not poison a successor recording');
   } finally { await writer.dispose(); await resources.dispose(); }
 });
