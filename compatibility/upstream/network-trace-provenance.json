@@ -142,21 +142,21 @@
     "packages/flashwright-core/src/trace-network.ts": "703b75ad08fe560d82cad4bec6b97e39e8b2410b66d07ea871b7d745ef1dc308",
     "packages/flashwright-core/src/trace-recording.ts": "ca7d00e02f695c3f36dfeeb61344d58a90a7284440afd571aeabe9b1f52de7ff",
     "packages/flashwright-core/src/trace-writer.ts": "24bf66c7f555c0c291b7445621f9e75bb6899f1c1c73aa9ee247350c7b177d42",
-    "packages/flashwright-core/src/tracing.ts": "8f4d9a8efff3ad6ea33e4189da39ea2447b317a4281d1227ec1ac7f833927df8",
-    "crates/flashwright-engine/src/recording.rs": "e8da5fd610198f2a3af7aae438c048a5b25a349256aec7807c0056d46fd1560f",
+    "packages/flashwright-core/src/tracing.ts": "8231617478aa2acc17923f6d5846c20ecfd6f1a357ac79286d5985f24905141e",
+    "crates/flashwright-engine/src/recording.rs": "7305db025b98a0647451a70b7e56341176b96a6df48cd8fe02096a2ec629daf5",
     "crates/flashwright-engine/src/recording/network.rs": "aa2ce3ef35324b61a75dcbe63891106e8f028320a8ae3d25e66fb7aadc3ea4da",
     "crates/flashwright-engine/src/recording/network/journal.rs": "faf56536a2fa3058a16be8a8ee6405cfd6cf0b15a0d7dcb9b37df93f57c853de",
     "crates/flashwright-engine/src/recording/network/observer.rs": "5b77a8007c34e4cd3eedca127d0143f233c014b05540b61542bdd785b7e5ef59",
     "crates/flashwright-engine/src/recording/network/ownership.rs": "d5cbabeec0d8f2e1d6ee74334870ca39fc2daf7baaa3d72952972010e551b382",
-    "crates/flashwright-engine/src/recording/network/resources.rs": "6b79b4d01f3eba95097ac4e888ff9d721fa459f92d8510646c4bcd7dafb8748a",
+    "crates/flashwright-engine/src/recording/network/resources.rs": "33c930b811a4cdf54b0baa777af49db56f62e533d6fa8c837c04c2bcfe40e0cc",
     "crates/flashwright-engine/src/recording/network/worker.rs": "f8801cfed1b5ae42f68a3a49f02ede29ff7fd032a927af0e4c25eec18bf0a159",
     "crates/flashwright-engine/src/diagnostic_sessions.rs": "87acb87dc36ffe8c7df84d0434a0dfae32e652c3b3276c99c7cf0bab5f5217f3",
     "tools/test-trace-network-entry.mjs": "3912841ccd77d760fdee1fb52bc3caea55c4a4dd82403978c90e0bb56599dd6b",
     "tools/test-trace-network.mjs": "eeab2bb6e2da2d862e842296ae755d08bc2d3a2b0a42de850e87edc249381a38",
     "tools/run-native-network-trace-tests.mjs": "d554fd5b9980a356ccacd0f6354781a4aba65b78b03965a0760efdefea07ce38",
-    "tools/run-snapshot-resource-tests.mjs": "d8b9c3d63caacd99584414b804dc95891c8ac504f06dececa2453cae7fc54b7e"
+    "tools/run-snapshot-resource-tests.mjs": "5278476f5219ec55f8259234a92888c8b5e08bf5410685bf4cbb8402bb96ca21"
   },
-  "relationship": "The private HAR converter adapts the pinned trace entry format, cookie parsing and timing/size arithmetic. The native recording journal supplies original occurrences, bounded resources and exact-session body ownership; the host writes sealed prefixes and immutable resources. Controlled converter tests execute extracted pinned HAR methods; native and offline-viewer fixtures separately exercise live collection. This source provenance does not itself establish conformance or public activation.",
+  "relationship": "The HAR converter adapts the pinned trace entry format, cookie parsing and timing/size arithmetic. The native recording journal supplies original occurrences, bounded resources and exact-session body ownership; the host writes sealed prefixes and immutable resources. Controlled converter tests execute extracted pinned HAR methods; native and offline-viewer fixtures separately exercise live collection. This source provenance does not itself establish conformance or public activation.",
   "changes": [
     "Convert one bounded immutable native journal version; do not collect traffic, fetch bodies, mutate recording state or issue browser commands.",
     "Use explicit mapped page/clock identities and retained cookie parse wall time. Preserve original request URL, method and body while effective request values affect the header-size estimate.",
@@ -164,7 +164,7 @@
     "Retain reference UTF-16 header estimates, double timing truncation, plain-HTTP ssl timing quirk, canonical response status and raw-extra header-size presence semantics.",
     "Reject malformed/non-finite metadata, accessors, cycles, resource alias mismatches and configured metadata/output/collection/string bounds rather than producing partially fabricated entries.",
     "Do not reproduce the reference Network.loadNetworkResource refetch fallback. Missing original response bytes remain explicitly unavailable.",
-    "Public snapshots remain gated independently of these private implementation files. Verification checkpoints separately record native collector, asynchronous ownership, original-server-off viewer and runtime coverage."
+    "Public manual snapshots use the native collector and sealed network exports. Verification checkpoints separately record asynchronous ownership, public API, packed-consumer, original-server-off viewer and runtime coverage."
   ],
   "license": "Apache-2.0",
   "licensePath": "compatibility/upstream/LICENSE.playwright",

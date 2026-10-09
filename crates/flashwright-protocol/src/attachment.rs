@@ -97,10 +97,18 @@ pub struct BinaryAttachment {
     pub decoded_length: usize,
     pub reservation: OwnedSemaphorePermit,
     /// Native byte custody survives owner failure while the transport still holds the payload.
-    pub byte_reservations: Vec<Arc<OwnedSemaphorePermit>>,
+    byte_reservations: Vec<Arc<dyn std::fmt::Debug + Send + Sync>>,
 }
 
 impl BinaryAttachment {
+    /// Share the original byte charge until this transfer's terminal writer acknowledgement.
+    pub fn retain_byte_reservation<Reservation: std::fmt::Debug + Send + Sync + 'static>(
+        &mut self,
+        reservation: Arc<Reservation>,
+    ) {
+        self.byte_reservations.push(reservation);
+    }
+
     pub fn new(
         bytes: Vec<u8>,
         encoding: AttachmentEncoding,

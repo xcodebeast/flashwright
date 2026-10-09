@@ -36,7 +36,7 @@ function fixture() {
   const tracing = new Tracing(driver, 'original-context', { width: 800, height: 600 });
   return { driver, tracing };
 }
-function start(tracing) { return tracing.control(() => tracing.startRecording({ snapshots: true })); }
+function start(tracing) { return tracing.start({ snapshots: true }); }
 async function freshRecording(tracing) { await start(tracing); await tracing.stop(); }
 const report = { status: 'running', checks: [] };
 async function check(name, callback) { await callback(); report.checks.push(name); }
@@ -134,6 +134,33 @@ try {
       assert.ok(seals.every(call => JSON.stringify(call.parameters) === JSON.stringify(chunkStart.parameters)));
       await freshRecording(tracing);
     } finally { tracing.ownerClosed(); await tracing.cleanup; }
+  });
+  await check('failed network export preserves pending custody and a confirmed retirement permits a fresh recording', async () => {
+    const { driver, tracing } = fixture();
+    const statusEntered = deferred();
+    const statusReleased = deferred();
+    const originalFailure = failure('ResourceLimitError', 'tracing.network', 'original export limit');
+    let failedRecording;
+    driver.intercept = async (method, parameters) => {
+      if (method === 'context.trace.recording.start') failedRecording ??= parameters.recording;
+      if (parameters.recording !== failedRecording) return;
+      if (method === 'context.trace.network.entry') throw originalFailure;
+      if (method === 'context.trace.chunk.status') { statusEntered.resolve(); await statusReleased.promise; }
+      if (method === 'context.trace.recording.stop') throw fromRecord({ code: 'ResourceLimitError', method, message: 'original export limit', cleanup: 'traceRecordingStopped' });
+    };
+    try {
+      await start(tracing);
+      const stopping = tracing.stop();
+      const rejected = assert.rejects(stopping, error => error === originalFailure);
+      await statusEntered.promise;
+      assert.equal(driver.recordingCalls('stop').length, 0, 'native pending work must settle before recording removal');
+      await assert.rejects(start(tracing), { name: 'InvalidArgumentError' });
+      statusReleased.resolve(); await rejected;
+      assert.equal(driver.recordingCalls('stop').length, 1);
+      await freshRecording(tracing);
+      assert.equal(driver.recordingCalls('start').length, 2);
+      assert.equal(driver.recordingCalls('stop').length, 2);
+    } finally { statusReleased.resolve(); tracing.ownerClosed(); await tracing.cleanup; }
   });
   report.status = 'passed';
 } catch (error) { report.status = 'failed'; report.error = error.stack ?? String(error); process.exitCode = 1; }

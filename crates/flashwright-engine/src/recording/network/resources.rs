@@ -282,12 +282,14 @@ impl NetworkResources {
             "network resource was already transferred",
         ))?;
         let mut attachment = BinaryAttachment::from_payload(payload, transfer);
-        attachment.byte_reservations = entry
+        for permit in &entry
             .custody
             .as_ref()
             .expect("untransferred resource retains custody")
             .permits
-            .clone();
+        {
+            attachment.retain_byte_reservation(permit.clone());
+        }
         Ok(attachment)
     }
 

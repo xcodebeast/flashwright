@@ -145,11 +145,11 @@ try {
     const value = {};
     assert.equal(new Untraced().action(value), value);
   });
-  await check('unsupported optional capture fails before native recording', async () => {
-    for (const option of ['snapshots']) {
+  await check('invalid optional capture fails before native recording', async () => {
+    for (const option of ['snapshots', 'screenshots', 'sources']) {
       const driver = new DiagnosticDriver();
       const tracing = new Tracing(driver, 'context', null);
-      await assert.rejects(tracing.start({ [option]: true }), { name: 'UnsupportedFeatureError' });
+      await assert.rejects(tracing.start({ [option]: 'true' }), { name: 'InvalidArgumentError' });
       assert.deepEqual(driver.requests, []);
     }
   });

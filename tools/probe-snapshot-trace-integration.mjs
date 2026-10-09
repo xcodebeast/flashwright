@@ -11,7 +11,7 @@ const { iso, utils } = require('playwright-core/lib/coreBundle');
 const output = resolve(process.argv[2]);
 await mkdir(output);
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const report = { status: 'running', scope: 'Private entry into actual host tracing lifecycle; public snapshots remain unsupported; no network replay acceptance', checks: [], archives: [], browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH) };
+const report = { status: 'running', scope: 'Public manual snapshot phases, original chunk ownership and typed export failures. Network replay has a separate original-server-off viewer corpus.', checks: [], archives: [], browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH) };
 const server = createServer((request, response) => {
   if (request.url === '/style.css') { response.setHeader('content-type', 'text/css'); response.end('button { color: rgb(20, 40, 60); }'); return; }
   response.setHeader('content-type', 'text/html');
@@ -20,7 +20,7 @@ const server = createServer((request, response) => {
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 let browser;
-async function startPrivate(tracing, options = {}) { await tracing.control(() => tracing.startRecording({ snapshots: true, ...options })); }
+async function startSnapshots(tracing, options = {}) { await tracing.start({ snapshots: true, ...options }); }
 async function check(name, callback) { await callback(); report.checks.push(name); }
 async function inspect(path) {
   const archive = new utils.ZipFile(path);
@@ -39,9 +39,13 @@ async function inspect(path) {
 }
 try {
   browser = await chromium.launch({ executablePath: process.env.FLASHWRIGHT_BROWSER_PATH });
-  await check('public snapshot option is still rejected pending full acceptance', async () => {
+  await check('public snapshot validation rejects invalid values before a fresh valid recording', async () => {
     const context = await browser.newContext();
-    try { await assert.rejects(context.tracing.start({ snapshots: true }), { name: 'UnsupportedFeatureError' }); }
+    try {
+      await assert.rejects(context.tracing.start({ snapshots: 'true' }), { name: 'InvalidArgumentError' });
+      await startSnapshots(context.tracing);
+      await context.tracing.stop();
+    }
     finally { await context.close(); }
   });
   for (const screenshots of [false, true]) {
@@ -49,7 +53,7 @@ try {
       const context = await browser.newContext();
       try {
         const page = await context.newPage(); await page.goto(origin);
-        await startPrivate(context.tracing, { screenshots });
+        await startSnapshots(context.tracing, { screenshots });
         await page.locator('#button').click();
         await page.locator('#input').fill('filled');
         await page.locator('#select').selectOption('two');
@@ -76,7 +80,7 @@ try {
         assert.ok(trace.entries.some(name => name.endsWith('.css')));
         assert.equal(await page.locator('#input').inputValue(), 'filled');
         // A completed native recording must not prevent an independent successor.
-        await startPrivate(context.tracing);
+        await startSnapshots(context.tracing);
         await page.title();
         await context.tracing.stop();
       } finally { await context.close(); }
@@ -86,7 +90,7 @@ try {
     const context = await browser.newContext();
     try {
       const page = await context.newPage(); await page.goto(origin);
-      await startPrivate(context.tracing);
+      await startSnapshots(context.tracing);
       const originalRecording = context.tracing.nativeRecording.identifier;
       const oldChunk = context.tracing.chunk.identifier;
       let release;
@@ -121,17 +125,65 @@ try {
     try {
       const page = await context.newPage(); await page.goto(origin);
       await page.evaluate(() => { const fragment = document.createDocumentFragment(); for (let index = 0; index < 25001; index++) fragment.appendChild(document.createTextNode('x')); document.body.appendChild(fragment); });
-      await startPrivate(context.tracing);
+      await startSnapshots(context.tracing);
       await page.locator('#input').fill('survived');
       const path = join(output, 'preserved.zip'); await writeFile(path, 'original-destination');
       await assert.rejects(context.tracing.stop({ path }), { name: 'ResourceLimitError' });
       assert.equal(await readFile(path, 'utf8'), 'original-destination');
       assert.equal(await page.locator('#input').inputValue(), 'survived');
       await page.goto(origin);
-      await startPrivate(context.tracing);
+      await startSnapshots(context.tracing);
       await page.locator('#input').fill('fresh');
       await context.tracing.stop({ path: join(output, 'fresh.zip') });
       await inspect(join(output, 'fresh.zip'));
+    } finally { await context.close(); }
+  });
+  await check('unsupported custom-element snapshots fail export without changing the public action or destination', async () => {
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage(); await page.goto(origin);
+      await page.evaluate(() => document.querySelector('#button').setAttribute('is', 'custom-button'));
+      await startSnapshots(context.tracing);
+      await page.locator('#input').fill('original-action-completed');
+      const path = join(output, 'unsupported-preserved.zip'); await writeFile(path, 'original-destination');
+      await assert.rejects(context.tracing.stop({ path }), error => error.name === 'UnsupportedFeatureError' && error.message.includes('customized built-in'));
+      assert.equal(await readFile(path, 'utf8'), 'original-destination');
+      assert.equal(await page.locator('#input').inputValue(), 'original-action-completed');
+      await page.evaluate(() => document.querySelector('#button').removeAttribute('is'));
+      await startSnapshots(context.tracing);
+      await page.locator('#input').fill('fresh-after-unsupported');
+      await context.tracing.stop({ path: join(output, 'after-unsupported.zip') });
+      await inspect(join(output, 'after-unsupported.zip'));
+    } finally { await context.close(); }
+  });
+  await check('cross-origin frame placement either captures same-process frames or rejects remote export explicitly', async () => {
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage(); await page.goto(origin);
+      await page.evaluate(async remote => {
+        document.querySelector('iframe').remove();
+        const child = document.createElement('iframe');
+        const loaded = new Promise(resolve => child.onload = resolve);
+        child.src = remote; document.body.append(child); await loaded;
+      }, origin.replace('127.0.0.1', 'localhost') + '/remote');
+      const child = page.frames().find(frame => frame !== page.mainFrame());
+      assert.ok(child);
+      let remote = false;
+      try { assert.equal(await child.locator('body').count(), 1); }
+      catch (error) { assert.equal(error.name, 'UnsupportedFeatureError'); remote = true; }
+      report.crossOriginFramePlacement = remote ? 'out-of-process' : 'same-process';
+      await startSnapshots(context.tracing);
+      await page.locator('#input').fill('frame-action-completed');
+      const path = join(output, 'cross-origin.zip'); await writeFile(path, 'original-destination');
+      if (remote) {
+        await assert.rejects(context.tracing.stop({ path }), error => error.name === 'UnsupportedFeatureError' && error.message.includes('out of process'));
+        assert.equal(await readFile(path, 'utf8'), 'original-destination');
+      } else {
+        await context.tracing.stop({ path });
+        const trace = await inspect(path);
+        assert.ok(trace.snapshots.some(snapshot => snapshot.frameUrl.includes('localhost')));
+      }
+      assert.equal(await page.locator('#input').inputValue(), 'frame-action-completed');
     } finally { await context.close(); }
   });
   report.status = 'passed';

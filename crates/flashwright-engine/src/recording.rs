@@ -251,16 +251,23 @@ impl TraceRecording {
             .as_mut()
             .filter(|chunk| chunk.identifier == identifier)
             .ok_or_else(|| invalid("context.trace.chunk.seal", "original chunk is not active"))?;
-        if chunk.cutoff.is_none() {
-            chunk.network = self
-                .network
-                .as_mut()
-                .map(network::NetworkRecording::seal)
-                .transpose()?;
-        }
+        let needs_prefix = chunk.cutoff.is_none() && self.failure.is_none();
         chunk.accepting = false;
         let cutoff = *chunk.cutoff.get_or_insert(self.last_event_sequence);
         chunk.retire_idle_documents();
+        // Sealing is a lifecycle fence even when archive construction has failed.
+        // Preserve the original failure for export while keeping retirement status usable.
+        if needs_prefix {
+            match self
+                .network
+                .as_mut()
+                .map(network::NetworkRecording::seal)
+                .transpose()
+            {
+                Ok(prefix) => self.chunk.as_mut().unwrap().network = prefix,
+                Err(error) => self.fail(error),
+            }
+        }
         Ok(json!({"lastEventSequence":cutoff}))
     }
 
@@ -621,7 +628,9 @@ impl Engine {
             owner.fail(error.clone());
             return Err(error);
         }
-        let payload = original.snapshots.take(capture)?;
-        Ok(BinaryAttachment::from_payload(payload, reservation))
+        let (payload, bytes) = original.snapshots.take(capture)?;
+        let mut attachment = BinaryAttachment::from_payload(payload, reservation);
+        attachment.retain_byte_reservation(bytes);
+        Ok(attachment)
     }
 }

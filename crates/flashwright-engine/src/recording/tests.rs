@@ -193,3 +193,79 @@ fn failed_archive_keeps_retirement_status_readable_until_original_phase_settles(
     assert!(!recording.original_chunk("chunk").unwrap().pending());
     assert!(recording.original_chunk("successor").is_err());
 }
+
+#[test]
+fn failed_network_archive_still_seals_and_retires_with_its_original_failure() {
+    let mut state = RecordingState::default();
+    state.start("recording").unwrap();
+    let recording = state.get_mut("recording").unwrap();
+    recording.network = Some(network::NetworkRecording::new(
+        recording.epoch,
+        Arc::new(network::NetworkBudget::default()),
+    ));
+    recording.start_chunk("chunk").unwrap();
+    recording.observed_group(17);
+    recording
+        .admit_phase("chunk", "call", SnapshotPhase::Before)
+        .unwrap();
+    recording.fail(ErrorRecord::new(
+        ErrorCode::ResourceLimit,
+        "tracing.snapshot",
+        "original snapshot limit",
+    ));
+    assert_eq!(
+        recording.seal_chunk("chunk").unwrap()["lastEventSequence"],
+        17
+    );
+    recording.observed_group(23);
+    assert_eq!(
+        recording.seal_chunk("chunk").unwrap()["lastEventSequence"],
+        17
+    );
+    assert!(recording.original_chunk("chunk").unwrap().pending());
+    assert!(state.stop("recording").is_err());
+    let recording = state.get_mut("recording").unwrap();
+    recording
+        .settle_phase("chunk", "call", SnapshotPhase::Before)
+        .unwrap();
+    let error = state.stop("recording").unwrap_err();
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    assert_eq!(error.message.as_ref(), "original snapshot limit");
+    state.start("successor").unwrap();
+}
+
+#[test]
+fn failure_while_sealing_network_does_not_prevent_the_lifecycle_fence() {
+    let mut state = RecordingState::default();
+    state.start("recording").unwrap();
+    let recording = state.get_mut("recording").unwrap();
+    recording.network = Some(network::NetworkRecording::new(
+        recording.epoch,
+        Arc::new(network::NetworkBudget::default()),
+    ));
+    recording.start_chunk("chunk").unwrap();
+    recording.observed_group(19);
+    recording
+        .network
+        .as_mut()
+        .unwrap()
+        .recording_failed(&ErrorRecord::new(
+            ErrorCode::ResourceLimit,
+            "tracing.network",
+            "network metadata limit",
+        ));
+    assert_eq!(
+        recording.seal_chunk("chunk").unwrap()["lastEventSequence"],
+        19
+    );
+    assert!(!recording.original_chunk("chunk").unwrap().accepting);
+    assert_eq!(
+        recording.failure.as_ref().unwrap().code,
+        ErrorCode::ResourceLimit
+    );
+    assert_eq!(
+        state.stop("recording").unwrap_err().code,
+        ErrorCode::ResourceLimit
+    );
+    state.start("successor").unwrap();
+}

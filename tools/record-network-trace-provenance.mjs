@@ -54,7 +54,7 @@ const provenance = {
   sources: ['packages/playwright-core/src/server/har/harTracer.ts', 'packages/playwright-core/src/server/network.ts', 'packages/playwright-core/src/server/chromium/crNetworkManager.ts', 'packages/playwright-core/src/server/helper.ts'].map(path => `https://github.com/microsoft/playwright/blob/v1.60.0/${path}`),
   retainedExtract: 'compatibility/upstream/network-trace.source.txt', extractSha256: hash(extract),
   snippets: Object.fromEntries([...snippets].map(([name, { text: _text, ...metadata }]) => [name, metadata])), implementation,
-  relationship: 'The private HAR converter adapts the pinned trace entry format, cookie parsing and timing/size arithmetic. The native recording journal supplies original occurrences, bounded resources and exact-session body ownership; the host writes sealed prefixes and immutable resources. Controlled converter tests execute extracted pinned HAR methods; native and offline-viewer fixtures separately exercise live collection. This source provenance does not itself establish conformance or public activation.',
+  relationship: 'The HAR converter adapts the pinned trace entry format, cookie parsing and timing/size arithmetic. The native recording journal supplies original occurrences, bounded resources and exact-session body ownership; the host writes sealed prefixes and immutable resources. Controlled converter tests execute extracted pinned HAR methods; native and offline-viewer fixtures separately exercise live collection. This source provenance does not itself establish conformance or public activation.',
   changes: [
     'Convert one bounded immutable native journal version; do not collect traffic, fetch bodies, mutate recording state or issue browser commands.',
     'Use explicit mapped page/clock identities and retained cookie parse wall time. Preserve original request URL, method and body while effective request values affect the header-size estimate.',
@@ -62,7 +62,7 @@ const provenance = {
     'Retain reference UTF-16 header estimates, double timing truncation, plain-HTTP ssl timing quirk, canonical response status and raw-extra header-size presence semantics.',
     'Reject malformed/non-finite metadata, accessors, cycles, resource alias mismatches and configured metadata/output/collection/string bounds rather than producing partially fabricated entries.',
     'Do not reproduce the reference Network.loadNetworkResource refetch fallback. Missing original response bytes remain explicitly unavailable.',
-    'Public snapshots remain gated independently of these private implementation files. Verification checkpoints separately record native collector, asynchronous ownership, original-server-off viewer and runtime coverage.',
+    'Public manual snapshots use the native collector and sealed network exports. Verification checkpoints separately record asynchronous ownership, public API, packed-consumer, original-server-off viewer and runtime coverage.',
   ],
   license: 'Apache-2.0', licensePath, noticePath,
   licenseSha256: hash(await readFile(licensePath)), noticeSha256: hash(await readFile(noticePath)),

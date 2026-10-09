@@ -49,14 +49,13 @@ export class Tracing {
       validateOptions('tracing.start', options, ['name', 'title', 'screenshots', 'snapshots', 'sources']);
       for (const key of ['screenshots', 'snapshots', 'sources'] as const) {
         if (options[key] !== undefined && typeof options[key] !== 'boolean') throw failure('InvalidArgumentError', `tracing.start.${key}`, 'expected a boolean');
-        if (key === 'snapshots' && options[key]) throw failure('UnsupportedFeatureError', `tracing.start.${key}`, 'manual tracing does not yet capture DOM snapshots');
       }
       validateChunkOptions(options);
       await this.startRecording(options);
     });
   }
 
-  /** Public validation keeps snapshots disabled until native/network/viewer acceptance is complete. */
+  /** One recording retains snapshot and network ownership across independently exported chunks. */
   private async startRecording(options: TracingStartOptions): Promise<void> {
     if (this.recording) throw failure('InvalidArgumentError', 'tracing.start', 'tracing is already started');
     this.resources = await TraceResources.create();
@@ -227,7 +226,8 @@ export class Tracing {
       delete chunk.native;
     }
     const rejected = results.find(result => result.status === 'rejected');
-    if (rejected?.status === 'rejected') { chunk.writer.fail(rejected.reason); throw rejected.reason; }
+    // Failed content prevents export, but does not make settled native retirement uncertain.
+    if (rejected?.status === 'rejected') chunk.writer.fail(rejected.reason);
   }
 
   /** Compose every cleanup owner; a newer closure cannot hide an older pending export. */

@@ -63,6 +63,7 @@ const commands = [
   [process.execPath, 'tools/test-trace-network.mjs', join(destination, 'network-host')],
   [process.execPath, 'tools/run-native-network-trace-tests.mjs', join(destination, 'native-network')],
   [process.execPath, 'tools/run-snapshot-resource-tests.mjs', join(destination, 'snapshot-resources'), '--candidate'],
+  [process.execPath, 'tools/probe-snapshot-trace-integration.mjs', join(destination, 'snapshot-public')],
   [process.execPath, 'tools/test-traced-locator-mutation.mjs'],
   [process.execPath, 'tools/test-caller-locations.mjs'],
   [process.execPath, 'compatibility/m1/client-request-order.mjs'],
