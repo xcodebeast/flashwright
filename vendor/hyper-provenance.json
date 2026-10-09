@@ -6,12 +6,13 @@
   "license": "MIT",
   "licenseFile": "hyper/LICENSE",
   "patch": "hyper-original-response-metadata.patch",
-  "patchSha256": "12316a90a249855c0e890088a01f95837761b9410696aff9d4e8bdb5f156abfd",
+  "patchSha256": "209d9e362f2043282052d553708cf70c1d427838e86a34527641b24eba7e54f5",
   "changes": [
     "Add opt-in original-response-metadata feature and OriginalResponseHeaders extension.",
     "Copy only the parsed initial HTTP/1 response header block, retaining original field order and casing with existing value normalization.",
     "Reject blocks above 256 KiB or more than 1024 fields before the extension allocation. No HTTP framing, socket, server or HTTP/2 changes.",
-    "Expose original validated reason-phrase bytes from the retained header block, preserving Latin-1 bytes that httparse intentionally omits from its string view. No additional wire copy or parser acceptance change."
+    "Expose original validated reason-phrase bytes from the retained header block, preserving Latin-1 bytes that httparse intentionally omits from its string view. No additional wire copy or parser acceptance change.",
+    "Add opt-in connection-custody feature retaining an opaque original transport allowance as the last Incoming field until body drop, including after EOF. Consumers retain Incoming while consuming the response head or dependent frames."
   ],
   "files": [
     {
@@ -24,7 +25,7 @@
     },
     {
       "path": "hyper/Cargo.toml",
-      "sha256": "e0a50e695838484afb59a1eafde5152a3aadab075b9edd8ff81dd6cb312dc130"
+      "sha256": "808242440e0f9b7fd4e13f2458d5395a685c24925124cc3d5e3658749e975786"
     },
     {
       "path": "hyper/Cargo.toml.orig",
@@ -40,7 +41,7 @@
     },
     {
       "path": "hyper/src/body/incoming.rs",
-      "sha256": "3bdb177b50e9d34f4bc0385d625bbe6a4ab528e3665017efdff76ae17be8b867"
+      "sha256": "32af6b9555f7fb6732bc902015b11c573b5a0f3fcf390bf5b6dbc3c06a8c6f55"
     },
     {
       "path": "hyper/src/body/length.rs",

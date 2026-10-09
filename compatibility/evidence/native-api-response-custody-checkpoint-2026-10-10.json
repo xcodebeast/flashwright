@@ -1,0 +1,202 @@
+{
+  "status": "passed-scoped-response-custody",
+  "scope": "Internal standalone API transport lifetime fix. The current 8 MiB connection allowance remains provisional; public API, aggregate sizing, attached cookies, runner fixtures, package/platform and performance acceptance remain open.",
+  "identitiesSha256": "c48232335a330db8fdec0c305ed577d98a68519aca068bd99c02bdaff91b7cfa",
+  "sourceArchiveSha256": "7b225caec9b961a9e56ed95ded2b6ee884fa4edfddb563b7cb97a5e4cbca9307",
+  "sourceFiles": 96,
+  "frozenHostFiles": 248,
+  "nativeDriverSha256": "412b9e43c9490b1d476e36d93bef958040fafbd86e2cf2629303af9697a2c87c",
+  "baseline": {
+    "basisCommit": "35e396b9",
+    "logSha256": "f4b14b7c3569ec973d23a38fc157b06bd07980c6b527aa9d962e0101a4d2ec42",
+    "watchdogSha256": "b2fdb77451e776a72a49494a5af513263b845e513c883287a68211e7fd8d1f9c",
+    "observation": "Tracked executor settled fully; socket and pool credits were gone; returned 3000-header cached map remained live but original connection credit was 0. Baseline test had three response cases; the final passing test additionally covers unread body data."
+  },
+  "regressionCases": [
+    "empty response retaining cached request HeaderMap capacity",
+    "completed body retaining original credit after EOF",
+    "unread body retaining queued bytes after dispatcher exit",
+    "truncated body retaining original credit after error"
+  ],
+  "verification": {
+    "api-units": {
+      "exitCode": 0,
+      "cleanProcessTree": true,
+      "watchdogSha256": "e17f533fb8a2686648c37ef7715c157b97de4ec4c9c543e5c5d7eec167366523",
+      "logSha256": "0f6c3a0fdea9f0c371095c283e38081f70fe9abf2f0a2a6bef9f7bdc5926d1b1"
+    },
+    "clippy": {
+      "exitCode": 0,
+      "cleanProcessTree": true,
+      "watchdogSha256": "a42213868a18e90bbb7bb845b5fc53b2f31634f306e00407eb75ccaad1b848fa",
+      "logSha256": "4bd8ee9210ee727c694cdc49aa1923ca6e15ad03098d9d997cacc06e6543587c"
+    },
+    "release-build": {
+      "exitCode": 0,
+      "cleanProcessTree": true,
+      "watchdogSha256": "d497b8263bc4e03b98ebe352f320723548e074e3ad149a1e65b8a8b6838cb077",
+      "logSha256": "7e7e6e9706a8071057053cabcdf26c11aaeab670d9127f25e9d4528547d3d317"
+    }
+  },
+  "nativeApiTests": 96,
+  "behaviorGroups": [
+    {
+      "runtime": "bun",
+      "group": "common",
+      "checks": 12,
+      "reportSha256": "6e8787dcb8d61ea892f1348562f1604332a68e90de2da5e100236073bf8fa9c6",
+      "watchdogSha256": "a3e798b99e8045c5d73e4a88169ceca6e0c64f5009b1b04334fe1fa7b34b7c7b"
+    },
+    {
+      "runtime": "bun",
+      "group": "tls",
+      "checks": 5,
+      "reportSha256": "1e7803d397e952c427e3891d33c70ee725d68f366dacb1fa42b0e130fdfc17d0",
+      "watchdogSha256": "4dc2b68b6acdaf8e4d3c1a309ca859e64afacc0e9230ad2ee090ccd3173fff1f"
+    },
+    {
+      "runtime": "bun",
+      "group": "auth",
+      "checks": 5,
+      "reportSha256": "b96fbda7f167de2e4a252b07aef98fb25a42d17c07180ae58351422df8246c7a",
+      "watchdogSha256": "b0b172359e262d84093eac9b8fdbf47400f18eecdeeb75fb7917d1fccd5ab4a2"
+    },
+    {
+      "runtime": "node22",
+      "group": "common",
+      "checks": 12,
+      "reportSha256": "c33e3b498f90f4c073b4bbb00c686f5a8722051539076d6b42a24cb8a2c1c44a",
+      "watchdogSha256": "c7ba418b6e8dbb8a759d3db53b1fafcca1ff9fe279fdd952958fda86d8fe23b9"
+    },
+    {
+      "runtime": "node22",
+      "group": "tls",
+      "checks": 5,
+      "reportSha256": "186a6f711c77346b30a2b8ec2adf97f80d723ac1da1066d21a140918952973bd",
+      "watchdogSha256": "51057e5e601dd4aaf53f622dd7e725869dcaedce45eb0affd81eea70517c11e4"
+    },
+    {
+      "runtime": "node22",
+      "group": "auth",
+      "checks": 5,
+      "reportSha256": "96730fc565ade87a20d9e2a8858d08d514fdc4b4822948231035916bd656d3de",
+      "watchdogSha256": "c881537f13b147bf9ad526ecf0a09b8e9b13ba749f0fdf881f8ecac6cee88104"
+    },
+    {
+      "runtime": "node24",
+      "group": "common",
+      "checks": 12,
+      "reportSha256": "ccde9611250530735ab8698b903e735d7fecae252a994b3c4181d0368bc59706",
+      "watchdogSha256": "235f4319d4b54bdbba7f77f3d2099f1e84b07889e68791928eeeeb01120bd3fd"
+    },
+    {
+      "runtime": "node24",
+      "group": "tls",
+      "checks": 5,
+      "reportSha256": "8a427ad822ea8ec3c6ebe285deb241fbb6b58145da9ffd380c2e4081e4705dc9",
+      "watchdogSha256": "0c61b227cd31945448c1fd5d0504791b6f578035c36096a94bb807f9397f217a"
+    },
+    {
+      "runtime": "node24",
+      "group": "auth",
+      "checks": 5,
+      "reportSha256": "338417a902321537c0ab20dcdfa54aef941b058678f1285bdcfc424eb63a3a30",
+      "watchdogSha256": "d63f666cd0d650c754133888502763ac5c161a50de47fa1bfbe094105707755b"
+    }
+  ],
+  "formatLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "independentReviewSha256": "a090b499db71a9e1c69f8c41368f6b52553d95e84470f73268250ce1201415db",
+  "vendorReconstructionSha256": "aaf0f31ea68eefd1a7d4a875e0102fc6c322a31585beb1a77fc50523e03c43b4",
+  "priorInternalCheckpointSha256": "8aa1b4e1973cdd3f8f491f17f4b18eabc3b4536c89a8f8c761c148ba0ff19d6c",
+  "implementation": {
+    "crates/flashwright-engine/src/api_requests/allocation.rs": "b298e285f995e3bce6bbc26994210f596d022ad32c9de4f102eb58022cd7523e",
+    "crates/flashwright-engine/src/api_requests/budget.rs": "38648180c4c2e077de84911dbcff45d78bfbcb45b3c451ca73a4e25005365d8e",
+    "crates/flashwright-engine/src/api_requests/certificate_key.rs": "28cbf6af9dee6fd92ade3a6ecb9c42180fbd4abbb08180e85687f1524d9bd3dd",
+    "crates/flashwright-engine/src/api_requests/connection_custody.rs": "a39e381cdbe968ff21d354159fa6aeb776a632de39a8c3bd40f523aa5b04d371",
+    "crates/flashwright-engine/src/api_requests/connection_races.rs": "51c644353769325d5ee6edc29472b7676f2b06018472bf9d18f0b5a01ed4ce7d",
+    "crates/flashwright-engine/src/api_requests/connector.rs": "6873936e999f364b4033e01eaa96db0379edab378597f16c7847f60d81e94dd2",
+    "crates/flashwright-engine/src/api_requests/cookie_date.rs": "b1bf2a308c1151a05cc8f9f0f14b6824a85896ff3d15243d44f691682a926abe",
+    "crates/flashwright-engine/src/api_requests/cookie_date_parser.rs": "0398748e3cc1cd500e8c5933419f9c31cabda5aebeaece3a635bd393d5eab8f0",
+    "crates/flashwright-engine/src/api_requests/cookie_jar.rs": "cdf8bdeaa1227a2cdf231db4b7a92eb7421f1ca679f6ffd792847ab60cb61055",
+    "crates/flashwright-engine/src/api_requests/exchange.rs": "5245a5e418646f35bf81389b3dfb4aa0690acf16182a334a35da1d071d23c493",
+    "crates/flashwright-engine/src/api_requests/fetch.rs": "c34c7faa123bda2afe5039afd3e95fb498852acddff69ee371085fdb7ca62530",
+    "crates/flashwright-engine/src/api_requests/local_dates.rs": "7264b4127522d3e433e9826817f97630a7bbc5715700ec0b4a9c1c2422418e8f",
+    "crates/flashwright-engine/src/api_requests/mod.rs": "a9b6a1ae1b6c602ebac472b875a8a0014d3cc89c3f23bdeffe9bae10ce7e1f66",
+    "crates/flashwright-engine/src/api_requests/options.rs": "b1d954849e494961b3cae18d653cde5b1a149415caadbfd2447f516cf8df04e8",
+    "crates/flashwright-engine/src/api_requests/registry.rs": "264a2f35f22a6e6bb9f88eec1145321f383bcd52484f9c5cd0f5173c3a06f3b5",
+    "crates/flashwright-engine/src/api_requests/resolver.rs": "897f5f157ca84b7af378566eefad01e9791cbe0c6e3b3cf0abf1f9c3df391f3e",
+    "crates/flashwright-engine/src/api_requests/response_custody.rs": "6c027a96e70eae6f79a9713144a489848350cfeba3618a9485e2105c440300f0",
+    "crates/flashwright-engine/src/api_requests/response_decoder.rs": "4b3977675e046076f0aa3ff2becb8a2d7caf751fa4bf2764485b30db7771dabc",
+    "crates/flashwright-engine/src/api_requests/tls.rs": "bfaa14e70fec9beded25281b6e429002046fc0ff9316f2cbf1acbe702ce03179",
+    "crates/flashwright-engine/src/api_requests/tls_backpressure.rs": "e9e8336b1a1d2cfa0fb17ab9cd6e511d78b4b054a3d7450e669c13d4e7db3f39",
+    "crates/flashwright-engine/src/api_requests/transport_error.rs": "f020cc36a677ef3bf22838fbd4a955200bdd913874f31816080d79d3405639d8",
+    "vendor/hyper-util-connection-custody.patch": "d4b646a53a510dde0782d536842ed0ee99750dee3d47ee280a604333d853adde",
+    "vendor/hyper-util-provenance.json": "5a06cc6507a41c82a57359d2b5762ea283b3b7c127d3c4e94db6e0aba867962f",
+    "vendor/hyper-util/.cargo_vcs_info.json": "7ee535b9a2ca8f0c370be5f12461dcea52078f06d09ea210d9028bdf1400260e",
+    "vendor/hyper-util/.github/workflows/CI.yml": "517dcbb16a104f9fa5e288132995351d565bb00b57b8e30c508a7d308353cfa0",
+    "vendor/hyper-util/.github/workflows/rustdoc-preview.yml": "0802ce7a66c3c2b6e56719729f2347c311e51cc2deb779a4ddeb8adad71f0490",
+    "vendor/hyper-util/.gitignore": "b95521619d6ecdf500cd0e035fd4ddd9716147916ddd2ebf17f43213f357869d",
+    "vendor/hyper-util/CHANGELOG.md": "75860253bf603acd5f62357e587bf2ddcf63c996438c74f4bfabdea639e8f4ee",
+    "vendor/hyper-util/Cargo.lock": "d106eb34f83ff5eab4cef01bd040614730beb3c35e080a500e0359717fec5338",
+    "vendor/hyper-util/Cargo.toml": "0c6f29761b706e79a305073b730a620cd2bd4decab2206bd9ef34071bb9edd90",
+    "vendor/hyper-util/Cargo.toml.orig": "b1afe14c09fd4495db247133cb53cbdc06077df7afb4172b8250bb14de9b60e2",
+    "vendor/hyper-util/LICENSE": "9e0a97848ea543aef745c98e84fde696a9a3e0735538f6daefdd3cb1942effc1",
+    "vendor/hyper-util/README.md": "b47cc5fcb41e5d802bd175f0014f5636eefb897419720ab125b446e0b7f6f666",
+    "vendor/hyper-util/examples/client.rs": "8153fa0d74b3653f9cee113e2d42448febe20562f9bccc7a32b2fc151fc47dd0",
+    "vendor/hyper-util/examples/server.rs": "2e04d3f86a76810bb170d8c1633b44b4c5989822b17dbed0f3b63c221cc23f1a",
+    "vendor/hyper-util/examples/server_graceful.rs": "e4d65a46c7d2f44266b5c540596da1e753eeb74c580c9265296352d6e8bde83c",
+    "vendor/hyper-util/src/client/legacy/client.rs": "907c1260e15ae11cc14c873ad58abef046fecb6deefd3080ccb420f8b8a4faeb",
+    "vendor/hyper-util/src/client/legacy/connect/capture.rs": "270c9d6be46aa2077df5ed52bb7cb1ac20c8153f88a4fbb3c57a19ef71936e67",
+    "vendor/hyper-util/src/client/legacy/connect/dns.rs": "ea20854191ca43b7755ec9e317af9b89238160a6a9e94235139aab0b39f707e5",
+    "vendor/hyper-util/src/client/legacy/connect/http.rs": "91138d11a2cff92699dbbfd367856d0b90ce8b0aa1286f595c16b4fd9c491b67",
+    "vendor/hyper-util/src/client/legacy/connect/mod.rs": "cb0601371e12670dba2f208e1fce20117c337620cc5e59f1325991b89d39eb9a",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/mod.rs": "2dc7d98c83f3303d9f275fe3517a251ed7b0bc78ff101ab8f641158ee6c98abf",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/mod.rs": "7a6370f7dc134acf458bbec07ad4909d6fc82a0b4cf60c4d3a96c0a0ce2c9dbd",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/v4/errors.rs": "ae6df7f24ea4c81aaa955255ed61885f1fd5ffde597a050f6b08218f7c5ee134",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/v4/messages.rs": "b51d7fbd219621c517532533181bd0a6fc7db208fb6186ed8b6600f84919c755",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/v4/mod.rs": "2855c1d5d0e0c81a58546c8186be34de662f18319798cc34858ad0247c435e77",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/v5/errors.rs": "e28013c08b05fc5743d9a475d4ab89bd563d22f0b2009b504f19b4974fde8880",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/v5/messages.rs": "4de6da2cc949626e17ca9236aff1d56555169557576a6f09fd886f53a2bae930",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/socks/v5/mod.rs": "2bdcb4b761a3e813d580cb30db20df5f4d3cb794c9043d9cbcda7a67564da170",
+    "vendor/hyper-util/src/client/legacy/connect/proxy/tunnel.rs": "0c9d85176b966dfccec0238bdf502941d84c210b60361a8c93471abb3f15dc24",
+    "vendor/hyper-util/src/client/legacy/mod.rs": "a893df119a025ce5e8226868f76130b50b15dd0a4c8ae007556b14f29cd3520a",
+    "vendor/hyper-util/src/client/legacy/pool.rs": "e472022c1636d40aeb56af0f239c069e6efee1fc9cf20eb18f1778426aa0f3ae",
+    "vendor/hyper-util/src/client/mod.rs": "52210c5c1dd0b34daef53148fa20f0efdf6a30a7e839789434be2efba34c6655",
+    "vendor/hyper-util/src/client/pool/cache.rs": "9abda0db1c81e388c4f4f2cdd1a2a0c06c7839d297af6c15b557f358280abef6",
+    "vendor/hyper-util/src/client/pool/map.rs": "faecd62801a979062cce1d27ecf8e574724bb72ff797a3425432c0039d8a6e1a",
+    "vendor/hyper-util/src/client/pool/mod.rs": "cedd0f9c035af53e1e41d5b09a811283b81aed573fb42fe6969ac123077283d6",
+    "vendor/hyper-util/src/client/pool/negotiate.rs": "ec4e248a830cacd0a388f6998c036aef01876e0d4efaf3987ef334e2686a81b7",
+    "vendor/hyper-util/src/client/pool/singleton.rs": "81d49d785012a857b1cd5007da179307e3ecf5de1af1e4bc7d15eabab48940ae",
+    "vendor/hyper-util/src/client/proxy/matcher.rs": "3869f863fbba4714ffd828d3dcd35e68fceeaf33169aa502e6b0d74a48f1fb1a",
+    "vendor/hyper-util/src/client/proxy/mod.rs": "1a6b7fdc17aa57aa356a5b8cd44c8a8401aa0a87258334ff8da62444a1b0885a",
+    "vendor/hyper-util/src/common/exec.rs": "74f899c6a3972fcbecde525c1601ba16945db863e4451660cc6da6008c5d3738",
+    "vendor/hyper-util/src/common/lazy.rs": "fe7cfc2b88a15f7ac4ee2459f525857d8324d250c51ce6a3047c3fc4ef559bab",
+    "vendor/hyper-util/src/common/mod.rs": "4df658f1cf439c9af244563879007aec3cfc3cfa3fe3382ee0905dcfe5fe7d9c",
+    "vendor/hyper-util/src/common/rewind.rs": "333cfde1eefa3419de76ff65367d30a48e03560cc18f4b5770d883b98e7ac864",
+    "vendor/hyper-util/src/common/sync.rs": "047d79590bbbf59aae35664b1b38f4d0e6478aa10116ab33a9f231e59b3fa32d",
+    "vendor/hyper-util/src/common/timer.rs": "8ee2b70568c2a87e1cd9e84084b11255deb995a3cc720723a787ee411a3a79f8",
+    "vendor/hyper-util/src/error.rs": "c10d50e4fd57184f9c0529c0f42852845d24455c3563ef445becbec67df67d79",
+    "vendor/hyper-util/src/lib.rs": "e400215a9bd661a14f80b6b452520ab6d3fe57b8f276f9a9201d1f332777119d",
+    "vendor/hyper-util/src/rt/io.rs": "06429f8b9a6d649dbde0298ae964cdf5e98e698cec95d6b09ead69fc00a69ca4",
+    "vendor/hyper-util/src/rt/mod.rs": "484f478be32e25714fa7a24d12626e5e828ac36960a54a7ec1650948e1088159",
+    "vendor/hyper-util/src/rt/tokio.rs": "40a4b9870237fb88851fa7fcdc377d3ba800ebeed3d0f9e3a8421474a8a790b0",
+    "vendor/hyper-util/src/rt/tokio/with_hyper_io.rs": "67b91e27248354ae138507a78dd62bbbe845ef16bcf6f59e00923c5877541f7e",
+    "vendor/hyper-util/src/rt/tokio/with_tokio_io.rs": "70f30a1475ed64047800da86b4e24a4a74e340be5046bc043f2b0b1ac8000fa5",
+    "vendor/hyper-util/src/server/conn/auto/mod.rs": "eba235600a7c8538f39923cbf64c6d051e48c9732c217813df45f3c22a7c7be6",
+    "vendor/hyper-util/src/server/conn/auto/upgrade.rs": "293d823c1fb34d4bb505f835b8b26255a7bafc10c56bc9235c3cb151ebb1e72c",
+    "vendor/hyper-util/src/server/conn/mod.rs": "f192ca3fb030351ad22dba11f58edf02503598e3f9c18652a445f3973d16b723",
+    "vendor/hyper-util/src/server/graceful.rs": "651ff44015798b7b837d27e11f8c48f5ec4878463caa989e2e49ef0bb36a3db5",
+    "vendor/hyper-util/src/server/mod.rs": "c30d25551b75ec6c2915ba9da0a5638488c2760a27c589c02415dec1441fb746",
+    "vendor/hyper-util/src/service/glue.rs": "dffde87ea652504e6260c52b7ddf28ba4c3df84e82acaf2ddcbd562abeb799f6",
+    "vendor/hyper-util/src/service/mod.rs": "e70a66aa974af3500cd0ab1e68397079f8b271af69276b6df90216df18420e0c",
+    "vendor/hyper-util/src/service/oneshot.rs": "29bb0a3ec6b54287e49379f32ccecf704c227ab4e8c3e9431a515186add376f3",
+    "vendor/hyper-util/tests/legacy_client.rs": "dd1e61fba1aceae059ccd7a49e90ebbb25ff8c7ea90a7acbab71aa98f0a21b63",
+    "vendor/hyper-util/tests/proxy.rs": "a17d630e0a65a876c1718cc564424e7a8071686103dc63f70b681229305b8d76",
+    "vendor/hyper-util/tests/test_utils/mod.rs": "29a225056b11e733fc84c49b11915d8dbe68bdffcedd2c0729b7fd7f2e8f821f"
+  },
+  "limitations": [
+    "Native consumer keeps Incoming alive while consuming response Parts and copying each frame. Arbitrary consumers splitting these lifetimes are outside this opt-in contract.",
+    "Frozen TypeScript host is copied from the prior accepted API checkpoint; concurrent runner edits are not covered by this matrix.",
+    "Full aggregate HTTP/TLS allocation bound remains unaccepted."
+  ]
+}

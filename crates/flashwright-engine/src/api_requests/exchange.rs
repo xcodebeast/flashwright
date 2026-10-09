@@ -16,8 +16,8 @@ use hyper::ext::OriginalResponseHeaders;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-// Hyper retains its bounded raw block, normalized header map, and original ranges.
-// This also covers the simultaneous Latin-1 strings while extracting metadata.
+// Workspace for extracting Latin-1 metadata. Incoming separately retains the
+// connection credit for the raw block, cached HeaderMap capacity and read-ahead.
 const HEADER_WORKING_BYTES: usize = 2 * 1024 * 1024;
 const MAXIMUM_REQUEST_METADATA_BYTES: usize = 1024 * 1024;
 const MAXIMUM_REQUEST_HEADERS: usize = 4096;
@@ -148,6 +148,8 @@ pub(super) async fn start(
         return std::future::pending().await;
     }
     let (parts, incoming) = response.into_parts();
+    // Keep Incoming's connection custody alive until the original head has been
+    // consumed, including metadata-validation failures.
     let metadata = metadata(parts, budget)?;
     Ok(Exchange {
         incoming,

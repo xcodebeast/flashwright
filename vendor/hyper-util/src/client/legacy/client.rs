@@ -359,6 +359,14 @@ where
             }
         };
 
+        // Transfer custody before releasing the pooled connection. Response heads
+        // can reuse its cached request HeaderMap, and queued body frames can also
+        // outlive the dispatcher after the socket closes.
+        #[cfg(feature = "connection-custody")]
+        if let Some(custody) = &pooled.conn_info.custody {
+            res.body_mut().retain_custody(custody.clone());
+        }
+
         // If the Connector included 'extra' info, add to Response...
         if let Some(extra) = &pooled.conn_info.extra {
             extra.set(res.extensions_mut());

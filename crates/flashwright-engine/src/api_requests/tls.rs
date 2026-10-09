@@ -177,6 +177,10 @@ impl ServerCertVerifier for ExplicitlyIgnoredCertificate {
 mod connection_races;
 
 #[cfg(test)]
+#[path = "response_custody.rs"]
+mod response_custody;
+
+#[cfg(test)]
 mod tests {
     use super::super::budget::{ContextBudget, EngineBudget};
     use super::super::resolver::BoundedResolver;
