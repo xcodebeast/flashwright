@@ -48,7 +48,11 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
-assert.equal(runnerIntegration.version, 7);
+assert.equal(runnerIntegration.version, 8);
+assert.throws(() => runnerIntegration.installOwnedContextLifecycle(7, {}), error => error.name === 'ProtocolError');
+const ownedLifecycle = runnerIntegration.installOwnedContextLifecycle(8, { beginContextCreation() { return { async didCreateContext() {}, complete() {} }; }, async willCloseContext() {} });
+await ownedLifecycle.ready;
+await ownedLifecycle.dispose();
 assert.throws(() => runnerIntegration.createTraceJournal(4, {}, { sources:false, attachments:false }), error => error.name === 'ProtocolError');
 const journal = await runnerIntegration.createTraceJournal(5, { version:8, type:'context-options', origin:'testRunner' }, { sources:false, attachments:true });
 journal.append({ type:'after', callId:'packed', endTime:1 }, [{ name:'body', contentType:'text/plain', body:Buffer.from('packed body') }]);
@@ -106,6 +110,14 @@ console.log(JSON.stringify({ mixedIdentity:true, sharedScope:true, versionEnforc
     await writeFile(join(consumer, `consumer.${extension}`), `import { runnerIntegration } from '@flashwright/core/runner-integration';
 import { chromium, type Page, type Response, type NavigationWaitOptions, type WaitForNavigationOptions, type BrowserContext, type Tracing, type TracingStartOptions, type TracingChunkOptions, type TracingStopOptions } from 'playwright';
 import type { Page as DirectPage } from 'flashwright';
+async function creationOwnership() {
+  const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+    beginContextCreation() { return { async didCreateContext(context: BrowserContext): Promise<void> { context.pages(); }, complete(): void {} }; },
+    async willCloseContext(context: BrowserContext): Promise<void> { context.pages(); },
+  });
+  await registration.ready;
+  await registration.dispose();
+}
 async function history(page: Page, directPage: DirectPage) {
   const options: NavigationWaitOptions = { waitUntil: 'commit', timeout: 1000 };
   const responses: Array<Response | null> = [await page.reload(options), await page.goBack(), await page.goForward(), await directPage.reload(options)];

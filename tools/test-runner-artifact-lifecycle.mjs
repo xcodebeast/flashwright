@@ -8,6 +8,7 @@ const require = createRequire(resolve('packages/flashwright-core/package.json'))
 const { Browser } = require(resolve('packages/flashwright-core/dist/commonjs/index.js'));
 const { runnerIntegration } = require(resolve('packages/flashwright-core/dist/commonjs/runner-integration.js'));
 const { didCreateRunnerContext } = require(resolve('packages/flashwright-core/dist/commonjs/runner-lifecycle.js'));
+const filesystem = require('node:fs/promises');
 const report = { status: 'running', checks: [] };
 let nextBrowser = 0;
 
@@ -330,6 +331,224 @@ try {
     await registration.ready;
     await registration.dispose();
     await registration.dispose();
+  });
+
+  await check('owned creation captures the original attempt before a native reply crosses into its successor', async () => {
+    const nativeReply = deferred();
+    const fixture = browserFixture(method => method === 'browser.newContext' ? nativeReply.promise : undefined);
+    let current = { title: 'original' };
+    const claims = []; const enrolled = []; const completed = [];
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() {
+        const owner = current; claims.push(owner);
+        return { async didCreateContext(context) { enrolled.push({ owner, context }); }, complete() { completed.push(owner); } };
+      },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready;
+      const original = current;
+      const creation = fixture.browser.newContext();
+      assert.deepEqual(claims, [original], 'claim is synchronous, before native completion');
+      current = { title: 'successor' };
+      nativeReply.resolve();
+      const context = await creation;
+      assert.deepEqual(enrolled, [{ owner: original, context }]); assert.deepEqual(completed, [original]);
+      const successor = await fixture.browser.newContext();
+      assert.deepEqual(enrolled, [{ owner: original, context }, { owner: current, context: successor }]);
+      assert.deepEqual(completed, [original, current]);
+    } finally { nativeReply.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('existing contexts claim their registration attempt before asynchronous enrollment', async () => {
+    const fixture = browserFixture();
+    const context = await fixture.browser.newContext();
+    let current = 'original'; let claims = 0; let completions = 0; const enrolled = [];
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { const owner = current; claims++; return { async didCreateContext(value) { enrolled.push([owner, value]); }, complete() { completions++; } }; },
+      async willCloseContext() {},
+    });
+    try {
+      assert.equal(claims, 1); current = 'successor'; await registration.ready;
+      await didCreateRunnerContext(context); await didCreateRunnerContext(context);
+      assert.deepEqual(enrolled, [['original', context]]); assert.equal(claims, 1); assert.equal(completions, 1);
+    } finally { await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('storage preparation retains the attempt claimed before its asynchronous read', async () => {
+    const fixture = browserFixture(); const storage = deferred(); let current = 'original'; const enrolled = [];
+    const originalRead = filesystem.readFile;
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { const owner = current; return { async didCreateContext() { enrolled.push(owner); }, complete() {} }; },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready;
+      filesystem.readFile = async (path, ...arguments_) => path === 'delayed-state.json' ? storage.promise : originalRead(path, ...arguments_);
+      const creation = fixture.browser.newContext({ storageState: 'delayed-state.json' });
+      assert.equal(fixture.requests.length, 0); current = 'successor';
+      storage.resolve('{"cookies":[],"origins":[]}'); await creation;
+      assert.deepEqual(enrolled, ['original']);
+    } finally { storage.resolve('{"cookies":[],"origins":[]}'); filesystem.readFile = originalRead; await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('owned creation completes validation, storage and native failures exactly once without enrollment', async () => {
+    const nativeFailure = new Error('original native failure');
+    const fixture = browserFixture(() => { throw nativeFailure; });
+    let claims = 0; let completions = 0;
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { claims++; return { async didCreateContext() { throw Error('failed creation must not enroll'); }, complete() { completions++; } }; },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready;
+      await assert.rejects(fixture.browser.newContext({ viewport: { width: -1, height: 10 } }), { name: 'InvalidArgumentError' });
+      assert.equal(completions, 1); assert.equal(fixture.requests.length, 0);
+      await assert.rejects(fixture.browser.newContext({ storageState: '/no-such-flashwright-creation-state.json' }));
+      assert.equal(completions, 2); assert.equal(fixture.requests.length, 0);
+      await assert.rejects(fixture.browser.newContext(), error => error === nativeFailure);
+      assert.equal(claims, 3); assert.equal(completions, 3); assert.equal(fixture.requests.length, 1);
+    } finally { await registration.dispose(); await fixture.browser.close().catch(() => {}); }
+  });
+
+  await check('owned observer retirement retains a pending native creation through its failed-context cleanup', async () => {
+    const nativeReply = deferred(); const nativeClose = deferred();
+    const fixture = browserFixture(method => method === 'browser.newContext' ? nativeReply.promise : method === 'context.close' ? nativeClose.promise : undefined);
+    let claims = 0; let completions = 0; let enrollments = 0;
+    const observer = {
+      beginContextCreation() { claims++; return { async didCreateContext() { enrollments++; }, complete() { completions++; } }; },
+      async willCloseContext() {},
+    };
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, observer);
+    try {
+      await registration.ready;
+      const rejected = assert.rejects(fixture.browser.newContext(), /observer is retiring/);
+      assert.equal(claims, 1);
+      let disposed = false; const disposal = registration.dispose().then(() => { disposed = true; });
+      await setImmediate(); assert.equal(disposed, false); assert.equal(completions, 0);
+      await assert.rejects(fixture.browser.newContext(), /observer is retiring/);
+      assert.equal(claims, 1); assert.equal(fixture.requests.length, 1, 'new admission fails before native creation');
+      assert.throws(() => runnerIntegration.installOwnedContextLifecycle(8, observer), /already active/);
+      nativeReply.resolve(); await until(() => fixture.requests.some(value => value.method === 'context.close'));
+      assert.equal(disposed, false); assert.equal(completions, 0); assert.equal(enrollments, 0);
+      nativeClose.resolve(); await Promise.all([rejected, disposal]); assert.equal(completions, 1);
+      const successor = runnerIntegration.installOwnedContextLifecycle(8, observer); await successor.ready;
+      await fixture.browser.newContext(); await successor.dispose(); assert.equal(enrollments, 1); assert.equal(completions, 2);
+    } finally { nativeReply.resolve(); nativeClose.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('failed owned enrollment keeps its exact original failure and claim until native close settles', async () => {
+    const nativeClose = deferred();
+    const fixture = browserFixture(method => method === 'context.close' ? nativeClose.promise : undefined);
+    const original = new Error('original owned enrollment'); let completions = 0;
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { return { async didCreateContext() { throw original; }, complete() { completions++; } }; },
+      async willCloseContext() { throw Error('secondary close callback'); },
+    });
+    try {
+      await registration.ready;
+      const rejected = assert.rejects(fixture.browser.newContext(), error => error === original);
+      await until(() => fixture.requests.some(value => value.method === 'context.close'));
+      assert.equal(completions, 0);
+      let disposed = false; const disposal = registration.dispose().then(() => { disposed = true; });
+      await setImmediate(); assert.equal(disposed, false);
+      nativeClose.resolve(); await Promise.all([rejected, disposal]);
+      assert.equal(completions, 1); assert.equal(fixture.browser.contexts().length, 0);
+    } finally { nativeClose.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('browser closure before the native reply retains its claim through late native disposal', async () => {
+    const nativeReply = deferred(); const nativeClose = deferred();
+    const fixture = browserFixture(method => method === 'browser.newContext' ? nativeReply.promise : method === 'context.close' ? nativeClose.promise : undefined);
+    let completions = 0;
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { return { async didCreateContext() { throw Error('dead context must not enroll'); }, complete() { completions++; } }; },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready;
+      const rejected = assert.rejects(fixture.browser.newContext(), { name: 'TargetClosedError' });
+      await fixture.browser.close(); nativeReply.resolve();
+      await until(() => fixture.requests.some(value => value.method === 'context.close'));
+      assert.equal(completions, 0); nativeClose.resolve(); await rejected; assert.equal(completions, 1);
+    } finally { nativeReply.resolve(); nativeClose.resolve(); await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('completion failures surface at observer disposal and never replace creation outcomes', async () => {
+    const fixture = browserFixture(); const original = new Error('first completion failure'); let calls = 0;
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { return { async didCreateContext() {}, complete() { calls++; throw calls === 1 ? original : Error('later completion'); } }; },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready;
+      const context = await fixture.browser.newContext(); assert.ok(fixture.browser.contexts().includes(context));
+      await assert.rejects(fixture.browser.newContext({ viewport: null, unknown: true }), { name: 'UnsupportedFeatureError' });
+      assert.equal(calls, 2); await assert.rejects(registration.dispose(), error => error === original);
+      const successor = runnerIntegration.installOwnedContextLifecycle(8, { beginContextCreation() { return { async didCreateContext() {}, complete() {} }; }, async willCloseContext() {} });
+      await successor.ready; await successor.dispose();
+    } finally { await registration.dispose().catch(() => {}); await fixture.browser.close(); }
+  });
+
+  await check('asynchronous claim completion retains retirement custody and its original failure', async () => {
+    const fixture = browserFixture(); const cleanup = deferred(); const original = new Error('asynchronous original completion');
+    const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() { return { async didCreateContext() {}, async complete() { await cleanup.promise; throw original; } }; },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready; const context = await fixture.browser.newContext();
+      assert.ok(fixture.browser.contexts().includes(context));
+      let disposed = false; const disposal = assert.rejects(registration.dispose(), error => error === original).then(() => { disposed = true; });
+      await setImmediate(); assert.equal(disposed, false);
+      assert.throws(() => runnerIntegration.installContextLifecycle(1, { didCreateContext() {}, async willCloseContext() {} }), /already active/);
+      cleanup.resolve(); await disposal;
+    } finally { cleanup.resolve(); await registration.dispose().catch(() => {}); await fixture.browser.close(); }
+  });
+
+  await check('invalid existing-context claims and failed callbacks detach without losing the original adoption failure', async () => {
+    const fixture = browserFixture(); await fixture.browser.newContext();
+    const original = new Error('original existing enrollment');
+    for (const invalidClaim of [true, false]) {
+      const registration = runnerIntegration.installOwnedContextLifecycle(8, {
+        beginContextCreation() { return invalidClaim ? {} : { async didCreateContext() { throw original; }, complete() { throw Error('secondary completion'); } }; },
+        async willCloseContext() {},
+      });
+      await assert.rejects(registration.ready, error => invalidClaim ? /invalid runner context-creation owner/.test(error.message) : error === original);
+      await registration.dispose().catch(() => {});
+    }
+    await fixture.browser.close();
+  });
+
+  await check('owned claim callbacks cannot recursively create contexts or dispose their observer', async () => {
+    const fixture = browserFixture(); const rejected = []; let registration;
+    registration = runnerIntegration.installOwnedContextLifecycle(8, {
+      beginContextCreation() {
+        rejected.push(assert.rejects(fixture.browser.newContext(), /creation.*recursively/));
+        rejected.push(assert.rejects(registration.dispose(), /disposal.*recursively/));
+        return { async didCreateContext() {}, complete() {
+          rejected.push(assert.rejects(fixture.browser.newContext(), /creation.*recursively/));
+          rejected.push(assert.rejects(registration.dispose(), /disposal.*recursively/));
+        } };
+      },
+      async willCloseContext() {},
+    });
+    try {
+      await registration.ready; await fixture.browser.newContext(); await Promise.all(rejected);
+      assert.equal(rejected.length, 4); assert.equal(fixture.requests.length, 1);
+    } finally { await registration.dispose(); await fixture.browser.close(); }
+  });
+
+  await check('owned lifecycle version and required claim shape fail before observer installation', async () => {
+    for (const [version, lifecycle] of [[7, {}], [8, {}], [8, { didCreateContext() {}, async willCloseContext() {} }], [8, { beginContextCreation() {} }]]) {
+      assert.throws(() => runnerIntegration.installOwnedContextLifecycle(version, lifecycle), { name: 'ProtocolError' });
+    }
+    const fixture = browserFixture();
+    for (const claim of [undefined, {}, { complete() {} }, { didCreateContext() {} }]) {
+      const registration = runnerIntegration.installOwnedContextLifecycle(8, { beginContextCreation() { return claim; }, async willCloseContext() {} });
+      await registration.ready; await assert.rejects(fixture.browser.newContext(), /invalid runner context-creation owner/); await registration.dispose();
+    }
+    assert.equal(fixture.requests.length, 0); await fixture.browser.close();
   });
   report.status = 'passed';
 } catch (error) {

@@ -14,6 +14,7 @@ import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs'
 
 const require = createRequire(resolve('packages/flashwright-core/package.json'));
 const { runnerIntegration } = require('@flashwright/core/runner-integration');
+const { EngineClient } = require(resolve('packages/flashwright-core/dist/commonjs/client.js'));
 const { iso, utils } = require(resolve(dirname(require.resolve('playwright-core/package.json')), 'lib/coreBundle.js'));
 const browserPath = process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath();
 const driverPath = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/flashwright-driver');
@@ -40,6 +41,8 @@ const admitted = new Set();
 let combined;
 const handles = new Map();
 const recordings = new Map();
+const creationClaims = [];
+let attempt = 'original attempt';
 let browser;
 let registration;
 
@@ -68,13 +71,21 @@ try {
   browser = await chromium.launch({ executablePath: browserPath });
   const surviving = await browser.newContext();
   const closedMarkers = new Map();
-  registration = runnerIntegration.installAsyncContextLifecycle(2, {
-    async didCreateContext(context) {
-      const recording = await runnerIntegration.startTraceRecording(7, context.tracing, { screenshots: true, snapshots: true, sources: true, title: 'Private runner handoff' });
-      assert.equal(runnerIntegration.currentTraceRecording(7, context.tracing), recording);
-      recordings.set(context, recording);
-      const handle = runnerIntegration.currentTraceChunk(3, context.tracing);
-      assert.ok(handle); handles.set(context, handle);
+  registration = runnerIntegration.installOwnedContextLifecycle(8, {
+    beginContextCreation() {
+      const claim = { owner: attempt, enrolled: undefined, completions: 0 };
+      creationClaims.push(claim);
+      return {
+        async didCreateContext(context) {
+          claim.enrolled = claim.owner;
+          const recording = await runnerIntegration.startTraceRecording(7, context.tracing, { screenshots: true, snapshots: true, sources: true, title: claim.owner });
+          assert.equal(runnerIntegration.currentTraceRecording(7, context.tracing), recording);
+          recordings.set(context, recording);
+          const handle = runnerIntegration.currentTraceChunk(3, context.tracing);
+          assert.ok(handle); handles.set(context, handle);
+        },
+        complete() { claim.completions++; },
+      };
     },
     async willCloseContext(context) {
       if (handles.has(context)) await retain(context, closedMarkers.get(context));
@@ -83,6 +94,32 @@ try {
     },
   });
   await registration.ready;
+  // Delay delivery of a real native allocation, crossing an attempt boundary while
+  // keeping the same worker observer installed. The native result is never replaced.
+  const originalRequest = EngineClient.prototype.request;
+  let allocationReturned; const allocated = new Promise(resolve => { allocationReturned = resolve; });
+  let releaseReply; const replyGate = new Promise(resolve => { releaseReply = resolve; });
+  let delayedCreation;
+  try {
+    EngineClient.prototype.request = async function(method, ...arguments_) {
+      const result = await originalRequest.call(this, method, ...arguments_);
+      if (method === 'browser.newContext') { allocationReturned(); await replyGate; }
+      return result;
+    };
+    delayedCreation = browser.newContext();
+    const claim = creationClaims.at(-1);
+    assert.equal(claim.owner, 'original attempt');
+    await allocated; attempt = 'successor attempt';
+    assert.equal(claim.enrolled, undefined); assert.equal(claim.completions, 0);
+    releaseReply(); const late = await delayedCreation;
+    assert.equal(claim.enrolled, 'original attempt'); assert.equal(claim.completions, 1);
+    await handles.get(late).discard(); handles.delete(late); await late.close();
+    report.checks.push('a delayed real native allocation retains its original attempt claim while the worker advances');
+  } finally {
+    releaseReply(); EngineClient.prototype.request = originalRequest;
+    await delayedCreation?.catch(() => {});
+  }
+  attempt = 'original attempt';
   await capture(surviving, 'surviving-first');
   const original = handles.get(surviving);
   await retain(surviving, 'surviving-first');
@@ -112,6 +149,9 @@ try {
   assert.equal(handles.size, 0);
   assert.equal(recordings.size, 0);
   assert.equal(retained.length, 3);
+  assert.equal(creationClaims.length, 4);
+  assert.ok(creationClaims.every(claim => claim.completions === 1 && claim.enrolled === claim.owner));
+  report.creationClaims = creationClaims;
   report.checks.push('explicit closure seals the original chunks before native contexts and browser retire');
 
   for (const { marker, archive } of retained) {
