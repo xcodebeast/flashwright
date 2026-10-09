@@ -66,6 +66,7 @@ const commands = [
   [process.execPath, 'tools/test-manual-tracing.mjs'],
   [process.execPath, 'tools/test-trace-resources.mjs'],
   [process.execPath, 'tools/test-trace-archive.mjs'],
+  [process.execPath, 'tools/test-trace-archive-assembly.mjs'],
   [process.execPath, 'tools/test-runner-trace-archives.mjs'],
   [process.execPath, 'tools/test-trace-filmstrip.mjs'],
   [process.execPath, 'tools/test-trace-snapshot-record.mjs', join(destination, 'snapshot-record')],

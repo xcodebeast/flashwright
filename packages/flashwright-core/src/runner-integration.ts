@@ -5,10 +5,15 @@ import { installRunnerContextLifecycle, installAsyncRunnerContextLifecycle, type
 import { installRunnerContextDefaults, type RunnerContextDefaults } from './runner-context-defaults.js';
 import { installRunnerActionObserver, type RunnerActionObserver } from './runner-actions.js';
 import { currentRunnerTraceChunk, type RunnerTraceChunk } from './runner-trace-archives.js';
+import { TraceArchiveAssembly } from './trace-archive-assembly.js';
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 3,
+  version: 4,
+  createTraceArchiveAssembly(version: number): TraceArchiveAssembly {
+    if (version !== 4) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return new TraceArchiveAssembly();
+  },
   currentTraceChunk(version: number, tracing: object): RunnerTraceChunk | undefined {
     if (version !== 3) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return currentRunnerTraceChunk(tracing);

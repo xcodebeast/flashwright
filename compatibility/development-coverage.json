@@ -450,6 +450,11 @@
       "checkpoint": "compatibility/evidence/runner-trace-handoff-checkpoint-2026-10-09.json",
       "scope": "38 focused groups across Bun 1.4.2, Node 22.22.0 and Node 24.15.0; 11 controlled handoff cases per runtime, six real-browser configurations, 18 retained ZIP CRC checks and packed ESM/CommonJS integration.",
       "limitations": "Private boundary only; automatic runner trace assembly, aggregate budgets, native Linux and release/performance acceptance remain open."
+    },
+    "runnerTraceAssembly": {
+      "checkpoint": "compatibility/evidence/trace-assembly-checkpoint-2026-10-09.json",
+      "scope": "Private version-4 final manifest assembly, canonical bounded descriptors and original archive custody; 41 focused groups, 13 assembly cases per runtime and six real-browser composite archives.",
+      "limitations": "Final assembly bounds do not establish capture-time aggregate budgets. Automatic policies and runner-journal fidelity remain open."
     }
   },
   "testSources": [
@@ -646,7 +651,8 @@
     "tools/run-dialog-tests.mjs",
     "tools/test-packed-dialogs.mjs",
     "tools/test-runner-trace-archives.mjs",
-    "tools/run-runner-trace-archive-tests.mjs"
+    "tools/run-runner-trace-archive-tests.mjs",
+    "tools/test-trace-archive-assembly.mjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
