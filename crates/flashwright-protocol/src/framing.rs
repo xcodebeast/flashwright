@@ -135,9 +135,18 @@ async fn read_remaining<Reader: AsyncRead + Unpin>(
 #[derive(Debug)]
 pub struct EncodedFrame {
     body: Vec<u8>,
+    reservations: Vec<std::sync::Arc<dyn std::fmt::Debug + Send + Sync>>,
 }
 
 impl EncodedFrame {
+    /// Preserve native allocation custody until this frame is written or discarded.
+    pub fn retain_reservation(
+        &mut self,
+        reservation: std::sync::Arc<dyn std::fmt::Debug + Send + Sync>,
+    ) {
+        self.reservations.push(reservation);
+    }
+
     /// Binary data is distinguished from JSON by a zero marker, then request identity/offset.
     pub fn attachment_chunk(
         request_id: u64,
@@ -160,7 +169,10 @@ impl EncodedFrame {
         body.extend_from_slice(&request_id.to_le_bytes());
         body.extend_from_slice(&offset.to_le_bytes());
         body.extend_from_slice(bytes);
-        Ok(Self { body })
+        Ok(Self {
+            body,
+            reservations: Vec::new(),
+        })
     }
 
     pub fn encode<Message: Serialize>(
@@ -182,7 +194,10 @@ impl EncodedFrame {
                 Err(FrameError::Json(error))
             };
         }
-        Ok(Self { body: body.bytes })
+        Ok(Self {
+            body: body.bytes,
+            reservations: Vec::new(),
+        })
     }
 }
 

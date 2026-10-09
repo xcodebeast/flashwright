@@ -44,6 +44,7 @@ mod trace_diagnostics;
 pub use dialogs::PreparedDialogHandling;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
+pub use trace_diagnostics::RetainedDiagnostics;
 
 use std::collections::HashMap;
 use std::os::fd::OwnedFd;
@@ -154,11 +155,23 @@ pub struct Engine {
     dialog_budget: Arc<dialogs::DialogBudget>,
     snapshot_budget: OnceLock<Arc<snapshots::SnapshotBudget>>,
     trace_network_budget: OnceLock<Arc<recording::network::NetworkBudget>>,
+    trace_diagnostic_budget: OnceLock<Arc<tokio::sync::Semaphore>>,
 }
 
 pub enum OperationResult {
     Value(Value),
+    RetainedDiagnostics(Arc<RetainedDiagnostics>),
     Binary(BinaryAttachment),
+}
+
+impl OperationResult {
+    pub fn value(&self) -> Option<&Value> {
+        match self {
+            Self::Value(value) => Some(value),
+            Self::RetainedDiagnostics(value) => Some(value.value()),
+            Self::Binary(_) => None,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -224,6 +237,7 @@ impl Engine {
             dialog_budget: dialogs::DialogBudget::engine(),
             snapshot_budget: OnceLock::new(),
             trace_network_budget: OnceLock::new(),
+            trace_diagnostic_budget: OnceLock::new(),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
@@ -264,6 +278,9 @@ impl Engine {
                 method,
                 "this operation does not accept binary input",
             ));
+        }
+        if let Some(result) = self.execute_diagnostic_control(method, &parameters, operation) {
+            return result;
         }
         if let Some(result) = self.execute_control(method, &parameters, operation) {
             return result.map(OperationResult::Value);

@@ -78,12 +78,6 @@ impl Engine {
         ) {
             return Some(self.filmstrip_control(method, parameters, operation));
         }
-        if matches!(
-            method,
-            "context.trace.start" | "context.trace.pull" | "context.trace.stop"
-        ) {
-            return Some(self.trace_diagnostic_control(method, parameters, operation));
-        }
         if method == "page.navigation.capture" {
             return Some(self.capture_navigation(parameters, operation));
         }

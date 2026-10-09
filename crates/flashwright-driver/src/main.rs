@@ -200,7 +200,10 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                         let (sender, receiver) = watch::channel(false);
                         cancellations.insert(request_id, sender);
                         let operation = Operation::new(method.clone(), deadline, receiver).with_trace_call(trace_call);
-                        let control_result = if input.is_none() { engine.execute_control(&method, &parameters, &operation) } else { None };
+                        let control_result = if input.is_none() {
+                            engine.execute_diagnostic_control(&method, &parameters, &operation)
+                                .or_else(|| engine.execute_control(&method, &parameters, &operation).map(|result| result.map(OperationResult::Value)))
+                        } else { None };
                         let dialog_handling = if input.is_none() { engine.prepare_dialog_handling(&method, &parameters, &operation) } else { None };
                         let engine = engine.clone();
                         let limits = limits.clone();
@@ -217,7 +220,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                                     return prepared?.finish(&operation).await.map(OperationResult::Value);
                                 }
                                 match control_result {
-                                    Some(result) => result.map(OperationResult::Value),
+                                    Some(result) => result,
                                     None => engine.execute(&method, parameters, &operation).await,
                                 }
                             }.await;
@@ -226,10 +229,9 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                                     let reply = attachments::stream_attachment(request_id, attachment, &operation, &outgoing, &limits).await;
                                     return (request_id, reply);
                                 }
-                                Ok(OperationResult::Value(value)) => Ok(value),
-                                Err(error) => Err(error),
+                                result => result,
                             };
-                            let reply = output::prepare_reply(&engine, request_id, &method, result, operation.input_delivery(), &limits).await.map(Some);
+                            let reply = output::prepare_operation_reply(&engine, request_id, &method, result, operation.input_delivery(), &limits).await.map(Some);
                             (request_id, reply)
                         });
                     }

@@ -66,6 +66,7 @@ const provenance = {
     'Reject malformed/non-finite metadata, accessors, cycles, resource alias mismatches and configured metadata/output/collection/string bounds rather than producing partially fabricated entries.',
     'Do not reproduce the reference Network.loadNetworkResource refetch fallback. Missing original response bytes remain explicitly unavailable.',
     'Public manual snapshots use the native collector and sealed network exports. Verification checkpoints separately record asynchronous ownership, public API, packed-consumer, original-server-off viewer and runtime coverage.',
+    'Native journal metadata and fixed owner overhead share 64 MiB per recording and 256 MiB per engine. Sealed versions, body descriptors and admitted body work keep both original allowances after recording retirement; rejected aggregate admission rolls back the local charge.',
   ],
   license: 'Apache-2.0', licensePath, noticePath,
   licenseSha256: hash(await readFile(licensePath)), noticeSha256: hash(await readFile(noticePath)),
