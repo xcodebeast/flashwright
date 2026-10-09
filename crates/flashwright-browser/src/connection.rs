@@ -207,14 +207,25 @@ impl Connection {
         session: &str,
         maximum_decoded_bytes: usize,
     ) -> Reply<BinaryPayload> {
-        self.binary_reply(
+        self.start_response_body(request_identifier, session, maximum_decoded_bytes)?
+            .response()
+            .await
+    }
+
+    /// Diagnostic owners keep this command through caller cancellation until its original reply settles.
+    pub fn start_response_body(
+        &self,
+        request_identifier: &str,
+        session: &str,
+        maximum_decoded_bytes: usize,
+    ) -> Reply<Command<BinaryPayload>> {
+        self.start_binary_reply(
             "Network.getResponseBody",
             json!({ "requestId": request_identifier }),
             session,
             BinaryReplyKind::ResponseBody,
             maximum_decoded_bytes,
         )
-        .await
     }
 
     /// Capture data is admitted only as the fixed base64 screenshot result shape.
@@ -224,24 +235,25 @@ impl Connection {
         session: &str,
         maximum_decoded_bytes: usize,
     ) -> Reply<BinaryPayload> {
-        self.binary_reply(
+        self.start_binary_reply(
             "Page.captureScreenshot",
             parameters,
             session,
             BinaryReplyKind::Screenshot,
             maximum_decoded_bytes,
-        )
+        )?
+        .response()
         .await
     }
 
-    async fn binary_reply(
+    fn start_binary_reply(
         &self,
         method: &str,
         parameters: Value,
         session: &str,
         kind: BinaryReplyKind,
         maximum_decoded_bytes: usize,
-    ) -> Reply<BinaryPayload> {
+    ) -> Reply<Command<BinaryPayload>> {
         if maximum_decoded_bytes > flashwright_protocol::attachment::MAXIMUM_ATTACHMENT_BYTES {
             return Err(ErrorRecord::new(
                 ErrorCode::ResourceLimit,
@@ -252,7 +264,7 @@ impl Connection {
         let identifier = self.inner.next_identifier.fetch_add(1, Ordering::Relaxed);
         let outgoing = encode_command(identifier, method, parameters, Some(session))?;
         let (sender, receiver) = oneshot::channel();
-        let mut command = Command {
+        let command = Command {
             identifier,
             state: self.inner.clone(),
             receiver,
@@ -272,7 +284,7 @@ impl Connection {
             )],
             method,
         )?;
-        command.response().await
+        Ok(command)
     }
 
     pub fn start_command(
