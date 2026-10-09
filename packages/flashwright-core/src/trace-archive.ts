@@ -25,8 +25,10 @@ export class SealedTraceArchive {
   private disposal: Promise<void> | undefined;
 
   constructor(entries: readonly TraceArchiveEntry[], private readonly removeFiles: () => Promise<void>) {
-    validateManifest(entries);
-    this.entries = Object.freeze(entries.map(entry => Object.freeze({ ...entry })));
+    if (entries.length > 8194) throw failure('ResourceLimitError', 'tracing.archive', 'archive exceeds its entry limit');
+    const snapshot = entries.map(({ name, path, byteLength, contentHash }) => Object.freeze({ name, ...(path === undefined ? {} : { path }), byteLength, contentHash }));
+    validateTraceArchiveManifest(snapshot);
+    this.entries = Object.freeze(snapshot);
   }
 
   acquire(): TraceArchiveReader {
@@ -69,10 +71,11 @@ export class SealedTraceArchive {
 }
 
 /** Check aggregate encoded size and member identity before accepting custody or touching output. */
-function validateManifest(entries: readonly TraceArchiveEntry[]): void {
+export function validateTraceArchiveManifest(entries: readonly TraceArchiveEntry[]): void {
   if (entries.length > 8194) throw failure('ResourceLimitError', 'tracing.archive', 'archive exceeds its entry limit');
   let centralBytes = 0;
   let archiveBytes = 22;
+  let descriptorBytes = 0;
   const names = new Set<string>();
   for (const entry of entries) {
     if (!/^(?:test\.trace|(?:[0-9]{1,9}-)?trace\.(?:trace|network|stacks)|resources\/(?:src@[a-f0-9]{40}\.txt|[a-f0-9]{40,64}(?:\.[a-z0-9]{1,8})?))$/.test(entry.name) || names.has(entry.name) ||
@@ -81,6 +84,10 @@ function validateManifest(entries: readonly TraceArchiveEntry[]): void {
       throw failure('ProtocolError', 'tracing.archive', 'invalid or duplicate archive entry');
     }
     names.add(entry.name);
+    descriptorBytes += traceArchiveDescriptorBytes(entry);
+    if ((entry.path?.length ?? 0) > 32768 || descriptorBytes > 4 * 1024 * 1024) {
+      throw failure('ResourceLimitError', 'tracing.archive', 'archive path or descriptor-text limit exceeded');
+    }
     const nameBytes = Buffer.byteLength(entry.name);
     centralBytes += 46 + nameBytes;
     archiveBytes += 92 + 2 * nameBytes + entry.byteLength;
@@ -88,6 +95,11 @@ function validateManifest(entries: readonly TraceArchiveEntry[]): void {
       throw failure('ResourceLimitError', 'tracing.archive', 'archive byte or central-directory limit exceeded');
     }
   }
+}
+
+/** Fixed scalar fields are bounded by entry counts; retained strings have a separate byte allowance. */
+export function traceArchiveDescriptorBytes(entry: TraceArchiveEntry): number {
+  return Buffer.byteLength(entry.name) + Buffer.byteLength(entry.path ?? '') + Buffer.byteLength(entry.contentHash);
 }
 
 const checksumTable = Uint32Array.from({ length: 256 }, (_, value) => {

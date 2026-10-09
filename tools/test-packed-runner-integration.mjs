@@ -48,7 +48,10 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
-assert.equal(runnerIntegration.version, 3);
+assert.equal(runnerIntegration.version, 4);
+assert.throws(() => runnerIntegration.createTraceArchiveAssembly(3), error => error.name === 'ProtocolError');
+const assembly = runnerIntegration.createTraceArchiveAssembly(4);
+await assembly.dispose();
 assert.equal(typeof runnerIntegration.currentTraceChunk, 'function');
 assert.throws(() => runnerIntegration.currentTraceChunk(2, {}), error => error.name === 'ProtocolError');
 assert.throws(() => runnerIntegration.currentTraceChunk(3, {}), error => error.name === 'ProtocolError');
@@ -113,6 +116,17 @@ async function runnerArchive(context: BrowserContext) {
   return names;
 }
 void runnerArchive;
+async function runnerAssembly(context: BrowserContext) {
+  const archive = await runnerIntegration.currentTraceChunk(3, context.tracing)?.takeArchive();
+  const assembly = runnerIntegration.createTraceArchiveAssembly(4);
+  if (archive) {
+    assembly.addLibrary(archive);
+    const combined = assembly.seal();
+    await combined.dispose();
+  }
+  await assembly.dispose();
+}
+void runnerAssembly;
 void manualTrace;
 const internal: number = runnerIntegration.runInternal(1, () => 1);
 void internal;

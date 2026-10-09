@@ -35,6 +35,9 @@ const server = createServer((request, response) => {
 server.listen(0, '127.0.0.1'); await once(server, 'listening');
 const origin = `http://127.0.0.1:${server.address().port}`;
 const retained = [];
+const assembly = runnerIntegration.createTraceArchiveAssembly(4);
+const admitted = new Set();
+let combined;
 const handles = new Map();
 let browser;
 let registration;
@@ -46,7 +49,9 @@ async function capture(context, marker) {
   assert.equal(await page.evaluate(async value => {
     document.querySelector('#marker').textContent = value;
     console.log(value);
-    return await (await fetch(`/payload?marker=${value}`)).text();
+    const response = await (await fetch(`/payload?marker=${value}`)).text();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0))));
+    return response;
   }, marker), `original resource ${marker}`);
 }
 
@@ -118,6 +123,27 @@ try {
       report.archives.push({ marker, path, sha256: hash(await readFile(path)), entries: names.length, snapshots: records.filter(record => record.type === 'frame-snapshot').length, filmstripFrames: records.filter(record => record.type === 'screencast-frame').length, actions: loader.contextEntries[0].actions.length, responseResource: resourceName });
     } finally { zip.close(); }
   }
+  for (const { archive } of retained) { assembly.addLibrary(archive); admitted.add(archive); }
+  combined = assembly.seal();
+  await assembly.dispose();
+  const combinedPath = join(destination, 'combined.zip');
+  await combined.export(combinedPath, new AbortController().signal);
+  const combinedZip = new utils.ZipFile(combinedPath);
+  try {
+    const names = await combinedZip.entries();
+    const loader = new iso.TraceLoader();
+    await loader.load({ entryNames: async () => names, readText: async name => names.includes(name) ? (await combinedZip.read(name)).toString() : undefined, hasEntry: async name => names.includes(name), isLive: () => false });
+    assert.equal(loader.contextEntries.length, 3);
+    for (const [index, { marker }] of retained.entries()) {
+      const records = (await combinedZip.read(`${index}-trace.trace`)).toString().trim().split('\n').map(JSON.parse);
+      assert.deepEqual(records.filter(record => record.type === 'console').map(record => record.text), [marker]);
+      const bodyName = report.archives[index].responseResource;
+      assert.equal((await combinedZip.read(`resources/${bodyName}`)).toString(), `original resource ${marker}`);
+    }
+    report.combined = { path: combinedPath, sha256: hash(await readFile(combinedPath)), entries: names.length, contexts: loader.contextEntries.length };
+  } finally { combinedZip.close(); }
+  execFileSync('python3', ['-c', 'import sys,zipfile\nwith zipfile.ZipFile(sys.argv[1]) as archive: assert archive.testzip() is None', combinedPath]);
+  report.checks.push('one composite ZIP reads the original leased files and preserves all three chunk identities after browser closure');
   execFileSync('python3', ['-c', 'import sys,zipfile\nfor path in sys.argv[1:]:\n with zipfile.ZipFile(path) as archive: assert archive.testzip() is None, path', ...report.archives.map(archive => archive.path)]);
   report.checks.push('all retained archives export after closure with independent ZIP CRC, pinned loader, source, snapshot, filmstrip and original response checks');
   assert.deepEqual(await sourceManifest(), report.sources);
@@ -127,7 +153,8 @@ finally {
   const cleanup = [];
   cleanup.push(...await Promise.allSettled([registration?.dispose()]));
   cleanup.push(...await Promise.allSettled([browser?.close()]));
-  cleanup.push(...await Promise.allSettled(retained.map(({ archive }) => archive.dispose())));
+  cleanup.push(...await Promise.allSettled([combined?.dispose(), assembly.dispose()]));
+  cleanup.push(...await Promise.allSettled(retained.filter(({ archive }) => !admitted.has(archive)).map(({ archive }) => archive.dispose())));
   server.closeAllConnections();
   cleanup.push(...await Promise.allSettled([new Promise(resolve => server.close(resolve))]));
   const failures = cleanup.filter(result => result.status === 'rejected');
