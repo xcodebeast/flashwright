@@ -1,0 +1,67 @@
+{
+  "status": "passed-focused-development-follow-up",
+  "baseCommit": "c57b3625fd97a1699f88b926aad9ea9a8c201b22",
+  "baseCoreCheckpoint": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+  "groups": 24,
+  "sourceManifestEntries": 606,
+  "frozenFilesIncludingSpecAndProvenance": 623,
+  "compiledCoreAndRunnerFiles": 288,
+  "cleanWatchdogs": 24,
+  "controlsPerRuntime": {
+    "test-runner-trace-archives": 17,
+    "test-manual-tracing": 20,
+    "test-trace-recording-lifecycle": 8,
+    "test-trace-archive-assembly": 13,
+    "test-runner-trace-journal": 20
+  },
+  "hostRuntimes": [
+    "Bun 1.4.2",
+    "Node 22.22.0",
+    "Node 24.15.0"
+  ],
+  "nativeBrowserCorpora": [
+    "Bun headless shell",
+    "Bun full Chrome",
+    "Node 22 headless shell",
+    "Node 24 headless shell"
+  ],
+  "driverSha256": "b1923b63d24ddd31e4d7760edc1814952c4ce85d01ba5d785f64849a35ddeb6d",
+  "retainedZipCrcChecks": 16,
+  "nativeLibraryArchives": 12,
+  "nativeCompositeArchives": 4,
+  "originalResponseChecks": 12,
+  "independentResourceHashChecks": 124,
+  "independentSourceContentChecks": 16,
+  "packageTarballHashChecks": 6,
+  "compiledCorePackageEntryHashChecks": 741,
+  "reportSha256": "b41be02cc53bdd143a96d288ba26f92c7f147be2e16d612434eb5647d5d70f9c",
+  "sourceArchiveSha256": "3d8ff5b995dfb0f86452bff18726f7d569772e4195243d62e8a66630adc78884",
+  "compiledArchiveSha256": "1d68eaec2da05923e13af1b40fdd938b657923eabe1c2f4e61f8825899021c37",
+  "rootAuditSha256": "cf5d6e36e66da8c249c2c97b3fd368920cad9ac7166ef92810151779a07edf05",
+  "independentAuditSha256": "c2b8240fd34a5b2cc93187d6e8c5ba3c34ad6ce82d1769362b68cd3d2257f96b",
+  "correctedSourceReviewSha256": "ccb8e844fe75c8d1a22cfea506012d8c6e7f8be8bfc2286fd907c5206e24bcf9",
+  "scope": [
+    "Private version-7 startup returns the original recording identity. Exact-recording handles open another chunk or retire only that same idle recording. An active manual chunk or replacement recording rejects before native commands.",
+    "Exact-chunk discard reads no final source files and waits for original cleanup beyond the public foreground grace. Private recording retirement also retains its original control until actual cleanup settles. Shared recordings keep the same resource store across chunks.",
+    "A context closure between asynchronous startup and host publication cannot revive a recording or return a cleared chunk. Original capture failures remain primary when later native retirement fails, for private discard, private archive handoff and manual export.",
+    "Actual native snapshot, network and filmstrip collectors retire through exact discard. Retained chunks export after their original recording, context and browser close; composite ZIP entries preserve the original streams and resource bytes."
+  ],
+  "retainedFinding": {
+    "kind": "independent source review and reproduced failure",
+    "priorReportSha256": "cd1e6a6d1bfd9830ce817129d4a8ffbefc07abf612758420c787816bf2781f1b",
+    "reproductionLogSha256": "b7fe48904eab5304777ed56694147b5ec580635d0223c1d1b945fea2f23583ca",
+    "reproductionWatchdogSha256": "b4a4938d05fef0c6ef3f11075c5b61774af444d2e404dc272d6292ad5f2f1ac8",
+    "finding": "Native retirement could reject before writer sealing observed an earlier capture failure, replacing the original error. The new snapshots-enabled regression fails against the retained original compiled code and passes after shared finalization selects the recorded capture failure while retaining cleanup ownership. The corrected full focused matrix supersedes the initial matrix."
+  },
+  "verification": [
+    "All 24 groups ran with unchanged isolated source and compiled hashes. TypeScript and eight affected provenance generators pass.",
+    "Each runtime passes 17 exact-control, 20 manual-trace, 8 recording-lifecycle, 13 assembly and 20 runner-journal checks. The new native failure case covers discard, handoff and manual export with cleanup delayed beyond foreground grace.",
+    "Fresh Bun-installed packed consumers verify aliased ESM/CommonJS identity, private version enforcement and the new recording-control declarations. All six package hashes and 741 core compiled entries match the frozen snapshot.",
+    "Four actual browser corpora verify 12 original chunks and four composites with pinned trace-loader checks, snapshots, filmstrip records, sources and original response bodies. Independent audits reopen the archives, verify all CRCs and compare original resources and source contents."
+  ],
+  "limitations": [
+    "Public automatic trace policies remain disabled. Worker coordination, library/API enrollment and owner deduplication, aggregate capture admission, live-option handling and full timeout/interruption integration remain open.",
+    "The isolated snapshot carries older unintegrated API-request foundation files. This checkpoint does not accept the independently continuing native API implementation.",
+    "The latest complete core remains the 126-group dialog checkpoint; the expanded 136-group core was not rerun. No new driver, native Linux, broad parity, performance or release claim."
+  ]
+}

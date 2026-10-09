@@ -12,7 +12,7 @@ import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs'
 import { sourceManifest } from './source-manifest.mjs';
 import { startConsumerRegistry } from './consumer-registry.mjs';
 
-const destination = resolve(`compatibility/evidence/runner-integration-packed-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
+const destination = resolve(process.env.FLASHWRIGHT_PACKED_INTEGRATION_OUTPUT ?? `compatibility/evidence/runner-integration-packed-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(destination, { recursive: true });
 const consumer = await mkdtemp(join(tmpdir(), 'flashwright-runner-integration-packed-'));
 const report = { status: 'running', ...runtimeMetadata, sources: await sourceManifest(), artifacts: {}, checks: [] };
@@ -48,7 +48,7 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
-assert.equal(runnerIntegration.version, 6);
+assert.equal(runnerIntegration.version, 7);
 assert.throws(() => runnerIntegration.createTraceJournal(4, {}, { sources:false, attachments:false }), error => error.name === 'ProtocolError');
 const journal = await runnerIntegration.createTraceJournal(5, { version:8, type:'context-options', origin:'testRunner' }, { sources:false, attachments:true });
 journal.append({ type:'after', callId:'packed', endTime:1 }, [{ name:'body', contentType:'text/plain', body:Buffer.from('packed body') }]);
@@ -73,6 +73,8 @@ await assembly.dispose();
 assert.equal(typeof runnerIntegration.currentTraceChunk, 'function');
 assert.throws(() => runnerIntegration.currentTraceChunk(2, {}), error => error.name === 'ProtocolError');
 assert.throws(() => runnerIntegration.currentTraceChunk(3, {}), error => error.name === 'ProtocolError');
+assert.throws(() => runnerIntegration.currentTraceRecording(7, {}), error => error.name === 'ProtocolError');
+assert.throws(() => runnerIntegration.startTraceRecording(6, {}, {}), error => error.name === 'ProtocolError');
 for (const library of [direct, aliased, require('flashwright'), require('playwright')]) {
   for (const method of ['reload', 'goBack', 'goForward', 'waitForNavigation', 'waitForURL']) assert.equal(typeof library.Page.prototype[method], 'function');
   assert.equal(library.Tracing, direct.Tracing);
@@ -134,6 +136,16 @@ async function runnerArchive(context: BrowserContext) {
   return names;
 }
 void runnerArchive;
+async function runnerRecording(context: BrowserContext) {
+  const recording = await runnerIntegration.startTraceRecording(7, context.tracing, { snapshots: true, sources: true });
+  const current = runnerIntegration.currentTraceRecording(7, context.tracing);
+  if (current !== recording) throw new Error('recording identity changed');
+  await runnerIntegration.currentTraceChunk(3, context.tracing)?.discard();
+  const successor = await recording.startChunk({ title: 'Next attempt' });
+  await successor.discard();
+  await recording.stop();
+}
+void runnerRecording;
 async function runnerAssembly(context: BrowserContext) {
   const archive = await runnerIntegration.currentTraceChunk(3, context.tracing)?.takeArchive();
   const assembly = runnerIntegration.createTraceArchiveAssembly(4);

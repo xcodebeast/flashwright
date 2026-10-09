@@ -84,13 +84,189 @@ try {
   await check('version and owner validation have no recording side effects; off has no chunk handle', async () => {
     const driver = new RecordingDriver();
     const tracing = new Tracing(driver, 'context', null);
-    assert.equal(runnerIntegration.version, 6);
+    assert.equal(runnerIntegration.version, 7);
     assert.throws(() => runnerIntegration.currentTraceChunk(2, tracing), { name: 'ProtocolError' });
     assert.throws(() => current({}), { name: 'ProtocolError' });
     assert.equal(current(tracing), undefined);
+    assert.equal(runnerIntegration.currentTraceRecording(7, tracing), undefined);
+    assert.throws(() => runnerIntegration.currentTraceRecording(6, tracing), { name: 'ProtocolError' });
+    assert.throws(() => runnerIntegration.startTraceRecording(6, tracing, {}), { name: 'ProtocolError' });
+    assert.throws(() => runnerIntegration.startTraceRecording(7, {}, {}), { name: 'ProtocolError' });
     assert.deepEqual(driver.calls, []);
     assert.equal(Object.hasOwn(require('../packages/flashwright-core/dist/commonjs/index.js'), 'runnerIntegration'), false);
     tracing.ownerClosed();
+  });
+
+  await check('private startup returns the original recording and idle reuse keeps its resource store', async () => {
+    const driver = new RecordingDriver();
+    const tracing = new Tracing(driver, 'context', null);
+    try {
+      const recording = await runnerIntegration.startTraceRecording(7, tracing, { sources: true });
+      assert.equal(recording, runnerIntegration.currentTraceRecording(7, tracing));
+      assert.equal(Object.isFrozen(recording), true);
+      const resources = tracing.resources;
+      const first = current(tracing);
+      const writer = tracing.chunk.writer;
+      writer.referenceSources([{ file: '/source-must-not-be-read-on-discard' }]);
+      resources.captureFile = async () => { throw new Error('discard read a source file'); };
+      const calls = driver.calls.length;
+      await assert.rejects(recording.startChunk(), /still has an active chunk/);
+      await assert.rejects(recording.stop(), /still has an active chunk/);
+      await assert.rejects(runnerIntegration.startTraceRecording(7, tracing, {}), /already started/);
+      assert.equal(driver.calls.length, calls);
+      await first.discard();
+      await assert.rejects(access(writer.directory), { code: 'ENOENT' });
+      assert.equal(current(tracing), undefined);
+      assert.equal(runnerIntegration.currentTraceRecording(7, tracing), recording);
+      const successor = await recording.startChunk({ title: 'next attempt' });
+      assert.equal(successor, current(tracing));
+      assert.equal(tracing.resources, resources);
+      await successor.discard();
+      await recording.stop();
+      assert.equal(runnerIntegration.currentTraceRecording(7, tracing), undefined);
+      await assert.rejects(access(resources.directory), { code: 'ENOENT' });
+    } finally { tracing.ownerClosed(); await tracing.cleanup; }
+  });
+
+  await check('stale recording and chunk controls preserve manual replacements without native commands', async () => {
+    await fixture(async ({ driver, tracing }) => {
+      const recording = runnerIntegration.currentTraceRecording(7, tracing);
+      const chunk = current(tracing);
+      await tracing.startChunk();
+      const manualChunk = current(tracing);
+      let calls = driver.calls.length;
+      await assert.rejects(chunk.discard(), /original trace chunk is no longer current/);
+      await assert.rejects(recording.stop(), /still has an active chunk/);
+      await assert.rejects(recording.startChunk(), /still has an active chunk/);
+      assert.equal(current(tracing), manualChunk);
+      assert.equal(driver.calls.length, calls);
+      await tracing.stop();
+      await tracing.start();
+      const replacement = runnerIntegration.currentTraceRecording(7, tracing);
+      const replacementChunk = current(tracing);
+      calls = driver.calls.length;
+      await assert.rejects(recording.stop(), /original trace recording is no longer current/);
+      await assert.rejects(recording.startChunk(), /original trace recording is no longer current/);
+      await assert.rejects(manualChunk.discard(), /original trace chunk is no longer current/);
+      assert.equal(runnerIntegration.currentTraceRecording(7, tracing), replacement);
+      assert.equal(current(tracing), replacementChunk);
+      assert.equal(driver.calls.length, calls);
+    });
+  });
+
+  await check('closure between native startup and host publication cannot revive a recording or chunk', async () => {
+    for (const phase of ['recording', 'chunk']) {
+      const driver = new RecordingDriver();
+      const tracing = new Tracing(driver, 'context', null);
+      let recording;
+      try {
+        if (phase === 'chunk') {
+          recording = await runnerIntegration.startTraceRecording(7, tracing, {});
+          await current(tracing).discard();
+        }
+        const originalOpen = tracing.openChunk.bind(tracing);
+        tracing.openChunk = async options => {
+          await originalOpen(options);
+          queueMicrotask(() => tracing.ownerClosed());
+        };
+        const starting = recording ? recording.startChunk() : runnerIntegration.startTraceRecording(7, tracing, {});
+        await assert.rejects(starting, { name: 'TargetClosedError' });
+        await tracing.cleanup;
+        assert.equal(runnerIntegration.currentTraceRecording(7, tracing), undefined);
+        assert.equal(current(tracing), undefined);
+      } finally { tracing.ownerClosed(); await tracing.cleanup; }
+    }
+  });
+
+  await check('exact discard retains its control and cleanup owner beyond foreground grace', async () => {
+    await withControlledDeadlines(async expire => {
+      await fixture(async ({ tracing }) => {
+        const recording = runnerIntegration.currentTraceRecording(7, tracing);
+        const writer = tracing.chunk.writer;
+        const originalDispose = writer.dispose.bind(writer);
+        const entered = deferred(); const released = deferred();
+        writer.dispose = async () => { entered.resolve(); await released.promise; return originalDispose(); };
+        let settled = false;
+        const discarding = current(tracing).discard().then(() => { settled = true; });
+        try {
+          await entered.promise; expire(2000); await turn();
+          assert.equal(settled, false);
+          await assert.rejects(recording.startChunk(), /control operation is in progress/);
+          await assert.rejects(tracing.startChunk(), /control operation is in progress/);
+          released.resolve(); await discarding;
+          assert.equal(tracing.cleanup, undefined);
+          await assert.rejects(access(writer.directory), { code: 'ENOENT' });
+          await (await recording.startChunk()).discard();
+          await recording.stop();
+        } finally { released.resolve(); await discarding; }
+      });
+    });
+  });
+
+  await check('private retirement waits for original resource removal and preserves original capture errors', async () => {
+    await withControlledDeadlines(async expire => {
+      await fixture(async ({ tracing }) => {
+        const recording = runnerIntegration.currentTraceRecording(7, tracing);
+        await current(tracing).discard();
+        const resources = tracing.resources;
+        const originalRetire = resources.retire.bind(resources);
+        const entered = deferred(); const released = deferred();
+        resources.retire = async () => { entered.resolve(); await released.promise; return originalRetire(); };
+        let settled = false;
+        const stopping = recording.stop().then(() => { settled = true; });
+        try {
+          await entered.promise; expire(2000); await turn();
+          assert.equal(settled, false);
+          await assert.rejects(tracing.start(), /control operation is in progress/);
+          released.resolve(); await stopping;
+          assert.equal(runnerIntegration.currentTraceRecording(7, tracing), undefined);
+          await assert.rejects(access(resources.directory), { code: 'ENOENT' });
+        } finally { released.resolve(); await stopping; }
+      });
+    });
+    await fixture(async ({ tracing }) => {
+      const original = new Error('original capture failure');
+      const writer = tracing.chunk.writer;
+      const originalDispose = writer.dispose.bind(writer);
+      writer.fail(original);
+      writer.dispose = async () => { await originalDispose(); throw new Error('later cleanup failure'); };
+      await assert.rejects(current(tracing).discard(), error => error === original);
+      assert.equal(tracing.cleanup, undefined);
+    });
+  });
+
+  await check('an earlier capture failure survives native retirement failure and late original cleanup', async () => {
+    for (const destination of ['discard', 'handoff', 'manual export']) {
+      await withControlledDeadlines(async expire => {
+        await fixture(async ({ driver, tracing }) => {
+          const original = new Error('earlier capture failure');
+          const cleanup = new Error('later native retirement failure');
+          tracing.chunk.writer.fail(original);
+          const entered = deferred(); const released = deferred();
+          let retirementAttempts = 0;
+          driver.intercept = async method => {
+            if (method !== 'context.trace.chunk.status') return;
+            if (++retirementAttempts === 1) throw cleanup;
+            entered.resolve(); await released.promise;
+          };
+          let settled = false;
+          const work = destination === 'discard' ? current(tracing).discard()
+            : destination === 'handoff' ? current(tracing).takeArchive()
+            : tracing.stopChunk({ path: join(directory, 'failed-native-retirement.zip') });
+          void work.then(() => { settled = true; }, () => { settled = true; });
+          const rejected = assert.rejects(work, error => error === original);
+          try {
+            await entered.promise; expire(2000); await turn();
+            if (destination === 'discard') assert.equal(settled, false);
+            assert.ok(tracing.cleanup);
+            await assert.rejects(tracing.startChunk());
+            released.resolve(); await rejected; await tracing.cleanup;
+            assert.ok(retirementAttempts >= 2);
+            await assert.rejects(access(join(directory, 'failed-native-retirement.zip')), { code: 'ENOENT' });
+          } finally { released.resolve(); await rejected; await tracing.cleanup; }
+        }, { snapshots: true });
+      });
+    }
   });
 
   await check('handoff waits for original native retirement and retained chunks survive recording and context closure', async () => {
@@ -116,7 +292,7 @@ try {
         released.resolve();
         const first = await taking;
         assert.equal(tracing.cleanup, undefined);
-        assert.equal(tracing.recording, true);
+        assert.equal(tracing.recording, runnerIntegration.currentTraceRecording(7, tracing));
         await tracing.startChunk();
         const successor = current(tracing);
         tracing.chunk.writer.append({ type: 'event', marker: 'second' });
