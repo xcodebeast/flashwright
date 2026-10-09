@@ -11,6 +11,7 @@ mod cookie_jar;
 mod exchange;
 mod fetch;
 mod local_dates;
+mod network_diagnostic;
 mod options;
 mod registry;
 mod resolver;

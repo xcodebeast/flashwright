@@ -282,22 +282,32 @@ fn request_head_failure(error: impl std::error::Error + 'static) -> Failure {
 }
 
 fn network_failure(error: impl std::error::Error + 'static) -> Failure {
-    let mut source: Option<&(dyn std::error::Error + 'static)> = Some(&error);
+    let mut deepest: &(dyn std::error::Error + 'static) = &error;
+    let mut source = Some(deepest);
     let mut connection_reset = false;
-    let mut detail = error.to_string();
     while let Some(current) = source {
         if let Some(original) = current.downcast_ref::<TransportError>() {
             return original.0.clone().into();
         }
-        if let Some(network) = current.downcast_ref::<std::io::Error>() {
+        let network = current.downcast_ref::<std::io::Error>();
+        if let Some(network) = network {
             connection_reset |= network.kind() == std::io::ErrorKind::ConnectionReset;
         }
         // Hyper's top-level label omits the actionable connection/TLS cause.
-        detail = current.to_string();
-        source = current.source();
+        deepest = current;
+        // io::Error::source skips its custom payload and calls that payload's
+        // source. Inspect get_ref first so a directly wrapped typed cause survives.
+        source = network
+            .and_then(|network| network.get_ref())
+            .map(|inner| inner as &(dyn std::error::Error + 'static))
+            .or_else(|| current.source());
     }
     Failure {
-        error: ErrorRecord::new(ErrorCode::Request, "apiRequest.fetch", detail),
+        error: ErrorRecord::new(
+            ErrorCode::Request,
+            "apiRequest.fetch",
+            super::network_diagnostic::message(deepest),
+        ),
         connection_reset,
     }
 }
@@ -312,6 +322,60 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
     use tokio::sync::watch;
+
+    #[derive(Debug)]
+    struct UnformattedWrapper(Box<dyn std::error::Error>);
+
+    impl std::fmt::Display for UnformattedWrapper {
+        fn fmt(&self, _formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            panic!("discarded error-chain labels must never be formatted");
+        }
+    }
+    impl std::error::Error for UnformattedWrapper {
+        fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+            Some(self.0.as_ref())
+        }
+    }
+
+    #[test]
+    fn failure_classification_precedes_formatting_and_only_the_deepest_cause_is_rendered() {
+        let failure = network_failure(UnformattedWrapper(Box::new(UnformattedWrapper(Box::new(
+            std::io::Error::new(std::io::ErrorKind::ConnectionReset, "original reset"),
+        )))));
+        assert_eq!(failure.error.message.as_ref(), "original reset");
+        assert_eq!(failure.error.code, ErrorCode::Request);
+        assert!(failure.connection_reset);
+        let failure = network_failure(UnformattedWrapper(Box::new(TransportError(
+            ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                "original.method",
+                "original quota",
+            ),
+        ))));
+        assert_eq!(failure.error.code, ErrorCode::ResourceLimit);
+        assert_eq!(failure.error.method.as_ref(), "original.method");
+        assert_eq!(failure.error.message.as_ref(), "original quota");
+        assert!(!failure.connection_reset);
+        for code in [ErrorCode::ResourceLimit, ErrorCode::TargetClosed] {
+            let failure = network_failure(UnformattedWrapper(Box::new(std::io::Error::other(
+                TransportError(ErrorRecord::new(
+                    code,
+                    "original.method",
+                    "wrapped original",
+                )),
+            ))));
+            assert_eq!(failure.error.code, code);
+            assert_eq!(failure.error.method.as_ref(), "original.method");
+            assert_eq!(failure.error.message.as_ref(), "wrapped original");
+            assert!(!failure.connection_reset);
+        }
+        let failure = network_failure(std::io::Error::other(std::io::Error::new(
+            std::io::ErrorKind::ConnectionReset,
+            "nested original reset",
+        )));
+        assert_eq!(failure.error.message.as_ref(), "nested original reset");
+        assert!(failure.connection_reset);
+    }
 
     #[tokio::test]
     async fn actual_http_preserves_raw_metadata_and_decodes_under_original_budgets() {
