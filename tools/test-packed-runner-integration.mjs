@@ -48,7 +48,7 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
-assert.equal(runnerIntegration.version, 5);
+assert.equal(runnerIntegration.version, 6);
 assert.throws(() => runnerIntegration.createTraceJournal(4, {}, { sources:false, attachments:false }), error => error.name === 'ProtocolError');
 const journal = await runnerIntegration.createTraceJournal(5, { version:8, type:'context-options', origin:'testRunner' }, { sources:false, attachments:true });
 journal.append({ type:'after', callId:'packed', endTime:1 }, [{ name:'body', contentType:'text/plain', body:Buffer.from('packed body') }]);
@@ -59,6 +59,14 @@ assert.equal(journalReader.entries[0].name, 'test.trace');
 assert.equal(journalReader.entries.length, 2);
 journalReader.release();
 await journalArchive.dispose();
+assert.throws(() => runnerIntegration.beginTraceJournal(5, {}, { sources:false, attachments:false }), error => error.name === 'ProtocolError');
+const startingJournal = runnerIntegration.beginTraceJournal(6, { version:8, type:'context-options', origin:'testRunner' }, { sources:false, attachments:true });
+assert.equal(typeof startingJournal.then, 'undefined');
+startingJournal.appendBeforeAction({ stepId:'early', category:'test.step', title:'early packed step', params:{ expected:[1,1] }, stack:[] }, 1);
+startingJournal.appendAfterAction('early', undefined, [], [], 2);
+const earlyArchive = await startingJournal.takeArchive(1000, new AbortController().signal);
+await startingJournal.dispose();
+await earlyArchive.dispose();
 assert.throws(() => runnerIntegration.createTraceArchiveAssembly(3), error => error.name === 'ProtocolError');
 const assembly = runnerIntegration.createTraceArchiveAssembly(4);
 await assembly.dispose();
@@ -150,6 +158,14 @@ async function runnerJournal() {
   await combined.dispose();
 }
 void runnerJournal;
+async function earlyRunnerJournal() {
+  const journal = runnerIntegration.beginTraceJournal(6, { version:8, type:'context-options', origin:'testRunner' }, { sources:false, attachments:false });
+  journal.appendBeforeAction({ stepId:'step', category:'test.step', title:'step' }, 1);
+  journal.appendAfterAction('step', undefined, [], [], 2);
+  journal.appendError({ message:'test error', stack:'' }, () => []);
+  await journal.dispose();
+}
+void earlyRunnerJournal;
 void manualTrace;
 const internal: number = runnerIntegration.runInternal(1, () => 1);
 void internal;

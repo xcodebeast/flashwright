@@ -10,7 +10,11 @@ import { RunnerTraceJournal, type RunnerTraceJournalOptions } from './runner-tra
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 5,
+  version: 6,
+  beginTraceJournal(version: number, context: unknown, options: RunnerTraceJournalOptions): RunnerTraceJournal {
+    if (version !== 6) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return RunnerTraceJournal.begin(context, options);
+  },
   createTraceJournal(version: number, context: unknown, options: RunnerTraceJournalOptions): Promise<RunnerTraceJournal> {
     if (version !== 5) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return RunnerTraceJournal.create(context, options);

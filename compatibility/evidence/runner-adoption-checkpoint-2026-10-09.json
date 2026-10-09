@@ -1,0 +1,75 @@
+{
+  "status": "passed-focused-development-follow-up",
+  "baseCommit": "a9192f12fc7fe90d3a5c18231072a16841320db9",
+  "baseCoreCheckpoint": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+  "groups": 39,
+  "sourceFiles": 600,
+  "frozenFiles": 601,
+  "compiledCoreAndRunnerFiles": 280,
+  "cleanOuterWatchdogs": 39,
+  "cleanWatchdogs": 50,
+  "journalCasesPerRuntime": 20,
+  "adapterCasesPerRuntime": 5,
+  "hostRuntimes": [
+    "Bun 1.4.2",
+    "Node 22.22.0",
+    "Node 24.15.0"
+  ],
+  "sameAttemptReferenceComparisons": 24,
+  "exactRunnerRecords": 924,
+  "exactSameAttemptResourceComparisons": 78,
+  "earlyAdapterAttemptPairs": 168,
+  "earlyAdapterArchivePairs": 42,
+  "matchingNonClockAdapterRecords": 1458,
+  "exactAdapterResourceComparisons": 228,
+  "retainedZipCrcChecks": 132,
+  "controlledJournalZipCrcChecks": 24,
+  "packageTarballHashChecks": 6,
+  "reportSha256": "1cf0839eb4f2e98167ff3bcede021a831de70d5af4530ba46331e37e3543fc02",
+  "sourceArchiveSha256": "970f19ed6e2d3a1f4eb78556bc0a1b76190d54510a22b23c6163a7a5a7a1ab1b",
+  "rootAuditSha256": "521f618d3c258485a1cf86a58b85ddf7083cfcd29bd0b649e2fdb64f008991a5",
+  "independentAuditSha256": "2ad2ef616b0909ad5a8799fcb89eeacc90be16b89cd7d0f91059e9b1271d78ac",
+  "scope": [
+    "Private version-6 beginTraceJournal admits bounded immutable records synchronously while filesystem initialization is pending. The version-5 asynchronous factory remains available. Original directory/file/resource owners survive cancellation, delayed open and initialization failure.",
+    "The earliest zero-dependency worker and all-hooks fixture adapter validates the bounded framework prefix, replaces all five allocation-producing pinned append callers synchronously and clears the original event array. Repeat hook scopes share the attempt owner; retries and successor tests do not.",
+    "Actual pinned-runner comparisons exercise all eight trace policy spellings, retries, expected failure, early worker failure, failed-worker teardown, attachment mutation and a statically skipped final test owning afterAll cleanup. Test outcomes and selected archive attempts match; original event arrays remain empty in candidate user phases.",
+    "The separate same-attempt observer preserves every clock field exactly. Early-adapter runs compare all non-clock fields and original resource bytes while validating monotonic clock-domain and before/after order.",
+    "Controlled metadata normalization bounds previews and error chains before serialization or stack parsing; getters, proxy traps and custom serialization do not execute. Ignored undefined fields and array holes count toward aggregate traversal limits."
+  ],
+  "additionalLimits": {
+    "parameterNames": 100,
+    "parameterNameCharacters": 256,
+    "parameterValues": 1000,
+    "parameterDepth": 8,
+    "parameterArrayEntries": 100,
+    "parameterPreviewContentCharacters": 5000,
+    "errorCauseDepth": 16,
+    "errorMessageCharacters": 32768,
+    "errorStackCharacters": 32768,
+    "errorStackLines": 1024
+  },
+  "retainedFindings": [
+    {
+      "kind": "reference fixture setup",
+      "failedReportSha256": "d4ba202ac5096bf459b22e3ce060b35cc92d313695943cfa83c48e00db15ec99",
+      "finding": "The pinned runner disallows worker fixture overrides inside describe. The deliberate early worker failure moved into its own file with a top-level override."
+    },
+    {
+      "kind": "actual skipped cleanup ownership",
+      "failedReportSha256": "e89333c4cc3c068dd8f9aeed4c3b05d7ab929a85141a271295833881adac2552",
+      "finding": "A statically skipped final test may first adopt tracing during After Hooks/afterAll. The initial Before Hooks-only guard rejected this real path. A narrow actual-and-expected skipped prefix allowance and permanent controlled/runner regressions fix it."
+    }
+  ],
+  "verification": [
+    "All39 groups preserve frozen source and compiled-module hashes. TypeScript, five affected provenance checks, host controls on three runtimes, both pinned runner corpora, packed ESM/CommonJS consumers and the existing trace-off runner regression pass.",
+    "Independent audits re-read retained ZIP CRCs, record/resource equality, source archive hashes, watchdog completion and packed artifact hashes.",
+    "The snapshot includes concurrent API-request development and unexported modules. This host-only trace checkpoint does not accept those changes. The scoped commit retains baseline hashes for peer-owned inputs in generated provenance."
+  ],
+  "limitations": [
+    "Automatic runner trace policies remain disabled in the public runner. The private adapter corpus uses a test-only finalizer; production final-stop deadlines, atomic export coordination and bounded artifact-error reporting remain unfinished.",
+    "Library/API enrollment, attached-request owner deduplication, manual-control collision handling and aggregate host/native/test capture admission remain unfinished. Final assembly bounds are not capture-time aggregate bounds.",
+    "Unsafe and oversized preview values deliberately use bounded markers or explicit failures. Exact preview parity is claimed only for the verified ordinary values.",
+    "The newest complete core remains the126-group dialog checkpoint. The expanded133-group core was not rerun for this host-only slice.",
+    "No new browser/native Linux, benchmark, broad parity or release claim."
+  ]
+}

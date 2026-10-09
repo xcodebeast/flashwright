@@ -460,6 +460,11 @@
       "checkpoint": "compatibility/evidence/runner-journal-checkpoint-2026-10-09.json",
       "scope": "Private version-5 bounded normalized-record journal;33 focused groups,16 controlled cases per runtime,24 actual pinned-runner comparisons,924 exact records and78 exact resource comparisons. Final clocks, body snapshots, path/source reads and original cleanup custody are preserved.",
       "limitations": "Automatic policies, early adapter replacement and aggregate native/test capture budgets remain open. The observer proves fidelity while leaving original pinned arrays/conversions in place."
+    },
+    "runnerTraceAdoption": {
+      "checkpoint": "compatibility/evidence/runner-adoption-checkpoint-2026-10-09.json",
+      "scope": "Private version-6 synchronous journal initialization and earliest-instance adapter;39 focused groups,20 journal and5 adapter controls per runtime,168 attempt pairs across all8 policy spellings,42 paired retained archives,1458 matching non-clock records and228 exact resources. Original pinned event arrays remain empty.",
+      "limitations": "Automatic policies remain disabled. Actual runner corpus uses a test-only finalizer; production final-stop coordination, library/API enrollment and aggregate capture budgets remain open."
     }
   },
   "testSources": [
@@ -661,7 +666,13 @@
     "tools/test-runner-trace-journal.mjs",
     "tools/run-runner-trace-journal-reference.mjs",
     "compatibility/m2/runner-trace-journal/journal.spec.cjs",
-    "compatibility/m2/runner-trace-journal/playwright.config.cjs"
+    "compatibility/m2/runner-trace-journal/playwright.config.cjs",
+    "tools/test-runner-trace-adoption.mjs",
+    "tools/run-runner-trace-adoption-tests.mjs",
+    "compatibility/m2/runner-trace-adoption/fixtures.cjs",
+    "compatibility/m2/runner-trace-adoption/adoption.spec.cjs",
+    "compatibility/m2/runner-trace-adoption/early-failure.spec.cjs",
+    "compatibility/m2/runner-trace-adoption/playwright.config.cjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",

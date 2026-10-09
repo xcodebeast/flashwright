@@ -44,11 +44,101 @@ async function readArchive(journal, timeout = 12345) {
 
 try {
   await check('journal factory enforces its private version without exposing a public constructor', async () => {
-    assert.equal(runnerIntegration.version, 5);
+    assert.equal(runnerIntegration.version, 6);
     assert.throws(() => runnerIntegration.createTraceJournal(4, context(), { sources: false, attachments: false }), { name: 'ProtocolError' });
     assert.equal('RunnerTraceJournal' in require('../packages/flashwright-core/dist/commonjs/index.js'), false);
     const value = await runnerIntegration.createTraceJournal(5, context(), { sources: false, attachments: false });
     await value.dispose();
+    assert.throws(() => runnerIntegration.beginTraceJournal(5, context(), { sources: false, attachments: false }), { name: 'ProtocolError' });
+    const starting = runnerIntegration.beginTraceJournal(6, context(), { sources: false, attachments: false });
+    assert.equal(typeof starting.then, 'undefined');
+    await starting.dispose();
+  });
+
+  await check('synchronous admission snapshots records and bodies while filesystem initialization is blocked', async () => {
+    const entered = deferred(); const release = deferred(); const original = TraceResources.create;
+    TraceResources.create = async () => { const resources = await original.call(TraceResources); entered.resolve(); await release.promise; return resources; };
+    let value;
+    try {
+      value = RunnerTraceJournal.begin(context(), { sources: false, attachments: true });
+      const attachment = body('early', 'before initialization');
+      value.append(after('early'), [attachment]);
+      attachment.body.fill(120);
+      assert.equal(value.queuedAttachments, 1);
+      assert.equal(value.queuedAttachmentBytes, Buffer.byteLength('before initialization'));
+      await entered.promise;
+      assert.equal(value.file, undefined);
+      const pending = readArchive(value);
+      release.resolve();
+      const result = await pending;
+      assert.equal(result.contents[`resources/${hash('before initialization')}`].toString(), 'before initialization');
+    } finally { release.resolve(); TraceResources.create = original; await value?.dispose(); }
+  });
+
+  await check('pre-initialization queues fail at the same admission limits and retain cleanup until creation settles', async () => {
+    const entered = deferred(); const release = deferred(); const original = TraceResources.create;
+    let resourceDirectory;
+    TraceResources.create = async () => { const resources = await original.call(TraceResources); resourceDirectory = resources.directory; entered.resolve(); await release.promise; return resources; };
+    let value;
+    try {
+      value = RunnerTraceJournal.begin(context(), { sources: false, attachments: true });
+      const input = body('queued', 'q');
+      for (let index = 0; index < 129; index++) value.append(after(`before-open-${index}`), [input]);
+      assert.equal(value.failure.name, 'ResourceLimitError'); assert.equal(value.queuedAttachments, 128);
+      await entered.promise;
+      let disposed = false; const disposal = value.dispose().then(() => { disposed = true; });
+      await Promise.resolve(); assert.equal(disposed, false); assert.equal(value.queuedAttachments, 128);
+      release.resolve(); await disposal;
+      assert.equal(value.queuedAttachments, 0); assert.equal(value.queuedBytes, 0);
+      assert.equal(value.file, undefined);
+      await assert.rejects(filesystem.access(resourceDirectory), { code: 'ENOENT' });
+    } finally { release.resolve(); TraceResources.create = original; await value?.dispose(); }
+  });
+
+  await check('initialization failure preserves its original error and cleans resources for both factory forms', async () => {
+    const original = filesystem.mkdtemp; const resourcesCreated = [];
+    filesystem.mkdtemp = async (...parameters) => {
+      if (String(parameters[0]).includes('flashwright-runner-trace-')) throw Error('original journal directory failure');
+      const directory = await original(...parameters);
+      if (String(parameters[0]).includes('flashwright-trace-resources-')) resourcesCreated.push(directory);
+      return directory;
+    };
+    let value;
+    try {
+      value = RunnerTraceJournal.begin(context(), { sources: false, attachments: true });
+      value.append(after('not-open'), [body('queued', 'bytes')]);
+      await assert.rejects(value.takeArchive(1, signal()), /original journal directory failure/);
+      await value.dispose();
+      await assert.rejects(RunnerTraceJournal.create(context(), { sources: false, attachments: false }), /original journal directory failure/);
+      assert.equal(resourcesCreated.length, 2);
+      for (const directory of resourcesCreated) await assert.rejects(filesystem.access(directory), { code: 'ENOENT' });
+    } finally { filesystem.mkdtemp = original; await value?.dispose(); }
+  });
+
+  await check('a late original file-open completion stays owned after disposal and cannot enter a successor', async () => {
+    const entered = deferred(); const release = deferred(); const original = filesystem.open;
+    let file;
+    filesystem.open = async (...parameters) => {
+      const handle = await original(...parameters);
+      if (String(parameters[0]).endsWith('events.jsonl') && !file) { file = handle; entered.resolve(); await release.promise; }
+      return handle;
+    };
+    const value = RunnerTraceJournal.begin(context(), { sources: false, attachments: false });
+    let successor;
+    try {
+      await entered.promise;
+      const pending = value.takeArchive(1, signal());
+      const rejected = assert.rejects(pending, { name: 'TargetClosedError' });
+      let disposed = false; const disposal = value.dispose().then(() => { disposed = true; });
+      successor = RunnerTraceJournal.begin(context(), { sources: false, attachments: false });
+      successor.append({ type: 'stdout', text: 'successor only' });
+      const result = await readArchive(successor);
+      assert.equal(result.records[1].text, 'successor only');
+      assert.equal(disposed, false);
+      release.resolve(); await rejected; await disposal;
+      await assert.rejects(file.stat(), { code: 'EBADF' });
+      await assert.rejects(filesystem.access(value.directory), { code: 'ENOENT' });
+    } finally { release.resolve(); filesystem.open = original; await value.dispose(); await successor?.dispose(); }
   });
   await check('final timeout and original context clocks survive ordered incremental journal replay in the pinned loader', () => journal(async value => {
     const parameters = { expected: 'before mutation' };
@@ -143,6 +233,11 @@ try {
       value.append({ type: 'stdout', text: '\u0000'.repeat(50000) });
       assert.equal(value.failure.name, 'ResourceLimitError'); assert.equal(value.streamBytes, 0);
       await assert.rejects(value.takeArchive(1, signal()), { name: 'ResourceLimitError' });
+    });
+    await journal(async value => {
+      const ignored = Object.fromEntries(Array.from({ length: 6000 }, (_, index) => [String(index), undefined]));
+      value.append({ type: 'error', first: ignored, second: ignored });
+      assert.equal(value.failure.name, 'ResourceLimitError'); assert.equal(value.streamBytes, 0);
     });
     await journal(async value => {
       value.appendStdio('stdout', Buffer.alloc(256 * 1024), 1);
