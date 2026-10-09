@@ -304,3 +304,130 @@ function monotonicTimeDeltaBetweenLibraryAndRunner(nonPrimaryContexts, libraryAc
   }
   return 0;
 }
+
+// TestTracing.stopIfNeeded
+async stopIfNeeded() {
+    this._contextCreatedEvent.testTimeout = this._testInfo.timeout;
+    if (!this._options)
+      return;
+    const error = await this._liveTraceFile?.fs.syncAndGetError();
+    if (error)
+      throw error;
+    if (this._shouldAbandonTrace()) {
+      for (const file of this._temporaryTraceFiles)
+        await import_fs2.default.promises.unlink(file).catch(() => {
+        });
+      return;
+    }
+    const zipFile = new yazl.ZipFile();
+    if (!this._options?.attachments) {
+      for (const event of this._traceEvents) {
+        if (event.type === "after")
+          delete event.attachments;
+      }
+    }
+    if (this._options?.sources) {
+      const sourceFiles = /* @__PURE__ */ new Set();
+      for (const event of this._traceEvents) {
+        if (event.type === "before") {
+          for (const frame of event.stack || [])
+            sourceFiles.add(frame.file);
+        }
+      }
+      for (const sourceFile of sourceFiles) {
+        await import_fs2.default.promises.readFile(sourceFile, "utf8").then((source) => {
+          zipFile.addBuffer(Buffer.from(source), "resources/src@" + calculateSha12(sourceFile) + ".txt");
+        }).catch(() => {
+        });
+      }
+    }
+    const sha1s = /* @__PURE__ */ new Set();
+    for (const event of this._traceEvents.filter((e) => e.type === "after")) {
+      for (const attachment of event.attachments || []) {
+        let contentPromise;
+        if (attachment.path)
+          contentPromise = import_fs2.default.promises.readFile(attachment.path).catch(() => void 0);
+        else if (attachment.base64)
+          contentPromise = Promise.resolve(Buffer.from(attachment.base64, "base64"));
+        const content = await contentPromise;
+        if (content === void 0)
+          continue;
+        const sha1 = calculateSha12(content);
+        attachment.sha1 = sha1;
+        delete attachment.path;
+        delete attachment.base64;
+        if (sha1s.has(sha1))
+          continue;
+        sha1s.add(sha1);
+        zipFile.addBuffer(content, "resources/" + sha1);
+      }
+    }
+    const traceContent = Buffer.from(this._traceEvents.map((e) => JSON.stringify(e)).join("\n"));
+    zipFile.addBuffer(traceContent, testTraceEntryName);
+    await new Promise((f) => {
+      zipFile.end(void 0, () => {
+        zipFile.outputStream.pipe(import_fs2.default.createWriteStream(this._generateNextTraceRecordingPath())).on("close", f);
+      });
+    });
+    const tracePath = this._testInfo.outputPath("trace.zip");
+    await mergeTraceFiles(tracePath, this._temporaryTraceFiles);
+    this._testInfo.attachments.push({ name: "trace", path: tracePath, contentType: "application/zip" });
+  }
+
+// TestTracing.appendAfterActionForStep
+appendAfterActionForStep(callId, error, attachments = [], annotations) {
+    this._appendTraceEvent({
+      type: "after",
+      callId,
+      endTime: monotonicTime2(),
+      attachments: serializeAttachments(attachments),
+      annotations,
+      error
+    });
+  }
+
+// TestTracing.appendStdioToTrace
+appendStdioToTrace(type, chunk) {
+    this._appendTraceEvent({
+      type,
+      timestamp: monotonicTime2(),
+      text: typeof chunk === "string" ? chunk : void 0,
+      base64: typeof chunk === "string" ? void 0 : chunk.toString("base64")
+    });
+  }
+
+// serializeAttachments
+function serializeAttachments(attachments) {
+  if (attachments.length === 0)
+    return void 0;
+  return attachments.filter((a) => a.name !== "trace").map((a) => {
+    return {
+      name: a.name,
+      contentType: a.contentType,
+      path: a.path,
+      base64: a.body?.toString("base64")
+    };
+  });
+}
+
+// generatePreview
+function generatePreview(value, visited = /* @__PURE__ */ new Set()) {
+  if (visited.has(value))
+    return "";
+  visited.add(value);
+  if (typeof value === "string")
+    return value;
+  if (typeof value === "number")
+    return value.toString();
+  if (typeof value === "boolean")
+    return value.toString();
+  if (value === null)
+    return "null";
+  if (value === void 0)
+    return "undefined";
+  if (Array.isArray(value))
+    return "[" + value.map((v) => generatePreview(v, visited)).join(", ") + "]";
+  if (typeof value === "object")
+    return "Object";
+  return String(value);
+}

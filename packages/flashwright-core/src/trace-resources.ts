@@ -3,6 +3,7 @@ import { open, mkdtemp, rename, rm, type FileHandle } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { StringDecoder } from 'node:string_decoder';
 import { failure } from './errors.js';
 
 export const maximumSourceBytes = 8 * 1024 * 1024;
@@ -66,12 +67,13 @@ export class TraceResources {
   owns(resource: TraceResource): boolean { return this.resources.get(resource.contentHash) === resource; }
 
   /** Nonblocking open closes the pathname-to-FIFO race; only regular files are read. */
-  async captureFile(path: string, signal: AbortSignal, maximumBytes = maximumResourceBytes): Promise<TraceResource | undefined> {
+  async captureFile(path: string, signal: AbortSignal, maximumBytes = maximumResourceBytes, encoding?: 'utf8'): Promise<TraceResource | undefined> {
     this.assertCaptureOpen(signal);
     if (this.ingests >= 2) throw failure('ResourceLimitError', 'tracing.resources', 'resource ingestion exceeds two concurrent files');
     if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 0 || maximumBytes > maximumResourceBytes) {
       throw failure('InvalidArgumentError', 'tracing.resources', 'invalid resource byte limit');
     }
+    if (encoding !== undefined && encoding !== 'utf8') throw failure('InvalidArgumentError', 'tracing.resources', 'invalid resource text encoding');
     this.ingests++;
     let source: FileHandle | undefined;
     let temporary: FileHandle | undefined;
@@ -92,22 +94,32 @@ export class TraceResources {
       temporary = await open(temporaryPath, 'wx', 0o600);
       const hash = createHash('sha256');
       const buffer = Buffer.alloc(65536);
+      const decoder = encoding === 'utf8' ? new StringDecoder('utf8') : undefined;
+      let sourceBytes = 0;
+      const write = async (bytes: Buffer): Promise<void> => {
+        if (reservedBytes + bytes.length > maximumResourceBytes || this.bytes + bytes.length > maximumRecordingBytes) {
+          throw failure('ResourceLimitError', 'tracing.resources', 'resource or recording byte limit exceeded');
+        }
+        reservedBytes += bytes.length;
+        this.bytes += bytes.length;
+        hash.update(bytes);
+        await temporary!.writeFile(bytes);
+      };
       for (;;) {
         this.assertCaptureOpen(signal);
         const { bytesRead } = await source.read(buffer, 0, buffer.length, null);
         this.assertCaptureOpen(signal);
         if (!bytesRead) break;
-        if (reservedBytes + bytesRead > maximumBytes || this.bytes + bytesRead > maximumRecordingBytes) {
+        if (sourceBytes + bytesRead > maximumBytes) {
           throw failure('ResourceLimitError', 'tracing.resources', 'resource or recording byte limit exceeded');
         }
-        reservedBytes += bytesRead;
-        this.bytes += bytesRead;
+        sourceBytes += bytesRead;
         const bytes = buffer.subarray(0, bytesRead);
-        hash.update(bytes);
-        await temporary.writeFile(bytes);
+        await write(decoder ? Buffer.from(decoder.write(bytes), 'utf8') : bytes);
       }
+      if (decoder) await write(Buffer.from(decoder.end(), 'utf8'));
       const after = await source.stat({ bigint: true });
-      if (before.dev !== after.dev || before.ino !== after.ino || before.size !== after.size || before.mtimeNs !== after.mtimeNs || before.ctimeNs !== after.ctimeNs || BigInt(reservedBytes) !== after.size) {
+      if (before.dev !== after.dev || before.ino !== after.ino || before.size !== after.size || before.mtimeNs !== after.mtimeNs || before.ctimeNs !== after.ctimeNs || BigInt(sourceBytes) !== after.size) {
         throw failure('ProtocolError', 'tracing.resources', 'source file changed while its trace resource was captured');
       }
       await temporary.close();

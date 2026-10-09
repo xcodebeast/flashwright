@@ -455,6 +455,11 @@
       "checkpoint": "compatibility/evidence/trace-assembly-checkpoint-2026-10-09.json",
       "scope": "Private version-4 final manifest assembly, canonical bounded descriptors and original archive custody; 41 focused groups, 13 assembly cases per runtime and six real-browser composite archives.",
       "limitations": "Final assembly bounds do not establish capture-time aggregate budgets. Automatic policies and runner-journal fidelity remain open."
+    },
+    "runnerTraceJournal": {
+      "checkpoint": "compatibility/evidence/runner-journal-checkpoint-2026-10-09.json",
+      "scope": "Private version-5 bounded normalized-record journal;33 focused groups,16 controlled cases per runtime,24 actual pinned-runner comparisons,924 exact records and78 exact resource comparisons. Final clocks, body snapshots, path/source reads and original cleanup custody are preserved.",
+      "limitations": "Automatic policies, early adapter replacement and aggregate native/test capture budgets remain open. The observer proves fidelity while leaving original pinned arrays/conversions in place."
     }
   },
   "testSources": [
@@ -652,7 +657,11 @@
     "tools/test-packed-dialogs.mjs",
     "tools/test-runner-trace-archives.mjs",
     "tools/run-runner-trace-archive-tests.mjs",
-    "tools/test-trace-archive-assembly.mjs"
+    "tools/test-trace-archive-assembly.mjs",
+    "tools/test-runner-trace-journal.mjs",
+    "tools/run-runner-trace-journal-reference.mjs",
+    "compatibility/m2/runner-trace-journal/journal.spec.cjs",
+    "compatibility/m2/runner-trace-journal/playwright.config.cjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",

@@ -9,12 +9,19 @@
     "packages/flashwright-core/src/runner-trace-archives.ts": "e5715ec8c2a631925ea26a3b98f3f08b9de84d5ad68a48df314e084575dbbba3",
     "packages/flashwright-core/src/trace-archive-assembly.ts": "a91c02f7e9ccd7a6cf7506da4eeaef64db418f73e47967bae128ce4cfec3e87d",
     "packages/flashwright-core/src/trace-archive.ts": "2426ffc273456b0fd13127b7c14931044248fa230321ce625eb0fd04a2f32ee1",
-    "tools/test-trace-archive-assembly.mjs": "1b18364663a10248b9481b6a11887a76c31acbaa289fa815dd35857632c04fea",
-    "tools/test-runner-trace-archives.mjs": "bb2960243827795bfb3a3441907b5f14fc3a2ee76bba9a14c2565f9dbb884325",
+    "tools/test-trace-archive-assembly.mjs": "a6167071724da5ca13ef8544cacab7c6c9a44c89b2f10f191ac4e4ed6b019a1f",
+    "tools/test-runner-trace-archives.mjs": "142d071fbbfd260d79a8ffce17e457787ad6886f7cd336fba17e2cfa432a90ab",
     "tools/run-runner-trace-archive-tests.mjs": "fdca73ae2477bb774d8150a92b0df614c12542f935a0596a81d9a91a6247c6e8",
+    "packages/flashwright-core/src/runner-trace-journal.ts": "390279fc4d03abdd19b9fb97d175e6999f495b3813a8624e3316012c53c917d9",
+    "packages/flashwright-core/src/runner-trace-record.ts": "5331c4ff9f8dd6a9c2a253719c74ba450af6c70f1d5a9c5073900deacda4f97c",
+    "packages/flashwright-core/src/trace-resources.ts": "a1f645e3f7a372278ab61ec93843e341389615ae69c5bb3ccc834c689c76bb7a",
+    "tools/test-runner-trace-journal.mjs": "e2e0577460d6d8d7f418ba8e018477a39be0b88d7473a0c3b46dfe4a8f3e1410",
+    "tools/run-runner-trace-journal-reference.mjs": "456d2d6225a668f79178c4de8f99f073a8ae9e121349cd7e5d574686c131aaff",
+    "compatibility/m2/runner-trace-journal/journal.spec.cjs": "377c950bf37c3e6027eb0df5699831df915ff12c9869e669979d1c95f38c30f2",
+    "compatibility/m2/runner-trace-journal/playwright.config.cjs": "2c449d4bf589fd10dcd6db2d6610a8b5866968aa52caa7c824ae513ef113fd44",
     "packages/flashwright-core/src/runner-actions.ts": "859ce02775a72cda54e7396e761c6fef1173a664c6ae0b05ef8bae09fc0adf97",
     "packages/flashwright-core/src/runner-lifecycle.ts": "85b3605a0fa43881d5ad6d62180a98a1fdcfec2f22faf0b238e47d367ea46609",
-    "packages/flashwright-core/src/runner-integration.ts": "c6ba2e3972139e4541b3e9bcf1e4b23daf845d644482318e63464e1f819946b0",
+    "packages/flashwright-core/src/runner-integration.ts": "4334da205728fbfcbec3e3e938abe3354af4b77e446453375695227c9322901d",
     "packages/flashwright-core/src/tracing.ts": "2ebcfca7bb34c21e1694f5811ed81390fc2c749219a2682f87e024173ee05340",
     "packages/flashwright-core/src/trace-hooks.ts": "b2d6659b158d7b2c23fccdbac1e9a609671cd69948b9e35b5f62421749bc702e",
     "packages/flashwright-core/src/index.ts": "4107df9a42b5c311e05392b9f1f2b28661001ff31090fafc9c891b2aab27e2f2",
@@ -27,12 +34,13 @@
   "sources": [
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts",
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/testInfo.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/testTracing.ts",
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/frame.ts",
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/frames.ts",
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/isomorphic/trace/traceModel.ts"
   ],
   "retainedExtract": "compatibility/upstream/runner-trace-boundaries.source.txt",
-  "extractSha256": "afb9e14c6c0f359f623f348af2afc36c3f45d3e5e31071210d26863005c12eb5",
+  "extractSha256": "046fe822b3a82e38846e2798f529c25f9edf63b2f5c08726cfd9c35627859452",
   "relationship": "Independent asynchronous host-context enrollment preserves invocation scope, publication, closure and cleanup ownership. A private version-2 action hook associates admitted library trace calls with the pinned runner step IDs. The pinned title/selector/group helpers are reused; expect-zone association follows the pinned listener and keeps matcher completion outside the core. The small title composition follows the retained renderTitle contract.",
   "scope": [
     "Controlled asynchronous enrollment and recursive lifecycle rejection; synchronous screenshots and the observer-free path remain available.",
@@ -42,8 +50,9 @@
     "Controlled actual pinned trace-loader/model alignment verifies merged step parents and clocks."
   ],
   "assembly": "Version-4 bounded final archive assembly consumes immutable input readers, prefixes library streams by admission ordinal and applies the pinned latest source-alias precedence. Canonical bounded descriptors, total retained input counts/text/bytes and final ZIP limits precede custody transfer. Rejection preserves caller custody; disposal releases all readers before four concurrent cleanup workers settle every archive.",
+  "journal": "Version-5 normalized-record journal snapshots admitted body attachments, streams bounded records, and resolves file attachments, UTF-8 sources and final timeout at finalization. Original clocks and records match a same-attempt pinned runner observer corpus, with original buffers mutated after attachment. Caller metadata and binary stdio cannot invoke accessors, proxy traps or custom serialization methods. Queue and file custody survives cancellation, reader transfer and cleanup failure.",
   "exclusions": [
-    "Automatic runner trace policies remain rejected. Sealed archive composition does not implement the runner journal, retention policies, aggregate capture budgets or new live-viewer behavior.",
+    "Automatic runner trace policies remain rejected. The journal primitive and sealed archive composition do not implement early TestTracing adaptation, retention policy enrollment, aggregate native/test capture budgets or new live-viewer behavior. The reference observer deliberately leaves original arrays/conversions in place; it proves record/resource fidelity, not production adapter admission.",
     "Private callbacks cannot create/close contexts or dispose their own observer recursively. The fixture/creator owns those lifecycle controls.",
     "No performance or native Linux result."
   ],
