@@ -15,11 +15,14 @@ import { NativeTraceRecording, type NativeTraceChunk } from './trace-recording.j
 import { TraceSnapshotChannel } from './trace-snapshots.js';
 import { TraceNetworkChannel } from './trace-network.js';
 import { beginRunnerAction, type RunnerAction } from './runner-actions.js';
+import { registerRunnerTraceOwner, type RunnerTraceChunk } from './runner-trace-archives.js';
+import type { SealedTraceArchive } from './trace-archive.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
-interface TraceChunk { identifier: string; writer: TraceWriter; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; accepting: boolean }
+interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; accepting: boolean }
+type TraceChunkDestination = { kind: 'file'; path: string | undefined } | { kind: 'runner'; signal: AbortSignal | undefined };
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; capture: TraceCaptureMode; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
 const processIdentity = randomUUID();
 let nextCall = 0;
@@ -43,7 +46,9 @@ export class Tracing {
   private cleanupFailure: unknown;
   private retiringChunk: TraceChunk | undefined;
   private exportCancellation: AbortController | undefined;
-  constructor(private readonly client: EngineClient, private readonly context: string, private readonly viewport: { width: number; height: number } | null) {}
+  constructor(private readonly client: EngineClient, private readonly context: string, private readonly viewport: { width: number; height: number } | null) {
+    registerRunnerTraceOwner(this, () => this.chunk?.runner);
+  }
 
   start(options: TracingStartOptions = {}): Promise<void> {
     return this.control(async () => {
@@ -92,34 +97,36 @@ export class Tracing {
       validateOptions('tracing.startChunk', options, ['name', 'title']);
       validateChunkOptions(options);
       if (!this.recording) throw failure('InvalidArgumentError', 'tracing.startChunk', 'must start tracing first');
-      await this.finishChunk(undefined);
+      await this.finishChunk({ kind: 'file', path: undefined });
       await this.openChunk(options);
     });
   }
   stopChunk(options: TracingStopOptions = {}): Promise<void> {
-    return this.control(async () => { validateStopOptions(options); await this.finishChunk(options.path); });
+    return this.control(async () => { validateStopOptions(options); await this.finishChunk({ kind: 'file', path: options.path }); });
   }
   stop(options: TracingStopOptions = {}): Promise<void> {
     return this.control(async () => {
       validateStopOptions(options);
-      try { await this.finishChunk(options.path, true); }
+      try { await this.finishChunk({ kind: 'file', path: options.path }, true); }
       finally { this.recording = false; }
     });
   }
-  private async control(callback: () => Promise<void>): Promise<void> {
+  private async control<Value>(callback: () => Promise<Value>): Promise<Value> {
     if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing', 'context has been closed');
     if (this.controlling) throw failure('InvalidArgumentError', 'tracing', 'another tracing control operation is in progress');
     if (this.cleanup) throw failure('ResourceLimitError', 'tracing', 'previous trace cleanup has not settled');
     if (this.cleanupFailure) throw this.cleanupFailure;
     this.controlling = true;
-    try { await callback(); } finally { this.controlling = false; }
+    try { return await callback(); } finally { this.controlling = false; }
   }
   private async openChunk(options: TracingChunkOptions): Promise<void> {
     if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing.startChunk', 'context is closed');
     if (this.cleanup) throw failure('ResourceLimitError', 'tracing.startChunk', 'previous trace cleanup has not settled');
     if (!this.resources) throw failure('ProtocolError', 'tracing', 'recording resource owner is unavailable');
     const writer = await TraceWriter.create(this.resources);
-    const chunk: TraceChunk = { identifier: randomUUID(), writer, accepting: false };
+    const identifier = randomUUID();
+    const runner = Object.freeze({ takeArchive: (signal?: AbortSignal) => this.takeRunnerArchive(identifier, signal) });
+    const chunk: TraceChunk = { identifier, writer, runner, accepting: false };
     try {
       if (this.nativeRecording) {
         chunk.nativeOwner = this.nativeRecording;
@@ -148,7 +155,18 @@ export class Tracing {
   private seal(chunk: TraceChunk): void {
     if (chunk.accepting) { chunk.accepting = false; traceChunkClosed(); }
   }
-  private async finishChunk(path: string | undefined, retireRecording = false): Promise<void> {
+  /** A saved runner handle cannot export a replacement created by manual trace controls. */
+  private takeRunnerArchive(identifier: string, signal?: AbortSignal): Promise<SealedTraceArchive> {
+    return this.control(async () => {
+      if (this.chunk?.identifier !== identifier) throw failure('InvalidArgumentError', 'runner.tracing', 'the original trace chunk is no longer current');
+      signal?.throwIfAborted();
+      const archive = await this.finishChunk({ kind: 'runner', signal });
+      if (!archive) throw failure('ProtocolError', 'runner.tracing', 'sealed trace archive is unavailable');
+      return archive;
+    });
+  }
+
+  private async finishChunk(destination: TraceChunkDestination, retireRecording = false): Promise<SealedTraceArchive | undefined> {
     const resources = retireRecording ? this.resources : undefined;
     const nativeRecording = this.nativeRecording;
     const network = retireRecording ? this.network : undefined;
@@ -160,12 +178,15 @@ export class Tracing {
         try { if (retireRecording) { await network?.stop(); await nativeRecording?.cleanup(); } }
         finally { if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined; await resources?.retire(); }
       })());
-      if (path !== undefined) throw failure('InvalidArgumentError', 'tracing.stopChunk', 'must start tracing before exporting');
+      if (destination.kind === 'runner' || destination.path !== undefined) throw failure('InvalidArgumentError', 'tracing.stopChunk', 'must start tracing before exporting');
       return;
     }
     this.seal(chunk);
     this.chunk = undefined;
     const cancellation = new AbortController();
+    const externalSignal = destination.kind === 'runner' ? destination.signal : undefined;
+    const cancelFromRunner = () => cancellation.abort(externalSignal!.reason);
+    externalSignal?.addEventListener('abort', cancelFromRunner, { once: true });
     this.retiringChunk = chunk;
     this.exportCancellation = cancellation;
     let committing = false;
@@ -183,11 +204,20 @@ export class Tracing {
       }, 30000);
     });
     const deadline = performance.now() + 30000;
+    const checkPreparation = () => {
+      cancellation.signal.throwIfAborted();
+      if (performance.now() >= deadline) throw failure('TimeoutError', 'tracing.stopChunk', 'trace preparation exceeded 30 seconds before custody transfer');
+    };
+    let preparedArchive: SealedTraceArchive | undefined;
     const work = (async () => {
       await this.retireCollectors(chunk, cancellation.signal);
-      await chunk.writer.finish(path, cancellation.signal, () => {
-        cancellation.signal.throwIfAborted();
-        if (performance.now() >= deadline) throw failure('TimeoutError', 'tracing.stopChunk', 'trace preparation exceeded 30 seconds before atomic commit');
+      if (destination.kind === 'runner') {
+        preparedArchive = await chunk.writer.takeArchive(cancellation.signal);
+        checkPreparation();
+        return;
+      }
+      await chunk.writer.finish(destination.path, cancellation.signal, () => {
+        checkPreparation();
         committing = true;
         clearTimeout(timer);
       });
@@ -199,19 +229,43 @@ export class Tracing {
     finally {
       clearTimeout(timer);
       cancellation.signal.removeEventListener('abort', interrupt);
-      this.retiringChunk = undefined;
-      this.exportCancellation = undefined;
       const dispose = async () => {
         try {
-          try { await this.retireCollectors(chunk); }
-          finally { if (retireRecording) { await network?.stop(); await nativeRecording?.cleanup(); } }
-        } finally {
-          if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined;
-          try { await chunk.writer.dispose(); }
-          finally { await resources?.retire(); }
+          try {
+            try { await this.retireCollectors(chunk); }
+            finally { if (retireRecording) { await network?.stop(); await nativeRecording?.cleanup(); } }
+          } finally {
+            if (retireRecording && this.nativeRecording === nativeRecording) this.nativeRecording = undefined;
+            try { await chunk.writer.dispose(); }
+            finally { await resources?.retire(); }
+          }
+        } catch (error) {
+          await preparedArchive?.dispose().catch(() => {});
+          throw error;
         }
+        if (failed || cancellation.signal.aborted) await preparedArchive?.dispose();
       };
       await this.waitForCleanup(work.then(dispose, dispose));
+      this.retiringChunk = undefined;
+      this.exportCancellation = undefined;
+      externalSignal?.removeEventListener('abort', cancelFromRunner);
+    }
+    if (destination.kind === 'runner') {
+      let handoffFailed = failed;
+      let handoffFailure = originalFailure;
+      if (!handoffFailed) {
+        try {
+          if (this.cleanupFailure) throw this.cleanupFailure;
+          checkPreparation();
+          if (this.cleanup) throw failure('ResourceLimitError', 'runner.tracing', 'trace cleanup has not settled before archive handoff');
+        } catch (error) { handoffFailed = true; handoffFailure = error; }
+      }
+      if (handoffFailed) {
+        // Timed-out preparation may still produce a manifest. Its original owner disposes it.
+        this.ownCleanup(work.then(() => preparedArchive?.dispose(), () => preparedArchive?.dispose()));
+        throw handoffFailure;
+      }
+      return preparedArchive;
     }
     if (failed) throw originalFailure;
     if (this.cleanupFailure) throw this.cleanupFailure;

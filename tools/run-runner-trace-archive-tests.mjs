@@ -1,0 +1,140 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { createServer } from 'node:http';
+import { once } from 'node:events';
+import { execFileSync } from 'node:child_process';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { chromium } from 'flashwright';
+import { chromium as referenceChromium } from 'playwright';
+import { identifyBrowser } from './browser-identity.mjs';
+import { sourceManifest } from './source-manifest.mjs';
+import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
+
+const require = createRequire(resolve('packages/flashwright-core/package.json'));
+const { runnerIntegration } = require('@flashwright/core/runner-integration');
+const { iso, utils } = require(resolve(dirname(require.resolve('playwright-core/package.json')), 'lib/coreBundle.js'));
+const browserPath = process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath();
+const driverPath = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/flashwright-driver');
+process.env.FLASHWRIGHT_DRIVER_PATH = driverPath;
+const destination = resolve(process.env.FLASHWRIGHT_HANDOFF_OUTPUT ?? `compatibility/evidence/runner-trace-handoff-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+await mkdir(destination, { recursive: true });
+const report = { status: 'running', ...runtimeMetadata, sources: await sourceManifest(), browser: await identifyBrowser(browserPath), driverSha256: hash(await readFile(driverPath)), archives: [], checks: [] };
+const server = createServer((request, response) => {
+  response.setHeader('Cache-Control', 'no-store');
+  if (request.url.startsWith('/payload')) {
+    response.setHeader('Content-Type', 'text/plain');
+    response.end(`original resource ${new URL(request.url, 'http://fixture').searchParams.get('marker')}`);
+  } else {
+    response.setHeader('Content-Type', 'text/html');
+    response.end('<!doctype html><title>Runner handoff</title><input id="value"><div id="marker">initial</div>');
+  }
+});
+server.listen(0, '127.0.0.1'); await once(server, 'listening');
+const origin = `http://127.0.0.1:${server.address().port}`;
+const retained = [];
+const handles = new Map();
+let browser;
+let registration;
+
+async function capture(context, marker) {
+  const page = context.pages()[0] ?? await context.newPage();
+  if (page.url() === 'about:blank') await page.goto(origin);
+  await page.locator('#value').fill(marker);
+  assert.equal(await page.evaluate(async value => {
+    document.querySelector('#marker').textContent = value;
+    console.log(value);
+    return await (await fetch(`/payload?marker=${value}`)).text();
+  }, marker), `original resource ${marker}`);
+}
+
+async function retain(context, marker) {
+  const handle = handles.get(context);
+  assert.ok(handle);
+  const archive = await handle.takeArchive();
+  handles.delete(context);
+  retained.push({ marker, archive });
+}
+
+try {
+  browser = await chromium.launch({ executablePath: browserPath });
+  const surviving = await browser.newContext();
+  const closedMarkers = new Map();
+  registration = runnerIntegration.installAsyncContextLifecycle(2, {
+    async didCreateContext(context) {
+      await context.tracing.start({ screenshots: true, snapshots: true, sources: true, title: 'Private runner handoff' });
+      const handle = runnerIntegration.currentTraceChunk(3, context.tracing);
+      assert.ok(handle); handles.set(context, handle);
+    },
+    async willCloseContext(context) {
+      if (handles.has(context)) await retain(context, closedMarkers.get(context));
+    },
+  });
+  await registration.ready;
+  await capture(surviving, 'surviving-first');
+  const original = handles.get(surviving);
+  await retain(surviving, 'surviving-first');
+  await surviving.tracing.startChunk({ title: 'Successor chunk' });
+  const successor = runnerIntegration.currentTraceChunk(3, surviving.tracing);
+  handles.set(surviving, successor);
+  await assert.rejects(original.takeArchive(), /original trace chunk is no longer current/);
+  assert.equal(runnerIntegration.currentTraceChunk(3, surviving.tracing), successor);
+  report.checks.push('existing context adoption and original handle rejection preserve the successor');
+
+  const early = await browser.newContext();
+  await capture(early, 'early-close');
+  closedMarkers.set(early, 'early-close');
+  await early.close();
+  await capture(surviving, 'surviving-second');
+  closedMarkers.set(surviving, 'surviving-second');
+  await surviving.close();
+  await registration.dispose(); registration = undefined;
+  await browser.close(); browser = undefined;
+  assert.equal(handles.size, 0);
+  assert.equal(retained.length, 3);
+  report.checks.push('explicit closure seals the original chunks before native contexts and browser retire');
+
+  for (const { marker, archive } of retained) {
+    const path = join(destination, `${marker}.zip`);
+    await archive.export(path, new AbortController().signal);
+    const zip = new utils.ZipFile(path);
+    try {
+      const names = await zip.entries();
+      const loader = new iso.TraceLoader();
+      await loader.load({ entryNames: async () => names, readText: async name => names.includes(name) ? (await zip.read(name)).toString() : undefined, hasEntry: async name => names.includes(name), isLive: () => false });
+      assert.equal(loader.contextEntries.length, 1);
+      const records = (await zip.read('trace.trace')).toString().trim().split('\n').map(JSON.parse);
+      assert.deepEqual(records.filter(record => record.type === 'console').map(record => record.text), [marker]);
+      assert.ok(records.some(record => record.type === 'frame-snapshot'));
+      assert.ok(records.some(record => record.type === 'screencast-frame'));
+      assert.ok(names.some(name => name.startsWith('resources/src@')));
+      const entries = (await zip.read('trace.network')).toString().trim().split('\n').filter(Boolean).map(JSON.parse);
+      const responses = entries.filter(entry => entry.snapshot.request.url.includes(`/payload?marker=${marker}`));
+      assert.equal(responses.length, 1);
+      const resourceName = responses[0].snapshot.response.content._sha1;
+      assert.equal((await zip.read(`resources/${resourceName}`)).toString(), `original resource ${marker}`);
+      report.archives.push({ marker, path, sha256: hash(await readFile(path)), entries: names.length, snapshots: records.filter(record => record.type === 'frame-snapshot').length, filmstripFrames: records.filter(record => record.type === 'screencast-frame').length, actions: loader.contextEntries[0].actions.length, responseResource: resourceName });
+    } finally { zip.close(); }
+  }
+  execFileSync('python3', ['-c', 'import sys,zipfile\nfor path in sys.argv[1:]:\n with zipfile.ZipFile(path) as archive: assert archive.testzip() is None, path', ...report.archives.map(archive => archive.path)]);
+  report.checks.push('all retained archives export after closure with independent ZIP CRC, pinned loader, source, snapshot, filmstrip and original response checks');
+  assert.deepEqual(await sourceManifest(), report.sources);
+  report.status = 'passed';
+} catch (error) { report.status = 'failed'; report.error = { name: error.name, message: error.message, stack: error.stack }; throw error; }
+finally {
+  const cleanup = [];
+  cleanup.push(...await Promise.allSettled([registration?.dispose()]));
+  cleanup.push(...await Promise.allSettled([browser?.close()]));
+  cleanup.push(...await Promise.allSettled(retained.map(({ archive }) => archive.dispose())));
+  server.closeAllConnections();
+  cleanup.push(...await Promise.allSettled([new Promise(resolve => server.close(resolve))]));
+  const failures = cleanup.filter(result => result.status === 'rejected');
+  report.cleanupFailures = failures.map(result => ({ name: result.reason?.name, message: String(result.reason) }));
+  const cleanupFailedAfterSuccess = report.status === 'passed' && failures.length > 0;
+  if (cleanupFailedAfterSuccess) report.status = 'failed';
+  await writeFile(join(destination, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+  console.log(`Runner trace handoff evidence: ${destination}/report.json`);
+  if (cleanupFailedAfterSuccess) throw failures[0].reason;
+}

@@ -48,6 +48,10 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
+assert.equal(runnerIntegration.version, 3);
+assert.equal(typeof runnerIntegration.currentTraceChunk, 'function');
+assert.throws(() => runnerIntegration.currentTraceChunk(2, {}), error => error.name === 'ProtocolError');
+assert.throws(() => runnerIntegration.currentTraceChunk(3, {}), error => error.name === 'ProtocolError');
 for (const library of [direct, aliased, require('flashwright'), require('playwright')]) {
   for (const method of ['reload', 'goBack', 'goForward', 'waitForNavigation', 'waitForURL']) assert.equal(typeof library.Page.prototype[method], 'function');
   assert.equal(library.Tracing, direct.Tracing);
@@ -98,6 +102,17 @@ async function manualTrace(context: BrowserContext) {
   await tracing.startChunk(chunk);
   await tracing.stop(stop);
 }
+async function runnerArchive(context: BrowserContext) {
+  const chunk = runnerIntegration.currentTraceChunk(3, context.tracing);
+  if (!chunk) return;
+  const archive = await chunk.takeArchive(new AbortController().signal);
+  const reader = archive.acquire();
+  const names: readonly string[] = reader.entries.map(entry => entry.name);
+  reader.release();
+  await archive.dispose();
+  return names;
+}
+void runnerArchive;
 void manualTrace;
 const internal: number = runnerIntegration.runInternal(1, () => 1);
 void internal;

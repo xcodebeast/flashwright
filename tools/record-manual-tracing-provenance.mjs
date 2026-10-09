@@ -41,6 +41,7 @@ for (const path of [
   'crates/flashwright-engine/src/console.rs', 'crates/flashwright-engine/src/events.rs',
   'crates/flashwright-engine/src/publication.rs', 'crates/flashwright-engine/src/lib.rs',
   'packages/flashwright-core/src/tracing.ts', 'packages/flashwright-core/src/trace-preview.ts',
+  'packages/flashwright-core/src/runner-trace-archives.ts',
   'packages/flashwright-core/src/trace-resources.ts', 'packages/flashwright-core/src/trace-writer.ts', 'packages/flashwright-core/src/trace-archive.ts', 'packages/flashwright-core/src/trace-diagnostics.ts',
   'packages/flashwright-core/src/trace-hooks.ts', 'packages/flashwright-core/src/index.ts',
   'packages/flashwright-core/src/call-sites.ts', 'packages/flashwright-core/src/client.ts',
