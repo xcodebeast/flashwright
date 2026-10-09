@@ -48,7 +48,17 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
-assert.equal(runnerIntegration.version, 4);
+assert.equal(runnerIntegration.version, 5);
+assert.throws(() => runnerIntegration.createTraceJournal(4, {}, { sources:false, attachments:false }), error => error.name === 'ProtocolError');
+const journal = await runnerIntegration.createTraceJournal(5, { version:8, type:'context-options', origin:'testRunner' }, { sources:false, attachments:true });
+journal.append({ type:'after', callId:'packed', endTime:1 }, [{ name:'body', contentType:'text/plain', body:Buffer.from('packed body') }]);
+const journalArchive = await journal.takeArchive(1000, new AbortController().signal);
+await journal.dispose();
+const journalReader = journalArchive.acquire();
+assert.equal(journalReader.entries[0].name, 'test.trace');
+assert.equal(journalReader.entries.length, 2);
+journalReader.release();
+await journalArchive.dispose();
 assert.throws(() => runnerIntegration.createTraceArchiveAssembly(3), error => error.name === 'ProtocolError');
 const assembly = runnerIntegration.createTraceArchiveAssembly(4);
 await assembly.dispose();
@@ -127,6 +137,19 @@ async function runnerAssembly(context: BrowserContext) {
   await assembly.dispose();
 }
 void runnerAssembly;
+async function runnerJournal() {
+  const journal = await runnerIntegration.createTraceJournal(5, { version:8, type:'context-options', origin:'testRunner' }, { sources:true, attachments:true });
+  journal.append({ type:'before', callId:'packed' });
+  journal.appendStdio('stdout', Buffer.from('packed output'), 1);
+  const archive = await journal.takeArchive(1000, new AbortController().signal);
+  const assembly = runnerIntegration.createTraceArchiveAssembly(4);
+  assembly.addRunner(archive);
+  const combined = assembly.seal();
+  await journal.dispose();
+  await assembly.dispose();
+  await combined.dispose();
+}
+void runnerJournal;
 void manualTrace;
 const internal: number = runnerIntegration.runInternal(1, () => 1);
 void internal;
