@@ -84,7 +84,7 @@ try {
   await check('version and owner validation have no recording side effects; off has no chunk handle', async () => {
     const driver = new RecordingDriver();
     const tracing = new Tracing(driver, 'context', null);
-    assert.equal(runnerIntegration.version, 9);
+    assert.equal(runnerIntegration.version, 10);
     assert.throws(() => runnerIntegration.currentTraceChunk(2, tracing), { name: 'ProtocolError' });
     assert.throws(() => current({}), { name: 'ProtocolError' });
     assert.equal(current(tracing), undefined);
