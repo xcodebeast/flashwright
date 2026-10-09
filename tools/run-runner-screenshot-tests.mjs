@@ -28,7 +28,7 @@ try {
     const directory = join(destination, engine);
     const outputDirectory = join(directory, 'output');
     await mkdir(directory);
-    for (const name of ['playwright.config.ts', 'artifacts.spec.ts', 'module-context.spec.ts']) {
+    for (const name of ['playwright.config.ts', 'artifacts.spec.ts', 'module-context.spec.ts', 'pending-module-context.spec.ts']) {
       const source = await readFile(`compatibility/m2/runner-screenshots/${name}`, 'utf8');
       await writeFile(join(directory, name), engine === 'playwright' ? source.replaceAll("from '@flashwright/test'", "from '@playwright/test'").replaceAll("from 'flashwright'", "from 'playwright'") : source);
     }
@@ -71,7 +71,7 @@ try {
         }
       }
     }
-    assert.equal(Object.keys(cases).length, 28, `${engine}: all selected cases ran`);
+    assert.equal(Object.keys(cases).length, 30, `${engine}: all selected cases ran`);
     assert.equal((await readdir(outputDirectory)).filter(name => name.startsWith('.flashwright-screenshots-')).length, 0, `${engine}: no temporary screenshot directories remain`);
     report.outcomes[engine] = { code, stats: results.stats, cases };
   }

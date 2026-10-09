@@ -31,7 +31,7 @@ function assertReaderAvailable(value) { const reader = value.acquire(); reader.r
 
 try {
   await check('private assembly version is enforced and the public facade stays clean', async () => {
-    assert.equal(runnerIntegration.version, 8);
+    assert.equal(runnerIntegration.version, 9);
     assert.throws(() => runnerIntegration.createTraceArchiveAssembly(3), { name: 'ProtocolError' });
     const assembly = runnerIntegration.createTraceArchiveAssembly(4);
     assert.equal(assembly instanceof TraceArchiveAssembly, true);

@@ -57,6 +57,6 @@ test('screenshot diagnostics publish every collected message to the reporter', a
     throw error;
   } }));
   lifecycle.contexts.add({ pages: () => pages });
-  try { await lifecycle.finish(lifecycle.start(information)); }
-  finally { lifecycle.dispose(); }
+  try { await lifecycle.ready; await lifecycle.finish(lifecycle.start(information)); }
+  finally { await lifecycle.dispose(); }
 });
