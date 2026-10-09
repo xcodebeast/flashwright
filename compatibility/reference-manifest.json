@@ -49,11 +49,12 @@
       "resources": "benchmarks/results/macos-reference-resources-002.json",
       "classification": "native-macos-arm64",
       "browser": {
-        "executablePath": "/Users/P/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "executablePath": "${PLAYWRIGHT_BROWSERS_PATH}/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
         "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
         "revision": "1223",
         "version": "148.0.7778.96",
-        "flagsSource": "Each raw launch retains DEBUG=pw:browser actual launch flags."
+        "flagsSource": "Each raw launch retains DEBUG=pw:browser actual launch flags.",
+        "pathPolicy": "Published browser-cache placeholder; executable hash and recorded measurements are unchanged."
       },
       "independentLaunches": 8,
       "measuredSamplesPerWorkload": 96,
@@ -271,13 +272,13 @@
     ],
     "consumerRuntimePolicy": "Private exact-version macOS arm64/Linux x64 optional runtime packages are selected and verified automatically. Offline npm consumers explicitly install local library/runtime tarballs with scripts disabled and no Cargo or driver override. Registry publication/acquisition, pnpm, Yarn and aliases remain open.",
     "performanceStatus": "The historical rebuilt-default comparison records median ratio 1.0672 (95% bootstrap interval 0.9919\u20131.1313), about 6.3% less complete-run time. Its confidence interval includes parity, so this final run does not establish a statistically resolved complete-run gain. The preceding identical-binary adoption comparisons show 5.3% less time against Playwright and 4.6% less time against residency off; all eighteen resident-on resource comparisons pass. The 10% complete-flow release target remains open. Failure medians and interaction/navigation observed maxima exceed the regression thresholds. The resource matrix remains bound to its pre-default binary; the assertion algorithm is unchanged. Native Linux performance, worker contention and broader release gates remain open. The current platform-package resolver and launch-budget changes have no new timing result.",
-    "sourceIdentity": "The current platform-runtime tree has 213 source hashes and passes 53 selected matrix groups (36 native macOS Node24, seven Node22/full Chromium, ten emulated Linux). Production Rust and the macOS optimized driver remain unchanged at 233bb93b96581bf8dbf9d63f3222c017c9e8f8ec77f595a4ef534461e0f3c13c; the portable Linux binary is b6a08333d12871df394ed364bbff2892954eb1efd49113009c37a556fd562ba2. The library now resolves installed platform packages and includes resolution in the launch budget. Earlier timing claims remain bound to their prior adapter snapshots. See compatibility/evidence/platform-runtime-checkpoint-2026-10-08.json",
+    "sourceIdentity": "The current native macOS/Bun development core passes 126 fresh groups at 501 unchanged source entries and driver b1923b63d24ddd31e4d7760edc1814952c4ce85d01ba5d785f64849a35ddeb6d. The same production passes 37 focused host groups and 36 shell/full-Chromium dialog/tracing/packed groups across Bun/Node22/Node24. The full core run's only delta from the focused source freeze is direct initialization in a protocol-version test. Older Linux runtime artifacts are historical and require rebuilding/verification for protocol 7; no new Linux or performance claim. See compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json.",
     "navigationEvidence": [
       "compatibility/evidence/navigation-darwin-arm64-24.15.0.json",
       "compatibility/evidence/navigation-darwin-arm64-22.22.0.json",
       "compatibility/evidence/navigation-linux-x64-24.15.0.json"
     ],
-    "applicationProtocolVersion": 5,
+    "applicationProtocolVersion": 7,
     "locatorEvidence": [
       "compatibility/evidence/locators-darwin-arm64-24.15.0.json",
       "compatibility/evidence/locators-darwin-arm64-22.22.0.json",
@@ -436,7 +437,8 @@
         "packageCases": 25,
         "node": "v24.15.0"
       }
-    ]
+    ],
+    "dialogRecoveryCheckpoint": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json"
   },
   "pairedRuns": [
     {

@@ -44,6 +44,7 @@ for (const path of [
   'packages/flashwright-core/src/trace-resources.ts', 'packages/flashwright-core/src/trace-writer.ts', 'packages/flashwright-core/src/trace-archive.ts', 'packages/flashwright-core/src/trace-diagnostics.ts',
   'packages/flashwright-core/src/trace-hooks.ts', 'packages/flashwright-core/src/index.ts',
   'packages/flashwright-core/src/call-sites.ts', 'packages/flashwright-core/src/client.ts',
+  'packages/flashwright-core/src/trace-admission.ts', 'packages/flashwright-core/src/operation-admission.ts',
   'packages/flashwright-core/src/frame.ts', 'packages/flashwright-core/src/locator.ts',
   'packages/flashwright-core/src/keyboard.ts', 'packages/flashwright-core/src/handles.ts',
   'packages/flashwright-core/src/network.ts', 'packages/flashwright-core/src/console.ts',

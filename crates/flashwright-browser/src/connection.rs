@@ -459,7 +459,20 @@ impl Connection {
             if let Some(error) = &pending.closed {
                 return Err(error.clone());
             }
-            if pending.replies.len() + replies.len() > MAXIMUM_PENDING {
+            let maximum_pending = if matches!(
+                method,
+                "Page.handleJavaScriptDialog"
+                    | "Target.closeTarget"
+                    | "Target.disposeBrowserContext"
+                    | "Browser.close"
+                    | "Target.detachFromTarget"
+                    | "Runtime.terminateExecution"
+            ) {
+                MAXIMUM_PENDING
+            } else {
+                flashwright_protocol::ordinary_operation_limit(MAXIMUM_PENDING)
+            };
+            if pending.replies.len() + replies.len() > maximum_pending {
                 return Err(ErrorRecord::new(
                     ErrorCode::ResourceLimit,
                     method,

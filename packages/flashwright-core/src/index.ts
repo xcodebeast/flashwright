@@ -1,10 +1,12 @@
 import { Tracing } from './tracing.js';
-import { instrumentTraceMethods, instrumentTraceCallbacks, installTracePageResolver, tracePageOwner, traceRecordingActive } from './trace-hooks.js';
+import { instrumentTraceMethods, instrumentTraceCallbacks, installTracePageResolver, tracePageOwner, traceRecordingActive, type TraceMethod } from './trace-hooks.js';
 export { Tracing, type TracingStartOptions, type TracingChunkOptions, type TracingStopOptions } from './tracing.js';
 import { NavigationWaiter } from './navigation-waiter.js';
 import { EventEmitter } from 'node:events';
 import { prepareInitScript, InitScriptRegistration, type InitScript, type Disposable } from './init-scripts.js';
 import { ConsoleMessage, consoleMessage } from './console.js';
+import { Dialog, receivedDialog, handleUnobservedDialog } from './dialog.js';
+export { Dialog, type DialogType } from './dialog.js';
 import { SubscribedEventEmitter } from './subscribed-events.js';
 export { ConsoleMessage } from './console.js';
 export type { ConsoleMessageType } from './console.js';
@@ -52,16 +54,23 @@ export type { LocatorOptions, TextOptions, RoleOptions, LocatorTimeoutOptions, F
 export type { URLMatcher };
 export type { Cookie, SetCookie, CookieFilter, StorageState, StorageStateOptions };
 const codec = createValueCodec();
+const eventWaitTrace: TraceMethod = {
+  parameters: ['event', 'options'],
+  completion: 'independent',
+  // A modal's recipient must receive its recovery object before renderer diagnostics can run.
+  capture: arguments_ => arguments_[0] === 'dialog' ? 'metadata-only' : 'default',
+};
 
 export interface LaunchOptions { executablePath?: string; headless?: boolean; timeout?: number; slowMo?: number }
+export interface PageCloseOptions { runBeforeUnload?: boolean }
 export interface ViewportSize { width: number; height: number }
 export interface BrowserContextOptions extends DeviceOptions, ContextSettings { viewport?: ViewportSize | null; baseURL?: string; storageState?: StorageState | string }
 export interface NavigationWaitOptions { timeout?: number; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit' }
 export interface WaitForNavigationOptions extends NavigationWaitOptions { url?: URLMatcher }
 export interface NavigationOptions extends NavigationWaitOptions { referer?: string }
 interface PageInitialization { identifier: string; frames: FrameSnapshot[]; mainFrame: string; initialEvents?: ObjectEvent[]; navigationSequence: number }
-interface ContextEvents { page: Page; close: BrowserContext; console: ConsoleMessage }
-interface PageEvents { filechooser: FileChooser; console: ConsoleMessage; response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
+interface ContextEvents { page: Page; close: BrowserContext; console: ConsoleMessage; dialog: Dialog }
+interface PageEvents { dialog: Dialog; filechooser: FileChooser; console: ConsoleMessage; response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
 
 
 function identifier(value: unknown): string {
@@ -201,7 +210,7 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
   recordTracePageClosed(pageId: string): void { this.tracingValue?.pageEvent(pageId, false); }
   static {
     instrumentTraceMethods(this.prototype, 'BrowserContext', context => ({ tracing: context.tracing }), {
-      addInitScript: { parameters: ['script', 'arg'] }, cookies: { parameters: ['urls'] }, addCookies: { parameters: ['cookies'] }, clearCookies: { parameters: ['options'] }, storageState: { parameters: ['options'] }, newPage: {}, close: {}, waitForEvent: { parameters: ['event', 'options'] },
+      addInitScript: { parameters: ['script', 'arg'] }, cookies: { parameters: ['urls'] }, addCookies: { parameters: ['cookies'] }, clearCookies: { parameters: ['options'] }, storageState: { parameters: ['options'] }, newPage: {}, close: {}, waitForEvent: eventWaitTrace,
     });
   }
 
@@ -213,12 +222,20 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
   private defaultTimeout = 30000;
   private defaultNavigationTimeout: number | undefined;
   constructor(private readonly client: EngineClient, private readonly identifier: string, private readonly owner: Browser, readonly viewport: ViewportSize | null, readonly baseURL: string | undefined) {
-    super({ console: enabled => client.setConsoleSubscription('context', identifier, enabled) });
+    super({ console: enabled => client.setConsoleSubscription('context', identifier, enabled), dialog: enabled => client.setDialogSubscription('context', identifier, enabled) });
     this.routeRegistry = new RouteRegistry(client, 'context', identifier, baseURL);
-    this.unsubscribe = client.subscribeObject(identifier, event => { if (event.event === 'close' || event.event === 'transportclosed') this.didClose(); });
+    this.unsubscribe = client.subscribeObject(identifier, event => {
+      if (event.event === 'close' || event.event === 'transportclosed') this.didClose();
+      else if (event.event === 'dialog') {
+        let dialog: Dialog;
+        try { dialog = receivedDialog(null, client, event.parameters, () => this.tracing); }
+        catch (error) { client.rejectProtocol(error); return; }
+        if (!this.emit('dialog', dialog)) handleUnobservedDialog(dialog, client);
+      }
+    });
   }
   async waitForEvent<Event extends keyof ContextEvents>(event: Event, waitOptions: EventWaitOptions<ContextEvents[Event]> | ((value: ContextEvents[Event]) => boolean | Promise<boolean>) = {}): Promise<ContextEvents[Event]> {
-    if (!['console', 'page', 'close'].includes(event)) throw failure('UnsupportedFeatureError', 'context.waitForEvent', 'event is not implemented');
+    if (!['console', 'dialog', 'page', 'close'].includes(event)) throw failure('UnsupportedFeatureError', 'context.waitForEvent', 'event is not implemented');
     if (this.closed) throw failure('TargetClosedError', 'context.waitForEvent', 'context is closed');
     const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
     options('context.waitForEvent', configured, ['predicate', 'timeout']);
@@ -311,7 +328,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     instrumentTraceMethods(this.prototype, 'Page', tracePageOwner, {
       waitForSelector: { className: 'Frame', parameters: ['selector', 'options'] },
       setInputFiles: { className: 'Frame', parameters: ['selector', 'files', 'options'] },
-      addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'] }, waitForNavigation: { parameters: ['options'] }, waitForURL: { parameters: ['url', 'options'] }, waitForResponse: { parameters: ['urlOrPredicate', 'options'] }, waitForEvent: { parameters: ['event', 'options'] }, close: {},
+      addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'], completion: 'independent' }, waitForNavigation: { parameters: ['options'], completion: 'independent' }, waitForURL: { parameters: ['url', 'options'], completion: 'independent' }, waitForResponse: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForEvent: eventWaitTrace, close: {},
     });
   }
 
@@ -337,7 +354,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
   private defaultTimeout: number | undefined;
   private defaultNavigationTimeout: number | undefined;
   constructor(private readonly client: EngineClient, private readonly identifier: string, private readonly owner: BrowserContext, private readonly ownsContext: boolean, initialization: PageInitialization) {
-    super({ console: enabled => client.setConsoleSubscription('page', identifier, enabled), filechooser: enabled => client.setFileChooserSubscription(identifier, enabled) });
+    super({ console: enabled => client.setConsoleSubscription('page', identifier, enabled), dialog: enabled => client.setDialogSubscription('page', identifier, enabled), filechooser: enabled => client.setFileChooserSubscription(identifier, enabled) });
     this.routeRegistry = new RouteRegistry(client, 'page', identifier, owner.baseURL);
     this.mainFrameIdentifier = initialization.mainFrame;
     try { this.navigationSequence = navigationSequence(initialization.navigationSequence); }
@@ -394,6 +411,14 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
         this.emit(event, request);
       } else if (event === 'load' || event === 'domcontentloaded') this.emit(event, this);
       else if (event === 'pageerror') this.emit('pageerror', pageError(parameters));
+      else if (event === 'dialog') {
+        let dialog: Dialog;
+        try { dialog = receivedDialog(this, this.client, parameters, () => this.owner.tracing); }
+        catch (error) { this.client.rejectProtocol(error); return; }
+        const contextObserved = this.owner.emit('dialog', dialog);
+        const pageObserved = this.emit('dialog', dialog);
+        if (!contextObserved && !pageObserved) handleUnobservedDialog(dialog, this.client);
+      }
       else if (event === 'filechooser') {
         if (!this.listenerCount('filechooser') || this.closed) {
           const group = (parameters as { group?: unknown })?.group;
@@ -647,7 +672,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     await this.client.request('page.waitForLoadState', { page: this.identifier, state }, validateTimeout(waitOptions.timeout ?? this.navigationTimeout(), 'page.waitForLoadState'));
   }
   async waitForEvent<Event extends keyof PageEvents>(event: Event, waitOptions: EventWaitOptions<PageEvents[Event]> | ((value: PageEvents[Event]) => boolean | Promise<boolean>) = {}): Promise<PageEvents[Event]> {
-    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror', 'console', 'filechooser'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
+    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror', 'console', 'filechooser', 'dialog'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
     this.checkOpen('page.waitForEvent');
     const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
     options('page.waitForEvent', configured, ['predicate', 'timeout']);
@@ -740,7 +765,10 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     this.checkOpen(method);
     await this.client.request(method, { page: this.identifier, handle, ...parameters }, validateTimeout(timeout ?? this.timeout(), method));
   }
-  close(): Promise<void> {
+  close(closeOptions: PageCloseOptions = {}): Promise<void> {
+    options('page.close', closeOptions, ['runBeforeUnload']);
+    if (closeOptions.runBeforeUnload !== undefined && typeof closeOptions.runBeforeUnload !== 'boolean') throw failure('InvalidArgumentError', 'page.close.runBeforeUnload', 'expected a boolean');
+    if (closeOptions.runBeforeUnload) throw failure('UnsupportedFeatureError', 'page.close.runBeforeUnload', 'dismissible page closure is not implemented; beforeunload navigation dialogs are supported');
     if (this.closed) return this.closing ?? Promise.resolve();
     this.closing ??= (async () => {
       try {

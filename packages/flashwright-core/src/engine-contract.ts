@@ -5,6 +5,7 @@ export const requiredCapabilities = [
   'page.close', 'page.evaluate', 'page.event.pageerror', 'page.screenshot', 'page.goto', 'page.reload', 'page.goBack', 'page.goForward', 'page.waitForLoadState', 'response.body', 'response.body.occurrence', 'request.postData.bytes', 'network.headers',
   'page.navigation.capture', 'page.navigation.next', 'page.navigation.complete',
   'page.fileChooser.subscribe', 'page.console.subscribe', 'context.console.subscribe',
+  'page.dialog.subscribe', 'context.dialog.subscribe', 'dialog.accept', 'dialog.dismiss',
   'context.trace.start', 'context.trace.pull', 'context.trace.stop',
   'context.trace.filmstrip.clock',
   'context.trace.filmstrip.activity',
@@ -23,6 +24,6 @@ export const requiredCapabilities = [
 ];
 
 export const engineHandshake = {
-  packageVersion: '0.0.0', protocolVersion: 6, capabilityInventoryVersion: 1,
+  packageVersion: '0.0.0', protocolVersion: 7, capabilityInventoryVersion: 1,
   limits: { controlFrameBytes: 8 * 1024 * 1024, pendingOperations: 1024, queuedMessages: 128, valueDepth: 64, valueNodes: 100000, binaryAttachmentBytes: 32 * 1024 * 1024, pendingAttachments: 2 },
 };

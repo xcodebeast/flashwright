@@ -3,7 +3,70 @@ import { test } from 'node:test';
 import { AttachmentReceiver } from '../packages/flashwright-core/dist/commonjs/attachments.js';
 import { EngineClient } from '../packages/flashwright-core/dist/commonjs/client.js';
 import { createRuntimeFixture } from './runtime-fixture.mjs';
+import { performance } from 'node:perf_hooks';
 const fixtureExecutable = createRuntimeFixture('compatibility/m1/attachment-driver.mjs');
+
+test('native collection busy retries preserve identity, expected length and the original deadline', async () => {
+  for (const method of ['context.trace.snapshot.take', 'context.trace.network.take']) await clientCase(async client => {
+    await client.waitForHandshake();
+    const parameters = { scenario: 'busy-then-transfer', capture: 'original', token: 'original' };
+    const transfer = client.requestTraceAttachment(method, parameters, 2000, 5);
+    parameters.capture = 'successor'; parameters.token = 'successor';
+    assert.deepEqual(await transfer, Buffer.from([0, 128, 255, 1, 2]));
+    const attempts = await client.request('collection.observations', {});
+    assert.equal(attempts.length, 3);
+    for (const attempt of attempts) {
+      assert.equal(attempt.method, method);
+      assert.equal(attempt.parameters.capture, 'original'); assert.equal(attempt.parameters.token, 'original');
+      assert(attempt.timeoutMilliseconds > 0 && attempt.timeoutMilliseconds < 2000);
+    }
+    assert(attempts[2].timeoutMilliseconds < attempts[0].timeoutMilliseconds);
+    assert.deepEqual(await client.request('observations', {}), { starts: 1, cancellations: 0 });
+  });
+});
+
+test('native collection pressure expires one deadline and never retries a terminal resource error', async () => {
+  await clientCase(async client => {
+    await client.waitForHandshake();
+    const started = performance.now();
+    await assert.rejects(client.requestTraceAttachment('context.trace.snapshot.take', { scenario: 'always-busy' }, 60, 5), { name: 'TimeoutError' });
+    assert(performance.now() - started < 1000);
+    const attempts = await client.request('collection.observations', {});
+    assert(attempts.length >= 1 && attempts.length <= 8);
+    assert.deepEqual(await client.request('observations', {}), { starts: 0, cancellations: 0 });
+  });
+  await clientCase(async client => {
+    await assert.rejects(client.requestTraceAttachment('context.trace.network.take', { scenario: 'collection-error' }, 2000, 5), { name: 'ResourceLimitError' });
+    assert.equal((await client.request('collection.observations', {})).length, 1);
+    assert.equal(await client.request('control', {}), 42);
+  });
+});
+
+test('collection cancellation during busy backoff preserves its original reason and prevents another take', async () => {
+  await clientCase(async client => {
+    await client.waitForHandshake();
+    const cancellation = new AbortController(); const original = new Error('original collector retired');
+    const request = client.request.bind(client);
+    client.request = async (...arguments_) => {
+      const result = await request(...arguments_);
+      if (arguments_[0] === 'context.trace.snapshot.take') setTimeout(() => cancellation.abort(original), 1);
+      return result;
+    };
+    await assert.rejects(client.requestTraceAttachment('context.trace.snapshot.take', { scenario: 'always-busy' }, 2000, 5, cancellation.signal), error => error === original);
+    assert.equal((await request('collection.observations', {})).length, 1);
+    assert.equal(await request('control', {}), 42);
+  });
+});
+
+test('collection null is forbidden after any binary start, including an empty transfer', async () => {
+  for (const scenario of ['control-result', 'empty-control-result']) await clientCase(async client => {
+    await assert.rejects(client.requestTraceAttachment('context.trace.snapshot.take', { scenario }, 2000, scenario === 'empty-control-result' ? 0 : 5), { name: 'ProtocolError' });
+    assert.equal(client.isClosed(), true);
+  });
+  await clientCase(async client => {
+    await assert.rejects(client.requestBinary('probe', { scenario: 'always-busy' }, 2000, 5), { name: 'ProtocolError' });
+  });
+});
 
 function chunk(identifier, offset, bytes) {
   const frame = Buffer.alloc(13 + bytes.length);

@@ -1,8 +1,14 @@
 //! The versioned TypeScript ↔ Rust control protocol, separate from Chromium CDP.
 
+mod admission;
 pub mod attachment;
 pub mod framing;
 pub mod messages;
+
+pub use admission::{
+    MINIMUM_DIALOG_PENDING_OPERATIONS, admits_operation, is_recovery_operation,
+    ordinary_operation_limit,
+};
 
 pub use attachment::{
     AttachmentEncoding, AttachmentFrame, AttachmentStream, BinaryAttachment, BinaryPayload,
@@ -15,6 +21,6 @@ pub use messages::{
     InputDelivery, ResourceLimits, TraceCall,
 };
 
-pub const PROTOCOL_VERSION: u32 = 6;
+pub const PROTOCOL_VERSION: u32 = 7;
 pub const CAPABILITY_INVENTORY_VERSION: u32 = 1;
 pub const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");

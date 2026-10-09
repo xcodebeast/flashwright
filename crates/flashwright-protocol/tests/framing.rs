@@ -99,9 +99,14 @@ async fn cancellation_of_a_fragmented_read_invalidates_the_stream() {
 
 #[test]
 fn handshake_rejects_incompatible_versions_and_invalid_limits() {
-    let mut handshake = Handshake::default();
-    handshake.protocol_version += 1;
-    assert!(handshake.validate().is_err());
+    let current_version = Handshake::default().protocol_version;
+    for incompatible in [current_version - 1, current_version + 1] {
+        let handshake = Handshake {
+            protocol_version: incompatible,
+            ..Handshake::default()
+        };
+        assert!(handshake.validate().is_err());
+    }
     let mut handshake = Handshake::default();
     handshake.limits.pending_operations = 0;
     assert!(handshake.validate().is_err());

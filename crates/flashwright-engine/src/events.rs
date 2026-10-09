@@ -154,6 +154,14 @@ impl Engine {
         // Exception descriptions can contain escaped lone UTF-16 surrogates. Preserve
         // their JSON through the bounded event transport for decoding by JavaScript.
         let parameters: Value = match event.parameters {
+            Some(parameters)
+                if matches!(
+                    event.method.as_str(),
+                    "Page.javascriptDialogOpening" | "Page.javascriptDialogClosed"
+                ) =>
+            {
+                json!({ "dialogJson": parameters.get() })
+            }
             Some(parameters) if event.method == "Runtime.exceptionThrown" => {
                 json!({ "exceptionJson": parameters.get() })
             }
@@ -212,6 +220,20 @@ impl Engine {
         };
         for (identifier, page) in pages {
             match event.method.as_str() {
+                "Page.javascriptDialogOpening" | "Page.javascriptDialogClosed" => {
+                    self.dialog_event(
+                        &identifier,
+                        &page,
+                        &event.method,
+                        parameters["dialogJson"].as_str().ok_or_else(|| {
+                            ErrorRecord::new(
+                                ErrorCode::Protocol,
+                                "page.dialog",
+                                "Chromium omitted dialog event parameters",
+                            )
+                        })?,
+                    )?;
+                }
                 "Target.targetDestroyed" | "Inspector.detached" => {
                     self.registry.lock().unwrap().pages.remove(&identifier);
                     self.finish_page(&identifier, &page, closed("page"), "close");
@@ -401,6 +423,7 @@ impl Engine {
         state.failure = Some(error);
         state.interception.clear();
         page.state.file_chooser.lock().unwrap().cancel();
+        page.state.dialogs.lock().unwrap().retire();
         page.state.handles.lock().unwrap().clear();
         page.state.evaluation_runtimes.lock().unwrap().clear();
         state.sequence += 1;

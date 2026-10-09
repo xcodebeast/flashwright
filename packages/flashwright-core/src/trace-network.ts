@@ -68,7 +68,7 @@ export class TraceNetworkChannel {
       }
       const metadata = this.pending.shift()!;
       const parameters = { ...this.identity, token: metadata.token };
-      const bytes = await this.client.requestBinary('context.trace.network.take', parameters, 2000, metadata.byteLength);
+      const bytes = await this.client.requestTraceAttachment('context.trace.network.take', parameters, 2000, metadata.byteLength, this.cancellation.signal);
       this.cancellation.signal.throwIfAborted();
       if (!Buffer.isBuffer(bytes) || bytes.length !== metadata.byteLength) throw protocol('network resource length changed');
       const formParameters = metadata.formEncoded ? parseForm(bytes) : undefined;

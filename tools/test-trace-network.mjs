@@ -28,7 +28,7 @@ class Driver {
   if(method==='context.trace.recording.status')return{recording:parameters.recording,networkPending:this.pendingNetwork};
   return null;
  }
- async requestBinary(method,parameters){this.calls.push({method,parameters});return Buffer.from(this.data.get(parameters.token));}
+ async requestTraceAttachment(method,parameters){this.calls.push({method,parameters});return Buffer.from(this.data.get(parameters.token));}
 }
 async function fixture(driver=new Driver()){
  const resources=await TraceResources.create();const writer=await TraceWriter.create(resources);const failures=[];

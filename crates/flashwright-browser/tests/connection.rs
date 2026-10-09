@@ -431,7 +431,11 @@ async fn rejected_sequences_have_no_wire_effects_and_release_pending_capacity() 
     let (reader, writer) = split(host);
     let connection = Connection::new(reader, writer);
     let occupied = connection
-        .start_commands("occupied", vec![Value::Null; 1024], None)
+        .start_commands(
+            "occupied",
+            vec![Value::Null; flashwright_protocol::ordinary_operation_limit(1024)],
+            None,
+        )
         .unwrap();
     assert!(
         matches!(connection.start_commands("overCapacity", vec![Value::Null; 2], None), Err(error) if error.code == ErrorCode::ResourceLimit)
@@ -466,7 +470,11 @@ async fn full_queue_rejects_entire_sequence_and_rolls_back_registrations() {
     drop(occupied);
     tokio::task::yield_now().await;
     let _following = connection
-        .start_commands("following", vec![Value::Null; 1024], None)
+        .start_commands(
+            "following",
+            vec![Value::Null; flashwright_protocol::ordinary_operation_limit(1024)],
+            None,
+        )
         .unwrap();
     let mut reader = BufReader::new(peer);
     assert_eq!(read_command(&mut reader).await["method"], "following");
