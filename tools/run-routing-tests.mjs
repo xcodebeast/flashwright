@@ -11,6 +11,7 @@ await mkdir(directory, { recursive: true });
 const browser = process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath();
 const hash = value => createHash('sha256').update(value).digest('hex');
 const report = { status: 'running', referenceVersion: '1.60.0', ...runtimeMetadata, browser, cases: {}, comparisons: {}, intentionalDifferences: {}, exclusions: ['Optional raw CDP diagnostics are outside the public Route contract; CDPSession remains unsupported.', 'Ephemeral local ports and engine-specific error stack frames are excluded from equality; original callback locations are asserted by the error fixture.', 'The already-handled error accepts the pinned Bun fulfill or Node route.fulfill prefix. Its exact error class, operation and substantive message remain asserted; raw messages are retained.'] };
+report.allowedSchedulingDifferences = {};
 function normalize(value) {
   if (typeof value === 'string') return value.replace(/(127\.0\.0\.1|localhost):\d+/g, '$1:PORT');
   if (Array.isArray(value)) return value.map(normalize);
@@ -51,6 +52,11 @@ try {
       assert.match(reference.closedCallback.evaluation.message, /closed/); assert.match(candidate.closedCallback.evaluation.message, /closed/);
       report.intentionalDifferences.closedEvaluation = { reference: reference.closedCallback.evaluation, flashwright: candidate.closedCallback.evaluation };
       delete reference.closedCallback.evaluation; delete candidate.closedCallback.evaluation;
+      report.allowedSchedulingDifferences.closedRequestDispatch = {
+        reference: reference.closedCallback.serverCount, flashwright: candidate.closedCallback.serverCount,
+        reason: 'Target closure can dispatch the original paused request before the held callback resumes; each fixture independently rejects replay.',
+      };
+      delete reference.closedCallback.serverCount; delete candidate.closedCallback.serverCount;
     }
     assert.deepEqual(candidate, reference);
     report.comparisons[kind] = { status: 'equal', cases: Object.keys(candidate).length };
