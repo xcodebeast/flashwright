@@ -1,0 +1,30 @@
+{
+  "status": "passed-focused-fixture-correction-full-core-incomplete",
+  "baseCommit": "f709c9cc1e4fd243d21175298047f35bcc91b401",
+  "groups": 4,
+  "testsPerGroup": 12,
+  "sourceFiles": 464,
+  "cleanWatchdogs": 8,
+  "profiles": [
+    "Bun1.4.2/headless-shell",
+    "Node22.22.0/headless-shell",
+    "Node24.15.0/headless-shell",
+    "Bun1.4.2/full-Chrome"
+  ],
+  "driverSha256": "5cb56d8d94641860d295a076c51675c7c403b032d88a8469cb3a61ba47b5ee04",
+  "focusedReportSha256": "589cf20238b6c99c1a5d1da859b7539ee7d4eab8ca7c03081bdd3d7b34bc411a",
+  "auditSha256": "5ebb1e2edc39942e14b08ab5115d62b26703e9f90261f854ba709dcfdb15d5b5",
+  "scope": "Use still-unsupported toBeInViewport for the runner unsupported-matcher fixture; implemented toHaveClass must no longer reject as unsupported. Require the typed error and method name. All four runner groups preserve the deliberate timeout, retry, soft failure, fixture teardown and unsupported configuration outcomes.",
+  "retainedFailedCore": {
+    "coreReport": "compatibility/evidence/core-darwin-arm64-bun-1.4.2-2026-10-09T16-23-44.041Z/report.json",
+    "coreReportSha256": "23c97a88b01f63a4d40dc7ad51165c9b045f1ac08efe0bd3788ec93409cbc65a",
+    "nestedReportSha256": "d2fdc2115cb9505d697297f789e8d6640ba5763dcd79ef769a9d0cc509fa30de",
+    "passedGroups": 85,
+    "cause": "Native runner fixture still expected implemented toHaveClass to reject as UnsupportedFeatureError. The matcher instead timed out against a mismatching class. Expected timeout and retry behavior retained their intended outcomes.",
+    "watchdogSha256": "85929626e23ab6ce1dc23c4e89d018278682b178f71bd28c5c687bc5569c7836"
+  },
+  "limitations": [
+    "The prior113-group run stopped at group86 after85 passes. This correction does not change engine semantics or deadlines and does not itself establish a full-core pass.",
+    "No performance or release claim. Automatic runner tracing remains unsupported."
+  ]
+}
