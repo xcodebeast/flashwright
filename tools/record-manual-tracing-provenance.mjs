@@ -36,6 +36,8 @@ for (const name of names) assert.ok(snippets.has(name), `Missing pinned tracing 
 const extract = names.map(name => `// ${name}\n${snippets.get(name)}`).join('\n\n') + '\n';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const implementation = {};
+implementation['packages/flashwright-core/src/trace-storage-budget.ts'] = hash(await readFile('packages/flashwright-core/src/trace-storage-budget.ts'));
+implementation['tools/test-trace-storage-budget.mjs'] = hash(await readFile('tools/test-trace-storage-budget.mjs'));
 for (const path of [
   'crates/flashwright-engine/src/trace_diagnostics.rs', 'crates/flashwright-engine/src/context_state.rs',
   'crates/flashwright-engine/src/console.rs', 'crates/flashwright-engine/src/events.rs',

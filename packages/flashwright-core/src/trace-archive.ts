@@ -1,8 +1,8 @@
-import { open, mkdir, rename, rm } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
+import { open, mkdir, rename, rm, type FileHandle } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { failure } from './errors.js';
+import { traceStorageBudget, TraceFileCustody, type TraceStorageBudget } from './trace-storage-budget.js';
 
 export interface TraceArchiveEntry {
   readonly name: string;
@@ -23,8 +23,9 @@ export class SealedTraceArchive {
   private closing = false;
   private readerFinished: (() => void) | undefined;
   private disposal: Promise<void> | undefined;
+  private readonly files = new TraceFileCustody();
 
-  constructor(entries: readonly TraceArchiveEntry[], private readonly removeFiles: () => Promise<void>) {
+  constructor(entries: readonly TraceArchiveEntry[], private readonly removeFiles: () => Promise<void>, private readonly budget: TraceStorageBudget = traceStorageBudget) {
     if (entries.length > 8194) throw failure('ResourceLimitError', 'tracing.archive', 'archive exceeds its entry limit');
     const snapshot = entries.map(({ name, path, byteLength, contentHash }) => Object.freeze({ name, ...(path === undefined ? {} : { path }), byteLength, contentHash }));
     validateTraceArchiveManifest(snapshot);
@@ -32,7 +33,7 @@ export class SealedTraceArchive {
   }
 
   acquire(): TraceArchiveReader {
-    if (this.closing) throw failure('TargetClosedError', 'tracing.archive', 'archive is being disposed');
+    if (this.closing || this.files.uncertain) throw failure('TargetClosedError', 'tracing.archive', 'archive is being disposed');
     if (this.reading) throw failure('ResourceLimitError', 'tracing.archive', 'archive already has an active reader');
     this.reading = true;
     let released = false;
@@ -50,7 +51,7 @@ export class SealedTraceArchive {
     let originalFailure: unknown;
     let failed = false;
     try {
-      await exportArchive(reader.entries, destination, signal, beginCommit, work => { cleanup = work; void work.catch(() => {}); });
+      await exportArchive(reader.entries, destination, signal, beginCommit, work => { cleanup = work; void work.catch(() => {}); }, this.budget, this.files);
     } catch (error) { originalFailure = error; failed = true; }
     finally {
       try { await cleanup; }
@@ -64,6 +65,7 @@ export class SealedTraceArchive {
     this.closing = true;
     this.disposal ??= (async () => {
       if (this.reading) await new Promise<void>(resolve => { this.readerFinished = resolve; });
+      await this.files.settle();
       await this.removeFiles();
     })();
     return this.disposal;
@@ -108,19 +110,26 @@ const checksumTable = Uint32Array.from({ length: 256 }, (_, value) => {
 });
 
 /** Export a fixed manifest with bounded ZIP metadata and verified immutable resources. */
-async function exportArchive(entries: readonly TraceArchiveEntry[], destination: string, signal: AbortSignal, beginCommit: () => void, ownCleanup: (cleanup: Promise<void>) => void): Promise<void> {
+async function exportArchive(entries: readonly TraceArchiveEntry[], destination: string, signal: AbortSignal, beginCommit: () => void, ownCleanup: (cleanup: Promise<void>) => void, budget: TraceStorageBudget, files: TraceFileCustody): Promise<void> {
   signal.throwIfAborted();
-  await mkdir(dirname(destination), { recursive: true });
+  const storage = budget.acquire(1);
+  let releaseMetadata: (() => void) | undefined;
+  try {
+    storage.retain(entries.reduce((bytes, entry) => bytes + 92 + 2 * Buffer.byteLength(entry.name) + entry.byteLength, 22));
+    releaseMetadata = budget.queue(entries.reduce((bytes, entry) => bytes + 46 + Buffer.byteLength(entry.name), 0));
+  } catch (error) { storage.release(); throw error; }
   const temporary = `${destination}.${randomUUID()}.tmp`;
-  const archive = await open(temporary, 'wx', 0o600);
+  let archive: FileHandle | undefined;
   let offset = 0;
   const centralDirectory: Buffer[] = [];
   const write = async (bytes: Buffer): Promise<void> => {
     signal.throwIfAborted();
-    await archive.writeFile(bytes);
+    await archive!.writeFile(bytes);
     offset += bytes.length;
   };
   try {
+    await mkdir(dirname(destination), { recursive: true });
+    archive = await open(temporary, 'wx', 0o600);
     for (const entry of entries) {
       const nameBytes = Buffer.from(entry.name);
       const localOffset = offset;
@@ -135,20 +144,12 @@ async function exportArchive(entries: readonly TraceArchiveEntry[], destination:
       let size = 0;
       const contentHash = createHash('sha256');
       if (entry.path !== undefined) {
-        try {
-          for await (const part of createReadStream(entry.path, { highWaterMark: 65536, signal })) {
-            const bytes = part as Buffer;
-            for (const byte of bytes) checksum = checksumTable[(checksum ^ byte) & 255]! ^ (checksum >>> 8);
-            size += bytes.length;
-            if (size > entry.byteLength) throw failure('ProtocolError', 'tracing', 'archive input grew after sealing');
-            contentHash.update(bytes);
-            await write(bytes);
-          }
-        } catch (error) {
-          // Read streams wrap the caller's reason; unrelated I/O failures keep their identity.
-          if (signal.aborted && error instanceof Error && error.name === 'AbortError' &&
-              'code' in error && error.code === 'ABORT_ERR' && error.cause === signal.reason) throw signal.reason;
-          throw error;
+        for await (const bytes of readArchiveEntry(entry.path, signal, files)) {
+          for (const byte of bytes) checksum = checksumTable[(checksum ^ byte) & 255]! ^ (checksum >>> 8);
+          size += bytes.length;
+          if (size > entry.byteLength) throw failure('ProtocolError', 'tracing', 'archive input grew after sealing');
+          contentHash.update(bytes);
+          await write(bytes);
         }
       }
       if (size !== entry.byteLength || contentHash.digest('hex') !== entry.contentHash) {
@@ -189,10 +190,41 @@ async function exportArchive(entries: readonly TraceArchiveEntry[], destination:
     // destination remains untouched. The controller awaits its definitive result.
     beginCommit();
     await rename(temporary, destination);
+    storage.release();
   } finally {
+    releaseMetadata();
     ownCleanup((async () => {
-      try { await archive.close(); }
-      finally { await rm(temporary, { force: true }); }
+      if (!archive) { storage.release(); return; }
+      let closed = false;
+      let originalFailure: unknown;
+      let failed = false;
+      try { await archive.close(); closed = true; }
+      catch (error) { originalFailure = error; failed = true; }
+      try {
+        await rm(temporary, { force: true });
+        if (closed) storage.release();
+      } catch (error) { if (!failed) { originalFailure = error; failed = true; } }
+      if (failed) throw originalFailure;
     })());
+  }
+}
+
+/** Explicit handles keep private input custody after a failed close; reads remain bounded. */
+async function* readArchiveEntry(path: string, signal: AbortSignal, files: TraceFileCustody): AsyncGenerator<Buffer> {
+  const file = await open(path, 'r');
+  let failed = false;
+  try {
+    const buffer = Buffer.allocUnsafe(65536);
+    for (;;) {
+      signal.throwIfAborted();
+      const { bytesRead } = await file.read(buffer, 0, buffer.length, null);
+      signal.throwIfAborted();
+      if (!bytesRead) break;
+      yield buffer.subarray(0, bytesRead);
+    }
+  } catch (error) { failed = true; throw error; }
+  finally {
+    try { await files.close(file); }
+    catch (error) { if (!failed) throw error; }
   }
 }

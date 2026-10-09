@@ -31,6 +31,7 @@ for (const name of names) assert.ok(snippets.has(name), `Missing pinned filmstri
 const extract = names.map(name => `// ${name}\n${snippets.get(name)}`).join('\n\n') + '\n';
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const implementation = {};
+implementation['packages/flashwright-core/src/trace-storage-budget.ts'] = hash(await readFile('packages/flashwright-core/src/trace-storage-budget.ts'));
 for (const path of [
   'packages/flashwright-core/src/trace-admission.ts', 'packages/flashwright-core/src/operation-admission.ts',
   'crates/flashwright-engine/src/filmstrip.rs', 'crates/flashwright-engine/src/filmstrip/frame_store.rs', 'crates/flashwright-engine/src/filmstrip/page_capture.rs',
