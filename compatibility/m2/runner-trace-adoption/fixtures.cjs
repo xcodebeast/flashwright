@@ -5,26 +5,15 @@ const { _baseTest: base, expect } = require('playwright/test');
 const globals = require(join(dirname(require.resolve('playwright/package.json')), 'lib/globals.js'));
 const candidate = process.env.FLASHWRIGHT_ADOPTION_ENGINE === 'flashwright';
 const { adoptRunnerTraceJournal } = candidate ? require(process.env.FLASHWRIGHT_ADOPTION_MODULE) : {};
-const finalized = new WeakSet();
+const { installRunnerTraceFinalizer } = candidate ? require(join(dirname(process.env.FLASHWRIGHT_ADOPTION_MODULE), 'runner-trace-finalizer.js')) : {};
 
-/** Test-only finalizer exercises the real pinned final stop boundary without claiming browser capture. */
+/** Exercise private production journal and final-stop owners through the actual pinned runner. */
 function setup(fixture, testInfo = globals.currentTestInfo()) {
   assert(testInfo);
   if (!candidate) return;
   const admission = adoptRunnerTraceJournal(fixture, testInfo);
   assert.equal(admission?.failure, undefined);
-  if (!admission?.journal || finalized.has(testInfo)) return;
-  finalized.add(testInfo);
-  testInfo._tracing.stopIfNeeded = async () => {
-    let archive;
-    try {
-      if (testInfo._tracing._shouldAbandonTrace()) return;
-      archive = await admission.journal.takeArchive(testInfo.timeout, new AbortController().signal);
-      const path = testInfo.outputPath('trace.zip');
-      await archive.export(path, new AbortController().signal);
-      testInfo.attachments.push({ name: 'trace', path, contentType: 'application/zip' });
-    } finally { await archive?.dispose(); await admission.journal.dispose(); }
-  };
+  if (admission) installRunnerTraceFinalizer(testInfo, admission);
 }
 
 function phase(name, testInfo = globals.currentTestInfo()) {

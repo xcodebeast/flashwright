@@ -1,3 +1,57 @@
+// TestInfo._attach
+_attach(attachment, stepId) {
+    const index = this._attachmentsPush(attachment) - 1;
+    let step = stepId ? this._stepMap.get(stepId) : void 0;
+    if (!!step?.group)
+      step = void 0;
+    if (step) {
+      step.attachmentIndices.push(index);
+    } else {
+      const stepId2 = `attach@${createGuid2()}`;
+      this._tracing.appendBeforeActionForStep({ stepId: stepId2, title: `Attach ${escapeWithQuotes2(attachment.name, '"')}`, category: "test.attach", stack: [] });
+      this._tracing.appendAfterActionForStep(stepId2, void 0, [attachment]);
+    }
+    this._callbacks.onAttach({
+      testId: this.testId,
+      name: attachment.name,
+      contentType: attachment.contentType,
+      path: attachment.path,
+      body: attachment.body?.toString("base64"),
+      stepId: step?.stepId
+    });
+  }
+
+// TestInfo._runWithTimeout
+async _runWithTimeout(runnable, cb) {
+    try {
+      await this._timeoutManager.withRunnable(runnable, async () => {
+        try {
+          await cb();
+        } catch (e) {
+          if (this._allowSkips && e instanceof TestSkipError) {
+            if (this.status === "passed")
+              this.status = "skipped";
+          } else {
+            this._failWithError(e);
+          }
+          throw e;
+        }
+      });
+    } catch (error) {
+      if (!this._interruptedPromise.isDone() && error instanceof TimeoutManagerError)
+        this._failWithError(error);
+      throw error;
+    }
+  }
+
+// TimeoutManager.setTimeout
+setTimeout(timeout) {
+    const slot = this._running ? this._running.slot : this._defaultSlot;
+    slot.timeout = timeout;
+    if (this._running)
+      this._updateTimeout(this._running);
+  }
+
 // onApiCallBegin
 onApiCallBegin: (data, channel) => {
         const testInfo2 = globals.currentTestInfo();

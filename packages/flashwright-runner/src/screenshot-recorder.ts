@@ -6,6 +6,7 @@ import { failure, type BrowserContext, type Page } from '@flashwright/core';
 import { runnerIntegration } from '@flashwright/core/runner-integration';
 import type { TestInfo } from 'flashwright-upstream-runner/test';
 import type { ScreenshotPolicy } from './screenshot-policy.js';
+import { ArtifactErrors } from './artifact-errors.js';
 
 interface PinnedTestInfo extends TestInfo {
   _onDidFinishTestFunctionCallbacks: Set<() => Promise<void>>;
@@ -53,9 +54,7 @@ class ScreenshotRecorder {
   private captureCount = 0;
   private capturedBytes = 0;
   private captureTail: Promise<void> = Promise.resolve();
-  private captureErrorCount = 0;
-  private readonly captureErrors: string[] = [];
-  private errorAttachment: { name: string; contentType: string; body: Buffer } | undefined;
+  private readonly errors = new ArtifactErrors('screenshot-error', true);
   private finished = false;
   private readonly afterTestFunction = async () => { await this.captureAtFinish(); };
 
@@ -136,17 +135,7 @@ class ScreenshotRecorder {
   }
 
   private captureError(error: unknown): void {
-    // Like pinned screenshot collection, a failed capture does not replace the test outcome.
-    // Keep an explicit diagnostic instead of advertising a missing/truncated image as successful.
-    const message = error instanceof Error ? error.stack ?? `${error.name}: ${error.message}` : String(error);
-    ++this.captureErrorCount;
-    if (this.captureErrors.length < 16) this.captureErrors.push(message.slice(0, 4096));
-    if (!this.errorAttachment) {
-      this.errorAttachment = { name: 'screenshot-error', contentType: 'text/plain', body: Buffer.alloc(0) };
-      this.testInfo.attachments.push(this.errorAttachment);
-    }
-    const omitted = this.captureErrorCount - this.captureErrors.length;
-    this.errorAttachment.body = Buffer.from(this.captureErrors.join('\n\n') + (omitted ? `\n\n${omitted} additional screenshot errors omitted.` : ''));
+    this.errors.record(error);
   }
 
   private async capturePage(page: Page, temporary: boolean, deadline: number): Promise<void> {
@@ -192,6 +181,7 @@ class ScreenshotRecorder {
         try { await rm(await this.temporaryDirectory, { recursive: true, force: true }); }
         catch (error) { this.captureError(error); }
       }
+      this.errors.publish(this.testInfo);
     }
   }
 }

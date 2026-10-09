@@ -465,6 +465,11 @@
       "checkpoint": "compatibility/evidence/runner-adoption-checkpoint-2026-10-09.json",
       "scope": "Private version-6 synchronous journal initialization and earliest-instance adapter;39 focused groups,20 journal and5 adapter controls per runtime,168 attempt pairs across all8 policy spellings,42 paired retained archives,1458 matching non-clock records and228 exact resources. Original pinned event arrays remain empty.",
       "limitations": "Automatic policies remain disabled. Actual runner corpus uses a test-only finalizer; production final-stop coordination, library/API enrollment and aggregate capture budgets remain open."
+    },
+    "runnerTraceFinalizer": {
+      "checkpoint": "compatibility/evidence/runner-finalizer-checkpoint-2026-10-09.json",
+      "scope": "Private journal final-stop owner and corrected screenshot diagnostic publication; 24 isolated focused groups, 8 finalizer controls per runtime, 168 all-policy attempt pairs, 36 actual/packed fault attempts and 108 retained ZIP CRC checks. Reporter diagnostics and trace resources agree; 12 tarballs match 864 frozen compiled entries.",
+      "limitations": "Public automatic policies remain disabled. Library/API enrollment, aggregate capture admission, manual-control collisions and full timeout/interruption integration remain open. Latest full core remains 126 groups."
     }
   },
   "testSources": [
@@ -672,7 +677,11 @@
     "compatibility/m2/runner-trace-adoption/fixtures.cjs",
     "compatibility/m2/runner-trace-adoption/adoption.spec.cjs",
     "compatibility/m2/runner-trace-adoption/early-failure.spec.cjs",
-    "compatibility/m2/runner-trace-adoption/playwright.config.cjs"
+    "compatibility/m2/runner-trace-adoption/playwright.config.cjs",
+    "tools/test-runner-trace-finalizer.mjs",
+    "tools/run-runner-trace-finalizer-tests.mjs",
+    "compatibility/m2/runner-trace-finalizer/finalizer.spec.cjs",
+    "compatibility/m2/runner-trace-finalizer/playwright.config.cjs"
   ],
   "limitations": [
     "Platform packages are private local tarballs under provisional names; registry-backed acquisition and browser installation tooling remain open. The explicit development driver override remains available.",
