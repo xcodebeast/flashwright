@@ -334,6 +334,46 @@ async fn type_text(
 }
 
 impl Engine {
+    /// Insert one complete native text payload into the browser's current focus and selection.
+    pub(crate) async fn insert_page_text(
+        &self,
+        parameters: Value,
+        operation: &Operation,
+    ) -> Result<Value, ErrorRecord> {
+        let method = "keyboard.insertText";
+        validate_keys(method, &parameters, &["page", "textUnits"])?;
+        let units: Vec<u16> = parse(method, parameters["textUnits"].clone())?;
+        let text = typing_text(&units, method)?;
+        let page = self.page(identifier(&parameters, "page", method)?, method)?;
+        let context = self.context(&page.context_identifier, method)?;
+        let browser = self.browser(&context.browser_identifier, method)?;
+        let _input_lock = operation
+            .wait(
+                page.state
+                    .while_alive(method, async { Ok(page.state.native_input.lock().await) }),
+            )
+            .await?;
+        self.capture_snapshot_phase(
+            identifier(&parameters, "page", method)?,
+            &page,
+            recording::SnapshotPhase::Input,
+            None,
+            operation,
+        )
+        .await;
+        dispatch_input(
+            &page,
+            &browser,
+            "Input.insertText",
+            json!({ "text": text }),
+            operation,
+            method,
+        )
+        .await
+        .result?;
+        Ok(Value::Null)
+    }
+
     /// Page typing holds native input ownership for the whole sequence without changing focus.
     pub(crate) async fn type_page_text(
         &self,

@@ -151,6 +151,7 @@ pub const CAPABILITIES: &[&str] = &[
     "diagnostics.pageSnapshot",
     "keyboard.press",
     "keyboard.type",
+    "keyboard.insertText",
     "frame.waitForFunction",
 ];
 
@@ -484,6 +485,7 @@ impl Engine {
             }
             "keyboard.press" => self.press_page_key(parameters, operation).await,
             "keyboard.type" => self.type_page_text(parameters, operation).await,
+            "keyboard.insertText" => self.insert_page_text(parameters, operation).await,
             "page.evaluate" | "frame.evaluate" | "handle.evaluate" => self
                 .evaluate(method, parameters, operation)
                 .await

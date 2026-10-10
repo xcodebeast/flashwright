@@ -1,0 +1,25 @@
+// client.insertText
+async insertText(text2) {
+        await this._page._channel.keyboardInsertText({ text: text2 });
+      }
+
+// dispatcher.keyboardInsertText
+async keyboardInsertText(params2, progress2) {
+        await this._page.keyboard.apiInsertText(progress2, params2.text);
+      }
+
+// keyboard.apiInsertText
+async apiInsertText(progress2, text2) {
+        await progress2.race(this._page.instrumentation.onBeforeInputAction(this._page, progress2.metadata));
+        await this.insertText(progress2, text2);
+      }
+
+// keyboard.insertText
+async insertText(progress2, text2) {
+        await this._raw.sendText(progress2, text2);
+      }
+
+// chromium.sendText
+async sendText(progress2, text2) {
+        await progress2.race(this._client.send("Input.insertText", { text: text2 }));
+      }

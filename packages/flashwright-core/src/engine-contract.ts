@@ -16,7 +16,7 @@ export const requiredCapabilities = [
   'context.trace.filmstrip.seal',
   'context.trace.filmstrip.dispose',
   'context.trace.filmstrip.take',
-  'locator.run', 'assertion.run', 'keyboard.press', 'keyboard.type',
+  'locator.run', 'assertion.run', 'keyboard.press', 'keyboard.type', 'keyboard.insertText',
   'frame.waitForSelector',
   'frame.waitForFunction',
   'frame.setInputFiles', 'elementHandle.setInputFiles',

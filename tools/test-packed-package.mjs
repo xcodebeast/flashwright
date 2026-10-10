@@ -138,6 +138,10 @@ try {
   await page.keyboard.type('é😃');
   assert.equal(await page.getByLabel('Name').inputValue(), 'zA+é😃');
   await page.getByLabel('Name').selectText();
+  await page.keyboard.insertText('packed insertioné😃');
+  assert.equal(await page.getByLabel('Name').inputValue(), 'packed insertioné😃');
+  await page.getByLabel('Name').fill('zA+é😃');
+  await page.getByLabel('Name').selectText();
   const selectedName = await page.getByLabel('Name').elementHandle();
   assert.equal(await selectedName.evaluate(element => element.selectionEnd), 'zA+é😃'.length);
   await selectedName.scrollIntoViewIfNeeded();
@@ -214,6 +218,13 @@ async function example(): Promise<number> {
     // @ts-expect-error Download policy preserves boolean option types.
     await browser.newContext({ acceptDownloads: 'false' });
     const page: Page = await context.newPage();
+    const insertedText: void = await page.keyboard.insertText('packedé😃');
+    await page.keyboard.insertText('');
+    // @ts-expect-error Native text insertion accepts strings only.
+    await page.keyboard.insertText(42);
+    // @ts-expect-error Native text insertion has no delay/timeout option object.
+    await page.keyboard.insertText('text', { delay: 1 });
+    void insertedText;
     const download: import('flashwright').Download = await page.waitForEvent('download', { predicate: received => received.suggestedFilename() === 'packed.bin' });
     const downloadPage: Page = download.page();
     const downloadURL: string = download.url();

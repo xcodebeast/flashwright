@@ -1,7 +1,27 @@
 //! Shared native input dispatch, page ownership and action/navigation completion.
 
 use super::*;
+use flashwright_browser::connection::Command;
 use flashwright_protocol::InputDelivery;
+
+#[cfg(test)]
+mod tests;
+
+/// Cancellation cannot release the native credit for input whose dispatch has started.
+fn retain_pending_reply(mut command: Command) {
+    if command.browser_reply_received()
+        || command.prevent_dispatch()
+        || command.try_response().is_some()
+    {
+        return;
+    }
+    tokio::spawn(settle_pending_reply(command));
+}
+
+async fn settle_pending_reply(mut command: Command) {
+    // Logical page loss does not prove that its native input command has settled.
+    let _ = command.response().await;
+}
 
 pub(crate) struct InputDispatch {
     pub result: Result<(), ErrorRecord>,
@@ -11,6 +31,43 @@ pub(crate) struct InputDispatch {
 pub(crate) struct InputSequenceDispatch {
     pub result: Result<(), ErrorRecord>,
     pub deliveries: Vec<InputDelivery>,
+}
+
+/// Both input paths classify cancellation and retain the original unsettled reply identically.
+async fn complete_input_command(
+    page: &Page,
+    mut command: Command,
+    operation: &Operation,
+    public_method: &str,
+    previous_failure: Option<&ErrorRecord>,
+) -> InputDispatch {
+    let result = match previous_failure {
+        Some(error) => Err(error.clone()),
+        None => {
+            operation
+                .wait(page.state.while_alive(public_method, command.response()))
+                .await
+        }
+    };
+    let delivery = if result.is_ok() {
+        InputDelivery::Acknowledged
+    } else if command.prevent_dispatch() {
+        InputDelivery::NotDispatched
+    } else if matches!(command.try_response(), Some(Ok(_))) {
+        InputDelivery::Acknowledged
+    } else {
+        InputDelivery::Uncertain
+    };
+    operation.record_input_delivery(delivery);
+    retain_pending_reply(command);
+    InputDispatch {
+        delivery,
+        result: result.map(|_| ()).map_err(|mut error| {
+            error.method = public_method.into();
+            error.input_delivery = error.input_delivery.max(operation.input_delivery());
+            error
+        }),
+    }
 }
 
 /// Queue ordered native input before awaiting acknowledgements. After an error,
@@ -30,7 +87,7 @@ pub(crate) async fn dispatch_input_sequence(
             .connection
             .start_commands(method, parameters, Some(&page.session_identifier))
     });
-    let mut commands = match commands {
+    let commands = match commands {
         Ok(commands) => commands,
         Err(mut error) => {
             error.method = public_method.into();
@@ -42,27 +99,12 @@ pub(crate) async fn dispatch_input_sequence(
         }
     };
     let mut failure: Option<ErrorRecord> = None;
-    for (command, delivery) in commands.iter_mut().zip(&mut deliveries) {
-        let result = match &failure {
-            Some(error) => Err(error.clone()),
-            None => {
-                operation
-                    .wait(page.state.while_alive(public_method, command.response()))
-                    .await
-            }
-        };
-        *delivery = if result.is_ok() {
-            InputDelivery::Acknowledged
-        } else if command.prevent_dispatch() {
-            InputDelivery::NotDispatched
-        } else if matches!(command.try_response(), Some(Ok(_))) {
-            InputDelivery::Acknowledged
-        } else {
-            InputDelivery::Uncertain
-        };
-        operation.record_input_delivery(*delivery);
+    for (command, delivery) in commands.into_iter().zip(&mut deliveries) {
+        let dispatch =
+            complete_input_command(page, command, operation, public_method, failure.as_ref()).await;
+        *delivery = dispatch.delivery;
         if failure.is_none() {
-            failure = result.err();
+            failure = dispatch.result.err();
         }
     }
     let result = match failure {
@@ -91,34 +133,18 @@ pub(crate) async fn dispatch_input(
             .connection
             .start_command(method, parameters, Some(&page.session_identifier))
     });
-    let mut command = match command {
+    let command = match command {
         Ok(command) => command,
-        Err(error) => {
+        Err(mut error) => {
+            error.method = public_method.into();
+            error.input_delivery = error.input_delivery.max(operation.input_delivery());
             return InputDispatch {
                 result: Err(error),
                 delivery: InputDelivery::NotDispatched,
             };
         }
     };
-    let result = operation
-        .wait(page.state.while_alive(public_method, command.response()))
-        .await;
-    let delivery = if result.is_ok() {
-        InputDelivery::Acknowledged
-    } else if command.prevent_dispatch() {
-        InputDelivery::NotDispatched
-    } else {
-        InputDelivery::Uncertain
-    };
-    operation.record_input_delivery(delivery);
-    InputDispatch {
-        delivery,
-        result: result.map(|_| ()).map_err(|mut error| {
-            error.method = public_method.into();
-            error.input_delivery = error.input_delivery.max(operation.input_delivery());
-            error
-        }),
-    }
+    complete_input_command(page, command, operation, public_method, None).await
 }
 
 impl Page {
