@@ -39,7 +39,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const report = {
   schemaVersion: 1, status: 'running', reference: '1.60.0', ...runtimeMetadata,
   platform: process.platform, architecture: process.arch, checks: [], outcomes: {}, failures: [], traces: {},
-  scope: 'Lazy FrameLocator paths on the same full Chromium executable: characterized absence/cardinality/composition, same-process nesting, native input, uploads, main-world/captured-target ownership, retries, closure and traced forms. No out-of-process, performance, release or visual-fidelity claim.',
+  scope: 'Lazy FrameLocator paths on the same pinned stock Chromium executable: characterized absence/cardinality/composition, same-process nesting, native input, uploads, main-world/captured-target ownership, retries, closure and traced forms. No out-of-process, performance, release or visual-fidelity claim.',
 };
 const fulfilled = (name, operation, value = null) => ({ name, operation, expected: { status: 'fulfilled', value } });
 const rejected = (name, operation, category, validateError) => ({ name, operation, expected: { status: 'rejected', category }, validateError });
