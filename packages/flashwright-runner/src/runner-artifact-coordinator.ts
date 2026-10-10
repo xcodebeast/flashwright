@@ -10,11 +10,16 @@ import type { ScreenshotPolicy } from './screenshot-policy.js';
 type Recording = Awaited<ReturnType<typeof runnerIntegration.startTraceRecordingWithActions>>;
 type Chunk = NonNullable<ReturnType<typeof runnerIntegration.currentTraceChunk>>;
 type Archive = Awaited<ReturnType<Chunk['takeArchive']>>;
-type CreationOwner = ReturnType<Parameters<typeof runnerIntegration.installArtifactContextLifecycle>[1]['beginContextCreation']>;
+type RequestContext = Parameters<typeof runnerIntegration.requestTraceOwner>[1];
+interface CreationOwner {
+  didCreateContext(context: object, tracing: object): Promise<void>;
+  complete(): void;
+}
 interface TraceOptions { screenshots: boolean; snapshots: boolean }
 interface PinnedTestInfo extends TestInfo { _tracing: { traceOptions(): TraceOptions | undefined } }
 interface RecordingOwner {
-  readonly context: BrowserContext;
+  readonly context: object;
+  readonly tracing: object;
   readonly options: TraceOptions;
   controls?: Recording;
   capture?: ContextCapture;
@@ -31,9 +36,11 @@ const maximumWorkerRecordings = 128;
 export class RunnerArtifactCoordinator {
   readonly contexts = new Set<BrowserContext>();
   private readonly attempts = new WeakMap<TestInfo, TraceAttempt>();
-  private readonly recordings = new Map<BrowserContext, RecordingOwner>();
-  private readonly activeCaptures = new WeakMap<BrowserContext, ContextCapture>();
+  private readonly requestContexts = new Set<RequestContext>();
+  private readonly recordings = new Map<object, RecordingOwner>();
+  private readonly activeCaptures = new WeakMap<object, ContextCapture>();
   private registration: ReturnType<typeof runnerIntegration.installArtifactContextLifecycle> | undefined;
+  private requestRegistration: ReturnType<typeof runnerIntegration.installArtifactRequestLifecycle> | undefined;
   private current: TraceAttempt | undefined;
   private screenshots: ScreenshotScopes | undefined;
   private outstandingCaptures = 0;
@@ -64,8 +71,10 @@ export class RunnerArtifactCoordinator {
     }
     try {
       if (!this.registration) this.observeContexts();
-      else for (const context of this.contexts) attempt.enrollExisting(context);
-      this.readiness = (async () => { await this.registration?.ready; await attempt.ready(); })();
+      else for (const context of this.contexts) attempt.enrollExisting(context, context.tracing);
+      if (!this.requestRegistration) this.observeRequests();
+      else for (const context of this.requestContexts) attempt.enrollExisting(context, runnerIntegration.requestTraceOwner(12, context));
+      this.readiness = (async () => { await this.registration?.ready; await this.requestRegistration?.ready; await attempt.ready(); })();
     } catch (error) { attempt.fail(error); this.readiness = Promise.resolve(); }
     void this.readiness.catch(error => attempt.fail(error));
     return true;
@@ -73,6 +82,7 @@ export class RunnerArtifactCoordinator {
 
   async ready(): Promise<void> {
     await this.registration?.ready.catch(error => this.current?.fail(error));
+    await this.requestRegistration?.ready.catch(error => this.current?.fail(error));
     await this.readiness.catch(error => this.current?.fail(error));
   }
 
@@ -90,7 +100,7 @@ export class RunnerArtifactCoordinator {
   }
 
   /** Reserve before native startup; failed cleanup keeps this original recording slot. */
-  async recording(context: BrowserContext, capture: ContextCapture, options: TraceOptions): Promise<RecordingOwner> {
+  async recording(context: object, tracing: object, capture: ContextCapture, options: TraceOptions): Promise<RecordingOwner> {
     if (this.retiring) throw failure('ResourceLimitError', 'runner.tracing', 'worker artifact capture is retiring');
     const previous = this.recordings.get(context);
     if (previous) {
@@ -105,7 +115,7 @@ export class RunnerArtifactCoordinator {
       if (this.retiring) throw failure('ResourceLimitError', 'runner.tracing', 'worker artifact capture is retiring');
     }
     if (this.recordings.size >= maximumWorkerRecordings) throw failure('ResourceLimitError', 'runner.tracing', 'worker exceeds 128 live or retiring trace recordings');
-    const recording: RecordingOwner = { context, capture, lastCapture: capture, options: { ...options } };
+    const recording: RecordingOwner = { context, tracing, capture, lastCapture: capture, options: { ...options } };
     this.recordings.set(context, recording);
     this.activeCaptures.set(context, capture);
     return recording;
@@ -139,7 +149,7 @@ export class RunnerArtifactCoordinator {
         const owner = this.current?.claim();
         return {
           didCreateContext: async context => {
-            if (owner) { this.observe(context); await owner.didCreateContext(context); }
+            if (owner) { this.observe(context); await owner.didCreateContext(context, context.tracing); }
             else this.observeUnclaimed(context);
           },
           complete: () => owner?.complete(),
@@ -148,18 +158,51 @@ export class RunnerArtifactCoordinator {
       didCreateUnclaimedContext: context => this.observeUnclaimed(context),
       willCloseContext: async (context, source) => {
         if (source !== 'browser') await this.screenshots?.beforeContextClose(context);
-        const capture = this.activeCaptures.get(context);
-        if (capture) await capture.beforeContextClose();
-        else {
-          const recording = this.recordings.get(context);
-          if (recording) await this.retireRecording(recording).catch(error => this.current?.fail(error));
-        }
+        await this.beforeOwnerClose(context);
       },
     });
   }
 
+  private observeRequests(): void {
+    this.requestRegistration = runnerIntegration.installArtifactRequestLifecycle(12, {
+      beginRequestCreation: () => {
+        const owner = this.current?.claim();
+        return {
+          didCreateContext: async context => {
+            this.requestContexts.add(context);
+            if (owner) await owner.didCreateContext(context, runnerIntegration.requestTraceOwner(12, context));
+            else this.failUnclaimedCreation();
+          },
+          complete: () => owner?.complete(),
+        };
+      },
+      didCreateUnclaimedContext: context => {
+        this.requestContexts.add(context);
+        this.failUnclaimedCreation();
+      },
+      willDisposeContext: context => this.beforeOwnerClose(context),
+      didCloseContext: async context => {
+        this.requestContexts.delete(context);
+        await this.settleClosedOwner(context);
+      },
+    });
+  }
+
+  private async beforeOwnerClose(context: object): Promise<void> {
+    const capture = this.activeCaptures.get(context);
+    if (capture) await capture.beforeContextClose();
+    else {
+      const recording = this.recordings.get(context);
+      if (recording) await this.retireRecording(recording).catch(error => recording.lastCapture.failCleanup(error));
+    }
+  }
+
   private observeUnclaimed(context: BrowserContext): void {
     this.observe(context);
+    this.failUnclaimedCreation();
+  }
+
+  private failUnclaimedCreation(): void {
     if (this.current?.active) this.current.fail(failure('UnsupportedFeatureError', 'runner.tracing', 'context creation began before trace ownership; await module context creation before tests or create the context in a fixture'));
   }
 
@@ -168,14 +211,19 @@ export class RunnerArtifactCoordinator {
     this.contexts.add(context);
     context.once('close', () => {
       this.contexts.delete(context);
-      const recording = this.recordings.get(context);
-      if (!recording) return;
-      recording.closedCleanup = runnerIntegration.settleClosedTraceCleanup(11, context.tracing).then(() => {
-        recording.capture?.didCloseContext();
-        if (this.recordings.get(context) === recording) this.recordings.delete(context);
-      });
-      void recording.closedCleanup.catch(error => recording.lastCapture.failCleanup(error));
+      void this.settleClosedOwner(context).catch(() => {});
     });
+  }
+
+  private settleClosedOwner(context: object): Promise<void> {
+    const recording = this.recordings.get(context);
+    if (!recording) return Promise.resolve();
+    recording.closedCleanup ??= runnerIntegration.settleClosedTraceCleanup(11, recording.tracing).then(() => {
+      recording.capture?.didCloseContext();
+      if (this.recordings.get(context) === recording) this.recordings.delete(context);
+    });
+    void recording.closedCleanup.catch(error => recording.lastCapture.failCleanup(error));
+    return recording.closedCleanup;
   }
 
   private async retireIdleRecordings(): Promise<void> {
@@ -186,10 +234,12 @@ export class RunnerArtifactCoordinator {
 
   async dispose(): Promise<void> {
     this.retiring = true;
-    try { await this.registration?.dispose(); } catch (error) { this.current?.fail(error); }
+    const registrations = await Promise.allSettled([this.registration?.dispose(), this.requestRegistration?.dispose()]);
+    for (const result of registrations) if (result.status === 'rejected') this.current?.fail(result.reason);
     await Promise.all([...this.recordings.values()].map(recording => recording.capture?.beforeContextClose()));
     try { await this.retireIdleRecordings(); } catch (error) { this.current?.fail(error); }
     this.contexts.clear();
+    this.requestContexts.clear();
     this.current = undefined;
   }
 }
@@ -220,13 +270,13 @@ class TraceAttempt implements RunnerTraceCollection {
     }
     const capture = new ContextCapture(this);
     this.captures.push(capture);
-    return { didCreateContext: context => capture.start(context), complete: () => capture.completeClaim() };
+    return { didCreateContext: (context, tracing) => capture.start(context, tracing), complete: () => capture.completeClaim() };
   }
 
-  enrollExisting(context: BrowserContext): void {
+  enrollExisting(context: object, tracing: object): void {
     const claim = this.claim();
     if (!claim) return;
-    void claim.didCreateContext(context).finally(() => claim.complete());
+    void claim.didCreateContext(context, tracing).finally(() => claim.complete());
   }
 
   async ready(): Promise<void> { await Promise.all(this.captures.map(capture => capture.claimSettled)); }
@@ -274,22 +324,23 @@ class ContextCapture {
   completeClaim(): void { this.resolveClaim(); }
   failCleanup(error: unknown): void { this.cleanupFailure ??= { error }; this.attempt.fail(error); }
   didCloseContext(): void {
+    if (this.chunk) this.attempt.fail(failure('TargetClosedError', 'runner.tracing', 'context closed before its original trace chunk could be sealed'));
     this.chunk = undefined;
     if (this.recording) this.attempt.coordinator.finishChunk(this.recording, this);
   }
 
-  start(context: BrowserContext): Promise<void> {
-    this.startup = this.startOwned(context);
+  start(context: object, tracing: object): Promise<void> {
+    this.startup = this.startOwned(context, tracing);
     return this.startup;
   }
 
-  private async startOwned(context: BrowserContext): Promise<void> {
+  private async startOwned(context: object, tracing: object): Promise<void> {
     if (!this.attempt.active) return;
     try {
-      const recording = await this.attempt.coordinator.recording(context, this, this.attempt.options);
+      const recording = await this.attempt.coordinator.recording(context, tracing, this, this.attempt.options);
       this.recording = recording;
       if (recording.controls) {
-        const startup = runnerIntegration.beginTraceRecordingChunk(11, context.tracing, recording.controls.recording, this.attempt.observer);
+        const startup = runnerIntegration.beginTraceRecordingChunk(11, tracing, recording.controls.recording, this.attempt.observer);
         this.startupCleanup = startup.cleanup;
         try { this.chunk = await startup.ready; }
         catch (error) {
@@ -298,7 +349,7 @@ class ContextCapture {
         }
       }
       else {
-        const startup = runnerIntegration.beginTraceRecordingWithActions(11, context.tracing, { ...this.attempt.options, sources: false }, this.attempt.observer);
+        const startup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { ...this.attempt.options, sources: false }, this.attempt.observer);
         this.startupCleanup = startup.cleanup;
         try {
           const started = await startup.ready;
@@ -324,7 +375,7 @@ class ContextCapture {
         this.attempt.coordinator.finishChunk(this.recording!, this);
       } catch (error) {
         this.attempt.fail(error);
-        this.chunkCleanup = runnerIntegration.discardTraceChunk(11, this.recording!.context.tracing, chunk).then(() => {
+        this.chunkCleanup = runnerIntegration.discardTraceChunk(11, this.recording!.tracing, chunk).then(() => {
           this.chunk = undefined;
           this.attempt.coordinator.finishChunk(this.recording!, this);
         });
@@ -360,7 +411,7 @@ class ContextCapture {
         await this.chunkCleanup;
         await this.recording?.closedCleanup;
         if (this.chunk) {
-          await runnerIntegration.discardTraceChunk(11, this.recording!.context.tracing, this.chunk);
+          await runnerIntegration.discardTraceChunk(11, this.recording!.tracing, this.chunk);
           this.chunk = undefined;
           this.attempt.coordinator.finishChunk(this.recording!, this);
         }

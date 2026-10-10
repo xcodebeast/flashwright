@@ -26,7 +26,7 @@ export interface TracingStopOptions { path?: string }
 export type TraceBackend = 'browser' | 'api';
 interface APIEntrySlot { attempt: APITraceAttempt; resolve(snapshot: Record<string, unknown>): void }
 interface APIRequestBody { hash: string; size: number; resource: Promise<TraceResource>; formParams?: { name: string; value: string }[] }
-interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiRequestBodies?: Map<string, APIRequestBody>; apiPendingRequestBytes?: number; apiResourceTail?: Promise<void>; apiDispatchCancellation?: AbortController; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
+interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiRequestBodies?: Map<string, APIRequestBody>; apiPendingRequestBytes?: number; apiResourceTail?: Promise<void>; apiDispatchCancellation?: AbortController; apiRetirement?: Promise<void>; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
 interface StartedRecording { recording: RunnerTraceRecording; chunk: RunnerTraceChunk }
 type TraceChunkDestination = { kind: 'file'; path: string | undefined } | { kind: 'runner'; signal: AbortSignal | undefined };
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; capture: TraceCaptureMode; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
@@ -581,9 +581,17 @@ export class Tracing {
 
   private async retireCollectors(chunk: TraceChunk, signal?: AbortSignal): Promise<void> {
     await this.drainCompletions(chunk);
+    let apiRetirementFailure: { error: unknown } | undefined;
     if (this.backend === 'api' && !this.ownerIsClosed) {
-      try { await this.client.request('apiRequest.traceBody.retire', { context: this.context, generation: chunk.identifier }, 2000); }
-      catch (error) { chunk.writer.fail(error); }
+      chunk.apiRetirement ??= this.client.request('apiRequest.traceBody.retire', { context: this.context, generation: chunk.identifier }, 2000)
+        .then(() => {});
+      try { await chunk.apiRetirement; }
+      catch (error) {
+        // Admission can fail before the native fence exists. Cleanup must retry or quarantine.
+        delete chunk.apiRetirement;
+        chunk.writer.fail(error);
+        apiRetirementFailure = { error };
+      }
     }
     for (const pending of chunk.apiPendingResponses?.values() ?? []) pending.resolve(apiTraceBodySnapshot(pending.attempt, undefined, 'response was not published before trace seal'));
     chunk.apiPendingResponses?.clear();
@@ -599,6 +607,7 @@ export class Tracing {
     const rejected = results.find(result => result.status === 'rejected');
     // Failed content prevents export, but does not make settled native retirement uncertain.
     if (rejected?.status === 'rejected') chunk.writer.fail(rejected.reason);
+    if (apiRetirementFailure) throw apiRetirementFailure.error;
   }
 
   /** Compose every cleanup owner; a newer closure cannot hide an older pending export. */
