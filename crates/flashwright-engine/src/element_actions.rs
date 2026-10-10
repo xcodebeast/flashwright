@@ -177,12 +177,12 @@ impl Engine {
                 method: &settings.method, group: self.identifier("element-action-group"), uses_object_group: true };
             let result = async {
                 let object_identifier = if let Some(handle) = &settings.handle {
-                    let mut command = browser.connection.start_raw_command("DOM.describeNode", json!({ "objectId": handle.object_identifier }), Some(&page.session_identifier))?;
+                    let mut command = browser.connection.start_raw_command("DOM.describeNode", json!({ "objectId": handle.object_identifier }), Some(&handle.context.session_identifier))?;
                     let response = allocation.wait(&mut command, false).await?;
                     let described: DescribedNode = serde_json::from_str(response.get()).map_err(|error| invalid(&settings.method, &error.to_string()))?;
                     let mut command = browser.connection.start_raw_command("DOM.resolveNode", json!({
                         "backendNodeId": described.node.backend_node_id, "executionContextId": realm.context.identifier, "objectGroup": allocation.group,
-                    }), Some(&page.session_identifier))?;
+                    }), Some(&realm.context.session_identifier))?;
                     let response = allocation.wait(&mut command, false).await?;
                     let resolved: ResolvedNode = serde_json::from_str(response.get()).map_err(|error| invalid(&settings.method, &error.to_string()))?;
                     if resolved.object.subtype.as_deref() != Some("node") { return Err(detached(&settings.method)); }
@@ -193,7 +193,7 @@ impl Engine {
                         "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveLocatorElement(request, deadline); }",
                         "arguments": [{ "value": selector.request }, { "value": operation.renderer_deadline() }],
                         "objectGroup": allocation.group, "returnByValue": false,
-                    }), Some(&page.session_identifier))?;
+                    }), Some(&realm.context.session_identifier))?;
                     let response = allocation.wait(&mut command, true).await?;
                     let value = allocation.evaluation_value(&response).await?;
                     if value.primitive(&settings.method)? == Some(json!({ "kind": "boolean", "value": false })) { return Ok(Value::Bool(false)); }
@@ -326,7 +326,7 @@ async fn prepare_action(
         "functionDeclaration": "function(action, force, deadline, token) { return globalThis.__flashwrightLocatorRuntime.prepareElementAction(this, action, force, deadline, token); }",
         "arguments": [{ "value": settings.action }, { "value": settings.force }, { "value": allocation.operation.renderer_deadline() }, { "value": token }],
         "objectGroup": allocation.group, "returnByValue": true, "awaitPromise": true, "userGesture": true,
-    }), Some(&allocation.page.session_identifier))?;
+    }), Some(&allocation.context.session_identifier))?;
     let result = allocation
         .operation
         .wait(
@@ -350,7 +350,7 @@ async fn prepare_action(
                     "uniqueContextId": realm.context.unique_identifier,
                     "functionDeclaration": "function(token) { return globalThis.__flashwrightLocatorRuntime.cancelElementAction(token); }",
                     "arguments": [{ "value": token }], "objectGroup": allocation.group, "returnByValue": true,
-                }), Some(&allocation.page.session_identifier))).await;
+                }), Some(&realm.context.session_identifier))).await;
                 let cancellation_completed = matches!(cancelled, Ok(Ok(_)));
                 if let Err(mut recovery) =
                     allocation.wait(&mut command, !cancellation_completed).await
@@ -389,7 +389,7 @@ async fn scroll_element(
     let mut command = allocation.browser.connection.start_command(
         "DOM.scrollIntoViewIfNeeded",
         json!({ "objectId": object_identifier }),
-        Some(&allocation.page.session_identifier),
+        Some(&allocation.context.session_identifier),
     )?;
     match allocation.wait(&mut command, false).await {
         Ok(_) => {

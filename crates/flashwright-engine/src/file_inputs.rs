@@ -349,12 +349,12 @@ async fn resolve_input(
         let mut command = allocation.browser.connection.start_raw_command(
             "DOM.describeNode",
             json!({"objectId": handle.object_identifier}),
-            Some(&allocation.page.session_identifier),
+            Some(&handle.context.session_identifier),
         )?;
         let response = allocation.wait(&mut command, false).await?;
         let described: DescribedNode = serde_json::from_str(response.get())
             .map_err(|error| invalid(allocation.method, &error.to_string()))?;
-        let mut command = allocation.browser.connection.start_raw_command("DOM.resolveNode", json!({"backendNodeId": described.node.backend_node_id, "executionContextId": realm.context.identifier, "objectGroup": allocation.group}), Some(&allocation.page.session_identifier))?;
+        let mut command = allocation.browser.connection.start_raw_command("DOM.resolveNode", json!({"backendNodeId": described.node.backend_node_id, "executionContextId": realm.context.identifier, "objectGroup": allocation.group}), Some(&realm.context.session_identifier))?;
         let response = allocation.wait(&mut command, false).await?;
         let resolved: ResolvedNode = serde_json::from_str(response.get())
             .map_err(|error| invalid(allocation.method, &error.to_string()))?;
@@ -366,7 +366,7 @@ async fn resolve_input(
         let mut command = allocation.browser.connection.start_command("Runtime.callFunctionOn", json!({
             "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": "function(selector, strict, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveElement(selector, strict, 'attached', deadline); }",
             "arguments": [{"value": selector}, {"value": request.strict}, {"value": allocation.operation.renderer_deadline()}], "objectGroup": allocation.group, "returnByValue": false,
-        }), Some(&allocation.page.session_identifier))?;
+        }), Some(&allocation.context.session_identifier))?;
         let response = allocation.wait(&mut command, true).await?;
         let element = allocation.evaluation_value(&response).await?;
         let Some(identifier) = element.object_id else {
@@ -378,7 +378,7 @@ async fn resolve_input(
     let mut command = allocation.browser.connection.start_command("Runtime.callFunctionOn", json!({
         "objectId": element, "functionDeclaration": "function(multiple, connected, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveFileInput(this, multiple, connected, deadline); }",
         "arguments": [{"value": request.files.count() > 1}, {"value": handle.is_none()}, {"value": allocation.operation.renderer_deadline()}], "objectGroup": allocation.group, "returnByValue": false,
-    }), Some(&allocation.page.session_identifier))?;
+    }), Some(&allocation.context.session_identifier))?;
     let response = allocation.wait(&mut command, true).await?;
     let element = allocation.evaluation_value(&response).await?;
     if let Some(identifier) = element.object_id {
@@ -410,7 +410,7 @@ async fn stage_payloads(
     };
     let mut command = allocation.browser.connection.start_command("Runtime.callFunctionOn", json!({
         "uniqueContextId": allocation.context.unique_identifier, "functionDeclaration": "function() { return globalThis.__flashwrightLocatorRuntime.createFileUpload(); }", "objectGroup": allocation.group, "returnByValue": false,
-    }), Some(&allocation.page.session_identifier))?;
+    }), Some(&allocation.context.session_identifier))?;
     let response = allocation.wait(&mut command, false).await?;
     check_exception(&response, allocation.method)?;
     let upload = response["result"]["objectId"]
@@ -444,7 +444,7 @@ async fn upload_call(
     arguments: Value,
 ) -> Result<(), ErrorRecord> {
     allocation.operation.check()?;
-    let mut command = allocation.browser.connection.start_command("Runtime.callFunctionOn", json!({"objectId": object, "functionDeclaration": function, "arguments": arguments, "objectGroup": allocation.group, "returnByValue": true}), Some(&allocation.page.session_identifier))?;
+    let mut command = allocation.browser.connection.start_command("Runtime.callFunctionOn", json!({"objectId": object, "functionDeclaration": function, "arguments": arguments, "objectGroup": allocation.group, "returnByValue": true}), Some(&allocation.context.session_identifier))?;
     let response = allocation.wait(&mut command, false).await?;
     check_exception(&response, allocation.method)
 }
@@ -464,7 +464,7 @@ async fn assign_files(
         let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
             "objectId": element, "functionDeclaration": "function(multiple, connected, deadline) { return globalThis.__flashwrightLocatorRuntime.validateFileInput(this, multiple, connected, deadline); }",
             "arguments": [{"value": files.count() > 1}, {"value": connected}, {"value": operation.renderer_deadline()}], "returnByValue": true,
-        }), Some(&page.session_identifier))?;
+        }), Some(&allocation.context.session_identifier))?;
         let response = allocation.wait(&mut command, false).await?;
         check_exception(&response, allocation.method)?;
         if !check_status(
@@ -480,13 +480,13 @@ async fn assign_files(
         browser.connection.start_command(
             "DOM.setFileInputFiles",
             json!({"objectId": element, "files": paths}),
-            Some(&page.session_identifier),
+            Some(&allocation.context.session_identifier),
         )?
     } else {
         browser.connection.start_command("Runtime.callFunctionOn", json!({
             "objectId": element, "functionDeclaration": "function(upload, connected, deadline) { return globalThis.__flashwrightLocatorRuntime.assignFileUpload(this, upload, connected, deadline); }",
             "arguments": [{"objectId": upload.unwrap()}, {"value": connected}, {"value": operation.renderer_deadline()}], "returnByValue": true, "userGesture": true,
-        }), Some(&page.session_identifier))?
+        }), Some(&allocation.context.session_identifier))?
     };
     let response = match allocation.wait(&mut command, true).await {
         Ok(response) => response,

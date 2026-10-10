@@ -245,7 +245,7 @@ impl Engine {
         let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
             "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": function, "arguments": arguments,
             "returnByValue": true, "awaitPromise": true,
-        }), Some(&page.session_identifier))?;
+        }), Some(&realm.context.session_identifier))?;
         match operation
             .wait(page.state.while_alive(METHOD, command.response()))
             .await
@@ -322,7 +322,7 @@ async fn cancel_resident_condition(
             "uniqueContextId": realm.context.unique_identifier,
             "functionDeclaration": "function(token) { return globalThis.__flashwrightLocatorRuntime.cancelAssertion(token); }",
             "arguments": [{ "value": token }], "returnByValue": true,
-        }), Some(&page.session_identifier)).await?;
+        }), Some(&realm.context.session_identifier)).await?;
         let cancellation = runtime_value(cancellation)?;
         if let Some(observation) = terminal_observation(&cancellation) { return Ok(Some(observation)); }
         // Null means the condition finished before cancellation. Its original terminal
