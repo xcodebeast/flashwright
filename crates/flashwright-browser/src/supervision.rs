@@ -89,6 +89,17 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         },
     ])?;
     let mut browser = command.spawn()?;
+    if crate::launch_audit::record_launch(
+        &command,
+        profile.path(),
+        parent.as_raw() as u32,
+        browser.id(),
+    )
+    .is_err()
+    {
+        // Audit failure invalidates measurement, never the guardian's existing cleanup ownership.
+        let _ = writeln!(std::io::stderr(), "flashwright:launch-audit unavailable");
+    }
     drop(command);
     let browser_group = Pid::from_raw(browser.id() as i32);
     if trace_ownership {
