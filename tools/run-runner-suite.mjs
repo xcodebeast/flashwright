@@ -8,13 +8,14 @@ import { identifyBrowser } from './browser-identity.mjs';
 import { dependencyManifest, hash } from './competitor-inputs.mjs';
 import { sourceManifest } from './source-manifest.mjs';
 import { renderRunnerSuiteAdmission, verifyRunnerSuite } from '../benchmarks/runner-suite-contract.mjs';
+import { verifyRunnerFailureDiagnostics } from '../benchmarks/runner-suite-diagnostics.mjs';
 
 assert.ok(process.argv[2], 'Usage: run-runner-suite.mjs NEW_OUTPUT_DIRECTORY playwright|flashwright [LAUNCH_INDEX]');
 const directory = resolve(process.argv[2]);
 const engine = process.argv[3];
 const launchIndex = Number(process.argv[4] ?? 0);
 assert.ok(['playwright', 'flashwright'].includes(engine) && process.argv.length <= 5);
-const configuration = JSON.parse(await readFile('benchmarks/configurations/baseline.json', 'utf8'));
+const configuration = JSON.parse(await readFile('benchmarks/configurations/runner-suite.json', 'utf8'));
 assert.ok(Number.isInteger(launchIndex) && launchIndex >= 0 && launchIndex < configuration.independentLaunches);
 for (const name of ['FLASHWRIGHT_BROWSER_PATH', 'FLASHWRIGHT_DRIVER_PATH']) assert.ok(process.env[name], `Set ${name}`);
 const runtime = process.env.FLASHWRIGHT_RUNNER_RUNTIME ?? process.execPath;
@@ -72,7 +73,9 @@ try {
   receipt.inputsUnchanged = true;
   const resources = JSON.parse(await readFile(join(directory, 'resources.json'), 'utf8'));
   const policy = JSON.parse(await readFile('crates/flashwright-browser/src/chromium-launch-policy.json', 'utf8'));
-  Object.assign(receipt, verifyRunnerSuite(report, resources, configuration, policy), { status: 'passed-runner-outcomes' });
+  const outcomes = verifyRunnerSuite(report, resources, configuration, policy);
+  const diagnosticAdmission = await verifyRunnerFailureDiagnostics(report, directory);
+  Object.assign(receipt, outcomes, { diagnosticAdmission, status: 'passed-runner-outcomes' });
   await writeFile(join(directory, 'table.md'), renderRunnerSuiteAdmission(report, receipt), { flag: 'wx' });
 } catch (error) { receipt.error = error.stack ?? String(error); }
 receipt.files = {};

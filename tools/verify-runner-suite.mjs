@@ -4,6 +4,7 @@ import { isAbsolute, join, normalize } from 'node:path';
 import { dependencyManifest, hash } from './competitor-inputs.mjs';
 import { sourceManifest } from './source-manifest.mjs';
 import { renderRunnerSuiteAdmission, verifyRunnerSuite } from '../benchmarks/runner-suite-contract.mjs';
+import { verifyRunnerFailureDiagnostics } from '../benchmarks/runner-suite-diagnostics.mjs';
 
 const directory = process.argv[2];
 assert.ok(directory && process.argv.length === 3, 'Usage: verify-runner-suite.mjs RETAINED_DIRECTORY');
@@ -59,10 +60,13 @@ assert.equal(inputs.runnerConfiguration.outputDir, join(resources.command[2], 't
 assert.deepEqual(inputs.runnerConfiguration.use, { headless: true, viewport: report.configuration.viewport,
   launchOptions: { executablePath: report.browser.executablePath }, trace: 'off', video: 'off', screenshot: 'off', actionTimeout: 5000, navigationTimeout: 10000 });
 assert.deepEqual((await read('project/suite-configuration.json')), { configuration: report.configuration, launchIndex: report.launchIndex });
-const configuration = JSON.parse(await readFile('benchmarks/configurations/baseline.json', 'utf8'));
+const configuration = JSON.parse(await readFile('benchmarks/configurations/runner-suite.json', 'utf8'));
 assert.deepEqual(launchInputs.configuration, configuration);
 const policy = JSON.parse(await readFile('crates/flashwright-browser/src/chromium-launch-policy.json', 'utf8'));
-const decision = verifyRunnerSuite(report, resources, configuration, policy);
+const decision = {
+  ...verifyRunnerSuite(report, resources, configuration, policy),
+  diagnosticAdmission: await verifyRunnerFailureDiagnostics(report, directory),
+};
 for (const [key, value] of Object.entries(decision)) assert.deepEqual(receipt[key], value, `Changed runner decision: ${key}`);
 assert.equal(await readFile(join(directory, 'table.md'), 'utf8'), renderRunnerSuiteAdmission(report, decision));
-console.log(`Verified ${report.engine} runner outcomes, preserved test bodies, raw reports, launch flags and resource cleanup. ${decision.actualRunnerFailures} intentional actual failures; no performance acceptance.`);
+console.log(`Verified ${report.engine} runner outcomes, preserved test bodies, original predicate diagnostics, raw reports, launch flags and resource cleanup. ${decision.actualRunnerFailures} intentional actual failures; no performance acceptance.`);

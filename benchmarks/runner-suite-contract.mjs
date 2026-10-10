@@ -124,11 +124,17 @@ export function verifyRunnerSuite(report, resources, configuration, policy) {
 
 /** A functional inventory keeps missing diagnostic work visible without publishing timing claims. */
 export function renderRunnerSuiteAdmission(report, receipt) {
+  const diagnosticAdmissionPassed = receipt.diagnosticAdmission?.status === 'passed-controlled-runner-diagnostics';
+  const completeWork = diagnosticAdmissionPassed ? 'Controlled fixture admitted, including original diagnostics'
+    : receipt.equivalentReferenceWork ? 'Reference baseline' : 'No: failure diagnostics differ or remain unverified';
   return [
     'Functional runner admission only. These are outcome counts, not comparative performance results.', '',
     '| Engine | Tests | Passed | Intentional actual failures | Workers | Browser launches | Error-context snapshots | Equivalent complete reference work |',
     '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
-    `| ${report.engine} | ${receipt.tests.length} | ${report.runner.stats.expected} | ${receipt.actualRunnerFailures} | ${receipt.workerCount} | ${receipt.browserLaunchCount} | ${receipt.failureDiagnostics.observedErrorContextCount} / ${receipt.failureDiagnostics.referenceErrorContextCount} | ${receipt.equivalentReferenceWork ? 'Reference baseline' : 'No: failure diagnostics differ or remain unverified'} |`, '',
-    receipt.failureDiagnostics.limitation, '', receipt.limitation, '',
+    `| ${report.engine} | ${receipt.tests.length} | ${report.runner.stats.expected} | ${receipt.actualRunnerFailures} | ${receipt.workerCount} | ${receipt.browserLaunchCount} | ${receipt.failureDiagnostics.observedErrorContextCount} / ${receipt.failureDiagnostics.referenceErrorContextCount} | ${completeWork} |`, '',
+    diagnosticAdmissionPassed
+      ? 'Every intentional failure retains the original predicate observation, useful assertion diagnostic, exact fixture accessibility tree and complete original source frame. Error wording differs. This supplemental content admission is scoped to this controlled fixture and does not establish general artifact parity or a speed gain.'
+      : receipt.failureDiagnostics.limitation,
+    '', receipt.limitation, '',
   ].join('\n');
 }
