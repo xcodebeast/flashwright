@@ -26,7 +26,7 @@ export interface TracingStopOptions { path?: string }
 export type TraceBackend = 'browser' | 'api';
 interface APIEntrySlot { attempt: APITraceAttempt; resolve(snapshot: Record<string, unknown>): void }
 interface APIRequestBody { hash: string; size: number; resource: Promise<TraceResource>; formParams?: { name: string; value: string }[] }
-interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiRequestBodies?: Map<string, APIRequestBody>; apiPendingRequestBytes?: number; apiResourceTail?: Promise<void>; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
+interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiRequestBodies?: Map<string, APIRequestBody>; apiPendingRequestBytes?: number; apiResourceTail?: Promise<void>; apiDispatchCancellation?: AbortController; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
 interface StartedRecording { recording: RunnerTraceRecording; chunk: RunnerTraceChunk }
 type TraceChunkDestination = { kind: 'file'; path: string | undefined } | { kind: 'runner'; signal: AbortSignal | undefined };
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; capture: TraceCaptureMode; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
@@ -68,11 +68,15 @@ export class Tracing {
   private async withAPITransfer<Result>(chunk: TraceChunk, capture: () => Promise<Result>): Promise<Result> {
     const deadline = performance.now() + 30000;
     for (;;) {
+      chunk.apiDispatchCancellation?.signal.throwIfAborted();
       if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing.api', 'original API request context closed during trace collection');
       if (chunk.writer.failure) throw chunk.writer.failure;
       const release = tryAcquireTraceTransfer(this.client, this.context);
       if (release) {
-        try { return await capture(); }
+        try {
+          chunk.apiDispatchCancellation?.signal.throwIfAborted();
+          return await capture();
+        }
         finally { release(); }
       }
       if (performance.now() >= deadline) throw failure('TimeoutError', 'tracing.api', 'shared trace transfer admission deadline exceeded');
@@ -175,7 +179,7 @@ export class Tracing {
       if (response.content.size > 16 * 1024 * 1024) throw failure('ResourceLimitError', 'tracing.api', 'API response body exceeds the trace resource limit');
       if (bodyLength !== response.content.size) throw failure('ProtocolError', 'tracing.api', 'API trace response metadata differs from the original wire body');
       const parameters = { context: this.context, response: responseIdentifier };
-      const bytes = await this.client.requestTraceAttachment('apiRequest.traceBody.take', parameters, 2000, bodyLength);
+      const bytes = await this.client.requestTraceAttachment('apiRequest.traceBody.take', parameters, 2000, bodyLength, undefined, chunk.apiDispatchCancellation?.signal);
       if (bytes.length !== response.content.size) throw failure('ProtocolError', 'tracing.api', 'API trace response body length changed after native publication');
       const alias = `${createHash('sha1').update(bytes).digest('hex')}.${apiTraceBodyExtension(pending.attempt)}`;
       const resource = await resources.captureBytes(bytes, requestNetworkSignal);
@@ -399,7 +403,7 @@ export class Tracing {
     const retirement = new Promise<void>(resolve => { retireCleanup = resolve; });
     void retirement.catch(() => {});
     this.chunkRetirements.set(runner, retirement);
-    const chunk: TraceChunk = { identifier, writer, runner, retireCleanup, ...(observer ? { actionObserver: observer } : {}), accepting: false };
+    const chunk: TraceChunk = { identifier, writer, runner, retireCleanup, ...(this.backend === 'api' ? { apiDispatchCancellation: new AbortController() } : {}), ...(observer ? { actionObserver: observer } : {}), accepting: false };
     try {
       if (this.nativeRecording) {
         chunk.nativeOwner = this.nativeRecording;
@@ -481,6 +485,8 @@ export class Tracing {
     this.seal(chunk);
     this.chunk = undefined;
     const cancellation = new AbortController();
+    const cancelAPIDispatch = () => chunk.apiDispatchCancellation?.abort(cancellation.signal.reason);
+    cancellation.signal.addEventListener('abort', cancelAPIDispatch, { once: true });
     const externalSignal = destination.kind === 'runner' ? destination.signal : undefined;
     const cancelFromRunner = () => cancellation.abort(externalSignal!.reason);
     externalSignal?.addEventListener('abort', cancelFromRunner, { once: true });
@@ -547,6 +553,7 @@ export class Tracing {
       await this.waitForCleanup(work.then(dispose, dispose));
       this.retiringChunk = undefined;
       this.exportCancellation = undefined;
+      cancellation.signal.removeEventListener('abort', cancelAPIDispatch);
       externalSignal?.removeEventListener('abort', cancelFromRunner);
     }
     try {
@@ -771,6 +778,7 @@ export class Tracing {
     this.retiringChunk?.snapshots?.ownerClosed();
     this.exportCancellation?.abort(failure('TargetClosedError', 'tracing', 'context closed during export'));
     const chunk = this.chunk;
+    chunk?.apiDispatchCancellation?.abort(failure('TargetClosedError', 'tracing.api', 'original request context closed'));
     this.chunk = undefined;
     const resources = this.resources;
     this.resources = undefined;

@@ -271,7 +271,7 @@ export class EngineClient {
   }
 
   /** timeout 0 means unbounded publicly; an exhausted finite budget is sent as zero remaining. */
-  async request(method: string, parameters: unknown, timeoutMilliseconds = 0, binary = false, inputBuffers?: readonly Buffer[], readinessOverride?: Promise<unknown>, expectedBinaryByteLength?: number): Promise<unknown> {
+  async request(method: string, parameters: unknown, timeoutMilliseconds = 0, binary = false, inputBuffers?: readonly Buffer[], readinessOverride?: Promise<unknown>, expectedBinaryByteLength?: number, dispatchSignal?: AbortSignal): Promise<unknown> {
     if (expectedBinaryByteLength !== undefined && (!binary || !Number.isSafeInteger(expectedBinaryByteLength) || expectedBinaryByteLength < 0)) throw failure('InvalidArgumentError', method, 'invalid expected binary byte length');
     const started = performance.now();
     const callSite = callerStack();
@@ -301,10 +301,12 @@ export class EngineClient {
       } finally { clearTimeout(readinessTimeout); }
       if (this.failure) throw this.failure;
       if (this.closed) throw failure('BrowserDisconnectedError', method, 'engine client is closed');
+      dispatchSignal?.throwIfAborted();
       const admissionLimit = operationAdmissionLimit(method, this.resourceLimits.pendingOperations);
       const admissionKind = isTraceCollection(method) ? 'collection' : method.startsWith('context.trace.') ? 'trace' : admissionLimit === this.resourceLimits.pendingOperations ? 'recovery' : 'ordinary';
       const admission = admissionKind === 'trace' || admissionKind === 'collection' ? this.traceAdmissionOwner() : this.traceAdmission;
       const dispatch = (): Promise<unknown> => {
+        dispatchSignal?.throwIfAborted();
         if (this.failure) throw this.failure;
         if (this.closed) throw failure('BrowserDisconnectedError', method, 'engine client is closed');
         if (this.pending.size >= admissionLimit) throw failure('ResourceLimitError', method, 'pending operation capacity is exhausted or reserved for recovery');
@@ -337,6 +339,12 @@ export class EngineClient {
           const transmission = this.send(message, () => {
             const pending = this.pending.get(identifier);
             if (!pending) return null;
+            if (dispatchSignal?.aborted) {
+              this.removePending(identifier);
+              clearTimeout(pending.timeout);
+              reject(dispatchSignal.reason);
+              return null;
+            }
             const remaining = timeoutMilliseconds === 0 ? null : Math.max(0, Math.floor(timeoutMilliseconds - (performance.now() - started)));
             if (remaining === 0) {
               this.removePending(identifier);
@@ -432,16 +440,17 @@ export class EngineClient {
   }
 
   /** A collection busy reply owns no bytes; retry only that explicit reply under one deadline. */
-  async requestTraceAttachment(method: string, parameters: Readonly<Record<string, unknown>>, timeoutMilliseconds: number, expectedByteLength: number, signal?: AbortSignal): Promise<Buffer> {
+  async requestTraceAttachment(method: string, parameters: Readonly<Record<string, unknown>>, timeoutMilliseconds: number, expectedByteLength: number, signal?: AbortSignal, dispatchSignal?: AbortSignal): Promise<Buffer> {
     if (!isTraceCollectionTake(method)) throw failure('InvalidArgumentError', method, 'not a native trace collection transfer');
     if (!Number.isFinite(timeoutMilliseconds) || timeoutMilliseconds <= 0) throw failure('InvalidArgumentError', method, 'trace transfer needs a finite positive deadline');
     const deadline = performance.now() + timeoutMilliseconds;
     const originalParameters = Object.freeze({ ...parameters });
     for (;;) {
       signal?.throwIfAborted();
+      dispatchSignal?.throwIfAborted();
       const remaining = Math.floor(deadline - performance.now());
       if (remaining <= 0) throw failure('TimeoutError', method, 'deadline exceeded waiting for trace attachment capacity');
-      const result = await this.request(method, originalParameters, remaining, true, undefined, undefined, expectedByteLength);
+      const result = await this.request(method, originalParameters, remaining, true, undefined, undefined, expectedByteLength, dispatchSignal);
       signal?.throwIfAborted();
       if (Buffer.isBuffer(result)) return result;
       if (result !== null) throw failure('ProtocolError', method, 'invalid trace attachment admission reply');
