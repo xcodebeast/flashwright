@@ -3,10 +3,11 @@ import { runtimeMetadata } from './javascript-runtime.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { chmod, copyFile, cp, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
+import { chmod, copyFile, cp, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { basename, dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { sourceManifest } from './source-manifest.mjs';
+import { collectRustDependencyNotices } from './rust-dependency-notices.mjs';
 
 const require = createRequire(import.meta.url);
 const { EngineClient } = require('../packages/flashwright-core/dist/commonjs/client.js');
@@ -75,16 +76,13 @@ const rust = commandText('rustc', ['-vV']).trim();
 const target = rust.match(/^host: (.+)$/m)?.[1];
 assert.ok(target);
 const metadata = JSON.parse(commandText('cargo', ['metadata', '--locked', '--format-version', '1', '--filter-platform', target]));
-const resolvedPackages = new Set(metadata.resolve.nodes.map(node => node.id));
-for (const dependency of metadata.packages.filter(dependency => dependency.source && resolvedPackages.has(dependency.id))) {
-  const root = dirname(dependency.manifest_path);
-  const names = (await readdir(root, { withFileTypes: true })).filter(entry => /^(licen[cs]es?|copying|copyright|notice|unlicense)([-._]|$)/i.test(entry.name)).map(entry => entry.name);
-  if (dependency.license_file && !names.includes(dependency.license_file)) names.push(dependency.license_file);
-  assert.ok(names.length, `Missing license text for ${dependency.name}@${dependency.version}`);
+const supplements = JSON.parse(await readFile('compatibility/upstream/rust-license-supplements.json', 'utf8'));
+for (const dependency of await collectRustDependencyNotices(metadata, supplements)) {
   const relative = `licenses/rust-dependencies/${dependency.name}-${dependency.version}`;
   await mkdir(join(directory, relative), { recursive: true });
-  for (const name of names) await cp(join(root, name), join(directory, relative, basename(name)), { recursive: true });
-  licenses.push({ name: dependency.name, version: dependency.version, source: dependency.source, license: dependency.license, directory: relative });
+  for (const document of dependency.documents) await cp(document.path, join(directory, relative, document.name), { recursive: true });
+  const { documents, ...provenance } = dependency;
+  licenses.push({ ...provenance, directory: relative });
 }
 const sysroot = commandText('rustc', ['--print', 'sysroot']).trim();
 await mkdir(join(directory, 'licenses/rust-standard-library'), { recursive: true });

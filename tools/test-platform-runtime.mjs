@@ -39,6 +39,30 @@ try {
   await copyFile(runtime.archive, join(destination, 'driver-runtime.tgz'));
   await copyFile(join(packageDirectory, 'package/runtime.json'), join(destination, 'runtime.json'));
   await copyFile(join(packageDirectory, 'package/provenance.json'), join(destination, 'runtime-provenance.json'));
+  const provenance = JSON.parse(await readFile(join(destination, 'runtime-provenance.json'), 'utf8'));
+  const metadata = JSON.parse(execFileSync('cargo', ['metadata', '--locked', '--format-version', '1', '--filter-platform', provenance.target], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }));
+  const resolved = new Set(metadata.resolve.nodes.map(node => node.id));
+  const workspaceMembers = new Set(metadata.workspace_members);
+  const dependencies = metadata.packages.filter(dependency => resolved.has(dependency.id) && !workspaceMembers.has(dependency.id));
+  const identity = dependency => `${dependency.name}@${dependency.version}`;
+  assert.deepEqual(provenance.dependencies.map(identity).sort(), dependencies.map(identity).sort(), 'Every resolved external dependency needs packaged notices, including vendored dependencies');
+  const archiveFiles = execFileSync('tar', ['-tzf', runtime.archive], { encoding: 'utf8' }).split('\n').filter(path => path && !path.endsWith('/'));
+  for (const dependency of provenance.dependencies) assert.ok(archiveFiles.some(path => path.startsWith(`package/${dependency.directory}/`)), `Archive omits ${identity(dependency)} notices`);
+  const checkedNoticeBytes = [];
+  for (const dependency of dependencies.filter(dependency => !dependency.source)) {
+    const expected = await readFile(join(dirname(dependency.manifest_path), 'LICENSE'));
+    const actual = execFileSync('tar', ['-xOf', runtime.archive, `package/licenses/rust-dependencies/${dependency.name}-${dependency.version}/LICENSE`]);
+    assert.deepEqual(actual, expected);
+    checkedNoticeBytes.push({ dependency: identity(dependency), sha256: hash(actual) });
+  }
+  const supplements = JSON.parse(await readFile('compatibility/upstream/rust-license-supplements.json', 'utf8'));
+  for (const supplement of supplements.dependencies.filter(supplement => dependencies.some(dependency => identity(dependency) === identity(supplement)))) {
+    const name = supplement.licensePath.split('/').at(-1);
+    const actual = execFileSync('tar', ['-xOf', runtime.archive, `package/licenses/rust-dependencies/${supplement.name}-${supplement.version}/${name}`]);
+    assert.equal(hash(actual), supplement.licenseSha256);
+    checkedNoticeBytes.push({ dependency: identity(supplement), sha256: hash(actual) });
+  }
+  report.dependencyNoticeAudit = { dependencies: dependencies.length, checkedNoticeBytes };
   report.runtimeArchiveSha256 = hash(await readFile(join(destination, 'driver-runtime.tgz')));
   report.runtimeManifest = runtime.manifest;
   const packedEnvironment = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', FLASHWRIGHT_BROWSER_PATH: browser.executablePath,

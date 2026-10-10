@@ -12,7 +12,7 @@ export async function sourceManifest() {
       }
     } else manifest[path] = createHash('sha256').update(await readFile(path)).digest('hex');
   }
-  for (const root of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'bun.lock', 'tsconfig.json', 'crates', 'vendor', 'packages', 'tools', 'compatibility/m1', 'compatibility/m2', 'compatibility/migration-projects', 'compatibility/capabilities.json', 'compatibility/parity-reviews.json', 'docs', 'benchmarks']) await visit(root);
+  for (const root of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'bun.lock', 'tsconfig.json', 'crates', 'vendor', 'packages', 'tools', 'compatibility/m1', 'compatibility/m2', 'compatibility/migration-projects', 'compatibility/upstream', 'compatibility/capabilities.json', 'compatibility/parity-reviews.json', 'docs', 'benchmarks']) await visit(root);
   const reviews = JSON.parse(await readFile('compatibility/parity-reviews.json', 'utf8'));
   for (const path of new Set(reviews.groups.flatMap(group => group.evidence.map(reference => reference.path)))) {
     if (!(path in manifest)) await visit(path);
