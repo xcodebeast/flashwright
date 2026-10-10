@@ -441,7 +441,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Supported graph values/identity/cycles, nested handle arguments, UTF-16 properties, property ownership, original-context evaluation, DOM detachment, disposal/async disposal, allocation rollback and packed declarations.",
-      "limitations": "Additional by-value classes remain unsupported; Map/functions/symbols can be retained/evaluated as handles but cannot generally serialize by value. Objects remain in original unique execution contexts; cross-context element adoption and out-of-process frames remain outside this slice. 4096 retained/pending handles per page, bounded replies/serialization and recovery. Primitive BigInt behavior intentionally differs from pinned 1.60.0 (S4.l).",
+      "limitations": "Additional by-value classes remain unsupported; Map/functions/symbols can be retained/evaluated as handles but cannot generally serialize by value. Objects remain in original unique execution contexts; cross-context element adoption remains outside this slice. A separate renderer-ownership checkpoint verifies remote Frame and selected locator evaluation/handle ownership; it does not extend every handle method or value class to remote frames. 4096 retained/pending handles per page, bounded replies/serialization and recovery. Primitive BigInt behavior intentionally differs from pinned 1.60.0 (S4.l).",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [
         "Primitive BigInt handles preserve the actual JavaScript value; pinned 1.60.0 converts it to undefined (S4.l)."
@@ -450,6 +450,22 @@
         {
           "path": "packages/flashwright-core/src/handles.ts",
           "sha256": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7"
+        },
+        {
+          "path": "crates/flashwright-engine/src/events.rs",
+          "sha256": "3323ab7495b75469daa3b21227518b1d5b3a2a878fb7898ab948c2cb1ad9f140"
+        },
+        {
+          "path": "crates/flashwright-engine/src/publication.rs",
+          "sha256": "c197c680dbafcb5ae7b7ffb99f4ee2c2909883a202fa9ec38fdbc6643cc47d84"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_sessions.rs",
+          "sha256": "b501cf94ae484f3183e55037f0102584ab00bad8d59042d0175dbf5a7751d869"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_setup.rs",
+          "sha256": "fbf1c8ea026b57c87b796c79fea8c9e7702ffb0a0c01ee7276201e43e446e137"
         }
       ],
       "evidence": [
@@ -461,6 +477,11 @@
         {
           "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
           "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/renderer-ownership-checkpoint-2026-10-10.json",
+          "sha256": "d423e2529e5ec713d7eb4a7d026988f6ecc65d6e25cc729ce4d5cec0af934179",
           "kind": "conformance"
         }
       ],
@@ -1686,8 +1707,8 @@
       "title": "Browser, context, page and frame ownership",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures.",
-      "limitations": "Only Chromium is implemented. Cross-process frame APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented.",
+      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls.",
+      "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation slice is verified; remote input/network/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -1698,6 +1719,22 @@
         {
           "path": "packages/flashwright-core/src/frame.ts",
           "sha256": "b363e9d426c2c6a76a0a7be823cd27939b3f0727539471f08631e95db03b402b"
+        },
+        {
+          "path": "crates/flashwright-engine/src/events.rs",
+          "sha256": "3323ab7495b75469daa3b21227518b1d5b3a2a878fb7898ab948c2cb1ad9f140"
+        },
+        {
+          "path": "crates/flashwright-engine/src/publication.rs",
+          "sha256": "c197c680dbafcb5ae7b7ffb99f4ee2c2909883a202fa9ec38fdbc6643cc47d84"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_sessions.rs",
+          "sha256": "b501cf94ae484f3183e55037f0102584ab00bad8d59042d0175dbf5a7751d869"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_setup.rs",
+          "sha256": "fbf1c8ea026b57c87b796c79fea8c9e7702ffb0a0c01ee7276201e43e446e137"
         }
       ],
       "evidence": [
@@ -1760,6 +1797,11 @@
           "path": "compatibility/m2/routing-errors.mjs",
           "sha256": "0a76374c7dbf2fac98b7d3acb4992a15a772fc9716a552038995ae97cb366ea6",
           "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/renderer-ownership-checkpoint-2026-10-10.json",
+          "sha256": "d423e2529e5ec713d7eb4a7d026988f6ecc65d6e25cc729ce4d5cec0af934179",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -2511,11 +2553,11 @@
     },
     {
       "id": "frame-locators",
-      "title": "Lazy same-process FrameLocator paths",
+      "title": "Lazy FrameLocator paths",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Page/Frame/Locator frameLocator, Locator.contentFrame and all FrameLocator descriptor methods. The retained 212-check differential exercises strictness, absence, nesting, same-frame composite normalization, native input/upload, child main-world evaluation, captured targets, whole-path retries, closure and traced forms. Packed consumers exercise runtime exports and declarations.",
-      "limitations": "Same-process frames on native macOS arm64 with Bun1.4.2 and Chromium148. Out-of-process routing, exhaustive getBy option/value combinations, native Linux, full runtime/consumer matrices, performance and release acceptance remain open. Method coverage is an experimental subset; only separately listed options are promoted.",
+      "scope": "Page/Frame/Locator frameLocator, Locator.contentFrame and all FrameLocator descriptor methods. The retained 212-check differential exercises strictness, absence, nesting, same-frame composite normalization, native input/upload, child main-world evaluation, captured targets, whole-path retries, closure and traced forms. Packed consumers exercise runtime exports and declarations. A separate full-Chrome renderer-ownership checkpoint exercises selected remote selector-to-handle and element evaluation paths, renderer return and no callback replay.",
+      "limitations": "The broad 212-check slice covers same-process frames on native macOS arm64/Bun 1.4.2/Chromium 148. Selected remote evaluation paths pass Bun and Node 22/24 checks on full Chrome; stock headless shell did not place that fixture in a remote renderer. Remote input, general locator reads/assertions, network delivery and artifacts, exhaustive getBy option/value combinations, native Linux and release acceptance remain open. Method coverage is an experimental subset; only separately listed options are promoted.",
       "defaults": "Descriptors are lazy and retain their original root Frame. Actions/assertions resolve iframe components strictly; count/list reads use the pinned first iframe match. Page/Frame selector calls retain per-call strictness. Missing iframe behavior is method-specific. Each eligible retry re-resolves the whole path; captured callbacks and uncertain input are never replayed.",
       "differences": [
         "Frame-path assertions use ordinary host retry intervals to observe changing ancestor selectors; known-frame assertions retain resident observation."
@@ -2572,6 +2614,22 @@
         {
           "path": "crates/flashwright-engine/src/recording.rs",
           "sha256": "8d49df114ae5be3264b55b3f6c13e3bf6553043aec36de526e2ce3865d061c67"
+        },
+        {
+          "path": "crates/flashwright-engine/src/events.rs",
+          "sha256": "3323ab7495b75469daa3b21227518b1d5b3a2a878fb7898ab948c2cb1ad9f140"
+        },
+        {
+          "path": "crates/flashwright-engine/src/publication.rs",
+          "sha256": "c197c680dbafcb5ae7b7ffb99f4ee2c2909883a202fa9ec38fdbc6643cc47d84"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_sessions.rs",
+          "sha256": "b501cf94ae484f3183e55037f0102584ab00bad8d59042d0175dbf5a7751d869"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_setup.rs",
+          "sha256": "fbf1c8ea026b57c87b796c79fea8c9e7702ffb0a0c01ee7276201e43e446e137"
         }
       ],
       "evidence": [
@@ -2589,6 +2647,11 @@
           "path": "compatibility/m2/frame-locators.mjs",
           "sha256": "347a2554343910f598b14d251c03501b9e59d7abdfb898eb2a49c9997b4708c5",
           "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/renderer-ownership-checkpoint-2026-10-10.json",
+          "sha256": "d423e2529e5ec713d7eb4a7d026988f6ecc65d6e25cc729ce4d5cec0af934179",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -2716,11 +2779,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/events.rs",
-          "sha256": "527ae1e3f1bcb864190d40e907a30ee9fadde55cce8dab76566ca1d62eb5e8e6"
+          "sha256": "3323ab7495b75469daa3b21227518b1d5b3a2a878fb7898ab948c2cb1ad9f140"
         },
         {
           "path": "crates/flashwright-engine/src/publication.rs",
-          "sha256": "c3f68cdb3944bf75f5293802add842e1e21be93bd4fb2181e3082f3124966a56"
+          "sha256": "c197c680dbafcb5ae7b7ffb99f4ee2c2909883a202fa9ec38fdbc6643cc47d84"
         },
         {
           "path": "crates/flashwright-engine/src/operation.rs",
