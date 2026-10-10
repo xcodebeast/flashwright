@@ -35,6 +35,7 @@ const commands = [
   ['cargo', 'fmt', '--all', '--check'],
   ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings'],
   ['python3', 'tools/watchdog.py', '--timeout', '120', '--report-directory', 'compatibility/evidence/resources', '--', 'cargo', 'test', '--workspace', '--locked'],
+  ['python3', 'tools/test-runtime-build-portability.py'],
   [process.execPath, 'tools/build-driver.mjs', ...(driverBuildProfile === 'release' ? ['--release'] : [])],
   [process.execPath, 'tools/build-packages.mjs'],
   [process.execPath, 'tools/extract-selector-runtime.mjs', '--check'],

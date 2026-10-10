@@ -9,7 +9,34 @@ import subprocess
 import sys
 import tempfile
 
-build_script = Path(sys.argv[1]).resolve()
+def current_build_script():
+    """Use Cargo's artifact identity instead of guessing among stale cached executables."""
+    execution = subprocess.run(
+        ['cargo', 'build', '-p', 'flashwright-engine', '--locked', '--message-format=json'],
+        capture_output=True, text=True,
+    )
+    sys.stderr.write(execution.stderr)
+    execution.check_returncode()
+    source = (Path.cwd() / 'crates/flashwright-engine/build.rs').resolve()
+    candidates = set()
+    for line in execution.stdout.splitlines():
+        artifact = json.loads(line)
+        target = artifact.get('target', {})
+        if (artifact.get('reason') == 'compiler-artifact'
+                and target.get('kind') == ['custom-build']
+                and Path(target['src_path']).resolve() == source):
+            filenames = artifact.get('filenames', [])
+            if len(filenames) != 1 or not Path(filenames[0]).is_file():
+                raise RuntimeError('Cargo must identify one existing engine build-script artifact')
+            candidates.add(Path(filenames[0]).resolve())
+    if len(candidates) != 1:
+        raise RuntimeError(f'Cargo must identify one current engine build script, found {len(candidates)}')
+    return candidates.pop()
+
+
+if len(sys.argv) > 2:
+    raise SystemExit('Usage: python3 tools/test-runtime-build-portability.py [build-script-executable]')
+build_script = Path(sys.argv[1]).resolve() if len(sys.argv) == 2 else current_build_script()
 results = []
 with tempfile.TemporaryDirectory(prefix='flashwright-runtime-build-') as temporary:
     for name, contents in [('first', b'globalThis.first = true;\n'), ('second', b'globalThis.second = true;\n')]:
