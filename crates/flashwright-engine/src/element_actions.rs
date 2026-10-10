@@ -106,11 +106,18 @@ impl Engine {
         };
         let context = self.context(&page.context_identifier, method)?;
         let browser = self.browser(&context.browser_identifier, method)?;
+        let mut selector = super::locators::FrameSelector::new(
+            &settings.page_identifier,
+            &settings.frame,
+            settings.request.as_deref().unwrap_or_default(),
+            true,
+            Some(true),
+        );
         let mut attempts = 0;
         loop {
             operation.check()?;
             let (captured, result) = self
-                .element_action_attempt(&page, &browser, &settings, operation)
+                .element_action_attempt(&page, &browser, &settings, &mut selector, operation)
                 .await;
             match result {
                 Ok(Value::Bool(false)) => {}
@@ -145,6 +152,7 @@ impl Engine {
         page: &Page,
         browser: &Chromium,
         settings: &ElementAction,
+        selector: &mut super::locators::FrameSelector<'_>,
         operation: &Operation,
     ) -> (bool, Result<Value, ErrorRecord>) {
         let mut captured = settings.handle.is_some();
@@ -152,10 +160,15 @@ impl Engine {
             if settings.handle.is_none() {
                 page.wait_for_input_navigation(0, operation, &settings.method).await?;
             }
-            let realm = self.locator_realm(page, browser, &settings.frame, operation, &settings.method).await?;
+            let realm = if settings.handle.is_some() {
+                self.locator_realm(page, browser, &settings.frame, operation, &settings.method).await?
+            } else {
+                let Some(realm) = self.resolve_frame_selector(page, browser, selector, operation, &settings.method).await? else { return Ok(Value::Bool(false)); };
+                realm
+            };
             let context = match &settings.handle {
                 Some(handle) => handle.context.clone(),
-                None => self.evaluation_context(page, browser, Some(&settings.frame), operation).await?,
+                None => realm.main_context.clone(),
             };
             if !same_document(page, &realm, &context) {
                 return if captured { Err(evaluation::context_destroyed()) } else { Ok(Value::Bool(false)) };
@@ -178,7 +191,7 @@ impl Engine {
                     let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
                         "uniqueContextId": realm.context.unique_identifier,
                         "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveLocatorElement(request, deadline); }",
-                        "arguments": [{ "value": settings.request }, { "value": operation.renderer_deadline() }],
+                        "arguments": [{ "value": selector.request }, { "value": operation.renderer_deadline() }],
                         "objectGroup": allocation.group, "returnByValue": false,
                     }), Some(&page.session_identifier))?;
                     let response = allocation.wait(&mut command, true).await?;

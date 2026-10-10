@@ -46,7 +46,7 @@ function attributeSelector(value: TextMatcher, exact = false): string {
   return typeof value === 'string' ? `"${value.replace(/\\/g, '\\\\').replace(/[\"]/g, '\\"')}"${exact ? 's' : 'i'}` : escapeRegularExpression(value);
 }
 
-/** Shared locator construction for Page, Frame and an existing locator scope. */
+/** Shared locator construction for Page, Frame and existing locator scopes. */
 export class LocatorScope {
   constructor(private readonly scopeFrame: () => Frame, private readonly prefix = '') {}
   locator(selector: string | Locator, locatorOptions: LocatorOptions = {}): Locator {
@@ -55,6 +55,10 @@ export class LocatorScope {
     if (typeof selector === 'string') query = selector;
     else { sameFrame(frame, selector); query = `internal:chain=${JSON.stringify(selector.selector)}`; }
     return new Locator(frame, this.prefix ? `${this.prefix} >> ${query}` : query, locatorOptions);
+  }
+  frameLocator(selector: string): FrameLocator {
+    validateFrameSelector(selector);
+    return new FrameLocator(this.scopeFrame(), this.prefix ? `${this.prefix} >> ${selector}` : selector);
   }
   getByText(text: TextMatcher, options: TextOptions = {}): Locator { return this.locator(`internal:text=${textSelector(text, exactOption('getByText', options))}`); }
   getByLabel(text: TextMatcher, options: TextOptions = {}): Locator { return this.locator(`internal:label=${textSelector(text, exactOption('getByLabel', options))}`); }
@@ -79,6 +83,32 @@ export class LocatorScope {
 
 function sameFrame(frame: Frame, locator: Locator): void {
   if (!(locator instanceof Locator) || locator.ownerFrame !== frame) throw failure('InvalidArgumentError', 'locator', 'locators must belong to the same frame');
+}
+
+function validateFrameSelector(selector: unknown): asserts selector is string {
+  if (typeof selector !== 'string') throw failure('InvalidArgumentError', 'frameLocator', 'selector must be a string');
+}
+
+/** Frame paths remain rooted in their original frame and resolve only when a locator runs. */
+export class FrameLocator extends LocatorScope {
+  constructor(private readonly ownerFrame: Frame, private readonly frameSelector: string) {
+    validateFrameSelector(frameSelector);
+    super(() => ownerFrame);
+  }
+  override locator(selector: string | Locator, options: LocatorOptions = {}): Locator {
+    if (typeof selector !== 'string') sameFrame(this.ownerFrame, selector);
+    // The pinned frame facade concatenates locator descriptors directly, without internal:chain.
+    const query = typeof selector === 'string' ? selector : selector.selector;
+    return new Locator(this.ownerFrame, `${this.frameSelector} >> internal:control=enter-frame >> ${query}`, options);
+  }
+  owner(): Locator { return new Locator(this.ownerFrame, this.frameSelector); }
+  override frameLocator(selector: string): FrameLocator {
+    validateFrameSelector(selector);
+    return new FrameLocator(this.ownerFrame, `${this.frameSelector} >> internal:control=enter-frame >> ${selector}`);
+  }
+  first(): FrameLocator { return this.nth(0); }
+  last(): FrameLocator { return this.nth(-1); }
+  nth(index: number): FrameLocator { return new FrameLocator(this.ownerFrame, `${this.frameSelector} >> nth=${index}`); }
 }
 
 /** A locator stores a query, never the element found by an earlier operation. */
@@ -145,6 +175,7 @@ export class Locator extends LocatorScope {
     this.selector = query;
   }
   page(): Page { return this.ownerFrame.page(); }
+  contentFrame(): FrameLocator { return new FrameLocator(this.ownerFrame, this.selector); }
   runAssertion(options: AssertionOptions, timeout: number): Promise<AssertionResult> { return this.ownerFrame.runAssertion(this.selector, options, timeout); }
   filter(options: LocatorOptions): Locator { return new Locator(this.ownerFrame, this.selector, options); }
   nth(index: number): Locator { return new Locator(this.ownerFrame, `${this.selector} >> nth=${index}`); }

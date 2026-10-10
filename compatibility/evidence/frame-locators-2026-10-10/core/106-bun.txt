@@ -1,0 +1,44 @@
+bun test v1.4.2 (744846f84)
+
+tools/test-harness.mjs:
+(pass) driver comparisons require identical execution contracts across independently verified backends [3.87ms]
+(pass) resident load invocation supports legacy and explicitly classified production samples [0.50ms]
+(pass) statistics preserve independent-launch units and do not invent tail estimates [0.96ms]
+(pass) paired comparisons retain launch correspondence and reject incomplete pairs [1.23ms]
+(pass) actual launch comparison normalizes only owned profile paths [0.25ms]
+(pass) benchmark admission binds core verification to the exact browser executable [0.23ms]
+(pass) fixture shutdown closes listening and active HTTP connections under the selected runtime [8.62ms]
+
+tools/test-protocol-profile.mjs:
+(pass) independent clock epochs and overlapping commands preserve accounting without double-counting waits [0.71ms]
+(pass) clock discontinuities invalidate attribution [0.20ms]
+(pass) commands near a phase boundary remain in global counts without arbitrary phase assignment [0.10ms]
+(pass) lost replies and duplicate command identities invalidate attribution [0.44ms]
+
+tools/test-attachments.mjs:
+(pass) native collection busy retries preserve identity, expected length and the original deadline [376.27ms]
+(pass) native collection pressure expires one deadline and never retries a terminal resource error [145.07ms]
+(pass) collection cancellation during busy backoff preserves its original reason and prevents another take [46.46ms]
+(pass) collection null is forbidden after any binary start, including an empty transfer [133.11ms]
+(pass) raw and base64 attachments interleave without exposing partial buffers [0.27ms]
+(pass) attachment offsets, identities, caps and terminal sizes reject corruption [0.24ms]
+(pass) base64 chunks require complete groups and canonical terminal padding [0.15ms]
+(pass) expired attachments release bytes but still validate late chunks [0.07ms]
+(pass) client assembles fragmented attachment frames and concurrent replies [45.98ms]
+(pass) an attachment larger than a control frame returns every byte [60.77ms]
+(pass) client rejects malformed starts, chunks, terminal replies and EOF [418.59ms]
+(pass) client deadline discards a partial attachment and leaves its successor usable [294.49ms]
+(pass) an expected binary length rejects a conflicting start before buffer allocation [91.52ms]
+
+tools/test-input-attachments.mjs:
+(pass) raw input above control-frame size preserves bytes and interleaves ordinary controls [244.39ms]
+(pass) input snapshot and empty payloads preserve ownership under tiny negotiated frames [45.38ms]
+(pass) header rejection closes the input stream and preserves the original error and successor [46.79ms]
+(pass) a stalled partial input times out, closes its stream and leaves the client usable [205.79ms]
+(pass) input reservation survives completed transfer until the terminal operation outcome [43.92ms]
+(pass) oversized host input rejects before protocol publication [45.45ms]
+(pass) an unresponsive input pipe retains an independent caller deadline and bounded cleanup [2128.87ms]
+
+ 31 pass
+ 0 fail
+Ran 31 tests across 4 files. [4.49s]

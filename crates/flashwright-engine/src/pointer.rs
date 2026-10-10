@@ -96,6 +96,7 @@ struct PointerAction<'operation> {
 
 struct PointerAttempt<'action, 'operation> {
     action: &'action PointerAction<'operation>,
+    request: &'action [u16],
     realm: LocatorRealm,
     token: String,
     delivery: InputDelivery,
@@ -182,6 +183,13 @@ impl Engine {
 
 impl PointerAction<'_> {
     async fn run(&self) -> Result<(), ErrorRecord> {
+        let mut selector = super::locators::FrameSelector::new(
+            &self.page_identifier,
+            &self.frame,
+            &self.request,
+            true,
+            None,
+        );
         let mut delivery = InputDelivery::NotDispatched;
         let mut retry_count = 0_usize;
         loop {
@@ -196,16 +204,22 @@ impl PointerAction<'_> {
             }
             let realm = match self
                 .engine
-                .locator_realm(
+                .resolve_frame_selector(
                     &self.page,
                     &self.browser,
-                    &self.frame,
+                    &mut selector,
                     self.operation,
                     &self.method,
                 )
                 .await
             {
-                Ok(realm) => realm,
+                Ok(Some(realm)) => realm,
+                Ok(None) => {
+                    self.pause(retry_count, "frame selector resolved to no frame", delivery)
+                        .await?;
+                    retry_count += 1;
+                    continue;
+                }
                 Err(error) if context_was_destroyed(&error) => {
                     self.pause(retry_count, "document changed", delivery)
                         .await?;
@@ -225,6 +239,7 @@ impl PointerAction<'_> {
                 .map_err(|error| self.decorate(error, delivery))?;
             let mut attempt = PointerAttempt {
                 action: self,
+                request: &selector.request,
                 realm,
                 token: self.engine.identifier("pointer"),
                 delivery: InputDelivery::NotDispatched,
@@ -410,7 +425,7 @@ impl PointerAttempt<'_, '_> {
     async fn perform(&mut self, retry_count: usize) -> Result<(Outcome, Option<u64>), ErrorRecord> {
         let mut settings = json!(self.action.options);
         settings["action"] = json!(self.action.action);
-        let prepared = self.runtime(&self.realm, "function(request, deadline, token, settings) { return globalThis.__flashwrightLocatorRuntime.preparePointer(request, deadline, token, settings); }", json!([{ "value": self.action.request }, { "value": self.action.operation.renderer_deadline() }, { "value": self.token }, { "value": settings }]), true).await?;
+        let prepared = self.runtime(&self.realm, "function(request, deadline, token, settings) { return globalThis.__flashwrightLocatorRuntime.preparePointer(request, deadline, token, settings); }", json!([{ "value": self.request }, { "value": self.action.operation.renderer_deadline() }, { "value": self.token }, { "value": settings }]), true).await?;
         match outcome(prepared, &self.action.method)? {
             Outcome::Ready => {}
             result => return Ok((result, None)),
@@ -697,7 +712,7 @@ impl PointerAttempt<'_, '_> {
         let mut ancestors = Vec::new();
         {
             let state = self.action.page.state.state.lock().unwrap();
-            let mut child = self.action.frame.clone();
+            let mut child = self.realm.context.frame_identifier.clone();
             while let Some(parent) = state
                 .frames
                 .get(&child)

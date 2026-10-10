@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-development-slice",
+  "reference": "Playwright 1.60.0",
+  "baseCommit": "6fca48700a22f8118592f5d6f47b84dbb7e22bd5",
+  "scope": "Lazy same-process FrameLocator paths and shared native trace attempt retention. Native macOS arm64/Bun1.4.2 development acceptance; no release or performance claim.",
+  "implementation": {
+    "packages/flashwright-core/src/locator.ts": "be822ac01d4d52e0e4354f3924269cc7ae00bdd33b6055a08bd3413b5c490efc",
+    "packages/flashwright-core/src/index.ts": "8653c78795bc861f42a16247535744107ea115d7608ffa492c6e5a87296dd21b",
+    "packages/resident-runtime/locator-runtime.js": "9261a0b3e00d7178103cbba004cca6a6c0ee0bf6e3534cdf5570438d3cb2bd2d",
+    "crates/flashwright-engine/src/locators/frame_selector.rs": "c7cfb7e079cf93247d57f66b140a382395bed05f612b7850b14c21f2da15d38e",
+    "crates/flashwright-engine/src/locators.rs": "7bccb219e56a2e117fe5cc7076711add0c480908b613f9ef535a7a5e63e3a06f",
+    "crates/flashwright-engine/src/assertions.rs": "98c849fc93df7d878c798ddc923f75933b8712b3e225e45eda81e7b755e1c7d4",
+    "crates/flashwright-engine/src/element_resolution.rs": "10dcdbf1fd3d69fcdf902ec200a3ac4513d1eea1bc21c8c3167637c02caf3485",
+    "crates/flashwright-engine/src/element_actions.rs": "39aba61ef5074fda5583075cef9a170e42ef06abca5bfaa995db34f5387bda6b",
+    "crates/flashwright-engine/src/file_inputs.rs": "541e79c81be72116ba0cceb74add0796351d987fe672d9ba0f559d5f87d37349",
+    "crates/flashwright-engine/src/keyboard.rs": "480cc51e0232a2fd04d699d2a57bfca1541640cf1e2ead047f0ba75a17879e63",
+    "crates/flashwright-engine/src/pointer.rs": "ebfd387592a00a3cdc1a1432b8733e17a2a2ef2e3160d3d51d4ca5a826f691a1",
+    "crates/flashwright-engine/src/recording/phases.rs": "82fa9d2f80ea6f1feb797bf99a50013b4403e06864b1dd4b2ea37c54e33af2b3",
+    "crates/flashwright-engine/src/recording.rs": "8d49df114ae5be3264b55b3f6c13e3bf6553043aec36de526e2ce3865d061c67"
+  },
+  "provenance": {
+    "path": "compatibility/upstream/frame-locators-provenance.json",
+    "sha256": "de959ac9e09822e34fe9ada021ceec7aad29fdb7d456bba1c8887ef5b6fcba49"
+  },
+  "nativeCore": {
+    "path": "compatibility/evidence/frame-locators-2026-10-10/core/report.json",
+    "sha256": "cb1a176fa1a8c1286337d165f034eac3f3f2dfc81cf11df7889c07b4eee67808",
+    "passedGroups": 151,
+    "driverSha256": "d51507b258af5b2dada3e6e823bc52134840ac5890396c927629ed6af91e093a",
+    "buildProfile": "debug",
+    "sourceChangedDuringVerification": false,
+    "browserChangedDuringVerification": false
+  },
+  "functional": {
+    "path": "compatibility/evidence/frame-locators-2026-10-10/report.json",
+    "sha256": "b6df4b6c4291b7e1bd1c67af97e5b98b0728a503c18c3c03ce2ead30ad326c00",
+    "passedChecks": 212,
+    "outcomeRowsPerEngine": 106,
+    "traceVerification": {
+      "path": "compatibility/evidence/frame-locators-2026-10-10/trace-verification.json",
+      "sha256": "1e2f320960274c4c1787f6c807ed8382baf442748274246438297c1237efb07a"
+    }
+  },
+  "inputRetry": {
+    "path": "compatibility/evidence/frame-locators-2026-10-10/input-retry-snapshots.json",
+    "sha256": "c53049da4d71484790a9a2af8d78327a62c6fc46f3fbbd46fe5e3b7e9a37f478",
+    "capturedInputAttempts": [
+      "original",
+      "replacement"
+    ],
+    "viewerFirstSnapshotTarget": "original"
+  },
+  "cleanup": {
+    "rawWatchdogSha256": "fb121d6a2afa61d7be241bcf034079ea2ddbae0100ac3eb8725b6b95987088aa",
+    "exitCode": 0,
+    "timedOut": false,
+    "interrupted": false,
+    "remainingObservedProcesses": [],
+    "cleanup": {
+      "policy": "owners-before-descendants",
+      "graceSeconds": 2,
+      "stagedTimeoutSeconds": 10,
+      "forcedTimeoutSeconds": 2,
+      "wholeTreeEscalation": false,
+      "elapsedSeconds": 0.044866916025057435
+    }
+  },
+  "changes": [
+    "Public frame descriptors keep the original root Frame; pinned parser composition supplies lazy iframe components and final selector.",
+    "Native operations resolve temporary iframe owners under bounded original-document allocation, then reuse existing child-world actions, captured-node evaluation and deadlines.",
+    "Each eligible retry resolves the entire ancestor path. Frame-path assertions use host retries to observe a selector switching between still-live frames.",
+    "Method-specific strictness and absence match the characterized reference; list reads keep first-match iframe behavior while actions/assertions stay strict.",
+    "Element resolution captures its before phase and uploads capture their original input target. Settled input phases may repeat across attempts without reopening pending or sealed ownership."
+  ],
+  "retainedDevelopmentAttempts": [
+    "The first differential failed before browser launch on a duplicate upstream runner import; using the retained byte-identical expect module repaired the harness.",
+    "The second differential retained six fixture expectation/classification failures: duplicate-frame list reads return the first text, and matcher-wrapped strictness must be classified as strictness.",
+    "The third differential passed212 functional checks; archive review exposed two missing element-resolution before snapshots and two upload input phases.",
+    "The fourth differential and strengthened trace verifier passed after both native phase repairs.",
+    "A targeted native-input-lock/replacement reproduction then proved later input attempts were absent from archives. The shared recording fix preserves both attempts and the pinned viewer first-snapshot selection.",
+    "The first full core run was deliberately interrupted after69 started groups to include the retry repair. Its watchdog confirmed no remaining observed processes. The final151-group run completed."
+  ],
+  "limitations": [
+    "Out-of-process frame routing remains explicitly unsupported.",
+    "Only the declared default/options/value combinations are experimentally verified; no exhaustive FrameLocator/getBy option claim.",
+    "Frame-path assertions use ordinary host retries, rather than the resident observation path used for known-frame assertions.",
+    "Trace checks cover call/phase/source custody, child target ancestry, backreferences and filmstrip resources. They do not establish universal visual fidelity; native viewer fixtures pass separately in core.",
+    "A trace input snapshot describes an attempt, not proof of input delivery. Pinned viewers select the first same-name snapshot; later attempts remain archived.",
+    "Downloads, broader migration/consumer coverage, native Linux, fresh matched performance and release acceptance remain open."
+  ],
+  "evidenceNormalization": "Only workstation path strings and dependent hashes change; numeric/boolean/null observations remain exact. Raw trace archives stay private at recorded hashes and fixtures regenerate them."
+}

@@ -271,7 +271,7 @@ impl TraceRecording {
         Ok(json!({"lastEventSequence":cutoff}))
     }
 
-    /// Deduplication belongs to the original public call, including its nested native helpers.
+    /// Call boundaries deduplicate; completed input captures may repeat for a later attempt.
     pub(crate) fn admit_phase(
         &mut self,
         chunk: &str,
@@ -299,7 +299,10 @@ impl TraceRecording {
             return Err(error);
         }
         let phases = chunk.calls.entry(call.into()).or_default();
-        if phases.contains_key(&phase) {
+        if phases
+            .get(&phase)
+            .is_some_and(|state| phase != SnapshotPhase::Input || *state == PhaseState::Pending)
+        {
             return Ok(false);
         }
         phases.insert(phase, PhaseState::Pending);

@@ -43,6 +43,13 @@ impl Engine {
         let page = self.page(&request.page, method)?;
         let context = self.context(&page.context_identifier, method)?;
         let browser = self.browser(&context.browser_identifier, method)?;
+        let mut selector = super::locators::FrameSelector::new(
+            &request.page,
+            &request.frame,
+            &request.selector,
+            false,
+            Some(request.strict),
+        );
         let mut reservation = if ["attached", "visible"].contains(&request.state.as_str()) {
             Some(self.reserve_handle(&page, method)?)
         } else {
@@ -56,20 +63,25 @@ impl Engine {
                 reservation = Some(self.reserve_handle(&page, method)?);
             }
             let realm = self
-                .locator_realm(&page, &browser, &request.frame, operation, method)
+                .resolve_frame_selector(&page, &browser, &mut selector, operation, method)
                 .await;
             let result = match realm {
-                Ok(realm) => {
+                Ok(Some(realm)) => {
                     self.resolve_element_attempt(
                         &page,
                         &browser,
                         &realm,
                         &request,
+                        &selector.request,
                         &mut reservation,
                         operation,
                     )
                     .await
                 }
+                Ok(None) if ["hidden", "detached"].contains(&request.state.as_str()) => {
+                    return Ok(json!({"page":request.page,"handles":[]}));
+                }
+                Ok(None) => Ok(Value::Bool(false)),
                 Err(error) => Err(error),
             };
             match result {
@@ -105,13 +117,12 @@ impl Engine {
         browser: &Chromium,
         realm: &LocatorRealm,
         request: &ElementRequest,
+        selector: &[u16],
         reservation: &mut Option<OwnedSemaphorePermit>,
         operation: &Operation,
     ) -> Result<Value, ErrorRecord> {
         let method = "frame.waitForSelector";
-        let context = self
-            .evaluation_context(page, browser, Some(&request.frame), operation)
-            .await?;
+        let context = realm.main_context.clone();
         if !same_document(page, realm, &context) {
             return Ok(Value::Bool(false));
         }
@@ -131,7 +142,7 @@ impl Engine {
             let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
                 "uniqueContextId": realm.context.unique_identifier,
                 "functionDeclaration": "function(selector, strict, state, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveElement(selector, strict, state, deadline); }",
-                "arguments": [{ "value": request.selector }, { "value": request.strict }, { "value": request.state }, { "value": operation.renderer_deadline() }],
+                "arguments": [{ "value": selector }, { "value": request.strict }, { "value": request.state }, { "value": operation.renderer_deadline() }],
                 "objectGroup": allocation.group, "returnByValue": false,
             }), Some(&page.session_identifier))?;
             let response = allocation.wait(&mut command, true).await?;

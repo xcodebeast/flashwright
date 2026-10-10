@@ -4,6 +4,8 @@ use super::element_resolution::same_document;
 use super::handle_values::{DescribedNode, ResolvedNode};
 use super::handles::{Handle, HandleAllocation};
 use super::locators::{LocatorRealm, check_exception, context_was_destroyed};
+use super::recording::SnapshotPhase;
+use super::snapshots::SnapshotNode;
 use super::*;
 use flashwright_protocol::InputDelivery;
 use flashwright_protocol::attachment::{MAXIMUM_ATTACHMENT_BYTES, encode_base64};
@@ -182,6 +184,13 @@ impl Engine {
             .unwrap();
         let context = self.context(&page.context_identifier, method)?;
         let browser = self.browser(&context.browser_identifier, method)?;
+        let mut selector = super::locators::FrameSelector::new(
+            &request.page,
+            frame,
+            request.selector.as_deref().unwrap_or_default(),
+            false,
+            Some(request.strict),
+        );
         let mut attempts = 0usize;
         loop {
             operation.check()?;
@@ -195,6 +204,7 @@ impl Engine {
                     &request,
                     handle.as_ref(),
                     frame,
+                    &mut selector,
                     operation,
                     method,
                 )
@@ -233,12 +243,22 @@ impl Engine {
         request: &FileInputRequest,
         handle: Option<&Handle>,
         frame: &str,
+        selector: &mut super::locators::FrameSelector<'_>,
         operation: &Operation,
         method: &str,
     ) -> Result<Value, ErrorRecord> {
-        let realm = self
-            .locator_realm(page, browser, frame, operation, method)
-            .await?;
+        let realm = if handle.is_some() {
+            self.locator_realm(page, browser, frame, operation, method)
+                .await?
+        } else {
+            let Some(realm) = self
+                .resolve_frame_selector(page, browser, selector, operation, method)
+                .await?
+            else {
+                return Ok(Value::Bool(false));
+            };
+            realm
+        };
         if let Some(handle) = handle
             && !same_document(page, &realm, &handle.context)
         {
@@ -256,11 +276,28 @@ impl Engine {
             uses_object_group: true,
         };
         let result = async {
-            let element = resolve_input(&allocation, &realm, request, handle).await?;
+            let element =
+                resolve_input(&allocation, &realm, request, handle, &selector.request).await?;
             let Some(element) = element else {
                 return Ok(Value::Bool(false));
             };
             let upload = stage_payloads(&allocation, &request.files).await?;
+            if operation
+                .trace_call()
+                .is_some_and(|trace| trace.recording.is_some())
+            {
+                self.capture_snapshot_phase(
+                    &request.page,
+                    page,
+                    SnapshotPhase::Input,
+                    Some(SnapshotNode {
+                        object_identifier: element.clone(),
+                        context: realm.context.clone(),
+                    }),
+                    operation,
+                )
+                .await;
+            }
             let _input_lock = operation
                 .wait(
                     page.state
@@ -306,6 +343,7 @@ async fn resolve_input(
     realm: &LocatorRealm,
     request: &FileInputRequest,
     handle: Option<&Handle>,
+    selector: &[u16],
 ) -> Result<Option<String>, ErrorRecord> {
     let element = if let Some(handle) = handle {
         let mut command = allocation.browser.connection.start_raw_command(
@@ -327,7 +365,7 @@ async fn resolve_input(
     } else {
         let mut command = allocation.browser.connection.start_command("Runtime.callFunctionOn", json!({
             "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": "function(selector, strict, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveElement(selector, strict, 'attached', deadline); }",
-            "arguments": [{"value": request.selector}, {"value": request.strict}, {"value": allocation.operation.renderer_deadline()}], "objectGroup": allocation.group, "returnByValue": false,
+            "arguments": [{"value": selector}, {"value": request.strict}, {"value": allocation.operation.renderer_deadline()}], "objectGroup": allocation.group, "returnByValue": false,
         }), Some(&allocation.page.session_identifier))?;
         let response = allocation.wait(&mut command, true).await?;
         let element = allocation.evaluation_value(&response).await?;

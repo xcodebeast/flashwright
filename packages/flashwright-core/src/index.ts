@@ -51,7 +51,7 @@ export type { PageScreenshotOptions };
 export type { KeyboardPressOptions };
 export type { AssertionOptions, AssertionResult, ExpectedText } from './assertions.js';
 export { Frame, Request, Response };
-export { Locator } from './locator.js';
+export { Locator, FrameLocator } from './locator.js';
 export type { LocatorOptions, TextOptions, RoleOptions, LocatorTimeoutOptions, FillOptions, SelectTextOptions, SelectOption, ClickOptions, HoverOptions, CheckOptions, PressOptions, KeyboardModifier } from './locator.js';
 export type { URLMatcher };
 export type { Cookie, SetCookie, CookieFilter, StorageState, StorageStateOptions };
@@ -503,6 +503,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
   press(...arguments_: Parameters<Frame['press']>): ReturnType<Frame['press']> { return this.mainFrame().press(...arguments_); }
   type(...arguments_: Parameters<Frame['type']>): ReturnType<Frame['type']> { return this.mainFrame().type(...arguments_); }
   locator: Frame['locator'] = (...arguments_) => this.mainFrame().locator(...arguments_);
+  frameLocator: Frame['frameLocator'] = (...arguments_) => this.mainFrame().frameLocator(...arguments_);
   getByText: Frame['getByText'] = (...arguments_) => this.mainFrame().getByText(...arguments_);
   getByLabel: Frame['getByLabel'] = (...arguments_) => this.mainFrame().getByLabel(...arguments_);
   getByTestId: Frame['getByTestId'] = (...arguments_) => this.mainFrame().getByTestId(...arguments_);

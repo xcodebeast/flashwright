@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "scope": "Eight deliberate-corruption failure-rejection checks only; no browser execution, build, production mutation, visual-fidelity or full trace-parity claim.",
+  "script": {
+    "name": "run-trace-verifier-corruption-checks.py",
+    "sha256": "194af08b8bee8230d1e4a57eb0c40ca900f68317c7716fcd6abedfda19ecdc90"
+  },
+  "verifier": {
+    "name": "verify-frame-locator-traces.py",
+    "sha256": "b05b1d2cbbfe7c50e1fd54dd87792f94b448c440428fc9b70cf755568456f5dd"
+  },
+  "runtime": {
+    "pythonVersion": "3.14.4",
+    "implementation": "CPython",
+    "versionOutput": "3.14.4 (v3.14.4:23116f998f6, Apr  7 2026, 09:45:22) [Clang 17.0.0 (clang-1700.6.4.2)]",
+    "executable": "<python-runtime>/Versions/3.14/bin/python3"
+  },
+  "originalChecksSha256": "45f750156d4e165a28772f130c974d05ab4e74bb791fbfd634b660ad8ca341aa",
+  "rawInputs": {
+    "differential-003/report.json": "78047549028ed75f8386d2bf1880619c716752e575c1882ca18a729e2d9023bc",
+    "differential-003/reference.zip": "594554d2a1ea336c49fcbef000b6381cd7cb177a85188793158bd5d82c12d115",
+    "differential-004/report.json": "48ffe480f70c725e0b40a854df226bc98165dd8785bf15db5207b78057907fb9",
+    "differential-004/flashwright.zip": "369f470345b64210f50aee725f6f3188f375ac5f54df31188ef78469e859d429"
+  },
+  "checks": [
+    {
+      "name": "unpaired-call",
+      "dataset": "differential-003",
+      "engine": "reference",
+      "status": "rejected",
+      "mutation": {
+        "removedAfterCallId": "call@352"
+      },
+      "expectedDiagnostic": "reference: unpaired calls",
+      "diagnostics": [
+        "reference: unpaired calls"
+      ],
+      "mutatedArchiveSha256": "c4a88130c067dcd0cb7c6649a73c516f44d623dbe86cedd2f22325220e5af364",
+      "mutatedTraceSha256": "42f24515f09ffe526437b145626cf45de58802e6d42cfb134529c538d0a6834a"
+    },
+    {
+      "name": "wrong-snapshot-call",
+      "dataset": "differential-003",
+      "engine": "reference",
+      "status": "rejected",
+      "mutation": {
+        "snapshotName": "before@call@356",
+        "replacementCallId": "wrong-call"
+      },
+      "expectedDiagnostic": "before@call@356: snapshot belongs to another call",
+      "diagnostics": [
+        "before@call@356: snapshot belongs to another call"
+      ],
+      "mutatedArchiveSha256": "778b5f7d71c77fc37dca2d7fc3969bd9d8481386b54f25bd7f87d6c829cde52a",
+      "mutatedTraceSha256": "31bb59a72dd516896c2d3c21a578b8fb64b6fcf63ad7b3cb484d3355efa6fb74"
+    },
+    {
+      "name": "invalid-backreference",
+      "dataset": "differential-003",
+      "engine": "reference",
+      "status": "rejected",
+      "mutation": {
+        "snapshotName": "before@call@354",
+        "replacementHtml": [
+          [
+            999999,
+            0
+          ]
+        ]
+      },
+      "expectedDiagnostic": "Invalid snapshot backreference in ('page@673b2df7896723db47539aad0b28e675', 'frame@c2f9bccae9cf32a0a036d74ffb752803')",
+      "diagnostics": [
+        "Invalid snapshot backreference in ('page@673b2df7896723db47539aad0b28e675', 'frame@c2f9bccae9cf32a0a036d74ffb752803')"
+      ],
+      "mutatedArchiveSha256": "56360f598fd02cb40a9dd0c84832d05a984d1615209cd45b34b3664d60f05211",
+      "mutatedTraceSha256": "545ecb119f06c3d844e08a472b276bdd14f8e039deba3e2e4f41b7590c9d62f2"
+    },
+    {
+      "name": "main-frame-input-target",
+      "dataset": "differential-003",
+      "engine": "reference",
+      "status": "rejected",
+      "mutation": {
+        "snapshotName": "input@call@596",
+        "markedRootCallId": "call@596",
+        "preservesPostorderNodeIndices": true
+      },
+      "expectedDiagnostic": "call@596: target marked in main frame",
+      "diagnostics": [
+        "call@596: target marked in main frame"
+      ],
+      "mutatedArchiveSha256": "e6319e0dc84866484372a46e052860efb2d8d3f06442ba30cbf7405a2375ee58",
+      "mutatedTraceSha256": "9ff76eee87182239fa9ecd30df9b5f61ea23d5e5f79301691f29b58a47894613"
+    },
+    {
+      "name": "changed-source-artifact",
+      "dataset": "differential-003",
+      "engine": "reference",
+      "status": "rejected",
+      "mutation": {
+        "sourceEntry": "resources/src@cc7ce82d7738fea92cb2f71cc4b3f71613c0e22b.txt"
+      },
+      "expectedDiagnostic": "resources/src@cc7ce82d7738fea92cb2f71cc4b3f71613c0e22b.txt: fixture source differs from report",
+      "diagnostics": [
+        "resources/src@cc7ce82d7738fea92cb2f71cc4b3f71613c0e22b.txt: fixture source differs from report"
+      ],
+      "mutatedArchiveSha256": "cc585891474202de373428173c1d936a08cf41241335b09be6a507d2cf74bc29",
+      "mutatedTraceSha256": "118e5746608bcfad3fc97122437a2e3583e8648334c3f04b247bbc14d90584a1"
+    },
+    {
+      "name": "missing-filmstrip-resource",
+      "dataset": "differential-003",
+      "engine": "reference",
+      "status": "rejected",
+      "mutation": {
+        "removedResourceEntry": "resources/page@673b2df7896723db47539aad0b28e675-1791613345097.jpeg"
+      },
+      "expectedDiagnostic": "Missing filmstrip resource: resources/page@673b2df7896723db47539aad0b28e675-1791613345097.jpeg",
+      "diagnostics": [
+        "Missing filmstrip resource: resources/page@673b2df7896723db47539aad0b28e675-1791613345097.jpeg"
+      ],
+      "mutatedArchiveSha256": "97b39d1457b892838b9d8d85b046c5c8c6fa5c08e482cfaba51d02a0d9512976",
+      "mutatedTraceSha256": "118e5746608bcfad3fc97122437a2e3583e8648334c3f04b247bbc14d90584a1"
+    },
+    {
+      "name": "missing-candidate-before-snapshot-name",
+      "dataset": "differential-004",
+      "engine": "flashwright",
+      "status": "rejected",
+      "mutation": {
+        "callId": "ee23c26d-4915-4daf-b909-7628d0d0bbbb@122",
+        "removedField": "beforeSnapshot",
+        "removedValue": "before@ee23c26d-4915-4daf-b909-7628d0d0bbbb@122"
+      },
+      "expectedDiagnostic": "ee23c26d-4915-4daf-b909-7628d0d0bbbb@122: missing before snapshot name",
+      "diagnostics": [
+        "ee23c26d-4915-4daf-b909-7628d0d0bbbb@122: missing before snapshot name"
+      ],
+      "mutatedArchiveSha256": "e5142089a2f1d9b2426071a907b0596a44c4524bd030181961079f9f48ec704e",
+      "mutatedTraceSha256": "33e966cafb567e66fcc29a0a0524b3363c719f77d529b05231725b8f417ca36e"
+    },
+    {
+      "name": "missing-candidate-after-snapshot-name",
+      "dataset": "differential-004",
+      "engine": "flashwright",
+      "status": "rejected",
+      "mutation": {
+        "callId": "ee23c26d-4915-4daf-b909-7628d0d0bbbb@122",
+        "removedField": "afterSnapshot",
+        "removedValue": "after@ee23c26d-4915-4daf-b909-7628d0d0bbbb@122"
+      },
+      "expectedDiagnostic": "ee23c26d-4915-4daf-b909-7628d0d0bbbb@122: missing after snapshot name",
+      "diagnostics": [
+        "ee23c26d-4915-4daf-b909-7628d0d0bbbb@122: missing after snapshot name"
+      ],
+      "mutatedArchiveSha256": "37673a6baf7959489f0113ace82ec6c29948955200e81809dfb48612f8b2520d",
+      "mutatedTraceSha256": "5596507597de5312afb9fb2b19704630c49cd4fbb0ef1c7c429d6f05e6327f2c"
+    }
+  ],
+  "rawInputsUnchanged": true,
+  "verifierUnchanged": true,
+  "originalChecksUnchanged": true
+}
