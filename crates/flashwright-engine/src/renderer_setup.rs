@@ -33,9 +33,10 @@ async fn renderer_command(
 }
 
 pub(crate) fn auto_attach_parameters() -> Value {
-    // Chromium pauses reported workers/worklets before applying the attachment filter.
-    // Receive every related target so unsupported types can be resumed and detached.
-    json!({"autoAttach":true,"waitForDebuggerOnStart":true,"flatten":true})
+    // Renderer child workers/worklets pause before filtering. Admit them for cleanup;
+    // other related targets gate pausing on filter acceptance and may outlive this page.
+    json!({"autoAttach":true,"waitForDebuggerOnStart":true,"flatten":true,
+        "filter":[{"type":"iframe"},{"type":"worker"},{"type":"worklet"},{"exclude":true}]})
 }
 
 impl Engine {
