@@ -6,7 +6,6 @@ import { createWriteStream } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile, copyFile, realpath } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import { packConsumerPackages } from './packed-artifacts.mjs';
 import { installPackedConsumer } from './install-packed-consumer.mjs';
@@ -59,7 +58,7 @@ try {
     const sourceFile = join(consumer, `standalone-${engine}.ts`); await writeFile(sourceFile, standaloneSource);
     const sourcePath = await realpath(sourceFile);
     await writeFile(join(output, 'original-source.txt'), standaloneSource);
-    const library = engine === 'playwright' ? pathToFileURL(require.resolve('playwright')).href : 'flashwright';
+    const library = engine === 'playwright' ? import.meta.resolve('playwright') : 'flashwright';
     await run([sourcePath], consumer, join(output, 'process.log'), { FLASHWRIGHT_SOURCE_LIBRARY: library, FLASHWRIGHT_SOURCE_OUTPUT: output });
     for (const version of ['original', 'changed', 'missing']) {
       const expected = version === 'missing' ? undefined : standaloneSource + (version === 'changed' ? '\n// changed source at export\n' : '');
