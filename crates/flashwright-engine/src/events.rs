@@ -198,7 +198,7 @@ impl Engine {
                         .get(&page.context_identifier)
                         .is_some_and(|context| context.browser_identifier == browser_identifier)
                         && match event.method.as_str() {
-                            "Target.targetDestroyed" => {
+                            "Target.targetDestroyed" | "Target.targetCrashed" => {
                                 parameters["targetId"].as_str() == Some(&page.target_identifier)
                             }
                             "Target.detachedFromTarget" => {
@@ -550,6 +550,96 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn target_crashes_require_root_identity_but_owned_frame_inspector_crashes_fail_the_page() {
+        for root_crash in [false, true] {
+            let (outgoing, _messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            let page = Page {
+                context_identifier: "context".into(),
+                target_identifier: "page-target".into(),
+                session_identifier: "root-session".into(),
+                state: Arc::new(PageState::default()),
+            };
+            let (root, child) = {
+                let mut sessions = page.state.renderer_sessions.lock().unwrap();
+                let root = sessions
+                    .register_root("page-target", "root-session")
+                    .unwrap();
+                let child = sessions
+                    .register_child(&root, "child-target", "child-session")
+                    .unwrap();
+                (root, child)
+            };
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native-context".into(),
+                    viewport: None,
+                    devices: crate::devices::DeviceOptions::default(),
+                    settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: false,
+                },
+            );
+            engine
+                .registry
+                .lock()
+                .unwrap()
+                .pages
+                .insert("page".into(), page.clone());
+            for target in ["worker-target", "retired-target", "child-target"] {
+                engine
+                    .handle_event(
+                        "browser",
+                        Event {
+                            sequence: 1,
+                            received_at: std::time::Instant::now(),
+                            method: "Target.targetCrashed".into(),
+                            session_identifier: Some("root-session".into()),
+                            parameters: Some(
+                                serde_json::value::to_raw_value(
+                                    &json!({"targetId":target,"status":"crashed","errorCode":1}),
+                                )
+                                .unwrap(),
+                            ),
+                        },
+                    )
+                    .unwrap();
+                assert!(page.state.state.lock().unwrap().failure.is_none());
+                assert!(!root.is_retired());
+                assert!(!child.is_retired());
+            }
+            // Root crashes require target identity; an owned frame Inspector crash follows the reference.
+            engine.handle_event("browser", Event {
+            sequence: 2, received_at: std::time::Instant::now(),
+            method: if root_crash { "Target.targetCrashed" } else { "Inspector.targetCrashed" }.into(),
+            session_identifier: if root_crash { None } else { Some("child-session".into()) },
+            parameters: if root_crash { Some(serde_json::value::to_raw_value(&json!({"targetId":"page-target","status":"crashed","errorCode":1})).unwrap()) } else { None },
+        }).unwrap();
+            assert_eq!(
+                page.state
+                    .state
+                    .lock()
+                    .unwrap()
+                    .failure
+                    .as_ref()
+                    .unwrap()
+                    .code,
+                ErrorCode::PageCrashed
+            );
+            assert!(root.is_retired());
+            assert!(child.is_retired());
+        }
+    }
 
     #[test]
     fn snapshot_terminal_session_events_survive_public_registry_removal() {

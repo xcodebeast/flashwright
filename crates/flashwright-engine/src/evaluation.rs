@@ -228,7 +228,7 @@ impl Engine {
         operation: &Operation,
     ) -> Result<Arc<EvaluationRuntime>, ErrorRecord> {
         let context = self
-            .evaluation_context(page, browser, frame, operation)
+            .evaluation_context(page, browser, frame, operation, METHOD, true)
             .await?;
         self.context_evaluation_runtime(page, browser, &context)
     }
@@ -240,11 +240,13 @@ impl Engine {
         browser: &Chromium,
         frame: Option<&str>,
         operation: &Operation,
+        method: &str,
+        allow_remote_frame: bool,
     ) -> Result<ExecutionContext, ErrorRecord> {
         operation
             .wait(
                 page.state
-                    .while_alive(METHOD, browser.connection.synchronize_events()),
+                    .while_alive(method, browser.connection.synchronize_events()),
             )
             .await?;
         let mut changes = page.state.changed.subscribe();
@@ -253,24 +255,21 @@ impl Engine {
                 loop {
                     {
                         let state = page.state.state.lock().unwrap();
-                        state.check(METHOD)?;
+                        state.check(method)?;
                         let selected = frame.or(state.main_frame.as_deref());
                         if let Some(selected) = selected {
-                            if !state.frames.contains_key(selected) {
-                                return Err(ErrorRecord::new(
-                                    ErrorCode::Evaluation,
-                                    METHOD,
-                                    "frame has been detached",
-                                ));
-                            }
-                            if let Some(context) =
-                                ready_frame_context(&page.state, &state, selected)
-                            {
+                            if let Some(context) = ready_frame_context(
+                                &page.state,
+                                &state,
+                                selected,
+                                method,
+                                allow_remote_frame,
+                            )? {
                                 break Ok(context);
                             }
                         }
                     }
-                    changes.changed().await.map_err(|_| closed(METHOD))?;
+                    changes.changed().await.map_err(|_| closed(method))?;
                 }
             })
             .await
@@ -318,10 +317,21 @@ fn ready_frame_context(
     page: &PageState,
     state: &page_state::DocumentState,
     frame_identifier: &str,
-) -> Option<ExecutionContext> {
-    let frame = state.frames.get(frame_identifier)?;
+    method: &str,
+    allow_remote_frame: bool,
+) -> Result<Option<ExecutionContext>, ErrorRecord> {
+    let frame = state.frames.get(frame_identifier).ok_or_else(|| {
+        ErrorRecord::new(ErrorCode::Evaluation, method, "frame has been detached")
+    })?;
+    if frame.remote && !allow_remote_frame {
+        return Err(ErrorRecord::new(
+            ErrorCode::UnsupportedFeature,
+            method,
+            "this locator operation in out-of-process frames is not implemented",
+        ));
+    }
     if frame.awaiting_renderer {
-        return None;
+        return Ok(None);
     }
     if frame.remote
         && !page
@@ -331,11 +341,15 @@ fn ready_frame_context(
             .get(&frame.session_identifier)
             .is_some_and(|owner| owner.is_ready())
     {
-        return None;
+        return Ok(None);
     }
-    let context = state.main_worlds.get(frame_identifier)?;
-    (context.session_identifier == frame.session_identifier && state.context_is_alive(context))
-        .then(|| context.clone())
+    let Some(context) = state.main_worlds.get(frame_identifier) else {
+        return Ok(None);
+    };
+    Ok(
+        (context.session_identifier == frame.session_identifier && state.context_is_alive(context))
+            .then(|| context.clone()),
+    )
 }
 
 pub(crate) async fn ready_runtime(
@@ -526,14 +540,32 @@ mod tests {
             .execution_contexts
             .insert(original_context.key(), original_context.clone());
         drop(sessions);
-        assert!(ready_frame_context(&page, &state, "child").is_none());
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+        let unsupported =
+            ready_frame_context(&page, &state, "child", "locator.fill", false).unwrap_err();
+        assert_eq!(unsupported.code, ErrorCode::UnsupportedFeature);
+        assert_eq!(unsupported.method.as_ref(), "locator.fill");
         original.mark_ready();
         assert_eq!(
-            ready_frame_context(&page, &state, "child"),
+            ready_frame_context(&page, &state, "child", METHOD, true).unwrap(),
             Some(original_context.clone())
         );
         state.frames.get_mut("child").unwrap().awaiting_renderer = true;
-        assert!(ready_frame_context(&page, &state, "child").is_none());
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(
+            ready_frame_context(&page, &state, "child", "locator.click", false)
+                .unwrap_err()
+                .code,
+            ErrorCode::UnsupportedFeature
+        );
         state.frames.get_mut("child").unwrap().awaiting_renderer = false;
         let replacement = {
             let mut sessions = page.renderer_sessions.lock().unwrap();
@@ -543,10 +575,18 @@ mod tests {
                 .unwrap()
         };
         original.mark_ready();
-        assert!(ready_frame_context(&page, &state, "child").is_none());
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
         state.frames.get_mut("child").unwrap().session_identifier = "replacement-session".into();
         replacement.mark_ready();
-        assert!(ready_frame_context(&page, &state, "child").is_none());
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
         let replacement_context = ExecutionContext {
             session_identifier: "replacement-session".into(),
             identifier: 7,
@@ -560,11 +600,15 @@ mod tests {
             .execution_contexts
             .insert(replacement_context.key(), replacement_context.clone());
         assert_eq!(
-            ready_frame_context(&page, &state, "child"),
+            ready_frame_context(&page, &state, "child", METHOD, true).unwrap(),
             Some(replacement_context.clone())
         );
         state.execution_contexts.remove(&replacement_context.key());
-        assert!(ready_frame_context(&page, &state, "child").is_none());
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
     }
 
     #[tokio::test]
