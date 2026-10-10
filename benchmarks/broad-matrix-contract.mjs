@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { summarize } from './statistics.mjs';
 import { verifyLaunch } from './paired-contract.mjs';
-import { verifyPuppeteerAdmission, verifyWebdriverAdmission } from './competitor-contract.mjs';
+import { verifyPuppeteerAdmission, verifyWebdriverAdmission, verifyPuppeteerSample, verifyWebdriverSample } from './competitor-contract.mjs';
 import { verifyCypressOutcomeAdmission } from './cypress-contract.mjs';
 
 export const broadEngines = ['flashwright', 'playwright', 'puppeteer', 'cypress', 'webdriverio'];
@@ -22,7 +22,7 @@ function positive(value, label) {
 }
 
 /** Recheck original reports instead of trusting admission booleans or a producer's summary. */
-export function normalizeBroadLaunch({ engine, launchIndex, report, receipt, resources, configuration, contenders, policies, browserPath }) {
+export function normalizeBroadLaunch({ engine, launchIndex, report, receipt, resources, admission, configuration, contenders, policies, browserPath }) {
   assert.ok(broadEngines.includes(engine));
   assert.ok(Number.isInteger(launchIndex) && launchIndex >= 0 && launchIndex < configuration.independentLaunches);
   assert.equal(resources.schemaVersion, 2);
@@ -49,10 +49,21 @@ export function normalizeBroadLaunch({ engine, launchIndex, report, receipt, res
   } else {
     assert.equal(receipt.inputsUnchanged, true);
     assert.equal(receipt.exit.code, 0);
+    if (report.sampling) {
+      assert.ok(['puppeteer', 'webdriverio'].includes(engine));
+      assert.equal(report.sampling.launchIndex, launchIndex);
+      assert.ok(admission, 'Library sampling requires separate current-source functional admission');
+      const verifyAdmission = engine === 'puppeteer' ? verifyPuppeteerAdmission : verifyWebdriverAdmission;
+      const admissionDecision = verifyAdmission(admission.report, admission.resources, configuration, contenders, policies.chromium, policies.webdriverio);
+      assert.equal(admission.receipt.inputsUnchanged, true);
+      assert.equal(admission.receipt.exit.code, 0);
+      for (const [key, value] of Object.entries(admissionDecision)) assert.deepEqual(admission.receipt[key], value, `Changed separate admission decision: ${key}`);
+      for (const key of ['engine', 'package', 'browser', 'driver', 'runtime']) assert.deepEqual(report[key], admission.report[key], `Sampling/admission identity mismatch: ${key}`);
+    }
     const decision = engine === 'puppeteer'
-      ? verifyPuppeteerAdmission(report, resources, configuration, contenders, policies.chromium)
+      ? (report.sampling ? verifyPuppeteerSample : verifyPuppeteerAdmission)(report, resources, configuration, contenders, policies.chromium)
       : engine === 'webdriverio'
-        ? verifyWebdriverAdmission(report, resources, configuration, contenders, policies.chromium, policies.webdriverio)
+        ? (report.sampling ? verifyWebdriverSample : verifyWebdriverAdmission)(report, resources, configuration, contenders, policies.chromium, policies.webdriverio)
         : verifyCypressOutcomeAdmission(report, resources, configuration, contenders, policies.cypress);
     for (const [key, value] of Object.entries(decision)) assert.deepEqual(receipt[key], value, `Changed admission decision: ${key}`);
   }
@@ -74,7 +85,8 @@ export function normalizeBroadLaunch({ engine, launchIndex, report, receipt, res
       workloadTotals: Object.fromEntries(report.workloads.map(workload => [workload.name, workload.completeMilliseconds])),
       semanticDifferences,
       equivalentReferenceWork: engine === 'flashwright' || engine === 'playwright',
-      instrumentation: engine === 'webdriverio' ? ['Verbose ChromeDriver protocol logging', 'Per-iteration report persistence', 'Extra isolation probe']
+      instrumentation: report.sampling ? (engine === 'webdriverio' ? ['Startup process-command observation'] : [])
+        : engine === 'webdriverio' ? ['Verbose ChromeDriver protocol logging', 'Per-iteration report persistence', 'Extra isolation probe']
         : engine === 'puppeteer' ? ['Per-iteration report persistence', 'Extra isolation probe'] : [],
     };
   }
@@ -149,6 +161,6 @@ export function renderBroadMatrixTable(summary) {
   }
   lines.push('', '| Engine | Selection rationale | Recorded differences and instrumentation |', '| --- | --- | --- |');
   for (const row of summary.rows) lines.push(`| ${row.engine} | ${cell(row.selectionRationale)} | ${cell([...row.semanticDifferences, ...row.instrumentation].join('; ') || 'None in the measured fixture contract')} |`);
-  lines.push('', 'The library-flow rows and Cypress runner-outcome row do not measure the same complete work. Native Linux, contention, representative runner suites and uninstrumented competitor comparisons remain open. No broad performance ranking follows from this table.');
+  lines.push('', 'The library-flow rows and Cypress runner-outcome row do not measure the same complete work. Diagnostic admission rows retain the instrumentation listed above. Native Linux, contention and representative matched runner suites remain open. No broad performance ranking follows from this table.');
   return lines.join('\n') + '\n';
 }

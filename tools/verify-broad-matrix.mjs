@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { lstat, readFile, readdir } from 'node:fs/promises';
 import { isAbsolute, join, normalize } from 'node:path';
 import { hash } from './competitor-inputs.mjs';
@@ -68,6 +69,48 @@ assert.deepEqual(summary.attempts.map(({ launchIndex, engine, status }) => ({ la
 assert.deepEqual((await read('progress.json')).attempts, summary.attempts);
 const launches = Object.fromEntries(broadEngines.map(engine => [engine, []]));
 const referenceObservations = {};
+assert.ok([undefined, false, true].includes(metadata.plan.sampleLibrary));
+const sampleLibrary = metadata.plan.sampleLibrary === true;
+
+async function readCompetitorEvidence(engine, root, launchIndex) {
+  const report = await read(`${root}/sample.json`);
+  const receipt = await read(`${root}/admission.json`);
+  const resources = await read(`${root}/resources.json`);
+  const inputs = await read(`${root}/inputs.json`);
+  const sampling = sampleLibrary && engine !== 'cypress' && launchIndex !== undefined;
+  assert.equal(report.sampling !== undefined, sampling);
+  for (const [file, expected] of Object.entries(receipt.files)) assert.equal(hash(await readFile(join(directory, root, contained(file)))), expected, `${root}/${file}`);
+  for (const [file, expected] of Object.entries(inputs.sources ?? inputs.inputs)) assert.equal(metadata.sources[contained(file)], expected, `Admission source changed: ${file}`);
+  assert.deepEqual(inputs.installedDependencies, metadata.competitorDependencies[engine]);
+  assert.equal(inputs.browserSha256, metadata.browser.sha256);
+  assert.deepEqual(inputs.runtime, { executable: metadata.measuredRuntime.executable, sha256: metadata.measuredRuntime.sha256 });
+  assert.deepEqual(reportRuntime(report), { name: metadata.measuredRuntime.name, version: metadata.measuredRuntime.version });
+  assert.equal(report.browser.sha256, metadata.browser.sha256);
+  assert.equal(resources.command[0], metadata.measuredRuntime.executable);
+  assert.equal(resources.command[1], `benchmarks/${engine}-admission.mjs`);
+  assert.equal(resources.command.length, sampling ? 4 : 3);
+  assert.ok(resources.command[2].endsWith(`/${root}/sample.json`));
+  if (sampling) {
+    assert.equal(resources.command[3], String(launchIndex));
+    execFileSync(process.execPath, ['tools/verify-competitor-sampling.mjs', join(directory, root)], { stdio: 'pipe' });
+  }
+  for (const file of ['package.json', 'bun.lock']) assert.equal(inputs.installedDependencies[file], metadata.sources[`benchmarks/competitors/${engine}/${file}`]);
+  if (engine === 'webdriverio') {
+    assert.equal(inputs.driverSha256, metadata.chromeDriverSha256);
+    assert.equal(report.driver.sha256, metadata.chromeDriverSha256);
+  }
+  if (engine === 'cypress') {
+    assert.deepEqual(inputs.bundle, metadata.cypressBundleFiles);
+    assert.equal(report.bundle.executableSha256, metadata.cypressBundleFiles['Contents/MacOS/Cypress']);
+  }
+  return { report, receipt, resources };
+}
+
+const admissions = {};
+if (sampleLibrary) {
+  assert.deepEqual((await read('admission-progress.json')).attempts.map(({ engine, status }) => ({ engine, status })), ['puppeteer', 'webdriverio'].map(engine => ({ engine, status: 'passed' })));
+  for (const engine of ['puppeteer', 'webdriverio']) admissions[engine] = await readCompetitorEvidence(engine, `admission-${engine}`);
+}
 for (const { engine, launchIndex } of expectedOrder) {
   let report, receipt, resources;
   if (engine === 'playwright' || engine === 'flashwright') {
@@ -78,33 +121,9 @@ for (const { engine, launchIndex } of expectedOrder) {
     assert.deepEqual(resources.command, [metadata.measuredRuntime.executable, 'benchmarks/sample.mjs', String(launchIndex), engine]);
     referenceObservations[`${engine}-${launchIndex}`] = report.workloads.map(workload => ({ name: workload.name, observations: workload.observations }));
   } else {
-    const root = `launch-${launchIndex}-${engine}`;
-    report = await read(`${root}/sample.json`);
-    receipt = await read(`${root}/admission.json`);
-    resources = await read(`${root}/resources.json`);
-    const inputs = await read(`${root}/inputs.json`);
-    for (const [file, expected] of Object.entries(receipt.files)) assert.equal(hash(await readFile(join(directory, root, contained(file)))), expected, `${root}/${file}`);
-    for (const [file, expected] of Object.entries(inputs.sources ?? inputs.inputs)) assert.equal(metadata.sources[contained(file)], expected, `Admission source changed: ${file}`);
-    assert.deepEqual(inputs.installedDependencies, metadata.competitorDependencies[engine]);
-    assert.equal(inputs.browserSha256, metadata.browser.sha256);
-    assert.deepEqual(inputs.runtime, { executable: metadata.measuredRuntime.executable, sha256: metadata.measuredRuntime.sha256 });
-    assert.deepEqual(reportRuntime(report), { name: metadata.measuredRuntime.name, version: metadata.measuredRuntime.version });
-    assert.equal(report.browser.sha256, metadata.browser.sha256);
-    assert.equal(resources.command[0], metadata.measuredRuntime.executable);
-    assert.equal(resources.command[1], `benchmarks/${engine}-admission.mjs`);
-    assert.equal(resources.command.length, 3);
-    assert.ok(resources.command[2].endsWith(`/${root}/sample.json`));
-    for (const file of ['package.json', 'bun.lock']) assert.equal(inputs.installedDependencies[file], metadata.sources[`benchmarks/competitors/${engine}/${file}`]);
-    if (engine === 'webdriverio') {
-      assert.equal(inputs.driverSha256, metadata.chromeDriverSha256);
-      assert.equal(report.driver.sha256, metadata.chromeDriverSha256);
-    }
-    if (engine === 'cypress') {
-      assert.deepEqual(inputs.bundle, metadata.cypressBundleFiles);
-      assert.equal(report.bundle.executableSha256, metadata.cypressBundleFiles['Contents/MacOS/Cypress']);
-    }
+    ({ report, receipt, resources } = await readCompetitorEvidence(engine, `launch-${launchIndex}-${engine}`, launchIndex));
   }
-  launches[engine].push(normalizeBroadLaunch({ engine, launchIndex, report, receipt, resources, configuration, contenders, policies, browserPath: metadata.browser.executablePath }));
+  launches[engine].push(normalizeBroadLaunch({ engine, launchIndex, report, receipt, resources, admission: admissions[engine], configuration, contenders, policies, browserPath: metadata.browser.executablePath }));
 }
 for (let index = 0; index < configuration.independentLaunches; index++) assert.deepEqual(referenceObservations[`flashwright-${index}`], referenceObservations[`playwright-${index}`]);
 const comparison = summarizeBroadMatrix(launches, configuration, contenders);
