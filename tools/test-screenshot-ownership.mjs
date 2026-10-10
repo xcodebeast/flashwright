@@ -75,6 +75,44 @@ async function images(info) {
 }
 
 try {
+  await check('pre-observer and unowned between-scope publication join the active screenshot scope', async () => {
+    const lifecycle = new ScreenshotLifecycle(policy);
+    try {
+      await lifecycle.ready;
+      const gapCreation = observer.beginContextCreation();
+      const info = information();
+      const recorder = lifecycle.start(info);
+      const preObserverContext = context(page('pre-observer publication'));
+      observer.didCreateUnclaimedContext(preObserverContext);
+      await observer.willCloseContext(preObserverContext, 'context');
+      preObserverContext.emit('close');
+      const gapContext = context(page('creation in an observed gap'));
+      await gapCreation.didCreateContext(gapContext);
+      gapCreation.complete();
+      await observer.willCloseContext(gapContext, 'context');
+      gapContext.emit('close');
+      await lifecycle.finish(recorder);
+      assert.deepEqual(await images(info), ['pre-observer publication', 'creation in an observed gap']);
+    } finally { await lifecycle.dispose(); }
+  });
+
+  await check('late hook creation joins a later scope only when TestInfo still identifies the original attempt', async () => {
+    const available = new Set();
+    const scopes = new ScreenshotScopes(policy, available);
+    const info = information();
+    const firstRecorder = scopes.start(info);
+    const creation = scopes.claim();
+    await scopes.finish(firstRecorder);
+    const laterRecorder = scopes.start(info);
+    const subject = context(page('late original hook'));
+    available.add(subject);
+    creation.didCreateContext(subject);
+    await scopes.beforeContextClose(subject);
+    available.delete(subject);
+    await scopes.finish(laterRecorder);
+    assert.deepEqual(await images(info), ['late original hook']);
+  });
+
   await check('late original creation and closure cannot publish screenshots on a successor scope', async () => {
     const available = new Set();
     const scopes = new ScreenshotScopes(policy, available);

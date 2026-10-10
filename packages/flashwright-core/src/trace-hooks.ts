@@ -4,8 +4,8 @@ import type { Tracing, TraceCall } from './tracing.js';
 export interface TraceCallMetadata { readonly context: string; readonly generation: string; readonly recording?: string; readonly call?: string }
 interface CallScope { internal: boolean; traceCall?: TraceCallMetadata; apiTraceCall?: TraceCallMetadata }
 export interface TraceOwner { tracing: Tracing; pageId?: string; selector?: string }
-export type TraceCaptureMode = 'default' | 'metadata-only';
-export interface TraceMethod { className?: string; method?: string | ((arguments_: readonly unknown[]) => string); apiName?: string; parameters?: readonly string[]; capture?: TraceCaptureMode | ((arguments_: readonly unknown[]) => TraceCaptureMode); completion?: 'independent' }
+export type TraceCaptureMode = 'default' | 'metadata-only' | 'filmstrip';
+export interface TraceMethod { className?: string; method?: string | ((arguments_: readonly unknown[]) => string); apiName?: string; parameters?: readonly string[]; capture?: TraceCaptureMode | ((arguments_: readonly unknown[]) => TraceCaptureMode); completion?: 'independent'; prepareArguments?: (arguments_: readonly unknown[]) => unknown[] }
 let activeChunks = 0;
 const scope = new AsyncLocalStorage<CallScope>();
 let pageOwnerResolver: ((page: object) => TraceOwner | undefined) | undefined;
@@ -44,9 +44,16 @@ export function instrumentTraceMethods<Owner extends object>(prototype: Owner, c
       );
       return Promise.resolve(result).then(async value => { await owner.tracing.complete(call, value, undefined, false); return value; }, async error => { await owner.tracing.complete(call, undefined, error, true); throw error; });
     };
-    Object.defineProperty(wrapped, 'name', { value: original.name });
-    Object.defineProperty(wrapped, 'length', { value: original.length });
-    Object.defineProperty(prototype, name, { ...descriptor, value: wrapped });
+    // Opt-in preparation is for Promise-returning APIs. It must run before owner lookup
+    // or trace begin, even with tracing disabled, and may normalize application getters.
+    // Other APIs keep their existing wrapper and hot path without an extra call.
+    const prepared = configuration.prepareArguments ? function(this: Owner, ...arguments_: unknown[]): unknown {
+      try { return wrapped.apply(this, configuration.prepareArguments!(arguments_)); }
+      catch (error) { return Promise.reject(error); }
+    } : wrapped;
+    Object.defineProperty(prepared, 'name', { value: original.name });
+    Object.defineProperty(prepared, 'length', { value: original.length });
+    Object.defineProperty(prototype, name, { ...descriptor, value: prepared });
   }
 }
 

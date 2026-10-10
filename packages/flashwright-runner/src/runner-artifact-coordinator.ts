@@ -7,7 +7,7 @@ import type { TestInfo } from 'flashwright-upstream-runner/test';
 import { adoptRunnerTraceAtStart, type RunnerJournalAdmission } from './runner-trace-journal.js';
 import { ownRunnerArtifactFinalTimeout, installRunnerTraceFinalizer, type RunnerTraceCollection } from './runner-trace-finalizer.js';
 import { createOwnedTraceSteps, type OwnedTraceSteps } from './trace-steps.js';
-import { ScreenshotScopes } from './screenshot-recorder.js';
+import { ScreenshotScopes, screenshotAttemptIdentity } from './screenshot-recorder.js';
 import type { ScreenshotPolicy } from './screenshot-policy.js';
 
 type Recording = Awaited<ReturnType<typeof runnerIntegration.startTraceRecordingWithActions>>;
@@ -49,6 +49,7 @@ export class RunnerArtifactCoordinator {
   private registration: ReturnType<typeof runnerIntegration.installArtifactContextLifecycle> | undefined;
   private requestRegistration: ReturnType<typeof runnerIntegration.installArtifactRequestLifecycle> | undefined;
   private current: TraceAttempt | undefined;
+  private activeScreenshotAttempt: object | undefined;
   private screenshots: ScreenshotScopes | undefined;
   private outstandingCaptures = 0;
   private readiness: Promise<void> = Promise.resolve();
@@ -56,6 +57,7 @@ export class RunnerArtifactCoordinator {
 
   /** Called synchronously at the owned normalized-policy boundary, before live or fixture work. */
   start(testInfo: TestInfo, policyFailure?: { error: unknown }): boolean {
+    this.activeScreenshotAttempt = screenshotAttemptIdentity(testInfo);
     this.failureContexts.start(testInfo, this.contexts);
     const previous = this.attempts.get(testInfo);
     if (previous) return true;
@@ -105,6 +107,7 @@ export class RunnerArtifactCoordinator {
     const stopTracing = tracing.stopIfNeeded.bind(tracing);
     let completion: Promise<void> | undefined;
     tracing.stopIfNeeded = () => completion ??= (async () => {
+      if (this.activeScreenshotAttempt === screenshotAttemptIdentity(testInfo)) this.activeScreenshotAttempt = undefined;
       const errors = new ArtifactErrors('error-context-error');
       try {
         this.attempts.get(testInfo)?.closeAdmission();
@@ -186,17 +189,23 @@ export class RunnerArtifactCoordinator {
         const owner = this.current?.claim();
         const failureOwner = this.failureContexts.claim();
         const screenshotOwner = this.screenshots?.claim();
+        const screenshotAttempt = this.activeScreenshotAttempt;
         return {
           didCreateContext: async context => {
             failureOwner?.didCreateContext(context);
-            screenshotOwner?.didCreateContext(context);
+            if (screenshotOwner) screenshotOwner.didCreateContext(context);
+            else if (screenshotAttempt) this.screenshots?.adoptForAttempt(context, screenshotAttempt);
+            else this.screenshots?.adoptUnclaimedContext(context);
             if (owner) { this.observe(context); await owner.didCreateContext(context, context.tracing); }
             else this.observeUnclaimed(context);
           },
           complete: () => owner?.complete(),
         };
       },
-      didCreateUnclaimedContext: context => this.observeUnclaimed(context),
+      didCreateUnclaimedContext: context => {
+        this.screenshots?.adoptUnclaimedContext(context);
+        this.observeUnclaimed(context);
+      },
       willCloseContext: async (context, source) => {
         await this.beforeOwnerClose(context);
         if (source !== 'browser') {
@@ -278,6 +287,7 @@ export class RunnerArtifactCoordinator {
 
   async dispose(): Promise<void> {
     this.retiring = true;
+    this.activeScreenshotAttempt = undefined;
     const registrations = await Promise.allSettled([this.registration?.dispose(), this.requestRegistration?.dispose()]);
     for (const result of registrations) if (result.status === 'rejected') this.current?.fail(result.reason);
     await Promise.all([...this.recordings.values()].map(recording => recording.capture?.beforeContextClose()));

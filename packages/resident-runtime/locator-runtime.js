@@ -537,6 +537,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
 
   return {
     failureContextSnapshot: deadline => safely(() => captureFailureContextSnapshot(injected, codec, deadline)),
+    ariaSnapshot: (units, deadline) => safely(() => captureAriaSnapshot(injected, codec, decodeRequest(units), deadline)),
     prepareFrameSelector: (units, structuredRequest) => safely(() => ({ status: 'success', plan: prepareFrameSelector(units, structuredRequest) })),
     resolveFrameElement,
     resolveElement,

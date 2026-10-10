@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { createRequire } from 'node:module';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -104,6 +104,78 @@ async function libraries(testInfo) {
 }
 
 try {
+  await check('screenshots adopt pre-observer and unowned module-gap publication', async () => {
+    const preObserverCreation = beginRunnerContextCreation();
+    assert.equal(preObserverCreation, null);
+    const coordinator = new RunnerArtifactCoordinator();
+    const screenshots = coordinator.configureScreenshots({ mode: 'on', options: {} });
+    const gapCreation = beginRunnerContextCreation();
+    const preObserverContext = context();
+    const gapContext = context();
+    const captured = [];
+    for (const [value, label] of [[preObserverContext, 'pre-observer'], [gapContext, 'observed gap']]) {
+      value.pages = () => [{ async screenshot(options) { captured.push(label); await writeFile(options.path, label); return Buffer.from(label); } }];
+    }
+    try {
+      const info = Object.assign(information({ off: true }), {
+        project: { outputDir: directory }, outputDir: directory, retry: 0,
+        _onDidFinishTestFunctionCallbacks: new Set(),
+      });
+      let finalizations = 0;
+      info._tracing.stopIfNeeded = async () => { ++finalizations; };
+      coordinator.start(info);
+      const recorder = screenshots.start(info);
+      await coordinator.ready();
+      await publish(preObserverContext, preObserverCreation);
+      await publish(gapContext, gapCreation);
+      await preObserverContext.close();
+      await gapContext.close();
+      await screenshots.finish(recorder);
+      await info._tracing.stopIfNeeded();
+      assert.equal(finalizations, 1);
+      assert.deepEqual(captured, ['pre-observer', 'observed gap']);
+      const attachments = info.attachments.filter(attachment => attachment.name === 'screenshot');
+      assert.equal(attachments.length, 2);
+      assert.equal(await readFile(attachments[0].path, 'utf8'), 'pre-observer');
+    } finally {
+      await preObserverContext.close(); await gapContext.close(); await coordinator.dispose();
+    }
+  });
+
+  await check('creation before screenshot fixture setup retains its original attempt through later publication', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    const early = context();
+    const late = context();
+    const captures = [];
+    for (const [value, label] of [[early, 'original early creation'], [late, 'late original creation']]) {
+      value.pages = () => [{ async screenshot(options) { captures.push(label); await writeFile(options.path, label); return Buffer.from(label); } }];
+    }
+    const screenshotInformation = () => {
+      const info = Object.assign(information({ off: true }), {
+        project: { outputDir: directory }, outputDir: directory, retry: 0,
+        _onDidFinishTestFunctionCallbacks: new Set(),
+      });
+      info._tracing.stopIfNeeded = async () => {};
+      return info;
+    };
+    try {
+      const first = screenshotInformation(); coordinator.start(first); await coordinator.ready();
+      const earlyCreation = beginRunnerContextCreation();
+      const lateCreation = beginRunnerContextCreation();
+      const screenshots = coordinator.configureScreenshots({ mode: 'on', options: {} });
+      const firstRecorder = screenshots.start(first);
+      await publish(early, earlyCreation); await early.close();
+      await screenshots.finish(firstRecorder); await first._tracing.stopIfNeeded();
+      const second = screenshotInformation(); coordinator.start(second); await coordinator.ready();
+      const secondRecorder = screenshots.start(second);
+      await publish(late, lateCreation); await late.close();
+      await screenshots.finish(secondRecorder); await second._tracing.stopIfNeeded();
+      assert.deepEqual(captures, ['original early creation']);
+      assert.equal(first.attachments.filter(attachment => attachment.name === 'screenshot').length, 1);
+      assert.equal(second.attachments.filter(attachment => attachment.name === 'screenshot').length, 0);
+    } finally { await early.close(); await late.close(); await coordinator.dispose(); }
+  });
+
   await check('already-published API contexts join the first original attempt', async () => {
     const request = requestContext();
     await publishRequest(request.value);

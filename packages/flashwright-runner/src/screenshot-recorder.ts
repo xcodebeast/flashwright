@@ -13,7 +13,17 @@ interface PinnedTestInfo extends TestInfo {
 }
 
 interface ScreenshotOwnership {
+  attemptIdentity: object;
   recorder: ScreenshotRecorder | undefined;
+}
+
+const attemptIdentities = new WeakMap<TestInfo, object>();
+
+/** Pending creation and surviving contexts retain identity without retaining completed test artifacts. */
+export function screenshotAttemptIdentity(testInfo: TestInfo): object {
+  let identity = attemptIdentities.get(testInfo);
+  if (!identity) { identity = {}; attemptIdentities.set(testInfo, identity); }
+  return identity;
 }
 
 /** One observer per worker; test/hook recorders own outcome and artifact retention. */
@@ -29,11 +39,15 @@ export class ScreenshotLifecycle {
       beginContextCreation: () => {
         const claim = this.scopes.claim();
         return {
-          didCreateContext: async context => { claim?.didCreateContext(context); this.observe(context); },
+          didCreateContext: async context => {
+            if (claim) claim.didCreateContext(context);
+            else this.scopes.adoptUnclaimedContext(context);
+            this.observe(context);
+          },
           complete() {},
         };
       },
-      didCreateUnclaimedContext: context => { this.observe(context); },
+      didCreateUnclaimedContext: context => { this.scopes.adoptUnclaimedContext(context); this.observe(context); },
       willCloseContext: async (context, source) => { if (source !== 'browser') await this.scopes.beforeContextClose(context); },
     });
     this.ready = this.registration.ready;
@@ -69,7 +83,7 @@ export class ScreenshotScopes {
     if (this.current) throw failure('ProtocolError', 'runner.screenshot', 'a screenshot recording scope is already active');
     let capturedPages = this.capturedPages.get(testInfo);
     if (!capturedPages) { capturedPages = new WeakSet(); this.capturedPages.set(testInfo, capturedPages); }
-    const ownership: ScreenshotOwnership = { recorder: undefined };
+    const ownership: ScreenshotOwnership = { attemptIdentity: screenshotAttemptIdentity(testInfo), recorder: undefined };
     const ownedContexts = () => [...this.contexts].filter(context => this.owners.get(context) === ownership);
     const recorder = new ScreenshotRecorder(this.policy, testInfo as PinnedTestInfo, ownedContexts, capturedPages);
     ownership.recorder = recorder;
@@ -83,11 +97,22 @@ export class ScreenshotScopes {
     const ownership = this.current;
     if (!ownership?.recorder) return undefined;
     return {
-      didCreateContext: context => {
-        if (!ownership.recorder) return;
-        if (!this.owners.get(context)?.recorder) this.owners.set(context, ownership);
-      },
+      didCreateContext: context => this.adoptForAttempt(context, ownership.attemptIdentity),
     };
+  }
+
+  /** Creation can precede screenshot fixture setup or span hook scopes of the same attempt. */
+  adoptForAttempt(context: BrowserContext, attemptIdentity: object): void {
+    const ownership = this.current;
+    if (ownership?.recorder && ownership.attemptIdentity === attemptIdentity && !this.owners.get(context)?.recorder) {
+      this.owners.set(context, ownership);
+    }
+  }
+
+  /** Creation outside every attempt has no earlier owner; screenshots can start at publication. */
+  adoptUnclaimedContext(context: BrowserContext): void {
+    const ownership = this.current;
+    if (ownership?.recorder && !this.owners.has(context)) this.owners.set(context, ownership);
   }
 
   async finish(recorder: ScreenshotRecorder): Promise<void> {

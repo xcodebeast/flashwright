@@ -1,4 +1,6 @@
 import { installFailureContextSnapshotResolver } from './failure-context-snapshot.js';
+import { prepareAriaSnapshot, prepareAriaSnapshotArguments, type AriaSnapshotOptions } from './aria-snapshot.js';
+export type { AriaSnapshotOptions } from './aria-snapshot.js';
 import { Tracing } from './tracing.js';
 import { instrumentTraceMethods, instrumentTraceCallbacks, installTracePageResolver, tracePageOwner, traceRecordingActive, type TraceMethod } from './trace-hooks.js';
 export { Tracing, type TracingStartOptions, type TracingChunkOptions, type TracingStopOptions } from './tracing.js';
@@ -363,6 +365,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
       return page.client.request('diagnostics.pageSnapshot', { page: page.identifier, frame: page.mainFrameIdentifier }, timeoutMilliseconds).then(result => codec.decode(result) as string);
     });
     instrumentTraceMethods(this.prototype, 'Page', tracePageOwner, {
+      ariaSnapshot: { className: 'Frame', parameters: ['options'], prepareArguments: prepareAriaSnapshotArguments, capture: 'filmstrip' },
       ...selectorActionTraceMethods,
       waitForSelector: { className: 'Frame', parameters: ['selector', 'options'] },
       setInputFiles: { className: 'Frame', parameters: ['selector', 'files', 'options'] },
@@ -585,6 +588,15 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     const input = ['click', 'dblclick', 'hover', 'check', 'uncheck', 'setChecked'].includes(action) ? { pointer: parameters } : keyboard ? { keyboard: parameters } : element ? { element: parameters } : {};
     const result = await this.client.request('locator.run', { page: this.identifier, frame, action, request: Array.from({ length: request.length }, (_, index) => request.charCodeAt(index)), ...input }, validateTimeout(timeoutOptions.timeout ?? this.timeout(), method));
     return codec.decode(result) as Result;
+  }
+  async ariaSnapshot(options: AriaSnapshotOptions = {}): Promise<string> {
+    return this.mainFrame().runAriaSnapshot(null, options);
+  }
+  async runAriaSnapshot(frame: string, selector: string | null, options: AriaSnapshotOptions): Promise<string> {
+    const request = prepareAriaSnapshot(selector, options);
+    this.checkOpen('aria.snapshot');
+    const result = await this.client.request('aria.snapshot', { page: this.identifier, frame, request }, validateTimeout(options.timeout ?? this.timeout(), 'aria.snapshot'));
+    return codec.decode(result) as string;
   }
   async runAssertion(frame: string, selector: string | null, assertion: AssertionOptions, timeout: number): Promise<AssertionResult> {
     this.checkOpen('assertion.run');

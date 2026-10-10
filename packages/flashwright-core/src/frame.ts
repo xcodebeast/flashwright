@@ -1,3 +1,4 @@
+import type { AriaSnapshotOptions } from './aria-snapshot.js';
 import { instrumentTraceMethods, tracePageOwner } from './trace-hooks.js';
 import type { AssertionOptions, AssertionResult } from './assertions.js';
 import type { Page } from './index.js';
@@ -78,6 +79,10 @@ export class Frame extends LocatorScope {
   async type(selector: string, text: string, options: SelectorOptions<PressOptions> = {}): Promise<void> {
     const target = this.selectorAction(selector, 'type', options);
     return target.actions.pressSequentially(text, target.options, 'type');
+  }
+  runAriaSnapshot(selector: string | null, options: AriaSnapshotOptions): Promise<string> {
+    if (this.detached) return Promise.reject(failure('TargetClosedError', 'aria.snapshot', 'frame has been detached'));
+    return this.owner.runAriaSnapshot(this.snapshot.identifier, selector, options);
   }
   runAssertion(selector: string | null, options: AssertionOptions, timeout: number): Promise<AssertionResult> {
     if (this.detached) return Promise.reject(failure('TargetClosedError', 'assertion.run', 'frame has been detached'));

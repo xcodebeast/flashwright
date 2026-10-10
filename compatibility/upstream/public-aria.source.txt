@@ -1,0 +1,103 @@
+// Frame.ariaSnapshot: node_modules/playwright-core/lib/coreBundle.js:18550
+async ariaSnapshot(progress2, options2 = {}) {
+        if (options2.selector && options2.track)
+          throw new Error("Cannot specify both selector and track options");
+        if (options2.selector && options2.mode !== "ai") {
+          const snapshot4 = await this._retryWithProgressIfNotConnected(progress2, options2.selector, { strict: true, performActionPreChecks: true }, async (progress3, handle) => {
+            return await progress3.race(handle.evaluateInUtility(([injected, element2, opts]) => injected.ariaSnapshot(element2, opts), { mode: "default", depth: options2.depth, boxes: options2.boxes }));
+          });
+          return { snapshot: snapshot4 };
+        }
+        let targetFrame;
+        let info;
+        if (options2.selector) {
+          const resolved = await progress2.race(this.selectors.resolveInjectedForSelector(options2.selector, { strict: true }));
+          if (!resolved)
+            throw new Error(`Selector "${options2.selector}" did not resolve to any element`);
+          targetFrame = resolved.frame;
+          info = resolved.info;
+        } else {
+          targetFrame = this;
+        }
+        const result2 = await ariaSnapshotForFrame(progress2, targetFrame, { ...options2, info });
+        const snapshot3 = options2.track && result2.incremental ? result2.incremental.join("\n") : result2.full.join("\n");
+        return { snapshot: snapshot3 };
+      }
+
+// ariaSnapshotForFrame: node_modules/playwright-core/lib/coreBundle.js:19610
+async function ariaSnapshotForFrame(progress2, frame, options2 = {}) {
+  const snapshot3 = await frame.retryWithProgressAndTimeouts(progress2, [1e3, 2e3, 4e3, 8e3], async (progress3, continuePolling) => {
+    try {
+      const context2 = await progress3.race(frame.utilityContext());
+      const injectedScript = await progress3.race(context2.injectedScript());
+      const snapshotOrRetry = await progress3.race(injectedScript.evaluate((injected, options3) => {
+        if (options3.info) {
+          const element2 = injected.querySelector(options3.info.parsed, injected.document, options3.info.strict);
+          if (!element2)
+            return false;
+          return injected.incrementalAriaSnapshot(element2, options3);
+        }
+        const node = injected.document.body;
+        if (!node)
+          return true;
+        return injected.incrementalAriaSnapshot(node, options3);
+      }, {
+        mode: options2.mode ?? "default",
+        refPrefix: frame.seq ? "f" + frame.seq : "",
+        track: options2.track,
+        doNotRenderActive: options2.doNotRenderActive,
+        info: options2.info,
+        depth: options2.depth,
+        boxes: options2.boxes
+      }));
+      if (snapshotOrRetry === true)
+        return continuePolling;
+      if (snapshotOrRetry === false)
+        throw new NonRecoverableDOMError(`Selector "${stringifySelector(options2.info.parsed)}" does not match any element`);
+      return snapshotOrRetry;
+    } catch (e) {
+      if (frame.isNonRetriableError(e))
+        throw e;
+      return continuePolling;
+    }
+  });
+  const renderedIframeRefs = snapshot3.iframeRefs.filter((ref) => ref in snapshot3.iframeDepths);
+  progress2.setAllowConcurrentOrNestedRaces(true);
+  const childSnapshotPromises = renderedIframeRefs.map((ref) => {
+    const iframeDepth = snapshot3.iframeDepths[ref];
+    const childDepth = options2.depth ? options2.depth - iframeDepth - 1 : void 0;
+    return ariaSnapshotFrameRef(progress2, frame, ref, { ...options2, depth: childDepth });
+  });
+  const childSnapshots = await Promise.all(childSnapshotPromises);
+  progress2.setAllowConcurrentOrNestedRaces(false);
+  const full = [];
+  let incremental;
+  if (snapshot3.incremental !== void 0) {
+    incremental = snapshot3.incremental.split("\n");
+    for (let i = 0; i < renderedIframeRefs.length; i++) {
+      const childSnapshot = childSnapshots[i];
+      if (childSnapshot.incremental)
+        incremental.push(...childSnapshot.incremental);
+      else if (childSnapshot.full.length)
+        incremental.push("- <changed> iframe [ref=" + renderedIframeRefs[i] + "]:", ...childSnapshot.full.map((l) => "  " + l));
+    }
+  }
+  for (const line of snapshot3.full.split("\n")) {
+    const match = line.match(/^(\s*)- iframe (?:\[active\] )?\[ref=([^\]]*)\]/);
+    if (!match) {
+      full.push(line);
+      continue;
+    }
+    const leadingSpace = match[1];
+    const ref = match[2];
+    const childSnapshot = childSnapshots[renderedIframeRefs.indexOf(ref)] ?? { full: [] };
+    full.push(childSnapshot.full.length ? line + ":" : line);
+    full.push(...childSnapshot.full.map((l) => leadingSpace + "  " + l));
+  }
+  return { full, incremental };
+}
+
+// InjectedScript.ariaSnapshot: packages/resident-runtime/playwright-injected.js:6652
+ariaSnapshot(node, options) {
+    return this.incrementalAriaSnapshot(node, options).full;
+  }
