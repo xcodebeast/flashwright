@@ -1,0 +1,99 @@
+
+Running 12 tests using 1 worker
+
+  ✓   1 compatibility/m2/runner/runner.spec.ts:6:0 › extended fixtures run native browser actions and assertions (344ms)
+  ✓   2 compatibility/m2/runner/runner.spec.ts:13:0 › fresh contexts isolate browser storage (207ms)
+  ✓   3 compatibility/m2/runner/runner.spec.ts:20:2 › stored login state › context options restore state before page fixture (385ms)
+  ✓   4 compatibility/m2/runner/runner.spec.ts:25:4 › stored login state › explicit state › storage state option overrides context options (365ms)
+  ✓   5 compatibility/m2/runner/runner.spec.ts:35:4 › stored login state › file state › file storage state restores through fixture override (398ms)
+  ✘   6 compatibility/m2/runner/runner.spec.ts:40:0 › soft native assertion failures reach the reporter (297ms)
+  ✓   7 compatibility/m2/runner/runner.spec.ts:46:0 › configured native assertion reports received value and call site (464ms)
+  ✘   8 compatibility/m2/runner/runner.spec.ts:55:0 › runner retries use fresh fixture ownership (236ms)
+  ✓   9 compatibility/m2/runner/runner.spec.ts:55:0 › runner retries use fresh fixture ownership (retry #1) (354ms)
+  ✘  10 compatibility/m2/runner/runner.spec.ts:59:0 › runner timeout tears down an unbounded native assertion (220ms)
+  ✘  11 compatibility/m2/runner/runner.spec.ts:59:0 › runner timeout tears down an unbounded native assertion (retry #1) (320ms)
+  ✓  12 compatibility/m2/runner/runner.spec.ts:63:0 › unimplemented browser matchers reject explicitly (335ms)
+  ✘  13 compatibility/m2/runner/unsupported-context.spec.ts:4:0 › unsupported context options reject before the test body (0ms)
+  ✘  14 compatibility/m2/runner/unsupported-video.spec.ts:4:0 › unsupported artifact policy rejects before the test body (0ms)
+
+
+  1) compatibility/m2/runner/runner.spec.ts:59:0 › runner timeout tears down an unbounded native assertion 
+
+    [31mTest timeout of 150ms exceeded.[39m
+
+    TargetClosedError: assertion.run: target has been closed or is not owned by this driver
+
+       at ../../../packages/flashwright-core/dist/commonjs/errors.js:50
+
+      48 | exports.NavigationError = NavigationError;
+      49 | class PageCrashedError extends FlashwrightError {
+    > 50 | }
+         |  ^
+      51 | exports.PageCrashedError = PageCrashedError;
+      52 | function fromRecord(record) {
+      53 |     const constructors = {
+        at fromRecord (<workspace>/packages/flashwright-core/dist/commonjs/errors.js:50:23)
+        at consume (<workspace>/packages/flashwright-core/dist/commonjs/client.js:573:16)
+        at request (<workspace>/packages/flashwright-core/dist/commonjs/client.js:259:36)
+        at runAssertion (<workspace>/packages/flashwright-core/dist/commonjs/index.js:771:65)
+        at assertion (<workspace>/packages/flashwright-runner/dist/commonjs/matchers.js:36:29)
+        at toHaveText (<workspace>/packages/flashwright-runner/dist/commonjs/matchers.js:82:52)
+        at <workspace>/compatibility/m2/runner/runner.spec.ts:61:40
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    [31mTest timeout of 150ms exceeded.[39m
+
+    TargetClosedError: assertion.run: target has been closed or is not owned by this driver
+
+       at ../../../packages/flashwright-core/dist/commonjs/errors.js:50
+
+      48 | exports.NavigationError = NavigationError;
+      49 | class PageCrashedError extends FlashwrightError {
+    > 50 | }
+         |  ^
+      51 | exports.PageCrashedError = PageCrashedError;
+      52 | function fromRecord(record) {
+      53 |     const constructors = {
+        at fromRecord (<workspace>/packages/flashwright-core/dist/commonjs/errors.js:50:23)
+        at consume (<workspace>/packages/flashwright-core/dist/commonjs/client.js:573:16)
+        at request (<workspace>/packages/flashwright-core/dist/commonjs/client.js:259:36)
+        at runAssertion (<workspace>/packages/flashwright-core/dist/commonjs/index.js:771:65)
+        at assertion (<workspace>/packages/flashwright-runner/dist/commonjs/matchers.js:36:29)
+        at toHaveText (<workspace>/packages/flashwright-runner/dist/commonjs/matchers.js:82:52)
+        at <workspace>/compatibility/m2/runner/runner.spec.ts:61:40
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) compatibility/m2/runner/runner.spec.ts:55:0 › runner retries use fresh fixture ownership ──────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m1[39m
+    Received: [31m0[39m
+
+      55 | test('runner retries use fresh fixture ownership', async ({ page }, testInfo) => {
+      56 |   await expect(page.getByRole('status')).toHaveText('Ready');
+    > 57 |   expect(testInfo.retry).toBe(1);
+         |                         ^
+      58 | });
+      59 | test('runner timeout tears down an unbounded native assertion', async ({ page }) => {
+      60 |   test.setTimeout(150);
+        at <workspace>/compatibility/m2/runner/runner.spec.ts:57:25
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    compatibility/m2/runner/runner.spec.ts:59:0 › runner timeout tears down an unbounded native assertion 
+  1 flaky
+    compatibility/m2/runner/runner.spec.ts:55:0 › runner retries use fresh fixture ownership ───────
+  10 passed (7.3s)
+Native runner evidence: compatibility/evidence/native-runner-darwin-arm64-bun-1.4.2.json

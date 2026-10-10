@@ -4,13 +4,40 @@ Flashwright has not established performance leadership. The current broad compar
 
 | Engine | Pinned package | Library-flow admission | Runner-suite measurement | Current broad performance result |
 | --- | --- | --- | --- | --- |
-| Flashwright | Development checkout | Historical verified slices; fresh source/driver acceptance required before new timing | Pending broader migration corpus | Not established |
-| Playwright | @playwright/test 1.60.0 | Existing seven-flow matched baseline | Pending broader comparison | Historical paired profiles only |
+| Flashwright | Development checkout | 144 current core groups; verified seven-flow profile | Pending broader migration corpus | Not established |
+| Playwright | @playwright/test 1.60.0 | Existing seven-flow matched baseline | Pending broader comparison | Current seven-flow paired profile below |
 | Puppeteer | puppeteer-core 25.13.0 | Seven functional flows; five match the checked reference outcomes, with explicit backend/failure differences | No bundled test runner in this comparison class | Not measured |
 | Cypress | cypress 16.1.1 | Default synthetic input and runner isolation are a separate class | 105 outcome-admission tests on each of Bun/Node 22/24; 15 intentional failures per run | Not measured |
 | WebdriverIO | webdriverio 10.0.2 | Seven functional flows on Bun/Node 22/24 and both Chromium variants; launch/input/failure differences | Not measured | Not measured |
 
 Startup, complete-suite time, action/assertion latency, CPU, concurrent memory and uncertainty remain unmeasured for the current broad matrix. Earlier Playwright/Flashwright observations retain their original source, browser, runtime and workload scope; see the [benchmark history](../README.md#r3-browser-baselines). They cannot establish a ranking against the additional contenders.
+
+## Current verified Playwright comparison
+
+The [current checkpoint](../compatibility/evidence/current-performance-checkpoint-2026-10-10.json) passes all 144 core groups at 851 source hashes matching commit `41cbdcea`. The subsequent [16-launch snapshot](../benchmarks/results/current-paired-2026-10-10/summary.json) passes independent verification before and after path normalization. Both engines use Bun 1.4.2 and the same full Chrome 148.0.7778.96 executable and launch policy on the shared native Apple M3 Pro macOS host. This is one worker, seven library flows and artifacts off.
+
+Times below are milliseconds, expressed as medians of independent-launch medians. Each operation has 96 measured observations across eight launches, plus three warmups per launch. Ratios are paired Playwright/Flashwright values; above 1 favors Flashwright. Confidence intervals use the predeclared launch-clustered bootstrap. Complete runs include preparation, warmup, semantic verification and cleanup; process wall also includes runtime imports and the sampling wrapper.
+
+| Metric | Playwright ms | Flashwright ms | Paired ratio | 95% interval |
+| --- | ---: | ---: | ---: | --- |
+| Complete run | 8075.777 | 7873.119 | 1.019 | 1.001–1.036 |
+| Process wall (imports and wrapper included) | 8450.858 | 8311.049 | 1.014 | 0.988–1.037 |
+| Cold browser launch | 378.876 | 386.064 | 0.975 | 0.941–1.143 |
+| Noop | 0.244 | 0.282 | 0.874 | 0.705–1.059 |
+| Interaction | 16.522 | 16.492 | 1.003 | 0.994–1.007 |
+| Assertion | 25.080 | 10.401 | 2.401 | 2.349–2.513 |
+| Navigation | 54.562 | 53.570 | 1.008 | 0.973–1.070 |
+| Setup | 231.069 | 234.431 | 0.990 | 0.936–1.013 |
+| Backend | 41.745 | 41.663 | 1.002 | 0.993–1.028 |
+| Failure | 24.492 | 25.841 | 0.949 | 0.941–0.957 |
+
+Median sampled process-tree CPU was 8.30 seconds for Playwright and 7.60 for Flashwright. Maximum sampled concurrent RSS was 944.59 MiB and 919.42 MiB respectively; the memory policy passes. These resource observations include the descendant tree, with the watchdog's documented risk of missing short-lived or reparented children.
+
+The paired complete-run estimate is about 1.9% less elapsed time, below the configured 10% target. Noop and failure medians still breach the regression policy; no observed maximum does. All launches complete with zero unexpected failures and clean owned-process exit. There are too few independent launches for p95/p99 claims. The setup workload accounts for about 45.7% of Flashwright complete time, supporting further setup and preparation research. This snapshot does not rank the broader contender set or complete runner-suite, contention, native Linux or release gates.
+
+The separate [four-launch instrumented profile](../benchmarks/results/current-attribution-2026-10-10/summary.json) also passes independent verification. Flashwright sends 1,048–1,049 browser commands per launch versus Playwright’s 2,189–2,280. Flashwright’s setup-phase median target-creation acknowledgements take about 75–78ms, `Page.enable` about 55–56ms, and navigation about 41–44ms. These intervals include proxy, transport and scheduling costs and can overlap; they do not isolate browser CPU. Instrumented observations are excluded from the ordinary timing table.
+
+Recheck exported observations with `bun tools/verify-paired.mjs benchmarks/results/current-paired-2026-10-10`. The [core report and logs](../compatibility/evidence/current-core-2026-10-10/report.json) bind the measured binary, sources and browser. Original and normalized hashes are recorded in the checkpoint; numeric observations are unchanged.
 
 ## Puppeteer functional admission
 
