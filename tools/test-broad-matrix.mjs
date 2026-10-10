@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
+import { exportBroadMatrix, verifyBroadSnapshot } from './broad-matrix-snapshot.mjs';
 import { sourceManifest } from './source-manifest.mjs';
 import { hash } from './competitor-inputs.mjs';
 import { readEngineConfiguration } from './engine-configuration.mjs';
@@ -159,17 +160,19 @@ test('table includes all workload groups, uncertainty, failure counts and compar
   assert.equal(summary.rows.find(row => row.engine === 'puppeteer').workloads.noop.p95, null);
 });
 
-for (const sampleLibrary of [false, true]) test(`independent verifier recomputes a synthetic full ${sampleLibrary ? 'sampling' : 'diagnostic'} snapshot and rejects altered evidence`, { timeout: 60000 }, async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-matrix-verifier-test-'));
+for (const sampleLibrary of [false, true]) test(`independent verifier recomputes a synthetic full ${sampleLibrary ? 'sampling' : 'diagnostic'} snapshot and rejects altered evidence`, { timeout: 120000 }, async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-matrix-verifier-é-test-'));
   const write = async (path, value) => {
     await mkdir(dirname(join(directory, path)), { recursive: true });
-    await writeFile(join(directory, path), typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n');
+    await writeFile(join(directory, path), typeof value === 'string' || Buffer.isBuffer(value) ? value : JSON.stringify(value, null, 2) + '\n');
   };
   try {
     const sources = await sourceManifest();
     const previous = read('benchmarks/results/current-paired-2026-10-10/metadata.json');
     const runtime = { name: 'node', version: '22.22.0', executable: '/synthetic/node', sha256: hash('synthetic runtime') };
-    const coreLog = 'Synthetic verifier fixture only. No browser or benchmark was executed.\n';
+    const coreLogPrefix = Buffer.from([0xff, 0]);
+    const coreLogSuffix = Buffer.from(' opaque bytes: %ff café\n');
+    const coreLog = Buffer.concat([coreLogPrefix, Buffer.from(`Synthetic verifier fixture only. No browser or benchmark was executed. ${directory}/core\n`), coreLogSuffix]);
     const core = { status: 'passed', sourceChangedDuringVerification: false, browserChangedDuringVerification: false,
       sources, driverSha256: hash('synthetic driver'), browser: previous.browser, runtime: { name: runtime.name, version: runtime.version },
       platform: 'synthetic', architecture: 'synthetic', engineConfiguration: readEngineConfiguration(), checks: [{ code: 0, log: 'synthetic.log', logSha256: hash(coreLog) }] };
@@ -177,6 +180,7 @@ for (const sampleLibrary of [false, true]) test(`independent verifier recomputes
     await write('verification/synthetic.log', coreLog);
     const metadata = { syntheticTestFixture: true, plan: { engines: broadEngines, sampleLibrary }, configuration, contenders, policies, sources,
       browser: previous.browser, measuredRuntime: runtime, platform: core.platform, architecture: core.architecture,
+      orchestrator: { runtime: 'bun', version: 'synthetic' },
       engineConfiguration: core.engineConfiguration, driverSha256: core.driverSha256,
       verificationSha256: hash(await readFile(join(directory, 'verification/report.json'))), competitorDependencies: {} };
     const launches = Object.fromEntries(broadEngines.map(engine => [engine, []]));
@@ -202,7 +206,13 @@ for (const sampleLibrary of [false, true]) test(`independent verifier recomputes
         await write(`${root}/stderr.txt`, 'Synthetic verifier fixture; no browser launched.\n');
         if (engine === 'webdriverio') await write(`${root}/chromedriver.log`, '');
       }
+      if (engine === 'cypress') state.report.syntheticEvidenceDirectory = join(directory, root);
       await write(`${root}/sample.json`, state.report);
+      if (engine === 'cypress') {
+        const sampleHash = hash(await readFile(join(directory, root, 'sample.json')));
+        await write(`${root}/stdout.txt`, `diagnostic mentions flashwright-cypress-report ${sampleHash}\nflashwright-cypress-report ${sampleHash}\n`);
+        await write(`${root}/runner-result.json`, { syntheticTestFixture: true, totalDuration: 123, config: { projectRoot: join(directory, root, 'project') } });
+      }
       await write(`${root}/resources.json`, state.resources);
       await write(`${root}/inputs.json`, inputs);
       state.receipt.files = {};
@@ -247,6 +257,84 @@ for (const sampleLibrary of [false, true]) test(`independent verifier recomputes
     await write('table.md', renderBroadMatrixTable(comparison));
     const verify = () => execFileSync(process.execPath, ['tools/verify-broad-matrix.mjs', directory], { encoding: 'utf8', stdio: 'pipe' });
     assert.match(verify(), /Verified 40 launches/);
+    if (sampleLibrary) {
+      const destination = `${directory}-portable`;
+      const pairedOutput = `${directory}-paired.json`;
+      try {
+        const manifest = await exportBroadMatrix({ sourceDirectory: directory, destination, recordedWorkspace: process.cwd() });
+        assert.deepEqual(manifest.recordedSources, sources);
+        assert.deepEqual(await verifyBroadSnapshot(destination, process.cwd()), manifest);
+        const analyze = () => execFileSync(process.execPath, ['tools/analyze-broad-pair.mjs', join(destination, 'evidence'), process.cwd(), pairedOutput], { stdio: 'pipe' });
+        analyze();
+        const paired = JSON.parse(await readFile(pairedOutput, 'utf8'));
+        for (const [engine, side] of [['playwright', 'reference'], ['flashwright', 'candidate']]) {
+          const workload = fixture(engine);
+          assert.equal(paired.processWall[side].launchMedianMilliseconds, workload.resources.elapsedSeconds * 1000);
+          assert.equal(paired.completeLaunch[side].independentLaunchCount, 8);
+        }
+        assert.equal(paired.memory.unit, 'bytes');
+        assert.equal(paired.cpu.unit, 'seconds');
+        assert.equal(paired.policy.releaseAccepted, false);
+        assert.throws(analyze, /EEXIST/);
+        await rm(pairedOutput);
+        assert.match(verify(), /Verified 40 launches/);
+        const exportedCoreLogPath = join(destination, 'evidence/verification/synthetic.log');
+        const exportedCoreLog = Buffer.concat([coreLogPrefix, Buffer.from('Synthetic verifier fixture only. No browser or benchmark was executed. /retained/broad-matrix/core\n'), coreLogSuffix]);
+        assert.deepEqual(await readFile(exportedCoreLogPath), exportedCoreLog);
+        assert.deepEqual(await readFile(join(directory, 'verification/synthetic.log')), coreLog);
+        const originalSummaryBytes = await readFile(join(destination, 'evidence/summary.json'));
+        const originalManifestBytes = await readFile(join(destination, 'manifest.json'));
+        const corruptedCoreLog = Buffer.concat([exportedCoreLog, Buffer.from([0xfe])]);
+        await writeFile(exportedCoreLogPath, corruptedCoreLog);
+        await assert.rejects(verifyBroadSnapshot(destination, process.cwd()), /inventory or bytes/);
+        assert.throws(analyze, /AssertionError/);
+        assert.equal(await stat(pairedOutput).then(() => true, error => { if (error.code === 'ENOENT') return false; throw error; }), false);
+        const corruptedCoreSummary = JSON.parse(originalSummaryBytes);
+        corruptedCoreSummary.retainedFileHashes['verification/synthetic.log'] = hash(corruptedCoreLog);
+        const corruptedCoreSummaryBytes = Buffer.from(JSON.stringify(corruptedCoreSummary, null, 2) + '\n');
+        await writeFile(join(destination, 'evidence/summary.json'), corruptedCoreSummaryBytes);
+        const corruptedCoreManifest = JSON.parse(originalManifestBytes);
+        corruptedCoreManifest.exportedFiles['verification/synthetic.log'] = hash(corruptedCoreLog);
+        corruptedCoreManifest.exportedFiles['summary.json'] = hash(corruptedCoreSummaryBytes);
+        await writeFile(join(destination, 'manifest.json'), JSON.stringify(corruptedCoreManifest, null, 2) + '\n');
+        await assert.rejects(verifyBroadSnapshot(destination, process.cwd()), /AssertionError/);
+        await writeFile(exportedCoreLogPath, exportedCoreLog);
+        await writeFile(join(destination, 'evidence/summary.json'), originalSummaryBytes);
+        await writeFile(join(destination, 'manifest.json'), originalManifestBytes);
+        assert.deepEqual(await verifyBroadSnapshot(destination, process.cwd()), manifest);
+        const exportedSample = await readFile(join(destination, 'evidence/launch-0-cypress/sample.json'));
+        assert.notEqual(hash(exportedSample), hash(await readFile(join(directory, 'launch-0-cypress/sample.json'))));
+        const originalSampleHash = hash(await readFile(join(directory, 'launch-0-cypress/sample.json')));
+        assert.equal(await readFile(join(destination, 'evidence/launch-0-cypress/stdout.txt'), 'utf8'), `diagnostic mentions flashwright-cypress-report ${originalSampleHash}\nflashwright-cypress-report ${hash(exportedSample)}\n`);
+        const runner = JSON.parse(await readFile(join(destination, 'evidence/launch-0-cypress/runner-result.json'), 'utf8'));
+        assert.equal(runner.totalDuration, 123);
+        assert.equal(runner.config.projectRoot, '/retained/broad-matrix/launch-0-cypress/project');
+        await writeFile(join(destination, 'evidence/launch-0-cypress/sample.json'), Buffer.concat([exportedSample, Buffer.from(' ')]));
+        await assert.rejects(verifyBroadSnapshot(destination, process.cwd()), /inventory or bytes/);
+        await writeFile(join(destination, 'evidence/launch-0-cypress/sample.json'), exportedSample);
+        const corruptedStdout = Buffer.from(`flashwright-cypress-report ${'0'.repeat(64)}\n`);
+        await writeFile(join(destination, 'evidence/launch-0-cypress/stdout.txt'), corruptedStdout);
+        const receiptPath = join(destination, 'evidence/launch-0-cypress/admission.json');
+        const corruptedReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));
+        corruptedReceipt.files['stdout.txt'] = hash(corruptedStdout);
+        const receiptBytes = Buffer.from(JSON.stringify(corruptedReceipt, null, 2) + '\n');
+        await writeFile(receiptPath, receiptBytes);
+        const summaryPath = join(destination, 'evidence/summary.json');
+        const corruptedSummary = JSON.parse(await readFile(summaryPath, 'utf8'));
+        corruptedSummary.retainedFileHashes['launch-0-cypress/stdout.txt'] = hash(corruptedStdout);
+        corruptedSummary.retainedFileHashes['launch-0-cypress/admission.json'] = hash(receiptBytes);
+        const summaryBytes = Buffer.from(JSON.stringify(corruptedSummary, null, 2) + '\n');
+        await writeFile(summaryPath, summaryBytes);
+        manifest.exportedFiles['launch-0-cypress/stdout.txt'] = hash(corruptedStdout);
+        manifest.exportedFiles['launch-0-cypress/admission.json'] = hash(receiptBytes);
+        manifest.exportedFiles['summary.json'] = hash(summaryBytes);
+        await writeFile(join(destination, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+        await assert.rejects(verifyBroadSnapshot(destination, process.cwd()), /Cypress stdout sample marker mismatch/);
+      } finally {
+        await rm(destination, { recursive: true, force: true });
+        await rm(pairedOutput, { force: true });
+      }
+    }
     const samplePath = 'launch-0-puppeteer/sample.json';
     const original = await readFile(join(directory, samplePath), 'utf8');
     await write(samplePath, original + ' ');

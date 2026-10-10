@@ -1,0 +1,3789 @@
+{
+  "schemaVersion": 1,
+  "engine": "cypress",
+  "comparisonClass": "runner-outcome",
+  "runtime": {
+    "name": "node",
+    "version": "22.22.0"
+  },
+  "node": "v22.22.0",
+  "package": {
+    "name": "cypress",
+    "version": "16.1.1",
+    "manifestSha256": "d616b5a50b946991824f6bc8679398d0172d2b54f98a0d4728a37a04c5e873cd",
+    "lockSha256": "849c11acee4081d15a1150921bc3d7241efb59d9ccece9a1dd3c6995b22c8f7f"
+  },
+  "bundle": {
+    "version": "16.1.1",
+    "electronVersion": "41.7.0",
+    "electronNodeVersion": "24.15.0",
+    "executableSha256": "3e66d4cbb3bb192ab8e8b9f7328b1241d42f63ab0d91789774b84f358614cd40"
+  },
+  "browser": {
+    "executablePath": "/browser/executable",
+    "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "full-chromium"
+  },
+  "configuration": {
+    "schemaVersion": 1,
+    "referenceVersion": "1.60.0",
+    "browserVersion": "148.0.7778.96",
+    "independentLaunches": 8,
+    "warmupIterations": 3,
+    "measuredIterations": 12,
+    "workloads": [
+      "noop",
+      "interaction",
+      "assertion",
+      "navigation",
+      "setup",
+      "backend",
+      "failure"
+    ],
+    "workers": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "headless": true,
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    },
+    "delayedAssertionMilliseconds": 8,
+    "backendDelayMilliseconds": 20,
+    "expectedFailureTimeoutMilliseconds": 25,
+    "statistics": {
+      "unit": "independent launch median",
+      "bootstrapReplicates": 10000,
+      "confidenceLevel": 0.95,
+      "seed": 41723,
+      "minimumSamplesForP95": 200,
+      "minimumSamplesForP99": 1000
+    },
+    "acceptance": {
+      "minimumMaterialImprovementFraction": 0.1,
+      "maximumMedianRegressionFraction": 0.05,
+      "maximumObservedTailRegressionFraction": 0.15,
+      "maximumConcurrentResidentMemoryRegressionFraction": 0.1,
+      "allowedUnexpectedFailures": 0,
+      "rationale": "Require at least a 10% complete-flow improvement with a launch-clustered confidence interval excluding parity. Reject median regressions above 5%, observed tail regressions above 15%, and memory growth above 10% unless explicitly reviewed. Baseline-only data establishes variability; it cannot pass a speed comparison. Tail claims need the stated sample counts."
+    },
+    "exclusionPolicy": "Retain every attempted launch and sample. Unexpected errors invalidate a comparison, not individual slow observations. Only an explicitly documented external interruption can invalidate an entire run. Never rerun selectively.",
+    "executionOrder": "Rotate workloads by launch index; paired engine comparisons must alternate which engine starts each launch pair.",
+    "resourceCoverage": "External watchdog samples the observed descendant process tree, including separately grouped browser processes. Short-lived processes between samples may be missed; report this limitation."
+  },
+  "failures": [],
+  "result": {
+    "browserName": "chrome-for-testing",
+    "browserPath": "/browser/executable",
+    "browserVersion": "148.0.7778.96",
+    "cypressVersion": "16.1.1",
+    "totalDuration": 11554,
+    "totalTests": 105,
+    "totalPassed": 90,
+    "totalFailed": 15,
+    "totalPending": 0,
+    "totalSkipped": 0,
+    "configuration": {
+      "video": false,
+      "screenshotOnRunFailure": false,
+      "retries": 0,
+      "testIsolation": true,
+      "viewportWidth": 1280,
+      "viewportHeight": 720
+    },
+    "runs": [
+      {
+        "error": null,
+        "stats": {
+          "duration": 11554,
+          "endedAt": "2026-10-10T13:12:21.824Z",
+          "failures": 15,
+          "passes": 90,
+          "pending": 0,
+          "skipped": 0,
+          "startedAt": "2026-10-10T13:12:10.270Z",
+          "suites": 1,
+          "tests": 105
+        },
+        "tests": [
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 234,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 58,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 51,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 48,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 46,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 38,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 39,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 37,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 42,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 41,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 43,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 38,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 40,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 42,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 39,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 131,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 134,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 144,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 130,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 125,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 124,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 123,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 123,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 128,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 116,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 114,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 124,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 121,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 121,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 126,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 59,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 69,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 74,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 74,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 67,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 67,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 86,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 60,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 62,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 56,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 70,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 81,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 63,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 66,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 76,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 99,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 105,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 107,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 111,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 94,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 86,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 83,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 101,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 101,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 93,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 83,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 92,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 99,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 95,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 118,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 40,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 40,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 51,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 57,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 46,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 44,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 50,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 40,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 39,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 48,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 52,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 39,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 48,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 58,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 39,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 265,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 252,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 254,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 249,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 260,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 271,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 247,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 255,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 257,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 275,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 264,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 260,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 259,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 285,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "passed"
+              }
+            ],
+            "displayError": null,
+            "duration": 275,
+            "state": "passed",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 97,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 77,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 72,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 71,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 63,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 86,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 68,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 72,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 64,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 84,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 72,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 80,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 71,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 105,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "AssertionError: Timed out retrying after 25ms: Expected to find element: `#missing`, but never found it.\n    at Context.eval (webpack:///./workloads.cy.js:60:127)",
+            "duration": 63,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/11"
+            ]
+          }
+        ],
+        "screenshots": [],
+        "video": null
+      }
+    ]
+  },
+  "scope": "Ordinary Cypress runner outcomes only. Default synthetic inputs, per-test storage reset and proxy/runner launch policy differ from native-input/fresh-context library flows. No performance acceptance.",
+  "launch": {
+    "browser": {
+      "name": "chrome-for-testing",
+      "family": "chromium",
+      "channel": "stable",
+      "displayName": "Custom Chrome for Testing",
+      "versionRegex": {},
+      "binary": "chrome",
+      "info": "Loaded from /browser/executable",
+      "custom": true,
+      "path": "/browser/executable",
+      "version": "148.0.7778.96",
+      "majorVersion": "148",
+      "isHeadless": true,
+      "isHeaded": false
+    },
+    "proposedLaunchOptions": {
+      "preferences": {
+        "default": {},
+        "defaultSecure": {},
+        "localState": {}
+      },
+      "args": [
+        "--test-type",
+        "--ignore-certificate-errors",
+        "--start-maximized",
+        "--silent-debugger-extension-api",
+        "--no-default-browser-check",
+        "--no-first-run",
+        "--noerrdialogs",
+        "--enable-fixed-layout",
+        "--disable-domain-reliability",
+        "--disable-field-trial-config",
+        "--disable-popup-blocking",
+        "--disable-password-generation",
+        "--disable-single-click-autofill",
+        "--disable-prompt-on-repos",
+        "--disable-background-timer-throttling",
+        "--disable-renderer-backgrounding",
+        "--disable-renderer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-restore-session-state",
+        "--disable-new-profile-management",
+        "--disable-new-avatar-menu",
+        "--allow-insecure-localhost",
+        "--reduce-security-for-testing",
+        "--enable-automation",
+        "--disable-print-preview",
+        "--disable-component-extensions-with-background-pages",
+        "--disable-infobars",
+        "--disable-device-discovery-notifications",
+        "--autoplay-policy=no-user-gesture-required",
+        "--disable-site-isolation-trials",
+        "--metrics-recording-only",
+        "--disable-prompt-on-repost",
+        "--disable-hang-monitor",
+        "--disable-sync",
+        "--disable-web-resources",
+        "--safebrowsing-disable-download-protection",
+        "--disable-client-side-phishing-detection",
+        "--disable-component-update",
+        "--simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT'",
+        "--disable-default-apps",
+        "--disable-features=GlobalMediaControls,HttpsUpgrades,InterestFeedContentSuggestions,LensOverlay,LocalNetworkAccessChecks,LocalNetworkAccessChecksWebRTC,MediaRouter,OptimizationHints,PrivacySandboxSettings4,Translate,WebFontsCacheAwareTimeoutAdaption,ServiceWorkerAutoPreload",
+        "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream",
+        "--disable-ipc-flooding-protection",
+        "--disable-backgrounding-occluded-window",
+        "--disable-breakpad",
+        "--password-store=basic",
+        "--use-mock-keychain",
+        "--disable-dev-shm-usage",
+        "--enable-precise-memory-info",
+        "--headless=new",
+        "--window-size=1280,720",
+        "--force-device-scale-factor=1",
+        "--remote-debugging-port=54651",
+        "--remote-debugging-address=127.0.0.1"
+      ],
+      "extensions": [],
+      "env": {}
+    }
+  },
+  "observations": [
+    {
+      "title": "noop/warmup/0",
+      "milliseconds": 6.900000095367432,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/warmup/1",
+      "milliseconds": 4,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/warmup/2",
+      "milliseconds": 3.899999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/0",
+      "milliseconds": 3.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/1",
+      "milliseconds": 3.100000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/2",
+      "milliseconds": 1.600000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/3",
+      "milliseconds": 1.600000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/4",
+      "milliseconds": 1.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/5",
+      "milliseconds": 3.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/6",
+      "milliseconds": 3.799999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/7",
+      "milliseconds": 1.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/8",
+      "milliseconds": 1.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/9",
+      "milliseconds": 3.299999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/10",
+      "milliseconds": 3.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "noop/sample/11",
+      "milliseconds": 1.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/warmup/0",
+      "milliseconds": 88.19999992847443,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/warmup/1",
+      "milliseconds": 76.60000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/warmup/2",
+      "milliseconds": 75.29999995231628,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/0",
+      "milliseconds": 74.89999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/1",
+      "milliseconds": 75.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/2",
+      "milliseconds": 73.69999992847443,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/3",
+      "milliseconds": 74.70000004768372,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/4",
+      "milliseconds": 73.80000007152557,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/5",
+      "milliseconds": 75.80000007152557,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/6",
+      "milliseconds": 74.29999995231628,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/7",
+      "milliseconds": 74.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/8",
+      "milliseconds": 74.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/9",
+      "milliseconds": 73.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/10",
+      "milliseconds": 73.10000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "interaction/sample/11",
+      "milliseconds": 77.79999995231628,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/warmup/0",
+      "milliseconds": 20.799999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/warmup/1",
+      "milliseconds": 20.100000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/warmup/2",
+      "milliseconds": 20.800000071525574,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/0",
+      "milliseconds": 20.899999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/1",
+      "milliseconds": 19.299999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/2",
+      "milliseconds": 19.200000047683716,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/3",
+      "milliseconds": 19.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/4",
+      "milliseconds": 19.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/5",
+      "milliseconds": 19.899999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/6",
+      "milliseconds": 20.200000047683716,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/7",
+      "milliseconds": 20.40000009536743,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/8",
+      "milliseconds": 20.200000047683716,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/9",
+      "milliseconds": 20.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/10",
+      "milliseconds": 20.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "assertion/sample/11",
+      "milliseconds": 20.699999928474426,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/warmup/0",
+      "milliseconds": 57.299999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/warmup/1",
+      "milliseconds": 50.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/warmup/2",
+      "milliseconds": 54.59999990463257,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/0",
+      "milliseconds": 49.60000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/1",
+      "milliseconds": 46.89999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/2",
+      "milliseconds": 45,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/3",
+      "milliseconds": 41.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/4",
+      "milliseconds": 48.799999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/5",
+      "milliseconds": 52.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/6",
+      "milliseconds": 52.299999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/7",
+      "milliseconds": 42,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/8",
+      "milliseconds": 46.60000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/9",
+      "milliseconds": 51,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/10",
+      "milliseconds": 54.10000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "navigation/sample/11",
+      "milliseconds": 77.30000007152557,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/warmup/0",
+      "milliseconds": 3.1999999284744263,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/warmup/1",
+      "milliseconds": 3.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/warmup/2",
+      "milliseconds": 3.6999999284744263,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/0",
+      "milliseconds": 4,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/1",
+      "milliseconds": 4,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/2",
+      "milliseconds": 3.700000047683716,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/3",
+      "milliseconds": 4.100000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/4",
+      "milliseconds": 3.200000047683716,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/5",
+      "milliseconds": 3.1999999284744263,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/6",
+      "milliseconds": 3.600000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/7",
+      "milliseconds": 4.299999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/8",
+      "milliseconds": 3,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/9",
+      "milliseconds": 1.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/10",
+      "milliseconds": 4,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "setup/sample/11",
+      "milliseconds": 1.7000000476837158,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/warmup/0",
+      "milliseconds": 212.80000007152557,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/warmup/1",
+      "milliseconds": 204.20000004768372,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/warmup/2",
+      "milliseconds": 204.10000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/0",
+      "milliseconds": 204.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/1",
+      "milliseconds": 206.20000004768372,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/2",
+      "milliseconds": 205.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/3",
+      "milliseconds": 203.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/4",
+      "milliseconds": 204.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/5",
+      "milliseconds": 204.60000002384186,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 8,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/6",
+      "milliseconds": 204.20000004768372,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 9,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/7",
+      "milliseconds": 207.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 9,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/8",
+      "milliseconds": 208.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 9,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/9",
+      "milliseconds": 205.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 9,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/10",
+      "milliseconds": 206.39999997615814,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 9,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "backend/sample/11",
+      "milliseconds": 206.20000004768372,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 1,
+      "trustedChanges": 0,
+      "untrustedChanges": 9,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/warmup/0",
+      "milliseconds": 29.600000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/warmup/1",
+      "milliseconds": 23.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/warmup/2",
+      "milliseconds": 21.100000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/0",
+      "milliseconds": 20.700000047683716,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/1",
+      "milliseconds": 21.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/2",
+      "milliseconds": 21.5,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/3",
+      "milliseconds": 21.199999928474426,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/4",
+      "milliseconds": 21.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/5",
+      "milliseconds": 19.800000071525574,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/6",
+      "milliseconds": 20.399999976158142,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/7",
+      "milliseconds": 21.40000009536743,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/8",
+      "milliseconds": 21.299999952316284,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/9",
+      "milliseconds": 20.100000023841858,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/10",
+      "milliseconds": 20.800000071525574,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    },
+    {
+      "title": "failure/sample/11",
+      "milliseconds": 20,
+      "isolation": {
+        "localStorage": null,
+        "sessionStorage": null,
+        "cookies": ""
+      },
+      "trustedClicks": 0,
+      "untrustedClicks": 0,
+      "trustedChanges": 0,
+      "untrustedChanges": 0,
+      "applicationCount": 0,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "focused": true,
+      "visibilityState": "visible"
+    }
+  ],
+  "browserProcesses": [
+    {
+      "process": 84110,
+      "parent": 82699,
+      "command": "/browser/executable about:blank --test-type --ignore-certificate-errors --start-maximized --silent-debugger-extension-api --no-default-browser-check --no-first-run --noerrdialogs --enable-fixed-layout --disable-domain-reliability --disable-field-trial-config --disable-popup-blocking --disable-password-generation --disable-single-click-autofill --disable-prompt-on-repos --disable-background-timer-throttling --disable-renderer-backgrounding --disable-renderer-throttling --disable-backgrounding-occluded-windows --disable-restore-session-state --disable-new-profile-management --disable-new-avatar-menu --allow-insecure-localhost --reduce-security-for-testing --enable-automation --disable-print-preview --disable-component-extensions-with-background-pages --disable-infobars --disable-device-discovery-notifications --autoplay-policy=no-user-gesture-required --disable-site-isolation-trials --metrics-recording-only --disable-prompt-on-repost --disable-hang-monitor --disable-sync --disable-web-resources --safebrowsing-disable-download-protection --disable-client-side-phishing-detection --disable-component-update --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' --disable-default-apps --disable-features=GlobalMediaControls,HttpsUpgrades,InterestFeedContentSuggestions,LensOverlay,LocalNetworkAccessChecks,LocalNetworkAccessChecksWebRTC,MediaRouter,OptimizationHints,PrivacySandboxSettings4,Translate,WebFontsCacheAwareTimeoutAdaption,ServiceWorkerAutoPreload --use-fake-ui-for-media-stream --use-fake-device-for-media-stream --disable-ipc-flooding-protection --disable-backgrounding-occluded-window --disable-breakpad --password-store=basic --use-mock-keychain --disable-dev-shm-usage --enable-precise-memory-info --headless=new --window-size=1280,720 --force-device-scale-factor=1 --remote-debugging-port=54651 --remote-debugging-address=127.0.0.1 --user-data-dir=/environment/cypress-profile-root/cy/production/browsers/chrome-for-testing-stable/run-82699 --disk-cache-dir=/environment/cypress-profile-root/cy/production/browsers/chrome-for-testing-stable/run-82699/CypressCache"
+    }
+  ],
+  "backend": {
+    "documents": 120,
+    "backendRequests": 15,
+    "otherRequests": 0
+  },
+  "completeMilliseconds": 17502.749958
+}

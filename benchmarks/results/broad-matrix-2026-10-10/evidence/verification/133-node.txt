@@ -1,0 +1,131 @@
+
+Running 12 tests using 1 worker
+
+(node:2752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 compatibility/m2/runner/runner.spec.ts:6:1 › extended fixtures run native browser actions and assertions (407ms)
+  ✓   2 compatibility/m2/runner/runner.spec.ts:13:1 › fresh contexts isolate browser storage (238ms)
+  ✓   3 compatibility/m2/runner/runner.spec.ts:20:3 › stored login state › context options restore state before page fixture (378ms)
+  ✓   4 compatibility/m2/runner/runner.spec.ts:25:5 › stored login state › explicit state › storage state option overrides context options (401ms)
+  ✓   5 compatibility/m2/runner/runner.spec.ts:35:5 › stored login state › file state › file storage state restores through fixture override (379ms)
+  ✘   6 compatibility/m2/runner/runner.spec.ts:40:1 › soft native assertion failures reach the reporter (304ms)
+  ✓   7 compatibility/m2/runner/runner.spec.ts:46:1 › configured native assertion reports received value and call site (443ms)
+  ✘   8 compatibility/m2/runner/runner.spec.ts:55:1 › runner retries use fresh fixture ownership (225ms)
+(node:2929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 compatibility/m2/runner/runner.spec.ts:55:1 › runner retries use fresh fixture ownership (retry #1) (327ms)
+  ✘  10 compatibility/m2/runner/runner.spec.ts:59:1 › runner timeout tears down an unbounded native assertion (201ms)
+(node:3016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 compatibility/m2/runner/runner.spec.ts:59:1 › runner timeout tears down an unbounded native assertion (retry #1) (300ms)
+(node:3072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  12 compatibility/m2/runner/runner.spec.ts:63:1 › unimplemented browser matchers reject explicitly (349ms)
+  ✘  13 compatibility/m2/runner/unsupported-context.spec.ts:4:1 › unsupported context options reject before the test body (0ms)
+(node:3157) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3157) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  14 compatibility/m2/runner/unsupported-video.spec.ts:4:1 › unsupported artifact policy rejects before the test body (0ms)
+
+
+  1) compatibility/m2/runner/runner.spec.ts:59:1 › runner timeout tears down an unbounded native assertion 
+
+    [31mTest timeout of 150ms exceeded.[39m
+
+    TargetClosedError: assertion.run: target has been closed or is not owned by this driver
+
+       at ../../../packages/flashwright-core/src/errors.ts:44
+
+      42 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,
+      43 |   };
+    > 44 |   return new (constructors[record.code] ?? ProtocolError)(record);
+         |          ^
+      45 | }
+      46 |
+      47 | export function failure(code: string, method: string, message: string): FlashwrightError {
+        at fromRecord (/workspace/packages/flashwright-core/src/errors.ts:44:10)
+        at EngineClient.consume (/workspace/packages/flashwright-core/src/client.ts:563:35)
+        at Socket.<anonymous> (/workspace/packages/flashwright-core/src/client.ts:104:60)
+        at request (/workspace/packages/flashwright-core/src/client.ts:277:33)
+        at runAssertion (/workspace/packages/flashwright-core/src/index.ts:590:34)
+        at runAssertion (/workspace/packages/flashwright-core/src/frame.ts:84:23)
+        at runAssertion (/workspace/packages/flashwright-core/src/trace-hooks.ts:31:72)
+        at runAssertion (/workspace/packages/flashwright-core/src/locator.ts:179:111)
+        at runAssertion (/workspace/packages/flashwright-core/src/trace-hooks.ts:31:72)
+        at assertion (/workspace/packages/flashwright-runner/src/matchers.ts:33:59)
+        at textAssertion (/workspace/packages/flashwright-runner/src/matchers.ts:52:10)
+        at toHaveText (/workspace/packages/flashwright-runner/src/matchers.ts:98:124)
+        at /workspace/compatibility/m2/runner/runner.spec.ts:61:40
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    [31mTest timeout of 150ms exceeded.[39m
+
+    TargetClosedError: assertion.run: target has been closed or is not owned by this driver
+
+       at ../../../packages/flashwright-core/src/errors.ts:44
+
+      42 |     BrowserDisconnectedError, ProtocolError, ResourceLimitError, CancelledError, EvaluationError, NavigationError, PageCrashedError,
+      43 |   };
+    > 44 |   return new (constructors[record.code] ?? ProtocolError)(record);
+         |          ^
+      45 | }
+      46 |
+      47 | export function failure(code: string, method: string, message: string): FlashwrightError {
+        at fromRecord (/workspace/packages/flashwright-core/src/errors.ts:44:10)
+        at EngineClient.consume (/workspace/packages/flashwright-core/src/client.ts:563:35)
+        at Socket.<anonymous> (/workspace/packages/flashwright-core/src/client.ts:104:60)
+        at request (/workspace/packages/flashwright-core/src/client.ts:277:33)
+        at runAssertion (/workspace/packages/flashwright-core/src/index.ts:590:34)
+        at runAssertion (/workspace/packages/flashwright-core/src/frame.ts:84:23)
+        at runAssertion (/workspace/packages/flashwright-core/src/trace-hooks.ts:31:72)
+        at runAssertion (/workspace/packages/flashwright-core/src/locator.ts:179:111)
+        at runAssertion (/workspace/packages/flashwright-core/src/trace-hooks.ts:31:72)
+        at assertion (/workspace/packages/flashwright-runner/src/matchers.ts:33:59)
+        at textAssertion (/workspace/packages/flashwright-runner/src/matchers.ts:52:10)
+        at toHaveText (/workspace/packages/flashwright-runner/src/matchers.ts:98:124)
+        at /workspace/compatibility/m2/runner/runner.spec.ts:61:40
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) compatibility/m2/runner/runner.spec.ts:55:1 › runner retries use fresh fixture ownership ──────
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m1[39m
+    Received: [31m0[39m
+
+      55 | test('runner retries use fresh fixture ownership', async ({ page }, testInfo) => {
+      56 |   await expect(page.getByRole('status')).toHaveText('Ready');
+    > 57 |   expect(testInfo.retry).toBe(1);
+         |                          ^
+      58 | });
+      59 | test('runner timeout tears down an unbounded native assertion', async ({ page }) => {
+      60 |   test.setTimeout(150);
+        at /workspace/compatibility/m2/runner/runner.spec.ts:57:26
+
+    attachment #1: flashwright-context-disposed (text/plain) ───────────────────────────────────────
+    disposed
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    compatibility/m2/runner/runner.spec.ts:59:1 › runner timeout tears down an unbounded native assertion 
+  1 flaky
+    compatibility/m2/runner/runner.spec.ts:55:1 › runner retries use fresh fixture ownership ───────
+  10 passed (8.4s)
+Native runner evidence: compatibility/evidence/native-runner-darwin-arm64-22.22.0.json

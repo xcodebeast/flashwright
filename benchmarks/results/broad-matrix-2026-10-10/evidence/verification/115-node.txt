@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: native collection busy retries preserve identity, expected length and the original deadline
+ok 1 - native collection busy retries preserve identity, expected length and the original deadline
+  ---
+  duration_ms: 409.078042
+  type: 'test'
+  ...
+# Subtest: native collection pressure expires one deadline and never retries a terminal resource error
+ok 2 - native collection pressure expires one deadline and never retries a terminal resource error
+  ---
+  duration_ms: 211.509708
+  type: 'test'
+  ...
+# Subtest: collection cancellation during busy backoff preserves its original reason and prevents another take
+ok 3 - collection cancellation during busy backoff preserves its original reason and prevents another take
+  ---
+  duration_ms: 62.653125
+  type: 'test'
+  ...
+# Subtest: collection null is forbidden after any binary start, including an empty transfer
+ok 4 - collection null is forbidden after any binary start, including an empty transfer
+  ---
+  duration_ms: 174.88525
+  type: 'test'
+  ...
+# Subtest: raw and base64 attachments interleave without exposing partial buffers
+ok 5 - raw and base64 attachments interleave without exposing partial buffers
+  ---
+  duration_ms: 0.630333
+  type: 'test'
+  ...
+# Subtest: attachment offsets, identities, caps and terminal sizes reject corruption
+ok 6 - attachment offsets, identities, caps and terminal sizes reject corruption
+  ---
+  duration_ms: 0.551917
+  type: 'test'
+  ...
+# Subtest: base64 chunks require complete groups and canonical terminal padding
+ok 7 - base64 chunks require complete groups and canonical terminal padding
+  ---
+  duration_ms: 0.269084
+  type: 'test'
+  ...
+# Subtest: expired attachments release bytes but still validate late chunks
+ok 8 - expired attachments release bytes but still validate late chunks
+  ---
+  duration_ms: 0.264333
+  type: 'test'
+  ...
+# Subtest: client assembles fragmented attachment frames and concurrent replies
+ok 9 - client assembles fragmented attachment frames and concurrent replies
+  ---
+  duration_ms: 65.567833
+  type: 'test'
+  ...
+# Subtest: an attachment larger than a control frame returns every byte
+ok 10 - an attachment larger than a control frame returns every byte
+  ---
+  duration_ms: 84.628209
+  type: 'test'
+  ...
+# Subtest: client rejects malformed starts, chunks, terminal replies and EOF
+ok 11 - client rejects malformed starts, chunks, terminal replies and EOF
+  ---
+  duration_ms: 555.488959
+  type: 'test'
+  ...
+# Subtest: client deadline discards a partial attachment and leaves its successor usable
+ok 12 - client deadline discards a partial attachment and leaves its successor usable
+  ---
+  duration_ms: 311.827917
+  type: 'test'
+  ...
+# Subtest: an expected binary length rejects a conflicting start before buffer allocation
+ok 13 - an expected binary length rejects a conflicting start before buffer allocation
+  ---
+  duration_ms: 142.704625
+  type: 'test'
+  ...
+# Subtest: driver comparisons require identical execution contracts across independently verified backends
+ok 14 - driver comparisons require identical execution contracts across independently verified backends
+  ---
+  duration_ms: 3.807209
+  type: 'test'
+  ...
+# Subtest: resident load invocation supports legacy and explicitly classified production samples
+ok 15 - resident load invocation supports legacy and explicitly classified production samples
+  ---
+  duration_ms: 0.968333
+  type: 'test'
+  ...
+# Subtest: statistics preserve independent-launch units and do not invent tail estimates
+ok 16 - statistics preserve independent-launch units and do not invent tail estimates
+  ---
+  duration_ms: 1.485167
+  type: 'test'
+  ...
+# Subtest: paired comparisons retain launch correspondence and reject incomplete pairs
+ok 17 - paired comparisons retain launch correspondence and reject incomplete pairs
+  ---
+  duration_ms: 2.314459
+  type: 'test'
+  ...
+# Subtest: actual launch comparison normalizes only owned profile paths
+ok 18 - actual launch comparison normalizes only owned profile paths
+  ---
+  duration_ms: 0.28875
+  type: 'test'
+  ...
+# Subtest: benchmark admission binds core verification to the exact browser executable
+ok 19 - benchmark admission binds core verification to the exact browser executable
+  ---
+  duration_ms: 0.27325
+  type: 'test'
+  ...
+# Subtest: fixture shutdown closes listening and active HTTP connections under the selected runtime
+ok 20 - fixture shutdown closes listening and active HTTP connections under the selected runtime
+  ---
+  duration_ms: 11.613042
+  type: 'test'
+  ...
+# Subtest: raw input above control-frame size preserves bytes and interleaves ordinary controls
+ok 21 - raw input above control-frame size preserves bytes and interleaves ordinary controls
+  ---
+  duration_ms: 311.1225
+  type: 'test'
+  ...
+# Subtest: input snapshot and empty payloads preserve ownership under tiny negotiated frames
+ok 22 - input snapshot and empty payloads preserve ownership under tiny negotiated frames
+  ---
+  duration_ms: 95.859958
+  type: 'test'
+  ...
+# Subtest: header rejection closes the input stream and preserves the original error and successor
+ok 23 - header rejection closes the input stream and preserves the original error and successor
+  ---
+  duration_ms: 76.27975
+  type: 'test'
+  ...
+# Subtest: a stalled partial input times out, closes its stream and leaves the client usable
+ok 24 - a stalled partial input times out, closes its stream and leaves the client usable
+  ---
+  duration_ms: 223.691
+  type: 'test'
+  ...
+# Subtest: input reservation survives completed transfer until the terminal operation outcome
+ok 25 - input reservation survives completed transfer until the terminal operation outcome
+  ---
+  duration_ms: 61.053834
+  type: 'test'
+  ...
+# Subtest: oversized host input rejects before protocol publication
+ok 26 - oversized host input rejects before protocol publication
+  ---
+  duration_ms: 61.819917
+  type: 'test'
+  ...
+# Subtest: an unresponsive input pipe retains an independent caller deadline and bounded cleanup
+ok 27 - an unresponsive input pipe retains an independent caller deadline and bounded cleanup
+  ---
+  duration_ms: 2144.143458
+  type: 'test'
+  ...
+# Subtest: independent clock epochs and overlapping commands preserve accounting without double-counting waits
+ok 28 - independent clock epochs and overlapping commands preserve accounting without double-counting waits
+  ---
+  duration_ms: 1.4095
+  type: 'test'
+  ...
+# Subtest: clock discontinuities invalidate attribution
+ok 29 - clock discontinuities invalidate attribution
+  ---
+  duration_ms: 0.564083
+  type: 'test'
+  ...
+# Subtest: commands near a phase boundary remain in global counts without arbitrary phase assignment
+ok 30 - commands near a phase boundary remain in global counts without arbitrary phase assignment
+  ---
+  duration_ms: 1.098125
+  type: 'test'
+  ...
+# Subtest: lost replies and duplicate command identities invalidate attribution
+ok 31 - lost replies and duplicate command identities invalidate attribution
+  ---
+  duration_ms: 0.495917
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3049.953709

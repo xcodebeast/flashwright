@@ -24,7 +24,7 @@ The [public runner tracing checkpoint](compatibility/evidence/runner-public-arti
 
 [SPECS.md](SPECS.md) defines the implementation and release gates. [Milestones](compatibility/milestones.json) track completed evidence and remaining work. [Reference manifest](compatibility/reference-manifest.json) records exact versions, retained runs and platform limitations
 
-The [current verification and performance checkpoint](compatibility/evidence/current-performance-checkpoint-2026-10-10.json) passes 144 core groups at 851 source hashes matching the committed checkout. Its independently verified 16-launch full-Chrome comparison measures about 1.9% less complete-run time by paired median, below the 10% target. Delayed assertions remain about 2.4× faster; setup remains near parity, and no-op/failure median regressions remain. The [complete table](docs/benchmarks.md#current-verified-playwright-comparison) includes uncertainty, startup and resource observations. This supersedes older performance snapshots for the recorded configuration only; broader competitor, runner-suite, native Linux and release gates remain open.
+The [latest broad performance checkpoint](compatibility/evidence/broad-performance-checkpoint-2026-10-10.json) passes 162 core groups and 40 sampled launches across Flashwright, Playwright, Puppeteer, WebdriverIO and Cypress at commit `70dc299f`. Bun coordinates matched Node 22 library workloads. The complete Flashwright/Playwright paired ratio is 0.997 (95% interval 0.941–1.028), so the 10% improvement gate fails. Delayed assertions are about 2.42× faster, but setup accounts for 44.0% of Flashwright complete time and failure latency regresses. The [complete tables](docs/benchmarks.md#latest-measured-broad-comparison) preserve uncertainty, resources and competitor differences. Newer matcher diagnostics are outside that measured snapshot. Native Linux, matched runner suites, contention and release acceptance remain open. The earlier [Bun baseline](compatibility/evidence/current-performance-checkpoint-2026-10-10.json) remains historical evidence.
 
 ## R2 Development
 
@@ -100,7 +100,7 @@ Chromium's default argument lists are extracted from the pinned reference, and t
 
 ## R3 Browser baselines
 
-The [broader comparison status](docs/benchmarks.md) records the pinned Playwright, Puppeteer, Cypress and WebdriverIO contender set. Puppeteer and WebdriverIO functional admission check real browser outcomes. Cypress default-runner outcome admission preserves its synthetic input, isolation and actual expected failures. Launch/input/failure differences remain explicit; the broad performance and representative runner-suite matrix remains incomplete.
+The [broader comparison status](docs/benchmarks.md) records the pinned Playwright, Puppeteer, Cypress and WebdriverIO contender set. Puppeteer and WebdriverIO functional admission check real browser outcomes. Cypress default-runner outcome admission preserves its synthetic input, isolation and actual expected failures. The 40-launch engineering comparison is retained with explicit launch/input/failure differences; equivalent-work leadership and representative runner-suite comparisons remain incomplete.
 
 Install the pinned reference Chromium explicitly if it is absent. No dependency install script downloads a browser
 
