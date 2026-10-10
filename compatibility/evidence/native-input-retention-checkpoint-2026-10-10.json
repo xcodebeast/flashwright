@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "scope": "Shared single/sequence native input keeps original dispatched pending credit through public cancellation until its reply or connection loss; no input replay. Private raw receipts remain preserved.",
+  "implementation": [
+    {
+      "path": "crates/flashwright-engine/src/input.rs",
+      "sha256": "c4cc21cbb23875a865042629778a3cb407f7c6f8b08baffb997897ad761cc258"
+    },
+    {
+      "path": "crates/flashwright-engine/src/input/tests.rs",
+      "sha256": "f998d019a18f519b7847d2e316538500099e7ed4a022e0f9919877e608fa5023"
+    }
+  ],
+  "positiveControl": {
+    "status": "passed",
+    "ownershipUnitTests": 11,
+    "rawLog": {
+      "sha256": "69266b858c3c244df012bb5a575b8f0a7e73fe692c3e70688f7744ff90668e5d"
+    },
+    "rawReceipt": {
+      "sha256": "fc2e121d6720e97a73ba3075dfe4cbd2bcbe1c6a191d2375f81a11270e0ae20f"
+    }
+  },
+  "negativeControl": {
+    "status": "failed-as-expected",
+    "classification": "Dropping the original dispatched Command in common production completion incorrectly admits overflow at saturation.",
+    "rawLog": {
+      "sha256": "1ce41bd46b9200e6d0fe61fc2a2b5744b68af42a44724aad98e8bf1606e16128"
+    },
+    "rawReceipt": {
+      "sha256": "a7a88ce8f177e97d43c39dd2b5f355d03632bf60bb522ad2ace431d83a649b49"
+    },
+    "correctedSourceRestoredWithEqualSha256": true
+  },
+  "contextualEngineGate": {
+    "status": "passed",
+    "tests": 343,
+    "rawLog": {
+      "sha256": "bd8a030a3e691b3488265bf05633d24c5426a5359fba13a88a114130d1186523"
+    },
+    "rawReceipt": {
+      "sha256": "1fcda5921c0b35fd7de0215a8d2a45def44e2b23daf8e5a05e2585c7d0a192f3"
+    },
+    "boundary": "Executed in the combined keyboard slice before later build-script and trace-phase corrections; exact input implementation/test hashes remain unchanged."
+  },
+  "coverage": [
+    "Queued withdrawal",
+    "Cancelled dispatched single reply",
+    "Original sequence error and unsent/dispatched tail",
+    "Cancellation after native acknowledgement",
+    "Native rejection preserves browser error code",
+    "Transport disconnect has no browser error code",
+    "Late reply releases original credit",
+    "No replay",
+    "Session detach does not settle withheld reply",
+    "Connection loss settles keeper"
+  ],
+  "unverified": [
+    "Integrated release gate",
+    "Performance"
+  ]
+}

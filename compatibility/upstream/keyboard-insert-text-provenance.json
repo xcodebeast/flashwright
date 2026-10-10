@@ -1,0 +1,32 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/input.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/input.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crInput.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/keyboard-insert-text.source.txt",
+  "extractSha256": "ffd44ace54045fcc8d8d636adbd9226f49901794af240430e12af023b6c94a0e",
+  "implementation": {
+    "packages/flashwright-core/src/keyboard.ts": "6dc4fd83b0efe844e1a0bb4d0a2b0a17b594561aeabf34a10eeb4b91aa3eba3b",
+    "packages/flashwright-core/src/index.ts": "6e7855efa2cc408caaa9197e387150cea17ed1af4ddf48d3aa23336cf7fffc75",
+    "packages/flashwright-core/src/engine-contract.ts": "79cdcf13c36f89094b8ea6288263868e719cdae1227af243498314e1dd14f89d",
+    "crates/flashwright-engine/src/keyboard.rs": "21150cc72940ba46051bb0445f9e9d75b91bc5be160617ce0207bce68e81dbd5",
+    "crates/flashwright-engine/src/input.rs": "c4cc21cbb23875a865042629778a3cb407f7c6f8b08baffb997897ad761cc258",
+    "crates/flashwright-engine/src/lib.rs": "a4631851604923448c10b71131fed786ba7afb5803955dda80832eb7a33e4ed7",
+    "packages/flashwright-core/src/tracing.ts": "b4539af0914fa1fbf21daded955e05b42d5dc39e4a8f25ef98a5a51cec0b4b09"
+  },
+  "relationship": "Preserve one whole-string native Input.insertText command, existing browser focus/selection and before-input instrumentation.",
+  "changes": [
+    "Apply the existing 100000 UTF-16 unit bound and explicit rejection of unpaired surrogates before native input.",
+    "Serialize native input under existing per-page ownership without selector resolution, focus, navigation waits or input replay.",
+    "Cancellation preserves its original public error and input delivery uncertainty; dispatched replies retain existing native credits until reply or connection loss.",
+    "Optional snapshots retain the original trace context, chunk, call and page; native acknowledgement is not evidence that insertion occurred."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

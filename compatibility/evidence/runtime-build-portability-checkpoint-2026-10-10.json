@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "scope": "Build-script execution checkout provenance, separately reviewable from keyboard API and native input ownership. Private raw receipts remain preserved; this checkpoint contains portable identities only.",
+  "implementation": [
+    {
+      "path": "crates/flashwright-engine/build.rs",
+      "sha256": "7f90a0e6670d4f9e61d3ce1480a6fa8ec13f9645633d648f3b8559f6b438d98e"
+    },
+    {
+      "path": "tools/test-runtime-build-portability.py",
+      "sha256": "f9d5e38ddc617188eb1ea6c7eccd5cb0f6ba03f85c4c6651a40634c01b32660a"
+    }
+  ],
+  "positiveControl": {
+    "status": "passed",
+    "executionTrees": 2,
+    "rawLog": {
+      "sha256": "818d64f2a7252ffbb194794e9ea7ed74a86a31250127159481dcdabee384744a"
+    },
+    "rawReceipt": {
+      "sha256": "a820ae3ddb46b3a3454162e54ed3cba355e08786f0e8a3aad87b7b89f55f1e16"
+    }
+  },
+  "negativeControl": {
+    "status": "failed-as-expected",
+    "executionTrees": 2,
+    "classification": "The preserved compile-time-manifest executable hashes its original checkout for both distinct execution runtime trees.",
+    "rawLog": {
+      "sha256": "95069a8c7a457ce794988faf836d9bf381c520b9948074ea80ecf5a63019aaca"
+    },
+    "rawReceipt": {
+      "sha256": "7f613431644bde031399540754e387da55ce9d8b9849a38fed3a2944a8803954"
+    }
+  },
+  "firstFailure": {
+    "classification": "A shared-target driver hashed the prior checkout runtime and rejected the current package at handshake.",
+    "rawLog": {
+      "sha256": "757336020b86cb0d44c3f8a55921f18bce08a6d3c6242a04929a2a7ee73c88f4"
+    }
+  },
+  "cleanupBeforeRootCauseCorrection": {
+    "package": "flashwright-engine",
+    "generatedFilesRemoved": 60,
+    "reportedBytesRemoved": "155.6 MiB",
+    "sharedDependencyArtifactsPreserved": true,
+    "originalDriversAndRawReceiptsPreserved": true
+  },
+  "unverified": [
+    "Integrated canonical release build",
+    "Native Linux",
+    "Performance"
+  ]
+}

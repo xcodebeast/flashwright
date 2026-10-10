@@ -2,8 +2,11 @@ use sha2::{Digest, Sha256};
 
 fn main() {
     let mut hash = Sha256::new();
+    // The build script executable can be reused across checkouts in a shared target.
+    let manifest_directory = std::env::var_os("CARGO_MANIFEST_DIR")
+        .expect("Cargo must provide the manifest directory when running the build script");
     let directory =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/resident-runtime");
+        std::path::PathBuf::from(manifest_directory).join("../../packages/resident-runtime");
     let manifest = directory.join("sources.txt");
     println!("cargo:rerun-if-changed={}", manifest.display());
     let sources = std::fs::read_to_string(manifest).expect("runtime source manifest must exist");

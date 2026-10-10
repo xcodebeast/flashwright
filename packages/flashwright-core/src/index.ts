@@ -580,6 +580,10 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     this.checkOpen('keyboard.type');
     await this.client.request('keyboard.type', { page: this.identifier, ...parameters });
   }
+  async insertKeyboardText(textUnits: number[]): Promise<void> {
+    this.checkOpen('keyboard.insertText');
+    await this.client.request('keyboard.insertText', { page: this.identifier, textUnits });
+  }
   async runLocator<Result>(frame: string, selector: string, action: string, parameters: object, timeoutOptions: LocatorTimeoutOptions, strict = true): Promise<Result> {
     const method = `locator.${action}`;
     this.checkOpen(method);
