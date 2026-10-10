@@ -1,8 +1,8 @@
 # V1 Retained application and tests
 
-This fixture retains the complete selected six-test SVGOMG example from Playwright 1.60.0, plus a content-hashed snapshot of the app served at [the public demo](https://demo.playwright.dev/svgomg/). The original test file, app JavaScript, workers, fonts, SVG, icons, manifest, changelog and four source maps remain unchanged. [provenance.json](provenance.json) records every retained file's URL, byte count and SHA-256
+This fixture retains the complete selected six-test SVGOMG example from Playwright 1.60.0, plus a content-hashed snapshot of the app served at [the public demo](https://demo.playwright.dev/svgomg/). The original test file, app JavaScript, workers, stylesheets, fonts, SVG, icons, manifest, changelog and six source maps remain unchanged. [provenance.json](provenance.json) records every retained file's URL, byte count and SHA-256
 
-The snapshot contains 13 runtime assets and four source maps. Its distribution identity is `26364f8a316b5e6945a6da4387b2334dd59b6c3e4acf8c247a0b492ce094ce27`; the manifest defines its digest calculation. This is an exact retained distribution, not a claim that a source checkout reproduces its bundles. The closest inspected first-party source commit matches 33 of 35 mapped source inputs; the other two differences and dependency-version differences are recorded separately. The app's version label alone doesn't establish its deployment revision. Local Git attributes preserve retained line endings and permit only the inherited whitespace in two unchanged notices
+The snapshot contains 14 runtime assets and six source maps. Its distribution identity is `64dc06d645ea14ac6663122584c062525f124c4f7fd3b4c0b9ff6f0526bd3821`; the manifest defines its digest calculation. This is an exact retained distribution, not a claim that a source checkout reproduces its bundles. The closest inspected first-party source commit matches 33 of 35 mapped JavaScript source inputs; the other two differences and dependency-version differences are recorded separately. The app's version label alone doesn't establish its deployment revision. Local Git attributes preserve retained line endings and permit only the inherited whitespace in two unchanged notices
 
 The demo source maps contain byte-identical published inputs from nanoevents 6.0.1, Prism 1.27.0, pako 2.0.4 and SVGO 2.7.0. [NOTICE.md](NOTICE.md) and `licenses/` retain first-party, dependency, font and Playwright notices, including pako's Zlib notice and the conservative SVGO dependency set. The original car SVG retains its creator and public-domain declaration. The exact font build-time revision hasn't been established; Inconsolata identification follows the retained CSS
 
@@ -16,7 +16,9 @@ Generated tests replace the package import through the engine adapter and replac
 
 # V3 Admission status and commands
 
-The fixture is source-materialized and unverified. No local server, browser or runner admission has been executed for this snapshot, and it has no timing, packed-package or native Linux claim
+The repaired fixture is source-materialized and unverified. The first local attempt used the earlier incomplete distribution: each engine attempted all six tests, with one pass and five failures. Both engines requested the omitted `all.css` six times and received HTTP 404; the five failures involved pointer interception. That attempt was rejected, with clean owned-process teardown and no performance acceptance. Its original fixture commit, manifest, distribution and receipt identities remain in `provenance.json`. These results don't establish an engine API gap
+
+This revision restores the unchanged public-demo `all.css`, its source map and the map referenced by the inline CSS. A static HTML/CSS audit covers resource attributes, style elements/attributes, stylesheet URLs/imports and source-map comments, including unquoted HTML attributes. Every discovered local reference is retained; the three inline font URLs already existed, and the embedded SVG background needs no HTTP request. Compiled `all.css` has no URLs or imports. Dynamic JavaScript and functional browser admission remain separate. This repaired distribution has no timing, packed-package or native Linux claim
 
 Once the checkout is built and a runtime window is available, run from the repository root:
 
@@ -32,6 +34,6 @@ The existing functional harness runs both engines with one worker, no retries, t
 bun tools/verify-application-suite.mjs RETAINED_DIRECTORY
 ```
 
-HTTP expectations are proposed from static inspection: six document/page-script loads, four demo SVG loads and at least five SVGO worker loads when every test passes. They haven't been observed in a local baseline. Preserve every request and investigate differences before accepting or changing those counts. Lazy gzip/Prism workers, optional fonts/icons/manifest/maps and conditional changelog loading have no mandatory counts
+HTTP expectations are proposed from static inspection: six document/page-script/stylesheet loads, four demo SVG loads and at least five SVGO worker loads when every test passes. The rejected attempt observed six stylesheet requests on each engine, all unsuccessful. The repaired baseline must verify six HTTP 200 stylesheet responses; the successful-suite SVG/worker counts remain unverified. Preserve every request and investigate differences before accepting or changing those counts. Lazy gzip/Prism workers, optional fonts/icons/manifest/maps and conditional changelog loading have no mandatory counts
 
 Admission requires six passes on each engine, unchanged source/body/binary identities, declared successful HTTP requests and clean owned-process teardown without watchdog intervention. The functional receipt explicitly sets `performanceAccepted: false`; later matched runner measurements must use this same complete fixture and retain preparation, failure, teardown and resource costs
