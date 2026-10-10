@@ -95,6 +95,10 @@ impl Engine {
                     .contexts
                     .get_mut(&identifier)
                     .ok_or_else(|| closed(method))?;
+                let lifetime = context.state.closed.borrow();
+                if let Some(error) = lifetime.as_ref() {
+                    return Err(error.clone());
+                }
                 let prepared = prepare(result)?;
                 context.published = true;
                 Ok(prepared)
@@ -104,9 +108,28 @@ impl Engine {
                     .pages
                     .get(&identifier)
                     .ok_or_else(|| closed(method))?;
+                let context = registry
+                    .contexts
+                    .get(&page.context_identifier)
+                    .ok_or_else(|| closed(method))?;
+                let lifetime = context.state.closed.borrow();
                 let mut state = page.state.state.lock().unwrap();
                 if let Some(error) = &state.failure {
                     return Err(error.clone());
+                }
+                if let Some(error) = lifetime.as_ref() {
+                    return Err(error.clone());
+                }
+                let sessions = page.state.renderer_sessions.lock().unwrap();
+                let root = sessions
+                    .get(&page.session_identifier)
+                    .ok_or_else(|| closed(method))?;
+                if !root.is_ready()
+                    || root.is_destroyed()
+                    || root.target_identifier != page.target_identifier
+                    || root.parent_session_identifier().is_some()
+                {
+                    return Err(closed(method));
                 }
                 *result = json!({ "identifier": identifier, "frames": state.frame_snapshot(), "mainFrame": state.main_frame, "initialEvents": state.initial_events, "navigationSequence": state.sequence });
                 let prepared = prepare(result)?;
@@ -269,8 +292,33 @@ mod tests {
         )
     }
 
+    fn insert_context(engine: &Engine) -> Arc<context_state::ContextState> {
+        let state = Arc::new(context_state::ContextState::default());
+        engine.registry.lock().unwrap().contexts.insert(
+            "context".into(),
+            Context {
+                browser_identifier: "browser".into(),
+                protocol_identifier: "native-context".into(),
+                viewport: None,
+                devices: crate::devices::DeviceOptions::default(),
+                settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                state: state.clone(),
+                published: false,
+            },
+        );
+        state
+    }
+
     fn insert_page(engine: &Engine) -> Arc<PageState> {
+        insert_context(engine);
         let state = Arc::new(PageState::default());
+        state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .register_root("target", "session")
+            .unwrap()
+            .mark_ready();
         engine.registry.lock().unwrap().pages.insert(
             "page".into(),
             Page {
@@ -372,5 +420,82 @@ mod tests {
             )
             .unwrap_err();
         assert_eq!(error.code, ErrorCode::TargetClosed);
+    }
+
+    #[test]
+    fn retained_closing_context_cannot_publish_itself_or_a_page() {
+        for method in ["browser.newContext", "context.newPage"] {
+            let (engine, mut messages) = engine();
+            let page_state = insert_page(&engine);
+            let context = engine.context("context", "test").unwrap();
+            context.state.closed.send_replace(Some(closed("context")));
+            let mut result = json!({"identifier": if method == "browser.newContext" { "context" } else { "page" }});
+            let error = engine
+                .prepare_publication(method, &mut result, |_| -> Result<(), ErrorRecord> {
+                    panic!("retained cleanup ownership cannot publish a successful allocation");
+                })
+                .unwrap_err();
+            assert_eq!(error.code, ErrorCode::TargetClosed);
+            assert!(!engine.registry.lock().unwrap().contexts["context"].published);
+            assert!(!page_state.state.lock().unwrap().published);
+            assert!(messages.try_recv().is_err());
+        }
+    }
+
+    #[test]
+    fn root_detachment_between_creation_and_reply_prevents_page_publication() {
+        let (engine, mut messages) = engine();
+        let state = insert_page(&engine);
+        let page = engine.page("page", "test").unwrap();
+        engine.detach_renderer(&page, "session");
+        assert!(state.state.lock().unwrap().failure.is_none());
+        let mut result = json!({"identifier":"page"});
+        let error = engine
+            .prepare_publication(
+                "context.newPage",
+                &mut result,
+                |_| -> Result<(), ErrorRecord> {
+                    panic!("a detached original root cannot be published");
+                },
+            )
+            .unwrap_err();
+        assert_eq!(error.code, ErrorCode::TargetClosed);
+        assert!(!state.state.lock().unwrap().published);
+        assert!(messages.try_recv().is_err());
+    }
+
+    #[test]
+    fn failed_page_publication_keeps_its_originating_error_after_root_or_context_retirement() {
+        for context_closed in [false, true] {
+            let (engine, _messages) = engine();
+            let state = insert_page(&engine);
+            state.state.lock().unwrap().failure = Some(ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                "original",
+                "original failure",
+            ));
+            let page = engine.page("page", "test").unwrap();
+            engine.detach_renderer(&page, "session");
+            if context_closed {
+                engine
+                    .context("context", "test")
+                    .unwrap()
+                    .state
+                    .closed
+                    .send_replace(Some(closed("context")));
+            }
+            let mut result = json!({"identifier":"page"});
+            let error = engine
+                .prepare_publication(
+                    "context.newPage",
+                    &mut result,
+                    |_| -> Result<(), ErrorRecord> {
+                        panic!("failed page must not encode a success");
+                    },
+                )
+                .unwrap_err();
+            assert_eq!(error.code, ErrorCode::ResourceLimit);
+            assert_eq!(error.message.as_ref(), "original failure");
+        }
     }
 }

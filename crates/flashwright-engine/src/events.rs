@@ -253,6 +253,9 @@ impl Engine {
             if event.method == "Target.detachedFromTarget" {
                 if let Some(session) = parameters["sessionId"].as_str() {
                     self.detach_renderer(&page, session);
+                    if session == page.session_identifier {
+                        self.finish_detached_root(&identifier, &page);
+                    }
                 }
                 continue;
             }
@@ -432,6 +435,43 @@ impl Engine {
         Ok(())
     }
 
+    /// Root detachment is terminal for this page, while child detach only retires its subtree.
+    fn finish_detached_root(&self, identifier: &str, page: &Page) {
+        let browser = {
+            let mut registry = self.registry.lock().unwrap();
+            if !registry
+                .pages
+                .get(identifier)
+                .is_some_and(|current| Arc::ptr_eq(&current.state, &page.state))
+            {
+                return;
+            }
+            registry.pages.remove(identifier);
+            registry
+                .contexts
+                .get(&page.context_identifier)
+                .and_then(|context| registry.browsers.get(&context.browser_identifier))
+                .map(|owner| owner.browser.clone())
+        };
+        let error = page
+            .state
+            .state
+            .lock()
+            .unwrap()
+            .failure
+            .clone()
+            .unwrap_or_else(|| closed("page"));
+        self.finish_page(identifier, page, error, "close");
+        // A lost CDP session does not prove the target died. Retain its native identity
+        // through bounded disposal; browser teardown owns it if the browser was withdrawn.
+        if let Some(browser) = browser {
+            let target = page.target_identifier.clone();
+            tokio::spawn(async move {
+                dispose(browser.as_ref(), ResourceKind::Page, &target).await;
+            });
+        }
+    }
+
     pub(crate) fn finish_page(
         &self,
         identifier: &str,
@@ -469,7 +509,7 @@ impl Engine {
         {
             recording.network_page_closed(identifier);
         }
-        state.failure = Some(error);
+        state.failure.get_or_insert(error);
         state.interception.clear();
         page.state.file_chooser.lock().unwrap().cancel();
         page.state.dialogs.lock().unwrap().retire();
@@ -543,22 +583,26 @@ impl Engine {
     }
 
     pub(crate) fn remove_browser(&self, identifier: &str) -> Option<Arc<Chromium>> {
-        let (browser, contexts) = {
+        let (browser, contexts, error) = {
             let mut registry = self.registry.lock().unwrap();
             let browser = registry.browsers.remove(identifier)?;
+            let error = browser
+                .browser
+                .connection
+                .failure()
+                .unwrap_or_else(|| closed("browser"));
             let contexts: Vec<_> = registry
                 .contexts
                 .iter()
                 .filter(|(_, context)| context.browser_identifier == identifier)
-                .map(|(identifier, _)| identifier.clone())
+                .map(|(identifier, context)| {
+                    // Close publication admission atomically with withdrawal of the browser.
+                    context.state.closed.send_replace(Some(error.clone()));
+                    identifier.clone()
+                })
                 .collect();
-            (browser, contexts)
+            (browser, contexts, error)
         };
-        let error = browser
-            .browser
-            .connection
-            .failure()
-            .unwrap_or_else(|| closed("browser"));
         for context in contexts {
             self.remove_context_with_error(&context, error.clone());
         }
@@ -840,9 +884,20 @@ mod tests {
                 Some(engine.diagnostic_session("page", &page).unwrap())
             };
             engine.handle_event("browser", terminal()).unwrap();
-            // Ordinary page removal may follow later; its registry presence cannot admit a late lease.
-            assert!(engine.registry.lock().unwrap().pages.contains_key("page"));
-            assert!(page.state.state.lock().unwrap().failure.is_none());
+            // Root detachment withdraws public ownership, while retained diagnostic
+            // leases still observe their original session's destruction.
+            assert!(!engine.registry.lock().unwrap().pages.contains_key("page"));
+            assert_eq!(
+                page.state
+                    .state
+                    .lock()
+                    .unwrap()
+                    .failure
+                    .as_ref()
+                    .unwrap()
+                    .code,
+                ErrorCode::TargetClosed
+            );
             assert!(
                 page.state
                     .diagnostic_session_destroyed
@@ -1084,5 +1139,105 @@ mod tests {
         );
         assert!(engine.registry.lock().unwrap().contexts.is_empty());
         assert!(engine.registry.lock().unwrap().pages.is_empty());
+    }
+
+    #[tokio::test]
+    async fn root_detach_wakes_unbounded_page_waiters_once_and_preserves_original_failure() {
+        for existing_failure in [false, true] {
+            let (outgoing, mut messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            let state = Arc::new(PageState::default());
+            state
+                .renderer_sessions
+                .lock()
+                .unwrap()
+                .register_root("target", "session")
+                .unwrap()
+                .mark_ready();
+            state.state.lock().unwrap().published = true;
+            let page = Page {
+                context_identifier: "context".into(),
+                target_identifier: "target".into(),
+                session_identifier: "session".into(),
+                state: state.clone(),
+            };
+            engine
+                .registry
+                .lock()
+                .unwrap()
+                .pages
+                .insert("page".into(), page.clone());
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native".into(),
+                    viewport: None,
+                    devices: Default::default(),
+                    settings: context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: true,
+                },
+            );
+            if existing_failure {
+                state.state.lock().unwrap().failure = Some(ErrorRecord::new(
+                    ErrorCode::ResourceLimit,
+                    "original",
+                    "original failure",
+                ));
+            }
+            let waiter = state.while_alive::<()>("page.evaluate", std::future::pending());
+            let detach = async {
+                tokio::task::yield_now().await;
+                for sequence in 0..2 {
+                    engine
+                        .handle_event(
+                            "browser",
+                            Event {
+                                received_at: std::time::Instant::now(),
+                                sequence,
+                                method: "Target.detachedFromTarget".into(),
+                                session_identifier: None,
+                                parameters: Some(
+                                    serde_json::value::to_raw_value(
+                                        &json!({"sessionId":"session", "targetId":"target"}),
+                                    )
+                                    .unwrap(),
+                                ),
+                            },
+                        )
+                        .unwrap();
+                }
+            };
+            let (result, ()) = tokio::time::timeout(Duration::from_secs(1), async {
+                tokio::join!(waiter, detach)
+            })
+            .await
+            .unwrap();
+            let error = result.unwrap_err();
+            assert_eq!(
+                error.code,
+                if existing_failure {
+                    ErrorCode::ResourceLimit
+                } else {
+                    ErrorCode::TargetClosed
+                }
+            );
+            if existing_failure {
+                assert_eq!(error.message.as_ref(), "original failure");
+            }
+            assert!(engine.page("page", "test").is_err());
+            assert!(engine.context("context", "test").is_ok());
+            assert!(
+                matches!(messages.try_recv().unwrap(), DriverOutput::Message(flashwright_protocol::DriverMessage::Event { event, .. }) if event == "close")
+            );
+            assert!(messages.try_recv().is_err());
+        }
     }
 }
