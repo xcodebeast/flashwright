@@ -346,7 +346,9 @@ try {
   report.sources = await sourceManifest();
   report.driverSha256 = hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH));
   report.browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath());
-  assert.equal(report.browser.distribution, 'full-chromium', 'This fixture requires full Chromium for both engines');
+  const referenceManifest = JSON.parse(await readFile('compatibility/reference-manifest.json', 'utf8'));
+  assert.equal(report.browser.version, referenceManifest.reference.chromiumVersion, 'Frame-locator conformance requires the pinned Chromium version');
+  assert.ok(['full-chromium', 'chromium-headless-shell'].includes(report.browser.distribution), 'Frame-locator conformance requires a stock Chromium distribution');
   report.caseCountPerEngine = (characterizedCases.length + additionalCases.length) * 2;
   await run('reference', referenceChromium, referenceExpect);
   await run('flashwright', candidateChromium, candidateExpect);
