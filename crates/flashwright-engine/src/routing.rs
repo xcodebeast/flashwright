@@ -40,34 +40,154 @@ impl Engine {
             }))
             .await?;
         operation.check()?;
-        if let Some(page) = &selected_page {
-            page.state
-                .routing_registered
-                .store(enabled, Ordering::Release);
-        } else {
-            context
-                .state
-                .routing_registered
-                .store(enabled, Ordering::Release);
+        let (pages, previous_registration) = {
+            // Attachment uses the same registry boundary, so it either observes
+            // this registration or precedes its remote-frame admission check.
+            let registry = self.registry.lock().unwrap();
+            let pages: Vec<_> = registry
+                .pages
+                .iter()
+                .filter(|(page_identifier, page)| {
+                    page.context_identifier == context_identifier
+                        && page.state.purpose == PagePurpose::Public
+                        && (scope == "context" || page_identifier.as_str() == identifier)
+                })
+                .map(|(identifier, page)| {
+                    let interception_enabled =
+                        page.state.state.lock().unwrap().interception.enabled;
+                    (identifier.clone(), page.clone(), interception_enabled)
+                })
+                .collect();
+            if enabled {
+                for (_, page, _) in &pages {
+                    check_routing_page(&page.state.state.lock().unwrap(), method)?;
+                }
+            }
+            for (_, page, previous_interception) in &pages {
+                let desired = if scope == "context" {
+                    enabled || page.state.routing_registered.load(Ordering::Acquire)
+                } else {
+                    enabled || context.state.routing_registered.load(Ordering::Acquire)
+                };
+                page.state
+                    .routing_transition
+                    .store(desired != *previous_interception, Ordering::Release);
+            }
+            let previous_registration = if let Some(page) = &selected_page {
+                page.state
+                    .routing_registered
+                    .swap(enabled, Ordering::AcqRel)
+            } else {
+                context
+                    .state
+                    .routing_registered
+                    .swap(enabled, Ordering::AcqRel)
+            };
+            (pages, previous_registration)
+        };
+        let mut released_interception = false;
+        let result = async {
+            for (identifier, page, previous_interception) in &pages {
+                let desired = context.state.routing_registered.load(Ordering::Acquire)
+                    || page.state.routing_registered.load(Ordering::Acquire);
+                released_interception |= *previous_interception && !desired;
+                self.configure_page_routing(identifier, page, &browser, desired, operation)
+                    .await?;
+            }
+            operation.check()
         }
-        let pages: Vec<_> = self
-            .registry
-            .lock()
-            .unwrap()
-            .pages
-            .iter()
-            .filter(|(page_identifier, page)| {
-                page.context_identifier == context_identifier
-                    && page.state.purpose == PagePurpose::Public
-                    && (scope == "context" || page_identifier.as_str() == identifier)
-            })
-            .map(|(identifier, page)| (identifier.clone(), page.clone()))
-            .collect();
-        for (identifier, page) in pages {
-            let desired = context.state.routing_registered.load(Ordering::Acquire)
-                || page.state.routing_registered.load(Ordering::Acquire);
-            self.configure_page_routing(&identifier, &page, &browser, desired, operation)
-                .await?;
+        .await;
+        if let Err(mut error) = result {
+            // Keep attachment admission closed until every native restoration settles.
+            // Disabling may already have published route settlement; it cannot be undone.
+            let cleanup = Operation::new("route.restore".into(), None, watch::channel(false).1);
+            let mut missing_original_page = false;
+            let restored = !released_interception
+                && matches!(
+                    timeout(Duration::from_secs(1), async {
+                        for (identifier, page, previous_interception) in &pages {
+                            let still_owned = self
+                                .registry
+                                .lock()
+                                .unwrap()
+                                .pages
+                                .get(identifier)
+                                .is_some_and(|current| Arc::ptr_eq(&current.state, &page.state));
+                            if still_owned {
+                                self.configure_page_routing(
+                                    identifier,
+                                    page,
+                                    &browser,
+                                    *previous_interception,
+                                    &cleanup,
+                                )
+                                .await?;
+                            } else {
+                                missing_original_page = true;
+                            }
+                        }
+                        Ok::<(), ErrorRecord>(())
+                    })
+                    .await,
+                    Ok(Ok(()))
+                );
+            if restored {
+                let _registry = self.registry.lock().unwrap();
+                if let Some(page) = &selected_page {
+                    page.state
+                        .routing_registered
+                        .store(previous_registration, Ordering::Release);
+                } else {
+                    context
+                        .state
+                        .routing_registered
+                        .store(previous_registration, Ordering::Release);
+                }
+                for (_, page, _) in &pages {
+                    page.state
+                        .routing_transition
+                        .store(false, Ordering::Release);
+                }
+            }
+            error.cleanup = Some(
+                if restored {
+                    error
+                        .cleanup
+                        .as_deref()
+                        .unwrap_or(if missing_original_page {
+                            "routingRestoredForRemainingPages"
+                        } else {
+                            "routingRestored"
+                        })
+                        .to_owned()
+                } else if let Some(page) = &selected_page {
+                    self.retire_routing_page(identifier, page, &browser)
+                        .await
+                        .to_owned()
+                } else if let Some(original) =
+                    self.remove_context_if_owned(context_identifier, closed(method), Some(&context))
+                {
+                    dispose(
+                        browser.as_ref(),
+                        ResourceKind::Context,
+                        &original.protocol_identifier,
+                    )
+                    .await
+                    .to_owned()
+                } else {
+                    "ownerAlreadyClosing".to_owned()
+                }
+                .into(),
+            );
+            return Err(error);
+        }
+        {
+            let _registry = self.registry.lock().unwrap();
+            for (_, page, _) in &pages {
+                page.state
+                    .routing_transition
+                    .store(false, Ordering::Release);
+            }
         }
         Ok(Value::Null)
     }
@@ -85,6 +205,9 @@ impl Engine {
         {
             let mut state = page.state.state.lock().unwrap();
             state.check(method)?;
+            if enabled {
+                check_routing_page(&state, method)?;
+            }
             if state.interception.enabled == enabled {
                 return Ok(());
             }
@@ -340,14 +463,18 @@ impl Engine {
         page: &Page,
         browser: &Chromium,
     ) -> &'static str {
-        if self
-            .registry
-            .lock()
-            .unwrap()
-            .pages
-            .remove(identifier)
-            .is_some()
-        {
+        let removed = {
+            let mut registry = self.registry.lock().unwrap();
+            let original = registry
+                .pages
+                .get(identifier)
+                .is_some_and(|current| Arc::ptr_eq(&current.state, &page.state));
+            if original {
+                registry.pages.remove(identifier);
+            }
+            original
+        };
+        if removed {
             self.finish_page(identifier, page, closed("route"), "close");
         }
         dispose(browser, ResourceKind::Page, &page.target_identifier).await
@@ -416,6 +543,19 @@ fn parse_headers(method: &str, headers: &Value) -> Result<Option<Vec<FetchHeader
         .map(Some)
 }
 
+/// Enabling interception must cover every current renderer before any flag changes.
+fn check_routing_page(state: &page_state::DocumentState, method: &str) -> Result<(), ErrorRecord> {
+    state.check(method)?;
+    if state.frames.values().any(|frame| frame.remote) {
+        return Err(ErrorRecord::new(
+            ErrorCode::UnsupportedFeature,
+            method,
+            "request routing in out-of-process child frames is not implemented",
+        ));
+    }
+    Ok(())
+}
+
 fn abort_reason(reason: &str) -> Result<&'static str, ErrorRecord> {
     match reason {
         "aborted" => Ok("Aborted"),
@@ -436,5 +576,37 @@ fn abort_reason(reason: &str) -> Result<&'static str, ErrorRecord> {
             "route.abort",
             &format!("Unknown error code: {reason}"),
         )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn routing_rejects_remote_and_pending_handoffs_without_mutating_interception() {
+        for direct_attachment in [false, true] {
+            let mut state = page_state::DocumentState::default();
+            state.initialize_main_frame("root", "root-session");
+            state.observe_in_session(
+                "root-session",
+                "Page.frameAttached",
+                &json!({"frameId":"child", "parentFrameId":"root"}),
+            );
+            check_routing_page(&state, "page.route").unwrap();
+            if direct_attachment {
+                state.observe_in_session("root-session", "Target.attachedToTarget", &json!({"sessionId":"child-session", "targetInfo":{"type":"iframe", "targetId":"child"}}));
+            } else {
+                state.observe_in_session(
+                    "root-session",
+                    "Page.frameDetached",
+                    &json!({"frameId":"child", "reason":"swap"}),
+                );
+            }
+            let error = check_routing_page(&state, "page.route").unwrap_err();
+            assert_eq!(error.code, ErrorCode::UnsupportedFeature);
+            assert!(!state.interception.enabled);
+            assert!(state.failure.is_none());
+        }
     }
 }
