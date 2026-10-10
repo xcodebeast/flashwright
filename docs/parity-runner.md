@@ -944,11 +944,11 @@
 | playwright/types/test.d.ts.LocatorAssertions.toHaveValues.values#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toHaveValues.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toHaveValues.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#runner-unavailable-matchers) |
+| playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#aria-matchers) |
 | playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot.expected#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot#2 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#runner-unavailable-matchers) |
+| playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot#2 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#aria-matchers) |
 | playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot.options#2 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot.options.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot.options.timeout#2 | PropertySignature | planned / unverified | Unreviewed |
@@ -969,11 +969,11 @@
 | playwright/types/test.d.ts.PageAssertions.toHaveURL.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PageAssertions.toHaveURL.options.ignoreCase#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PageAssertions.toHaveURL.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#runner-unavailable-matchers) |
+| playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#aria-matchers) |
 | playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot.expected#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#2 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#runner-unavailable-matchers) |
+| playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#2 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#aria-matchers) |
 | playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot.options#2 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot.options.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot.options.timeout#2 | PropertySignature | planned / unverified | Unreviewed |

@@ -51,7 +51,7 @@ export type { Unboxed, SmartHandle };
 export type { WaitForSelectorOptions, WaitForSelectorOptionsNotHidden } from './element-resolution.js';
 export type { PageScreenshotOptions };
 export type { KeyboardPressOptions };
-export type { AssertionOptions, AssertionResult, ExpectedText } from './assertions.js';
+export type { AriaSnapshotTemplate, AssertionOptions, AssertionResult, ExpectedText } from './assertions.js';
 export { Frame, Request, Response };
 export { Locator, FrameLocator } from './locator.js';
 export type { LocatorOptions, TextOptions, RoleOptions, LocatorTimeoutOptions, FillOptions, SelectTextOptions, SelectOption, ClickOptions, HoverOptions, CheckOptions, PressOptions, KeyboardModifier } from './locator.js';

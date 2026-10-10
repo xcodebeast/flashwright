@@ -4,6 +4,7 @@ import { runnerIntegration } from '@flashwright/core/runner-integration';
 import { chromium, failure, type Browser, type BrowserContext, type Page, type LaunchOptions, type BrowserContextOptions, type ViewportSize } from '@flashwright/core';
 import type { PlaywrightTestOptions, PlaywrightWorkerOptions, ExpectMatcherState } from 'flashwright-upstream-runner/test';
 import { matchers } from './matchers.js';
+import { toMatchAriaSnapshot } from './aria-matcher.js';
 import { screenshotPolicy } from './screenshot-policy.js';
 import { validateTracePolicy } from './trace-policy.js';
 import type { ScreenshotScopes } from './screenshot-recorder.js';
@@ -40,7 +41,7 @@ export const expect = upstream.expect.extend({}).extend({
   toBeInViewport: unsupportedMatcher('toBeInViewport'), toBeOK: unsupportedMatcher('toBeOK'),
   toHaveJSProperty: unsupportedMatcher('toHaveJSProperty'),
   toHaveScreenshot: unsupportedMatcher('toHaveScreenshot'),
-  toMatchAriaSnapshot: unsupportedMatcher('toMatchAriaSnapshot'),
+  toMatchAriaSnapshot,
 });
 
 type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _workerArtifacts: void; _validateWorkerOptions: void; _screenshotScopes: ScreenshotScopes | undefined };
