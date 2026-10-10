@@ -7,5 +7,5 @@ export const upstreamDirectory = join(__dirname, '..', 'upstream');
 export const upstreamRequire = createRequire(join(upstreamDirectory, 'package.json'));
 export const runnerGlobals = upstreamRequire('./lib/globals.js') as { currentTestInfo(): TestInfo | undefined };
 export const runnerHooks = upstreamRequire('./flashwright-hooks.cjs') as {
-  installTraceStart(callback: (testInfo: TestInfo) => boolean): void;
+  installTraceStart(callback: (testInfo: TestInfo, policy: unknown) => boolean): void;
 };

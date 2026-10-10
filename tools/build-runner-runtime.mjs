@@ -15,7 +15,7 @@ const originalBoundary = `    if (!this._shouldCaptureTrace()) {
 const adaptedBoundary = `    if (!this._shouldCaptureTrace())
       this._options = void 0;
     // Flashwright adaptation: the original attempt is owned before live writes and fixtures.
-    if (flashwrightTraceHooks.onTraceStart?.(this._testInfo))
+    if (flashwrightTraceHooks.onTraceStart?.(this._testInfo, value))
       return;
     if (!this._options)
       return;
