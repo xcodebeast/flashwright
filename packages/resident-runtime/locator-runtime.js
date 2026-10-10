@@ -545,7 +545,10 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     }),
     preparePointer: (units, deadline, token, settings) => safely(() => preparePointer(units, deadline, token, settings)),
     armPointer: (token, point) => safely(() => armPointer(token, point)),
-    finishPointer: token => safely(() => finishPointer(token)),
+    finishPointer: token => safely(() => {
+      try { return finishPointer(token); }
+      finally { cleanupPointer(token); }
+    }),
     cleanupPointer,
     pointerElement,
     scrollPointer(token, alignment) { pointerElement(token)?.scrollIntoView({ block: alignment, inline: alignment }); },

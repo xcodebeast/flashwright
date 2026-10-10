@@ -33,11 +33,37 @@ pub(crate) async fn wait_for_allocation<Output>(
         Ok(value) => return Ok(value),
         Err(error) => error,
     };
-    if reply_consumed || command.prevent_dispatch() || command.try_response().is_some() {
+    if reply_consumed {
         return Err(AllocationFailure {
             error,
             reply_pending: false,
         });
+    }
+    Err(recover_failed_allocation(
+        connection,
+        page,
+        context,
+        command,
+        executes_user_code,
+        error,
+    )
+    .await)
+}
+
+/// Called only when an interrupted waiter has not consumed its command's response.
+pub(crate) async fn recover_failed_allocation<Output>(
+    connection: &Connection,
+    page: &Page,
+    context: &ExecutionContext,
+    command: &mut Command<Output>,
+    executes_user_code: bool,
+    error: ErrorRecord,
+) -> AllocationFailure {
+    if command.prevent_dispatch() || command.try_response().is_some() {
+        return AllocationFailure {
+            error,
+            reply_pending: false,
+        };
     }
     let recover = async {
         let context_alive = {
@@ -56,10 +82,10 @@ pub(crate) async fn wait_for_allocation<Output>(
         command.response().await
     };
     let reply_pending = timeout(CLEANUP_BUDGET, recover).await.is_err();
-    Err(AllocationFailure {
+    AllocationFailure {
         error,
         reply_pending,
-    })
+    }
 }
 
 /// A group can contain objects from several worlds, including a reused numeric context.

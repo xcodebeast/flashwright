@@ -1213,6 +1213,114 @@ async fn child_frame_owner_uses_exact_backend_identity_in_original_parent_world(
     fixture.finish().await;
 }
 
+fn replace_captured_child(fixture: &Fixture) {
+    let mut state = fixture.page.state.state.lock().unwrap();
+    let replacement = ExecutionContext {
+        session_identifier: "session".into(),
+        identifier: 3,
+        unique_identifier: "child-replacement".into(),
+        frame_identifier: "child".into(),
+    };
+    state
+        .main_worlds
+        .insert("child".into(), replacement.clone());
+    state
+        .execution_contexts
+        .insert(replacement.key(), replacement);
+    state.sequence += 1;
+    fixture.page.state.changed.send_replace(state.sequence);
+}
+
+#[tokio::test(start_paused = true)]
+async fn captured_parent_commit_survives_child_replacement_after_serialization() {
+    use crate::recording::SnapshotPhase;
+    use crate::snapshots::{SnapshotArchive, SnapshotMetadata};
+
+    for replacement_phase in ["before decision", "during commit", "during cleanup"] {
+        let mut fixture = Fixture::new();
+        let capture = fixture.capture_child_frame();
+        fixture.install().await;
+        let owner = fixture.command("DOM.getFrameOwner").await;
+        fixture.reply(&owner, json!({"backendNodeId": 42})).await;
+        let resolve = fixture.command("DOM.resolveNode").await;
+        fixture
+            .reply(
+                &resolve,
+                json!({"object":{"objectId":"original-frame-element"}}),
+            )
+            .await;
+        let verify = fixture.command("DOM.describeNode").await;
+        fixture
+            .reply(&verify, json!({"node":{"backendNodeId":42}}))
+            .await;
+        fixture.captured(1).await;
+        let prepared = capture.await.unwrap().unwrap();
+        let expected_data = prepared.captured.data.bytes.clone();
+        let mut archive = SnapshotArchive::default();
+        let decision = archive
+            .accept(
+                SnapshotMetadata {
+                    capture: "capture-token".into(),
+                    call: "public-call".into(),
+                    phase: SnapshotPhase::Before,
+                    page: "page".into(),
+                    frame: "frame".into(),
+                    is_main_frame: true,
+                    snapshot_number: 0,
+                    native_time: 0.0,
+                    byte_length: 0,
+                },
+                prepared,
+            )
+            .unwrap();
+        assert!(archive.pull().unwrap().is_empty());
+        if replacement_phase == "before decision" {
+            replace_captured_child(&fixture);
+        }
+        let committed = tokio::spawn(decision.commit());
+        let command = fixture.command("Runtime.callFunctionOn").await;
+        assert!(
+            command["params"]["functionDeclaration"]
+                .as_str()
+                .unwrap()
+                .contains("this.commit")
+        );
+        if replacement_phase == "during commit" {
+            replace_captured_child(&fixture);
+        }
+        fixture
+            .reply(
+                &command,
+                json!({"result":{"value":{
+                    "snapshotNumber":1,"cache":{"bytes":0,"nodes":0,"attributes":0,"sheets":0}
+                }}}),
+            )
+            .await;
+        let release = fixture.command("Runtime.releaseObjectGroup").await;
+        assert!(
+            release["params"]["objectGroup"]
+                .as_str()
+                .unwrap()
+                .contains("_decision_")
+        );
+        if replacement_phase == "during cleanup" {
+            replace_captured_child(&fixture);
+        }
+        fixture.reply(&release, json!({})).await;
+        archive
+            .commit_finished("capture-token", committed.await.unwrap())
+            .unwrap();
+        let metadata = archive.pull().unwrap();
+        assert_eq!(metadata.len(), 1, "{replacement_phase}");
+        assert_eq!(metadata[0].snapshot_number, 1);
+        let (data, reservation) = archive.take("capture-token").unwrap();
+        assert_eq!(data.bytes, expected_data, "{replacement_phase}");
+        archive.ingested("capture-token").unwrap();
+        drop(reservation);
+        fixture.finish().await;
+    }
+}
+
 #[tokio::test(start_paused = true)]
 async fn child_context_replacement_during_frame_owner_lookup_prevents_adoption() {
     let mut fixture = Fixture::new();

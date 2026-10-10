@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { chromium as referenceChromium } from 'playwright';
 import { chromium as flashwrightChromium } from 'flashwright';
 
@@ -170,9 +171,9 @@ async function run(name, chromium) {
 try {
   await run('reference', referenceChromium); await run('flashwright', flashwrightChromium);
   assert.deepEqual(outcomes.flashwright, outcomes.reference);
-  await mkdir('compatibility/evidence', { recursive: true });
   const hash = value => createHash('sha256').update(value).digest('hex');
-  const destination = `compatibility/evidence/pointer-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
+  const destination = process.argv[2] ?? `compatibility/evidence/pointer-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
+  await mkdir(dirname(destination), { recursive: true });
   await writeFile(destination, JSON.stringify({ reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch, fixtureSha256: hash(await readFile(new URL(import.meta.url))), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes, scope: 'Experimental native pointer/actionability/navigation differential; no performance claim.' }, null, 2) + '\n');
   console.log(`Pointer differential evidence: ${destination}`);
 } finally { for (const response of heldResponses.values()) response.destroy(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
