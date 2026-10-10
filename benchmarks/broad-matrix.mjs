@@ -20,14 +20,16 @@ const engines = ['flashwright', 'playwright', ...contenders.competitors.map(comp
 assert.deepEqual(engines, broadEngines);
 assert.equal(configuration.workers, 1);
 assert.equal(configuration.headless, true);
-assert.ok(process.argv.slice(2).length === 0 || (process.argv.length === 3 && process.argv[2] === '--plan'), 'Usage: broad-matrix.mjs [--plan]');
+const arguments_ = process.argv.slice(2);
+assert.ok(arguments_.every(argument => ['--plan', '--sample-library'].includes(argument)) && new Set(arguments_).size === arguments_.length, 'Usage: broad-matrix.mjs [--plan] [--sample-library]');
+const sampleLibrary = arguments_.includes('--sample-library');
 assert.deepEqual(configuration.artifacts, { trace: 'off', video: 'off', screenshot: 'off' });
 assert.equal(contenders.referenceVersion, configuration.referenceVersion);
 const plan = {
-  engines, independentLaunches: configuration.independentLaunches,
+  engines, independentLaunches: configuration.independentLaunches, sampleLibrary,
   libraryFlow: ['flashwright', 'playwright', 'puppeteer', 'webdriverio'],
   runnerOutcome: ['cypress'],
-  requirements: ['Passed current-source core report for the exact runtime, browser and Flashwright driver', 'Pinned isolated competitor dependencies and matching ChromeDriver/Cypress bundle', 'Functional admission on every fresh launch', 'One-worker complete work including preparation and cleanup', 'Rotated engine order; no shared-host timing until coordinated'],
+  requirements: ['Passed current-source core report for the exact runtime, browser and Flashwright driver', 'Pinned isolated competitor dependencies and matching ChromeDriver/Cypress bundle', sampleLibrary ? 'Separate current-source library admission before sampling; recheck every sample outcome' : 'Functional admission on every fresh launch', 'One-worker complete work including preparation and cleanup', 'Rotated engine order; no shared-host timing until coordinated'],
   limitation: 'Outcome admission does not establish equivalent work for Puppeteer, Cypress or WebdriverIO; no ranking is emitted by this harness.',
 };
 if (process.argv.includes('--plan')) {
@@ -104,14 +106,15 @@ const metadata = {
   driverSha256, chromeDriverSha256, verificationSha256: hash(await readFile(verificationPath)),
   competitorDependencies, cypressBundleFiles, sources,
   environmentClass: process.env.FLASHWRIGHT_ENVIRONMENT_CLASS ?? 'shared-native-development-host',
-  limitations: ['Single worker and one host; no native Linux measurement or contention sweep', 'Puppeteer/WebdriverIO admission probes include per-iteration persistence and extra isolation; WebdriverIO also retains verbose logging and a different launch policy', 'Cypress runner outcomes retain synthetic input, runner proxy and per-test reset; its startup interval is not isolated', 'No fastest-engine claim until uninstrumented equivalent runner suites and acceptance gates pass'],
+  limitations: ['Single worker and one host; no native Linux measurement or contention sweep', sampleLibrary ? 'Puppeteer/WebdriverIO use sampling mode after separate admission; input/failure differences and the native WebdriverIO launch policy remain' : 'Puppeteer/WebdriverIO admission probes include per-iteration persistence and extra isolation; WebdriverIO also retains verbose logging and a different launch policy', 'Cypress runner outcomes retain synthetic input, runner proxy and per-test reset; its startup interval is not isolated', 'No fastest-engine claim until equivalent runner suites and acceptance gates pass'],
 };
 await writeFile(join(destination, 'metadata.json'), JSON.stringify(metadata, null, 2) + '\n', { flag: 'wx' });
 
 async function runCompetitor(engine, launchIndex) {
-  const directory = join(destination, `launch-${launchIndex}-${engine}`);
+  const directory = join(destination, launchIndex === undefined ? `admission-${engine}` : `launch-${launchIndex}-${engine}`);
   const runner = engine === 'cypress' ? 'tools/run-cypress-admission.mjs' : 'tools/run-competitor-admission.mjs';
   const arguments_ = [runner, directory, ...(engine === 'cypress' ? [] : [engine])];
+  if (sampleLibrary && engine !== 'cypress' && launchIndex !== undefined) arguments_.push(String(launchIndex));
   const environment = {
     ...process.env,
     FLASHWRIGHT_COMPETITOR_DIRECTORY: competitorDirectories[engine],
@@ -127,9 +130,22 @@ async function runCompetitor(engine, launchIndex) {
   const exit = await new Promise(resolve => { child.on('error', error => resolve({ code: null, error: error.message })); child.on('close', (code, signal) => resolve({ code, signal })); });
   assert.equal(exit.code, 0, `${engine} admission failed on launch ${launchIndex}: ${stderr}\n${stdout}`);
   const read = async name => JSON.parse(await readFile(join(directory, name), 'utf8'));
-  return normalizeBroadLaunch({ engine, launchIndex, report: await read('sample.json'), receipt: await read('admission.json'), resources: await read('resources.json'), configuration, contenders, policies, browserPath });
+  return { report: await read('sample.json'), receipt: await read('admission.json'), resources: await read('resources.json') };
 }
 
+const admissions = {};
+const admissionAttempts = [];
+if (sampleLibrary) for (const engine of ['puppeteer', 'webdriverio']) {
+  const startedAt = new Date().toISOString();
+  let failure;
+  try {
+    admissions[engine] = await runCompetitor(engine);
+    assert.equal(admissions[engine].receipt.functionalAdmissionPassed, true);
+  } catch (error) { failure = error; }
+  admissionAttempts.push({ engine, startedAt, finishedAt: new Date().toISOString(), status: failure ? 'failed' : 'passed', ...(failure ? { error: failure.stack ?? String(failure) } : {}) });
+  await writeFile(join(destination, 'admission-progress.json'), JSON.stringify({ attempts: admissionAttempts }, null, 2) + '\n');
+  if (failure) throw failure;
+}
 const launches = Object.fromEntries(engines.map(engine => [engine, []]));
 const attempts = [];
 for (let launchIndex = 0; launchIndex < configuration.independentLaunches; launchIndex++) {
@@ -142,7 +158,7 @@ for (let launchIndex = 0; launchIndex < configuration.independentLaunches; launc
       if (engine === 'playwright' || engine === 'flashwright') {
         const report = await runSample({ launchIndex, engine, destination, configuration, launchPolicy, driverPath, executablePath: browserPath, runtimePath });
         normalized = normalizeBroadLaunch({ engine, launchIndex, report, resources: report.resources, configuration, contenders, policies, browserPath });
-      } else normalized = await runCompetitor(engine, launchIndex);
+      } else normalized = normalizeBroadLaunch({ engine, launchIndex, ...await runCompetitor(engine, launchIndex), admission: admissions[engine], configuration, contenders, policies, browserPath });
       launches[engine].push(normalized);
     } catch (caught) { error = caught?.stack ?? String(caught); }
     attempts.push({ launchIndex, engine, startedAt, finishedAt: new Date().toISOString(), status: error ? 'failed' : 'passed', ...(error ? { error } : {}) });

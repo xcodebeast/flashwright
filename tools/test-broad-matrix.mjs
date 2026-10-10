@@ -9,6 +9,7 @@ import { sourceManifest } from './source-manifest.mjs';
 import { hash } from './competitor-inputs.mjs';
 import { readEngineConfiguration } from './engine-configuration.mjs';
 import { broadEngines, broadLaunchOrder, normalizeBroadLaunch, renderBroadMatrixTable, summarizeBroadMatrix } from '../benchmarks/broad-matrix-contract.mjs';
+import { verifyPuppeteerSample, verifyWebdriverSample } from '../benchmarks/competitor-contract.mjs';
 
 const read = path => JSON.parse(readFileSync(path, 'utf8'));
 const configuration = read('benchmarks/configurations/baseline.json');
@@ -35,6 +36,42 @@ function fixture(engine) {
       : 'benchmarks/results/cypress-admission-2026-10-10/node22';
   return { engine, launchIndex: 0, report: read(`${directory}/sample.json`), receipt: read(`${directory}/admission.json`),
     resources: read(`${directory}/resources.json`), configuration, contenders, policies };
+}
+
+function samplingFixture(engine, launchIndex = 0) {
+  const state = fixture(engine);
+  state.admission = fixture(engine);
+  state.launchIndex = launchIndex;
+  state.report.sampling = { launchIndex, reportPersistence: 'after-completion', isolationProbe: 'separate-admission', protocolLogging: engine === 'webdriverio' ? 'warning' : 'off' };
+  state.report.isolation = null;
+  state.report.backend.documents -= 2;
+  const offset = launchIndex % configuration.workloads.length;
+  state.report.workloads = state.report.workloads.slice(offset).concat(state.report.workloads.slice(0, offset));
+  if (engine === 'webdriverio') state.report.browserProcessId = state.resources.processes[0].process;
+  const verify = engine === 'puppeteer' ? verifyPuppeteerSample : verifyWebdriverSample;
+  Object.assign(state.receipt, verify(state.report, state.resources, configuration, contenders, policies.chromium, policies.webdriverio), { status: 'passed-sampling-outcomes' });
+  return state;
+}
+
+for (const engine of ['puppeteer', 'webdriverio']) {
+  test(`${engine} sampling requires matching separate admission and retains native differences`, () => {
+    const state = samplingFixture(engine, 3);
+    const result = normalizeBroadLaunch(state);
+    assert.equal(result.equivalentReferenceWork, false);
+    assert.ok(result.semanticDifferences.some(difference => difference.workload === 'backend'));
+    assert.deepEqual(result.instrumentation, engine === 'webdriverio' ? ['Startup process-command observation'] : []);
+  });
+  for (const [name, mutate] of [
+    ['missing admission', state => { delete state.admission; }],
+    ['failed isolation', state => { state.admission.report.isolation.cookies = 'leaked=value'; }],
+    ['changed admission receipt', state => { state.admission.receipt.functionalAdmissionPassed = false; }],
+    ['different admitted browser', state => { state.admission.report.browser.sha256 = 'different'; }],
+    ['different admitted package bytes', state => { state.admission.report.package.manifestSha256 = 'different'; }],
+    ['wrong sample launch index', state => { state.launchIndex++; }],
+  ]) test(`${engine} sampling matrix rejects ${name}`, () => {
+    const state = samplingFixture(engine, 3); mutate(state);
+    assert.throws(() => normalizeBroadLaunch(state));
+  });
 }
 
 for (const engine of broadEngines) test(`normalizes the ${engine} fixture and uses measured child wall time`, () => {
@@ -122,7 +159,7 @@ test('table includes all workload groups, uncertainty, failure counts and compar
   assert.equal(summary.rows.find(row => row.engine === 'puppeteer').workloads.noop.p95, null);
 });
 
-test('independent verifier recomputes a synthetic full snapshot and rejects altered evidence', { timeout: 30000 }, async () => {
+for (const sampleLibrary of [false, true]) test(`independent verifier recomputes a synthetic full ${sampleLibrary ? 'sampling' : 'diagnostic'} snapshot and rejects altered evidence`, { timeout: 60000 }, async () => {
   const directory = await mkdtemp(join(tmpdir(), 'flashwright-matrix-verifier-test-'));
   const write = async (path, value) => {
     await mkdir(dirname(join(directory, path)), { recursive: true });
@@ -138,14 +175,46 @@ test('independent verifier recomputes a synthetic full snapshot and rejects alte
       platform: 'synthetic', architecture: 'synthetic', engineConfiguration: readEngineConfiguration(), checks: [{ code: 0, log: 'synthetic.log', logSha256: hash(coreLog) }] };
     await write('verification/report.json', core);
     await write('verification/synthetic.log', coreLog);
-    const metadata = { syntheticTestFixture: true, plan: { engines: broadEngines }, configuration, contenders, policies, sources,
+    const metadata = { syntheticTestFixture: true, plan: { engines: broadEngines, sampleLibrary }, configuration, contenders, policies, sources,
       browser: previous.browser, measuredRuntime: runtime, platform: core.platform, architecture: core.architecture,
       engineConfiguration: core.engineConfiguration, driverSha256: core.driverSha256,
       verificationSha256: hash(await readFile(join(directory, 'verification/report.json'))), competitorDependencies: {} };
     const launches = Object.fromEntries(broadEngines.map(engine => [engine, []]));
     const attempts = [];
+    async function writeCompetitor(state, root) {
+      const { engine } = state;
+      const originalDirectory = engine === 'puppeteer' ? 'benchmarks/results/competitor-admission-2026-10-10/node22-full'
+        : engine === 'webdriverio' ? 'benchmarks/results/webdriverio-admission-2026-10-10/webdriverio-node22-full'
+          : 'benchmarks/results/cypress-admission-2026-10-10/node22';
+      const inputs = read(`${originalDirectory}/inputs.json`);
+      const originalSources = inputs.sources ?? inputs.inputs;
+      for (const file of Object.keys(originalSources)) originalSources[file] = sources[file];
+      inputs.runtime = { executable: runtime.executable, sha256: runtime.sha256 };
+      metadata.competitorDependencies[engine] = inputs.installedDependencies;
+      if (engine === 'webdriverio') metadata.chromeDriverSha256 = inputs.driverSha256;
+      if (engine === 'cypress') metadata.cypressBundleFiles = inputs.bundle;
+      state.resources.command = [runtime.executable, `benchmarks/${engine}-admission.mjs`, join(directory, root, 'sample.json')];
+      if (state.report.sampling) {
+        state.resources.command.push(String(state.launchIndex));
+        await write(`${root}/launch-inputs.json`, { browser: state.report.browser,
+          ...(engine === 'webdriverio' ? { driver: { sha256: state.report.driver.sha256, versionOutput: state.report.driver.versionOutput } } : {}) });
+        await write(`${root}/stdout.txt`, state.report);
+        await write(`${root}/stderr.txt`, 'Synthetic verifier fixture; no browser launched.\n');
+        if (engine === 'webdriverio') await write(`${root}/chromedriver.log`, '');
+      }
+      await write(`${root}/sample.json`, state.report);
+      await write(`${root}/resources.json`, state.resources);
+      await write(`${root}/inputs.json`, inputs);
+      state.receipt.files = {};
+      for (const file of await readdir(join(directory, root))) state.receipt.files[file] = hash(await readFile(join(directory, root, file)));
+      await write(`${root}/admission.json`, state.receipt);
+    }
+    if (sampleLibrary) {
+      for (const engine of ['puppeteer', 'webdriverio']) await writeCompetitor(fixture(engine), `admission-${engine}`);
+      await write('admission-progress.json', { attempts: ['puppeteer', 'webdriverio'].map(engine => ({ engine, status: 'passed' })) });
+    }
     for (let launchIndex = 0; launchIndex < configuration.independentLaunches; launchIndex++) for (const engine of broadLaunchOrder(launchIndex)) {
-      const state = fixture(engine);
+      const state = sampleLibrary && ['puppeteer', 'webdriverio'].includes(engine) ? samplingFixture(engine, launchIndex) : fixture(engine);
       state.launchIndex = launchIndex;
       if (engine === 'flashwright' || engine === 'playwright') {
         state.report.launchIndex = launchIndex;
@@ -154,24 +223,7 @@ test('independent verifier recomputes a synthetic full snapshot and rejects alte
         await write(`launch-${launchIndex}-${engine}.json`, state.report);
         await write(`resources-${launchIndex}-${engine}.json`, state.resources);
       } else {
-        const root = `launch-${launchIndex}-${engine}`;
-        const originalDirectory = engine === 'puppeteer' ? 'benchmarks/results/competitor-admission-2026-10-10/node22-full'
-          : engine === 'webdriverio' ? 'benchmarks/results/webdriverio-admission-2026-10-10/webdriverio-node22-full'
-            : 'benchmarks/results/cypress-admission-2026-10-10/node22';
-        const inputs = read(`${originalDirectory}/inputs.json`);
-        const originalSources = inputs.sources ?? inputs.inputs;
-        for (const file of Object.keys(originalSources)) originalSources[file] = sources[file];
-        inputs.runtime = { executable: runtime.executable, sha256: runtime.sha256 };
-        metadata.competitorDependencies[engine] = inputs.installedDependencies;
-        if (engine === 'webdriverio') metadata.chromeDriverSha256 = inputs.driverSha256;
-        if (engine === 'cypress') metadata.cypressBundleFiles = inputs.bundle;
-        state.resources.command = [runtime.executable, `benchmarks/${engine}-admission.mjs`, join(directory, root, 'sample.json')];
-        await write(`${root}/sample.json`, state.report);
-        await write(`${root}/resources.json`, state.resources);
-        await write(`${root}/inputs.json`, inputs);
-        state.receipt.files = {};
-        for (const file of ['sample.json', 'resources.json', 'inputs.json']) state.receipt.files[file] = hash(await readFile(join(directory, root, file)));
-        await write(`${root}/admission.json`, state.receipt);
+        await writeCompetitor(state, `launch-${launchIndex}-${engine}`);
       }
       launches[engine].push(normalizeBroadLaunch(state));
       attempts.push({ launchIndex, engine, status: 'passed' });
