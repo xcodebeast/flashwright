@@ -1604,7 +1604,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence.",
-      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. Rendered child-frame fallback composition and broader merged-core acceptance remain open.",
+      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. The combined artifact integration passes all 179 macOS core groups. Rendered child-frame fallback composition, native Linux and release acceptance remain open.",
       "defaults": "Recorded cases include configured/per-call timeouts and pinned predicate defaults; this review does not promote every declaration default.",
       "differences": [
         "Retained matcher accessibility diagnostics truncate explicitly after16384 UTF-16 units; complete predicate inputs remain unchanged."
@@ -1634,6 +1634,11 @@
         {
           "path": "compatibility/evidence/failure-context-checkpoint-2026-10-10.json",
           "sha256": "bf7c52283d160f2eb15815acbaa31a4ebc0edd0b601eaa6a65d0df78812dc14d",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/artifact-integration-checkpoint-2026-10-10.json",
+          "sha256": "0d8f66e3209d8350b4509c05274d9ede010e686cd672ef50938dd2f80b5705b3",
           "kind": "conformance"
         }
       ],
@@ -3365,7 +3370,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Page and Locator inline/file ARIA assertions retain role-tree predicates, same-process frame scoping, negation, retries, configured child matching, soft failures and tested baseline policies. Three runtime gates each pass 25 conformance checks.",
-      "limitations": "Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Public ariaSnapshot, child-frame failure-context composition, out-of-process frames, packed consumers and full-core acceptance remain separate gates.",
+      "limitations": "Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Child-frame failure-context composition and out-of-process frames remain unsupported; public default ariaSnapshot and merged artifact acceptance have separate evidence.",
       "defaults": "Pinned template parsing and runner snapshot naming/update configuration; original assertion timeout and a 100000 UTF-16-unit limit per template or generated snapshot string. Ordinary mismatch diagnostics remain bounded.",
       "differences": [
         "Bun inline generation/update policies fail with UnsupportedFeatureError before browser dispatch instead of producing the pinned reference header-only patch.",
@@ -3406,6 +3411,11 @@
           "path": "compatibility/evidence/aria-matcher-checkpoint-2026-10-10.json",
           "sha256": "77721cbccdec963b2a18b57a4efe10efff29def35ba45fb52512e3a4cc565054",
           "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/artifact-integration-checkpoint-2026-10-10.json",
+          "sha256": "0d8f66e3209d8350b4509c05274d9ede010e686cd672ef50938dd2f80b5705b3",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -3424,6 +3434,136 @@
         {
           "id": "playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#2",
           "declarationSha256": "026876ed8a43c1fbd24655aab26c07ae6e1ed1da14cf240cf4e96d15d5e1c2ee"
+        }
+      ]
+    },
+    {
+      "id": "public-default-aria-snapshots",
+      "title": "Public default ARIA snapshots",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Page.ariaSnapshot and Locator.ariaSnapshot return pinned default-mode accessibility trees with tested depth, boxes, strictness, retries, Unicode, timeout and same-process frame behavior. Twelve shared browser groups and fresh ESM/CommonJS typed consumers pass on Bun and Node 22/24; the combined implementation also passes the full macOS core gate.",
+      "limitations": "Public AI mode, recursive child-document composition and out-of-process frame evaluation remain unsupported. Page capture excludes child documents. Output bounds do not bound renderer tree allocations or synchronous DOM traversal. Native Linux and release coverage remain unverified.",
+      "defaults": "Default mode, boxes false, depth 0 unlimited and inherited timeout; negative depth returns an empty tree and explicit timeout 0 is unbounded. Page capture retries a missing body; Locator capture is strict and retries a missing target.",
+      "differences": [
+        "Requests and complete output strings are limited to 100,000 UTF-16 units; oversized snapshots fail atomically with ResourceLimitError.",
+        "AI mode and unknown options fail explicitly before browser dispatch."
+      ],
+      "implementation": [
+        {
+          "path": "crates/flashwright-engine/src/aria_snapshots.rs",
+          "sha256": "ddaa94509260bfc7cc14b416a81e303bd04ede51acdcfc10bc61f3b1375b1ebf"
+        },
+        {
+          "path": "crates/flashwright-engine/src/lib.rs",
+          "sha256": "1af6b1cdef30a63c3e968c69afe7b0be83823f64384040de74af6d9a30d980f1"
+        },
+        {
+          "path": "crates/flashwright-engine/src/locators.rs",
+          "sha256": "65eab01e4e18337153ed2d63a40af6817906cbbe73cfb070968b50c85987abf2"
+        },
+        {
+          "path": "packages/flashwright-core/src/aria-snapshot.ts",
+          "sha256": "a303e7f5db8b1479bd2cfed4759c520603d44784ee9af7d8db97ed40d818ca06"
+        },
+        {
+          "path": "packages/flashwright-core/src/frame.ts",
+          "sha256": "b363e9d426c2c6a76a0a7be823cd27939b3f0727539471f08631e95db03b402b"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "4a9c84c52b55d2f952514546daea8e2a597725e038dd435c211f3c2bc82ff117"
+        },
+        {
+          "path": "packages/flashwright-core/src/locator.ts",
+          "sha256": "7455e797ad480b3d3472a7cb38983ce42c312dfa59d82172d0c3f0f348cb6842"
+        },
+        {
+          "path": "packages/flashwright-core/src/trace-hooks.ts",
+          "sha256": "103fcc2da8942a42e67c769bcb528049efab6e34b2e8496f529f90d957fdf3ff"
+        },
+        {
+          "path": "packages/flashwright-core/src/tracing.ts",
+          "sha256": "616e2801247cb8b1c92129f8b61592b3abbf7a25a2617c24d4a263ff3b8b13c1"
+        },
+        {
+          "path": "packages/resident-runtime/aria-snapshot.js",
+          "sha256": "f8ef489bf099481f8baff3c08caa2addd5be306e2e9ae96f4c264d230295e03c"
+        },
+        {
+          "path": "packages/resident-runtime/locator-runtime.js",
+          "sha256": "09cb5b21c0623f229596f7a4e9e9fc3064eb044d979a2e2b9ab43687a72e0bf8"
+        },
+        {
+          "path": "packages/resident-runtime/sources.txt",
+          "sha256": "d2ab02f14d9aad90154785a5b6050096a03706662215f5ddbba6b9c2f692b678"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/public-default-aria-checkpoint-2026-10-10.json",
+          "sha256": "303c7dc91192775e6675c329c7df2cc950b97eb83545d0d0a8dcf5e8acf3e21a",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/artifact-integration-checkpoint-2026-10-10.json",
+          "sha256": "0d8f66e3209d8350b4509c05274d9ede010e686cd672ef50938dd2f80b5705b3",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/todomvc-public-aria-checkpoint-2026-10-10.json",
+          "sha256": "b9c9185e2df963aaafc3403aedb4a0c67fbc7fde863e428344dfb4512e839b44",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.ariaSnapshot#1",
+          "declarationSha256": "f6f3e348caa9c0dc106bd3bd220bc9b029442b29d0f9d035ac95d04ab677cc33"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.ariaSnapshot.options#1",
+          "declarationSha256": "d17ff54da635d9afbf839c884d44cdc975bbdf6efef0df11dbdf76e9c99754b9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.ariaSnapshot.options.boxes#1",
+          "declarationSha256": "981da5bcbfdca245b6e76bc178d4cc071d0ff3976595bb8667d956f9d0bdaa92"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.ariaSnapshot.options.depth#1",
+          "declarationSha256": "ab3581025c592776398c4c8429862969a3655cbb7618e6fe6b5c484323963227"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.ariaSnapshot.options.mode#1",
+          "declarationSha256": "0532d1a2f4bc198e7e58c4e49c1e9c3d02b000e3b3127997c4e5864f9d8bc54b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.ariaSnapshot.options.timeout#1",
+          "declarationSha256": "5c26331142214d00ee9a46b5a34f3e011d619dfb32c20371b48025bcd2634b33"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.ariaSnapshot#1",
+          "declarationSha256": "8f601996acfa4f4aa666f06c1757a3ec51323e93950793e54297a03cc8dcdddd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.ariaSnapshot.options#1",
+          "declarationSha256": "6d62c10440cb9d5a42854d47b8af665a38b462263ea836599a8124375900709c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.boxes#1",
+          "declarationSha256": "ff6422a9d8d67e5ffef144383b4fbb993462d0619ba9bbcc601c0e34a4f4d9fb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.depth#1",
+          "declarationSha256": "17d1c096c064dcebacc9051a218fd9ba9501b41faffa39b6c2907e09583ce9cd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.mode#1",
+          "declarationSha256": "c0d0dd7912a2969bd0f370706aebec9801a18d7b04dd9987bd9d8a7f3daf1a0e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.timeout#1",
+          "declarationSha256": "ffe8753220b8320488d25e70903e05f2a7565e1a0a22f9a6dc63470418240d67"
         }
       ]
     }

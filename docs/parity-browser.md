@@ -580,12 +580,12 @@
 | playwright-core/types/types.d.ts.Page.addStyleTag.options.content#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.addStyleTag.options.path#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.addStyleTag.options.url#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.ariaSnapshot#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.ariaSnapshot.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.boxes#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.depth#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.mode#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.ariaSnapshot#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Page.ariaSnapshot.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.boxes#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.depth#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.mode#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Page.ariaSnapshot.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
 | playwright-core/types/types.d.ts.Page.bringToFront#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.cancelPickLocator#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.check#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#selector-actions) |
@@ -2740,12 +2740,12 @@
 | playwright-core/types/types.d.ts.Locator.allTextContents#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-locator-queries) |
 | playwright-core/types/types.d.ts.Locator.and#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-locator-queries) |
 | playwright-core/types/types.d.ts.Locator.and.locator#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.ariaSnapshot#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.boxes#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.depth#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.mode#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Locator.ariaSnapshot#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.boxes#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.depth#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.mode#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
+| playwright-core/types/types.d.ts.Locator.ariaSnapshot.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#public-default-aria-snapshots) |
 | playwright-core/types/types.d.ts.Locator.blur#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-actions) |
 | playwright-core/types/types.d.ts.Locator.blur.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Locator.blur.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |

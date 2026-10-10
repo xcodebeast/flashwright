@@ -1,6 +1,6 @@
 # Public default ARIA snapshots
 
-This candidate adds `Page.ariaSnapshot()` and `Locator.ariaSnapshot()` on baseline `70dc299f`. Its focused acceptance matrix passes on macOS arm64 with full Chromium 148.0.7778.96 and Playwright 1.60.0 as the reference. Integration with default failure diagnostics is in progress; the full merged suite remains pending. These results establish the tested behavior; they make no speed, release-platform or broad parity claim.
+Flashwright provides `Page.ariaSnapshot()` and `Locator.ariaSnapshot()` with focused evidence based on `70dc299f`. Its focused acceptance matrix passes on macOS arm64 with full Chromium 148.0.7778.96 and Playwright 1.60.0 as the reference. The [combined integration checkpoint](../compatibility/evidence/artifact-integration-checkpoint-2026-10-10.json) passes all 179 core groups with default failure diagnostics at source `666a2a8f`, plus fresh Bun/Node22/Node24 consumers. These results establish the tested behavior; they make no speed, release-platform or broad parity claim.
 
 The [final checkpoint](../compatibility/evidence/public-default-aria-checkpoint-2026-10-10.json) contains production/test source hashes, shared outcomes, raw-artifact receipts and cleanup results. The [earlier host ledger](../compatibility/evidence/public-default-aria-host-2026-10-10.json) is a historical development record, superseded for current gate status by that checkpoint. Raw reports, traces, screenshots and failed attempts remain in ignored local evidence directories; the public checkpoint contains no host paths.
 
