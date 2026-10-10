@@ -4,6 +4,7 @@ import { startFixtureServer } from './fixture-server.mjs';
 import { prepareWorkload } from './workloads/index.mjs';
 import { startProfileClock } from './profile-clock.mjs';
 import { readEngineConfiguration } from '../tools/engine-configuration.mjs';
+import { forbidUpstreamBrowserBackend } from './native-backend-guard.mjs';
 
 const configuration = JSON.parse(await readFile(new URL('./configurations/baseline.json', import.meta.url), 'utf8'));
 const launchIndex = Number(process.argv[2]);
@@ -12,11 +13,7 @@ assert.ok(['playwright', 'flashwright'].includes(engine));
 let chromium;
 let expect;
 if (engine === 'flashwright') {
-  const upstream = await import('flashwright-upstream-runner/test');
-  for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
-    for (const method of ['launch', 'launchPersistentContext', 'connect', 'connectOverCDP']) browser[method] = async () => { throw new Error('Forbidden upstream browser backend entered'); };
-  }
-  upstream.request.newContext = async () => { throw new Error('Forbidden upstream request backend entered'); };
+  forbidUpstreamBrowserBackend();
   ({ chromium } = await import('flashwright'));
   ({ expect } = await import('@flashwright/test'));
 } else {

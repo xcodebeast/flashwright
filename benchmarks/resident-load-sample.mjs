@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { startResidentLoadFixture } from './resident-load-fixture.mjs';
 import { readEngineConfiguration } from '../tools/engine-configuration.mjs';
 import { loadExecutionBudget } from './resident-load-contract.mjs';
+import { forbidUpstreamBrowserBackend } from './native-backend-guard.mjs';
 
 const configuration = JSON.parse(await readFile(new URL('./configurations/resident-load.json', import.meta.url), 'utf8'));
 const [mode, workload, count, group, executionPurpose = 'comparison'] = process.argv.slice(2);
@@ -16,11 +17,7 @@ const engine = mode === 'playwright' ? 'playwright' : 'flashwright';
 let chromium;
 let expect;
 if (engine === 'flashwright') {
-  const upstream = await import('flashwright-upstream-runner/test');
-  for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
-    for (const method of ['launch', 'launchPersistentContext', 'connect', 'connectOverCDP']) browser[method] = async () => { throw new Error('Forbidden upstream browser backend entered'); };
-  }
-  upstream.request.newContext = async () => { throw new Error('Forbidden upstream request backend entered'); };
+  forbidUpstreamBrowserBackend();
   ({ chromium } = await import('flashwright'));
   ({ expect } = await import('@flashwright/test'));
 } else ({ chromium, expect } = await import('@playwright/test'));

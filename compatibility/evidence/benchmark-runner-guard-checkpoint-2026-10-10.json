@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-focused-benchmark-runner-guard",
+  "baseCommit": "3546fd8f05391111040918facb8d62628cb30678",
+  "scope": "Benchmark harness integration repair after the owned runner runtime change. No engine behavior or performance acceptance. Full-core attempt 005 is running separately.",
+  "cause": "Both benchmark samples imported the old upstream runner alias before importing Flashwright, which now owns a private runner tree. The pinned duplicate-runner guard rejected initialization before any Flashwright benchmark browser launch.",
+  "change": "Resolve the private runner through the installed Flashwright test facade and guard that exact instance. Share the guard between paired and resident-load samples without changing workload bodies or timing policy.",
+  "validation": {
+    "runtimes": [
+      "Bun 1.4.2",
+      "Node 22.22.0",
+      "Node 24.15.0"
+    ],
+    "hostChecks": [
+      "Owned runtime identity equals the guarded runtime",
+      "Flashwright expect imports and evaluates successfully",
+      "The former upstream alias is absent from the module cache",
+      "All twelve browser entry points and request.newContext reject explicitly"
+    ],
+    "browserContract": {
+      "launches": 2,
+      "checks": [
+        "matched actual launch arguments",
+        "native trusted input and application outcomes",
+        "real backend and document request counts",
+        "owned process cleanup",
+        "reject omitted trusted input",
+        "reject omitted backend request",
+        "reject unmatched browser policy"
+      ],
+      "reportSha256": "991bc0a94e51fc29b8b599396a03442b047bbd34fcd10a0e7beaa9f2a5c3a01a"
+    },
+    "residentLoadContract": {
+      "ordinaryLaunches": 9,
+      "separateDiagnosticLaunches": 1,
+      "checks": [
+        "wrong execution purpose",
+        "wrong assertion deadline",
+        "wrong watchdog deadline",
+        "missing execution purpose",
+        "missing sample version",
+        "omitted assertion",
+        "dropped application task",
+        "dropped mutation",
+        "omitted backend request",
+        "wrong final target",
+        "wrong final element count",
+        "early application completion",
+        "CPU total differs from process records",
+        "coherent CPU totals disagree with raw observations",
+        "CPU falls to zero when an observed process exits",
+        "memory peak differs from samples",
+        "unobserved claimed process",
+        "watchdog had to terminate a process",
+        "wrong residency mode",
+        "counters enabled in production comparison",
+        "diagnostic exclusion",
+        "functional sample exclusion from production comparison",
+        "matched browser policy",
+        "all six engine orders in every scenario"
+      ],
+      "reportSha256": "71ad0855251a3e7b1de84c004e8c53e95f67c5804b656d4d1a69904f6de27835"
+    },
+    "retainedFocusedJobs": {
+      "test-benchmark-contract": {
+        "stdoutSha256": "485a51302407bf2fb6f109beeb074da0c35d5afff52c054939e94005b6798cb8",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "watchdogSha256": "034bc722e343880e5fc4f5d31f3a4fcc551b91caa23d373cbf4efee1424c612c",
+        "exitCode": 0,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "test-resident-load": {
+        "stdoutSha256": "ec3bff13a260efacd2d0fcf21b650b3690426cb1b141032126e4fcfc85ad0d5a",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "watchdogSha256": "55be77dc5bdbb43bedfcb179412845c0652117a05448fc98d1f1be74cd4604e4",
+        "exitCode": 0,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    }
+  },
+  "failedCore": {
+    "status": "failed",
+    "checksAttempted": 119,
+    "reportSha256": "372f0f3634ce4bc31f8d0a7c707ff05ab8a0d27a90d6c15a79ef4eff0513a69c",
+    "lastCheck": "<workspace>/.tools/bun-v1.4.2-darwin-arm64/bin/bun tools/test-benchmark-contract.mjs",
+    "failedLaunchSha256": "21564a6ef8532dfeb85bb295c5cdedf8438650a3fd698c0184c494ce1084631d",
+    "diagnostics": "60 | setBoxedStackPrefixes([import_package.packageRoot]);\n61 | if (process[\"__pw_initiator__\"]) {\n62 |   const originalStackTraceLimit = Error.stackTraceLimit;\n63 |   Error.stackTraceLimit = 200;\n64 |   try {\n65 |     throw new Error(\"Requiring @playwright/test second time, \\nFirst:\\n\" + process[\"__pw_initiator__\"] + \"\\n\\nSecond: \");\n                   ^\nerror: Requiring @playwright/test second time, \nFirst:\nError\n    at <anonymous> (<workspace>/node_modules/.bun/playwright@1.60.0/node_modules/playwright/lib/index.js:70:37)\n    at anonymous (unknown)\n    at <anonymous> (<workspace>/node_modules/.bun/playwright@1.60.0/node_modules/playwright/test.js:17:7)\n\nSecond: \n      at <anonymous> (<workspace>/packages/flashwright-runner/dist/upstream/lib/index.js:65:15)\n      at <anonymous> (<workspace>/packages/flashwright-runner/dist/upstream/test.js:17:7)\n      at <anonymous> (<workspace>/packages/flashwright-runner/dist/commonjs/index.js:12:44)\n      at <anonymous> (<workspace>/packages/flashwright-test/dist/commonjs/index.js:1:8)\n      at <workspace>/packages/flashwright-test/dist/esm/index.js:2:46\n\nBun v1.4.2 (macOS arm64)\n",
+    "processExit": {
+      "code": 1,
+      "signal": null
+    }
+  },
+  "sources": {
+    "benchmarks/native-backend-guard.mjs": "48d893ef024fe9b58443cb3923bbf909a6847d72eb5f57054061f0eb7cfa9501",
+    "benchmarks/sample.mjs": "10fed7ab9c544bdcfc0ece67c66ac53932c84fb9254fa39600969fb6a67d3acb",
+    "benchmarks/resident-load-sample.mjs": "80bd0cca1311ae67e19fc90e67eeac6323a87f767551ff6c02a9bd3f3be71faf",
+    "tools/test-benchmark-backend-guard.mjs": "88cce8b9e452cc53eb9e8482c0ebb528f00513487076bbe49af8b964fbeea5f3",
+    "tools/verify-core.mjs": "c0e4dbaaa7352e0ce40f01e0eb2fffc55bb7514f5afe66a236dbe523ea4eb4a9"
+  },
+  "limitations": [
+    "Focused browser observations validate the harness only and are excluded from comparative speed results.",
+    "Raw reports and resource samples remain private by hash; final current-core and profile evidence will be exported separately."
+  ]
+}
