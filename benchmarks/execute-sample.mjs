@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { verifyLaunch } from './paired-contract.mjs';
 
 /** Retain each attempted browser launch, including invalid observations and independent resource samples. */
-export async function runSample({ launchIndex, engine, destination, configuration, launchPolicy, driverPath, executablePath }) {
+export async function runSample({ launchIndex, engine, destination, configuration, launchPolicy, driverPath, executablePath, runtimePath = process.execPath }) {
   const resourcePath = join(destination, `resources-${launchIndex}-${engine}.json`);
   const started = performance.now();
-  const child = spawn('python3', ['tools/watchdog.py', '--timeout', '90', '--report', resourcePath, '--', process.execPath, 'benchmarks/sample.mjs', String(launchIndex), engine], {
+  const child = spawn('python3', ['tools/watchdog.py', '--timeout', '90', '--report', resourcePath, '--', runtimePath, 'benchmarks/sample.mjs', String(launchIndex), engine], {
     env: { ...process.env, DEBUG: 'pw:browser', DEBUG_COLORS: '0', FLASHWRIGHT_DEBUG_BROWSER: '1', FLASHWRIGHT_DRIVER_PATH: driverPath, FLASHWRIGHT_BROWSER_PATH: executablePath, FLASHWRIGHT_BENCHMARK_OBSERVATIONS: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -33,4 +33,3 @@ export async function runSample({ launchIndex, engine, destination, configuratio
   await writeFile(path, JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
   return result;
 }
-

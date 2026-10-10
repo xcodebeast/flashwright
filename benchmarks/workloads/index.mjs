@@ -75,6 +75,8 @@ export async function prepareWorkload(name, browser, origin, expect, configurati
       trustedChanges: window.observations.changes.filter(Boolean).length,
       untrustedChanges: window.observations.changes.filter(trusted => !trusted).length,
       applicationCount: window.observations.count,
+      viewport: { width: innerWidth, height: innerHeight },
+      focused: document.hasFocus(), visibilityState: document.visibilityState,
     })),
     accounting: {
       publicCallsPerIteration: { noop: 1, interaction: 3, assertion: 3, navigation: 3, backend: 5, failure: 1 }[name],
