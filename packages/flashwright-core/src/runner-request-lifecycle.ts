@@ -141,13 +141,19 @@ export function installArtifactRequestLifecycle(lifecycle: ArtifactRequestLifecy
   }
   const registration: Registration = { lifecycle, pending: new Set(), observed: new WeakSet(), enrollments: new WeakMap(), disposals: new WeakMap(), closures: new WeakSet(), disposing: false };
   activeRegistration = registration;
-  for (const context of publicContexts) {
-    registration.observed.add(context);
-    notifyUnclaimed(registration, context);
-  }
+  const existing = [...publicContexts].map(context => {
+    try {
+      const claim = beginRunnerRequestCreation();
+      return publishRunnerRequestContext(context, claim).finally(() => claim.complete());
+    } catch (error) { registration.failure ??= { error }; return Promise.resolve(); }
+  });
+  const ready = Promise.all(existing).then(() => {
+    if (registration.failure) throw registration.failure.error;
+  });
+  void ready.catch(() => {});
   let disposal: Promise<void> | undefined;
   return {
-    ready: registration.failure ? Promise.reject(registration.failure.error) : Promise.resolve(),
+    ready,
     dispose() {
       if (callbackScope.getStore() === registration) return Promise.reject(failure('ProtocolError', 'runner.request', 'request lifecycle disposal cannot run recursively inside its callback'));
       registration.disposing = true;

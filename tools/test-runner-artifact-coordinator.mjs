@@ -13,6 +13,8 @@ const { adoptRunnerTraceAtStart } = require('../packages/flashwright-runner/dist
 const { installRunnerTraceFinalizer } = require('../packages/flashwright-runner/dist/commonjs/runner-trace-finalizer.js');
 const { runnerIntegration } = require('../packages/flashwright-core/dist/commonjs/runner-integration.js');
 const { beginRunnerContextCreation, completeRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext } = require('../packages/flashwright-core/dist/commonjs/runner-lifecycle.js');
+const { beginRunnerRequestCreation, publishRunnerRequestContext } = require('../packages/flashwright-core/dist/commonjs/runner-request-lifecycle.js');
+const { APIRequestContext } = require('../packages/flashwright-core/dist/commonjs/api-request.js');
 const { utils } = require('playwright-core/lib/coreBundle');
 const directory = await mkdtemp(join(tmpdir(), 'flashwright-coordinator-'));
 const report = { status: 'running', checks: [] };
@@ -67,6 +69,26 @@ async function publish(value, claim = beginRunnerContextCreation()) {
   try { await didCreateRunnerContext(value, claim); }
   finally { completeRunnerContextCreation(claim); }
 }
+
+function requestContext() {
+  const calls = [];
+  let closed = false;
+  let listener;
+  const client = {
+    subscribeObject(_identifier, callback) { listener = callback; return () => {}; },
+    isClosed: () => closed,
+    intercept: async () => {},
+    async request(method, parameters) { calls.push({ method, parameters }); await this.intercept(method, parameters); return null; },
+    async release() {},
+  };
+  const value = new APIRequestContext(client, `request-context-${++ordinal}`, { timeout: 30000, maxRedirects: 20, failOnStatusCode: false, hasContentType: false });
+  return { value, calls, client, disconnect() { closed = true; listener({ event: 'transportclosed' }); } };
+}
+
+async function publishRequest(value, claim = beginRunnerRequestCreation()) {
+  try { await publishRunnerRequestContext(value, claim); }
+  finally { claim.complete(); }
+}
 async function libraries(testInfo) {
   assert.equal(testInfo.attachments.filter(item => item.name === 'trace-error').length, 0);
   const attachment = testInfo.attachments.find(item => item.name === 'trace');
@@ -80,6 +102,121 @@ async function libraries(testInfo) {
 }
 
 try {
+  await check('already-published API contexts join the first original attempt', async () => {
+    const request = requestContext();
+    await publishRequest(request.value);
+    const coordinator = new RunnerArtifactCoordinator();
+    try {
+      const first = information(); coordinator.start(first); await coordinator.ready();
+      assert(runnerIntegration.currentTraceChunk(3, runnerIntegration.requestTraceOwner(12, request.value)));
+      await first._tracing.stopIfNeeded();
+      assert.equal((await libraries(first)).length, 1);
+      await turn(); assert.equal(coordinator.outstandingCaptures, 0);
+    } finally { await request.value.dispose(); await coordinator.dispose(); }
+  });
+  await check('API retirement requires a confirmed fence before cleanup can release admission', async () => {
+    for (const failures of [1, 2]) {
+      const coordinator = new RunnerArtifactCoordinator();
+      const request = requestContext();
+      let retirements = 0;
+      request.client.intercept = async method => {
+        if (method === 'apiRequest.traceBody.retire' && ++retirements <= failures) {
+          const error = Error('original retirement admission failure'); error.name = 'ResourceLimitError'; throw error;
+        }
+      };
+      try {
+        const first = information(); coordinator.start(first); await coordinator.ready(); await publishRequest(request.value);
+        const finalizer = installRunnerTraceFinalizer(first, adoptRunnerTraceAtStart(first), coordinator.current);
+        await first._tracing.stopIfNeeded();
+        assert.equal(first.status, 'passed'); assert.equal(first.attachments.filter(item => item.name === 'trace').length, 0);
+        assert.match(first.attachments.find(item => item.name === 'trace-error').body.toString(), /original retirement admission failure/);
+        assert.equal(retirements, 2, 'failed export gets one original-generation cleanup retry');
+        await finalizer.cleanup;
+        assert.equal(finalizer.cleanupSucceeded, failures === 1);
+        assert.equal(coordinator.outstandingCaptures, failures === 1 ? 0 : 1);
+        if (failures === 1) {
+          const second = information(); coordinator.start(second); await coordinator.ready(); await second._tracing.stopIfNeeded();
+          assert.equal((await libraries(second)).length, 1);
+        } else {
+          await assert.rejects(runnerIntegration.requestTraceOwner(12, request.value).startChunk(), /cleanup|retirement admission failure/);
+        }
+      } finally { await request.value.dispose(); await coordinator.dispose(); }
+    }
+  });
+  await check('API and browser contexts share original attempt archives and capture admission', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    const browser = context();
+    const request = requestContext();
+    try {
+      const first = information({ snapshots: true }); coordinator.start(first); await coordinator.ready();
+      await publish(browser); await publishRequest(request.value);
+      assert.equal(coordinator.outstandingCaptures, 2);
+      assert.equal(coordinator.contexts.has(request.value), false, 'API owners are not screenshot subjects');
+      const tracing = runnerIntegration.requestTraceOwner(12, request.value);
+      const recording = runnerIntegration.currentTraceRecording(7, tracing);
+      await first._tracing.stopIfNeeded();
+      assert.equal((await libraries(first)).length, 2);
+      const second = information({ snapshots: true }); coordinator.start(second); await coordinator.ready();
+      assert.equal(runnerIntegration.currentTraceRecording(7, tracing), recording);
+      await request.value.dispose(); await browser.close();
+      await second._tracing.stopIfNeeded();
+      assert.equal((await libraries(second)).length, 2);
+      assert.deepEqual(request.calls.map(call => call.method), ['apiRequest.traceBody.retire', 'apiRequest.traceBody.retire', 'apiRequest.dispose']);
+      assert.equal(coordinator.recordings.size, 0);
+      await turn(); assert.equal(coordinator.outstandingCaptures, 0);
+    } finally { await request.value.dispose(); await browser.close(); await coordinator.dispose(); }
+  });
+  await check('late API publication cannot move from an abandoned attempt to its successor', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    const first = information({ abandon: true }); coordinator.start(first); await coordinator.ready();
+    const claim = beginRunnerRequestCreation();
+    const request = requestContext();
+    try {
+      await first._tracing.stopIfNeeded();
+      const second = information(); coordinator.start(second); await coordinator.ready();
+      await publishRequest(request.value, claim);
+      assert.equal(request.calls.length, 0);
+      assert.equal(runnerIntegration.currentTraceChunk(3, runnerIntegration.requestTraceOwner(12, request.value)), undefined);
+      await second._tracing.stopIfNeeded(); assert.equal((await libraries(second)).length, 0);
+      const third = information(); coordinator.start(third); await coordinator.ready();
+      await third._tracing.stopIfNeeded(); assert.equal((await libraries(third)).length, 1);
+    } finally { claim.complete(); await request.value.dispose(); await coordinator.dispose(); }
+  });
+  await check('API transport loss settles the exact recording and removes future enrollment', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    const request = requestContext();
+    try {
+      const first = information(); coordinator.start(first); await coordinator.ready(); await publishRequest(request.value);
+      request.disconnect();
+      await coordinator.dispose();
+      await first._tracing.stopIfNeeded();
+      assert.equal(coordinator.recordings.size, 0);
+      assert.equal(coordinator.requestContexts.size, 0);
+      assert.equal(first.attachments.filter(item => item.name === 'trace').length, 0);
+      assert.match(first.attachments.find(item => item.name === 'trace-error').body.toString(), /context closed before its original trace chunk/);
+      assert.equal(request.calls.length, 0, 'closed transport cannot receive cleanup commands');
+    } finally { await request.value.dispose(); await coordinator.dispose(); }
+  });
+  await check('API and browser pending creations share the same 128 attempt slots', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    const attempt = information(); coordinator.start(attempt); await coordinator.ready();
+    const browserClaims = Array.from({ length: 64 }, () => beginRunnerContextCreation());
+    const requestClaims = Array.from({ length: 65 }, () => beginRunnerRequestCreation());
+    try {
+      assert.equal(coordinator.outstandingCaptures, 128);
+      for (const claim of browserClaims) completeRunnerContextCreation(claim);
+      for (const claim of requestClaims) claim.complete();
+      await attempt._tracing.stopIfNeeded();
+      assert.equal(attempt.status, 'passed');
+      assert.equal(attempt.attachments.filter(item => item.name === 'trace').length, 0);
+      assert.match(attempt.attachments.find(item => item.name === 'trace-error').body.toString(), /128 captures/);
+      await turn(); assert.equal(coordinator.outstandingCaptures, 0);
+    } finally {
+      for (const claim of browserClaims) completeRunnerContextCreation(claim);
+      for (const claim of requestClaims) claim.complete();
+      await coordinator.dispose();
+    }
+  });
   await check('invalid policy owns finalization without enrolling existing contexts or accepting creation', async () => {
     const coordinator = new RunnerArtifactCoordinator();
     coordinator.configureScreenshots({ mode: 'on', options: {} });
