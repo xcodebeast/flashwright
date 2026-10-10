@@ -100,7 +100,8 @@ impl Engine {
         if let Err(mut error) = result {
             // Keep attachment admission closed until every native restoration settles.
             // Disabling may already have published route settlement; it cannot be undone.
-            let cleanup = Operation::new("route.restore".into(), None, watch::channel(false).1);
+            let (_cleanup_cancellation_sender, cleanup_cancellation) = watch::channel(false);
+            let cleanup = Operation::new("route.restore".into(), None, cleanup_cancellation);
             let mut missing_original_page = false;
             let restored = !released_interception
                 && matches!(
