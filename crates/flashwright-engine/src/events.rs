@@ -149,6 +149,7 @@ impl Engine {
                 | "Network.loadingFinished"
                 | "Network.loadingFailed"
                 | "Target.targetDestroyed"
+                | "Target.attachedToTarget"
                 | "Target.detachedFromTarget"
                 | "Target.targetCrashed"
                 | "Inspector.targetCrashed"
@@ -202,20 +203,36 @@ impl Engine {
                             }
                             "Target.detachedFromTarget" => {
                                 parameters["sessionId"].as_str() == Some(&page.session_identifier)
+                                    || parameters["sessionId"].as_str().is_some_and(|session| {
+                                        page.state
+                                            .renderer_sessions
+                                            .lock()
+                                            .unwrap()
+                                            .original(session)
+                                            .is_some()
+                                    })
                             }
                             _ => {
                                 event.session_identifier.as_deref()
                                     == Some(&page.session_identifier)
+                                    || event.session_identifier.as_deref().is_some_and(|session| {
+                                        page.state
+                                            .renderer_sessions
+                                            .lock()
+                                            .unwrap()
+                                            .get(session)
+                                            .is_some()
+                                    })
                                     || parameters["targetId"].as_str()
                                         == Some(&page.target_identifier)
                             }
                         }
                 })
                 .map(|(identifier, page)| {
-                    if matches!(
-                        event.method.as_str(),
-                        "Target.targetDestroyed" | "Target.detachedFromTarget"
-                    ) {
+                    if event.method == "Target.targetDestroyed"
+                        || (event.method == "Target.detachedFromTarget"
+                            && parameters["sessionId"].as_str() == Some(&page.session_identifier))
+                    {
                         page.state
                             .diagnostic_session_destroyed
                             .store(true, Ordering::Release);
@@ -225,6 +242,24 @@ impl Engine {
                 .collect()
         };
         for (identifier, page) in pages {
+            let source_session = event
+                .session_identifier
+                .as_deref()
+                .unwrap_or(&page.session_identifier);
+            if event.method == "Target.attachedToTarget" {
+                self.attach_renderer(&identifier, &page, source_session, &parameters)?;
+                continue;
+            }
+            if event.method == "Target.detachedFromTarget" {
+                if let Some(session) = parameters["sessionId"].as_str() {
+                    self.detach_renderer(&page, session);
+                }
+                continue;
+            }
+            if event.method == "Inspector.detached" && source_session != page.session_identifier {
+                self.detach_renderer(&page, source_session);
+                continue;
+            }
             match event.method.as_str() {
                 "Page.javascriptDialogOpening" | "Page.javascriptDialogClosed" => {
                     self.dialog_event(
@@ -256,7 +291,7 @@ impl Engine {
                     if let Err(error) = self.console_event(
                         &identifier,
                         &page,
-                        &page.session_identifier,
+                        source_session,
                         &event.method,
                         parameters["consoleJson"].as_str().ok_or_else(|| {
                             ErrorRecord::new(
@@ -294,7 +329,7 @@ impl Engine {
                         })
                         .map(|context| context.state.recording.lock().unwrap());
                     let network_event = crate::network_observer::NetworkEvent {
-                        session_identifier: &page.session_identifier,
+                        session_identifier: source_session,
                         method: &event.method,
                         parameters: &parameters,
                         ingress: crate::network_observer::NetworkIngress {
@@ -399,6 +434,7 @@ impl Engine {
         error: ErrorRecord,
         event: &str,
     ) {
+        page.state.renderer_sessions.lock().unwrap().retire_all();
         self.registry
             .lock()
             .unwrap()

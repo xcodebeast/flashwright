@@ -38,6 +38,8 @@ mod page_state;
 mod pointer;
 mod publication;
 mod recording;
+mod renderer_sessions;
+mod renderer_setup;
 mod response_body;
 mod routing;
 mod routing_state;
@@ -745,6 +747,7 @@ impl Engine {
             document.interception = routing_state::RequestInterception::new(self.routing_budget.clone());
             let state = Arc::new(PageState { purpose, state: Mutex::new(document), ..PageState::default() });
             let page = Page { context_identifier: context_identifier.clone(), target_identifier: target_identifier.clone(), session_identifier: session_identifier.clone(), state: state.clone() };
+            let renderer = state.renderer_sessions.lock().unwrap().register_root(&target_identifier, &session_identifier)?;
             {
                 let mut registry = self.registry.lock().unwrap();
                 if !registry.contexts.contains_key(&context_identifier) { return Err(closed(method)); }
@@ -780,6 +783,7 @@ impl Engine {
                 self.configure_page_routing(&page_identifier, &page, &browser, context.state.routing_registered.load(Ordering::Acquire), operation).await?;
                 self.initialize_page_scripts(&page_identifier, &page, &browser, operation).await?;
                 self.initialize_page_filmstrip(&page_identifier, &page, &context, &browser);
+                operation.wait(browser.connection.call("Target.setAutoAttach", renderer_setup::auto_attach_parameters(), Some(&session_identifier))).await?;
             }
             let tree = operation.wait(browser.connection.call("Page.getFrameTree", json!({}), Some(&session_identifier))).await?;
             let registry = self.registry.lock().unwrap();
@@ -788,10 +792,14 @@ impl Engine {
             let mut document = state.state.lock().unwrap();
             // Page.enable normally supplies the initial frame; getFrameTree covers an idle about:blank.
             if document.main_frame.is_none() { document.observe_in_session(&session_identifier, "Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
+            renderer.mark_ready();
             Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame, "navigationSequence":document.sequence }))
         }.await;
         if let Err(mut error) = result {
-            self.registry.lock().unwrap().pages.remove(&page_identifier);
+            let page = self.registry.lock().unwrap().pages.remove(&page_identifier);
+            if let Some(page) = page {
+                self.finish_page(&page_identifier, &page, error.clone(), "close");
+            }
             error.cleanup = Some(
                 dispose(browser.as_ref(), ResourceKind::Page, &target_identifier)
                     .await
