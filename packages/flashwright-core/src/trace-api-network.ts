@@ -9,6 +9,8 @@ export interface APITraceAttempt {
   snapshot: Record<string, unknown>;
 }
 
+export interface APITraceRequestBody { alias: string; mimeType: string; size: number; params?: { name: string; value: string }[] }
+
 function invalid(message: string): never { throw failure('ProtocolError', 'tracing.api', message); }
 
 function headers(value: unknown): Header[] {
@@ -70,11 +72,16 @@ export function apiTraceAttempt(value: unknown): APITraceAttempt {
 
 export function apiTraceBodyExtension(attempt: APITraceAttempt): string {
   const response = attempt.snapshot.response as { content: { mimeType: string } };
-  const mimeType = response.content.mimeType.split(';', 1)[0]!.trim().toLowerCase();
+  return apiTraceResourceExtension(response.content.mimeType);
+}
+
+export function apiTraceResourceExtension(value: string): string {
+  const mimeType = value.split(';', 1)[0]!.trim().toLowerCase();
   const extensions: Record<string, string> = {
     'text/plain': 'txt', 'text/html': 'html', 'text/css': 'css', 'text/javascript': 'js', 'application/javascript': 'js',
     'application/json': 'json', 'application/xml': 'xml', 'text/xml': 'xml', 'image/svg+xml': 'svg',
     'image/png': 'png', 'image/jpeg': 'jpeg', 'image/webp': 'webp', 'image/gif': 'gif', 'application/pdf': 'pdf',
+    'application/octet-stream': 'bin',
   };
   return extensions[mimeType] ?? 'dat';
 }
@@ -83,4 +90,10 @@ export function apiTraceBodySnapshot(attempt: APITraceAttempt, alias: string | u
   const response = attempt.snapshot.response as { content: Record<string, unknown> };
   return { ...attempt.snapshot, response: { ...response, content: { ...response.content,
     ...(alias ? { _sha1: alias } : {}), ...(reason ? { _flashwrightContentUnavailable: reason } : {}) } } };
+}
+
+export function apiTraceRequestBodySnapshot(attempt: APITraceAttempt, body: APITraceRequestBody): Record<string, unknown> {
+  const request = attempt.snapshot.request as Record<string, unknown>;
+  if (request.bodySize !== body.size) invalid('API trace request body changed between preparation and wire attempt');
+  return { ...attempt.snapshot, request: { ...request, postData: { mimeType: body.mimeType, text: '', params: body.params ?? [], _sha1: body.alias } } };
 }

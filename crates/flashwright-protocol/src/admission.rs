@@ -38,6 +38,9 @@ pub fn is_trace_collection(method: &str) -> bool {
             | "context.trace.network.pull"
             | "context.trace.network.take"
             | "context.trace.network.ingested"
+            | "apiRequest.traceBody.take"
+            | "apiRequest.traceBody.ingested"
+            | "apiRequest.traceBody.retire"
     )
 }
 
@@ -104,6 +107,9 @@ mod tests {
                 "context.trace.network.pull",
                 "context.trace.network.take",
                 "context.trace.network.ingested",
+                "apiRequest.traceBody.take",
+                "apiRequest.traceBody.ingested",
+                "apiRequest.traceBody.retire",
             ] {
                 assert!(admits_operation(total - 1, total, method));
                 assert!(!admits_operation(total, total, method));

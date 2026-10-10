@@ -309,6 +309,15 @@ impl Engine {
                 .await
                 .map(OperationResult::Binary);
         }
+        if method == "apiRequest.traceBody.take" {
+            return self
+                .api_trace_body_take(parameters, operation)
+                .await
+                .map(|attachment| match attachment {
+                    Some(attachment) => OperationResult::Binary(attachment),
+                    None => OperationResult::Value(Value::Null),
+                });
+        }
         if method.starts_with("apiRequest.") || method.starts_with("apiResponse.") {
             return self.api_request_control(method, parameters, operation);
         }

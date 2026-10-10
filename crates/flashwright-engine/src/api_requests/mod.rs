@@ -34,6 +34,42 @@ fn unix_milliseconds() -> f64 {
 }
 
 impl Engine {
+    pub(crate) async fn api_trace_body_take(
+        &self,
+        parameters: Value,
+        operation: &Operation,
+    ) -> Result<Option<flashwright_protocol::BinaryAttachment>, ErrorRecord> {
+        let method = "apiRequest.traceBody.take";
+        validate_keys(method, &parameters, &["context", "response"])?;
+        let context = self
+            .api_requests
+            .context(identifier(&parameters, "context", method)?, method)?;
+        let response = identifier(&parameters, "response", method)?;
+        let body = context.trace_body(response, method)?;
+        operation.check()?;
+        let reservation = match self.attachment_slots.clone().try_acquire_owned() {
+            Ok(reservation) => reservation,
+            Err(tokio::sync::TryAcquireError::NoPermits) => return Ok(None),
+            Err(tokio::sync::TryAcquireError::Closed) => {
+                return Err(ErrorRecord::new(
+                    ErrorCode::TargetClosed,
+                    method,
+                    "attachment output is closed",
+                ));
+            }
+        };
+        operation.check()?;
+        context.check(method)?;
+        let attachment = flashwright_protocol::BinaryAttachment::from_shared_raw(
+            body.bytes.clone(),
+            body,
+            self.maximum_attachment_bytes,
+            reservation,
+            method,
+        )?;
+        Ok(Some(attachment))
+    }
+
     pub(crate) async fn api_response_body(
         &self,
         parameters: Value,
@@ -122,6 +158,23 @@ impl Engine {
                     identifier(&parameters, "context", method)?,
                     identifier(&parameters, "response", method)?,
                 );
+                Ok(OperationResult::Value(Value::Null))
+            }
+            "apiRequest.traceBody.ingested" => {
+                validate_keys(method, &parameters, &["context", "response"])?;
+                let context = self
+                    .api_requests
+                    .context(identifier(&parameters, "context", method)?, method)?;
+                context.ingest_trace_body(identifier(&parameters, "response", method)?, method)?;
+                Ok(OperationResult::Value(Value::Null))
+            }
+            "apiRequest.traceBody.retire" => {
+                validate_keys(method, &parameters, &["context", "generation"])?;
+                let context = self
+                    .api_requests
+                    .context(identifier(&parameters, "context", method)?, method)?;
+                context
+                    .retire_trace_bodies(identifier(&parameters, "generation", method)?, method)?;
                 Ok(OperationResult::Value(Value::Null))
             }
             _ => Err(ErrorRecord::new(

@@ -12,6 +12,9 @@ const require = createRequire(import.meta.url);
 const { request } = require('../packages/flashwright-core/dist/commonjs/api-request.js');
 const { runnerIntegration } = require('../packages/flashwright-core/dist/commonjs/runner-integration.js');
 const { request: publicRequest } = require('../packages/flashwright-core/dist/commonjs/index.js');
+const { tryAcquireTraceTransfer } = require('../packages/flashwright-core/dist/commonjs/trace-transfers.js');
+const { TraceNetworkChannel } = require('../packages/flashwright-core/dist/commonjs/trace-network.js');
+const { TraceResources } = require('../packages/flashwright-core/dist/commonjs/trace-resources.js');
 const { server: upstreamServer } = require(resolve(dirname(require.resolve('playwright-core/package.json')), 'lib/coreBundle.js'));
 
 const directory = await mkdtemp(join(tmpdir(), 'flashwright-api-trace-integration-'));
@@ -24,8 +27,20 @@ const server = createServer((incoming, outgoing) => {
     announceSlowRequest();
     return;
   }
+  if (incoming.url === '/truncated') {
+    outgoing.writeHead(200, { 'content-length': '10' });
+    outgoing.write('short');
+    setTimeout(() => outgoing.destroy(), 10);
+    return;
+  }
   if (incoming.url === '/redirect') {
     outgoing.writeHead(302, { location: '/final', 'set-cookie': 'original=1; Path=/' });
+    outgoing.end();
+    return;
+  }
+  if (incoming.url === '/post-redirect') {
+    outgoing.writeHead(307, { location: '/submit' });
+    incoming.resume();
     outgoing.end();
     return;
   }
@@ -35,6 +50,7 @@ const server = createServer((incoming, outgoing) => {
     return;
   }
   outgoing.writeHead(200, { 'content-type': 'text/plain', 'x-request-method': incoming.method });
+  incoming.resume();
   outgoing.end('finished');
 });
 server.listen(0, '127.0.0.1');
@@ -59,6 +75,13 @@ try {
   assert.equal(await response.text(), 'finished');
   const authenticated = await context.get(`${origin}/auth`);
   assert.equal(authenticated.status(), 200);
+  const postBody = Buffer.from([0, 1, 2, 255]);
+  const posted = await context.post(`${origin}/submit`, { data: postBody, headers: { 'content-type': 'application/octet-stream' } });
+  assert.equal(posted.status(), 200);
+  const redirectedPost = await context.post(`${origin}/post-redirect`, { data: postBody, headers: { 'content-type': 'application/octet-stream' } });
+  assert.equal(redirectedPost.status(), 200);
+  const formResponse = await context.post(`${origin}/submit`, { form: { a: 'one', b: 'two' } });
+  assert.equal(formResponse.status(), 200);
   archive = await recording.chunk.takeArchive();
   const destination = join(directory, 'api-trace.zip');
   await archive.export(destination, new AbortController().signal);
@@ -67,9 +90,9 @@ try {
   assert.equal(contextOptions.browserName, '');
   assert.deepEqual(contextOptions.options, {});
   const snapshots = execFileSync('unzip', ['-p', destination, 'trace.network'], { encoding: 'utf8' }).trim().split('\n').map(line => JSON.parse(line).snapshot);
-  assert.equal(snapshots.length, 4);
-  assert.deepEqual(snapshots.map(snapshot => snapshot.response.status), [302, 200, 401, 200]);
-  assert.deepEqual(snapshots.map(snapshot => snapshot.request.url), [`${origin}/redirect`, `${origin}/final`, `${origin}/auth`, `${origin}/auth`]);
+  assert.equal(snapshots.length, 8);
+  assert.deepEqual(snapshots.map(snapshot => snapshot.response.status), [302, 200, 401, 200, 200, 307, 200, 200]);
+  assert.deepEqual(snapshots.map(snapshot => snapshot.request.url), [`${origin}/redirect`, `${origin}/final`, `${origin}/auth`, `${origin}/auth`, `${origin}/submit`, `${origin}/post-redirect`, `${origin}/submit`, `${origin}/submit`]);
   assert.ok(snapshots.every(snapshot => snapshot._apiRequest === true));
   assert.equal(snapshots[1].response.content.size, 8);
   assert.match(snapshots[1].response.content._sha1, /^[a-f0-9]{40}\.txt$/);
@@ -77,10 +100,20 @@ try {
   assert.equal(snapshots[0].response.content._sha1, undefined);
   assert.equal(snapshots[2].request.headers.some(header => header.name === 'authorization'), false);
   assert.equal(snapshots[3].request.headers.some(header => header.name === 'authorization'), true);
+  assert.equal(snapshots[4].request.postData.mimeType, 'application/octet-stream');
+  assert.match(snapshots[4].request.postData._sha1, /^[a-f0-9]{40}\.bin$/);
+  assert.deepEqual(execFileSync('unzip', ['-p', destination, `resources/${snapshots[4].request.postData._sha1}`]), postBody);
+  assert.equal(snapshots[5].request.postData._sha1, snapshots[4].request.postData._sha1);
+  assert.equal(snapshots[6].request.postData._sha1, snapshots[4].request.postData._sha1);
+  assert.deepEqual(snapshots[7].request.postData.params, [{ name: 'a', value: 'one' }, { name: 'b', value: 'two' }]);
+  assert.equal(execFileSync('unzip', ['-p', destination, `resources/${snapshots[7].request.postData._sha1}`], { encoding: 'utf8' }), 'a=one&b=two');
   referenceContext = await referenceRequest.newContext({ httpCredentials: { username: 'trace-user', password: 'trace-password', send: 'unauthorized' } });
   await referenceContext.tracing.start({ snapshots: true });
   await referenceContext.get(`${origin}/redirect`);
   await referenceContext.get(`${origin}/auth`);
+  await referenceContext.post(`${origin}/submit`, { data: postBody, headers: { 'content-type': 'application/octet-stream' } });
+  await referenceContext.post(`${origin}/post-redirect`, { data: postBody, headers: { 'content-type': 'application/octet-stream' } });
+  await referenceContext.post(`${origin}/submit`, { form: { a: 'one', b: 'two' } });
   const referenceDestination = join(directory, 'playwright-api-trace.zip');
   await referenceContext.tracing.stop({ path: referenceDestination });
   const referenceSnapshots = execFileSync('unzip', ['-p', referenceDestination, 'trace.network'], { encoding: 'utf8' }).trim().split('\n').map(line => JSON.parse(line).snapshot).filter(snapshot => snapshot._apiRequest);
@@ -108,6 +141,9 @@ try {
   await recording.stop();
   await response.dispose();
   await authenticated.dispose();
+  await posted.dispose();
+  await redirectedPost.dispose();
+  await formResponse.dispose();
   const metadataOnlyStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: false }, { begin() { return undefined; } });
   const metadataOnlyRecording = await metadataOnlyStartup.ready;
   const metadataOnlyResponse = await context.get(`${origin}/final`);
@@ -131,6 +167,51 @@ try {
   assert.equal(failedSnapshots[0].time, -1);
   await failedArchive.dispose();
   await failedRecording.stop();
+  const truncatedStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
+  const truncatedRecording = await truncatedStartup.ready;
+  await assert.rejects(context.get(`${origin}/truncated`, { timeout: 2000 }));
+  const truncatedArchive = await truncatedRecording.chunk.takeArchive();
+  const truncatedDestination = join(directory, 'truncated-attempt.zip');
+  await truncatedArchive.export(truncatedDestination, new AbortController().signal);
+  const truncatedSnapshot = JSON.parse(execFileSync('unzip', ['-p', truncatedDestination, 'trace.network'], { encoding: 'utf8' }).trim()).snapshot;
+  assert.equal(truncatedSnapshot.response.status, -1);
+  assert.equal(truncatedSnapshot.response.content.size, -1);
+  await truncatedArchive.dispose();
+  await truncatedRecording.stop();
+  const sharedStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
+  const sharedRecording = await sharedStartup.ready;
+  const browserResources = await TraceResources.create();
+  const originalClientRequest = tracing.client.request;
+  let releaseBrowserPoll;
+  const browserPoll = new Promise(resolve => { releaseBrowserPoll = resolve; });
+  tracing.client.request = (method, parameters, ...rest) => method === 'context.trace.network.pull'
+    ? browserPoll.then(() => ({ recording: parameters.recording, resources: [], pending: false }))
+    : originalClientRequest.call(tracing.client, method, parameters, ...rest);
+  const browserCollectorOne = new TraceNetworkChannel(tracing.client, 'browser-trace-one', 'recording-one', browserResources, error => { throw error; });
+  const browserCollectorTwo = new TraceNetworkChannel(tracing.client, 'browser-trace-two', 'recording-two', browserResources, error => { throw error; });
+  clearTimeout(browserCollectorOne.timer);
+  clearTimeout(browserCollectorTwo.timer);
+  try {
+    const browserDrainOne = browserCollectorOne.drain();
+    const browserDrainTwo = browserCollectorTwo.drain();
+    assert.equal(tryAcquireTraceTransfer(tracing.client, context.identifier), undefined);
+    const disposableResponse = await context.get(`${origin}/final`);
+    await disposableResponse.dispose();
+    releaseBrowserPoll();
+    await Promise.all([browserDrainOne, browserDrainTwo]);
+  } finally {
+    releaseBrowserPoll();
+    tracing.client.request = originalClientRequest;
+    await Promise.all([browserCollectorOne.stop(), browserCollectorTwo.stop()]);
+    await browserResources.dispose();
+  }
+  const sharedArchive = await sharedRecording.chunk.takeArchive();
+  const sharedDestination = join(directory, 'shared-transfer.zip');
+  await sharedArchive.export(sharedDestination, new AbortController().signal);
+  const sharedSnapshot = JSON.parse(execFileSync('unzip', ['-p', sharedDestination, 'trace.network'], { encoding: 'utf8' }).trim()).snapshot;
+  assert.equal(execFileSync('unzip', ['-p', sharedDestination, `resources/${sharedSnapshot.response.content._sha1}`], { encoding: 'utf8' }), 'finished');
+  await sharedArchive.dispose();
+  await sharedRecording.stop();
   const closingStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
   const closingRecording = await closingStartup.ready;
   const pending = context.get(`${origin}/slow`, { timeout: 5000 });
