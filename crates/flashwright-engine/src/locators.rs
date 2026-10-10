@@ -4,7 +4,7 @@ use super::*;
 use flashwright_protocol::InputDelivery;
 use tokio::time::sleep;
 
-mod traced_mutation;
+mod traced_action;
 
 pub(crate) const LOCATOR_WORLD_NAME: &str = "__flashwright_locator_world__";
 
@@ -145,7 +145,7 @@ impl Engine {
                             .trace_call()
                             .is_some_and(|trace| trace.recording.is_some())
                     {
-                        self.traced_locator_mutation(
+                        self.traced_locator_action(
                             identifier(&parameters, "page", &method)?,
                             &page,
                             &browser,

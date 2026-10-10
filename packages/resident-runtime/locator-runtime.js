@@ -109,8 +109,9 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
 
   async function preparePointer(units, deadline, token, settings) {
     if (expired(deadline)) return { status: 'expired' };
-    const request = { selector: decodeRequest(units).selector, ...settings, checked: settings.checked ?? undefined };
-    const element = injected.querySelector(injected.parseSelector(request.selector), document, true);
+    const selection = decodeRequest(units);
+    const request = { selector: selection.selector, strict: selection.strict, ...settings, checked: settings.checked ?? undefined };
+    const element = injected.querySelector(injected.parseSelector(request.selector), document, request.strict ?? true);
     if (!element) return retry('locator resolved to no elements');
     if (request.checked !== undefined) {
       const state = injected.elementState(element, 'checked');
@@ -381,20 +382,21 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     return 'success';
   }
 
-  async function mutationReadiness(element, request) {
+  async function capturedActionReadiness(element, request) {
     if (!element || element.ownerDocument !== document || !element.isConnected) return 'error:notconnected';
-    if (request.force) return undefined;
+    if (['press', 'pressSequentially'].includes(request.action) || request.force) return undefined;
     const states = request.action === 'fill' ? ['visible', 'enabled', 'editable'] : ['visible', 'enabled'];
     return injected.checkElementStates(element, states);
   }
 
-  /** Capture can await browser work; recheck this retained node immediately before mutation. */
-  async function mutateElement(element, request, deadline) {
+  /** Capture can await browser work; recheck this retained node immediately before mutation or keyboard focus. */
+  async function performCapturedAction(element, request, deadline) {
     if (expired(deadline)) return { status: 'expired' };
-    const readiness = await mutationReadiness(element, request);
+    const readiness = await capturedActionReadiness(element, request);
     if (readiness) return actionResult(readiness);
     if (element.ownerDocument !== document || !element.isConnected) return retry('error:notconnected');
     if (expired(deadline)) return { status: 'expired' };
+    if (['press', 'pressSequentially'].includes(request.action)) return actionResult(injected.focusNode(element, true));
     if (request.action === 'fill') {
       const result = injected.fill(element, request.value);
       if (result === 'needsinput') return { status: 'needsinput', textUnits: codec.encode(request.value).units };
@@ -405,12 +407,12 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
   }
 
   /** The action owns this selector result; later snapshot work cannot resolve a replacement. */
-  async function resolveMutationElement(units, deadline) {
+  async function resolveActionElement(units, deadline) {
     try {
       if (expired(deadline)) return { outcome: 'success', value: false };
       const request = decodeRequest(units);
-      const element = injected.querySelector(injected.parseSelector(request.selector), document, true);
-      const readiness = await mutationReadiness(element, request);
+      const element = injected.querySelector(injected.parseSelector(request.selector), document, request.strict ?? true);
+      const readiness = await capturedActionReadiness(element, request);
       return { outcome: 'success', value: readiness || expired(deadline) ? false : element };
     } catch (error) {
       return { outcome: 'exception', failure: JSON.stringify({ outcome: 'exception', stage: 'execution', error: codec.describeError(error, false) }) };
@@ -426,7 +428,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       if (request.action === 'count') return succeeded(elements.length);
       return succeeded(elements.map(element => request.action === 'allTextContents' ? element.textContent || '' : element.innerText));
     }
-    const element = injected.querySelector(selector, document, true);
+    const element = injected.querySelector(selector, document, request.strict ?? true);
     if (request.action === 'waitFor') {
       const visible = !!element && injected.elementState(element, 'visible').matches;
       const matches = request.state === 'attached' ? !!element : request.state === 'detached' ? !element : request.state === 'visible' ? visible : !visible;
@@ -459,8 +461,8 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
 
   return {
     resolveElement,
-    resolveMutationElement,
-    mutateCapturedElement: (element, units, deadline) => safely(() => mutateElement(element, decodeRequest(units), deadline)),
+    resolveActionElement,
+    runCapturedAction: (element, units, deadline) => safely(() => performCapturedAction(element, decodeRequest(units), deadline)),
     resolveFileInput, validateFileInput, createFileUpload, beginUploadFile, appendUploadFile, finishUploadFile, assignFileUpload,
     resolveLocatorElement: (units, deadline) => resolveElement(codec.encode(decodeRequest(units).selector).units, true, 'attached', deadline),
     prepareElementAction: (element, action, force, deadline, token) => safely(() => prepareElementAction(element, action, force, deadline, token)),
@@ -475,7 +477,8 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     run: (requestUnits, deadline) => safely(() => run(decodeRequest(requestUnits), deadline)),
     prepareKeyboard: (units, deadline) => safely(() => {
       if (expired(deadline)) return { status: 'expired' };
-      const element = injected.querySelector(injected.parseSelector(decodeRequest(units).selector), document, true);
+      const request = decodeRequest(units);
+      const element = injected.querySelector(injected.parseSelector(request.selector), document, request.strict ?? true);
       if (!element) return retry('locator resolved to no elements');
       return actionResult(injected.focusNode(element, true));
     }),

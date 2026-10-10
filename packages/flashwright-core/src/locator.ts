@@ -5,7 +5,7 @@ import type { Page } from './index.js';
 import { failure } from './errors.js';
 import { validateBoolean, validateOptions } from './validation.js';
 import type { ElementHandle, JSHandle, SmartHandle, Unboxed } from './handles.js';
-import { prepareTyping } from './keyboard.js';
+import { SelectorActions } from './selector-actions.js';
 import type { InputFiles, SetInputFilesOptions } from './file-inputs.js';
 
 export interface LocatorOptions { has?: Locator; hasNot?: Locator; hasText?: string | RegExp; hasNotText?: string | RegExp; visible?: boolean }
@@ -101,7 +101,7 @@ export class Locator extends LocatorScope {
         hover: { parameters: ['options'] },
         check: { parameters: ['options'] },
         uncheck: { parameters: ['options'] },
-        setChecked: { parameters: ['checked', 'options'] },
+        setChecked: { method: arguments_ => arguments_[0] ? 'check' : 'uncheck', parameters: ['checked', 'options'] },
         count: {},
         all: {},
         allTextContents: {},
@@ -126,6 +126,7 @@ export class Locator extends LocatorScope {
     }, 'Locator');
   }
 
+  private readonly actions = new SelectorActions((action, parameters, options) => this.run(action, parameters, options));
   readonly selector: string;
   constructor(readonly ownerFrame: Frame, selector: string, options: LocatorOptions = {}) {
     validateOptions('locator', options, ['has', 'hasNot', 'hasText', 'hasNotText', 'visible']);
@@ -184,41 +185,9 @@ export class Locator extends LocatorScope {
     if (typeof pageFunction !== 'string' && typeof pageFunction !== 'function') throw failure('InvalidArgumentError', 'locator.evaluateHandle', 'expected a function or JavaScript expression string');
     return this.withElement(element => element.evaluateHandle(pageFunction, argument), options);
   }
-  private async pointer(action: string, options: ClickOptions, checked?: boolean): Promise<void> {
-    const supported = ['force', 'trial', 'position', 'timeout'];
-    if (action === 'click' || action === 'dblclick') supported.push('button', 'delay', 'modifiers', 'noWaitAfter');
-    if (action === 'click') supported.push('clickCount');
-    if (action === 'hover') supported.push('modifiers');
-    if (checked !== undefined) supported.push('noWaitAfter');
-    const method = `locator.${action}`;
-    validateOptions(method, options, supported);
-    for (const name of ['force', 'trial', 'noWaitAfter'] as const) validateBoolean(`${method}.${name}`, options[name]);
-    if (options.button !== undefined && !['left', 'right', 'middle'].includes(options.button)) throw failure('InvalidArgumentError', method, 'invalid mouse button');
-    if (options.clickCount !== undefined && (!Number.isInteger(options.clickCount) || options.clickCount < 1 || options.clickCount > 100)) throw failure('InvalidArgumentError', method, 'clickCount must be an integer from 1 to 100');
-    if (options.delay !== undefined && (!Number.isFinite(options.delay) || options.delay < 0)) throw failure('InvalidArgumentError', method, 'delay must be a finite nonnegative number');
-    if (options.position !== undefined) {
-      validateOptions(`${method}.position`, options.position, ['x', 'y']);
-      if (![options.position.x, options.position.y].every(Number.isFinite)) throw failure('InvalidArgumentError', method, 'position coordinates must be finite numbers');
-    }
-    if (options.modifiers !== undefined && (!Array.isArray(options.modifiers) || options.modifiers.some(modifier => !['Alt', 'Control', 'ControlOrMeta', 'Meta', 'Shift'].includes(modifier)))) throw failure('InvalidArgumentError', method, 'invalid keyboard modifier');
-    const { timeout, ...pointer } = options;
-    return this.run(action, { ...pointer, ...(checked === undefined ? {} : { checked }) }, timeout === undefined ? {} : { timeout });
-  }
-  async press(key: string, options: PressOptions = {}): Promise<void> {
-    validateOptions('locator.press', options, ['timeout', 'delay', 'noWaitAfter']);
-    validateBoolean('locator.press.noWaitAfter', options.noWaitAfter);
-    if (typeof key !== 'string') throw failure('InvalidArgumentError', 'locator.press', 'key must be a string');
-    if (options.delay !== undefined && (!Number.isFinite(options.delay) || options.delay < 0)) throw failure('InvalidArgumentError', 'locator.press', 'delay must be a finite nonnegative number');
-    const { timeout, ...keyboard } = options;
-    return this.run('press', { ...keyboard, keyUnits: Array.from({ length: key.length }, (_, index) => key.charCodeAt(index)) }, timeout === undefined ? {} : { timeout });
-  }
-  /** Focus once and let the browser route the remaining characters as application focus changes. */
-  async pressSequentially(text: string, options: PressOptions = {}): Promise<void> {
-    const method = 'locator.pressSequentially';
-    validateOptions(method, options, ['timeout', 'delay', 'noWaitAfter']);
-    validateBoolean(`${method}.noWaitAfter`, options.noWaitAfter);
-    return this.run('pressSequentially', prepareTyping(text, options, method), options.timeout === undefined ? {} : { timeout: options.timeout });
-  }
+  private pointer(action: string, options: ClickOptions, checked?: boolean): Promise<void> { return this.actions.pointer(action, options, checked); }
+  press(key: string, options: PressOptions = {}): Promise<void> { return this.actions.press(key, options); }
+  pressSequentially(text: string, options: PressOptions = {}): Promise<void> { return this.actions.pressSequentially(text, options); }
   /** Native capture owns resolution and selection under one deadline without retargeting replacements. */
   async selectText(options: SelectTextOptions = {}): Promise<void> {
     validateOptions('locator.selectText', options, ['force', 'timeout']);
@@ -257,29 +226,9 @@ export class Locator extends LocatorScope {
     if (!['attached', 'detached', 'visible', 'hidden'].includes(state)) throw failure('InvalidArgumentError', 'locator.waitFor', 'invalid wait state');
     return this.run('waitFor', { state }, timeout);
   }
-  async fill(value: string, options: FillOptions = {}): Promise<void> {
-    if (typeof value !== 'string') throw failure('InvalidArgumentError', 'locator.fill', 'value must be a string');
-    if (/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(value)) throw failure('UnsupportedFeatureError', 'locator.fill', 'native text input containing unpaired UTF-16 surrogates is not implemented');
-    const { force = false, noWaitAfter, ...timeout } = options;
-    validateBoolean('locator.fill.force', force);
-    validateBoolean('locator.fill.noWaitAfter', noWaitAfter);
-    return this.run('fill', { value, force }, timeout);
-  }
+  fill(value: string, options: FillOptions = {}): Promise<void> { return this.actions.fill(value, options); }
   clear(options: FillOptions = {}): Promise<void> { return this.fill('', options); }
   focus(options: LocatorTimeoutOptions = {}): Promise<void> { return this.run('focus', {}, options); }
   blur(options: LocatorTimeoutOptions = {}): Promise<void> { return this.run('blur', {}, options); }
-  async selectOption(values: string | SelectOption | readonly string[] | readonly SelectOption[] | null, options: FillOptions = {}): Promise<string[]> {
-    const { force = false, noWaitAfter, ...timeout } = options;
-    const normalized = values === null ? [] : Array.isArray(values) ? values : [values];
-    validateBoolean('locator.selectOption.force', force);
-    validateBoolean('locator.selectOption.noWaitAfter', noWaitAfter);
-    if (normalized.some(value => typeof value !== typeof normalized[0])) throw failure('InvalidArgumentError', 'locator.selectOption', 'option arrays must contain only strings or only option objects');
-    for (const value of normalized) {
-      if (typeof value === 'string') continue;
-      validateOptions('locator.selectOption', value, ['value', 'label', 'index']);
-      for (const name of ['value', 'label'] as const) if (value[name] !== undefined && typeof value[name] !== 'string') throw failure('InvalidArgumentError', `locator.selectOption.${name}`, 'expected a string');
-      if (value.index !== undefined && !Number.isInteger(value.index)) throw failure('InvalidArgumentError', 'locator.selectOption.index', 'expected an integer');
-    }
-    return this.run('selectOption', { values: normalized.map(value => typeof value === 'string' ? { valueOrLabel: value } : value), force }, timeout);
-  }
+  selectOption(values: string | SelectOption | readonly string[] | readonly SelectOption[] | null, options: FillOptions = {}): Promise<string[]> { return this.actions.selectOption(values, options); }
 }

@@ -5,7 +5,7 @@ export interface TraceCallMetadata { readonly context: string; readonly generati
 interface CallScope { internal: boolean; traceCall?: TraceCallMetadata }
 export interface TraceOwner { tracing: Tracing; pageId?: string; selector?: string }
 export type TraceCaptureMode = 'default' | 'metadata-only';
-export interface TraceMethod { className?: string; method?: string; apiName?: string; parameters?: readonly string[]; capture?: TraceCaptureMode | ((arguments_: readonly unknown[]) => TraceCaptureMode); completion?: 'independent' }
+export interface TraceMethod { className?: string; method?: string | ((arguments_: readonly unknown[]) => string); apiName?: string; parameters?: readonly string[]; capture?: TraceCaptureMode | ((arguments_: readonly unknown[]) => TraceCaptureMode); completion?: 'independent' }
 let activeChunks = 0;
 const scope = new AsyncLocalStorage<CallScope>();
 let pageOwnerResolver: ((page: object) => TraceOwner | undefined) | undefined;
@@ -31,7 +31,8 @@ export function instrumentTraceMethods<Owner extends object>(prototype: Owner, c
       const owner = ownerFor(this);
       if (!owner) return original.apply(this, arguments_);
       const capture = typeof configuration.capture === 'function' ? configuration.capture(arguments_) : configuration.capture;
-      const call: TraceCall | undefined = owner.tracing.begin(configuration.className ?? className, configuration.method ?? name, configuration.apiName ?? `${publicClassName === 'BrowserContext' ? 'browserContext' : publicClassName.toLowerCase()}.${name}`, owner, configuration.parameters ?? [], arguments_, capture);
+      const method = typeof configuration.method === 'function' ? configuration.method(arguments_) : configuration.method ?? name;
+      const call: TraceCall | undefined = owner.tracing.begin(configuration.className ?? className, method, configuration.apiName ?? `${publicClassName === 'BrowserContext' ? 'browserContext' : publicClassName.toLowerCase()}.${name}`, owner, configuration.parameters ?? [], arguments_, capture);
       if (!call) return original.apply(this, arguments_);
       let result: unknown;
       try { result = scope.run({ internal: true, ...(call.nativeTrace ? { traceCall: call.nativeTrace } : {}) }, () => original.apply(this, arguments_)); }

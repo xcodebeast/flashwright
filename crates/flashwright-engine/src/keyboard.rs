@@ -451,30 +451,55 @@ impl Engine {
             let before = page
                 .input_sequence_start(&browser, operation, method)
                 .await?;
-            page.trace_before_input(operation);
-            let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
-                "uniqueContextId": realm.context.unique_identifier,
-                "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.prepareKeyboard(request, deadline); }",
-                "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }],
-                "returnByValue": true, "awaitPromise": true, "userGesture": true,
-            }), Some(&page.session_identifier))?;
-            let result = operation
-                .wait(page.state.while_alive(method, command.response()))
-                .await;
-            let result = match result {
-                Ok(result) => {
-                    check_exception(&result, method)?;
-                    result["result"]["value"].clone()
+            let preparation = if operation
+                .trace_call()
+                .is_some_and(|trace| trace.recording.is_some())
+            {
+                self.traced_locator_action(
+                    identifier(&parameters, "page", method)?,
+                    &page,
+                    &browser,
+                    &realm,
+                    &request,
+                    operation,
+                    method,
+                )
+                .await
+            } else {
+                page.trace_before_input(operation);
+                let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
+                    "uniqueContextId": realm.context.unique_identifier,
+                    "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.prepareKeyboard(request, deadline); }",
+                    "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }],
+                    "returnByValue": true, "awaitPromise": true, "userGesture": true,
+                }), Some(&page.session_identifier))?;
+                match operation
+                    .wait(page.state.while_alive(method, command.response()))
+                    .await
+                {
+                    Ok(result) => {
+                        check_exception(&result, method)?;
+                        Ok(result["result"]["value"].clone())
+                    }
+                    Err(mut error) => {
+                        if !context_was_destroyed(&error) && !command.prevent_dispatch() {
+                            error.input_delivery = InputDelivery::Uncertain;
+                        }
+                        Err(error)
+                    }
                 }
-                Err(error) if context_was_destroyed(&error) => {
+            };
+            let result = match preparation {
+                Ok(result) => result,
+                Err(error)
+                    if context_was_destroyed(&error)
+                        && matches!(error.input_delivery, InputDelivery::NotDispatched) =>
+                {
                     page.state.locator_realms.lock().await.remove(frame);
                     drop(input_lock);
                     continue;
                 }
                 Err(mut error) => {
-                    if !command.prevent_dispatch() {
-                        error.input_delivery = InputDelivery::Uncertain;
-                    }
                     error.method = method.into();
                     return Err(error);
                 }
