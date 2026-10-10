@@ -15,7 +15,7 @@
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/injected/src/injectedScript.ts"
   ],
   "retainedExtract": "compatibility/upstream/common-matchers.source.txt",
-  "extractSha256": "ea37e7741e5120cad9b5b8d1fe33f4da9ece4286a6a5f63486dc1d15180562b8",
+  "extractSha256": "8dd739bb0aa049ca3aae558eec75df8d8d286edcc53a69aa5b007740a85a094f",
   "snippets": {
     "toHaveAccessibleDescription": {
       "path": "node_modules/playwright/lib/matchers/expect.js",
@@ -71,6 +71,12 @@
       "lastLine": 12500,
       "sha256": "de19034fa64c6c2804042a37d4465c21bde959118fa7f629693657aff45f7e12"
     },
+    "_ariaSnapshotForExpect": {
+      "path": "packages/resident-runtime/playwright-injected.js",
+      "firstLine": 7679,
+      "lastLine": 7692,
+      "sha256": "f31a8172106e26e153529eb84cc9815f5901f3bc6ffe0b9135a15d665930f09b"
+    },
     "_expectCore": {
       "path": "packages/resident-runtime/playwright-injected.js",
       "firstLine": 7696,
@@ -97,13 +103,17 @@
     }
   },
   "implementation": {
-    "packages/flashwright-runner/src/matchers.ts": "84414fabdb8024f3560e3278cd41f4ea8ed1fa04ba5fb8ef6ec0e73b9507fef4",
+    "packages/flashwright-runner/src/matchers.ts": "49df225963dd9cd83832e79a19956bedcd493cc61a8fa654f7a787bca33195b6",
     "packages/flashwright-runner/src/index.ts": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619",
-    "packages/flashwright-core/src/assertions.ts": "c1967c3b8dda934a6da302fce4348fbed4ba1dd8d92fa2ea411ef9f4b5a13d02",
+    "packages/flashwright-core/src/assertions.ts": "b90a4e21e2ed0a9dc2082d1697efe55b79286882c35bfbc2177dc17f41ebe5d5",
     "crates/flashwright-engine/src/assertions.rs": "4eca904e2a2675727a2fdfe8f42028393a2251466637ade8966b6f55625975d0",
-    "packages/resident-runtime/locator-runtime.js": "6690f9129ca1700346c88ff14f3a494aadd587fccc09f2da29c2f0c6f4b3acd9",
+    "packages/resident-runtime/locator-runtime.js": "fe1e632c49e02aa25a67bc3d4678906a78a0c0fe1046dfb06c2f643cbdf95167",
     "packages/resident-runtime/condition-registry.js": "a42b4aba99fd2243e75b1661ce6d9af17d29a42b2b038ba2f559a9a3e9fe2182",
-    "tools/test-common-matchers.mjs": "f70a8870e0c0a1369e30a6a4cd4c77abd56b9d72541ccfca27d30d81c53a0c02",
+    "tools/test-common-matchers.mjs": "84fb3a0ac86d7303b14767c8941d9844b387479daa2665470df2b8d28477a2d2",
+    "tools/test-matcher-context-runtime.mjs": "99026f7fc1f8f7e82ec327d81c50c341fa0521fceef7e8cc8c8ed56ddeb83464",
+    "tools/run-matcher-context-tests.mjs": "35b7fc082e708acfaeb52f35fdf42903bf547fb235c860490c1aac9f459a655b",
+    "compatibility/m2/matcher-context/assertions.spec.cjs": "3d757b290c927e03833e1d6cc83bacadcd2284c5d369547bcc54cfaad2d6e4ce",
+    "compatibility/m2/matcher-context/playwright.config.cjs": "a8c603bcbe3e03509264566e74b2a40e26fc3060228984d62533f3831ee0ea5a",
     "tools/run-common-matcher-tests.mjs": "489528c7b73a05da6bd96c71050ebe643a503a770e49435061690d5d76a592b5",
     "tools/test-packed-common-matchers.mjs": "7e90dae707faa282602f794a03d3959b09677fff3eeef1c66126ac39a66b9250",
     "compatibility/m2/common-matchers-fixture.mjs": "8a7017ec9f71d8edcc854c596337cd32048f876583c9435fe7cb7f832a8a2775",
@@ -115,6 +125,7 @@
     "Computed CSS accepts before/after pseudo-elements; selected values retarget labels and require a multiple select, preserving DOM option order.",
     "Accessibility name/description/error text uses pinned whitespace normalization and explicit ignoreCase precedence. Role matching requires a literal string and does not infer role hierarchy.",
     "Existing assertion transport, full predicates, retry/negation/missing-target handling and bounded diagnostics remain shared with established matchers.",
+    "Runner assertions request target/body accessibility diagnostics only for failing predicate observations. Count, array and ARIA assertions omit those snapshots. Retained text has an explicit 16384 UTF-16-unit truncation boundary; successful conditions and library assertions without the diagnostic flag skip capture.",
     "Shared-selector cache eligibility is unchanged. New predicates retain complete ordinary resident checks and frame/timer fallback for CSSOM, selected-property and related accessible-node changes.",
     "JSProperty remains unsupported: the pinned implementation selects main world, requiring a separate ownership and value-serialization design.",
     "This source record is not a verification result. Host tests compare exact pinned wrapper dispatch; browser and native evidence must independently establish behavior."

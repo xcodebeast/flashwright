@@ -68,7 +68,9 @@ try {
       const state = fixture(isNot);
       await reference[name].call(state.state, state.reference, ...arguments_);
       await matchers[name].call(state.state, state.actual, ...arguments_);
-      assert.deepEqual(state.calls[1], state.calls[0], `${name} isNot=${isNot}`);
+      const { includeAriaSnapshot, ...candidateRequest } = state.calls[1];
+      assert.equal(includeAriaSnapshot, true, 'runner requests same-observation failure context');
+      assert.deepEqual(candidateRequest, state.calls[0], `${name} isNot=${isNot}`);
       report.comparisons++;
     }
   });

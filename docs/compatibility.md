@@ -412,7 +412,7 @@ Evidence: [packages/flashwright-runner/src/index.ts](../packages/flashwright-run
 
 toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence.
 
-Limits: The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified.
+Limits: The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; automatic failure documents and fallback page capture remain unfinished.
 
 Runtime defaults: Recorded cases include configured/per-call timeouts and pinned predicate defaults; this review does not promote every declaration default.
 
@@ -420,7 +420,11 @@ Assessment: experimental / verified-subset.
 
 Implementation: [packages/flashwright-runner/src/matchers.ts](../packages/flashwright-runner/src/matchers.ts).
 
-Evidence: [compatibility/evidence/common-matchers-checkpoint-2026-10-09.json](../compatibility/evidence/common-matchers-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance).
+Evidence: [compatibility/evidence/common-matchers-checkpoint-2026-10-09.json](../compatibility/evidence/common-matchers-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/matcher-context-checkpoint-2026-10-10.json](../compatibility/evidence/matcher-context-checkpoint-2026-10-10.json) (conformance).
+
+Intentional differences:
+
+- Retained matcher accessibility diagnostics truncate explicitly after16384 UTF-16 units; complete predicate inputs remain unchanged.
 
 <a id="core-lifecycle"></a>
 

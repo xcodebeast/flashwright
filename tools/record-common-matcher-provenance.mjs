@@ -8,7 +8,7 @@ assert.equal(JSON.parse(await readFile('node_modules/playwright/package.json', '
 const wrappers = ['toHaveClass', 'toContainClass', 'toHaveCSS', 'toHaveId', 'toHaveValues', 'toHaveRole', 'toHaveAccessibleName', 'toHaveAccessibleDescription', 'toHaveAccessibleErrorMessage'];
 const sources = [
   { path: 'node_modules/playwright/lib/matchers/expect.js', sha256: '10b9442388bd9cfaae64e3f76c74081548687ab89e7d1f1ea20c93de6bd02358', names: wrappers, kind: 'function' },
-  { path: 'packages/resident-runtime/playwright-injected.js', sha256: '7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a', names: ['_expectCore', 'expectSingleElement', 'expectArray', 'matchesClassList'], kind: 'method' },
+  { path: 'packages/resident-runtime/playwright-injected.js', sha256: '7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a', names: ['_ariaSnapshotForExpect', '_expectCore', 'expectSingleElement', 'expectArray', 'matchesClassList'], kind: 'method' },
 ];
 const snippets = {};
 for (const source of sources) {
@@ -30,7 +30,7 @@ for (const source of sources) {
   for (const name of source.names) assert(Object.hasOwn(snippets, name), `Missing source contract: ${name}`);
 }
 const extract = Object.entries(snippets).map(([name, snippet]) => `// ${name}: ${snippet.path}:${snippet.firstLine}-${snippet.lastLine}\n${snippet.text}`).join('\n\n') + '\n';
-const implementationPaths = ['packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts', 'packages/flashwright-core/src/assertions.ts', 'crates/flashwright-engine/src/assertions.rs', 'packages/resident-runtime/locator-runtime.js', 'packages/resident-runtime/condition-registry.js', 'tools/test-common-matchers.mjs', 'tools/run-common-matcher-tests.mjs', 'tools/test-packed-common-matchers.mjs', 'compatibility/m2/common-matchers-fixture.mjs', 'compatibility/m2/common-matchers-types.ts'];
+const implementationPaths = ['packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts', 'packages/flashwright-core/src/assertions.ts', 'crates/flashwright-engine/src/assertions.rs', 'packages/resident-runtime/locator-runtime.js', 'packages/resident-runtime/condition-registry.js', 'tools/test-common-matchers.mjs', 'tools/test-matcher-context-runtime.mjs', 'tools/run-matcher-context-tests.mjs', 'compatibility/m2/matcher-context/assertions.spec.cjs', 'compatibility/m2/matcher-context/playwright.config.cjs', 'tools/run-common-matcher-tests.mjs', 'tools/test-packed-common-matchers.mjs', 'compatibility/m2/common-matchers-fixture.mjs', 'compatibility/m2/common-matchers-types.ts'];
 const implementation = Object.fromEntries(await Promise.all(implementationPaths.map(async path => [path, hash(await readFile(path))])));
 const licensePath = 'compatibility/upstream/LICENSE.playwright';
 const noticePath = 'compatibility/upstream/NOTICE.playwright';
@@ -45,6 +45,7 @@ const provenance = {
     'Computed CSS accepts before/after pseudo-elements; selected values retarget labels and require a multiple select, preserving DOM option order.',
     'Accessibility name/description/error text uses pinned whitespace normalization and explicit ignoreCase precedence. Role matching requires a literal string and does not infer role hierarchy.',
     'Existing assertion transport, full predicates, retry/negation/missing-target handling and bounded diagnostics remain shared with established matchers.',
+    'Runner assertions request target/body accessibility diagnostics only for failing predicate observations. Count, array and ARIA assertions omit those snapshots. Retained text has an explicit 16384 UTF-16-unit truncation boundary; successful conditions and library assertions without the diagnostic flag skip capture.',
     'Shared-selector cache eligibility is unchanged. New predicates retain complete ordinary resident checks and frame/timer fallback for CSSOM, selected-property and related accessible-node changes.',
     'JSProperty remains unsupported: the pinned implementation selects main world, requiring a separate ownership and value-serialization design.',
     'This source record is not a verification result. Host tests compare exact pinned wrapper dispatch; browser and native evidence must independently establish behavior.',

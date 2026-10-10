@@ -25,11 +25,11 @@ function texts(expected: Text | readonly Text[], options: Pick<ExpectedText, 'no
     throw failure('InvalidArgumentError', 'expect', 'expected a string or regular expression');
   });
 }
-async function assertion(state: ExpectMatcherState, name: string, actual: Locator | Page, expected: unknown, options: TimeoutOptions, request: Omit<AssertionOptions, 'isNot'>): Promise<MatcherReturnType> {
+async function assertion(state: ExpectMatcherState, name: string, actual: Locator | Page, expected: unknown, options: TimeoutOptions, request: Omit<AssertionOptions, 'isNot'>): Promise<MatcherReturnType & { ariaSnapshot?: string }> {
   const isPageAssertion = ['to.have.title', 'to.have.url'].includes(request.expression);
   if (isPageAssertion ? !(actual instanceof Page) : !(actual instanceof Locator)) throw failure('InvalidArgumentError', name, `expected a Flashwright ${isPageAssertion ? 'Page' : 'Locator'}`);
   const timeout = options.timeout ?? state.timeout;
-  const parameters = { ...request, isNot: state.isNot };
+  const parameters = { ...request, isNot: state.isNot, includeAriaSnapshot: true };
   const result = actual instanceof Locator ? await actual.runAssertion(parameters, timeout) : await actual.mainFrame().runAssertion(null, parameters, timeout);
   const target = actual instanceof Locator ? actual.toString() : 'page';
   const message = () => [
@@ -40,7 +40,7 @@ async function assertion(state: ExpectMatcherState, name: string, actual: Locato
     !result.observed ? 'Received: no observation before the deadline' : result.missingReceived ? 'Received: no matching element' : `Received: ${state.utils.printReceived(result.received)}`,
     ...(result.diagnosticTruncated ? ['Received diagnostic was truncated to its retention limit.'] : []),
   ].join('\n');
-  return { name, pass: result.matches, expected, actual: result.received, message, ...(result.timedOut ? { timeout } : {}) };
+  return { name, pass: result.matches, expected, actual: result.received, message, ...(result.ariaSnapshot === undefined ? {} : { ariaSnapshot: result.ariaSnapshot }), ...(result.timedOut ? { timeout } : {}) };
 }
 function stateAssertion(state: ExpectMatcherState, name: string, actual: Locator, expression: string, options: TimeoutOptions, extra: Partial<AssertionOptions> = {}): Promise<MatcherReturnType> {
   return assertion(state, name, actual, expression.replace('to.be.', ''), options, { expression, ...extra });

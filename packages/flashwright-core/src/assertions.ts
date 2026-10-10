@@ -31,6 +31,7 @@ export interface AssertionOptions {
   expectedNumber?: number;
   expectedValue?: { checked?: boolean; indeterminate?: boolean } | AriaSnapshotTemplate;
   ariaSnapshotCapture?: 'always' | 'mismatch';
+  includeAriaSnapshot?: boolean;
   expressionArg?: string;
   useInnerText?: boolean;
   pseudo?: 'before' | 'after';
@@ -39,6 +40,7 @@ export interface AssertionResult {
   observed: boolean;
   matches: boolean;
   received?: unknown;
+  ariaSnapshot?: string;
   missingReceived: boolean;
   timedOut: boolean;
   diagnosticTruncated: boolean;

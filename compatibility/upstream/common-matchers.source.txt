@@ -90,6 +90,22 @@ function toHaveValues(locator, expected, options) {
   }, expected, options);
 }
 
+// _ariaSnapshotForExpect: packages/resident-runtime/playwright-injected.js:7679-7692
+_ariaSnapshotForExpect(element, options) {
+    const expression = options.expression;
+    if (expression === "to.have.count" || expression.endsWith(".array"))
+      return void 0;
+    if (expression === "to.match.aria")
+      return void 0;
+    if (element && isElementVisible(element)) {
+      const isContainment = expression === "to.have.text";
+      return this._renderAriaSnapshot(element, { mode: "default", depth: isContainment ? void 0 : 1 });
+    }
+    if (!this.document.body)
+      return void 0;
+    return this._renderAriaSnapshot(this.document.body, { mode: "default" });
+  }
+
 // _expectCore: packages/resident-runtime/playwright-injected.js:7696-7734
 async _expectCore(element, options, elements) {
     var _a, _b;
