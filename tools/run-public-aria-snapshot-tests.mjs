@@ -17,7 +17,9 @@ const report = { status: 'running', ...runtimeMetadata, source: await sourceMani
 try {
   report.driverSha256 = createHash('sha256').update(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)).digest('hex');
   report.browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? reference.executablePath());
-  assert.equal(report.browser.distribution, 'full-chromium');
+  const referenceManifest = JSON.parse(await readFile('compatibility/reference-manifest.json', 'utf8'));
+  assert.equal(report.browser.version, referenceManifest.reference.chromiumVersion, 'Public ARIA conformance requires the pinned Chromium version');
+  assert.ok(['full-chromium', 'chromium-headless-shell'].includes(report.browser.distribution), 'Public ARIA conformance requires a stock Chromium distribution');
   for (const [name, chromium] of [['playwright', reference], ['flashwright', candidate]]) {
     const browser = await chromium.launch({ executablePath: report.browser.executablePath });
     report.outcomes[name] = [];
