@@ -60,6 +60,12 @@ struct RequestHeaders {
     _cookie_copy: Option<super::budget::PairedReservation>,
 }
 
+struct InitialRequest<'value> {
+    url: Url,
+    method: Method,
+    response_identifier: &'value str,
+}
+
 impl Engine {
     pub(crate) async fn api_fetch(
         &self,
@@ -158,7 +164,11 @@ impl Engine {
                         self,
                         &context,
                         &options,
-                        (original_url.clone(), original_method.clone()),
+                        InitialRequest {
+                            url: original_url.clone(),
+                            method: original_method.clone(),
+                            response_identifier: &response_identifier,
+                        },
                         &mut headers,
                         body.clone(),
                         operation,
@@ -206,7 +216,7 @@ async fn request_chain(
     engine: &Engine,
     context: &Arc<RequestContext>,
     options: &FetchOptions,
-    initial_request: (Url, Method),
+    initial_request: InitialRequest<'_>,
     original_headers: &mut RequestHeaders,
     mut body: Bytes,
     operation: &Operation,
@@ -218,7 +228,11 @@ async fn request_chain(
     ),
     Failure,
 > {
-    let (mut url, mut method) = initial_request;
+    let InitialRequest {
+        mut url,
+        mut method,
+        response_identifier,
+    } = initial_request;
     let mut redirects = 0u32;
     let mut redirect_headers: Option<RequestHeaders> = None;
     loop {
@@ -293,7 +307,29 @@ async fn request_chain(
             &context.budget,
             || operation.check(),
         )
-        .await?;
+        .await;
+        let exchange = match exchange {
+            Ok(exchange) => exchange,
+            Err(error) => {
+                if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
+                    trace::record_failed_attempt(
+                        engine,
+                        context,
+                        capture,
+                        trace::FailedAttempt {
+                            identifier: attempt,
+                            url: url.as_str(),
+                            method: request_method.as_deref().unwrap_or(method.as_str()),
+                            request_headers: &outgoing,
+                            request_body_size,
+                            started_wall_time,
+                        },
+                    )
+                    .await;
+                }
+                return Err(error);
+            }
+        };
         engine
             .apply_api_cookies(
                 context,
@@ -319,6 +355,7 @@ async fn request_chain(
                             request_body_size,
                             response: &exchange.metadata,
                             response_body_size: None,
+                            response_identifier: None,
                             started_wall_time,
                             started,
                         },
@@ -387,6 +424,7 @@ async fn request_chain(
                             request_body_size,
                             response: &exchange.metadata,
                             response_body_size: None,
+                            response_identifier: None,
                             started_wall_time,
                             started,
                         },
@@ -419,6 +457,7 @@ async fn request_chain(
                         request_body_size,
                         response: &exchange.metadata,
                         response_body_size: None,
+                        response_identifier: None,
                         started_wall_time,
                         started,
                     },
@@ -449,6 +488,7 @@ async fn request_chain(
                     request_body_size,
                     response: &metadata,
                     response_body_size: Some(body.bytes.len()),
+                    response_identifier: Some(response_identifier),
                     started_wall_time,
                     started,
                 },

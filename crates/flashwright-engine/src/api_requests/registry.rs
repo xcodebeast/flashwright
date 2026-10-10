@@ -10,7 +10,7 @@ use super::exchange::{Header, ResponseMetadata};
 use super::options::{ContextOptions, Cookie, StorageOrigin};
 use super::resolver::BoundedResolver;
 use super::tls::{self, HttpClient};
-use flashwright_protocol::{ErrorCode, ErrorRecord};
+use flashwright_protocol::{ErrorCode, ErrorRecord, ResourceLimits};
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -53,10 +53,16 @@ impl RetainedValue {
     }
 }
 
-#[derive(Default)]
 pub(crate) struct RequestRegistry {
     budget: EngineBudget,
+    pub(super) limits: ResourceLimits,
     state: Mutex<RegistryState>,
+}
+
+impl Default for RequestRegistry {
+    fn default() -> Self {
+        Self::with_limits(ResourceLimits::default())
+    }
 }
 
 #[derive(Default)]
@@ -123,6 +129,14 @@ impl fmt::Debug for RequestContext {
 }
 
 impl RequestRegistry {
+    pub(crate) fn with_limits(limits: ResourceLimits) -> Self {
+        Self {
+            budget: EngineBudget::default(),
+            limits,
+            state: Mutex::default(),
+        }
+    }
+
     pub(super) fn create(
         &self,
         identifier: String,

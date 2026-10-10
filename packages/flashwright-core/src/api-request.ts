@@ -11,7 +11,7 @@ import { fileMimeType } from './file-mime-types.js';
 import { writeAtomicFile } from './files.js';
 import { decodeStorageState, prepareCookies, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 import { validateBoolean, validateOptions } from './validation.js';
-import { Tracing, recordAPITraceAttempt, recordAPITraceFailure } from './tracing.js';
+import { Tracing, recordAPITraceAttempt, recordAPITraceFailure, recordAPITraceResponse } from './tracing.js';
 import { instrumentTraceMethods, traceAPICommandMetadata } from './trace-hooks.js';
 import { beginRunnerRequestCreation, publishRunnerRequestContext, beforeRunnerRequestDispose, notifyRunnerRequestClosed, assertRunnerRequestDisposeAllowed, type RequestCreationClaim } from './runner-request-lifecycle.js';
 
@@ -702,6 +702,11 @@ export class APIRequestContext {
       }
       const response = new APIResponse(this, this.client, metadata);
       this.responses.add(response);
+      if (trace?.context === this.identifier && trace.call) {
+        const tracing = requestTraceOwners.get(this);
+        if (tracing) recordAPITraceResponse(tracing, trace.generation, trace.call, metadata.identifier,
+          () => this.client.requestBinary('apiResponse.body', { context: metadata.context, response: metadata.identifier }, 30000, metadata.bodyLength));
+      }
       return response;
     } finally { preparation.release(); }
   }
@@ -837,6 +842,7 @@ export class APIRequest {
       const storageState = options.storageState === undefined ? undefined : await preparation.wait(storageInput(options.storageState, deadline, preparation), deadline);
       remainingTime(deadline, method);
       const client = retainEngine(deadline, method);
+      let context: APIRequestContext | undefined;
       try {
         const parameters = { extraHTTPHeaders, ...(options.userAgent === undefined ? {} : { userAgent: options.userAgent }), ...(options.ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors: options.ignoreHTTPSErrors }), ...(credentials === undefined ? {} : { httpCredentials: credentials }), ...(storageState === undefined ? {} : { storageState }) };
         const result = await client.request('apiRequest.newContext', parameters, remainingTime(deadline, method));
@@ -845,10 +851,15 @@ export class APIRequest {
           client.rejectProtocol(error);
           throw error;
         }
-        const context = new APIRequestContext(client, result.identifier, { baseURL: options.baseURL, timeout, maxRedirects, failOnStatusCode: options.failOnStatusCode ?? false, hasContentType: extraHTTPHeaders.some(header => header.name.toLowerCase() === 'content-type') });
+        context = new APIRequestContext(client, result.identifier, { baseURL: options.baseURL, timeout, maxRedirects, failOnStatusCode: options.failOnStatusCode ?? false, hasContentType: extraHTTPHeaders.some(header => header.name.toLowerCase() === 'content-type') });
         await publishRunnerRequestContext(context, claim);
+        context.assertLive(method);
         return context;
-      } catch (error) { await client.release(); throw error; }
+      } catch (error) {
+        if (context) await context.dispose().catch(() => {});
+        else await client.release();
+        throw error;
+      }
     } finally { preparation.release(); }
   }
 }

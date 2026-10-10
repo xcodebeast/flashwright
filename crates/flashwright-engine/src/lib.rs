@@ -254,7 +254,7 @@ impl Engine {
             snapshot_budget: OnceLock::new(),
             trace_network_budget: OnceLock::new(),
             trace_diagnostic_budget: OnceLock::new(),
-            api_requests: api_requests::RequestRegistry::default(),
+            api_requests: api_requests::RequestRegistry::with_limits(limits),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
