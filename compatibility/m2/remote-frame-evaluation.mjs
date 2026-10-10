@@ -243,7 +243,7 @@ try {
   report.browser = await identifyBrowser(browserPath);
   const reference = JSON.parse(await readFile(new URL('../reference-manifest.json', import.meta.url), 'utf8')).reference;
   assert.equal(report.browser.version, reference.chromiumVersion, 'Use the pinned Chromium version');
-  assert.ok(['full-chromium', 'chromium-headless-shell'].includes(report.browser.distribution), 'Use a pinned stock Chromium distribution for both engines');
+  assert.equal(report.browser.distribution, 'full-chromium', 'This remote-frame fixture requires pinned full Chromium; stock headless shell keeps these cross-site children in the parent renderer');
   await run('reference', referenceChromium);
   await run('flashwright', candidateChromium);
   assert.deepEqual(report.outcomes.flashwright, report.outcomes.reference);
