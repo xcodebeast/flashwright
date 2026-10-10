@@ -1,10 +1,34 @@
 use super::*;
+
 use crate::page_state::{FrameState, PageState};
 use tokio::io::{
     AsyncBufReadExt, AsyncWriteExt, BufReader, DuplexStream, ReadHalf, WriteHalf, duplex, split,
 };
 use tokio::task::JoinHandle;
 use tokio::time::{advance, timeout};
+
+#[tokio::test(start_paused = true)]
+async fn retained_payload_wait_preserves_original_document_unavailability() {
+    let mut fixture = Fixture::new();
+    let payloads = fixture.retained_payloads();
+    let capture = fixture.capture(false);
+    fixture.assert_no_command().await;
+    assert!(!capture.is_finished());
+
+    fixture.page.state.state.lock().unwrap().main_worlds.clear();
+    fixture.page.state.changed.send_replace(1);
+    let error = capture.await.unwrap().err().unwrap();
+    assert!(
+        matches!(
+            &error,
+            SnapshotFailure::Unavailable(SnapshotUnavailable::NoExistingMainContext)
+        ),
+        "retained-payload wait changed the original lifecycle reason: {error:?}"
+    );
+    drop(payloads);
+    fixture.document.wait_finished().await;
+    fixture.assert_no_command().await;
+}
 
 #[tokio::test]
 async fn lifecycle_unavailability_preserves_reasons_without_browser_commands() {
@@ -120,6 +144,21 @@ struct Fixture {
 }
 
 impl Fixture {
+    fn retained_payloads(&self) -> Vec<PayloadReservation> {
+        let reservation = self.document.shared.reservation.lock().unwrap();
+        let reservation = reservation.as_ref().unwrap();
+        (0..64)
+            .map(|_| {
+                let mut capture = reservation.reserve_capture().unwrap();
+                capture.begin_evaluation().unwrap();
+                capture.evaluation_finished();
+                let payload = capture.take_payload(1).unwrap();
+                capture.transaction_finished().unwrap();
+                payload
+            })
+            .collect()
+    }
+
     fn new() -> Self {
         Self::with_budget(Arc::new(SnapshotBudget::default()), "context")
     }
@@ -332,6 +371,123 @@ impl Fixture {
             .is_err()
         );
         assert!(bytes.is_empty());
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn retained_payload_backpressure_waits_for_ingestion_before_dispatch() {
+    let mut fixture = Fixture::new();
+    let mut payloads = fixture.retained_payloads();
+    let capture = fixture.capture(false);
+    fixture.assert_no_command().await;
+    assert!(
+        !capture.is_finished(),
+        "retained payloads must apply backpressure"
+    );
+    drop(payloads.pop());
+    fixture.install().await;
+    fixture.captured(1).await;
+    let prepared = capture.await.unwrap().unwrap();
+    let decision = tokio::spawn(prepared.decision.discard());
+    let command = fixture.command("Runtime.callFunctionOn").await;
+    fixture
+        .reply(&command, json!({"result":{"type":"boolean","value":true}}))
+        .await;
+    fixture.release("_decision_").await;
+    decision.await.unwrap().unwrap();
+    drop(prepared.reservation);
+    drop(payloads);
+    fixture.finish().await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn payload_waiters_keep_bounded_queue_slots_and_the_original_deadline() {
+    let mut fixture = Fixture::new();
+    let payloads = fixture.retained_payloads();
+    let first = fixture.capture_with_budget(false, Duration::from_millis(20));
+    let second = fixture.capture_with_budget(false, Duration::from_millis(20));
+    fixture.assert_no_command().await;
+    assert!(!first.is_finished() && !second.is_finished());
+    let excess = fixture.capture(false).await.unwrap().err().unwrap();
+    assert_eq!(excess.recording_error().code, ErrorCode::ResourceLimit);
+    advance(Duration::from_millis(25)).await;
+    for waiter in [first, second] {
+        assert_eq!(
+            waiter.await.unwrap().err().unwrap().recording_error().code,
+            ErrorCode::Timeout
+        );
+    }
+    drop(payloads);
+    fixture.assert_no_command().await;
+    drop(fixture.retained_payloads());
+    let first_slot = fixture.document.requests.try_reserve().unwrap();
+    let second_slot = fixture.document.requests.try_reserve().unwrap();
+    drop((first_slot, second_slot));
+    fixture.document.close();
+    fixture.document.wait_finished().await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn payload_waiter_cancellation_and_owner_close_suppress_later_dispatch() {
+    for close_owner in [false, true] {
+        let mut fixture = Fixture::new();
+        let payloads = fixture.retained_payloads();
+        let capture = fixture.capture(false);
+        fixture.assert_no_command().await;
+        assert!(!capture.is_finished());
+        if close_owner {
+            fixture.document.close();
+        } else {
+            fixture.cancellation.send_replace(true);
+        }
+        let error = capture.await.unwrap().err().unwrap().recording_error();
+        assert_eq!(
+            error.code,
+            if close_owner {
+                ErrorCode::TargetClosed
+            } else {
+                ErrorCode::Cancelled
+            }
+        );
+        drop(payloads);
+        fixture.assert_no_command().await;
+        if !close_owner {
+            drop(fixture.retained_payloads());
+        }
+        fixture.document.close();
+        fixture.document.wait_finished().await;
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn global_payload_backpressure_releases_without_borrowing_another_contexts_credits() {
+    let budget = Arc::new(SnapshotBudget::default());
+    let first = Fixture::with_budget(budget.clone(), "first");
+    let second = Fixture::with_budget(budget.clone(), "second");
+    let mut waiting = Fixture::with_budget(budget, "third");
+    let mut first_payloads = first.retained_payloads();
+    let second_payloads = second.retained_payloads();
+    let capture = waiting.capture(false);
+    waiting.assert_no_command().await;
+    assert!(!capture.is_finished());
+    drop(first_payloads.pop());
+    waiting.install().await;
+    waiting.captured(1).await;
+    let prepared = capture.await.unwrap().unwrap();
+    let decision = tokio::spawn(prepared.decision.discard());
+    let command = waiting.command("Runtime.callFunctionOn").await;
+    waiting
+        .reply(&command, json!({"result":{"type":"boolean","value":true}}))
+        .await;
+    waiting.release("_decision_").await;
+    decision.await.unwrap().unwrap();
+    drop(prepared.reservation);
+    waiting.finish().await;
+    drop(first_payloads);
+    drop(second_payloads);
+    for fixture in [first, second] {
+        fixture.document.close();
+        fixture.document.wait_finished().await;
     }
 }
 

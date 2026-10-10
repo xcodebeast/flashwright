@@ -235,6 +235,10 @@ impl SnapshotBudget {
 }
 
 impl DocumentReservation {
+    pub(super) fn admission_changes(&self) -> watch::Receiver<()> {
+        self.account.budget.available.subscribe()
+    }
+
     pub(super) fn generation_grant(&self) -> CacheGrant {
         self.account.generation
     }
