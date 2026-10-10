@@ -412,7 +412,7 @@ Evidence: [packages/flashwright-runner/src/index.ts](../packages/flashwright-run
 
 toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence.
 
-Limits: The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; automatic failure documents and fallback page capture remain unfinished.
+Limits: The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. Rendered child-frame fallback composition and broader merged-core acceptance remain open.
 
 Runtime defaults: Recorded cases include configured/per-call timeouts and pinned predicate defaults; this review does not promote every declaration default.
 
@@ -420,7 +420,7 @@ Assessment: experimental / verified-subset.
 
 Implementation: [packages/flashwright-runner/src/matchers.ts](../packages/flashwright-runner/src/matchers.ts).
 
-Evidence: [compatibility/evidence/common-matchers-checkpoint-2026-10-09.json](../compatibility/evidence/common-matchers-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/matcher-context-checkpoint-2026-10-10.json](../compatibility/evidence/matcher-context-checkpoint-2026-10-10.json) (conformance).
+Evidence: [compatibility/evidence/common-matchers-checkpoint-2026-10-09.json](../compatibility/evidence/common-matchers-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/matcher-context-checkpoint-2026-10-10.json](../compatibility/evidence/matcher-context-checkpoint-2026-10-10.json) (conformance), [compatibility/evidence/failure-context-checkpoint-2026-10-10.json](../compatibility/evidence/failure-context-checkpoint-2026-10-10.json) (conformance).
 
 Intentional differences:
 
@@ -712,7 +712,7 @@ Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](..
 
 Page and Locator inline/file ARIA assertions retain role-tree predicates, same-process frame scoping, negation, retries, configured child matching, soft failures and tested baseline policies. Three runtime gates each pass 25 conformance checks.
 
-Limits: Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Public ariaSnapshot, automatic failure-context capture, out-of-process frames, packed consumers and full-core acceptance remain separate gates.
+Limits: Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Public ariaSnapshot, child-frame failure-context composition, out-of-process frames, packed consumers and full-core acceptance remain separate gates.
 
 Runtime defaults: Pinned template parsing and runner snapshot naming/update configuration; original assertion timeout and a 100000 UTF-16-unit limit per template or generated snapshot string. Ordinary mismatch diagnostics remain bounded.
 

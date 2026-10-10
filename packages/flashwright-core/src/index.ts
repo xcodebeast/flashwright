@@ -1,3 +1,4 @@
+import { installFailureContextSnapshotResolver } from './failure-context-snapshot.js';
 import { Tracing } from './tracing.js';
 import { instrumentTraceMethods, instrumentTraceCallbacks, installTracePageResolver, tracePageOwner, traceRecordingActive, type TraceMethod } from './trace-hooks.js';
 export { Tracing, type TracingStartOptions, type TracingChunkOptions, type TracingStopOptions } from './tracing.js';
@@ -356,6 +357,11 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
 export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: [PageEvents[Event]] }> {
   static {
     installTracePageResolver(page => page instanceof Page ? { tracing: page.owner.tracing, pageId: page.identifier } : undefined);
+    installFailureContextSnapshotResolver((page, timeoutMilliseconds) => {
+      if (!(page instanceof Page)) return undefined;
+      page.checkOpen('diagnostics.pageSnapshot');
+      return page.client.request('diagnostics.pageSnapshot', { page: page.identifier, frame: page.mainFrameIdentifier }, timeoutMilliseconds).then(result => codec.decode(result) as string);
+    });
     instrumentTraceMethods(this.prototype, 'Page', tracePageOwner, {
       ...selectorActionTraceMethods,
       waitForSelector: { className: 'Frame', parameters: ['selector', 'options'] },

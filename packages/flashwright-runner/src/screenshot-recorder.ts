@@ -12,6 +12,10 @@ interface PinnedTestInfo extends TestInfo {
   _onDidFinishTestFunctionCallbacks: Set<() => Promise<void>>;
 }
 
+interface ScreenshotOwnership {
+  recorder: ScreenshotRecorder | undefined;
+}
+
 /** One observer per worker; test/hook recorders own outcome and artifact retention. */
 export class ScreenshotLifecycle {
   private readonly contexts = new Set<BrowserContext>();
@@ -22,10 +26,13 @@ export class ScreenshotLifecycle {
   constructor(policy: ScreenshotPolicy) {
     this.scopes = new ScreenshotScopes(policy, this.contexts);
     this.registration = runnerIntegration.installArtifactContextLifecycle(9, {
-      beginContextCreation: () => ({
-        didCreateContext: async context => { this.observe(context); },
-        complete() {},
-      }),
+      beginContextCreation: () => {
+        const claim = this.scopes.claim();
+        return {
+          didCreateContext: async context => { claim?.didCreateContext(context); this.observe(context); },
+          complete() {},
+        };
+      },
       didCreateUnclaimedContext: context => { this.observe(context); },
       willCloseContext: async (context, source) => { if (source !== 'browser') await this.scopes.beforeContextClose(context); },
     });
@@ -53,26 +60,48 @@ export class ScreenshotLifecycle {
 /** Share worker context availability without installing an observer or starting capture. */
 export class ScreenshotScopes {
   private readonly capturedPages = new WeakMap<TestInfo, WeakSet<Page>>();
-  private recorder: ScreenshotRecorder | undefined;
+  private readonly owners = new WeakMap<BrowserContext, ScreenshotOwnership>();
+  private current: ScreenshotOwnership | undefined;
 
   constructor(private readonly policy: ScreenshotPolicy, private readonly contexts: ReadonlySet<BrowserContext>) {}
 
   start(testInfo: TestInfo): ScreenshotRecorder {
-    if (this.recorder) throw failure('ProtocolError', 'runner.screenshot', 'a screenshot recording scope is already active');
+    if (this.current) throw failure('ProtocolError', 'runner.screenshot', 'a screenshot recording scope is already active');
     let capturedPages = this.capturedPages.get(testInfo);
     if (!capturedPages) { capturedPages = new WeakSet(); this.capturedPages.set(testInfo, capturedPages); }
-    this.recorder = new ScreenshotRecorder(this.policy, testInfo as PinnedTestInfo, this.contexts, capturedPages);
-    return this.recorder;
+    const ownership: ScreenshotOwnership = { recorder: undefined };
+    const ownedContexts = () => [...this.contexts].filter(context => this.owners.get(context) === ownership);
+    const recorder = new ScreenshotRecorder(this.policy, testInfo as PinnedTestInfo, ownedContexts, capturedPages);
+    ownership.recorder = recorder;
+    this.current = ownership;
+    for (const context of this.contexts) this.owners.set(context, ownership);
+    return recorder;
+  }
+
+  /** Preserve the original scope before asynchronous creation; explicit later adoption takes precedence. */
+  claim(): { didCreateContext(context: BrowserContext): void } | undefined {
+    const ownership = this.current;
+    if (!ownership?.recorder) return undefined;
+    return {
+      didCreateContext: context => {
+        if (!ownership.recorder) return;
+        if (!this.owners.get(context)?.recorder) this.owners.set(context, ownership);
+      },
+    };
   }
 
   async finish(recorder: ScreenshotRecorder): Promise<void> {
-    if (this.recorder !== recorder) throw failure('ProtocolError', 'runner.screenshot', 'screenshot recording ownership changed before teardown');
-    this.recorder = undefined;
+    const ownership = this.current;
+    if (ownership?.recorder !== recorder) throw failure('ProtocolError', 'runner.screenshot', 'screenshot recording ownership changed before teardown');
+    ownership.recorder = undefined;
+    this.current = undefined;
     await recorder.finish();
   }
 
   async beforeContextClose(context: BrowserContext): Promise<void> {
-    await this.recorder?.beforeContextClose(context);
+    const owner = this.owners.get(context);
+    this.owners.delete(context);
+    await owner?.recorder?.beforeContextClose(context);
   }
 }
 
@@ -91,7 +120,7 @@ class ScreenshotRecorder {
   constructor(
     private readonly policy: ScreenshotPolicy,
     private readonly testInfo: PinnedTestInfo,
-    private readonly contexts: ReadonlySet<BrowserContext>,
+    private readonly contexts: () => BrowserContext[],
     private readonly capturedPages: WeakSet<Page>,
   ) {
     if (!(testInfo._onDidFinishTestFunctionCallbacks instanceof Set)) {
@@ -124,7 +153,7 @@ class ScreenshotRecorder {
   }
 
   private async captureAtFinish(): Promise<void> {
-    if (!this.finished && this.shouldRetain()) await this.capturePages([...this.contexts].flatMap(context => context.pages()), false);
+    if (!this.finished && this.shouldRetain()) await this.capturePages(this.contexts().flatMap(context => context.pages()), false);
   }
 
   private capturePages(pages: Page[], temporary: boolean): Promise<void> {

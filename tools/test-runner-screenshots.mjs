@@ -157,7 +157,10 @@ try {
     value.once('close', () => sharedContexts.delete(value));
   };
   const sharedRegistration = runnerIntegration.installArtifactContextLifecycle(9, {
-    beginContextCreation: () => ({ didCreateContext: async value => { observeSharedContext(value); }, complete() {} }),
+    beginContextCreation: () => {
+      const claim = sharedScopes.claim();
+      return { didCreateContext: async value => { claim?.didCreateContext(value); observeSharedContext(value); }, complete() {} };
+    },
     didCreateUnclaimedContext: observeSharedContext,
     willCloseContext: value => sharedScopes.beforeContextClose(value),
   });

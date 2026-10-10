@@ -63,8 +63,9 @@ async function controlledTimers(callback) {
   const originalClearTimeout = globalThis.clearTimeout;
   const timers = new Map();
   globalThis.setTimeout = (callback, milliseconds, ...arguments_) => {
-    if (![30000, 2000].includes(milliseconds)) return originalSetTimeout(callback, milliseconds, ...arguments_);
-    const handle = {}; timers.set(handle, { callback, milliseconds }); return handle;
+    const controlledMilliseconds = milliseconds > 29000 && milliseconds <= 30000 ? 30000 : milliseconds;
+    if (![30000, 2000].includes(controlledMilliseconds)) return originalSetTimeout(callback, milliseconds, ...arguments_);
+    const handle = {}; timers.set(handle, { callback, milliseconds: controlledMilliseconds }); return handle;
   };
   globalThis.clearTimeout = handle => { if (!timers.delete(handle)) originalClearTimeout(handle); };
   try {
@@ -138,6 +139,25 @@ try {
       assert.equal(archiveDisposed, 1); assert.deepEqual(outcome(testInfo), original);
       assert.equal(testInfo.attachments.some(attachment => attachment.name === 'trace'), false);
     });
+  });
+
+  await check('pre-fallback sealing cannot grant a fresh final export preparation budget', async () => {
+    const testInfo = information(false, true); const original = outcome(testInfo);
+    let collectionDisposed = 0, journalDisposed = 0;
+    const finalizer = installRunnerTraceFinalizer(testInfo, { journal: {
+      takeArchive() { throw Error('expired original budget must not read final resources'); },
+      async dispose() { journalDisposed++; },
+    } }, {
+      closeAdmission() {}, preparationDeadline: () => performance.now() - 1,
+      async collect() { throw Error('expired original budget must not collect'); },
+      async dispose() { collectionDisposed++; },
+    });
+    await finalizer.finish(); await finalizer.cleanup;
+    assert.match(diagnostics(testInfo), /30 seconds/);
+    assert.doesNotMatch(diagnostics(testInfo), /must not/);
+    assert.equal(collectionDisposed, 1); assert.equal(journalDisposed, 1);
+    assert.deepEqual(outcome(testInfo), original);
+    assert.equal(testInfo.attachments.some(attachment => attachment.name === 'trace'), false);
   });
 
   await check('monotonic deadline is rechecked after preparation even before the timer callback runs', async () => {

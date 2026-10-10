@@ -10,7 +10,7 @@ const destination = resolve(process.argv[2] ?? `compatibility/evidence/runner-tr
 await mkdir(destination, { recursive: true });
 const hash = value => createHash('sha256').update(value).digest('hex');
 const readEvents = async path => (await readFile(path, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
-const report = { status: 'running', ...runtimeMetadata, sources: await sourceManifest(), outcomes: {}, scope: 'Disabled trace journals, earliest user-fixture admission, retries/skips/early failures and preserved public reporter data. No automatic enabled trace or performance claim.' };
+const report = { status: 'running', ...runtimeMetadata, sources: await sourceManifest(), outcomes: {}, scope: 'Disabled trace journals, earliest user-fixture admission, retries/skips/early failures and preserved public reporter data. The reference uses artifact-free upstream _baseTest; candidate default failure documents are separately asserted. No automatic enabled trace or performance claim.' };
 try {
   for (const engine of ['playwright', 'flashwright']) {
     const directory = join(destination, engine);
@@ -41,6 +41,13 @@ try {
     assert.equal(outcome.publicSteps.length, 100);
     assert(outcome.publicSteps.every(event => !event.error));
     outcome.publicResults = reporter.filter(event => event.type === 'result');
+    // This control intentionally uses upstream _baseTest without its automatic artifact fixtures.
+    outcome.defaultFailureDocuments = outcome.publicResults.flatMap(result => result.attachments.filter(attachment => attachment.name === 'error-context').map(attachment => ({ title: result.title, retry: result.retry, ...attachment })));
+    assert.equal(outcome.defaultFailureDocuments.length, engine === 'flashwright' ? 2 : 0);
+    for (const document of outcome.defaultFailureDocuments) {
+      assert.equal(document.contentType, 'text/markdown');
+      assert.match(await readFile(document.path, 'utf8'), /intentional (first-attempt|early fixture) failure/);
+    }
     const successor = outcome.publicResults.find(event => event.title === 'ordinary successor');
     assert.deepEqual(successor.attachments, [{ name: 'retained attachment', contentType: 'text/plain', body: Buffer.from('reporter attachment').toString('base64') }]);
     outcome.stdio = ['stdout', 'stderr'].flatMap(type => reporter.filter(event => event.type === type));
@@ -48,7 +55,9 @@ try {
     assert(!(await readdir(join(directory, 'output'), { recursive: true })).some(path => path.endsWith('.zip')), 'disabled tracing must not create archives');
     outcome.inputs = Object.fromEntries(await Promise.all(['results.json', 'events.jsonl', 'reporter.jsonl'].map(async path => [path, hash(await readFile(join(directory, path)))])));
   }
-  for (const field of ['phases', 'publicSteps', 'publicResults', 'stdio']) assert.deepEqual(report.outcomes.flashwright[field], report.outcomes.playwright[field], `public ${field} must match`);
+  for (const field of ['phases', 'publicSteps', 'stdio']) assert.deepEqual(report.outcomes.flashwright[field], report.outcomes.playwright[field], `public ${field} must match`);
+  const comparableResults = outcome => outcome.publicResults.map(result => ({ ...result, attachments: result.attachments.filter(attachment => attachment.name !== 'error-context') }));
+  assert.deepEqual(comparableResults(report.outcomes.flashwright), comparableResults(report.outcomes.playwright), 'explicit public reporter results must match; default failure documents are separately asserted against the artifact-free control');
   assert.deepEqual(await sourceManifest(), report.sources);
   report.status = 'passed';
 } catch (error) {
