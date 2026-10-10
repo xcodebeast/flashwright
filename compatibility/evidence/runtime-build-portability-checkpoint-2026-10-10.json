@@ -9,7 +9,7 @@
     },
     {
       "path": "tools/test-runtime-build-portability.py",
-      "sha256": "f9d5e38ddc617188eb1ea6c7eccd5cb0f6ba03f85c4c6651a40634c01b32660a"
+      "sha256": "2801e4ac7aa6f0c32513daba5043e3dfb86814761cd914844a1812e8314431c2"
     }
   ],
   "positiveControl": {
@@ -50,5 +50,18 @@
     "Integrated canonical release build",
     "Native Linux",
     "Performance"
-  ]
+  ],
+  "integratedDefaultSelection": {
+    "status": "passed",
+    "contract": "The core gate builds the current engine and selects the unique existing filename from its exact Cargo custom-build compiler artifact. It does not guess among cached executables. Explicit executable mode retains the original positive and negative checks above.",
+    "executionTrees": 2,
+    "logSha256": "85c4d5672d0e25712518c7a8adc86d18283f907893f1d4a01b948a387534f3ba",
+    "rawReceiptSha256": "104ccf701b7e8c82b7ff6f31bc975e1f1470d66aba62bd6d4b3eb0c64b6ee252",
+    "firstFailure": {
+      "classification": "The initial wrapper selected executable, which is null for the pinned Cargo custom-build artifact; filenames contains its binary. The corrected selector is independently exercised.",
+      "logSha256": "43d0e143cd32d0887a9b45b0fb2a8b6a0d17e2c2d4efa0f06876762070dbb390",
+      "originalWrapperSha256": "3973476e8d64c7e617d3c686c9e5816fa02af39d9bee3d25abe35b090d95838c",
+      "cargoArtifactReceiptSha256": "b79a2d6d70275a61ba18f33bcf5bd26098d1bc8cb96464d0c6c97a0c0c2cc425"
+    }
+  }
 }

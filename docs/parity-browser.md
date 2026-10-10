@@ -75,14 +75,14 @@
 | playwright-core/types/types.d.ts.Page.$$eval.selector#4 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.$$eval.pageFunction#4 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.$$eval.arg#4 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction.pageFunction#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction.arg#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction#2 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction.pageFunction#2 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction.arg#2 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForFunction.options#2 | parameter | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.waitForFunction#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction.pageFunction#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction.arg#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction#2 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction.pageFunction#2 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction.arg#2 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Page.waitForFunction.options#2 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
 | playwright-core/types/types.d.ts.Page.waitForSelector#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-locator-queries) |
 | playwright-core/types/types.d.ts.Page.waitForSelector.selector#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForSelector.options#1 | parameter | planned / unverified | Unreviewed |
@@ -1215,14 +1215,14 @@
 | playwright-core/types/types.d.ts.Frame.$$eval.selector#4 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.$$eval.pageFunction#4 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.$$eval.arg#4 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction.pageFunction#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction.arg#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction#2 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction.pageFunction#2 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction.arg#2 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.waitForFunction.options#2 | parameter | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Frame.waitForFunction#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction.pageFunction#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction.arg#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction#2 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction.pageFunction#2 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction.arg#2 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.Frame.waitForFunction.options#2 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
 | playwright-core/types/types.d.ts.Frame.waitForSelector#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.waitForSelector.selector#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.waitForSelector.options#1 | parameter | planned / unverified | Unreviewed |
@@ -4038,8 +4038,8 @@
 | playwright-core/types/types.d.ts.Keyboard#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Keyboard.down#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#keyboard-explicit-rejection) |
 | playwright-core/types/types.d.ts.Keyboard.down.key#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Keyboard.insertText#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#keyboard-explicit-rejection) |
-| playwright-core/types/types.d.ts.Keyboard.insertText.text#1 | parameter | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Keyboard.insertText#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#keyboard-insert-text) |
+| playwright-core/types/types.d.ts.Keyboard.insertText.text#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#keyboard-insert-text) |
 | playwright-core/types/types.d.ts.Keyboard.press#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#keyboard) |
 | playwright-core/types/types.d.ts.Keyboard.press.key#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Keyboard.press.options#1 | parameter | planned / unverified | Unreviewed |
@@ -4967,9 +4967,9 @@
 | playwright-core/types/types.d.ts.PageWaitForSelectorOptions.state#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.PageWaitForSelectorOptions.strict#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.PageWaitForSelectorOptions.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.PageWaitForFunctionOptions#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.PageWaitForFunctionOptions.polling#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.PageWaitForFunctionOptions.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.PageWaitForFunctionOptions#1 | InterfaceDeclaration | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.PageWaitForFunctionOptions.polling#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
+| playwright-core/types/types.d.ts.PageWaitForFunctionOptions.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#requested-function-polling) |
 | playwright-core/types/types.d.ts.PageScreenshotOptions#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.PageScreenshotOptions.animations#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.PageScreenshotOptions.caret#1 | PropertySignature | planned / unverified | Unreviewed |
