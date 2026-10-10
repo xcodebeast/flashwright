@@ -978,19 +978,12 @@ impl PointerAttempt<'_, '_> {
             }
             Ok::<(), ErrorRecord>(())
         };
+        // A semantic page failure does not retire its renderer or release native input.
+        // Only acknowledged cleanup can avoid the caller's original-page disposal.
         if matches!(
             timeout(Duration::from_millis(500), cleanup).await,
             Ok(Ok(()))
-        ) || self
-            .action
-            .page
-            .state
-            .state
-            .lock()
-            .unwrap()
-            .failure
-            .is_some()
-        {
+        ) {
             Ok(())
         } else {
             Err(())
