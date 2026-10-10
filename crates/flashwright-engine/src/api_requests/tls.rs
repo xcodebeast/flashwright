@@ -22,9 +22,10 @@ use std::sync::OnceLock;
 pub(super) type HttpClient =
     Client<BudgetedConnector<HttpsConnector<SocketConnector>>, Full<Bytes>>;
 
-// Each pool has at most 1024 waiters and 16 idle sockets. Its hash tables retain
-// spare buckets after those owners leave; their separate credit lives with PoolInner.
-pub(super) const POOL_WORKING_BYTES: usize = 512 * 1024;
+// Both TLS policy pools share this allowance. It covers their historical table
+// capacities, compact origin keys, waiter channels and compacted deque storage.
+// PoolInner and outstanding pooled/connecting owners retain the original credit.
+pub(super) const POOL_WORKING_BYTES: usize = 4 * 1024 * 1024;
 
 #[derive(Debug)]
 pub(super) struct PoolCustody {
@@ -179,6 +180,10 @@ mod connection_races;
 #[cfg(test)]
 #[path = "response_custody.rs"]
 mod response_custody;
+
+#[cfg(test)]
+#[path = "pool_keys.rs"]
+mod pool_keys;
 
 #[cfg(test)]
 mod tests {

@@ -984,7 +984,7 @@ fn authority_form(uri: &mut Uri) {
 fn extract_domain(uri: &mut Uri, is_http_connect: bool) -> Result<PoolKey, Error> {
     let uri_clone = uri.clone();
     match (uri_clone.scheme(), uri_clone.authority()) {
-        (Some(scheme), Some(auth)) => Ok((scheme.clone(), auth.clone())),
+        (Some(scheme), Some(auth)) => Ok((scheme.clone(), pool_authority(auth))),
         (None, Some(auth)) if is_http_connect => {
             let scheme = match auth.port_u16() {
                 Some(443) => {
@@ -996,12 +996,28 @@ fn extract_domain(uri: &mut Uri, is_http_connect: bool) -> Result<PoolKey, Error
                     Scheme::HTTP
                 }
             };
-            Ok((scheme, auth.clone()))
+            Ok((scheme, pool_authority(auth)))
         }
         _ => {
             debug!("Client requires absolute-form URIs, received: {:?}", uri);
             Err(e!(UserAbsoluteUriRequired))
         }
+    }
+}
+
+fn pool_authority(authority: &http::uri::Authority) -> http::uri::Authority {
+    #[cfg(feature = "connection-custody")]
+    {
+        // Authority can alias the complete URI allocation, including a large path.
+        // Pool keys need only the validated origin text.
+        authority
+            .as_str()
+            .parse()
+            .expect("authority is already valid")
+    }
+    #[cfg(not(feature = "connection-custody"))]
+    {
+        authority.clone()
     }
 }
 

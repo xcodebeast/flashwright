@@ -126,7 +126,46 @@
                                      // Log that the client is waiting for the connection to be ready.
                                      // Readiness indicates the sender (tx) can accept a request without blocking.
                                      trace!("waiting for connection to be ready");
-@@ -1020,6 +1071,8 @@
+@@ -933,7 +984,7 @@
+ fn extract_domain(uri: &mut Uri, is_http_connect: bool) -> Result<PoolKey, Error> {
+     let uri_clone = uri.clone();
+     match (uri_clone.scheme(), uri_clone.authority()) {
+-        (Some(scheme), Some(auth)) => Ok((scheme.clone(), auth.clone())),
++        (Some(scheme), Some(auth)) => Ok((scheme.clone(), pool_authority(auth))),
+         (None, Some(auth)) if is_http_connect => {
+             let scheme = match auth.port_u16() {
+                 Some(443) => {
+@@ -945,12 +996,28 @@
+                     Scheme::HTTP
+                 }
+             };
+-            Ok((scheme, auth.clone()))
++            Ok((scheme, pool_authority(auth)))
+         }
+         _ => {
+             debug!("Client requires absolute-form URIs, received: {:?}", uri);
+             Err(e!(UserAbsoluteUriRequired))
+         }
++    }
++}
++
++fn pool_authority(authority: &http::uri::Authority) -> http::uri::Authority {
++    #[cfg(feature = "connection-custody")]
++    {
++        // Authority can alias the complete URI allocation, including a large path.
++        // Pool keys need only the validated origin text.
++        authority
++            .as_str()
++            .parse()
++            .expect("authority is already valid")
++    }
++    #[cfg(not(feature = "connection-custody"))]
++    {
++        authority.clone()
+     }
+ }
+ 
+@@ -1020,6 +1087,8 @@
      h2_builder: hyper::client::conn::http2::Builder<Exec>,
      pool_config: pool::Config,
      pool_timer: Option<timer::Timer>,
@@ -135,7 +174,7 @@
  }
  
  impl Builder {
-@@ -1032,6 +1085,8 @@
+@@ -1032,6 +1101,8 @@
          Self {
              client_config: Config {
                  retry_canceled_requests: true,
@@ -144,7 +183,7 @@
                  set_host: true,
                  ver: Ver::Auto,
              },
-@@ -1045,8 +1100,25 @@
+@@ -1045,8 +1116,25 @@
                  max_idle_per_host: usize::MAX,
              },
              pool_timer: None,
@@ -172,7 +211,7 @@
      /// Set an optional timeout for idle sockets being kept-alive.
      /// A `Timer` is required for this to take effect. See `Builder::pool_timer`
      ///
-@@ -1590,6 +1662,11 @@
+@@ -1590,6 +1678,11 @@
      {
          let exec = self.exec.clone();
          let timer = self.pool_timer.clone();
@@ -184,7 +223,7 @@
          Client {
              config: self.client_config,
              exec: exec.clone(),
-@@ -1598,7 +1675,7 @@
+@@ -1598,7 +1691,7 @@
              #[cfg(feature = "http2")]
              h2_builder: self.h2_builder.clone(),
              connector,
@@ -262,7 +301,7 @@
  }
  
  // This is because `Weak::new()` *allocates* space for `T`, even if it
-@@ -135,12 +138,21 @@
+@@ -135,12 +138,28 @@
                  exec,
                  timer,
                  timeout: config.idle_timeout,
@@ -281,6 +320,156 @@
 +        if let Some(inner) = &self.inner {
 +            inner.lock().unwrap().custody = Some(custody);
 +        }
++    }
++
++    #[cfg(feature = "connection-custody")]
++    fn custody(&self) -> Option<Arc<dyn fmt::Debug + Send + Sync>> {
++        self.inner
++            .as_ref()
++            .and_then(|inner| inner.lock().unwrap().custody.clone())
      }
  
      pub(crate) fn is_enabled(&self) -> bool {
+@@ -180,6 +199,8 @@
+                     let connecting = Connecting {
+                         key: key.clone(),
+                         pool: WeakOpt::downgrade(enabled),
++                        #[cfg(feature = "connection-custody")]
++                        _custody: inner.custody.clone(),
+                     };
+                     Some(connecting)
+                 } else {
+@@ -195,6 +216,8 @@
+             // in HTTP/1's case, there is never a lock, so we don't
+             // need to do anything in Drop.
+             pool: WeakOpt::none(),
++            #[cfg(feature = "connection-custody")]
++            _custody: self.custody(),
+         })
+     }
+ 
+@@ -261,6 +284,8 @@
+             is_reused: false,
+             pool: pool_ref,
+             value: Some(value),
++            #[cfg(feature = "connection-custody")]
++            _custody: self.custody(),
+         }
+     }
+ 
+@@ -286,6 +311,8 @@
+             key: key.clone(),
+             pool: pool_ref,
+             value: Some(value),
++            #[cfg(feature = "connection-custody")]
++            _custody: self.custody(),
+         }
+     }
+ }
+@@ -382,6 +409,8 @@
+                 trace!("put; removing canceled waiter for {:?}", key);
+             }
+             remove_waiters = waiters.is_empty();
++            #[cfg(feature = "connection-custody")]
++            compact_waiters(waiters);
+         }
+         if remove_waiters {
+             self.waiters.remove(&key);
+@@ -455,6 +484,8 @@
+             duration: dur,
+             pool: WeakOpt::downgrade(pool_ref),
+             pool_drop_notifier: rx,
++            #[cfg(feature = "connection-custody")]
++            _custody: self.custody.clone(),
+         };
+ 
+         self.exec.execute(interval.run());
+@@ -471,10 +502,21 @@
+         if let Some(waiters) = self.waiters.get_mut(key) {
+             waiters.retain(|tx| !tx.is_canceled());
+             remove_waiters = waiters.is_empty();
++            #[cfg(feature = "connection-custody")]
++            compact_waiters(waiters);
+         }
+         if remove_waiters {
+             self.waiters.remove(key);
+         }
++    }
++}
++
++// Keep a nonempty origin from retaining a historical peak of canceled waiters.
++// Compact only below half capacity to avoid reallocating on every successful reuse.
++#[cfg(feature = "connection-custody")]
++fn compact_waiters<T>(waiters: &mut VecDeque<T>) {
++    if waiters.capacity() > waiters.len().saturating_mul(2).max(4) {
++        waiters.shrink_to_fit();
+     }
+ }
+ 
+@@ -524,6 +566,9 @@
+     is_reused: bool,
+     key: K,
+     pool: WeakOpt<Mutex<PoolInner<T, K>>>,
++    // Pooled owners can outlive PoolInner; release their key before its allowance.
++    #[cfg(feature = "connection-custody")]
++    _custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
+ }
+ 
+ impl<T: Poolable, K: Key> Pooled<T, K> {
+@@ -738,6 +783,8 @@
+ pub struct Connecting<T: Poolable, K: Key> {
+     key: K,
+     pool: WeakOpt<Mutex<PoolInner<T, K>>>,
++    #[cfg(feature = "connection-custody")]
++    _custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
+ }
+ 
+ impl<T: Poolable, K: Key> Connecting<T, K> {
+@@ -786,6 +833,8 @@
+     // Pool is fully dropped, and shutdown. This channel is never sent on,
+     // but Err(Canceled) will be received when the Pool is dropped.
+     pool_drop_notifier: oneshot::Receiver<Infallible>,
++    #[cfg(feature = "connection-custody")]
++    _custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
+ }
+ 
+ impl<T: Poolable + 'static, K: Key> IdleTask<T, K> {
+@@ -874,6 +923,38 @@
+         Connecting {
+             key,
+             pool: WeakOpt::none(),
++            #[cfg(feature = "connection-custody")]
++            _custody: None,
++        }
++    }
++
++    #[cfg(feature = "connection-custody")]
++    #[test]
++    fn waiter_storage_compacts_after_cancellation_and_delivery() {
++        for cancel in [true, false] {
++            let pool = pool_no_timer::<Uniq<usize>, KeyImpl>();
++            let key = host_key("example.test");
++            let mut checkouts: Vec<_> = (0..1024).map(|_| pool.checkout(key.clone())).collect();
++            let mut context = task::Context::from_waker(task::Waker::noop());
++            for checkout in &mut checkouts {
++                assert!(Pin::new(checkout).poll(&mut context).is_pending());
++            }
++            assert!(pool.locked().waiters[&key].capacity() >= 1024);
++            if cancel {
++                checkouts.truncate(1);
++            } else {
++                for value in 0..1023 {
++                    drop(pool.pooled(c(key.clone()), Uniq(value)));
++                }
++            }
++            {
++                let inner = pool.locked();
++                let remaining = &inner.waiters[&key];
++                assert_eq!(remaining.len(), 1);
++                assert!(remaining.capacity() <= 4);
++            }
++            drop(checkouts);
++            assert!(pool.locked().waiters.is_empty());
+         }
+     }
+ 

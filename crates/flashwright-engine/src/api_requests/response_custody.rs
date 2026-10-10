@@ -20,7 +20,7 @@ use tokio::net::TcpListener;
 use tokio::sync::watch;
 
 #[derive(Clone)]
-struct TrackedExecutor(Arc<AtomicUsize>);
+pub(super) struct TrackedExecutor(pub(super) Arc<AtomicUsize>);
 
 impl<Work> hyper::rt::Executor<Work> for TrackedExecutor
 where

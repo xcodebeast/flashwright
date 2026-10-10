@@ -155,6 +155,13 @@ impl<T, K: Key> Pool<T, K> {
         }
     }
 
+    #[cfg(feature = "connection-custody")]
+    fn custody(&self) -> Option<Arc<dyn fmt::Debug + Send + Sync>> {
+        self.inner
+            .as_ref()
+            .and_then(|inner| inner.lock().unwrap().custody.clone())
+    }
+
     pub(crate) fn is_enabled(&self) -> bool {
         self.inner.is_some()
     }
@@ -192,6 +199,8 @@ impl<T: Poolable, K: Key> Pool<T, K> {
                     let connecting = Connecting {
                         key: key.clone(),
                         pool: WeakOpt::downgrade(enabled),
+                        #[cfg(feature = "connection-custody")]
+                        _custody: inner.custody.clone(),
                     };
                     Some(connecting)
                 } else {
@@ -207,6 +216,8 @@ impl<T: Poolable, K: Key> Pool<T, K> {
             // in HTTP/1's case, there is never a lock, so we don't
             // need to do anything in Drop.
             pool: WeakOpt::none(),
+            #[cfg(feature = "connection-custody")]
+            _custody: self.custody(),
         })
     }
 
@@ -273,6 +284,8 @@ impl<T: Poolable, K: Key> Pool<T, K> {
             is_reused: false,
             pool: pool_ref,
             value: Some(value),
+            #[cfg(feature = "connection-custody")]
+            _custody: self.custody(),
         }
     }
 
@@ -298,6 +311,8 @@ impl<T: Poolable, K: Key> Pool<T, K> {
             key: key.clone(),
             pool: pool_ref,
             value: Some(value),
+            #[cfg(feature = "connection-custody")]
+            _custody: self.custody(),
         }
     }
 }
@@ -394,6 +409,8 @@ impl<T: Poolable, K: Key> PoolInner<T, K> {
                 trace!("put; removing canceled waiter for {:?}", key);
             }
             remove_waiters = waiters.is_empty();
+            #[cfg(feature = "connection-custody")]
+            compact_waiters(waiters);
         }
         if remove_waiters {
             self.waiters.remove(&key);
@@ -467,6 +484,8 @@ impl<T: Poolable, K: Key> PoolInner<T, K> {
             duration: dur,
             pool: WeakOpt::downgrade(pool_ref),
             pool_drop_notifier: rx,
+            #[cfg(feature = "connection-custody")]
+            _custody: self.custody.clone(),
         };
 
         self.exec.execute(interval.run());
@@ -483,10 +502,21 @@ impl<T, K: Eq + Hash> PoolInner<T, K> {
         if let Some(waiters) = self.waiters.get_mut(key) {
             waiters.retain(|tx| !tx.is_canceled());
             remove_waiters = waiters.is_empty();
+            #[cfg(feature = "connection-custody")]
+            compact_waiters(waiters);
         }
         if remove_waiters {
             self.waiters.remove(key);
         }
+    }
+}
+
+// Keep a nonempty origin from retaining a historical peak of canceled waiters.
+// Compact only below half capacity to avoid reallocating on every successful reuse.
+#[cfg(feature = "connection-custody")]
+fn compact_waiters<T>(waiters: &mut VecDeque<T>) {
+    if waiters.capacity() > waiters.len().saturating_mul(2).max(4) {
+        waiters.shrink_to_fit();
     }
 }
 
@@ -536,6 +566,9 @@ pub struct Pooled<T: Poolable, K: Key> {
     is_reused: bool,
     key: K,
     pool: WeakOpt<Mutex<PoolInner<T, K>>>,
+    // Pooled owners can outlive PoolInner; release their key before its allowance.
+    #[cfg(feature = "connection-custody")]
+    _custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
 }
 
 impl<T: Poolable, K: Key> Pooled<T, K> {
@@ -750,6 +783,8 @@ impl<T, K: Key> Drop for Checkout<T, K> {
 pub struct Connecting<T: Poolable, K: Key> {
     key: K,
     pool: WeakOpt<Mutex<PoolInner<T, K>>>,
+    #[cfg(feature = "connection-custody")]
+    _custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
 }
 
 impl<T: Poolable, K: Key> Connecting<T, K> {
@@ -798,6 +833,8 @@ struct IdleTask<T, K: Key> {
     // Pool is fully dropped, and shutdown. This channel is never sent on,
     // but Err(Canceled) will be received when the Pool is dropped.
     pool_drop_notifier: oneshot::Receiver<Infallible>,
+    #[cfg(feature = "connection-custody")]
+    _custody: Option<Arc<dyn fmt::Debug + Send + Sync>>,
 }
 
 impl<T: Poolable + 'static, K: Key> IdleTask<T, K> {
@@ -886,6 +923,38 @@ mod tests {
         Connecting {
             key,
             pool: WeakOpt::none(),
+            #[cfg(feature = "connection-custody")]
+            _custody: None,
+        }
+    }
+
+    #[cfg(feature = "connection-custody")]
+    #[test]
+    fn waiter_storage_compacts_after_cancellation_and_delivery() {
+        for cancel in [true, false] {
+            let pool = pool_no_timer::<Uniq<usize>, KeyImpl>();
+            let key = host_key("example.test");
+            let mut checkouts: Vec<_> = (0..1024).map(|_| pool.checkout(key.clone())).collect();
+            let mut context = task::Context::from_waker(task::Waker::noop());
+            for checkout in &mut checkouts {
+                assert!(Pin::new(checkout).poll(&mut context).is_pending());
+            }
+            assert!(pool.locked().waiters[&key].capacity() >= 1024);
+            if cancel {
+                checkouts.truncate(1);
+            } else {
+                for value in 0..1023 {
+                    drop(pool.pooled(c(key.clone()), Uniq(value)));
+                }
+            }
+            {
+                let inner = pool.locked();
+                let remaining = &inner.waiters[&key];
+                assert_eq!(remaining.len(), 1);
+                assert!(remaining.capacity() <= 4);
+            }
+            drop(checkouts);
+            assert!(pool.locked().waiters.is_empty());
         }
     }
 
