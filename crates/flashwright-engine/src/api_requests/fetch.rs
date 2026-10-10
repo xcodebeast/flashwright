@@ -4,6 +4,7 @@ use super::cookie_jar::CookieUrl;
 use super::exchange::{self, Failure, Header};
 use super::options::{CredentialSend, HttpCredentials};
 use super::registry::RequestContext;
+use super::trace::{self, TraceCapture};
 use super::unix_milliseconds;
 use crate::{Engine, Operation};
 use bytes::Bytes;
@@ -15,6 +16,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::sync::Arc;
 use std::time::Duration;
+use std::time::Instant;
 use url::Url;
 
 const METHOD: &str = "apiRequest.fetch";
@@ -37,6 +39,8 @@ struct FetchOptions {
     #[serde(default, rename = "ignoreHTTPSErrors")]
     ignore_https_errors: bool,
     has_body: bool,
+    #[serde(default)]
+    trace: Option<TraceCapture>,
 }
 
 fn default_redirects() -> u32 {
@@ -65,6 +69,13 @@ impl Engine {
         let options: FetchOptions =
             serde_json::from_value(parameters).map_err(|error| invalid(error.to_string()))?;
         let context = self.api_requests.context(&options.context, METHOD)?;
+        if options
+            .trace
+            .as_ref()
+            .is_some_and(|capture| !capture.valid())
+        {
+            return Err(invalid("invalid API trace attempt identity"));
+        }
         let mut metadata_bytes = options
             .url
             .capacity()
@@ -268,6 +279,14 @@ async fn request_chain(
             authorize(&mut outgoing, &username, &password);
         }
         let request = build_request(&url, method.clone(), &outgoing, body.clone())?;
+        let attempt = options
+            .trace
+            .as_ref()
+            .map(|_| engine.identifier("api-attempt"));
+        let request_method = options.trace.as_ref().map(|_| method.to_string());
+        let request_body_size = body.len();
+        let started_wall_time = super::unix_milliseconds();
+        let started = Instant::now();
         let exchange = exchange::start(
             context.client(options.ignore_https_errors),
             request,
@@ -287,6 +306,25 @@ async fn request_chain(
             && options.max_redirects != 0
         {
             if redirects == options.max_redirects {
+                if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
+                    trace::record_attempt(
+                        engine,
+                        context,
+                        capture,
+                        trace::WireAttempt {
+                            identifier: attempt,
+                            url: url.as_str(),
+                            method: request_method.as_deref().unwrap_or(method.as_str()),
+                            request_headers: &outgoing,
+                            request_body_size,
+                            response: &exchange.metadata,
+                            response_body_size: None,
+                            started_wall_time,
+                            started,
+                        },
+                    )
+                    .await;
+                }
                 return Err(request_error("Max redirect count exceeded").into());
             }
             if let Some(location) = exchange
@@ -336,6 +374,25 @@ async fn request_chain(
                     _cookie_copy: None,
                 });
                 redirects += 1;
+                if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
+                    trace::record_attempt(
+                        engine,
+                        context,
+                        capture,
+                        trace::WireAttempt {
+                            identifier: attempt,
+                            url: url.as_str(),
+                            method: request_method.as_deref().unwrap_or(method.as_str()),
+                            request_headers: &outgoing,
+                            request_body_size,
+                            response: &exchange.metadata,
+                            response_body_size: None,
+                            started_wall_time,
+                            started,
+                        },
+                    )
+                    .await;
+                }
                 url = next;
                 drop(exchange);
                 continue;
@@ -349,6 +406,25 @@ async fn request_chain(
                 .is_some_and(|value| value.trim().starts_with("Basic"))
             && let Some(credentials) = credentials(context, &url)
         {
+            if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
+                trace::record_attempt(
+                    engine,
+                    context,
+                    capture,
+                    trace::WireAttempt {
+                        identifier: attempt,
+                        url: url.as_str(),
+                        method: request_method.as_deref().unwrap_or(method.as_str()),
+                        request_headers: &outgoing,
+                        request_body_size,
+                        response: &exchange.metadata,
+                        response_body_size: None,
+                        started_wall_time,
+                        started,
+                    },
+                )
+                .await;
+            }
             authorize(
                 &mut headers.values,
                 &credentials.username,
@@ -360,6 +436,25 @@ async fn request_chain(
         let (metadata, body) = exchange
             .finish(&context.budget, || operation.check())
             .await?;
+        if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
+            trace::record_attempt(
+                engine,
+                context,
+                capture,
+                trace::WireAttempt {
+                    identifier: attempt,
+                    url: url.as_str(),
+                    method: request_method.as_deref().unwrap_or(method.as_str()),
+                    request_headers: &outgoing,
+                    request_body_size,
+                    response: &metadata,
+                    response_body_size: Some(body.bytes.len()),
+                    started_wall_time,
+                    started,
+                },
+            )
+            .await;
+        }
         return Ok((url.to_string(), metadata, body));
     }
 }

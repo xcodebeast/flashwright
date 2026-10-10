@@ -82,6 +82,7 @@ pub(super) struct ResponseMetadata {
     pub(super) status: u16,
     pub(super) status_text: String,
     pub(super) headers: Vec<Header>,
+    pub(super) version: http::Version,
     _capacity: PairedReservation,
 }
 
@@ -250,6 +251,7 @@ fn metadata(parts: Parts, budget: &ContextBudget) -> Result<ResponseMetadata, Er
         status: parts.status.as_u16(),
         status_text,
         headers,
+        version: parts.version,
         _capacity: capacity,
     })
 }

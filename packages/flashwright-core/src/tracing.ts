@@ -17,17 +17,25 @@ import { TraceNetworkChannel } from './trace-network.js';
 import { beginRunnerAction, captureRunnerActionObserver, type RunnerAction, type RunnerActionObserver } from './runner-actions.js';
 import { registerRunnerTraceOwner, type RunnerTraceChunk, type RunnerTraceRecording, type RunnerTraceRecordingWithActions, type RunnerTraceStartup, type RunnerTraceOperation } from './runner-trace-archives.js';
 import type { SealedTraceArchive } from './trace-archive.js';
+import { apiTraceAttempt } from './trace-api-network.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
-interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; accepting: boolean }
+export type TraceBackend = 'browser' | 'api';
+interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; accepting: boolean }
 interface StartedRecording { recording: RunnerTraceRecording; chunk: RunnerTraceChunk }
 type TraceChunkDestination = { kind: 'file'; path: string | undefined } | { kind: 'runner'; signal: AbortSignal | undefined };
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; capture: TraceCaptureMode; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
 const processIdentity = randomUUID();
 let nextCall = 0;
 let nextContext = 0;
+const captureAPIRequestAttempt = Symbol('capture API request attempt');
+const captureAPIRequestFailure = Symbol('capture API request failure');
+const requestNetworkSignal = new AbortController().signal;
+
+export function recordAPITraceAttempt(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestAttempt](value); }
+export function recordAPITraceFailure(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestFailure](value); }
 
 /** Manual action tracing owns context diagnostics and independent, bounded archive chunks. */
 export class Tracing {
@@ -50,7 +58,31 @@ export class Tracing {
   private cleanupFailure: { error: unknown } | undefined;
   private retiringChunk: TraceChunk | undefined;
   private exportCancellation: AbortController | undefined;
-  constructor(private readonly client: EngineClient, private readonly context: string, private readonly viewport: { width: number; height: number } | null) {
+  [captureAPIRequestAttempt](value: unknown): void {
+    const chunk = this.chunk;
+    if (this.backend !== 'api' || !chunk?.accepting || this.ownerIsClosed) return;
+    try {
+      const attempt = apiTraceAttempt(value);
+      if (attempt.generation !== chunk.identifier) return;
+      const attempts = chunk.apiAttempts ??= new Set();
+      if (attempts.size >= 16384) throw failure('ResourceLimitError', 'tracing.api', 'API trace exceeds 16384 wire attempts');
+      if (attempts.has(attempt.attempt)) throw failure('ProtocolError', 'tracing.api', 'duplicate API wire attempt identity');
+      attempts.add(attempt.attempt);
+      const completion = chunk.writer.appendNetwork({ type: 'resource-snapshot', snapshot: attempt.snapshot }, requestNetworkSignal);
+      const completions = chunk.completions ??= new Set();
+      completions.add(completion);
+      void completion.then(() => completions.delete(completion), error => { completions.delete(completion); chunk.writer.fail(error); });
+    } catch (error) { chunk.writer.fail(error); }
+  }
+  [captureAPIRequestFailure](value: unknown): void {
+    const chunk = this.chunk;
+    if (this.backend !== 'api' || !chunk?.accepting || this.ownerIsClosed) return;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) { chunk.writer.fail(failure('ProtocolError', 'tracing.api', 'invalid API trace failure')); return; }
+    const event = value as Record<string, unknown>;
+    if (event.generation !== chunk.identifier) return;
+    chunk.writer.fail(failure('ResourceLimitError', 'tracing.api', typeof event.message === 'string' ? event.message : 'native API trace capture failed'));
+  }
+  constructor(private readonly client: EngineClient, private readonly context: string, private readonly viewport: { width: number; height: number } | null, private readonly backend: TraceBackend = 'browser') {
     registerRunnerTraceOwner(this, {
       currentChunk: () => this.chunk?.runner,
       currentRecording: () => this.recording,
@@ -90,7 +122,7 @@ export class Tracing {
     this.includeScreenshots = options.screenshots ?? false;
     this.includeSnapshots = options.snapshots ?? false;
     try {
-      if (this.includeSnapshots) {
+      if (this.includeSnapshots && this.backend === 'browser') {
         this.nativeRecording = new NativeTraceRecording(this.client, this.context, true);
         await this.nativeRecording.start();
         this.network = new TraceNetworkChannel(this.client, this.context, this.nativeRecording.identifier, this.resources, error => {
@@ -254,13 +286,13 @@ export class Tracing {
         if (this.network) chunk.network = this.network;
         chunk.native = await chunk.nativeOwner.startChunk(chunk.identifier);
       }
-      const clock = this.includeScreenshots ? await sampleTraceClock(this.client, this.context) : undefined;
-      writer.append({ version: 8, type: 'context-options', origin: 'library', browserName: 'chromium', playwrightVersion: '1.60.0', options: { viewport: this.viewport }, platform: process.platform, wallTime: Date.now(), monotonicTime: performance.now(), sdkLanguage: 'javascript', contextId: this.traceContext, title: options.title, testIdAttributeName: 'data-testid', ...(clock ? { flashwrightClock: clock } : {}), ...(chunk.native?.clock ? { flashwrightRecordingClock: chunk.native.clock } : {}) });
-      chunk.channel = await TraceDiagnosticChannel.start(this.client, this.context, chunk.identifier, diagnostic => this.diagnostic(chunk, diagnostic), error => writer.fail(error));
+      const clock = this.backend === 'browser' && this.includeScreenshots ? await sampleTraceClock(this.client, this.context) : undefined;
+      writer.append({ version: 8, type: 'context-options', origin: 'library', browserName: this.backend === 'browser' ? 'chromium' : '', playwrightVersion: '1.60.0', options: this.backend === 'browser' ? { viewport: this.viewport } : {}, platform: process.platform, wallTime: Date.now(), monotonicTime: performance.now(), sdkLanguage: 'javascript', contextId: this.traceContext, title: options.title, testIdAttributeName: 'data-testid', ...(clock ? { flashwrightClock: clock } : {}), ...(chunk.native?.clock ? { flashwrightRecordingClock: chunk.native.clock } : {}) });
+      if (this.backend === 'browser') chunk.channel = await TraceDiagnosticChannel.start(this.client, this.context, chunk.identifier, diagnostic => this.diagnostic(chunk, diagnostic), error => writer.fail(error));
       if (clock) chunk.filmstrip = await TraceFilmstripChannel.start(this.client, this.context, chunk.identifier, clock, this.resources, writer, page => this.pageIdentity(page));
       if (chunk.native?.clock) chunk.snapshots = new TraceSnapshotChannel(this.client, chunk.native.identity, chunk.native.clock, this.resources, writer,
         page => this.pageIdentity(page), call => writer.append({ type: 'input', callId: call, inputSnapshot: `input@${call}` }));
-      if (this.ownerIsClosed) { chunk.channel.ownerClosed(); chunk.filmstrip?.ownerClosed(); chunk.snapshots?.ownerClosed(); throw failure('TargetClosedError', 'tracing.start', 'context closed while starting tracing'); }
+      if (this.ownerIsClosed) { chunk.channel?.ownerClosed(); chunk.filmstrip?.ownerClosed(); chunk.snapshots?.ownerClosed(); throw failure('TargetClosedError', 'tracing.start', 'context closed while starting tracing'); }
       this.chunk = chunk;
       chunk.accepting = true;
       traceChunkOpened();
@@ -463,8 +495,8 @@ export class Tracing {
     if (!chunk?.accepting || this.ownerIsClosed || chunk.writer.failure) return undefined;
     if (this.calls.size >= 1024) { chunk.writer.fail(failure('ResourceLimitError', 'tracing', 'trace exceeds 1024 unfinished public calls')); return undefined; }
     const call: TraceCall = { identifier: `${processIdentity}@${++nextCall}`, chunk, completed: false, evaluates: method.includes('eval'), pageId: owner.pageId, capture };
-    if (capture === 'metadata-only' || this.includeScreenshots || chunk.native) call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier,
-      ...(chunk.native && capture !== 'metadata-only' ? { recording: chunk.native.identity.recording, call: call.identifier } : {}) });
+    if (capture === 'metadata-only' || this.includeScreenshots || chunk.native || this.backend === 'api') call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier,
+      ...(this.backend === 'api' ? { call: call.identifier } : chunk.native && capture !== 'metadata-only' ? { recording: chunk.native.identity.recording, call: call.identifier } : {}) });
     this.calls.add(call);
     if (capture !== 'metadata-only') chunk.filmstrip?.activity(owner.pageId);
     try {

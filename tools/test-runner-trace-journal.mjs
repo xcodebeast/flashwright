@@ -44,7 +44,7 @@ async function readArchive(journal, timeout = 12345) {
 
 try {
   await check('journal factory enforces its private version without exposing a public constructor', async () => {
-    assert.equal(runnerIntegration.version, 11);
+    assert.equal(runnerIntegration.version, 12);
     assert.throws(() => runnerIntegration.createTraceJournal(4, context(), { sources: false, attachments: false }), { name: 'ProtocolError' });
     assert.equal('RunnerTraceJournal' in require('../packages/flashwright-core/dist/commonjs/index.js'), false);
     const value = await runnerIntegration.createTraceJournal(5, context(), { sources: false, attachments: false });

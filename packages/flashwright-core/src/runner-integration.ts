@@ -9,10 +9,20 @@ import { beginRunnerTraceRecordingChunk } from './runner-trace-archives.js';
 import type { TracingStartOptions, TracingChunkOptions } from './tracing.js';
 import { TraceArchiveAssembly } from './trace-archive-assembly.js';
 import { RunnerTraceJournal, type RunnerTraceJournalOptions } from './runner-trace-journal.js';
+import { installArtifactRequestLifecycle, type ArtifactRequestLifecycle, type RunnerRequestLifecycleRegistration } from './runner-request-lifecycle.js';
+import { runnerRequestTraceOwner, type APIRequestContext } from './api-request.js';
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 11,
+  version: 12,
+  installArtifactRequestLifecycle(version: number, lifecycle: ArtifactRequestLifecycle): RunnerRequestLifecycleRegistration {
+    if (version !== 12) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return installArtifactRequestLifecycle(lifecycle);
+  },
+  requestTraceOwner(version: number, context: APIRequestContext): object {
+    if (version !== 12) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return runnerRequestTraceOwner(context);
+  },
   beginTraceRecordingChunk(version: number, tracing: object, recording: RunnerTraceRecording, observer: RunnerActionObserver, options: TracingChunkOptions = {}): ReturnType<typeof beginRunnerTraceRecordingChunk> {
     if (version !== 11) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return beginRunnerTraceRecordingChunk(tracing, recording, observer, options);
