@@ -10,4 +10,5 @@ pub use chromium::{Chromium, LaunchOptions};
 pub use connection::Connection;
 
 mod guardian_metadata;
+mod launch_audit;
 mod process_group;
