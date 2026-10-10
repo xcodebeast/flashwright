@@ -212,6 +212,7 @@ const commands = [
   [process.execPath, 'tools/test-packed-filmstrip.mjs'],
   [process.execPath, 'tools/test-packed-dialogs.mjs', join(destination, 'dialog-packed')],
   [process.execPath, 'tools/test-packed-runner-integration.mjs'],
+  [process.execPath, 'tools/run-page-initialization-tests.mjs', join(destination, 'page-initialization')],
 ];
 for (const [index, command] of commands.entries()) {
   const started = performance.now();

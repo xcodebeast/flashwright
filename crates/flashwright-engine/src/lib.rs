@@ -753,39 +753,47 @@ impl Engine {
                 if !registry.contexts.contains_key(&context_identifier) { return Err(closed(method)); }
                 registry.pages.insert(page_identifier.clone(), page.clone());
             }
-            operation.wait(browser.connection.call("Page.enable", json!({}), Some(&session_identifier))).await?;
-            operation.wait(browser.connection.call("Page.setLifecycleEventsEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;
-            operation.wait(browser.connection.call("Network.enable", json!({}), Some(&session_identifier))).await?;
-            operation.wait(browser.connection.call("Runtime.enable", json!({}), Some(&session_identifier))).await?;
-            operation.wait(browser.connection.call("Log.enable", json!({}), Some(&session_identifier))).await?;
+            // Setup replies can disappear after native root detachment. Every bare
+            // setup command must observe the original page's terminal state.
+            let initialize_command = |command: &'static str, parameters| {
+                operation.wait(state.while_alive(
+                    method,
+                    browser.connection.call(command, parameters, Some(&session_identifier)),
+                ))
+            };
+            initialize_command("Page.enable", json!({})).await?;
+            initialize_command("Page.setLifecycleEventsEnabled", json!({ "enabled": true })).await?;
+            initialize_command("Network.enable", json!({})).await?;
+            initialize_command("Runtime.enable", json!({})).await?;
+            initialize_command("Log.enable", json!({})).await?;
             if purpose == PagePurpose::Public {
                 if context.settings.ignore_https_errors {
-                    operation.wait(browser.connection.call("Security.setIgnoreCertificateErrors", json!({"ignore":true}), Some(&session_identifier))).await?;
+                    initialize_command("Security.setIgnoreCertificateErrors", json!({"ignore":true})).await?;
                 }
                 if !context.settings.javascript_enabled {
-                    operation.wait(browser.connection.call("Emulation.setScriptExecutionDisabled", json!({"value":true}), Some(&session_identifier))).await?;
+                    initialize_command("Emulation.setScriptExecutionDisabled", json!({"value":true})).await?;
                 }
-                operation.wait(browser.connection.call("Emulation.setEmulatedMedia", context_settings::default_media_parameters(), Some(&session_identifier))).await?;
+                initialize_command("Emulation.setEmulatedMedia", context_settings::default_media_parameters()).await?;
             }
             // Match the reference's page focus/visibility policy so fresh frame checks
             // keep running when another page becomes the browser's active tab.
-            operation.wait(browser.connection.call("Emulation.setFocusEmulationEnabled", json!({ "enabled": true }), Some(&session_identifier))).await?;
+            initialize_command("Emulation.setFocusEmulationEnabled", json!({ "enabled": true })).await?;
             if let Some(viewport) = &context.viewport {
-                configure_viewport(&browser, viewport, &context.devices, &session_identifier, operation).await?;
+                state.while_alive(method, configure_viewport(&browser, viewport, &context.devices, &session_identifier, operation)).await?;
             }
             if context.devices.has_touch {
-                operation.wait(browser.connection.call("Emulation.setTouchEmulationEnabled", json!({"enabled":true}), Some(&session_identifier))).await?;
+                initialize_command("Emulation.setTouchEmulationEnabled", json!({"enabled":true})).await?;
             }
             if !context.devices.user_agent.is_empty() {
-                operation.wait(browser.connection.call("Emulation.setUserAgentOverride", context.devices.user_agent_override(), Some(&session_identifier))).await?;
+                initialize_command("Emulation.setUserAgentOverride", context.devices.user_agent_override()).await?;
             }
             if purpose == PagePurpose::Public {
                 self.configure_page_routing(&page_identifier, &page, &browser, context.state.routing_registered.load(Ordering::Acquire), operation).await?;
                 self.initialize_page_scripts(&page_identifier, &page, &browser, operation).await?;
                 self.initialize_page_filmstrip(&page_identifier, &page, &context, &browser);
-                operation.wait(browser.connection.call("Target.setAutoAttach", renderer_setup::auto_attach_parameters(), Some(&session_identifier))).await?;
+                initialize_command("Target.setAutoAttach", renderer_setup::auto_attach_parameters()).await?;
             }
-            let tree = operation.wait(browser.connection.call("Page.getFrameTree", json!({}), Some(&session_identifier))).await?;
+            let tree = initialize_command("Page.getFrameTree", json!({})).await?;
             let registry = self.registry.lock().unwrap();
             operation.check()?;
             if !registry.contexts.contains_key(&context_identifier) || !registry.pages.contains_key(&page_identifier) { return Err(closed(method)); }
