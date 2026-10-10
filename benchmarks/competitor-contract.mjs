@@ -2,6 +2,16 @@ import assert from 'node:assert/strict';
 
 /** Admit fixture outcomes independently of timings and retain every contract difference. */
 export function verifyPuppeteerAdmission(report, resources, baseline, competitors, launchPolicy) {
+  assert.equal(report.sampling, undefined, 'Sampling cannot replace the separate isolation admission');
+  return verifyPuppeteer(report, resources, baseline, competitors, launchPolicy);
+}
+
+export function verifyPuppeteerSample(report, resources, baseline, competitors, launchPolicy) {
+  verifySamplingConfiguration(report, baseline, 'off');
+  return verifyPuppeteer(report, resources, baseline, competitors, launchPolicy);
+}
+
+function verifyPuppeteer(report, resources, baseline, competitors, launchPolicy) {
   assert.equal(report.engine, 'puppeteer');
   assert.equal(report.package.name, 'puppeteer-core');
   assert.equal(report.package.version, competitors.competitors.find(competitor => competitor.id === 'puppeteer').version);
@@ -11,6 +21,16 @@ export function verifyPuppeteerAdmission(report, resources, baseline, competitor
 
 /** Require the observed native driver policy without claiming reference-policy equivalence. */
 export function verifyWebdriverAdmission(report, resources, baseline, competitors, launchPolicy, driverPolicy) {
+  assert.equal(report.sampling, undefined, 'Sampling cannot replace the separate isolation admission');
+  return verifyWebdriver(report, resources, baseline, competitors, launchPolicy, driverPolicy);
+}
+
+export function verifyWebdriverSample(report, resources, baseline, competitors, launchPolicy, driverPolicy) {
+  verifySamplingConfiguration(report, baseline, 'warning');
+  return verifyWebdriver(report, resources, baseline, competitors, launchPolicy, driverPolicy);
+}
+
+function verifyWebdriver(report, resources, baseline, competitors, launchPolicy, driverPolicy) {
   assert.equal(report.engine, 'webdriverio');
   assert.equal(report.package.name, 'webdriverio');
   assert.equal(report.package.version, competitors.competitors.find(competitor => competitor.id === 'webdriverio').version);
@@ -24,12 +44,26 @@ export function verifyWebdriverAdmission(report, resources, baseline, competitor
   return { ...verifyFixtureAdmission(report, resources, baseline), launchPolicyEquivalent: false, launchPolicyDifference: driverPolicy.reason };
 }
 
+/** Sampling omits the admission-only probe and diagnostic writes, but still checks every outcome. */
+function verifySamplingConfiguration(report, baseline, protocolLogging) {
+  const launchIndex = report.sampling?.launchIndex;
+  assert.ok(Number.isInteger(launchIndex) && launchIndex >= 0 && launchIndex < baseline.independentLaunches);
+  assert.deepEqual(report.sampling, { launchIndex, reportPersistence: 'after-completion', isolationProbe: 'separate-admission', protocolLogging });
+  const offset = launchIndex % baseline.workloads.length;
+  assert.deepEqual(report.workloads.map(workload => workload.name), baseline.workloads.slice(offset).concat(baseline.workloads.slice(0, offset)));
+  assert.equal(report.isolation, null);
+  for (const workload of report.workloads) {
+    assert.deepEqual(workload.samples.map(sample => sample.iteration), Array.from({ length: baseline.measuredIterations }, (_, index) => index));
+    assert.deepEqual(workload.warmupSamples.map(sample => sample.iteration), Array.from({ length: baseline.warmupIterations }, (_, index) => index));
+  }
+}
+
 function verifyFixtureAdmission(report, resources, baseline) {
   assert.deepEqual(report.configuration, baseline);
   assert.equal(report.browser.version, baseline.browserVersion);
   assert.equal(report.browserVersion, baseline.browserVersion);
   assert.deepEqual(report.failures, []);
-  assert.deepEqual(report.isolation, { storage: null, cookies: '' });
+  if (!report.sampling) assert.deepEqual(report.isolation, { storage: null, cookies: '' });
   assert.equal(resources.schemaVersion, 2);
   assert.ok(Number.isFinite(resources.observedCpuSeconds) && resources.observedCpuSeconds >= 0);
   assert.ok(Number.isFinite(resources.maximumSampledConcurrentRssBytes) && resources.maximumSampledConcurrentRssBytes > 0);
@@ -66,9 +100,10 @@ function verifyFixtureAdmission(report, resources, baseline) {
     if (observations.visibilityState !== 'visible' || observations.focused !== true) differences.push({ workload: workload.name, reason: `Document visibility/focus differs from the reference: ${observations.visibilityState}/${observations.focused}.` });
   }
   assert.equal(report.backend.backendRequests, iterations);
-  assert.equal(report.backend.documents, iterations * 2 + baseline.workloads.length - 1 + 2);
+  assert.equal(report.backend.documents, iterations * 2 + baseline.workloads.length - 1 + (report.sampling ? 0 : 2));
   return {
-    functionalAdmissionPassed: true,
+    functionalAdmissionPassed: !report.sampling,
+    ...(report.sampling ? { samplingOutcomesPassed: true } : {}),
     performanceAccepted: false,
     differences,
     outcomeMatchedWorkloads: baseline.workloads.filter(name => !differences.some(difference => difference.workload === name)),
