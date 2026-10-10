@@ -26,19 +26,26 @@ require(join(runtime, 'flashwright-hooks.cjs')).installTraceStart(information =>
   const steps = createOwnedTraceSteps(information, admission.journal);
   const owned = { steps, archives: [], reads: [], journal: admission.journal };
   attempts.set(information, owned);
-  const takeJournal = admission.journal.takeArchive.bind(admission.journal);
-  admission.journal.takeArchive = async (...arguments_) => {
-    const assembly = runnerIntegration.createTraceArchiveAssembly(4);
-    try {
-      for (const archive of owned.archives) assembly.addLibrary(archive);
-      owned.archives.length = 0;
-      assembly.addRunner(await takeJournal(...arguments_));
-      const result = assembly.seal();
-      appendFileSync(process.env.FLASHWRIGHT_SOURCE_EVENTS, JSON.stringify({ title: information.title, project: information.project.name, reads: owned.reads }) + '\n');
-      return result;
-    } catch (error) { await assembly.dispose(); throw error; }
-  };
-  installRunnerTraceFinalizer(information, admission);
+  let closed = false;
+  const finalizer = installRunnerTraceFinalizer(information, admission, {
+    closeAdmission() { closed = true; steps.close(); },
+    async collect(acceptArchive, signal) {
+      assert.equal(closed, true);
+      while (owned.archives.length) {
+        signal.throwIfAborted();
+        acceptArchive(owned.archives[0]);
+        owned.archives.shift();
+      }
+    },
+    async dispose() {
+      const results = await Promise.allSettled(owned.archives.splice(0).map(archive => archive.dispose()));
+      const failed = results.find(result => result.status === 'rejected');
+      if (failed) throw failed.reason;
+    },
+  });
+  void finalizer.cleanup.then(() => {
+    appendFileSync(process.env.FLASHWRIGHT_SOURCE_EVENTS, JSON.stringify({ title: information.title, project: information.project.name, reads: owned.reads }) + '\n');
+  });
   return true;
 });
 
@@ -64,7 +71,7 @@ const test = base.extend({
       owned.archives.push(archive);
     };
     try { await use({ page, context, recording, retain, observer: owned.steps.observer }); }
-    finally { owned.steps.close(); await retain(); await recording.stop(); await context.close(); }
+    finally { await retain(); await recording.stop(); await context.close(); }
   },
 });
 
