@@ -337,6 +337,7 @@ mod tests {
         page.state.state.lock().unwrap().main_worlds.insert(
             "frame".into(),
             ExecutionContext {
+                session_identifier: "session".into(),
                 identifier: 1,
                 unique_identifier: "world".into(),
                 frame_identifier: "frame".into(),
@@ -409,6 +410,7 @@ mod tests {
             chooser.queued.push_back(PendingChooser {
                 backend_node: 1,
                 context: ExecutionContext {
+                    session_identifier: "session".into(),
                     identifier: 1,
                     unique_identifier: "original-world".into(),
                     frame_identifier: "frame".into(),

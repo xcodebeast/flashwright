@@ -38,6 +38,7 @@ impl RequestState {
             identifier,
             sequence,
             &NetworkEvent {
+                session_identifier: "",
                 method: "Network.requestWillBeSent",
                 parameters,
                 ingress: NetworkIngress {

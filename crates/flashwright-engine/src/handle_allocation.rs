@@ -49,7 +49,7 @@ pub(crate) async fn wait_for_allocation<Output>(
                 .call(
                     "Runtime.terminateExecution",
                     json!({}),
-                    Some(&page.session_identifier),
+                    Some(&context.session_identifier),
                 )
                 .await;
         }
@@ -65,14 +65,14 @@ pub(crate) async fn wait_for_allocation<Output>(
 /// A group can contain objects from several worlds, including a reused numeric context.
 pub(crate) async fn release_group(
     connection: &Connection,
-    page: &Page,
+    session_identifier: &str,
     group: &str,
 ) -> Result<(), ErrorRecord> {
     connection
         .call(
             "Runtime.releaseObjectGroup",
             json!({"objectGroup": group}),
-            Some(&page.session_identifier),
+            Some(session_identifier),
         )
         .await
         .map(|_| ())
@@ -133,6 +133,7 @@ mod tests {
                 state: Arc::new(PageState::default()),
             };
             let context = ExecutionContext {
+                session_identifier: "original-renderer".into(),
                 identifier: 1,
                 unique_identifier: "original".into(),
                 frame_identifier: "frame".into(),
@@ -160,7 +161,7 @@ mod tests {
                         "backendNodeId": 42, "executionContextId": self.context.identifier,
                         "objectGroup": "attempt",
                     }),
-                    Some(&self.page.session_identifier),
+                    Some(&self.context.session_identifier),
                 )
                 .unwrap()
         }
@@ -168,13 +169,45 @@ mod tests {
 
     fn replace_context(page: &Page, unique: &str) {
         let mut state = page.state.state.lock().unwrap();
-        state.observe(
+        state.observe_in_session(
+            "original-renderer",
             "Runtime.executionContextCreated",
             &json!({"context": {
                 "id": 1, "uniqueId": unique, "auxData": {"frameId": "frame", "isDefault": true},
             }}),
         );
         page.state.changed.send_replace(state.sequence);
+    }
+
+    #[tokio::test]
+    async fn cancellation_terminates_only_the_original_renderer_session() {
+        let mut fixture = Fixture::new();
+        let mut command = fixture.adopt();
+        let adoption = fixture.peer.command().await;
+        assert_eq!(adoption["sessionId"], "original-renderer");
+        fixture.cancellation.send_replace(true);
+        let waiting = wait_for_allocation(
+            &fixture.connection,
+            &fixture.page,
+            &fixture.context,
+            &fixture.operation,
+            &mut command,
+            true,
+        );
+        let browser = async {
+            let terminate = fixture.peer.command().await;
+            assert_eq!(terminate["method"], "Runtime.terminateExecution");
+            assert_eq!(terminate["sessionId"], "original-renderer");
+            fixture.peer.reply(&terminate, json!({})).await;
+            fixture
+                .peer
+                .reply(&adoption, json!({"object": {"objectId": "late-alias"}}))
+                .await;
+        };
+        let (result, ()) = tokio::join!(waiting, browser);
+        let failure = result.err().unwrap();
+        assert_eq!(failure.error.code, ErrorCode::Cancelled);
+        assert!(!failure.reply_pending);
     }
 
     #[tokio::test]
@@ -226,11 +259,15 @@ mod tests {
         let failure = waiting.await.err().unwrap();
         assert_eq!(failure.error.code, ErrorCode::Evaluation);
         assert!(!failure.reply_pending);
-        let cleanup = release_group(&fixture.connection, &fixture.page, "attempt");
+        let cleanup = release_group(
+            &fixture.connection,
+            &fixture.context.session_identifier,
+            "attempt",
+        );
         let browser = async {
             let release = fixture.peer.command().await;
             assert_eq!(release["method"], "Runtime.releaseObjectGroup");
-            assert_eq!(release["sessionId"], "session");
+            assert_eq!(release["sessionId"], "original-renderer");
             assert_eq!(release["params"]["objectGroup"], "attempt");
             fixture.peer.reply(&release, json!({})).await;
         };

@@ -256,6 +256,7 @@ impl Engine {
                     if let Err(error) = self.console_event(
                         &identifier,
                         &page,
+                        &page.session_identifier,
                         &event.method,
                         parameters["consoleJson"].as_str().ok_or_else(|| {
                             ErrorRecord::new(
@@ -293,6 +294,7 @@ impl Engine {
                         })
                         .map(|context| context.state.recording.lock().unwrap());
                     let network_event = crate::network_observer::NetworkEvent {
+                        session_identifier: &page.session_identifier,
                         method: &event.method,
                         parameters: &parameters,
                         ingress: crate::network_observer::NetworkIngress {

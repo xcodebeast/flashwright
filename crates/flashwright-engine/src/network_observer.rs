@@ -15,6 +15,7 @@ pub(crate) struct NetworkIngress {
 
 #[derive(Clone, Copy)]
 pub(crate) struct NetworkEvent<'event> {
+    pub session_identifier: &'event str,
     pub method: &'event str,
     pub parameters: &'event Value,
     pub ingress: NetworkIngress,
@@ -137,6 +138,7 @@ impl<'observer, 'event> NetworkObservation<'observer, 'event> {
     pub(crate) fn ignored() -> Self {
         Self {
             event: NetworkEvent {
+                session_identifier: "",
                 method: "",
                 parameters: &Value::Null,
                 ingress: NetworkIngress {
@@ -394,6 +396,7 @@ mod tests {
     ) -> Vec<(&'static str, Value)> {
         state.observe_event(
             NetworkEvent {
+                session_identifier: "",
                 method,
                 parameters,
                 ingress: NetworkIngress {

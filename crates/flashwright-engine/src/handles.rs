@@ -81,7 +81,7 @@ impl Engine {
         };
         let result = async {
             operation.check()?;
-            let mut command = prepared.browser.connection.start_command("Runtime.callFunctionOn", prepared.command_parameters(Some(&allocation.group)), Some(&prepared.page.session_identifier))?;
+            let mut command = prepared.browser.connection.start_command("Runtime.callFunctionOn", prepared.command_parameters(Some(&allocation.group)), Some(&prepared.runtime.context.session_identifier))?;
             let response = allocation.wait(&mut command, true).await?;
             let value = allocation.evaluation_value(&response).await?;
             let handle = allocation.retain(value, reservation)?;
@@ -172,7 +172,7 @@ impl Engine {
             let mut alias = browser.connection.start_command("Runtime.callFunctionOn", json!({
                 "objectId": handle.object_identifier, "functionDeclaration": "function() { 'use strict'; return this; }",
                 "objectGroup": allocation.group, "returnByValue": false,
-            }), Some(&page.session_identifier))?;
+            }), Some(&allocation.context.session_identifier))?;
             let response = allocation.wait(&mut alias, false).await?;
             if response.get("exceptionDetails").is_some() { evaluation_result(method, &response)?; }
             let object_identifier = response["result"]["objectId"].as_str().ok_or_else(|| ErrorRecord::new(ErrorCode::Protocol, method, "Chromium omitted the property inspection identity"))?;
@@ -191,7 +191,7 @@ impl Engine {
                 if cleanup != "handleGroupDisposed" { return Err(ErrorRecord::new(ErrorCode::TargetClosed, method, "property inspection owner closed during cleanup")); }
                 return Ok(json!({ "page": page_identifier, "group": null, "handles": [] }));
             }
-            let mut release = browser.connection.start_command("Runtime.releaseObject", json!({ "objectId": object_identifier }), Some(&page.session_identifier))?;
+            let mut release = browser.connection.start_command("Runtime.releaseObject", json!({ "objectId": object_identifier }), Some(&allocation.context.session_identifier))?;
             allocation.wait(&mut release, false).await?;
             Ok(json!({ "page": page_identifier, "group": allocation.group, "handles": handles }))
         }.await;
@@ -249,7 +249,7 @@ impl Engine {
         let mut command = browser.connection.start_command(
             release_method,
             release_parameters.clone(),
-            Some(&page.session_identifier),
+            Some(&allocation.context.session_identifier),
         );
         let result = match &mut command {
             Ok(command) => {
@@ -279,7 +279,7 @@ impl Engine {
                     browser.connection.call(
                         release_method,
                         release_parameters,
-                        Some(&page.session_identifier),
+                        Some(&allocation.context.session_identifier),
                     ),
                 )
                 .await
@@ -600,7 +600,7 @@ impl HandleAllocation<'_> {
         let mut command = self.browser.connection.start_raw_command(
             "Runtime.getProperties",
             json!({ "objectId": object_identifier, "ownProperties": true }),
-            Some(&self.page.session_identifier),
+            Some(&self.context.session_identifier),
         )?;
         let raw = self.wait(&mut command, false).await?;
         let properties: RemoteProperties = serde_json::from_str(raw.get()).map_err(|error| {
@@ -672,7 +672,7 @@ impl HandleAllocation<'_> {
         let mut release = self.browser.connection.start_command(
             "Runtime.releaseObject",
             json!({ "objectId": wrapper }),
-            Some(&self.page.session_identifier),
+            Some(&self.context.session_identifier),
         )?;
         self.wait(&mut release, false).await?;
         value.ok_or_else(|| {
@@ -738,11 +738,16 @@ impl HandleAllocation<'_> {
         }
         let cleanup = async {
             if self.uses_object_group {
-                release_group(&self.browser.connection, self.page, &self.group).await
+                release_group(
+                    &self.browser.connection,
+                    &self.context.session_identifier,
+                    &self.group,
+                )
+                .await
             } else {
                 release_object_references(
                     self.browser,
-                    self.page,
+                    &self.context.session_identifier,
                     &discarded
                         .iter()
                         .filter_map(|handle| handle.object_identifier.clone())
@@ -792,30 +797,44 @@ impl HandleAllocation<'_> {
 
 /// Event references retain the exact remote disposal operation without retaining public handles.
 pub(crate) enum RemoteReference {
-    Object(String),
-    Group(String),
+    Object {
+        session_identifier: Arc<str>,
+        identifier: String,
+    },
+    Group {
+        session_identifier: Arc<str>,
+        identifier: String,
+    },
 }
 
 pub(crate) async fn release_event_references(
     browser: &Chromium,
-    page: &Page,
     references: &[RemoteReference],
 ) -> Result<(), ErrorRecord> {
     let mut commands = Vec::with_capacity(references.len());
     for reference in references {
-        let (method, parameters) = match reference {
-            RemoteReference::Object(identifier) => {
-                ("Runtime.releaseObject", json!({"objectId": identifier}))
-            }
-            RemoteReference::Group(identifier) => (
+        let (method, parameters, session_identifier) = match reference {
+            RemoteReference::Object {
+                session_identifier,
+                identifier,
+            } => (
+                "Runtime.releaseObject",
+                json!({"objectId": identifier}),
+                session_identifier,
+            ),
+            RemoteReference::Group {
+                session_identifier,
+                identifier,
+            } => (
                 "Runtime.releaseObjectGroup",
                 json!({"objectGroup": identifier}),
+                session_identifier,
             ),
         };
         commands.push(browser.connection.start_command(
             method,
             parameters,
-            Some(&page.session_identifier),
+            Some(session_identifier),
         )?);
     }
     for command in &mut commands {
@@ -831,7 +850,7 @@ pub(crate) async fn release_event_references(
 /// Release only the remote IDs owned by an event; never clear Chromium's shared console group.
 pub(crate) async fn release_object_references(
     browser: &Chromium,
-    page: &Page,
+    session_identifier: &str,
     identifiers: &[String],
 ) -> Result<(), ErrorRecord> {
     for chunk in identifiers.chunks(64) {
@@ -841,7 +860,7 @@ pub(crate) async fn release_object_references(
                 .iter()
                 .map(|identifier| json!({ "objectId": identifier }))
                 .collect(),
-            Some(&page.session_identifier),
+            Some(session_identifier),
         )?;
         for command in &mut commands {
             if let Err(error) = command.response().await

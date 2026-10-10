@@ -144,7 +144,7 @@ impl Engine {
                 "functionDeclaration": "function(selector, strict, state, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveElement(selector, strict, state, deadline); }",
                 "arguments": [{ "value": selector }, { "value": request.strict }, { "value": request.state }, { "value": operation.renderer_deadline() }],
                 "objectGroup": allocation.group, "returnByValue": false,
-            }), Some(&page.session_identifier))?;
+            }), Some(&realm.context.session_identifier))?;
             let response = allocation.wait(&mut command, true).await?;
             let element = allocation.evaluation_value(&response).await?;
             if element.object_id.is_none() {
@@ -158,14 +158,14 @@ impl Engine {
                 return Err(invalid(method, "resident resolver did not return a DOM node"));
             }
             let isolated_identifier = element.object_id.as_ref().unwrap();
-            let mut describe = browser.connection.start_raw_command("DOM.describeNode", json!({ "objectId": isolated_identifier }), Some(&page.session_identifier))?;
+            let mut describe = browser.connection.start_raw_command("DOM.describeNode", json!({ "objectId": isolated_identifier }), Some(&realm.context.session_identifier))?;
             let description = allocation.wait(&mut describe, false).await?;
             let description: DescribedNode = serde_json::from_str(description.get()).map_err(|error| invalid(method, &error.to_string()))?;
             if !same_document(page, realm, &allocation.context) { return Ok(Value::Bool(false)); }
             let mut adopt = browser.connection.start_raw_command("DOM.resolveNode", json!({
                 "backendNodeId": description.node.backend_node_id,
                 "executionContextId": allocation.context.identifier, "objectGroup": allocation.group,
-            }), Some(&page.session_identifier))?;
+            }), Some(&realm.context.session_identifier))?;
             let adopted = allocation.wait(&mut adopt, false).await?;
             let adopted: ResolvedNode = serde_json::from_str(adopted.get()).map_err(|error| invalid(method, &error.to_string()))?;
             if adopted.object.subtype.as_deref() == Some("null") {
@@ -174,7 +174,7 @@ impl Engine {
             if adopted.object.subtype.as_deref() != Some("node") || adopted.object.object_id.is_none() {
                 return Err(invalid(method, "Chromium omitted the adopted DOM node"));
             }
-            let mut release = browser.connection.start_command("Runtime.releaseObject", json!({ "objectId": isolated_identifier }), Some(&page.session_identifier))?;
+            let mut release = browser.connection.start_command("Runtime.releaseObject", json!({ "objectId": isolated_identifier }), Some(&realm.context.session_identifier))?;
             allocation.wait(&mut release, false).await?;
             if !same_document(page, realm, &allocation.context) { return Ok(Value::Bool(false)); }
             let handle = allocation.retain(adopted.object, reservation.take().ok_or_else(|| invalid(method, "element resolution has no handle reservation"))?)?;

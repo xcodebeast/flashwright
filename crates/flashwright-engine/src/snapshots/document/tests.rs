@@ -14,7 +14,7 @@ async fn lifecycle_unavailability_preserves_reasons_without_browser_commands() {
         let mut state = fixture.page.state.state.lock().unwrap();
         assert!(
             state
-                .observe("Page.javascriptDialogOpening", &json!({}))
+                .observe_in_session("session", "Page.javascriptDialogOpening", &json!({}))
                 .is_empty()
         );
     }
@@ -28,10 +28,11 @@ async fn lifecycle_unavailability_preserves_reasons_without_browser_commands() {
         let mut state = fixture.page.state.state.lock().unwrap();
         assert!(
             state
-                .observe("Page.javascriptDialogClosed", &json!({}))
+                .observe_in_session("session", "Page.javascriptDialogClosed", &json!({}))
                 .is_empty()
         );
-        state.observe(
+        state.observe_in_session(
+            "session",
             "Page.frameRequestedNavigation",
             &json!({"frameId":"frame", "disposition":"currentTab"}),
         );
@@ -133,11 +134,13 @@ impl Fixture {
         let connection = Connection::new(reader, writer);
         let (reader, writer) = split(peer);
         let main = ExecutionContext {
+            session_identifier: "session".into(),
             identifier: 1,
             unique_identifier: "main-original".into(),
             frame_identifier: "frame".into(),
         };
         let isolated = ExecutionContext {
+            session_identifier: "session".into(),
             identifier: 2,
             unique_identifier: "isolated-original".into(),
             frame_identifier: "frame".into(),
@@ -160,8 +163,10 @@ impl Fixture {
                 },
             );
             state.main_worlds.insert("frame".into(), main.clone());
-            state.execution_contexts.insert(1, main.clone());
-            state.execution_contexts.insert(2, isolated.clone());
+            state.execution_contexts.insert(main.key(), main.clone());
+            state
+                .execution_contexts
+                .insert(isolated.key(), isolated.clone());
         }
         let realm = LocatorRealm {
             loader: "loader".into(),
@@ -453,7 +458,7 @@ async fn reused_numeric_adoption_context_does_not_release_unknown_alias_ownershi
     {
         let mut state = fixture.page.state.state.lock().unwrap();
         state.execution_contexts.insert(
-            2,
+            fixture.realm.context.key(),
             ExecutionContext {
                 unique_identifier: "isolated-successor".into(),
                 ..fixture.realm.context.clone()
@@ -1002,13 +1007,11 @@ async fn a_dialog_retired_worker_releases_its_claim_before_payload_ingestion() {
         .await;
     fixture.release("_decision_").await;
     committed.await.unwrap().unwrap();
-    fixture
-        .page
-        .state
-        .state
-        .lock()
-        .unwrap()
-        .observe("Page.javascriptDialogOpening", &json!({}));
+    fixture.page.state.state.lock().unwrap().observe_in_session(
+        "session",
+        "Page.javascriptDialogOpening",
+        &json!({}),
+    );
     fixture.page.state.changed.send_replace(1);
     let release = fixture.command("Runtime.releaseObjectGroup").await;
     assert!(
@@ -1025,13 +1028,11 @@ async fn a_dialog_retired_worker_releases_its_claim_before_payload_ingestion() {
             .budget
             .owns_document("context", "session", "main-original")
     );
-    fixture
-        .page
-        .state
-        .state
-        .lock()
-        .unwrap()
-        .observe("Page.javascriptDialogClosed", &json!({}));
+    fixture.page.state.state.lock().unwrap().observe_in_session(
+        "session",
+        "Page.javascriptDialogClosed",
+        &json!({}),
+    );
     fixture.document = Arc::new(
         SnapshotDocument::start(
             "successor",
@@ -1126,6 +1127,7 @@ async fn timed_out_world_selection_retains_command_and_grants_until_late_settlem
 impl Fixture {
     fn capture_child_frame(&self) -> JoinHandle<Result<PreparedSnapshot, SnapshotFailure>> {
         let child_context = ExecutionContext {
+            session_identifier: "session".into(),
             identifier: 3,
             unique_identifier: "child-original".into(),
             frame_identifier: "child".into(),
@@ -1144,7 +1146,9 @@ impl Fixture {
             state
                 .main_worlds
                 .insert("child".into(), child_context.clone());
-            state.execution_contexts.insert(3, child_context.clone());
+            state
+                .execution_contexts
+                .insert(child_context.key(), child_context.clone());
         }
         let document = self.document.clone();
         let cancellation = self.cancellation.subscribe();
@@ -1216,6 +1220,7 @@ async fn child_context_replacement_during_frame_owner_lookup_prevents_adoption()
     {
         let mut state = fixture.page.state.state.lock().unwrap();
         let replacement = ExecutionContext {
+            session_identifier: "session".into(),
             identifier: 3,
             unique_identifier: "child-replacement".into(),
             frame_identifier: "child".into(),
@@ -1223,7 +1228,9 @@ async fn child_context_replacement_during_frame_owner_lookup_prevents_adoption()
         state
             .main_worlds
             .insert("child".into(), replacement.clone());
-        state.execution_contexts.insert(3, replacement);
+        state
+            .execution_contexts
+            .insert(replacement.key(), replacement);
     }
     fixture.reply(&owner, json!({"backendNodeId":42})).await;
     assert!(matches!(

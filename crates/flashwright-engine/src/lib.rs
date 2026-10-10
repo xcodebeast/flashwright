@@ -768,7 +768,7 @@ impl Engine {
             if !registry.contexts.contains_key(&context_identifier) || !registry.pages.contains_key(&page_identifier) { return Err(closed(method)); }
             let mut document = state.state.lock().unwrap();
             // Page.enable normally supplies the initial frame; getFrameTree covers an idle about:blank.
-            if document.main_frame.is_none() { document.observe("Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
+            if document.main_frame.is_none() { document.observe_in_session(&session_identifier, "Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
             Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame, "navigationSequence":document.sequence }))
         }.await;
         if let Err(mut error) = result {

@@ -507,6 +507,7 @@ mod tests {
     fn add_frame(page: &Page, identifier: &str, number: u64, parent: Option<&str>) {
         let mut state = page.state.state.lock().unwrap();
         let context = ExecutionContext {
+            session_identifier: page.session_identifier.as_str().into(),
             identifier: number,
             unique_identifier: format!("original-{identifier}"),
             frame_identifier: identifier.into(),
@@ -521,7 +522,7 @@ mod tests {
             },
         );
         state.main_worlds.insert(identifier.into(), context.clone());
-        state.execution_contexts.insert(number, context);
+        state.execution_contexts.insert(context.key(), context);
         if parent.is_none() {
             state.main_frame = Some(identifier.into());
         }

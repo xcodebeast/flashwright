@@ -431,6 +431,7 @@ mod tests {
         sequence: u64,
     ) -> NetworkEvent<'value> {
         NetworkEvent {
+            session_identifier: "",
             method,
             parameters,
             ingress: NetworkIngress {

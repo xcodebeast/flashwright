@@ -969,7 +969,10 @@ impl DocumentWorker {
                 .lock()
                 .unwrap()
                 .execution_contexts
-                .get(&identifier)
+                .get(&(
+                    self.realm.main_context.session_identifier.clone(),
+                    identifier,
+                ))
                 .filter(|context| {
                     context.frame_identifier == self.realm.main_context.frame_identifier
                         && context.unique_identifier != self.realm.main_context.unique_identifier
