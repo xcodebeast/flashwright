@@ -111,7 +111,7 @@ impl RendererSessions {
         if !self.sessions.is_empty() {
             return Err(invalid("renderer root is already registered"));
         }
-        self.insert(target, session, None)
+        self.insert_active(target, session, None)
     }
 
     /// An old setup lease cannot attach children after its registry ownership has retired.
@@ -129,10 +129,46 @@ impl RendererSessions {
         {
             return Err(invalid("renderer parent is no longer owned"));
         }
-        self.insert(target, session, Some(parent.clone()))
+        self.insert_active(target, session, Some(parent.clone()))
     }
 
-    fn insert(
+    /// Late children keep cleanup credit and their original parent, without becoming frame owners.
+    pub(crate) fn register_cleanup_child(
+        &mut self,
+        parent: &Arc<RendererSession>,
+        target: &str,
+        session: &str,
+    ) -> Result<Arc<RendererSession>, ErrorRecord> {
+        if !self
+            .original(&parent.session_identifier)
+            .is_some_and(|original| Arc::ptr_eq(&original, parent))
+        {
+            return Err(invalid("cleanup parent is not the original renderer"));
+        }
+        let owner = self.allocate(target, session, Some(parent.clone()))?;
+        owner.retired.send_replace(true);
+        Ok(owner)
+    }
+
+    fn insert_active(
+        &mut self,
+        target: &str,
+        session: &str,
+        parent: Option<Arc<RendererSession>>,
+    ) -> Result<Arc<RendererSession>, ErrorRecord> {
+        if self
+            .sessions
+            .values()
+            .any(|owner| owner.target_identifier == target)
+        {
+            return Err(invalid("renderer target still has an active owner"));
+        }
+        let owner = self.allocate(target, session, parent)?;
+        self.sessions.insert(session.into(), owner.clone());
+        Ok(owner)
+    }
+
+    fn allocate(
         &mut self,
         target: &str,
         session: &str,
@@ -148,13 +184,6 @@ impl RendererSessions {
             .retain(|_, owner| owner.strong_count() != 0);
         if self.original_sessions.contains_key(session) {
             return Err(invalid("renderer session is already registered"));
-        }
-        if self
-            .sessions
-            .values()
-            .any(|owner| owner.target_identifier == target)
-        {
-            return Err(invalid("renderer target still has an active owner"));
         }
         let reservation = self.capacity.clone().try_acquire_owned().map_err(|_| {
             ErrorRecord::new(
@@ -172,7 +201,6 @@ impl RendererSessions {
             destroyed: AtomicBool::new(false),
             _reservation: reservation,
         });
-        self.sessions.insert(session.into(), owner.clone());
         self.original_sessions
             .insert(session.into(), Arc::downgrade(&owner));
         Ok(owner)
@@ -201,6 +229,49 @@ impl RendererSessions {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn late_child_cleanup_cannot_replace_a_live_successor_or_borrow_another_parent() {
+        let mut sessions = RendererSessions::default();
+        let root = sessions.register_root("root", "root-session").unwrap();
+        let retired = sessions
+            .register_child(&root, "parent", "old-parent")
+            .unwrap();
+        sessions.retire(&retired);
+        let replacement = sessions
+            .register_child(&root, "parent", "new-parent")
+            .unwrap();
+        let current_child = sessions
+            .register_child(&replacement, "child", "current-child")
+            .unwrap();
+        let late = sessions
+            .register_cleanup_child(&retired, "child", "late-child")
+            .unwrap();
+        assert!(late.is_retired());
+        late.mark_ready();
+        assert!(!late.is_ready());
+        assert!(sessions.get("late-child").is_none());
+        assert!(Arc::ptr_eq(
+            &sessions.original("late-child").unwrap(),
+            &late
+        ));
+        assert!(Arc::ptr_eq(
+            &sessions.for_target("child").unwrap(),
+            &current_child
+        ));
+        assert_eq!(late.parent_session_identifier(), Some("old-parent"));
+        sessions.retire(&late);
+        assert!(!current_child.is_retired());
+        let mut unrelated = RendererSessions::default();
+        let other_parent = unrelated.register_root("parent", "old-parent").unwrap();
+        assert!(
+            sessions
+                .register_cleanup_child(&other_parent, "other", "wrong-parent-child")
+                .is_err()
+        );
+        drop(late);
+        assert!(sessions.original("late-child").is_none());
+    }
 
     #[test]
     fn retiring_a_parent_retires_only_its_original_subtree() {

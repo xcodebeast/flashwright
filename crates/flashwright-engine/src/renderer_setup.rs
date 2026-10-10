@@ -33,8 +33,9 @@ async fn renderer_command(
 }
 
 pub(crate) fn auto_attach_parameters() -> Value {
-    json!({"autoAttach":true,"waitForDebuggerOnStart":true,"flatten":true,
-        "filter":[{"type":"iframe","exclude":false},{"exclude":true}]})
+    // Chromium pauses reported workers/worklets before applying the attachment filter.
+    // Receive every related target so unsupported types can be resumed and detached.
+    json!({"autoAttach":true,"waitForDebuggerOnStart":true,"flatten":true})
 }
 
 impl Engine {
@@ -46,9 +47,7 @@ impl Engine {
         parent_session: &str,
         parameters: &Value,
     ) -> Result<(), ErrorRecord> {
-        if parameters["targetInfo"]["type"] != "iframe" {
-            return Ok(());
-        }
+        let is_frame = parameters["targetInfo"]["type"] == "iframe";
         let target = string_field(&parameters["targetInfo"], "targetId")?;
         let session = string_field(parameters, "sessionId")?;
         // Removal and context closure transfer child cleanup to the original page/context
@@ -77,27 +76,43 @@ impl Engine {
         let (owner, accepted) = {
             let mut state = page.state.state.lock().unwrap();
             let mut sessions = page.state.renderer_sessions.lock().unwrap();
-            let Some(parent) = sessions.get(parent_session) else {
+            let Some(parent) = sessions.original(parent_session) else {
                 return Err(invalid(
                     METHOD,
                     "child attachment has no original parent owner",
                 ));
             };
-            if let Some(previous) = sessions.for_target(&target) {
-                if previous.session_identifier == session {
+            if let Some(previous) = sessions.original(&session) {
+                if previous.target_identifier == target
+                    && previous.parent_session_identifier() == Some(parent_session)
+                {
                     return Ok(());
                 }
-                if previous.parent_session_identifier().is_none() {
-                    return Err(invalid(
-                        METHOD,
-                        "child attachment cannot replace the root renderer",
-                    ));
-                }
-                sessions.retire(&previous);
+                return Err(invalid(
+                    METHOD,
+                    "child attachment cannot rebind an original session",
+                ));
             }
-            let owner = sessions.register_child(&parent, &target, &session)?;
-            let events =
-                state.observe_in_session(parent_session, "Target.attachedToTarget", parameters);
+            let (owner, events) = if !is_frame || parent.is_retired() || state.failure.is_some() {
+                (
+                    sessions.register_cleanup_child(&parent, &target, &session)?,
+                    Vec::new(),
+                )
+            } else {
+                if let Some(previous) = sessions.for_target(&target) {
+                    if previous.parent_session_identifier().is_none() {
+                        return Err(invalid(
+                            METHOD,
+                            "child attachment cannot replace the root renderer",
+                        ));
+                    }
+                    sessions.retire(&previous);
+                }
+                let owner = sessions.register_child(&parent, &target, &session)?;
+                let events =
+                    state.observe_in_session(parent_session, "Target.attachedToTarget", parameters);
+                (owner, events)
+            };
             page.state
                 .evaluation_runtimes
                 .lock()
@@ -106,7 +121,8 @@ impl Engine {
             page.state.handles.lock().unwrap().retain(|_, handle| {
                 handle.primitive.is_some() || state.context_is_alive(&handle.context)
             });
-            let accepted = state.failure.is_none()
+            let accepted = !owner.is_retired()
+                && state.failure.is_none()
                 && state
                     .frames
                     .get(&target)
@@ -152,7 +168,7 @@ impl Engine {
                         if state.failure.is_none() {
                             state.failure = Some(error);
                         }
-                        page.state.renderer_sessions.lock().unwrap().retire_all();
+                        page.state.renderer_sessions.lock().unwrap().retire(&owner);
                         state.sequence += 1;
                         page.state.changed.send_replace(state.sequence);
                     }
