@@ -337,7 +337,15 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     const received = expression === 'to.match.aria' && result.received
       ? fullAriaSnapshot ? result.received : { raw: bound(result.received.raw), regex: bound(result.received.regex) }
       : bound(result.received);
-    return { status: 'observation', matches: result.matches, missingReceived: !!result.missingReceived, received: codec.encode(received), diagnosticTruncated: truncated };
+    // Retain the pinned target/body diagnostic with this failing observation, not a later DOM.
+    let ariaSnapshot;
+    if (options.includeAriaSnapshot && result.matches === options.isNot) {
+      const snapshot = injected._ariaSnapshotForExpect(element, options);
+      if (snapshot !== undefined) ariaSnapshot = codec.encode(snapshot.length <= 16384
+        ? snapshot : snapshot.slice(0, 16384) + '\n# Diagnostic snapshot truncated at 16384 UTF-16 units');
+    }
+    return { status: 'observation', matches: result.matches, missingReceived: !!result.missingReceived,
+      received: codec.encode(received), ...(ariaSnapshot === undefined ? {} : { ariaSnapshot }), diagnosticTruncated: truncated };
   }
 
   function assertion(units, deadline, expression, isNot) {

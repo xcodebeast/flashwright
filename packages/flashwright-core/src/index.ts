@@ -598,6 +598,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
       observed: observation.status === 'observation',
       matches: timedOut ? assertion.isNot : observation.matches === true,
       received: observation.received === undefined ? undefined : codec.decode(observation.received),
+      ...(observation.ariaSnapshot === undefined ? {} : { ariaSnapshot: codec.decode(observation.ariaSnapshot) as string }),
       missingReceived: observation.missingReceived === true,
       timedOut, diagnosticTruncated: observation.diagnosticTruncated === true,
     };
