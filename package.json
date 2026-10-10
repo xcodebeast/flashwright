@@ -28,7 +28,7 @@
     "inventory": "bun tools/generate-inventory.mjs",
     "inventory:check": "bun tools/generate-inventory.mjs --check",
     "test:inventory": "bun test ./tools/test-parity-catalog.mjs",
-    "test:competitors": "bun test ./tools/test-competitor-contract.mjs",
+    "test:competitors": "bun test ./tools/test-competitor-contract.mjs ./tools/test-cypress-contract.mjs",
     "baseline": "python3 tools/watchdog.py --timeout 600 --report-directory benchmarks/results/resources -- bun benchmarks/run.mjs",
     "test:runner-boundary": "bun tools/run-runner-boundary.mjs",
     "test:harness": "bun test ./tools/test-harness.mjs ./tools/test-protocol-profile.mjs ./tools/test-attachments.mjs ./tools/test-input-attachments.mjs",

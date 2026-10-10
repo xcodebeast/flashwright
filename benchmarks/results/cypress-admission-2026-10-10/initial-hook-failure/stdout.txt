@@ -1,0 +1,98 @@
+Note: You have set the environment variable:
+
+CYPRESS_RUN_BINARY=<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/MacOS/Cypress
+
+This overrides the default Cypress binary path used.
+
+
+================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        16.1.1                                                                         │
+  │ Browser:        Custom Chrome for Testing 148 (headless)                                       │
+  │ Node Version:   v26.3.0 (<workspace>/.tools/bun-v1.4.2-darwin-arm64/bin/bun)        │
+  │ Specs:          1 found (workloads.cy.js)                                                      │
+  │ Searched:       workloads.cy.js                                                                │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  workloads.cy.js                                                                 (1 of 1)
+
+
+  Cypress runner outcome admission
+    1) "before all" hook for "noop/warmup/0"
+
+
+  0 passing (151ms)
+  1 failing
+
+  1) Cypress runner outcome admission
+       "before all" hook for "noop/warmup/0":
+     CypressError: `cy.task('admissionBrowserProcesses')` failed with the following error:
+
+> undefined is not an object (evaluating 'process.env.FLASHWRIGHT_BROWSER_PATH')
+
+https://on.cypress.io/api/task
+
+Because this error occurred during a `before all` hook we are skipping the remaining tests in the current suite: `Cypress runner outcome admi...`
+      at <unknown> (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:136630:70)
+      at tryCatcher (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1780:23)
+      at Promise._settlePromiseFromHandler (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1492:31)
+      at Promise._settlePromise (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1549:18)
+      at Promise._settlePromise0 (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1594:10)
+      at Promise._settlePromises (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1670:18)
+      at _drainQueueStep (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2380:12)
+      at _drainQueue (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2373:9)
+      at Async._drainQueues (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2389:5)
+      at Async.drainQueues (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2259:14)
+  From Your Spec Code:
+      at Context.eval (webpack:///./workloads.cy.js:7:18)
+  
+  From Node.js Internals:
+    TypeError: undefined is not an object (evaluating 'process.env.FLASHWRIGHT_BROWSER_PATH')
+    Error: undefined is not an object (evaluating 'process.env.FLASHWRIGHT_BROWSER_PATH')
+        at <anonymous> (<workspace>/.cache/cypress-admission-001/initial-admission/project/cypress.config.cjs:20:109)
+    at filter (native)
+        at recordOwnedBrowserProcesses (<workspace>/.cache/cypress-admission-001/initial-admission/project/cypress.config.cjs:20:20)
+        at admissionBrowserProcesses (<workspace>/.cache/cypress-admission-001/initial-admission/project/cypress.config.cjs:39:29)
+        at tryCatcher (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/node_modules/bluebird/js/release/util.js:16:23)
+        at <anonymous> (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/node_modules/bluebird/js/release/method.js:39:28)
+        at wrapChildPromise (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/packages/server/lib/plugins/util.js:133:31)
+        at taskExecute (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/packages/server/lib/plugins/child/run_plugins.js:179:20)
+        at <anonymous> (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/packages/server/lib/plugins/child/run_plugins.js:42:18)
+        at emit (node:events:106:22)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        105                                                                              │
+  │ Passing:      0                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      104                                                                              │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     0 seconds                                                                        │
+  │ Spec Ran:     workloads.cy.js                                                                  │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ✖  workloads.cy.js                          154ms      105        -        1        -      104 │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ✖  1 of 1 failed (100%)                     154ms      105        -        1        -      104  
+
+flashwright-cypress-report 254e1442a6b76d5583817afd2f367514fa006bf9e41fae82e13fd2eaaee44c75

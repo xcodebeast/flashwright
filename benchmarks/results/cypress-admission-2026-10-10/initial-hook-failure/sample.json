@@ -1,0 +1,1683 @@
+{
+  "schemaVersion": 1,
+  "engine": "cypress",
+  "comparisonClass": "runner-outcome",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "node": null,
+  "nodeCompatibility": "v26.3.0",
+  "package": {
+    "name": "cypress",
+    "version": "16.1.1",
+    "manifestSha256": "d616b5a50b946991824f6bc8679398d0172d2b54f98a0d4728a37a04c5e873cd",
+    "lockSha256": "849c11acee4081d15a1150921bc3d7241efb59d9ccece9a1dd3c6995b22c8f7f"
+  },
+  "bundle": {
+    "version": "16.1.1",
+    "electronVersion": "41.7.0",
+    "electronNodeVersion": "24.15.0",
+    "executableSha256": "3e66d4cbb3bb192ab8e8b9f7328b1241d42f63ab0d91789774b84f358614cd40"
+  },
+  "browser": {
+    "executablePath": "<home>/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "full-chromium"
+  },
+  "configuration": {
+    "schemaVersion": 1,
+    "referenceVersion": "1.60.0",
+    "browserVersion": "148.0.7778.96",
+    "independentLaunches": 8,
+    "warmupIterations": 3,
+    "measuredIterations": 12,
+    "workloads": [
+      "noop",
+      "interaction",
+      "assertion",
+      "navigation",
+      "setup",
+      "backend",
+      "failure"
+    ],
+    "workers": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "headless": true,
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    },
+    "delayedAssertionMilliseconds": 8,
+    "backendDelayMilliseconds": 20,
+    "expectedFailureTimeoutMilliseconds": 25,
+    "statistics": {
+      "unit": "independent launch median",
+      "bootstrapReplicates": 10000,
+      "confidenceLevel": 0.95,
+      "seed": 41723,
+      "minimumSamplesForP95": 200,
+      "minimumSamplesForP99": 1000
+    },
+    "acceptance": {
+      "minimumMaterialImprovementFraction": 0.1,
+      "maximumMedianRegressionFraction": 0.05,
+      "maximumObservedTailRegressionFraction": 0.15,
+      "maximumConcurrentResidentMemoryRegressionFraction": 0.1,
+      "allowedUnexpectedFailures": 0,
+      "rationale": "Require at least a 10% complete-flow improvement with a launch-clustered confidence interval excluding parity. Reject median regressions above 5%, observed tail regressions above 15%, and memory growth above 10% unless explicitly reviewed. Baseline-only data establishes variability; it cannot pass a speed comparison. Tail claims need the stated sample counts."
+    },
+    "exclusionPolicy": "Retain every attempted launch and sample. Unexpected errors invalidate a comparison, not individual slow observations. Only an explicitly documented external interruption can invalidate an entire run. Never rerun selectively.",
+    "executionOrder": "Rotate workloads by launch index; paired engine comparisons must alternate which engine starts each launch pair.",
+    "resourceCoverage": "External watchdog samples the observed descendant process tree, including separately grouped browser processes. Short-lived processes between samples may be missed; report this limitation."
+  },
+  "failures": [
+    null
+  ],
+  "result": {
+    "browserName": "chrome-for-testing",
+    "browserPath": "<home>/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "browserVersion": "148.0.7778.96",
+    "cypressVersion": "16.1.1",
+    "totalDuration": 154,
+    "totalTests": 105,
+    "totalPassed": 0,
+    "totalFailed": 1,
+    "totalPending": 0,
+    "totalSkipped": 104,
+    "configuration": {
+      "video": false,
+      "screenshotOnRunFailure": false,
+      "retries": 0,
+      "testIsolation": true,
+      "viewportWidth": 1280,
+      "viewportHeight": 720
+    },
+    "runs": [
+      {
+        "error": null,
+        "stats": {
+          "duration": 154,
+          "endedAt": "2026-10-10T02:53:29.941Z",
+          "failures": 1,
+          "passes": 0,
+          "pending": 0,
+          "skipped": 104,
+          "startedAt": "2026-10-10T02:53:29.787Z",
+          "suites": 1,
+          "tests": 105
+        },
+        "tests": [
+          {
+            "attempts": [
+              {
+                "state": "failed"
+              }
+            ],
+            "displayError": "CypressError: `cy.task('admissionBrowserProcesses')` failed with the following error:\n\n> undefined is not an object (evaluating 'process.env.FLASHWRIGHT_BROWSER_PATH')\n\nhttps://on.cypress.io/api/task\n\nBecause this error occurred during a `before all` hook we are skipping the remaining tests in the current suite: `Cypress runner outcome admi...`\n    at <unknown> (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:136630:70)\n    at tryCatcher (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1780:23)\n    at Promise._settlePromiseFromHandler (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1492:31)\n    at Promise._settlePromise (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1549:18)\n    at Promise._settlePromise0 (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1594:10)\n    at Promise._settlePromises (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:1670:18)\n    at _drainQueueStep (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2380:12)\n    at _drainQueue (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2373:9)\n    at Async._drainQueues (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2389:5)\n    at Async.drainQueues (http://127.0.0.1:52199/__cypress/runner/cypress_runner.js:2259:14)\nFrom Your Spec Code:\n    at Context.eval (webpack:///./workloads.cy.js:7:18)\n\nFrom Node.js Internals:\n  TypeError: undefined is not an object (evaluating 'process.env.FLASHWRIGHT_BROWSER_PATH')\n  Error: undefined is not an object (evaluating 'process.env.FLASHWRIGHT_BROWSER_PATH')\n      at <anonymous> (<workspace>/.cache/cypress-admission-001/initial-admission/project/cypress.config.cjs:20:109)\n  at filter (native)\n      at recordOwnedBrowserProcesses (<workspace>/.cache/cypress-admission-001/initial-admission/project/cypress.config.cjs:20:20)\n      at admissionBrowserProcesses (<workspace>/.cache/cypress-admission-001/initial-admission/project/cypress.config.cjs:39:29)\n      at tryCatcher (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/node_modules/bluebird/js/release/util.js:16:23)\n      at <anonymous> (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/node_modules/bluebird/js/release/method.js:39:28)\n      at wrapChildPromise (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/packages/server/lib/plugins/util.js:133:31)\n      at taskExecute (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/packages/server/lib/plugins/child/run_plugins.js:179:20)\n      at <anonymous> (<workspace>/.cache/cypress-admission-001/binary-cache/16.1.1/Cypress.app/Contents/Resources/app/packages/server/lib/plugins/child/run_plugins.js:42:18)\n      at emit (node:events:106:22)",
+            "duration": 126,
+            "state": "failed",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "noop/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "interaction/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "assertion/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "navigation/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "setup/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "backend/sample/11"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/warmup/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/warmup/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/warmup/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/0"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/1"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/2"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/3"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/4"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/5"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/6"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/7"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/8"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/9"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/10"
+            ]
+          },
+          {
+            "attempts": [
+              {
+                "state": "skipped"
+              }
+            ],
+            "displayError": null,
+            "duration": 0,
+            "state": "skipped",
+            "title": [
+              "Cypress runner outcome admission",
+              "failure/sample/11"
+            ]
+          }
+        ],
+        "screenshots": [],
+        "video": null
+      }
+    ]
+  },
+  "scope": "Ordinary Cypress runner outcomes only. Default synthetic inputs, per-test storage reset and proxy/runner launch policy differ from native-input/fresh-context library flows. No performance acceptance.",
+  "launch": {
+    "browser": {
+      "name": "chrome-for-testing",
+      "family": "chromium",
+      "channel": "stable",
+      "displayName": "Custom Chrome for Testing",
+      "versionRegex": {},
+      "binary": "chrome",
+      "info": "Loaded from <home>/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+      "custom": true,
+      "path": "<home>/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+      "version": "148.0.7778.96",
+      "majorVersion": "148",
+      "isHeadless": true,
+      "isHeaded": false
+    },
+    "proposedLaunchOptions": {
+      "preferences": {
+        "default": {},
+        "defaultSecure": {},
+        "localState": {}
+      },
+      "args": [
+        "--test-type",
+        "--ignore-certificate-errors",
+        "--start-maximized",
+        "--silent-debugger-extension-api",
+        "--no-default-browser-check",
+        "--no-first-run",
+        "--noerrdialogs",
+        "--enable-fixed-layout",
+        "--disable-domain-reliability",
+        "--disable-field-trial-config",
+        "--disable-popup-blocking",
+        "--disable-password-generation",
+        "--disable-single-click-autofill",
+        "--disable-prompt-on-repos",
+        "--disable-background-timer-throttling",
+        "--disable-renderer-backgrounding",
+        "--disable-renderer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-restore-session-state",
+        "--disable-new-profile-management",
+        "--disable-new-avatar-menu",
+        "--allow-insecure-localhost",
+        "--reduce-security-for-testing",
+        "--enable-automation",
+        "--disable-print-preview",
+        "--disable-component-extensions-with-background-pages",
+        "--disable-infobars",
+        "--disable-device-discovery-notifications",
+        "--autoplay-policy=no-user-gesture-required",
+        "--disable-site-isolation-trials",
+        "--metrics-recording-only",
+        "--disable-prompt-on-repost",
+        "--disable-hang-monitor",
+        "--disable-sync",
+        "--disable-web-resources",
+        "--safebrowsing-disable-download-protection",
+        "--disable-client-side-phishing-detection",
+        "--disable-component-update",
+        "--simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT'",
+        "--disable-default-apps",
+        "--disable-features=GlobalMediaControls,HttpsUpgrades,InterestFeedContentSuggestions,LensOverlay,LocalNetworkAccessChecks,LocalNetworkAccessChecksWebRTC,MediaRouter,OptimizationHints,PrivacySandboxSettings4,Translate,WebFontsCacheAwareTimeoutAdaption,ServiceWorkerAutoPreload",
+        "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream",
+        "--disable-ipc-flooding-protection",
+        "--disable-backgrounding-occluded-window",
+        "--disable-breakpad",
+        "--password-store=basic",
+        "--use-mock-keychain",
+        "--disable-dev-shm-usage",
+        "--enable-precise-memory-info",
+        "--headless=new",
+        "--window-size=1280,720",
+        "--force-device-scale-factor=1",
+        "--remote-debugging-port=52205",
+        "--remote-debugging-address=127.0.0.1"
+      ],
+      "extensions": [],
+      "env": {}
+    }
+  },
+  "backend": {
+    "documents": 0,
+    "backendRequests": 0,
+    "otherRequests": 0
+  },
+  "completeMilliseconds": 9406.838542000001
+}

@@ -1,0 +1,757 @@
+{
+  "schemaVersion": 1,
+  "engine": "webdriverio",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "node": null,
+  "nodeCompatibility": "v26.3.0",
+  "package": {
+    "name": "webdriverio",
+    "version": "10.0.2",
+    "manifestSha256": "c6d23912b605941e013bc2e811fc7c29d832cd1900b92b8e21143bfd110613c4",
+    "lockSha256": "4b4d61b2fefe222a7f3a576fffb1b640040a4ba5bf23d24fd44727e235f720db"
+  },
+  "browser": {
+    "executablePath": "<home>/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+    "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "chromium-headless-shell"
+  },
+  "driver": {
+    "version": "148.0.7778.96",
+    "versionOutput": "ChromeDriver 148.0.7778.96 (8625e066febc721e015ea99842da12901eb7ed73-refs/branch-heads/7778@{#1904})",
+    "sha256": "fec2a090c36f62f4597abd44c50bf5f1c22247f6a20ee392b67fc09e1eb41b1c"
+  },
+  "configuration": {
+    "schemaVersion": 1,
+    "referenceVersion": "1.60.0",
+    "browserVersion": "148.0.7778.96",
+    "independentLaunches": 8,
+    "warmupIterations": 3,
+    "measuredIterations": 12,
+    "workloads": [
+      "noop",
+      "interaction",
+      "assertion",
+      "navigation",
+      "setup",
+      "backend",
+      "failure"
+    ],
+    "workers": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "headless": true,
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    },
+    "delayedAssertionMilliseconds": 8,
+    "backendDelayMilliseconds": 20,
+    "expectedFailureTimeoutMilliseconds": 25,
+    "statistics": {
+      "unit": "independent launch median",
+      "bootstrapReplicates": 10000,
+      "confidenceLevel": 0.95,
+      "seed": 41723,
+      "minimumSamplesForP95": 200,
+      "minimumSamplesForP99": 1000
+    },
+    "acceptance": {
+      "minimumMaterialImprovementFraction": 0.1,
+      "maximumMedianRegressionFraction": 0.05,
+      "maximumObservedTailRegressionFraction": 0.15,
+      "maximumConcurrentResidentMemoryRegressionFraction": 0.1,
+      "allowedUnexpectedFailures": 0,
+      "rationale": "Require at least a 10% complete-flow improvement with a launch-clustered confidence interval excluding parity. Reject median regressions above 5%, observed tail regressions above 15%, and memory growth above 10% unless explicitly reviewed. Baseline-only data establishes variability; it cannot pass a speed comparison. Tail claims need the stated sample counts."
+    },
+    "exclusionPolicy": "Retain every attempted launch and sample. Unexpected errors invalidate a comparison, not individual slow observations. Only an explicitly documented external interruption can invalidate an entire run. Never rerun selectively.",
+    "executionOrder": "Rotate workloads by launch index; paired engine comparisons must alternate which engine starts each launch pair.",
+    "resourceCoverage": "External watchdog samples the observed descendant process tree, including separately grouped browser processes. Short-lived processes between samples may be missed; report this limitation."
+  },
+  "driverPolicy": {
+    "driverVersion": "148.0.7778.96",
+    "protocol": "webdriver-bidi",
+    "removedReferenceSwitches": [
+      "--no-startup-window"
+    ],
+    "additionalDriverArguments": [
+      "--enable-automation",
+      "--enable-logging",
+      "--log-level=0",
+      "--test-type=webdriver",
+      "data:,"
+    ],
+    "additionalDisabledFeatures": [
+      "IgnoreDuplicateNavs",
+      "Prewarm"
+    ],
+    "reason": "ChromeDriver owns launch and the BiDi mapper bootstrap page. Retain its native defaults and report the difference from the reference pipe-only/no-startup-window policy. Launch-policy equivalence is not established."
+  },
+  "launchArguments": [
+    "--allow-pre-commit-input",
+    "--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4",
+    "--disable-back-forward-cache",
+    "--disable-background-networking",
+    "--disable-background-timer-throttling",
+    "--disable-backgrounding-occluded-windows",
+    "--disable-breakpad",
+    "--disable-client-side-phishing-detection",
+    "--disable-component-extensions-with-background-pages",
+    "--disable-component-update",
+    "--disable-default-apps",
+    "--disable-dev-shm-usage",
+    "--disable-edgeupdater",
+    "--disable-extensions",
+    "--disable-features=IgnoreDuplicateNavs,Prewarm,AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion",
+    "--disable-field-trial-config",
+    "--disable-hang-monitor",
+    "--disable-infobars",
+    "--disable-ipc-flooding-protection",
+    "--disable-popup-blocking",
+    "--disable-prompt-on-repost",
+    "--disable-renderer-backgrounding",
+    "--disable-search-engine-choice-screen",
+    "--disable-sync",
+    "--edge-skip-compat-layer-relaunch",
+    "--enable-automation",
+    "--enable-features=CDPScreenshotNewSurface",
+    "--enable-logging",
+    "--enable-unsafe-swiftshader",
+    "--export-tagged-pdf",
+    "--force-color-profile=srgb",
+    "--headless",
+    "--hide-scrollbars",
+    "--log-level=0",
+    "--metrics-recording-only",
+    "--mute-audio",
+    "--no-default-browser-check",
+    "--no-first-run",
+    "--no-sandbox",
+    "--no-service-autorun",
+    "--password-store=basic",
+    "--remote-debugging-pipe",
+    "--test-type=webdriver",
+    "--unsafely-disable-devtools-self-xss-warnings",
+    "--use-mock-keychain",
+    "--user-data-dir=__FLASHWRIGHT_PROFILE__",
+    "data:,"
+  ],
+  "workloads": [
+    {
+      "name": "noop",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 4.567708000000039
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 2.09641600000009
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 3.624708000000055
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 1.7955419999998412
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 1.6110000000001037
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 1.8494579999999132
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 1.8766249999998763
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 2.615624999999909
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 2.8998750000000655
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 3.1663750000000164
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 2.3149590000000444
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 4.597375000000056
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 3.804875000000038
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 1.7180000000000746
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 2.130374999999958
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 54.14366599999994,
+      "observations": {
+        "trustedClicks": 0,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 200.8593330000001
+    },
+    {
+      "name": "interaction",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 39.393749999999955
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 25.543707999999924
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 29.957374999999956
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 32.45170800000005
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 38.05883399999993
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 25.0006249999999
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 40.40283299999987
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 33.87912499999993
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 40.67637500000001
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 31.840791999999965
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 32.85537499999987
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 22.841499999999996
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 65.61304199999995
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 29.145500000000084
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 34.418249999999944
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 55.525082999999995,
+      "observations": {
+        "trustedClicks": 15,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 15,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 612.923542
+    },
+    {
+      "name": "assertion",
+      "samples": [
+        {
+          "iteration": 0,
+          "detectionLagUpperBoundMilliseconds": 502.1999999284744,
+          "milliseconds": 514.9687920000001
+        },
+        {
+          "iteration": 1,
+          "detectionLagUpperBoundMilliseconds": 14.5,
+          "milliseconds": 25.653332999999748
+        },
+        {
+          "iteration": 2,
+          "detectionLagUpperBoundMilliseconds": 505.5,
+          "milliseconds": 516.8841669999997
+        },
+        {
+          "iteration": 3,
+          "detectionLagUpperBoundMilliseconds": 2.899999976158142,
+          "milliseconds": 14.128499999999804
+        },
+        {
+          "iteration": 4,
+          "detectionLagUpperBoundMilliseconds": 5.299999952316284,
+          "milliseconds": 16.921707999999853
+        },
+        {
+          "iteration": 5,
+          "detectionLagUpperBoundMilliseconds": 503.59999990463257,
+          "milliseconds": 514.3555420000002
+        },
+        {
+          "iteration": 6,
+          "detectionLagUpperBoundMilliseconds": 507.2000000476837,
+          "milliseconds": 521.9127500000004
+        },
+        {
+          "iteration": 7,
+          "detectionLagUpperBoundMilliseconds": 6.100000023841858,
+          "milliseconds": 24.24883300000056
+        },
+        {
+          "iteration": 8,
+          "detectionLagUpperBoundMilliseconds": 509.8000000715256,
+          "milliseconds": 527.6618749999998
+        },
+        {
+          "iteration": 9,
+          "detectionLagUpperBoundMilliseconds": 9.300000071525574,
+          "milliseconds": 20.728291000000354
+        },
+        {
+          "iteration": 10,
+          "detectionLagUpperBoundMilliseconds": 9.5,
+          "milliseconds": 22.09862499999963
+        },
+        {
+          "iteration": 11,
+          "detectionLagUpperBoundMilliseconds": 510.2000000476837,
+          "milliseconds": 520.5515839999998
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "detectionLagUpperBoundMilliseconds": 502,
+          "milliseconds": 522.5339170000002
+        },
+        {
+          "iteration": 1,
+          "detectionLagUpperBoundMilliseconds": 9.600000023841858,
+          "milliseconds": 24.302000000000135
+        },
+        {
+          "iteration": 2,
+          "detectionLagUpperBoundMilliseconds": 511.60000002384186,
+          "milliseconds": 522.37475
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 56.003541999999925,
+      "observations": {
+        "trustedClicks": 0,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 4427.0136250000005
+    },
+    {
+      "name": "navigation",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 22.96125000000029
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 26.978417000000263
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 13.593959000000723
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 18.46229200000016
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 14.831499999999323
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 22.914999999999964
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 15.229083000000173
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 23.214458000000377
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 22.68237499999941
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 14.909500000000662
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 15.471542000000227
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 20.867458000000624
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 18.046542000000045
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 21.559374999999818
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 25.595249999999396
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 69.73050000000057,
+      "observations": {
+        "trustedClicks": 0,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 467.301958
+    },
+    {
+      "name": "setup",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 71.09691699999985
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 64.24270799999977
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 76.30133399999977
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 64.43662500000028
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 78.85750000000007
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 79.66812500000015
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 74.27270800000042
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 77.49387500000012
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 71.47312499999953
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 65.97437500000069
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 72.19329199999993
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 83.80799999999999
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 66.67020799999955
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 73.52295799999956
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 74.6303340000004
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 0.01691599999958271,
+      "observations": {
+        "freshContexts": 15
+      },
+      "completeMilliseconds": 1117.7619159999995
+    },
+    {
+      "name": "backend",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 581.9070419999989
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 590.152333
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 600.4550419999996
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 591.3516250000011
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 590.8824999999997
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 582.4912499999991
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 597.8804170000003
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 582.8327089999984
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 591.2667920000004
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 590.8940000000002
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 587.196750000001
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 591.377457999999
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 604.1195000000007
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 583.8805410000004
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 573.9171669999996
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 54.578332999999475,
+      "observations": {
+        "trustedClicks": 15,
+        "untrustedClicks": 0,
+        "trustedChanges": 126,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 8922.657583
+    },
+    {
+      "name": "failure",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 5.166624999998021
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 3.5845829999998386
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 3.2100830000017595
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 4.533708999999362
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 2.9264580000017304
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 4.112916999998561
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 3.810750000000553
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 3.5677080000023125
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 4.993249999999534
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 5.267457999998442
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 3.7265000000006694
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 4.988416000000143
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 5.468916000001627
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 4.922249999999622
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 3.644624999997177
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 75.97904100000233,
+      "observations": {
+        "trustedClicks": 0,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 266.63500000000204
+    }
+  ],
+  "failures": [],
+  "isolation": {
+    "storage": null,
+    "cookies": ""
+  },
+  "scope": "Functional admission only. Timing and resources are excluded from comparative performance acceptance.",
+  "adaptations": [
+    "Native WebdriverIO BiDi operations, ARIA selectors and default action readiness; user-context isolation uses browser.createUserContext and browser.removeUserContext.",
+    "Fixture-specific text/title assertions use native waitUntil with the ordinary 500ms polling interval and a 5-second deadline.",
+    "Missing-element failure uses native waitForDisplayed with the reference 25ms timeout, not equivalent Playwright assertion diagnostics.",
+    "ChromeDriver retains its native added switches and bootstrap page. Reference no-startup-window is removed; actual arguments and every launch-policy difference remain explicit.",
+    "Native typing input events remain observable and are never normalized to the reference fill event count."
+  ],
+  "launchMilliseconds": 954.1986670000001,
+  "protocol": "webdriver-bidi",
+  "browserVersion": "148.0.7778.96",
+  "negotiatedDriverVersion": "148.0.7778.96 (8625e066febc721e015ea99842da12901eb7ed73-refs/branch-heads/7778@{#1904})",
+  "completeMilliseconds": 17240.991542,
+  "backend": {
+    "documents": 38,
+    "backendRequests": 15,
+    "otherRequests": 0
+  }
+}
