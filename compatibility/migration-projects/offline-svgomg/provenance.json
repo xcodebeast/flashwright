@@ -8,9 +8,9 @@
       "collectedOn": "2026-10-10",
       "observedVersion": "1.15.1",
       "exactDeploymentCommit": null,
-      "runtimeAssetCount": 13,
-      "sourceMapCount": 4,
-      "snapshotSha256": "26364f8a316b5e6945a6da4387b2334dd59b6c3e4acf8c247a0b492ce094ce27",
+      "runtimeAssetCount": 14,
+      "sourceMapCount": 6,
+      "snapshotSha256": "64dc06d645ea14ac6663122584c062525f124c4f7fd3b4c0b9ff6f0526bd3821",
       "snapshotDigestDefinition": "SHA-256 of UTF-8 compact JSON array of asset requestPath, bytes and sha256 objects, ordered by retained file path, with no trailing newline",
       "reproducibleFromClaimedSourceCommit": false
     },
@@ -34,7 +34,8 @@
         "sourceCommit": "f881e2e13f626732bd922a379200a1371dbec3cb",
         "deploymentCommit": "81b95ad65ae98109b8730e4acb24adf96af383a7",
         "limitation": "HTML, page.js and all three worker bundle bytes differ from the retained public demo"
-      }
+      },
+      "scope": "Ancestry comparison covers the four retained JavaScript source maps. The two subsequently retained CSS source maps were not included in the 33-of-35 comparison."
     },
     "confirmedRuntimeDependencyInputs": [
       {
@@ -107,6 +108,24 @@
   },
   "files": [
     {
+      "path": "assets/all.css",
+      "url": "https://demo.playwright.dev/svgomg/all.css",
+      "sha256": "300ca12e5adc0918ccd3b0ebc958a9a493eff3ee172f96bf39f60dc8a5978c36",
+      "bytes": 13740,
+      "changes": [],
+      "role": "asset",
+      "requestPath": "/svgomg/all.css"
+    },
+    {
+      "path": "assets/all.css.map",
+      "url": "https://demo.playwright.dev/svgomg/all.css.map",
+      "sha256": "30c3d777ec3ad9ec6767370507c9970063f8cbad28865ef8a011f6b576547958",
+      "bytes": 23839,
+      "changes": [],
+      "role": "asset",
+      "requestPath": "/svgomg/all.css.map"
+    },
+    {
       "path": "assets/changelog.json",
       "url": "https://demo.playwright.dev/svgomg/changelog.json",
       "sha256": "c496da821d5b0017e847c770549b8a3d3134b3af1cfdc4409e7119a6d91c131f",
@@ -141,6 +160,15 @@
       "changes": [],
       "role": "asset",
       "requestPath": "/svgomg/fonts/code-vietnamese.woff2"
+    },
+    {
+      "path": "assets/head.css.map",
+      "url": "https://demo.playwright.dev/svgomg/head.css.map",
+      "sha256": "4613fea1c83fc30ce65c23f27cf57f6df7bc85f0f1ac3377ef4bb49bfad01ffa",
+      "bytes": 7109,
+      "changes": [],
+      "role": "asset",
+      "requestPath": "/svgomg/head.css.map"
     },
     {
       "path": "assets/imgs/icon.png",
@@ -519,7 +547,8 @@
   "httpExpectations": {
     "alwaysExact": {
       "/svgomg/": 6,
-      "/svgomg/js/page.js": 6
+      "/svgomg/js/page.js": 6,
+      "/svgomg/all.css": 6
     },
     "whenAllPassedExact": {
       "/svgomg/test-svgs/car-lite.svg": 4
@@ -530,7 +559,7 @@
   },
   "httpExpectationAdmission": {
     "status": "proposed-unverified",
-    "derivation": "Static inspection of six unchanged test bodies, lazy worker creation and application fetches",
+    "derivation": "Static inspection of six unchanged test bodies, lazy worker creation and application fetches; the first rejected attempt observed six stylesheet requests per engine, all 404 because its fixture omitted all.css. The repaired fixture must produce six successful stylesheet responses.",
     "finishLine": "Complete Playwright and Flashwright baseline admission must retain every raw request and verify or explain each proposed count before any timing claim; counts must not be weakened silently",
     "optionalResources": "No mandatory count for gzip/Prism workers, fonts, icons, manifest, maps or changelog; app scheduling and teardown can affect requests"
   },
@@ -665,8 +694,41 @@
   },
   "admission": {
     "status": "source-materialized-unverified",
-    "scope": "Original app/worker/test/source-map/notice bytes retained, with shared declared HTML and generated setup/import adaptations; no server, browser or runner execution",
+    "scope": "Original app/worker/test/notice bytes retained, with shared declared HTML and generated setup/import adaptations. Stylesheet and referenced CSS maps restore the omitted resource closure; this repaired distribution has not completed functional admission.",
     "performanceAccepted": false,
-    "nativeLinux": "unverified"
+    "nativeLinux": "unverified",
+    "priorRejectedDistribution": {
+      "snapshotSha256": "26364f8a316b5e6945a6da4387b2334dd59b6c3e4acf8c247a0b492ce094ce27",
+      "fixtureCommit": "85a5fcdd2b43fa440735f703a5b91e4d58759bf4",
+      "manifestSha256": "d7d7e2a7f584fd827745151d2128db03ce06be4efd19835092b0eee4989aa828",
+      "receiptSha256": "de4481a4995c83edd48743caf3e5bf44d3966d0b53e68678152e987d53921dc9",
+      "status": "application-gaps",
+      "engines": {
+        "playwright": {
+          "attempted": 6,
+          "passed": 1,
+          "failed": 5,
+          "skipped": 0
+        },
+        "flashwright": {
+          "attempted": 6,
+          "passed": 1,
+          "failed": 5,
+          "skipped": 0
+        }
+      },
+      "cause": "The original fixture omitted the HTML preload stylesheet all.css. Both engines requested it six times with HTTP404; five tests then failed on pointer interception. These failures do not establish an engine API gap.",
+      "performanceAccepted": false
+    }
+  },
+  "resourceClosure": {
+    "scope": "Static resource attributes parsed with HTMLParser, inline style elements/attributes, compiled CSS URLs/imports and source-map comments. Dynamic JavaScript and browser admission remain separate.",
+    "htmlResourceAttributes": 6,
+    "inlineStyleElements": 1,
+    "inlineStyleAttributes": 2,
+    "compiledStylesheets": 1,
+    "unretainedStaticResourceReferences": 0,
+    "runtimeVerified": false,
+    "sourceMaps": "Four original JavaScript maps and two CSS maps are retained; no mandatory request count for maps"
   }
 }
