@@ -307,11 +307,11 @@ impl Engine {
                 .frames
                 .get(frame_identifier)
                 .ok_or_else(|| closed(method))?;
-            if frame.remote {
+            if frame.remote && method != "frame.waitForSelector" {
                 return Err(ErrorRecord::new(
                     ErrorCode::UnsupportedFeature,
                     method,
-                    "out-of-process frame routing is not implemented",
+                    "this locator operation in out-of-process frames is not implemented",
                 ));
             }
             frame.loader.clone()

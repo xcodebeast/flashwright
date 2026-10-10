@@ -216,12 +216,12 @@ impl Engine {
                                 event.session_identifier.as_deref()
                                     == Some(&page.session_identifier)
                                     || event.session_identifier.as_deref().is_some_and(|session| {
-                                        page.state
-                                            .renderer_sessions
-                                            .lock()
-                                            .unwrap()
-                                            .get(session)
-                                            .is_some()
+                                        let sessions = page.state.renderer_sessions.lock().unwrap();
+                                        if event.method == "Target.attachedToTarget" {
+                                            sessions.original(session).is_some()
+                                        } else {
+                                            sessions.get(session).is_some()
+                                        }
                                     })
                                     || parameters["targetId"].as_str()
                                         == Some(&page.target_identifier)
