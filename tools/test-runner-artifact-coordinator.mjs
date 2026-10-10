@@ -80,6 +80,25 @@ async function libraries(testInfo) {
 }
 
 try {
+  await check('invalid policy owns finalization without enrolling existing contexts or accepting creation', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    coordinator.configureScreenshots({ mode: 'on', options: {} });
+    const value = context();
+    try {
+      await coordinator.ready(); await publish(value);
+      const rejected = information();
+      coordinator.start(rejected, { error: Error('original invalid policy') });
+      await coordinator.ready();
+      assert.equal(value.calls.length, 0);
+      assert.equal(coordinator.outstandingCaptures, 0);
+      assert.equal(coordinator.current.active, false);
+      await rejected._tracing.stopIfNeeded();
+      assert.equal(rejected.attachments.filter(item => item.name === 'trace').length, 0);
+      assert.match(rejected.attachments.find(item => item.name === 'trace-error').body.toString(), /original invalid policy/);
+      const successor = information(); coordinator.start(successor); await coordinator.ready();
+      await successor._tracing.stopIfNeeded(); assert.equal((await libraries(successor)).length, 1);
+    } finally { await value.close(); await coordinator.dispose(); }
+  });
   await check('original attempts reuse an idle recording and finalize distinct library chunks', async () => {
     const coordinator = new RunnerArtifactCoordinator();
     const first = information();
@@ -136,6 +155,28 @@ try {
       assert.match(testInfo.attachments.find(item => item.name === 'trace-error').body.toString(), /128 captures/);
       await turn(); assert.equal(coordinator.outstandingCaptures, 0);
     } finally { for (const claim of claims) completeRunnerContextCreation(claim); await value.close(); await coordinator.dispose(); }
+  });
+  await check('unclaimed late publication reports incomplete capture and permits later explicit enrollment', async () => {
+    for (const installedBeforeCreation of [false, true]) {
+      const coordinator = new RunnerArtifactCoordinator();
+      if (installedBeforeCreation) {
+        const previous = information(); coordinator.start(previous); await coordinator.ready(); await previous._tracing.stopIfNeeded();
+      }
+      const creation = beginRunnerContextCreation();
+      const value = context();
+      try {
+        const first = information(); coordinator.start(first); await coordinator.ready();
+        await publish(value, creation);
+        assert.equal(value.calls.length, 0);
+        assert.equal(coordinator.current.captureFailure.error.name, 'UnsupportedFeatureError');
+        await first._tracing.stopIfNeeded();
+        assert.equal(first.status, 'passed'); assert.deepEqual(first.errors, []);
+        assert.equal(first.attachments.filter(attachment => attachment.name === 'trace').length, 0);
+        assert.match(first.attachments.find(attachment => attachment.name === 'trace-error').body.toString(), /runner.tracing: context creation began before trace ownership/);
+        const later = information(); coordinator.start(later); await coordinator.ready(); await later._tracing.stopIfNeeded();
+        assert.equal((await libraries(later)).length, 1);
+      } finally { completeRunnerContextCreation(creation); await value.close(); await coordinator.dispose(); }
+    }
   });
   await check('pending original attempts share the 256 worker capture limit until successful cleanup', async () => {
     const coordinator = new RunnerArtifactCoordinator();

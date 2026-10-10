@@ -7,8 +7,8 @@ module.exports = Object.freeze({
   installTraceStart(callback) {
     if (onTraceStart || typeof callback !== 'function')
       throw new Error('Invalid or duplicate Flashwright runner trace adapter');
-    onTraceStart = information => {
-      const handled = callback(information);
+    onTraceStart = (information, policy) => {
+      const handled = callback(information, policy);
       if (typeof handled !== 'boolean') {
         // An accidental promise must never resume upstream live allocation after final stop.
         if (require('node:util').types.isPromise(handled)) void handled.catch(() => {});

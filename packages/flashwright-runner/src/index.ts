@@ -5,18 +5,22 @@ import { chromium, failure, type Browser, type BrowserContext, type Page, type L
 import type { PlaywrightTestOptions, PlaywrightWorkerOptions, ExpectMatcherState } from 'flashwright-upstream-runner/test';
 import { matchers } from './matchers.js';
 import { screenshotPolicy } from './screenshot-policy.js';
-import { ScreenshotLifecycle } from './screenshot-recorder.js';
+import { validateTracePolicy } from './trace-policy.js';
+import type { ScreenshotScopes } from './screenshot-recorder.js';
+import { RunnerArtifactCoordinator } from './runner-artifact-coordinator.js';
 import { discardDisabledRunnerTrace } from './runner-trace-off.js';
 
 const upstream: typeof PinnedRunner = upstreamRequire('./test.js');
+const artifacts = new RunnerArtifactCoordinator();
 
 // The pinned runner's transformed files need its map registry, even when Bun
 // exposes structured call sites independently of Error.prepareStackTrace.
 const { sourceMapSupport } = upstreamRequire('playwright-core/lib/utilsBundle') as { sourceMapSupport: { mapSourcePosition: Parameters<typeof runnerIntegration.installSourcePositionMapper>[1] } };
 runnerIntegration.installSourcePositionMapper(1, position => sourceMapSupport.mapSourcePosition(position));
-runnerHooks.installTraceStart(testInfo => {
-  discardDisabledRunnerTrace(testInfo);
-  return false;
+runnerHooks.installTraceStart((testInfo, policy) => {
+  try { validateTracePolicy(policy); }
+  catch (error) { artifacts.start(testInfo, { error }); throw error; }
+  return artifacts.start(testInfo);
 });
 
 export type { TestInfo, WorkerInfo, TestType, Fixtures, FullConfig, FullProject, PlaywrightTestConfig, ExpectMatcherState, MatcherReturnType } from 'flashwright-upstream-runner/test';
@@ -39,24 +43,26 @@ export const expect = upstream.expect.extend({}).extend({
   toMatchAriaSnapshot: unsupportedMatcher('toMatchAriaSnapshot'),
 });
 
-type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _discardWorkerTraceEvents: void; _validateWorkerOptions: void; _screenshotLifecycle: ScreenshotLifecycle | undefined };
+type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _workerArtifacts: void; _validateWorkerOptions: void; _screenshotScopes: ScreenshotScopes | undefined };
 type TestFixtures = Partial<Omit<PlaywrightTestOptions, 'contextOptions' | 'viewport' | 'actionTimeout' | 'navigationTimeout'>> & {
   page: Page; context: BrowserContext; contextOptions: BrowserContextOptions; viewport: ViewportSize | null;
   actionTimeout: number; navigationTimeout: number; _validateContextOptions: void;
-  _combinedContextOptions: BrowserContextOptions; _setupRunnerContextDefaults: void; _setupRunnerScreenshots: void; _discardTestTraceEvents: void;
+  _combinedContextOptions: BrowserContextOptions; _setupRunnerContextDefaults: void; _setupRunnerScreenshots: void; _testArtifacts: void;
 };
 
 /** The version-pinned root runner provides scheduling; every browser fixture below is ours. */
 export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
   // These zero-dependency fixtures must precede options and other automatic fixtures.
-  _discardWorkerTraceEvents: [async ({}, use) => {
+  _workerArtifacts: [async ({}, use) => {
     discardDisabledRunnerTrace();
-    await use();
-  }, { scope: 'worker', auto: true }],
-  _discardTestTraceEvents: [async ({}, use, testInfo) => {
+    await artifacts.ready();
+    try { await use(); } finally { await artifacts.dispose(); }
+  }, { scope: 'worker', auto: true, timeout: 0 }],
+  _testArtifacts: [async ({}, use, testInfo) => {
     discardDisabledRunnerTrace(testInfo);
+    await artifacts.ready();
     await use();
-  }, { auto: 'all-hooks-included' as unknown as boolean }],
+  }, { auto: 'all-hooks-included' as unknown as boolean, timeout: 0 }],
   defaultBrowserType: ['chromium', { scope: 'worker', option: true }],
   browserName: [async ({ defaultBrowserType }, use) => use(defaultBrowserType), { scope: 'worker', option: true }],
   headless: [async ({ launchOptions }, use) => use(launchOptions.headless ?? true), { scope: 'worker', option: true }],
@@ -66,24 +72,23 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
   screenshot: ['off', { scope: 'worker', option: true }],
   trace: ['off', { scope: 'worker', option: true }],
   video: ['off', { scope: 'worker', option: true }],
-  _validateWorkerOptions: [async ({ browserName, defaultBrowserType, channel, connectOptions, screenshot, trace, video }, use) => {
+  _validateWorkerOptions: [async ({ browserName, defaultBrowserType, channel, connectOptions, screenshot, video }, use) => {
     if (browserName !== 'chromium' || defaultBrowserType !== 'chromium') throw failure('UnsupportedFeatureError', 'test.use.browserName', 'only the pinned Chromium is implemented');
     unsupportedOptions({ channel, connectOptions });
     screenshotPolicy(screenshot);
-    for (const [name, value] of Object.entries({ trace, video })) if (value !== 'off') throw failure('UnsupportedFeatureError', `test.use.${name}`, 'artifact collection is not implemented; use off');
+    if (video !== 'off') throw failure('UnsupportedFeatureError', 'test.use.video', 'video collection is not implemented; use off');
     await use();
   }, { scope: 'worker', auto: true }],
-  _screenshotLifecycle: [async ({ _validateWorkerOptions, screenshot }, use) => {
+  _screenshotScopes: [async ({ _validateWorkerOptions, screenshot }, use) => {
     void _validateWorkerOptions;
-    const policy = screenshotPolicy(screenshot);
-    if (policy.mode === 'off') { await use(undefined); return; }
-    const lifecycle = new ScreenshotLifecycle(policy);
-    try { await lifecycle.ready; await use(lifecycle); } finally { await lifecycle.dispose(); }
-  }, { scope: 'worker', auto: true }],
-  _setupRunnerScreenshots: [async ({ _screenshotLifecycle }, use, testInfo) => {
-    if (!_screenshotLifecycle) { await use(); return; }
-    const recorder = _screenshotLifecycle.start(testInfo);
-    try { await use(); } finally { await _screenshotLifecycle.finish(recorder); }
+    const scopes = artifacts.configureScreenshots(screenshotPolicy(screenshot));
+    await artifacts.ready();
+    await use(scopes);
+  }, { scope: 'worker', auto: true, timeout: 0 }],
+  _setupRunnerScreenshots: [async ({ _screenshotScopes }, use, testInfo) => {
+    if (!_screenshotScopes) { await use(); return; }
+    const recorder = _screenshotScopes.start(testInfo);
+    try { await use(); } finally { await _screenshotScopes.finish(recorder); }
   }, { auto: 'all-hooks-included' as unknown as boolean, timeout: 0 }],
   browser: [async ({ _validateWorkerOptions, headless, launchOptions }, use) => {
     void _validateWorkerOptions;

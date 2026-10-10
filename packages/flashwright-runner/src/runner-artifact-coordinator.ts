@@ -41,7 +41,7 @@ export class RunnerArtifactCoordinator {
   private retiring = false;
 
   /** Called synchronously at the owned normalized-policy boundary, before live or fixture work. */
-  start(testInfo: TestInfo): boolean {
+  start(testInfo: TestInfo, policyFailure?: { error: unknown }): boolean {
     const previous = this.attempts.get(testInfo);
     if (previous) return true;
     const admission = adoptRunnerTraceAtStart(testInfo);
@@ -56,6 +56,12 @@ export class RunnerArtifactCoordinator {
     this.attempts.set(testInfo, attempt);
     const finalizer = installRunnerTraceFinalizer(testInfo, admission, attempt);
     void finalizer.cleanup.then(() => { if (finalizer.cleanupSucceeded) this.outstandingCaptures -= attempt.captureCount; });
+    if (policyFailure) {
+      attempt.fail(policyFailure.error);
+      attempt.closeAdmission();
+      this.readiness = Promise.resolve();
+      return true;
+    }
     try {
       if (!this.registration) this.observeContexts();
       else for (const context of this.contexts) attempt.enrollExisting(context);
@@ -132,11 +138,14 @@ export class RunnerArtifactCoordinator {
       beginContextCreation: () => {
         const owner = this.current?.claim();
         return {
-          didCreateContext: async context => { this.observe(context); await owner?.didCreateContext(context); },
+          didCreateContext: async context => {
+            if (owner) { this.observe(context); await owner.didCreateContext(context); }
+            else this.observeUnclaimed(context);
+          },
           complete: () => owner?.complete(),
         };
       },
-      didCreateUnclaimedContext: context => this.observe(context),
+      didCreateUnclaimedContext: context => this.observeUnclaimed(context),
       willCloseContext: async (context, source) => {
         if (source !== 'browser') await this.screenshots?.beforeContextClose(context);
         const capture = this.activeCaptures.get(context);
@@ -147,6 +156,11 @@ export class RunnerArtifactCoordinator {
         }
       },
     });
+  }
+
+  private observeUnclaimed(context: BrowserContext): void {
+    this.observe(context);
+    if (this.current?.active) this.current.fail(failure('UnsupportedFeatureError', 'runner.tracing', 'context creation began before trace ownership; await module context creation before tests or create the context in a fixture'));
   }
 
   private observe(context: BrowserContext): void {

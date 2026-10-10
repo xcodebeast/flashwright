@@ -33,6 +33,11 @@ try {
     });
     try {
       await page.goto(`${viewer.urlPrefix('precise')}/trace/index.html?trace=${encodeURIComponent(`file?path=${encodeURIComponent(input.trace)}`)}`);
+      if (input.parentTitle) {
+        const parent = page.getByRole('treeitem', { name: input.parentTitle });
+        await parent.click();
+        await parent.press('ArrowRight');
+      }
       await page.getByRole('treeitem', { name: /evaluate/i }).first().click();
       await page.getByRole('tab', { name: 'Source', exact: true }).click();
       await page.getByTestId('source-code').getByText(basename(input.sourcePath), { exact: true }).waitFor();

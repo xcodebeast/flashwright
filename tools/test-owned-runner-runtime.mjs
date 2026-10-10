@@ -44,8 +44,9 @@ function fixture() {
 }
 for (const handled of [undefined, false, true]) {
   const owner = fixture();
-  if (handled !== undefined) owner.hooks.installTraceStart(information => { assert.equal(information, owner.information); return handled; });
-  await owner.tracing.startIfNeeded({ mode: 'on', live: true });
+  const policy = { mode: 'on', live: true };
+  if (handled !== undefined) owner.hooks.installTraceStart((information, suppliedPolicy) => { assert.equal(information, owner.information); assert.equal(suppliedPolicy, policy); return handled; });
+  await owner.tracing.startIfNeeded(policy);
   assert.equal(owner.writes(), handled === true ? 0 : 2);
 }
 checks.push('handled startup suppresses live allocation while absent or declined handlers preserve original behavior');
