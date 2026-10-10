@@ -109,6 +109,7 @@ impl ExecutionContext {
 #[derive(Default)]
 pub(crate) struct FrameState {
     pub identifier: String,
+    pub session_identifier: Arc<str>,
     pub parent: Option<String>,
     pub name: String,
     pub url: String,
@@ -213,6 +214,25 @@ impl FrameState {
 }
 
 impl DocumentState {
+    /// Establish the root owner before enabling domains that can emit initial worlds or lifecycle.
+    pub(crate) fn initialize_main_frame(&mut self, identifier: &str, session_identifier: &str) {
+        self.frames.insert(
+            identifier.to_owned(),
+            FrameState {
+                identifier: identifier.to_owned(),
+                session_identifier: session_identifier.into(),
+                url: "about:blank".into(),
+                ..Default::default()
+            },
+        );
+    }
+
+    fn owns_frame(&self, identifier: &str, session_identifier: &str) -> bool {
+        self.frames
+            .get(identifier)
+            .is_some_and(|frame| frame.session_identifier.as_ref() == session_identifier)
+    }
+
     /// Page construction shares the engine's network allowance without changing idle initialization.
     pub(crate) fn with_network_budget(budget: Arc<tokio::sync::Semaphore>) -> Self {
         Self {
@@ -401,6 +421,11 @@ impl DocumentState {
             "Runtime.executionContextCreated" => {
                 let description = &parameters["context"];
                 let is_default = description["auxData"]["isDefault"] == true;
+                if let Some(frame) = description["auxData"]["frameId"].as_str()
+                    && !self.owns_frame(frame, session_identifier)
+                {
+                    return events;
+                }
                 if is_default || description["auxData"]["frameId"].is_string() {
                     match (
                         description["id"].as_u64(),
@@ -479,41 +504,109 @@ impl DocumentState {
             }
             "Page.frameAttached" => {
                 let identifier = text(parameters, "frameId");
-                let frame = self
-                    .frames
-                    .entry(identifier.clone())
-                    .or_insert_with(|| FrameState {
-                        identifier,
-                        parent: parameters["parentFrameId"].as_str().map(str::to_owned),
+                let parent = parameters["parentFrameId"].as_str().map(str::to_owned);
+                if !parent
+                    .as_ref()
+                    .is_some_and(|parent| self.owns_frame(parent, session_identifier))
+                {
+                    return events;
+                }
+                if self.frames.contains_key(&identifier) {
+                    // Reattachment hands an existing remote frame back to its parent renderer.
+                    // It does not create a second public Frame.
+                    if self.frames[&identifier].session_identifier.as_ref() != session_identifier {
+                        events.extend(self.remove_frames(&identifier, false));
+                        self.retire_frame_contexts(&identifier);
+                        let remote = self.session_is_remote(session_identifier);
+                        let frame = self.frames.get_mut(&identifier).unwrap();
+                        frame.session_identifier = session_identifier.into();
+                        frame.remote = remote;
+                        frame.lifecycle.clear();
+                    }
+                } else {
+                    let frame = FrameState {
+                        identifier: identifier.clone(),
+                        session_identifier: session_identifier.into(),
+                        parent,
+                        remote: self.session_is_remote(session_identifier),
                         url: "about:blank".into(),
                         ..Default::default()
-                    });
-                events.push(("frameattached", frame.snapshot()));
+                    };
+                    events.push(("frameattached", frame.snapshot()));
+                    self.frames.insert(identifier, frame);
+                }
+            }
+            "Target.attachedToTarget" if parameters["targetInfo"]["type"] == "iframe" => {
+                let identifier = text(&parameters["targetInfo"], "targetId");
+                let Some(frame) = self.frames.get(&identifier) else {
+                    // A removed logical frame cannot be revived by delayed target attachment.
+                    return events;
+                };
+                let Some(renderer) = parameters["sessionId"]
+                    .as_str()
+                    .filter(|identifier| !identifier.is_empty())
+                else {
+                    self.failure = Some(ErrorRecord::new(
+                        ErrorCode::Protocol,
+                        "frame.attach",
+                        "renderer attachment omitted its session identity",
+                    ));
+                    return events;
+                };
+                if frame.session_identifier.as_ref() == renderer {
+                    return events;
+                }
+                let owns_parent = frame
+                    .parent
+                    .as_ref()
+                    .and_then(|parent| self.frames.get(parent))
+                    .is_some_and(|parent| parent.session_identifier.as_ref() == session_identifier);
+                if frame.session_identifier.as_ref() != session_identifier && !owns_parent {
+                    return events;
+                }
+                events.extend(self.remove_frames(&identifier, false));
+                self.retire_frame_contexts(&identifier);
+                let frame = self.frames.get_mut(&identifier).unwrap();
+                frame.session_identifier = renderer.into();
+                frame.remote = true;
+                frame.lifecycle.clear();
             }
             "Page.frameNavigated" => {
                 let description = &parameters["frame"];
                 let identifier = text(description, "id");
+                if !self.owns_frame(&identifier, session_identifier) {
+                    return events;
+                }
                 // Chromium can replace a document without individual detach events for
                 // each child. Those frame identities belong to the predecessor document.
                 events.extend(self.remove_frames(&identifier, false));
-                let parent = description["parentId"].as_str().map(str::to_owned);
+                let parent = description["parentId"]
+                    .as_str()
+                    .map(str::to_owned)
+                    .or_else(|| {
+                        self.frames
+                            .get(&identifier)
+                            .and_then(|frame| frame.parent.clone())
+                    });
                 if parent.is_none() {
                     self.main_frame = Some(identifier.clone());
                 }
                 let loader = text(description, "loaderId");
+                let remote = self.session_is_remote(session_identifier);
                 let frame = self.frames.entry(identifier.clone()).or_default();
                 if frame.loader != loader {
                     frame.lifecycle.clear();
                     frame.loader = loader;
                 }
                 frame.identifier = identifier;
+                frame.session_identifier = session_identifier.into();
                 frame.parent = parent;
                 frame.name = text(description, "name");
                 frame.url =
                     text(description, "url") + description["urlFragment"].as_str().unwrap_or("");
                 frame.navigation_sequence = self.sequence;
                 frame.pending_navigation = None;
-                frame.remote = false;
+                frame.remote = remote;
                 let public_navigation_index = events.len();
                 events.push(("framenavigated", frame.snapshot()));
                 if !frame.loader.is_empty() && !self.completed_lifecycle.contains_key(&frame.loader)
@@ -555,6 +648,9 @@ impl DocumentState {
             }
             "Page.navigatedWithinDocument" => {
                 let identifier = text(parameters, "frameId");
+                if !self.owns_frame(&identifier, session_identifier) {
+                    return events;
+                }
                 let public_navigation_index = events.len();
                 let navigation = if let Some(frame) = self.frames.get_mut(&identifier) {
                     frame.url = text(parameters, "url");
@@ -577,6 +673,7 @@ impl DocumentState {
             "Page.frameRequestedNavigation" => {
                 if parameters["disposition"] == "currentTab"
                     && let Some(frame) = self.frames.get_mut(&text(parameters, "frameId"))
+                    && frame.session_identifier.as_ref() == session_identifier
                 {
                     frame.pending_navigation = Some(PendingNavigation {
                         sequence: self.sequence,
@@ -586,29 +683,41 @@ impl DocumentState {
             }
             "Page.frameDetached" => {
                 let identifier = text(parameters, "frameId");
+                let Some(frame) = self.frames.get(&identifier) else {
+                    return events;
+                };
+                let owns_frame = frame.session_identifier.as_ref() == session_identifier;
                 if parameters["reason"] == "swap" {
+                    if !owns_frame {
+                        return events;
+                    }
                     events.extend(self.remove_frames(&identifier, false));
-                    self.main_worlds.remove(&identifier);
-                    self.execution_contexts
-                        .retain(|_, context| context.frame_identifier != identifier);
+                    self.retire_frame_contexts(&identifier);
                     if let Some(frame) = self.frames.get_mut(&identifier) {
                         frame.remote = true;
                     }
                 } else {
+                    let owns_parent = frame
+                        .parent
+                        .as_ref()
+                        .and_then(|parent| self.frames.get(parent))
+                        .is_some_and(|parent| {
+                            parent.session_identifier.as_ref() == session_identifier
+                        });
+                    if !owns_frame && !owns_parent {
+                        return events;
+                    }
                     events.extend(self.remove_frames(&identifier, true));
                 }
             }
             "Page.lifecycleEvent" => {
                 let identifier = text(parameters, "frameId");
+                if !self.owns_frame(&identifier, session_identifier) {
+                    return events;
+                }
                 let loader = text(parameters, "loaderId");
                 let name = text(parameters, "name");
-                let frame = self
-                    .frames
-                    .entry(identifier.clone())
-                    .or_insert_with(|| FrameState {
-                        identifier,
-                        ..Default::default()
-                    });
+                let frame = self.frames.get_mut(&identifier).unwrap();
                 if name == "init" {
                     frame.loader = loader.clone();
                     frame.lifecycle.clear();
@@ -836,6 +945,19 @@ impl DocumentState {
         events
     }
 
+    fn session_is_remote(&self, session_identifier: &str) -> bool {
+        self.main_frame
+            .as_ref()
+            .and_then(|frame| self.frames.get(frame))
+            .is_some_and(|frame| frame.session_identifier.as_ref() != session_identifier)
+    }
+
+    fn retire_frame_contexts(&mut self, frame_identifier: &str) {
+        self.main_worlds.remove(frame_identifier);
+        self.execution_contexts
+            .retain(|_, context| context.frame_identifier != frame_identifier);
+    }
+
     fn remove_frames(&mut self, root: &str, include_root: bool) -> Vec<(&'static str, Value)> {
         let mut depths = HashMap::from([(root.to_owned(), 0_usize)]);
         loop {
@@ -1039,6 +1161,256 @@ mod tests {
         );
     }
 
+    fn frame_world(
+        state: &mut DocumentState,
+        session: &str,
+        frame: &str,
+        unique: &str,
+    ) -> ExecutionContext {
+        state.observe_in_session(session, "Runtime.executionContextCreated", &json!({
+            "context": {"id": 1, "uniqueId": unique, "auxData": {"frameId": frame, "isDefault": true}}
+        }));
+        state.main_worlds[frame].clone()
+    }
+
+    fn frame_tree() -> DocumentState {
+        let mut state = DocumentState::default();
+        state.initialize_main_frame("main", "root");
+        state.observe_in_session(
+            "root",
+            "Page.frameNavigated",
+            &json!({"frame": {"id":"main", "loaderId":"main-loader", "url":"http://local/root"}}),
+        );
+        state.observe_in_session(
+            "root",
+            "Page.frameAttached",
+            &json!({"frameId":"child", "parentFrameId":"main"}),
+        );
+        state.observe_in_session("root", "Page.frameNavigated", &json!({"frame": {"id":"child", "parentId":"main", "loaderId":"child-loader", "url":"http://local/child"}}));
+        frame_world(&mut state, "root", "child", "local-child-world");
+        state
+    }
+
+    #[test]
+    fn late_predecessor_swap_cannot_retire_the_new_renderer_document() {
+        for swap_first in [true, false] {
+            let mut state = frame_tree();
+            let local = state.main_worlds["child"].clone();
+            if swap_first {
+                state.observe_in_session(
+                    "root",
+                    "Page.frameDetached",
+                    &json!({"frameId":"child", "reason":"swap"}),
+                );
+            }
+            let attached = state.observe_in_session(
+                "root",
+                "Target.attachedToTarget",
+                &json!({"sessionId":"remote", "targetInfo":{"type":"iframe", "targetId":"child"}}),
+            );
+            assert!(attached.is_empty());
+            state.observe_in_session("remote", "Page.frameNavigated", &json!({"frame":{"id":"child", "loaderId":"remote-loader", "url":"http://remote/child"}}));
+            let remote = frame_world(&mut state, "remote", "child", "remote-child-world");
+            state.observe_in_session(
+                "remote",
+                "Page.frameAttached",
+                &json!({"frameId":"new-descendant", "parentFrameId":"child"}),
+            );
+            state.observe_in_session("remote", "Runtime.executionContextCreated", &json!({"context":{"id":2,"uniqueId":"descendant-world","auxData":{"frameId":"new-descendant","isDefault":true}}}));
+            let descendant = state.main_worlds["new-descendant"].clone();
+            if !swap_first {
+                let late = state.observe_in_session(
+                    "root",
+                    "Page.frameDetached",
+                    &json!({"frameId":"child", "reason":"swap"}),
+                );
+                assert!(late.is_empty());
+            }
+            state.observe_in_session(
+                "root",
+                "Page.lifecycleEvent",
+                &json!({"frameId":"child", "loaderId":"stale-loader", "name":"init"}),
+            );
+            state.observe_in_session("root", "Runtime.executionContextCreated", &json!({"context":{"id":3,"uniqueId":"stale-world","auxData":{"frameId":"child","isDefault":true}}}));
+            assert!(!state.context_is_alive(&local));
+            assert!(state.context_is_alive(&remote));
+            assert!(state.context_is_alive(&descendant));
+            assert_eq!(state.main_frame.as_deref(), Some("main"));
+            assert_eq!(state.frames["child"].parent.as_deref(), Some("main"));
+            assert_eq!(state.frames["child"].loader, "remote-loader");
+            assert_eq!(state.frames["child"].session_identifier.as_ref(), "remote");
+            assert!(state.frames["child"].remote);
+            assert!(state.failure.is_none());
+        }
+    }
+
+    #[test]
+    fn renderer_handoffs_preserve_frame_identity_and_parent_removal_retires_it() {
+        let mut state = frame_tree();
+        for renderer in ["remote-one", "remote-two"] {
+            state.observe_in_session(
+                "root",
+                "Target.attachedToTarget",
+                &json!({"sessionId":renderer,"targetInfo":{"type":"iframe","targetId":"child"}}),
+            );
+            state.observe_in_session(
+                renderer,
+                "Page.frameNavigated",
+                &json!({"frame":{"id":"child","loaderId":renderer}}),
+            );
+            frame_world(&mut state, renderer, "child", renderer);
+        }
+        let original_remote = state.main_worlds["child"].clone();
+        state
+            .frames
+            .get_mut("child")
+            .unwrap()
+            .lifecycle
+            .insert("load".into());
+        assert_eq!(original_remote.session_identifier.as_ref(), "remote-two");
+        assert!(
+            state
+                .observe_in_session(
+                    "remote-one",
+                    "Page.frameDetached",
+                    &json!({"frameId":"child","reason":"swap"})
+                )
+                .is_empty()
+        );
+        assert!(state.context_is_alive(&original_remote));
+        let returned = state.observe_in_session(
+            "root",
+            "Page.frameAttached",
+            &json!({"frameId":"child","parentFrameId":"main"}),
+        );
+        assert!(returned.is_empty());
+        assert!(!state.context_is_alive(&original_remote));
+        assert!(!state.frames["child"].remote);
+        assert!(state.frames["child"].lifecycle.is_empty());
+        let local = frame_world(&mut state, "root", "child", "returned-local-world");
+        state.observe_in_session("remote-two", "Runtime.executionContextsCleared", &json!({}));
+        assert!(state.context_is_alive(&local));
+
+        state.observe_in_session(
+            "root",
+            "Target.attachedToTarget",
+            &json!({"sessionId":"remote-three","targetInfo":{"type":"iframe","targetId":"child"}}),
+        );
+        frame_world(&mut state, "remote-three", "child", "third-remote-world");
+        let removed = state.observe_in_session(
+            "root",
+            "Page.frameDetached",
+            &json!({"frameId":"child","reason":"remove"}),
+        );
+        assert_eq!(removed.len(), 1);
+        assert_eq!(removed[0].0, "framedetached");
+        assert!(!state.frames.contains_key("child"));
+        assert!(!state.main_worlds.contains_key("child"));
+        assert_eq!(state.main_frame.as_deref(), Some("main"));
+        assert!(state.failure.is_none());
+    }
+
+    #[test]
+    fn removed_frames_cannot_be_recreated_by_predecessor_events() {
+        for handoff in [false, true] {
+            let mut state = frame_tree();
+            state.observe_in_session(
+                "root",
+                "Page.frameAttached",
+                &json!({"frameId":"old-descendant","parentFrameId":"child"}),
+            );
+            if handoff {
+                state.observe_in_session("root", "Target.attachedToTarget", &json!({"sessionId":"remote","targetInfo":{"type":"iframe","targetId":"child"}}));
+            } else {
+                state.observe_in_session(
+                    "root",
+                    "Page.frameDetached",
+                    &json!({"frameId":"child","reason":"remove"}),
+                );
+            }
+            let expected_frames = state.frames.len();
+            for (session, method, parameters) in [
+                (
+                    "root",
+                    "Page.frameNavigated",
+                    json!({"frame":{"id":"old-descendant","parentId":"child","loaderId":"stale"}}),
+                ),
+                (
+                    "root",
+                    "Page.lifecycleEvent",
+                    json!({"frameId":"old-descendant","loaderId":"stale","name":"init"}),
+                ),
+                (
+                    "root",
+                    "Runtime.executionContextCreated",
+                    json!({"context":{"id":99,"uniqueId":"stale-world","auxData":{"frameId":"old-descendant","isDefault":true}}}),
+                ),
+                (
+                    "root",
+                    "Page.frameAttached",
+                    json!({"frameId":"old-descendant","parentFrameId":"child"}),
+                ),
+                (
+                    "root",
+                    "Target.attachedToTarget",
+                    json!({"sessionId":"stale-renderer","targetInfo":{"type":"iframe","targetId":"old-descendant"}}),
+                ),
+                (
+                    "remote",
+                    "Page.frameNavigated",
+                    json!({"frame":{"id":"old-descendant","loaderId":"stale"}}),
+                ),
+            ] {
+                assert!(
+                    state
+                        .observe_in_session(session, method, &parameters)
+                        .is_empty(),
+                    "{method}"
+                );
+                assert_eq!(state.frames.len(), expected_frames, "{method}");
+                assert_eq!(state.main_frame.as_deref(), Some("main"), "{method}");
+                assert!(
+                    !state.main_worlds.contains_key("old-descendant"),
+                    "{method}"
+                );
+                assert!(state.failure.is_none(), "{method}");
+            }
+            if !handoff {
+                assert!(
+                    state
+                        .observe_in_session(
+                            "remote",
+                            "Page.frameNavigated",
+                            &json!({"frame":{"id":"child","loaderId":"late-remote-root"}})
+                        )
+                        .is_empty()
+                );
+                assert_eq!(state.main_frame.as_deref(), Some("main"));
+                assert!(!state.frames.contains_key("child"));
+            }
+        }
+    }
+
+    #[test]
+    fn early_lifecycle_cannot_invent_a_child_or_suppress_its_attachment() {
+        let mut state = frame_tree();
+        state.observe_in_session(
+            "root",
+            "Page.lifecycleEvent",
+            &json!({"frameId":"new-child","loaderId":"early","name":"init"}),
+        );
+        assert!(!state.frames.contains_key("new-child"));
+        let events = state.observe_in_session(
+            "root",
+            "Page.frameAttached",
+            &json!({"frameId":"new-child","parentFrameId":"main"}),
+        );
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].0, "frameattached");
+        assert_eq!(state.frames["new-child"].parent.as_deref(), Some("main"));
+        assert!(state.frames["new-child"].lifecycle.is_empty());
+    }
+
     #[test]
     fn numeric_context_collisions_and_clearing_are_scoped_to_the_original_session() {
         let mut state = DocumentState::default();
@@ -1046,6 +1418,7 @@ mod tests {
             ("parent-session", "main", "parent-world"),
             ("child-session", "child", "child-world"),
         ] {
+            state.initialize_main_frame(frame, session);
             state.observe_in_session(
                 session,
                 "Runtime.executionContextCreated",
@@ -1097,6 +1470,10 @@ mod tests {
     fn renderer_sessions_share_one_page_execution_context_allowance() {
         let mut state = DocumentState::default();
         for identifier in 0..MAXIMUM_EXECUTION_CONTEXTS {
+            state.initialize_main_frame(
+                &format!("frame-{identifier}"),
+                &format!("session-{identifier}"),
+            );
             state.observe_in_session(
                 &format!("session-{identifier}"),
                 "Runtime.executionContextCreated",
@@ -1105,6 +1482,7 @@ mod tests {
             );
         }
         assert!(state.failure.is_none());
+        state.initialize_main_frame("extra-frame", "extra-session");
         state.observe_in_session(
             "extra-session",
             "Runtime.executionContextCreated",
@@ -1124,6 +1502,7 @@ mod tests {
     #[test]
     fn context_events_can_precede_frame_initialization() {
         let mut state = DocumentState::default();
+        state.initialize_main_frame("main", "");
         create_context(&mut state, "main", 1, "main-world");
         assert!(state.main_execution_context().is_none());
         state.observe(
@@ -1151,6 +1530,7 @@ mod tests {
             main_frame: Some("main".into()),
             ..Default::default()
         };
+        state.initialize_main_frame("main", "");
         create_context(&mut state, "main", 1, "main-world");
         state.observe(
             "Runtime.executionContextCreated",
@@ -1195,6 +1575,7 @@ mod tests {
             main_frame: Some("main".into()),
             ..Default::default()
         };
+        state.initialize_main_frame("main", "");
         create_context(&mut state, "main", 1, "predecessor");
         create_context(&mut state, "main", 1, "successor");
         state.observe(
@@ -1219,6 +1600,7 @@ mod tests {
     #[test]
     fn isolated_identity_reuse_and_document_open_preserve_only_the_live_world() {
         let mut state = DocumentState::default();
+        state.initialize_main_frame("main", "");
         create_context(&mut state, "main", 1, "main-world");
         for unique in ["isolated-before", "isolated-after"] {
             state.observe(
@@ -1266,6 +1648,14 @@ mod tests {
             ("nested", Some("child"), 3),
             ("sibling", Some("main"), 4),
         ] {
+            if let Some(parent) = parent {
+                state.observe(
+                    "Page.frameAttached",
+                    &json!({"frameId":frame,"parentFrameId":parent}),
+                );
+            } else {
+                state.initialize_main_frame(frame, "");
+            }
             state.observe(
                 "Page.frameNavigated",
                 &json!({"frame": {"id": frame, "parentId": parent, "loaderId": frame}}),
@@ -1305,6 +1695,7 @@ mod tests {
     #[test]
     fn isolated_worlds_share_the_page_context_capacity() {
         let mut state = DocumentState::default();
+        state.initialize_main_frame("main", "");
         create_context(&mut state, "main", 1, "main-world");
         for identifier in 2..=MAXIMUM_EXECUTION_CONTEXTS {
             state.observe("Runtime.executionContextCreated", &json!({"context": {
@@ -1326,6 +1717,7 @@ mod tests {
     #[test]
     fn context_identity_and_live_world_capacity_fail_explicitly() {
         let mut malformed = DocumentState::default();
+        malformed.initialize_main_frame("main", "");
         create_context(&mut malformed, "main", 1, "");
         assert_eq!(
             malformed.check("page.evaluate").unwrap_err().code,
@@ -1333,6 +1725,7 @@ mod tests {
         );
         let mut state = DocumentState::default();
         for identifier in 0..MAXIMUM_EXECUTION_CONTEXTS {
+            state.initialize_main_frame(&identifier.to_string(), "");
             create_context(
                 &mut state,
                 &identifier.to_string(),
@@ -1342,6 +1735,7 @@ mod tests {
         }
         create_context(&mut state, "0", 2048, "replacement");
         assert!(state.check("page.evaluate").is_ok());
+        state.initialize_main_frame("overflow", "");
         create_context(&mut state, "overflow", 2049, "overflow");
         assert_eq!(
             state.check("page.evaluate").unwrap_err().code,
@@ -1352,9 +1746,14 @@ mod tests {
     #[test]
     fn navigation_journal_distinguishes_document_same_document_and_failed_main_frame_actions() {
         let mut state = DocumentState::default();
+        state.initialize_main_frame("main", "");
         state.observe(
             "Page.frameNavigated",
             &json!({"frame":{"id":"main","loaderId":"initial","url":"about:blank"}}),
+        );
+        state.observe(
+            "Page.frameAttached",
+            &json!({"frameId":"child","parentFrameId":"main"}),
         );
         state.observe("Page.frameNavigated", &json!({"frame":{"id":"child","parentId":"main","loaderId":"child-loader","url":"about:blank"}}));
         state.observe(
@@ -1396,6 +1795,7 @@ mod tests {
     #[test]
     fn navigation_journal_retains_a_bounded_suffix_and_reports_the_evicted_sequence() {
         let mut state = DocumentState::default();
+        state.initialize_main_frame("main", "");
         state.observe(
             "Page.frameNavigated",
             &json!({"frame":{"id":"main","loaderId":"initial","url":"about:blank"}}),

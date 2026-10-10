@@ -515,6 +515,7 @@ mod tests {
         state.frames.insert(
             identifier.into(),
             FrameState {
+                session_identifier: page.session_identifier.as_str().into(),
                 identifier: identifier.into(),
                 parent: parent.map(str::to_owned),
                 loader: format!("loader-{identifier}"),
