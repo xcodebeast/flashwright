@@ -1,11 +1,21 @@
 import { performance } from 'node:perf_hooks';
 import { failure } from '@flashwright/core';
+import { runnerIntegration } from '@flashwright/core/runner-integration';
 import type { TestInfo } from 'flashwright-upstream-runner/test';
 import type { RunnerJournalAdmission } from './runner-trace-journal.js';
 import { ArtifactErrors } from './artifact-errors.js';
 
 type Journal = NonNullable<RunnerJournalAdmission['journal']>;
 type Archive = Awaited<ReturnType<Journal['takeArchive']>>;
+
+/** Original-attempt capture owns every pending or rejected handoff until its disposal settles. */
+export interface RunnerTraceCollection {
+  closeAdmission(): void;
+  /** Hand off in admission order; the callback takes custody only when it returns successfully. */
+  collect(acceptArchive: (archive: Archive) => void, signal: AbortSignal): Promise<void>;
+  dispose(): Promise<void>;
+}
+
 const journalAppenders = ['appendForError', 'appendStdioToTrace', 'appendBeforeActionForStep', 'appendAfterActionForStep', '_appendTraceEvent'] as const;
 const discard = (): void => {};
 interface TimeoutSlot { timeout: number; elapsed: number }
@@ -21,14 +31,14 @@ interface PinnedTestInfo extends TestInfo {
 const finalizers = new WeakMap<object, RunnerTraceFinalizer>();
 
 /** Install once on the original instance, whose final stop follows every test and failure hook. */
-export function installRunnerTraceFinalizer(testInfo: TestInfo, admission: RunnerJournalAdmission): RunnerTraceFinalizer {
+export function installRunnerTraceFinalizer(testInfo: TestInfo, admission: RunnerJournalAdmission, collection?: RunnerTraceCollection): RunnerTraceFinalizer {
   const information = testInfo as PinnedTestInfo;
   const existing = finalizers.get(information._tracing);
   if (existing) {
-    if (existing.admission !== admission) throw failure('ProtocolError', 'runner.tracing', 'runner journal ownership changed before final stop');
+    if (existing.admission !== admission || existing.collection !== collection) throw failure('ProtocolError', 'runner.tracing', 'runner artifact ownership changed before final stop');
     return existing;
   }
-  const finalizer = new RunnerTraceFinalizer(information, admission);
+  const finalizer = new RunnerTraceFinalizer(information, admission, collection);
   information._tracing.stopIfNeeded = () => finalizer.finish();
   finalizers.set(information._tracing, finalizer);
   return finalizer;
@@ -41,7 +51,7 @@ export class RunnerTraceFinalizer {
   private completion: Promise<void> | undefined;
   private readonly errors = new ArtifactErrors('trace-error');
 
-  constructor(private readonly testInfo: PinnedTestInfo, readonly admission: RunnerJournalAdmission) {
+  constructor(private readonly testInfo: PinnedTestInfo, readonly admission: RunnerJournalAdmission, readonly collection?: RunnerTraceCollection) {
     this.cleanup = new Promise(resolve => { this.resolveCleanup = resolve; });
   }
 
@@ -65,12 +75,15 @@ export class RunnerTraceFinalizer {
     const journal = this.admission.journal;
     const cancellation = new AbortController();
     let archive: Archive | undefined;
+    let unadmittedJournal: Archive | undefined;
+    let assembly: ReturnType<typeof runnerIntegration.createTraceArchiveAssembly> | undefined;
     let work: Promise<void> = Promise.resolve();
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Final artifacts still create public attachment steps. They must not append
     // to their own sealed journal or turn its successful capture into a failure.
     for (const name of journalAppenders) this.testInfo._tracing[name] = discard;
     try {
+      this.collection?.closeAdmission();
       this.ownFinalTimeout();
       if (!this.testInfo._tracing._shouldAbandonTrace()) {
         if (this.admission.failure !== undefined) throw this.admission.failure;
@@ -91,7 +104,19 @@ export class RunnerTraceFinalizer {
           }, 30000);
         });
         work = (async () => {
-          archive = await journal.takeArchive(timeout, cancellation.signal);
+          if (this.collection) {
+            const originalAssembly = runnerIntegration.createTraceArchiveAssembly(4);
+            assembly = originalAssembly;
+            await this.collection.collect(input => { checkPreparation(); originalAssembly.addLibrary(input); }, cancellation.signal);
+            checkPreparation();
+            unadmittedJournal = await journal.takeArchive(timeout, cancellation.signal);
+            checkPreparation();
+            originalAssembly.addRunner(unadmittedJournal);
+            unadmittedJournal = undefined;
+            archive = originalAssembly.seal();
+          } else {
+            archive = await journal.takeArchive(timeout, cancellation.signal);
+          }
           checkPreparation();
           await archive.export(destination, cancellation.signal, () => {
             checkPreparation();
@@ -109,9 +134,13 @@ export class RunnerTraceFinalizer {
       clearTimeout(timer);
       // Dispose immediately cancels pending initialization and writes. A late archive belongs
       // to this finalizer until the original export settles, including a dispatched rename.
-      const journalCleanup = journal?.dispose() ?? Promise.resolve();
-      const archiveCleanup = work.then(() => archive?.dispose(), () => archive?.dispose());
-      void Promise.allSettled([journalCleanup, archiveCleanup]).then(results => {
+      const dispose = (owner: { dispose(): Promise<void> } | undefined) => Promise.resolve().then(() => owner?.dispose());
+      const disposePreparedArchives = async () => {
+        const results = await Promise.allSettled([dispose(archive), dispose(unadmittedJournal)]);
+        for (const result of results) if (result.status === 'rejected') this.errors.record(result.reason);
+      };
+      const archiveCleanup = work.then(disposePreparedArchives, disposePreparedArchives);
+      void Promise.allSettled([dispose(journal), dispose(this.collection), dispose(assembly), archiveCleanup]).then(results => {
         for (const result of results) if (result.status === 'rejected') this.errors.record(result.reason);
         this.resolveCleanup();
       });

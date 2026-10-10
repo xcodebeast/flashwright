@@ -1,0 +1,141 @@
+{
+  "status": "passed-focused-development-follow-up",
+  "verificationBaseCommit": "4dd9484e58570c08193ec7b61d1d8f17a1f8f5ad",
+  "committedProvenanceBaseCommit": "4dd9484e58570c08193ec7b61d1d8f17a1f8f5ad",
+  "precedingRunnerCheckpoint": "compatibility/evidence/runner-action-source-checkpoint-2026-10-10.json",
+  "acceptedGroups": 27,
+  "frozenFiles": 783,
+  "compiledFilesAllFourPackages": 402,
+  "hostRuntimes": [
+    "Bun 1.4.2",
+    "Node 22.22.0",
+    "Node 24.15.0"
+  ],
+  "browserVersion": "Chromium 148.0.7778.96",
+  "unitGroupsPerRuntime": {
+    "runner-trace-steps": 15,
+    "runner-trace-journal": 24,
+    "trace-archive-assembly": 13,
+    "runner-trace-finalizer": 15
+  },
+  "actualFinalizerCasesPerRuntime": 6,
+  "packedFinalizerCasesOnBun": 6,
+  "actualCollections": [
+    {
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "distribution": "chromium-headless-shell",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "reportSha256": "9d67b2bd0a3b569844e76cf88820a5fbab509f69cc46d4956d21a99401b4ad48",
+      "attempts": 6,
+      "libraryChunks": 8,
+      "packed": false
+    },
+    {
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "distribution": "full-chromium",
+      "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+      "reportSha256": "b40cb21e408e6a1d5776163cf70ede087ca79ee9f5de741fa09887cb581541b5",
+      "attempts": 6,
+      "libraryChunks": 8,
+      "packed": false
+    },
+    {
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "distribution": "chromium-headless-shell",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "reportSha256": "0242a40105860601872462c5d284456f9f9a2a901d79bfff2f8b1a04062da0fa",
+      "attempts": 6,
+      "libraryChunks": 8,
+      "packed": true
+    },
+    {
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "distribution": "chromium-headless-shell",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "reportSha256": "c4912d2eb77a937833e26d384784d9b5ef00dd34a525551b4582834855efb4b7",
+      "attempts": 6,
+      "libraryChunks": 8,
+      "packed": false
+    },
+    {
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "distribution": "chromium-headless-shell",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "reportSha256": "c8379a4c68656058332f1af1ddc3f6b8d6b7a95b525e6d44637a83ad5175fb2b",
+      "attempts": 6,
+      "libraryChunks": 8,
+      "packed": false
+    }
+  ],
+  "cleanWatchdogs": 38,
+  "retainedZipCrcChecks": 46,
+  "packageTarballs": 14,
+  "compiledPackageEntryHashChecks": 1620,
+  "sourceArchiveSha256": "8b903d10e80401b87042f160849e2c82295eb8d8edd2d9a755530d328abb5ff3",
+  "compiledArchiveSha256": "d8e7fa045fa7e3a88ee28e81fd4c387bb4cbfaf899118bc7696eb9f42ccba69f",
+  "driverSha256": "cdb0c285a56ba1b06dceafd95434261ccbddc2a4a5df3e372a38c9576b62f372",
+  "rootAuditSha256": "5c245607e59c521d120d4fc48c231f4635e7f5e5e84cadd660ce1b811c2ff668",
+  "matrixReportSha256": "aafd78c35767d6966d821620e3dc79bda39a9042222a17f6c564e0bb2c8b73a0",
+  "initialHarnessFailure": {
+    "matrixReportSha256": "1add3f21dcbcb8f8c7a4d8d177375cbcd71349df6c78ed705a0a268dd0e70520",
+    "condition": "The first packed verifier compared the noncanonical macOS temporary directory with the canonical mapped caller path. All six packed tests passed, but the source-path assertion failed before acceptance. The verifier now canonicalizes its temporary project before installation and launch.",
+    "changedFiles": [
+      "compatibility/upstream/runner-trace-boundaries-provenance.json",
+      "tools/run-runner-trace-source-tests.mjs"
+    ],
+    "compiledPackagesUnchanged": true,
+    "verification": "All 27 groups were rerun under a fresh immutable source snapshot after the harness repair."
+  },
+  "independentReview": {
+    "reviewSha256": "3bedc79c683c644ac786ebee81eb001ec4c3ceb2469fc04c505616d9a0ceb475",
+    "sourceManifestSha256": "8f8afafb49815d09c152c6f1cd264a9c3ad659c4642ac5d97ff0ba57ad067ade",
+    "scope": "Read-only review of the finalizer collection implementation, original source fixture and seven new controlled coverage groups found no blocker. Packed-verifier changes followed this review. No reviewer execution."
+  },
+  "implementation": {
+    "SPECS.md": "6d897b762a55ee0586e0e054f9e25b6647e320c6223d9e12fd0aeb328cc64f47",
+    "packages/flashwright-runner/src/runner-trace-finalizer.ts": "be9dcfad04ae4987262d9660dd4976be40de4eb855c960b3aa95dc979ee27d44",
+    "tools/test-runner-trace-finalizer.mjs": "70ce71dbf93bff030f7f8be8783720a86eafc578e63bafdf6422654be64eb868",
+    "compatibility/m2/runner-trace-sources/sources.spec.cjs": "64c41465cfe3a98df33839030e43912bf1a514b22b419f89bdc472750062a9fd",
+    "tools/run-runner-trace-source-tests.mjs": "2c0f02b537a93d52e27b339a842ca7918907624f02eb1038d63b9a3874f61bd1",
+    "tools/record-runner-trace-boundaries-provenance.mjs": "c6c19462763b798846e36740e30f2e03517c296d241ff46bb311a4af35e2cf06"
+  },
+  "scope": [
+    "The original finalizer accepts an optional collection with synchronous admission closure, ordered library archive handoff and independent disposal. Its identity is part of idempotent original-instance installation.",
+    "Only successful handoff transfers library custody. The finalizer owns assembly, adds the original journal last and checks its existing preparation deadline before every handoff, after journal preparation and before atomic commit.",
+    "Abandoned attempts close and dispose without collection or final source reads. Partial failure, late collection and late journal preparation preserve their original owners. Dispatched rename still receives a definitive result.",
+    "Collection, journal, assembly and prepared archives each receive cleanup, including when another disposal throws synchronously. Cleanup grace and late custody preserve original test outcomes and immutable reporter attachment bytes."
+  ],
+  "verification": [
+    "All three runtimes pass 15 finalizer groups, including seven new collection cases, plus original action-step, journal and archive-assembly coverage, packed integration and six actual finalizer attempts.",
+    "The real-browser source fixture now uses the production collection boundary instead of replacing journal.takeArchive. Six attempts and eight chunks pass on each runtime with headless shell, on Bun with full Chrome and in a clean packed Bun consumer.",
+    "Every library action retains the original journal step ID, title and parent. The pinned loader/model accepts each retained trace. Source-enabled attempts read helper bytes exactly once; source-disabled attempts perform no source reads.",
+    "Packed source verification uses a fresh Bun cache and compares five installed compiled files with the built inputs before launch. Root audit verifies canonical tarball compiled entries against the frozen build.",
+    "Bun additionally passes packed actual finalizer and disabled tracing. All frozen source, compiled, browser and driver hashes stay unchanged throughout the accepted matrix. Every retained archive passes CRC checks and all observed watchdog processes retire cleanly."
+  ],
+  "reproduce": [
+    "Build all four packages with pinned Bun and run tools/typecheck.mjs.",
+    "Run tools/test-runner-trace-finalizer.mjs, tools/test-runner-trace-journal.mjs, tools/test-runner-trace-steps.mjs, tools/test-trace-archive-assembly.mjs, tools/test-packed-runner-integration.mjs and tools/run-runner-trace-finalizer-tests.mjs on Bun and Node 22/24.",
+    "Run tools/run-runner-trace-source-tests.mjs with an output directory and verified browser/driver environment on those runtimes. Repeat on Bun with full Chrome, and separately with --packed.",
+    "Run tools/run-runner-trace-finalizer-tests.mjs with --packed and tools/run-runner-trace-off-tests.mjs on Bun. Use external watchdogs."
+  ],
+  "limitations": [
+    "The native browser fixtures reuse the accepted pre-API driver. This does not accept the combined native API/runner build or rerun Rust, full-core, Linux, package-manager layouts or performance gates.",
+    "The production finalizer can assemble explicitly supplied library captures, but automatic context enrollment, shared screenshot coordination, per-attempt capture admission and attached API capture remain unfinished.",
+    "Public automatic trace policies remain unsupported. No release, publication or fastest-framework claim is made."
+  ]
+}
