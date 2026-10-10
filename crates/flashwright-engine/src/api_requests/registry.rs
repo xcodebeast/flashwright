@@ -98,6 +98,14 @@ struct ContextState {
     published: bool,
     disposed: bool,
     responses: BTreeMap<String, ResponseEntry>,
+    trace_bodies: BTreeMap<String, TraceBodyEntry>,
+    retired_trace_generations: BTreeMap<String, PairedReservation>,
+}
+
+struct TraceBodyEntry {
+    generation: String,
+    body: Arc<RetainedBody>,
+    _metadata: PairedReservation,
 }
 
 struct ResponseEntry {
@@ -168,6 +176,8 @@ impl RequestRegistry {
                 published: false,
                 disposed: false,
                 responses: BTreeMap::new(),
+                trace_bodies: BTreeMap::new(),
+                retired_trace_generations: BTreeMap::new(),
             }),
             closed,
             local_dates: super::local_dates::PendingDates::default(),
@@ -405,6 +415,7 @@ impl RequestContext {
         url: String,
         metadata: ResponseMetadata,
         body: Arc<RetainedBody>,
+        trace_generation: Option<&str>,
     ) -> Result<Value, ErrorRecord> {
         let method = "apiRequest.fetch";
         let entry_credit = self.budget.responses.reserve(1, method)?;
@@ -438,6 +449,25 @@ impl RequestContext {
         let value = serde_json::to_value(wire)
             .map_err(|error| ErrorRecord::new(ErrorCode::Protocol, method, error.to_string()))?;
         let (closed, _) = watch::channel(false);
+        let trace_entry = if let Some(generation) = trace_generation {
+            self.budget
+                .metadata
+                .reserve(
+                    identifier
+                        .capacity()
+                        .saturating_add(generation.len())
+                        .saturating_add(256),
+                    method,
+                )
+                .ok()
+                .map(|metadata| TraceBodyEntry {
+                    generation: generation.to_owned(),
+                    body: body.clone(),
+                    _metadata: metadata,
+                })
+        } else {
+            None
+        };
         let response = Arc::new(Response {
             identifier: identifier.clone(),
             _context: self.identifier.clone(),
@@ -457,13 +487,83 @@ impl RequestContext {
             return Err(invalid_publication(method));
         }
         state.responses.insert(
-            identifier,
+            identifier.clone(),
             ResponseEntry {
                 response,
                 published: false,
             },
         );
+        if trace_generation
+            .is_none_or(|generation| !state.retired_trace_generations.contains_key(generation))
+            && state.trace_bodies.len() < 64
+            && let Some(entry) = trace_entry
+        {
+            state.trace_bodies.insert(identifier.clone(), entry);
+        }
         Ok(value)
+    }
+
+    pub(super) fn trace_body(
+        &self,
+        identifier: &str,
+        method: &str,
+    ) -> Result<Arc<RetainedBody>, ErrorRecord> {
+        let state = self.state.lock().expect("API context lock");
+        if state.disposed {
+            return Err(closed_error(method));
+        }
+        state
+            .trace_bodies
+            .get(identifier)
+            .map(|entry| entry.body.clone())
+            .ok_or_else(|| closed_error(method))
+    }
+
+    pub(super) fn ingest_trace_body(
+        &self,
+        identifier: &str,
+        method: &str,
+    ) -> Result<(), ErrorRecord> {
+        let mut state = self.state.lock().expect("API context lock");
+        if state.disposed {
+            return Err(closed_error(method));
+        }
+        state
+            .trace_bodies
+            .remove(identifier)
+            .map(|_| ())
+            .ok_or_else(|| closed_error(method))
+    }
+
+    pub(super) fn retire_trace_bodies(
+        &self,
+        generation: &str,
+        method: &str,
+    ) -> Result<(), ErrorRecord> {
+        let mut state = self.state.lock().expect("API context lock");
+        if state.disposed {
+            return Err(closed_error(method));
+        }
+        state
+            .trace_bodies
+            .retain(|_, entry| entry.generation != generation);
+        if !state.retired_trace_generations.contains_key(generation) {
+            if state.retired_trace_generations.len() >= 1024 {
+                return Err(ErrorRecord::new(
+                    ErrorCode::ResourceLimit,
+                    method,
+                    "API context exceeds 1024 retired trace generations",
+                ));
+            }
+            let credit = self
+                .budget
+                .metadata
+                .reserve(generation.len().saturating_add(128), method)?;
+            state
+                .retired_trace_generations
+                .insert(generation.to_owned(), credit);
+        }
+        Ok(())
     }
 
     pub(super) fn response(
@@ -528,6 +628,8 @@ impl RequestContext {
         for entry in std::mem::take(&mut state.responses).into_values() {
             entry.response.closed.send_replace(true);
         }
+        state.trace_bodies.clear();
+        state.retired_trace_generations.clear();
     }
 }
 
@@ -608,6 +710,7 @@ fn invalid_publication(method: &str) -> ErrorRecord {
 mod tests {
     use super::super::exchange;
     use super::*;
+    use crate::{Engine, Operation};
     use bytes::Bytes;
     use flashwright_protocol::{BinaryAttachment, DriverMessage, InputDelivery};
     use http_body_util::Full;
@@ -703,6 +806,7 @@ mod tests {
                 "http://example.test/".into(),
                 metadata,
                 body,
+                None,
             )
             .unwrap();
         registry
@@ -818,6 +922,109 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn trace_body_survives_public_disposal_while_attachment_slots_are_occupied() {
+        let (outgoing, _receiver) = tokio::sync::mpsc::channel(8);
+        let (fatal, _) = watch::channel(false);
+        let engine = Engine::new(
+            None,
+            outgoing,
+            fatal,
+            flashwright_protocol::ResourceLimits::default(),
+        );
+        let context = context(&engine.api_requests);
+        let (metadata, body) = response_parts(&context).await;
+        let original = Arc::downgrade(&body);
+        let value = context
+            .retain_response(
+                "traced".into(),
+                "http://example.test/".into(),
+                metadata,
+                body,
+                Some("generation-1"),
+            )
+            .unwrap();
+        engine
+            .api_requests
+            .prepare_publication("apiRequest.fetch", &value, |_, _| Ok(()))
+            .unwrap();
+        let (_, cancelled) = watch::channel(false);
+        let operation = Operation::new("apiRequest.traceBody.take".into(), None, cancelled);
+        let parameters = json!({"context":"context","response":"traced"});
+        let occupied = engine
+            .attachment_slots
+            .clone()
+            .try_acquire_many_owned(2)
+            .unwrap();
+        assert!(
+            engine
+                .api_trace_body_take(parameters.clone(), &operation)
+                .await
+                .unwrap()
+                .is_none()
+        );
+        assert!(engine.api_requests.dispose_response("context", "traced"));
+        assert!(
+            original.upgrade().is_some(),
+            "trace retains the original body after public disposal"
+        );
+        drop(occupied);
+        let attachment = engine
+            .api_trace_body_take(parameters.clone(), &operation)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(attachment.bytes.as_slice(), b"body");
+        engine
+            .api_request_control("apiRequest.traceBody.ingested", parameters, &operation)
+            .unwrap();
+        assert!(context.trace_body("traced", "test").is_err());
+        drop(attachment);
+        assert!(original.upgrade().is_none());
+        let (metadata, body) = response_parts(&context).await;
+        let pending = Arc::downgrade(&body);
+        let value = context
+            .retain_response(
+                "unread".into(),
+                "http://example.test/".into(),
+                metadata,
+                body,
+                Some("generation-1"),
+            )
+            .unwrap();
+        engine
+            .api_requests
+            .prepare_publication("apiRequest.fetch", &value, |_, _| Ok(()))
+            .unwrap();
+        engine.api_requests.dispose_response("context", "unread");
+        assert!(pending.upgrade().is_some());
+        context.retire_trace_bodies("generation-1", "test").unwrap();
+        assert!(
+            pending.upgrade().is_none(),
+            "retiring the recording releases unread original bodies"
+        );
+        let (metadata, body) = response_parts(&context).await;
+        let late = Arc::downgrade(&body);
+        let value = context
+            .retain_response(
+                "late".into(),
+                "http://example.test/".into(),
+                metadata,
+                body,
+                Some("generation-1"),
+            )
+            .unwrap();
+        engine
+            .api_requests
+            .prepare_publication("apiRequest.fetch", &value, |_, _| Ok(()))
+            .unwrap();
+        engine.api_requests.dispose_response("context", "late");
+        assert!(
+            late.upgrade().is_none(),
+            "late responses cannot revive a retired trace body generation"
+        );
+    }
+
+    #[tokio::test]
     async fn response_disposal_wakes_blocked_output_admission_without_harming_successor() {
         let registry = RequestRegistry::default();
         let context = context(&registry);
@@ -904,6 +1111,7 @@ mod tests {
                 "http://example.test/".into(),
                 metadata,
                 body,
+                None,
             )
             .unwrap();
         assert!(
@@ -930,6 +1138,7 @@ mod tests {
                 "x".repeat(MAXIMUM_METADATA_BYTES),
                 metadata,
                 body,
+                None,
             )
             .unwrap_err();
         assert_eq!(error.code, ErrorCode::ResourceLimit);

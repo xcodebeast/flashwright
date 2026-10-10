@@ -11,7 +11,7 @@ import { fileMimeType } from './file-mime-types.js';
 import { writeAtomicFile } from './files.js';
 import { decodeStorageState, prepareCookies, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 import { validateBoolean, validateOptions } from './validation.js';
-import { Tracing, recordAPITraceAttempt, recordAPITraceFailure, recordAPITraceResponse } from './tracing.js';
+import { Tracing, recordAPITraceAttempt, recordAPITraceFailure, recordAPITraceRequestBody, recordAPITraceResponse } from './tracing.js';
 import { instrumentTraceMethods, traceAPICommandMetadata } from './trace-hooks.js';
 import { beginRunnerRequestCreation, publishRunnerRequestContext, beforeRunnerRequestDispose, notifyRunnerRequestClosed, assertRunnerRequestDisposeAllowed, type RequestCreationClaim } from './runner-request-lifecycle.js';
 
@@ -693,6 +693,11 @@ export class APIRequestContext {
       const body = await preparation.wait(prepareBody(options, values, this.defaults.hasContentType, deadline, method, preparation), deadline);
       this.assertLive(method);
       const parameters = { context: this.identifier, url, method: verb, headers: values, maxRedirects, maxRetries, failOnStatusCode: options.failOnStatusCode ?? this.defaults.failOnStatusCode, hasBody: body !== undefined, ...(options.ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors: options.ignoreHTTPSErrors }), ...(trace?.context === this.identifier && trace.call ? { trace: { generation: trace.generation, call: trace.call } } : {}) };
+      if (body && trace?.context === this.identifier && trace.call) {
+        const tracing = requestTraceOwners.get(this);
+        if (tracing) recordAPITraceRequestBody(tracing, trace.generation, trace.call, body,
+          options.form !== undefined || values.some(header => header.name.toLowerCase() === 'content-type' && header.value.split(';', 1)[0]!.trim().toLowerCase() === 'application/x-www-form-urlencoded'));
+      }
       const remaining = remainingTime(deadline, method);
       const result = body === undefined ? await this.client.request('apiRequest.fetch', parameters, remaining) : await this.client.requestWithInput('apiRequest.fetch', parameters, [body], remaining);
       const metadata = responseMetadata(result, this.identifier, this.client);
@@ -704,8 +709,7 @@ export class APIRequestContext {
       this.responses.add(response);
       if (trace?.context === this.identifier && trace.call) {
         const tracing = requestTraceOwners.get(this);
-        if (tracing) recordAPITraceResponse(tracing, trace.generation, trace.call, metadata.identifier,
-          () => this.client.requestBinary('apiResponse.body', { context: metadata.context, response: metadata.identifier }, 30000, metadata.bodyLength));
+        if (tracing) recordAPITraceResponse(tracing, trace.generation, trace.call, metadata.identifier, metadata.bodyLength);
       }
       return response;
     } finally { preparation.release(); }

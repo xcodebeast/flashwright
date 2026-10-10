@@ -4,7 +4,8 @@ import type { EngineClient } from './client.js';
 import { failure } from './errors.js';
 import { validateOptions } from './validation.js';
 import { TraceWriter } from './trace-writer.js';
-import { TraceResources } from './trace-resources.js';
+import { TraceResources, type TraceResource } from './trace-resources.js';
+import { tryAcquireTraceTransfer } from './trace-transfers.js';
 import { TraceDiagnosticChannel, type TraceDiagnostic } from './trace-diagnostics.js';
 import { tracePreview, serializedTracePreview, traceStack, traceError, traceBooleanField } from './trace-preview.js';
 import { traceChunkOpened, traceChunkClosed, type TraceOwner, type TraceCallMetadata, type TraceCaptureMode } from './trace-hooks.js';
@@ -17,14 +18,15 @@ import { TraceNetworkChannel } from './trace-network.js';
 import { beginRunnerAction, captureRunnerActionObserver, type RunnerAction, type RunnerActionObserver } from './runner-actions.js';
 import { registerRunnerTraceOwner, type RunnerTraceChunk, type RunnerTraceRecording, type RunnerTraceRecordingWithActions, type RunnerTraceStartup, type RunnerTraceOperation } from './runner-trace-archives.js';
 import type { SealedTraceArchive } from './trace-archive.js';
-import { apiTraceAttempt, apiTraceBodyExtension, apiTraceBodySnapshot, type APITraceAttempt } from './trace-api-network.js';
+import { apiTraceAttempt, apiTraceBodyExtension, apiTraceBodySnapshot, apiTraceRequestBodySnapshot, apiTraceResourceExtension, type APITraceAttempt } from './trace-api-network.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
 export type TraceBackend = 'browser' | 'api';
 interface APIEntrySlot { attempt: APITraceAttempt; resolve(snapshot: Record<string, unknown>): void }
-interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
+interface APIRequestBody { hash: string; size: number; resource: Promise<TraceResource>; formParams?: { name: string; value: string }[] }
+interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiRequestBodies?: Map<string, APIRequestBody>; apiPendingRequestBytes?: number; apiResourceTail?: Promise<void>; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
 interface StartedRecording { recording: RunnerTraceRecording; chunk: RunnerTraceChunk }
 type TraceChunkDestination = { kind: 'file'; path: string | undefined } | { kind: 'runner'; signal: AbortSignal | undefined };
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; capture: TraceCaptureMode; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
@@ -34,11 +36,13 @@ let nextContext = 0;
 const captureAPIRequestAttempt = Symbol('capture API request attempt');
 const captureAPIRequestFailure = Symbol('capture API request failure');
 const captureAPIResponse = Symbol('capture API response body');
+const captureAPIRequestBody = Symbol('capture API request body');
 const requestNetworkSignal = new AbortController().signal;
 
 export function recordAPITraceAttempt(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestAttempt](value); }
 export function recordAPITraceFailure(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestFailure](value); }
-export function recordAPITraceResponse(tracing: Tracing, generation: string, call: string, responseIdentifier: string, readBody: () => Promise<Buffer>): void { tracing[captureAPIResponse](generation, call, responseIdentifier, readBody); }
+export function recordAPITraceResponse(tracing: Tracing, generation: string, call: string, responseIdentifier: string, bodyLength: number): void { tracing[captureAPIResponse](generation, call, responseIdentifier, bodyLength); }
+export function recordAPITraceRequestBody(tracing: Tracing, generation: string, call: string, body: Buffer, parseForm: boolean): void { tracing[captureAPIRequestBody](generation, call, body, parseForm); }
 
 /** Manual action tracing owns context diagnostics and independent, bounded archive chunks. */
 export class Tracing {
@@ -61,6 +65,48 @@ export class Tracing {
   private cleanupFailure: { error: unknown } | undefined;
   private retiringChunk: TraceChunk | undefined;
   private exportCancellation: AbortController | undefined;
+  private async withAPITransfer<Result>(chunk: TraceChunk, capture: () => Promise<Result>): Promise<Result> {
+    const deadline = performance.now() + 30000;
+    for (;;) {
+      if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing.api', 'original API request context closed during trace collection');
+      if (chunk.writer.failure) throw chunk.writer.failure;
+      const release = tryAcquireTraceTransfer(this.client, this.context);
+      if (release) {
+        try { return await capture(); }
+        finally { release(); }
+      }
+      if (performance.now() >= deadline) throw failure('TimeoutError', 'tracing.api', 'shared trace transfer admission deadline exceeded');
+      await new Promise<void>(resolve => setTimeout(resolve, 10));
+    }
+  }
+  private enqueueAPIResource<Result>(chunk: TraceChunk, capture: () => Promise<Result>): Promise<Result> {
+    const result = (chunk.apiResourceTail ?? Promise.resolve()).then(capture);
+    chunk.apiResourceTail = result.then(() => {}, () => {});
+    return result;
+  }
+  [captureAPIRequestBody](generation: string, call: string, body: Buffer, parseForm: boolean): void {
+    const chunk = this.chunk;
+    if (this.backend !== 'api' || !chunk?.accepting || chunk.identifier !== generation || this.ownerIsClosed || !this.resources) return;
+    try {
+      const requestBodies = chunk.apiRequestBodies ??= new Map();
+      if (requestBodies.has(call)) throw failure('ProtocolError', 'tracing.api', 'public API call prepared multiple request bodies');
+      if (body.length > 16 * 1024 * 1024 || (chunk.apiPendingRequestBytes ?? 0) + body.length > 32 * 1024 * 1024) throw failure('ResourceLimitError', 'tracing.api', 'pending API request bodies exceed trace allowance');
+      if (parseForm && body.length > 256 * 1024) throw failure('ResourceLimitError', 'tracing.api', 'API form trace parameters exceed parsing allowance');
+      const formParams = parseForm ? [...new URLSearchParams(body.toString('utf8'))].map(([name, value]) => ({ name, value })) : undefined;
+      if (formParams && formParams.length > 2048) throw failure('ResourceLimitError', 'tracing.api', 'API form trace exceeds 2048 parameters');
+      const hash = createHash('sha1').update(body).digest('hex');
+      chunk.apiPendingRequestBytes = (chunk.apiPendingRequestBytes ?? 0) + body.length;
+      const resources = this.resources;
+      const resource = this.enqueueAPIResource(chunk, () => this.withAPITransfer(chunk, () => resources.captureBytes(body, requestNetworkSignal))).finally(() => {
+        chunk.apiPendingRequestBytes = (chunk.apiPendingRequestBytes ?? 0) - body.length;
+      });
+      requestBodies.set(call, { hash, size: body.length, resource, ...(formParams ? { formParams } : {}) });
+      const completion = resource.then(() => {});
+      const completions = chunk.completions ??= new Set();
+      completions.add(completion);
+      void completion.then(() => completions.delete(completion), error => { completions.delete(completion); chunk.writer.fail(error); });
+    } catch (error) { chunk.writer.fail(error); }
+  }
   private queueAPIEntry(chunk: TraceChunk, attempt: APITraceAttempt): APIEntrySlot {
     const bytes = Buffer.byteLength(JSON.stringify(attempt.snapshot));
     const entries = chunk.apiEntries ??= new Set();
@@ -93,6 +139,19 @@ export class Tracing {
       if (attempts.size >= 16384) throw failure('ResourceLimitError', 'tracing.api', 'API trace exceeds 16384 wire attempts');
       if (attempts.has(attempt.attempt)) throw failure('ProtocolError', 'tracing.api', 'duplicate API wire attempt identity');
       if (attempt.responseIdentifier && chunk.apiPendingResponses?.has(attempt.call)) throw failure('ProtocolError', 'tracing.api', 'public API call owns multiple final wire responses');
+      if ((attempt.snapshot.request as { bodySize: number }).bodySize > 0) {
+        const body = chunk.apiRequestBodies?.get(attempt.call);
+        if (!body) throw failure('ProtocolError', 'tracing.api', 'wire attempt lost its prepared request body');
+        const request = attempt.snapshot.request as { headers: { name: string; value: string }[] };
+        const mimeType = request.headers.find(header => header.name.toLowerCase() === 'content-type')?.value ?? 'application/octet-stream';
+        const alias = `${body.hash}.${apiTraceResourceExtension(mimeType)}`;
+        attempt.snapshot = apiTraceRequestBodySnapshot(attempt, { alias, mimeType, size: body.size,
+          ...(mimeType.split(';', 1)[0]!.trim().toLowerCase() === 'application/x-www-form-urlencoded' && body.formParams ? { params: body.formParams } : {}) });
+        const completion = body.resource.then(resource => chunk.writer.addResource(`resources/${alias}`, resource));
+        const completions = chunk.completions ??= new Set();
+        completions.add(completion);
+        void completion.then(() => completions.delete(completion), error => { completions.delete(completion); chunk.writer.fail(error); });
+      }
       attempts.add(attempt.attempt);
       const slot = this.queueAPIEntry(chunk, attempt);
       if (attempt.responseIdentifier) {
@@ -101,7 +160,7 @@ export class Tracing {
       } else slot.resolve(attempt.snapshot);
     } catch (error) { chunk.writer.fail(error); }
   }
-  [captureAPIResponse](generation: string, call: string, responseIdentifier: string, readBody: () => Promise<Buffer>): void {
+  [captureAPIResponse](generation: string, call: string, responseIdentifier: string, bodyLength: number): void {
     const chunk = this.chunk;
     if (this.backend !== 'api' || !chunk?.accepting || chunk.identifier !== generation || this.ownerIsClosed) return;
     const pending = chunk.apiPendingResponses?.get(call);
@@ -111,16 +170,19 @@ export class Tracing {
     }
     chunk.apiPendingResponses!.delete(call);
     const resources = this.resources;
-    const completion = (async () => {
+    const completion = this.enqueueAPIResource(chunk, () => this.withAPITransfer(chunk, async () => {
       const response = pending.attempt.snapshot.response as { content: { size: number } };
       if (response.content.size > 16 * 1024 * 1024) throw failure('ResourceLimitError', 'tracing.api', 'API response body exceeds the trace resource limit');
-      const bytes = await readBody();
+      if (bodyLength !== response.content.size) throw failure('ProtocolError', 'tracing.api', 'API trace response metadata differs from the original wire body');
+      const parameters = { context: this.context, response: responseIdentifier };
+      const bytes = await this.client.requestTraceAttachment('apiRequest.traceBody.take', parameters, 2000, bodyLength);
       if (bytes.length !== response.content.size) throw failure('ProtocolError', 'tracing.api', 'API trace response body length changed after native publication');
       const alias = `${createHash('sha1').update(bytes).digest('hex')}.${apiTraceBodyExtension(pending.attempt)}`;
       const resource = await resources.captureBytes(bytes, requestNetworkSignal);
       chunk.writer.addResource(`resources/${alias}`, resource);
+      await this.client.request('apiRequest.traceBody.ingested', parameters, 2000);
       pending.resolve(apiTraceBodySnapshot(pending.attempt, alias));
-    })();
+    }));
     const completions = chunk.completions ??= new Set();
     completions.add(completion);
     void completion.then(() => completions.delete(completion), error => {
@@ -512,6 +574,10 @@ export class Tracing {
 
   private async retireCollectors(chunk: TraceChunk, signal?: AbortSignal): Promise<void> {
     await this.drainCompletions(chunk);
+    if (this.backend === 'api' && !this.ownerIsClosed) {
+      try { await this.client.request('apiRequest.traceBody.retire', { context: this.context, generation: chunk.identifier }, 2000); }
+      catch (error) { chunk.writer.fail(error); }
+    }
     for (const pending of chunk.apiPendingResponses?.values() ?? []) pending.resolve(apiTraceBodySnapshot(pending.attempt, undefined, 'response was not published before trace seal'));
     chunk.apiPendingResponses?.clear();
     await chunk.apiEntryTail;
@@ -613,6 +679,7 @@ export class Tracing {
   private async captureCompletion(call: TraceCall, value: unknown, error: unknown, failed: boolean): Promise<void> {
     try {
       if (!call.chunk.accepting) return;
+      call.chunk.apiRequestBodies?.delete(call.identifier);
       if (failed) {
         const pending = call.chunk.apiPendingResponses?.get(call.identifier);
         if (pending) {

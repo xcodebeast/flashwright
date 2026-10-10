@@ -190,6 +190,10 @@ impl Engine {
                                 url,
                                 metadata,
                                 body,
+                                options
+                                    .trace
+                                    .as_ref()
+                                    .map(|capture| capture.generation.as_str()),
                             );
                         }
                         Err(failure)
@@ -472,9 +476,29 @@ async fn request_chain(
             drop(exchange);
             continue;
         }
-        let (metadata, body) = exchange
-            .finish(&context.budget, || operation.check())
-            .await?;
+        let finished = exchange.finish(&context.budget, || operation.check()).await;
+        let (metadata, body) = match finished {
+            Ok(finished) => finished,
+            Err(error) => {
+                if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
+                    trace::record_failed_attempt(
+                        engine,
+                        context,
+                        capture,
+                        trace::FailedAttempt {
+                            identifier: attempt,
+                            url: url.as_str(),
+                            method: request_method.as_deref().unwrap_or(method.as_str()),
+                            request_headers: &outgoing,
+                            request_body_size,
+                            started_wall_time,
+                        },
+                    )
+                    .await;
+                }
+                return Err(error);
+            }
+        };
         if let (Some(capture), Some(attempt)) = (&options.trace, &attempt) {
             trace::record_attempt(
                 engine,
