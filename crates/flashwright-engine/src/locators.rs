@@ -27,6 +27,18 @@ pub(crate) struct LocatorRealm {
     pub main_context: page_state::ExecutionContext,
 }
 
+/// Unsupported remote operations reject before waiting for a paused renderer's world.
+fn check_remote_locator_operation(remote: bool, method: &str) -> Result<(), ErrorRecord> {
+    if remote && method != "frame.waitForSelector" {
+        return Err(ErrorRecord::new(
+            ErrorCode::UnsupportedFeature,
+            method,
+            "this locator operation in out-of-process frames is not implemented",
+        ));
+    }
+    Ok(())
+}
+
 impl Engine {
     pub(crate) async fn run_locator(
         &self,
@@ -283,8 +295,22 @@ impl Engine {
         operation: &Operation,
         method: &str,
     ) -> Result<LocatorRealm, ErrorRecord> {
+        {
+            let state = page.state.state.lock().unwrap();
+            state.check(method)?;
+            if let Some(frame) = state.frames.get(frame_identifier) {
+                check_remote_locator_operation(frame.remote, method)?;
+            }
+        }
         let main_context = self
-            .evaluation_context(page, browser, Some(frame_identifier), operation)
+            .evaluation_context(
+                page,
+                browser,
+                Some(frame_identifier),
+                operation,
+                method,
+                method == "frame.waitForSelector",
+            )
             .await?;
         let mut realms = operation
             .wait(async { Ok(page.state.locator_realms.lock().await) })
@@ -307,13 +333,7 @@ impl Engine {
                 .frames
                 .get(frame_identifier)
                 .ok_or_else(|| closed(method))?;
-            if frame.remote && method != "frame.waitForSelector" {
-                return Err(ErrorRecord::new(
-                    ErrorCode::UnsupportedFeature,
-                    method,
-                    "this locator operation in out-of-process frames is not implemented",
-                ));
-            }
+            check_remote_locator_operation(frame.remote, method)?;
             frame.loader.clone()
         };
         if let Some(realm) = realms.get(frame_identifier) {
