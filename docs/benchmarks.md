@@ -7,7 +7,7 @@ Flashwright has not established performance leadership. The current broad compar
 | Flashwright | Development checkout | Historical verified slices; fresh source/driver acceptance required before new timing | Pending broader migration corpus | Not established |
 | Playwright | @playwright/test 1.60.0 | Existing seven-flow matched baseline | Pending broader comparison | Historical paired profiles only |
 | Puppeteer | puppeteer-core 25.13.0 | Seven functional flows; five match the checked reference outcomes, with explicit backend/failure differences | No bundled test runner in this comparison class | Not measured |
-| Cypress | cypress 16.1.1 | Separate runner/event model requires its own adapter | Not measured | Not measured |
+| Cypress | cypress 16.1.1 | Default synthetic input and runner isolation are a separate class | 105 outcome-admission tests on each of Bun/Node 22/24; 15 intentional failures per run | Not measured |
 | WebdriverIO | webdriverio 10.0.2 | Seven functional flows on Bun/Node 22/24 and both Chromium variants; launch/input/failure differences | Not measured | Not measured |
 
 Startup, complete-suite time, action/assertion latency, CPU, concurrent memory and uncertainty remain unmeasured for the current broad matrix. Earlier Playwright/Flashwright observations retain their original source, browser, runtime and workload scope; see the [benchmark history](../README.md#r3-browser-baselines). They cannot establish a ranking against the additional contenders.
@@ -58,8 +58,27 @@ Bun is the default workload runtime; `FLASHWRIGHT_COMPETITOR_RUNTIME` selects an
 
 With the snapshot's recorded source checkout, verify exported hashes and independently recheck every functional admission using `bun tools/verify-competitor-snapshot.mjs benchmarks/results/webdriverio-admission-2026-10-10`. This verifier intentionally rejects changed source bytes and does not confer performance acceptance.
 
+## Cypress runner outcome admission
+
+Cypress 16.1.1 executes 105 ordinary isolated runner tests on Bun 1.4.2, Node 22.22.0 and Node 24.15.0 with full Chrome 148.0.7778.96. Each run produces 90 passes and 15 intentional missing-element failures, with no unexpected failures or skipped tests. The failure cases remain actual runner failures. Each run makes 120 fixture document requests and 15 real backend requests, verifies cookie/local/session storage reset, and finishes with clean process cleanup.
+
+The [checkpoint](../compatibility/evidence/cypress-admission-checkpoint-2026-10-10.json) and [retained reports](../benchmarks/results/cypress-admission-2026-10-10/manifest.json) include every test, event count, duration and resource observation. The first attempt failed in the harness's process-capture hook; that failed report is retained. Source, installed dependency, complete Cypress application bundle, browser and runtime bytes are recorded and checked before and after each run.
+
+Default `click` and `type` dispatch untrusted events here. Cypress's native proxy, launch policy and per-test storage reset differ from the native-input, fresh-context library flows. Every case includes runner page preparation. Proposed launch options and the owned browser command are recorded separately. These are outcome-admission results; equivalent-operation admission and performance acceptance remain false. This follows Cypress's documented [event behavior](https://docs.cypress.io/app/core-concepts/interacting-with-elements), [test isolation](https://docs.cypress.io/app/core-concepts/test-isolation) and [browser launch hook](https://docs.cypress.io/api/node-events/browser-launch-api).
+
+For macOS arm64 reproduction, copy `benchmarks/competitors/cypress/package.json` and `bun.lock` into a new isolated directory and run `bun install --frozen-lockfile --ignore-scripts`. Explicitly install the pinned Cypress binary using its CLI with an owned `CYPRESS_CACHE_FOLDER`, as described in [advanced installation](https://docs.cypress.io/app/references/advanced-installation). Set `FLASHWRIGHT_COMPETITOR_DIRECTORY` to that dependency directory, `FLASHWRIGHT_CYPRESS_BUNDLE` to its `16.1.1/Cypress.app`, and `FLASHWRIGHT_BROWSER_PATH` to full Chrome 148.0.7778.96. Run:
+
+```sh
+bun tools/run-cypress-admission.mjs .cache/new-cypress-admission
+bun test ./tools/test-cypress-contract.mjs
+bun tools/verify-cypress-snapshot.mjs benchmarks/results/cypress-admission-2026-10-10
+bun tools/verify-competitor-snapshot.mjs benchmarks/results/cypress-admission-2026-10-10/regressions
+```
+
+`FLASHWRIGHT_COMPETITOR_RUNTIME` selects an absolute Node executable; Bun is the default. The snapshot verifier needs its recorded source checkout and checks normalized exported bytes independently. The expanded Cypress configuration stays private by hash because it contains environment-specific configuration; the public curated report preserves every test and observation. Headless shell and native Linux remain unmeasured for this Cypress class.
+
 ## Remaining comparison work
 
-Admit Cypress using its native APIs, recording differences instead of hiding them behind the Playwright adapter. Cypress documents its [event dispatch behavior](https://docs.cypress.io/app/core-concepts/interacting-with-elements). Actual runner startup, retries, hooks, artifacts and parallel execution need suite-level cases.
+Actual runner startup, retries, hooks, artifacts and parallel execution still need representative suite comparisons across the declared contenders.
 
 Before publishing comparisons, verify the current Flashwright binary and sources, run matched independent launches with rotated execution order, and apply the [predeclared statistical and regression policy](../benchmarks/configurations/baseline.json). Include complete preparation and cleanup, uncertainty, CPU/concurrent memory, unexpected failures and contention. A functional pass, one favorable run or a different input contract does not satisfy that gate.

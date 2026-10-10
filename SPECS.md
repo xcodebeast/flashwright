@@ -131,6 +131,8 @@ M0 records numeric acceptance thresholds in versioned benchmark configuration, w
 
 The initial broader contender set is Playwright, Puppeteer, Cypress and WebdriverIO, alongside Flashwright. Pin their versions and selection rationale in `benchmarks/configurations/competitors.json`. Library-flow comparisons and actual test-runner suite comparisons are separate classes. First admit each adapter against real fixture outcomes, browser identity/launch flags, trusted input, backend requests, context isolation and cleanup; functional admission is not speed acceptance. Preserve native competitor APIs and document any assertion helper, polling choice, launch-policy override or input-event difference. Do not disable native action readiness to manufacture a faster comparator. A competitor that cannot execute equivalent work remains explicitly unmeasured or noncomparable for that case. Current Flashwright source/driver verification and S6 sampling/resource gates still precede a comparative performance claim.
 
+Cypress's default runner is a separate outcome-admission class: keep ordinary test isolation, click/type commands and native failing tests. Record dispatched-event trust, per-test page/storage reset, proxy/runner launch policy and expected versus unexpected failures. A successful outcome admission does not pass the native-input/fresh-context functional gate or authorize a library-flow speed comparison. Do not suppress the runner's expected failures or silently replace its default input with a plugin. A future native-input plugin configuration needs its own pinned class and evidence.
+
 ## S7 TypeScript packages, types and migration
 
 Proposed public packages:

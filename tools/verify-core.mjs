@@ -126,7 +126,7 @@ const commands = [
   ['python3', 'tools/watchdog.py', '--timeout', '180', '--report-directory', 'compatibility/evidence/resources', '--', process.execPath, 'tools/test-device-catalogue.mjs'],
   [process.execPath, 'tools/generate-inventory.mjs', '--check'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-parity-catalog.mjs'],
-  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-competitor-contract.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-competitor-contract.mjs', './tools/test-cypress-contract.mjs'],
   [process.execPath, 'tools/typecheck.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-harness.mjs', './tools/test-protocol-profile.mjs', './tools/test-attachments.mjs', './tools/test-input-attachments.mjs'],
   ['python3', '-m', 'unittest', 'discover', '-s', 'tools', '-p', 'test_*.py', '-v'],

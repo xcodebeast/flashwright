@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { mkdir, readFile, readdir, realpath, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 import { verifyPuppeteerAdmission, verifyWebdriverAdmission } from '../benchmarks/competitor-contract.mjs';
+import { dependencyManifest, hash } from './competitor-inputs.mjs';
 
 const destinationArgument = process.argv[2];
 assert.ok(destinationArgument, 'Usage: run-competitor-admission.mjs NEW_OUTPUT_DIRECTORY [puppeteer|webdriverio]');
@@ -13,27 +13,10 @@ assert.ok(process.env.FLASHWRIGHT_COMPETITOR_DIRECTORY, 'Set FLASHWRIGHT_COMPETI
 assert.ok(process.env.FLASHWRIGHT_BROWSER_PATH, 'Set FLASHWRIGHT_BROWSER_PATH to the pinned browser');
 const destination = resolve(destinationArgument);
 await mkdir(destination);
-const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const inputPaths = ['tools/run-competitor-admission.mjs', `benchmarks/${engine}-admission.mjs`, `benchmarks/${engine}-workloads.mjs`, 'benchmarks/competitor-contract.mjs', 'benchmarks/fixture-server.mjs', 'tools/http-fixture.mjs', 'tools/browser-identity.mjs', 'tools/javascript-runtime.mjs', 'tools/watchdog.py', 'benchmarks/configurations/baseline.json', 'benchmarks/configurations/competitors.json', `benchmarks/competitors/${engine}/package.json`, `benchmarks/competitors/${engine}/bun.lock`, 'crates/flashwright-browser/src/chromium-launch-policy.json'];
 if (engine === 'webdriverio') inputPaths.push('benchmarks/configurations/webdriverio-launch-policy.json');
+inputPaths.push('tools/competitor-inputs.mjs');
 const readInputs = async () => Object.fromEntries(await Promise.all(inputPaths.map(async path => [path, hash(await readFile(path))])));
-
-/** Freeze installed executable dependency bytes, following links once without filesystem cycles. */
-async function dependencyManifest(directory) {
-  const manifest = {};
-  const visited = new Set();
-  async function visit(path) {
-    const absolute = join(directory, path);
-    const resolved = await realpath(absolute);
-    if (visited.has(resolved)) return;
-    visited.add(resolved);
-    if ((await stat(absolute)).isDirectory()) {
-      for (const name of (await readdir(absolute)).sort()) await visit(join(path, name));
-    } else manifest[path] = hash(await readFile(absolute));
-  }
-  for (const path of ['package.json', 'bun.lock', 'node_modules']) await visit(path);
-  return manifest;
-}
 
 const dependencies = resolve(process.env.FLASHWRIGHT_COMPETITOR_DIRECTORY);
 const inputs = await readInputs();
