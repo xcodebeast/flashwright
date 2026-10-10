@@ -111,3 +111,18 @@ bun tools/verify-competitor-snapshot.mjs benchmarks/results/cypress-admission-20
 Actual runner startup, retries, hooks, artifacts and parallel execution still need representative suite comparisons across the declared contenders.
 
 Before publishing comparisons, verify the current Flashwright binary and sources, run matched independent launches with rotated execution order, and apply the [predeclared statistical and regression policy](../benchmarks/configurations/baseline.json). Include complete preparation and cleanup, uncertainty, CPU/concurrent memory, unexpected failures and contention. A functional pass, one favorable run or a different input contract does not satisfy that gate.
+
+The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for every declared contender. Inspect its requirements without starting a browser:
+
+```sh
+bun benchmarks/broad-matrix.mjs --plan
+bun test ./tools/test-broad-matrix.mjs
+```
+
+Its first collection mode repeats the existing admission probes. Puppeteer and WebdriverIO retain per-iteration report writes and an extra isolation probe; WebdriverIO also retains verbose protocol logging. Cypress measures its ordinary isolated runner tests and records intentional failures. These are diagnostic engineering observations, excluded from broad equivalent-work speed claims. A production comparison still needs uninstrumented competitor sampling and representative matched runner suites.
+
+For a coordinated run, set `FLASHWRIGHT_BROAD_RUNTIME` to one absolute runtime executable for every measured child, and supply `FLASHWRIGHT_VERIFICATION_REPORT`, `FLASHWRIGHT_DRIVER_PATH`, and `FLASHWRIGHT_BROWSER_PATH` for a passed core report with exactly matching sources, runtime, browser and driver. Install the pinned competitors in separate directories and set `FLASHWRIGHT_PUPPETEER_DIRECTORY`, `FLASHWRIGHT_WEBDRIVERIO_DIRECTORY`, `FLASHWRIGHT_CYPRESS_DIRECTORY`, `FLASHWRIGHT_CHROMEDRIVER_PATH`, and `FLASHWRIGHT_CYPRESS_BUNDLE`. The coordinator itself uses Bun. The initial Cypress adapter requires macOS; native Linux remains unverified.
+
+Only after coordinating exclusive measurement time, run `FLASHWRIGHT_BROAD_RUN=1 bun benchmarks/broad-matrix.mjs`. It retains every attempted launch and any failures in a new result directory. Engine order rotates, with Playwright/Flashwright order alternating. All process-wall cells use the common watchdog's child interval, so parent dependency verification does not inflate competitor times. A complete admitted run produces `summary.json` and `table.md`, including all seven workloads, preparation-inclusive totals, launch-clustered uncertainty, sampled CPU and concurrent memory, intentional failures, instrumentation and semantic differences. Cypress startup and preparation-inclusive workload intervals remain explicitly unisolated.
+
+Recheck a collected run using `bun tools/verify-broad-matrix.mjs RETAINED_DIRECTORY` from its recorded source checkout. The verifier checks retained hashes, core logs, runtime/dependency identities, every original semantic admission and the recomputed statistics/table. No broad matrix has yet been run with this coordinator. Raw outputs can contain workstation paths and must be normalized and reverified before public retention under S19.i.
