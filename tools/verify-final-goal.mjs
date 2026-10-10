@@ -4,13 +4,17 @@ import { constants } from 'node:fs';
 import { lstat, open } from 'node:fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { analyzeFinalGoal, finalGoalHash, renderFinalGoalReport } from '../benchmarks/final-goal-contract.mjs';
+import { analyzeFinalGoal, finalGoalHash, finalGoalScenarioIds, renderFinalGoalReport,
+  verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
 
-const maximumEvidenceBytes = 32 * 1024 * 1024;
-const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+export const finalGoalEvidenceLimits = Object.freeze({
+  maximumFileBytes: 32 * 1024 * 1024,
+  maximumAggregateJsonBytes: 512 * 1024 * 1024,
+  opaqueReadChunkBytes: 64 * 1024,
+});
 
-/** Read bounded ordinary evidence files without following links or escaping the retained root. */
-async function retainedFile(directory, path) {
+/** Hash ordinary files with a fixed buffer; only JSON reads retain bytes until parsing. */
+async function retainedFile(directory, path, reserveJsonBytes) {
   assert.ok(typeof path === 'string' && path && !isAbsolute(path) && !path.includes('\\') && normalize(path) === path
     && !path.split('/').some(part => ['', '.', '..'].includes(part)), 'Evidence path must be relative and contained');
   let current = directory;
@@ -21,51 +25,116 @@ async function retainedFile(directory, path) {
     const information = await lstat(current);
     assert.ok(!information.isSymbolicLink(), 'Evidence custody contains a symbolic link');
     assert.ok(index === path.split('/').length - 1 ? information.isFile() : information.isDirectory(), 'Unexpected evidence file type');
-    assert.ok(index !== path.split('/').length - 1 || information.size <= maximumEvidenceBytes, 'Oversized evidence file');
+    assert.ok(index !== path.split('/').length - 1 || information.size <= finalGoalEvidenceLimits.maximumFileBytes, 'Oversized evidence file');
   }
   const before = await lstat(current);
   const file = await open(current, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   try {
     const opened = await file.stat();
     assert.ok(opened.isFile() && opened.dev === before.dev && opened.ino === before.ino && opened.size === before.size
-      && opened.size <= maximumEvidenceBytes, 'Evidence changed before read');
-    const bytes = Buffer.alloc(opened.size + 1);
+      && opened.size <= finalGoalEvidenceLimits.maximumFileBytes, 'Evidence changed before read');
+    if (reserveJsonBytes) reserveJsonBytes(opened.size);
+    const bytes = Buffer.alloc(reserveJsonBytes ? opened.size + 1
+      : Math.min(opened.size + 1, finalGoalEvidenceLimits.opaqueReadChunkBytes));
+    const digest = createHash('sha256');
     let length = 0;
-    while (length < bytes.length) {
-      const result = await file.read(bytes, length, bytes.length - length, null);
+    while (length <= opened.size) {
+      const offset = reserveJsonBytes ? length : 0;
+      const result = await file.read(bytes, offset, Math.min(bytes.length - offset, opened.size + 1 - length), null);
       if (!result.bytesRead) break;
+      digest.update(bytes.subarray(offset, offset + result.bytesRead));
       length += result.bytesRead;
     }
     const after = await file.stat();
-    assert.ok(length === opened.size && after.size === opened.size && after.mtimeMs === opened.mtimeMs, 'Evidence changed during read');
-    return bytes.subarray(0, length);
+    assert.ok(length === opened.size && after.size === opened.size && after.mtimeMs === opened.mtimeMs
+      && after.ctimeMs === opened.ctimeMs, 'Evidence changed during read');
+    return { sha256: digest.digest('hex'), jsonBytes: reserveJsonBytes ? bytes.subarray(0, length) : undefined };
   } finally { await file.close(); }
 }
 
-/** Bind raw file bytes and recompute acceptance; this does not replace live browser or collector admission. */
-export async function verifyFinalGoalEvidence(directory) {
-  directory = resolve(directory);
-  const campaign = JSON.parse((await retainedFile(directory, 'campaign.json')).toString('utf8'));
+/** Reject excess or relabelled campaign rows before opening any scenario evidence. */
+function verifyCampaignTopology(campaign) {
   assert.equal(campaign.schemaVersion, 1);
-  const checked = new Map();
-  async function evidence(entry) {
-    assert.match(entry.sha256 ?? '', /^[a-f0-9]{64}$/);
-    if (checked.has(entry.path)) {
-      assert.equal(checked.get(entry.path).sha256, entry.sha256, 'Retained file has conflicting identities');
-      return checked.get(entry.path).bytes;
+  assert.ok(Array.isArray(campaign.scenarios), 'Missing nine-scenario inventory');
+  assert.deepEqual(campaign.scenarios.map(entry => entry.scenarioId).sort(), [...finalGoalScenarioIds].sort(),
+    'Campaign must contain the nine declared scenarios exactly once');
+  assert.equal(new Set(campaign.scenarios.map(entry => entry.path)).size, finalGoalScenarioIds.length,
+    'Scenario evidence paths must be distinct');
+}
+
+/** Bound the declared cell and attempt graph before visiting its evidence receipts. */
+function verifyScenarioTopology(result, configuration) {
+  assert.ok(Array.isArray(result.cells), 'Missing two-cell inventory');
+  assert.deepEqual(result.cells.map(cell => cell.id).sort(), configuration.cells.map(cell => cell.id).sort(),
+    'Scenario must contain the two declared cells exactly once');
+  for (const cell of result.cells) {
+    assert.ok(['comparable', 'unsupported', 'failed', 'noncomparable', 'unmeasured'].includes(cell.status), 'Unknown cell status');
+    assert.ok(Array.isArray(cell.attempts) && cell.attempts.length <= configuration.independentPairs,
+      'Cell exceeds the eight declared attempts');
+    if (cell.status === 'unmeasured') assert.equal(cell.attempts.length, 0, 'Unmeasured cell has attempted work');
+    else assert.ok(cell.attempts.length, 'Attempted cell needs retained original attempts');
+    if (cell.status === 'comparable') assert.equal(cell.attempts.length, configuration.independentPairs,
+      'Comparable cell needs all eight declared pairs');
+    for (const [index, attempt] of cell.attempts.entries()) {
+      const engineNames = Object.keys(attempt.runs ?? {}).sort();
+      assert.ok(engineNames.every(engine => ['playwright', 'flashwright'].includes(engine)), 'Unknown attempted engine');
+      if (cell.status === 'comparable') {
+        assert.deepEqual(engineNames, ['flashwright', 'playwright'], 'Comparable pair needs both original engines');
+        assert.equal(attempt.id, `${result.id}/${cell.id}/${index}`, 'Relabelled pair identity');
+        assert.equal(attempt.launchIndex, index, 'Relabelled pair launch index');
+      }
+      for (const run of Object.values(attempt.runs ?? {})) {
+        assert.ok(Array.isArray(run.evidence) && Array.isArray(run.report?.tests), 'Missing original run evidence or test inventory');
+        for (const kind of ['report', 'resources']) assert.equal(run.evidence.filter(receipt => receipt.kind === kind).length, 1,
+          `Missing unique raw ${kind} file`);
+      }
     }
-    const bytes = await retainedFile(directory, entry.path);
-    assert.equal(hash(bytes), entry.sha256, 'Retained evidence bytes changed');
-    checked.set(entry.path, { sha256: entry.sha256, bytes });
-    return bytes;
   }
-  const configuration = JSON.parse((await evidence(campaign.configuration)).toString('utf8'));
-  const declaration = JSON.parse((await evidence(campaign.declaration)).toString('utf8'));
-  assert.ok(Array.isArray(campaign.scenarios));
+}
+
+/** Bound input bytes and bind raw files; input limits do not bound parsed heap or process RSS. */
+export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes = finalGoalEvidenceLimits.maximumAggregateJsonBytes } = {}) {
+  directory = resolve(directory);
+  assert.ok(Number.isSafeInteger(maximumAggregateJsonBytes) && maximumAggregateJsonBytes > 0
+    && maximumAggregateJsonBytes <= finalGoalEvidenceLimits.maximumAggregateJsonBytes, 'JSON byte budget must be positive and cannot exceed the declared limit');
+  const checked = new Map();
+  let aggregateJsonBytes = 0;
+  function reserveJsonBytes(size) {
+    assert.ok(size <= maximumAggregateJsonBytes - aggregateJsonBytes, 'Aggregate JSON byte budget exceeded before parsing');
+    aggregateJsonBytes += size;
+  }
+  function verifyReceiptIdentity(entry) {
+    assert.match(entry.sha256 ?? '', /^[a-f0-9]{64}$/);
+    if (checked.has(entry.path)) assert.equal(checked.get(entry.path), entry.sha256, 'Retained file has conflicting identities');
+  }
+  async function evidence(entry) {
+    verifyReceiptIdentity(entry);
+    if (checked.has(entry.path)) return;
+    const file = await retainedFile(directory, entry.path);
+    assert.equal(file.sha256, entry.sha256, 'Retained evidence bytes changed');
+    checked.set(entry.path, file.sha256);
+  }
+  async function jsonFile(path, expectedSha256) {
+    const file = await retainedFile(directory, path, reserveJsonBytes);
+    if (expectedSha256 !== undefined) assert.equal(file.sha256, expectedSha256, 'Retained evidence bytes changed');
+    if (checked.has(path)) assert.equal(checked.get(path), file.sha256, 'Retained evidence bytes changed');
+    checked.set(path, file.sha256);
+    return JSON.parse(file.jsonBytes.toString('utf8'));
+  }
+  async function jsonEvidence(entry) {
+    verifyReceiptIdentity(entry);
+    return jsonFile(entry.path, entry.sha256);
+  }
+  const campaign = await jsonFile('campaign.json');
+  verifyCampaignTopology(campaign);
+  const configuration = await jsonEvidence(campaign.configuration);
+  verifyFinalGoalConfiguration(configuration);
+  const declaration = await jsonEvidence(campaign.declaration);
   const scenarioResults = [];
   for (const entry of campaign.scenarios) {
-    const result = JSON.parse((await evidence(entry)).toString('utf8'));
+    const result = await jsonEvidence(entry);
     assert.equal(result.id, entry.scenarioId, 'Retained scenario was relabelled');
+    verifyScenarioTopology(result, configuration);
     scenarioResults.push(result);
     for (const cell of result.cells) {
       for (const receipt of cell.evidence ?? []) await evidence(receipt);
@@ -76,7 +145,7 @@ export async function verifyFinalGoalEvidence(directory) {
           for (const kind of ['report', 'resources']) {
             const files = run.evidence.filter(receipt => receipt.kind === kind);
             assert.equal(files.length, 1, `Missing unique raw ${kind} file`);
-            assert.deepEqual(JSON.parse((await evidence(files[0])).toString('utf8')), run[kind], `Inline ${kind} differs from original raw file`);
+            assert.deepEqual(await jsonEvidence(files[0]), run[kind], `Inline ${kind} differs from original raw file`);
           }
           for (const test of run.report.tests) for (const receipt of test.diagnostics?.evidence ?? []) await evidence(receipt);
         }
@@ -84,20 +153,22 @@ export async function verifyFinalGoalEvidence(directory) {
     }
   }
   for (const receipt of declaration.approvalEvidence ?? []) {
-    const approval = JSON.parse((await evidence(receipt)).toString('utf8'));
+    const approval = await jsonEvidence(receipt);
     assert.equal(approval.status, 'approved-before-measurement');
     assert.equal(approval.configurationSha256, declaration.configurationSha256);
     assert.equal(approval.resourceCollectorSha256, declaration.resourceCollectorSha256);
   }
   for (const gate of declaration.gates ?? []) for (const receipt of gate.evidence) {
-    const admission = JSON.parse((await evidence(receipt)).toString('utf8'));
+    const admission = await jsonEvidence(receipt);
     assert.equal(admission.status, 'passed');
     assert.equal(admission.gateId, gate.id);
     assert.equal(admission.verifierSha256, gate.verifierSha256);
     assert.equal(admission.sourceManifestSha256, finalGoalHash(declaration.sourceManifest), 'Gate does not bind admitted campaign source');
   }
   const analysis = analyzeFinalGoal({ configuration, declaration, scenarioResults });
-  return { analysis, checkedFiles: Object.fromEntries([...checked].map(([path, value]) => [path, value.sha256])),
+  return { analysis, checkedFiles: Object.fromEntries(checked),
+    inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
+      scope: 'Cumulative JSON read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
     scope: 'Retained file integrity and pure final-goal policy validation. Original behavior, source and collector algorithm admission remain separately required; a draft never proves final acceptance.' };
 }
 
