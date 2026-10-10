@@ -1,0 +1,2806 @@
+{
+  "schemaVersion": 1,
+  "referenceVersion": "1.60.0",
+  "groups": [
+    {
+      "id": "dialog",
+      "title": "Dialog",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "29 shared cases; occurrence/page/frame/session ownership, null-page prepublication, UTF-16 metadata, handling, duplicate/stale behavior, page/context listeners/predicates and packed module modes.",
+      "limitations": "Experimental Chromium/macOS development scope; no native Linux/release/performance acceptance. Page.close({runBeforeUnload:true}) stays unsupported; beforeunload navigation and parent-session cross-process dialog cases do not establish general cross-process frame APIs. Dialog waiter trace capture intentionally omits pinned snapshot references; metadata is bounded to 1 MiB per opening.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/dialog.ts",
+          "sha256": "da0814e9736b97e278b26e95039d710256201e2e72821225643639087adc246b"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/subscribed-events.ts",
+          "sha256": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.accept#1",
+          "declarationSha256": "695477ec5b91a6fff6cd786ccc4f67b0c9f381e0c9cf339c63a9ad6312a49916"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.defaultValue#1",
+          "declarationSha256": "88f13b959da8893e5ddf0b22bdd49fa886864096df6ef597f27790723bd6a346"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.dismiss#1",
+          "declarationSha256": "f5c248c4c93242887966b35acce0da154a2d8ea8649a396ed6dce0817b684a12"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.message#1",
+          "declarationSha256": "58cda896c6c58317a51302f6c6ebe3a063aac9aef2980e046f128f900f8a404a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.page#1",
+          "declarationSha256": "6256440850d1fdd7ea7053db483d429e625ede1e6ae5003670d4a521aa372dc3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.type#1",
+          "declarationSha256": "1b20113b085a381af5f7e3b98bba6b37528300eb67e8e0a62b071db9fe6d09ac"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Dialog.accept.promptText#1",
+          "declarationSha256": "b35b7ab55bc81047a5886baa71dfd2ce9a3a2956ac6b7e0a92f1ab9c1546935b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.on#4",
+          "declarationSha256": "68e81b648dbceec41068e87233c1fede2029858839690ced404c4c334ca51c95"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.once#4",
+          "declarationSha256": "51c288f65dbb29eda406edbcb088aa80c2196cc1d25083a336af5318cf0feb7e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addListener#4",
+          "declarationSha256": "0c76c97d5a91a03b6fdf77ce7bc0b5c7025aec2ee699efc5b47ba569d7bf5bef"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.removeListener#4",
+          "declarationSha256": "c5242b6f0b08ff118f6c3c9512e5d1379c14a610d4419e640555d6ca7a2296d9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.off#4",
+          "declarationSha256": "8cdd8287131b1a12367654b1d2f68f5e6110460009f5a85fafbc44c342ed61e0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.prependListener#4",
+          "declarationSha256": "582ed00db69cf6e837e369b554a74a98c13a1404cf70a55d067ae310924863fb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent#4",
+          "declarationSha256": "8218d502263da24a33f2ee44bc39144784ca318b2f5fdc6dfcab0a3cd88ef63c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.on#4",
+          "declarationSha256": "15189dd4d750d21d043dbfb4d6768eefc27b5d45288063a42b943c3b3a3543ca"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.once#4",
+          "declarationSha256": "54231a32ceac5968b10e3a0f154c212c48eb878d494482f46b480ff81e43402f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addListener#4",
+          "declarationSha256": "a1334d7f922dfe75a758aae38f8b6003d15ea38e772c072125458594504f3ec8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.removeListener#4",
+          "declarationSha256": "62ffaf517d6b5e1aa3af41360be986b35d6c5a52a2e2419f38be274bc41ea8f4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.off#4",
+          "declarationSha256": "1801e8a99aada231158f49e8a591c6094b33959a1f2e4cf4f2e1450da2499924"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.prependListener#4",
+          "declarationSha256": "7f89b8ad805b83e7d60b10862904ebe2fda14cbea619ee8cdba8bbe26e1c7ef9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent#4",
+          "declarationSha256": "1b52df374e4778fbc7290ea51982d7905f949d5605b557388324268acadcaee5"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.on.event#4",
+          "declarationSha256": "c476730e7dc6af4a2b1276998dc400c1d157015075adbbedb4743d136d16799a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.on.listener#4",
+          "declarationSha256": "498fec0facd46fa1b216282b9fb287b9f7d8b66fb3cae13619bbff94af81ca4f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.on.listener.dialog#1",
+          "declarationSha256": "df5adf6619ab5225bd99e880ba8630383d7e757c3ce7a9ef5f18113bee229eb5"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.once.event#4",
+          "declarationSha256": "50104904725eed5c0b3a8cb9d46dd825766cb17e0af7bdff8ad645802ab57c60"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.once.listener#4",
+          "declarationSha256": "d043228d29d5fe2e945ff00e41d7baef245db9a2ece184494d54b7d12ff4656a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.once.listener.dialog#1",
+          "declarationSha256": "30e802294e819064860c159876c3430eb6725b5550568579ef4e5cab2681b7d6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addListener.event#4",
+          "declarationSha256": "2132ee75e367b60fb0ca51156e736087c22e7b3f1230f408ce1d7f5802092b0f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addListener.listener#4",
+          "declarationSha256": "f31f6873854b421853a1237555d63128109f7116ec46b2384f9a1c21ecea2178"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addListener.listener.dialog#1",
+          "declarationSha256": "b32ba60e260c6acf08ed24a000022b12e3d49ddaea0d3af74ee17614d8db62a2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.removeListener.event#4",
+          "declarationSha256": "26100356aaf11f8ed79a021101f02a08ff7e3ce0ff4477fcb7250f2737ea816b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.removeListener.listener#4",
+          "declarationSha256": "64e11c6d15acaf116d9d9bbcbce27220c3d20c735a93154a8eb6740fbb05817b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.removeListener.listener.dialog#1",
+          "declarationSha256": "1209ee3f148b43eb2bdd2d1bca74b9214fc6318049cb82417d7a74046a0d806c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.off.event#4",
+          "declarationSha256": "b36408be05d62d55956236afd3cde593d0612ff97a5782df12b2583e046ad95e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.off.listener#4",
+          "declarationSha256": "db99166fc62e7a1e54c6574c90c4e5d17f1f0631c8d1fc2eb748b057802d7929"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.off.listener.dialog#1",
+          "declarationSha256": "d7760350099427c663d89270ab45204c113dbea28d5a416e0d27269d4f7fb503"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.prependListener.event#4",
+          "declarationSha256": "24706f48a350eff9487bcc2ccf08f3bd3397dae0759c9cb15c24a0416fe0f97f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.prependListener.listener#4",
+          "declarationSha256": "39331ccfbee3555ef399ea7e59d24e490476d77d52ac4840acaa5e2e7adabd2a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.prependListener.listener.dialog#1",
+          "declarationSha256": "00f0d2a53c313c77fc40783b6b64d44b2f73e25c14c868e556e0565d82707503"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent.event#4",
+          "declarationSha256": "f3283fcffbb71c6f0ce1ca46e86c8c916715201f5d905fbef2ceae01c425997b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate#4",
+          "declarationSha256": "78aacc19df981f28ca04067b24f7b87708db6969eb249e8c8526ef5c435f6b7f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.predicate#4",
+          "declarationSha256": "b4797948aa98c65de1c4ba114ad2a9ff4863624f971b35141318ae6180be269d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.predicate.dialog#1",
+          "declarationSha256": "231487e12d5867bc0ff7ea192ad42794fb095b04c4d206cbaf64d1640237f582"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.timeout#4",
+          "declarationSha256": "4ab182f6781a8fe35affd9462b5e8fb82544fa85ea76d098a492a8ed2bc274fb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.dialog#1",
+          "declarationSha256": "5d54c64797d144f3f1f52e67ca59b88306adade8d78cadd30e30eeb24b7e2a5e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.on.event#4",
+          "declarationSha256": "5a463fff18e35fdbdc36aca5d3b03a6143fdcb61037ee512f8bdb40fa8367db1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.on.listener#4",
+          "declarationSha256": "b8ad508bc0457b835f852ef517dbd52d52b28c8ac1dbdb9258760a0084326bf1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.on.listener.dialog#1",
+          "declarationSha256": "4da6a7292a209c646bb06371864096a74554fb51cd82aebc18b5eed532cdfd3c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.once.event#4",
+          "declarationSha256": "d0f82858fed4dff473d3098d5e919bae72e133e2673241b8718117cea94a131c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.once.listener#4",
+          "declarationSha256": "276188b58b76c2699b6c8ede35373dccbeb486310be598d419657931d2a83e21"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.once.listener.dialog#1",
+          "declarationSha256": "d34f106c4b5f0db3adaeabbeb0a0cdabd4979f23b941439aefc3b862ee5d5549"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addListener.event#4",
+          "declarationSha256": "d6b0ef61c5b68a2d42a98c3e49fddd003b67fb4730c61df6dd22a962708e136c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addListener.listener#4",
+          "declarationSha256": "e19104d0cac0ed4cee6868222c358109774dc3d269f5ec316f29d0e4b070b492"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addListener.listener.dialog#1",
+          "declarationSha256": "86bd7f5dbe264d5d80d3289528a9efe5f7f120d08d7d39a8ae3bfe5dd6b3603a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.removeListener.event#4",
+          "declarationSha256": "29fbbb66c8d4a1ffaa8d24919170ee0e7b1091c79ff0841c9b2fbaee321a446e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.removeListener.listener#4",
+          "declarationSha256": "220daa2c9c0f441d498412ddba0bb9809ffc85433a92c2dbea515b3d613c7340"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.removeListener.listener.dialog#1",
+          "declarationSha256": "e79ae7fa53d3ddf1f0534488a508d11869bc1e344e10feb937439077362b1110"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.off.event#4",
+          "declarationSha256": "39af211b8fe9c7b3fc81efa6553402c974104f5ade2873017c1f7d86058b53bb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.off.listener#4",
+          "declarationSha256": "738ff6496613b9257220ec3020a5cac01385020db1c6c12834d19e4cc9dca9bd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.off.listener.dialog#1",
+          "declarationSha256": "16362b44e5c51aeaadd0444312e0e01066182e5df2a94b7e1814c456ec14623e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.prependListener.event#4",
+          "declarationSha256": "160b390e0cc54d46745839a303af0068267c5dc893492b2a4bed4d069f7fd35c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.prependListener.listener#4",
+          "declarationSha256": "bd09ae68e8f9348c5495ec2a919c028159e4c7b3f2087cc814171328a7dbdc1d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.prependListener.listener.dialog#1",
+          "declarationSha256": "56fcc709cf83f4e4453ff297ad0504c9651b30d810c033c3023b91607d09e307"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent.event#4",
+          "declarationSha256": "a3b6d48e3362a14fefe22139141c649a7891ea4c25f8d738b710a330888eb10f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent.optionsOrPredicate#4",
+          "declarationSha256": "7007b2c011ab4ad25d4a096896e5d8c8dafc6bf072884e4ef9fa2d649e4993c2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent.optionsOrPredicate.predicate#4",
+          "declarationSha256": "006bfb5a45a38132fbd374b74137d5d6e7fcad4503524af76bf795eed89b7235"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent.optionsOrPredicate.predicate.dialog#1",
+          "declarationSha256": "e172aa3c746fd965f784f043790efdc3b78ef1408194df437967cba0a3ca1aaa"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent.optionsOrPredicate.timeout#4",
+          "declarationSha256": "6434a5b5217bff4e5577d5b7e06114aa3a0f4dccd620c193c99c50d46e1628b0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent.optionsOrPredicate.dialog#1",
+          "declarationSha256": "b5e738837a1b52cd38990820c183abea2742f3a8c4dc87b22a96db946d865e89"
+        }
+      ]
+    },
+    {
+      "id": "consolemessage",
+      "title": "ConsoleMessage",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Live page/context console delivery and same-process main-world child frames; exact diagnostics, aliases, timestamp, page, null worker, retained original-context argument handles and listener identity/order.",
+      "limitations": "Worker logs, out-of-process frame delivery and console history remain outside this slice. worker() returns null within verified page scope. BigInt handles and value-derived text preserve values differing from pinned Playwright 1.60.0 (S4.l). 4096 retained/pending handles per page and bounded 4096-ID background release queue.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "Primitive BigInt console arguments and derived text retain their value; pinned 1.60.0 loses that handle value (S4.l)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/console.ts",
+          "sha256": "bc53c9fa38b91a4a6f85994fcf7e9d54f311f964f17a392040c2bb12299e2176"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/subscribed-events.ts",
+          "sha256": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/console-checkpoint-2026-10-08.json",
+          "sha256": "ff52dae0d92e5ebc135952d98786fa29e07141179fd7d279c4f6c65ba0be3ca4",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.args#1",
+          "declarationSha256": "d201124b6760ae3a3dfa68cf380a8c8e5d275c46a5a1e47de0efbab93c82b6e3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.location#1",
+          "declarationSha256": "0e8a8ad0bbf64bd0d6332f1327bdc719325e5c89bb5111aef6c538d474a36760"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.page#1",
+          "declarationSha256": "5500f92a5dcf60dc8d868bc8602faa6cba23012e9a3c3fb107da3d7c9ea78cae"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.text#1",
+          "declarationSha256": "f2baac9f800baec5080bd5f7eaf561a914d520ec144bb26fcefbb49175778fe8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.timestamp#1",
+          "declarationSha256": "443dfd658e401150ed639a534e16ec96daea1865e12f44005f8ef622fc786841"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.type#1",
+          "declarationSha256": "7faea5549d93c53df5fbd8d6caf4992e5b9268ad03870e07e0456fdcffb06b5e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ConsoleMessage.worker#1",
+          "declarationSha256": "44e94ac31e863510ad14ce32000b8f361431b49220459a3ae7a30176a87e6a02"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.on#2",
+          "declarationSha256": "a6dafaad430966eace0f6c160104e8c0f5922c53ceb457bb5943c368d6e0ed65"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.once#2",
+          "declarationSha256": "1cd1b4e39f687ef965a5dfb90f53fbd5bdfd50b1118ca0f7cbdcbbf434f3d670"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addListener#2",
+          "declarationSha256": "331d463d157bc224d889ce0538c9ffa352e6a9921b018bf7563c134fa48ef71c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.removeListener#2",
+          "declarationSha256": "40322127d22c9a60b696f0f31b815d6f343053dfd2559a1598f122bea7f6921d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.off#2",
+          "declarationSha256": "1f78a5f735d5ab3f2eb037263d15c5fafc273546c6b7f0006ab832ef1b2c1526"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.prependListener#2",
+          "declarationSha256": "dbfc0af364fbdc8bec125cc15efd5155dd8f320acaf579c03cb75f0dd5fe228f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent#2",
+          "declarationSha256": "e7aa627d06bc650a0a2d4d20086e892f143ff0cf5abbfe2caff06999f77c6fb8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.on#3",
+          "declarationSha256": "2d81736f08093e8b34be8166e6fb498ce95acc08d6d528b4108ba644707071dd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.once#3",
+          "declarationSha256": "311bf9e348b9cb4717faff94e5799214d8ab7fd026de6270dac67c817a6d9bcb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addListener#3",
+          "declarationSha256": "dcc060cd8d4ac8632a50435d1e9ecba6f54256f4df1c2c3813c5157f34231059"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.removeListener#3",
+          "declarationSha256": "13843e7e247618391b1470fee4deb1f776eba7ddfadb9a18c57ad91c6dfd5da6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.off#3",
+          "declarationSha256": "d2decf78182a3c250885583bffe5b58d348550961d5d4ca660aad867d9768af1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.prependListener#3",
+          "declarationSha256": "2f34eb8c99164973556c0fb6eb30f751fe287b4788ffa4d9a485cbf8713048b3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.waitForEvent#3",
+          "declarationSha256": "18feacbf4cf8519f8a3dcf2108ed290082c18a76c146281cb6ea13775c8d94d1"
+        }
+      ]
+    },
+    {
+      "id": "jshandle",
+      "title": "JSHandle",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Supported graph values/identity/cycles, nested handle arguments, UTF-16 properties, property ownership, original-context evaluation, DOM detachment, disposal/async disposal, allocation rollback and packed declarations.",
+      "limitations": "Additional by-value classes remain unsupported; Map/functions/symbols can be retained/evaluated as handles but cannot generally serialize by value. Objects remain in original unique execution contexts; cross-context element adoption and out-of-process frames remain outside this slice. 4096 retained/pending handles per page, bounded replies/serialization and recovery. Primitive BigInt behavior intentionally differs from pinned 1.60.0 (S4.l).",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "Primitive BigInt handles preserve the actual JavaScript value; pinned 1.60.0 converts it to undefined (S4.l)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/handles.ts",
+          "sha256": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/handles-checkpoint-2026-10-08.json",
+          "sha256": "d81e249340ada18d5707a125e70cf2e286646160bd74c3a1b49fc7ad40a799c3",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.evaluate#1",
+          "declarationSha256": "421d66abe5488e391d526916c385d949337c2a930007b406e3adfa7b3903287c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.evaluate#2",
+          "declarationSha256": "de9d9feb362b332176be8dde56187c3970fd1eca6a4c68315f8e0cb934b89979"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.evaluateHandle#1",
+          "declarationSha256": "3a80f26b45f1bda5b9ea8ad68897302e3618039fe6d60fdd8969871796bfb488"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.evaluateHandle#2",
+          "declarationSha256": "2d51cc4e85787d905e17b06afe7e1b2c3973ccfd7cb4c8ea1bcf7c56a857f76c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.jsonValue#1",
+          "declarationSha256": "3d9273b0ba833b3ed4f237c0cb58258ca4c850a4c141f5186eb9454cd04b7f71"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.asElement#1",
+          "declarationSha256": "2446ef7d29301abb4f0f6c1ba477e34a03f03c628352c5ba9e14e6b75a7f1975"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.dispose#1",
+          "declarationSha256": "63ddeda87875849689fdbe4ce3b45058125f9b5ae693e777c971ee5d13ea8dcf"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.getProperties#1",
+          "declarationSha256": "6b6705890128de47d85a4fe23805cc4e17b367fea1ab7dbba2da21b24f36ceb3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.getProperty#1",
+          "declarationSha256": "9f71280452daabfe30544c83169a22f084282903594faf5fd1408e930a008f69"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.JSHandle.[Symbol.asyncDispose]#1",
+          "declarationSha256": "84fe276b1f657079575748a43dd43311e16da84286afe5adb879926da4253d5f"
+        }
+      ]
+    },
+    {
+      "id": "elementhandle",
+      "title": "ElementHandle",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Captured original-node selectText/scrollIntoViewIfNeeded and original-node local-file/buffer/clear assignment. Core report accepted via checkpoint hash includes successful run-element-action-tests and run-file-input-tests.",
+      "limitations": "JSHandle base operations are inherited; inventory has no duplicated ElementHandle entry for those methods. All other own ElementHandle methods explicitly reject. Same-process frames and same-document temporary utility aliases only; borrowed handle ownership is preserved. Uploads exclude directories/webkitdirectory; 4096 files, 1 MiB metadata, 32768 UTF-16 path units, 32 MiB aggregate memory payloads. Invalid non-file input rejects explicitly, differing from pinned buffer/clear behavior (S4.m).",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "File assignment to an INPUT whose type is not file rejects before mutation; pinned buffer/clear behavior silently succeeds and path input retries (S4.m)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/handles.ts",
+          "sha256": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7"
+        },
+        {
+          "path": "packages/flashwright-core/src/file-inputs.ts",
+          "sha256": "65679b54717632b473cee2bd972d72d9ef72ba693ff3f4b2309a19f1c126c6c2"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.scrollIntoViewIfNeeded#1",
+          "declarationSha256": "b747adc0a5701241aab8179c43f0ca121894b6b843a798bfecb88e351e313cb1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.selectText#1",
+          "declarationSha256": "d9cd5b0a97bc4ae0c83e751cb666bbe5fc5c6f35e09517958ff347a6509f106b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.setInputFiles#1",
+          "declarationSha256": "6199226d0df314e2cf24a530b08aaf300be058778ec1ff91d2cd870fc68efa8a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.selectText.options.force#1",
+          "declarationSha256": "1d3b5bf344ab4a0b547a2101f6c027e91670268502c1aa3c3b5989d753ffb000"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.selectText.options.timeout#1",
+          "declarationSha256": "a6c312ecb81f9c5f2a73f72f3476effab3e9a7876b5951f2e2871c8bfa5ce82c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.scrollIntoViewIfNeeded.options.timeout#1",
+          "declarationSha256": "0f16417c6c06a6b3688bf7a006f2e40f80a3c8725fb1aac79e40ae879eb482ff"
+        }
+      ]
+    },
+    {
+      "id": "elementhandle-explicit-rejection",
+      "title": "ElementHandle explicit rejections",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "These listed methods explicitly return UnsupportedFeatureError.",
+      "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/handles.ts",
+          "sha256": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7"
+        },
+        {
+          "path": "packages/flashwright-core/src/file-inputs.ts",
+          "sha256": "65679b54717632b473cee2bd972d72d9ef72ba693ff3f4b2309a19f1c126c6c2"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/handles.ts",
+          "sha256": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7",
+          "kind": "source-review"
+        },
+        {
+          "path": "packages/flashwright-core/src/file-inputs.ts",
+          "sha256": "65679b54717632b473cee2bd972d72d9ef72ba693ff3f4b2309a19f1c126c6c2",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$#1",
+          "declarationSha256": "6822fcba161bd2daa148a69fe923b252e1af2627f34bd0befc0ae78d3017539d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$#2",
+          "declarationSha256": "9674c1b23af2b146a7209eacc6826c6eb9b28894e17a3568e6042a13ab2f17f4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$$#1",
+          "declarationSha256": "2f8767bade6617824fdd693dd720f1fdd79a2beb4636d89ba70e9b0106839278"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$$#2",
+          "declarationSha256": "30a6a64d95b9e5098ee9676b7f450adecb65879125dd8154d9ceb2740d371d64"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$eval#1",
+          "declarationSha256": "ab02342cbd650a2e9b3d07e911b2e509e18bbfdf9a97a7e170ce7953aa2350c9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$eval#2",
+          "declarationSha256": "d697a842d463419d616793e17c63982063b786a86cf914f7b9893e63ad4b0d07"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$eval#3",
+          "declarationSha256": "04d8a8d32f597ad334190ae05ee08b22c3d5b30f9ed6e9d19c31bb3f028b3815"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$eval#4",
+          "declarationSha256": "6b416983367431ad789cb510dab6c2ae10f509b7de6ef7850755cdeeb24e1a11"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$$eval#1",
+          "declarationSha256": "955d5003e503519a15f7c14a302223d7b3769c593d407c7c4231eb47fc6dbfc6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$$eval#2",
+          "declarationSha256": "327be1fd7c6c2971e1bae53b534e3072f5121e1bf6db4af99e8a561a5b889c5f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$$eval#3",
+          "declarationSha256": "cb2253bea17b57c34f50b41de2e0033a68db50f1bf92b9d0e6edf8a0eb920637"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.$$eval#4",
+          "declarationSha256": "aef7baa3e996560c398bcb20b438f20ff0d2abaf8f69632ad7d1b46f455f26a2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.waitForSelector#1",
+          "declarationSha256": "14bb01ee968c35a260541e8401be6e974f8f1ce579eeeecbd7889afecfd3a4d2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.waitForSelector#2",
+          "declarationSha256": "acbbe3ed007b97acd777baae9c3dec904334979a3f78f775a689038abaded35b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.waitForSelector#3",
+          "declarationSha256": "0a366647395a0bc8a6f5861d909be11fddf059e0b0adddffda69516a6ac51718"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.waitForSelector#4",
+          "declarationSha256": "5974a43c45f5e3731fc7c6b74da868e0ab723538d51776bdef52f76e10c5a5a8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.boundingBox#1",
+          "declarationSha256": "a4b0d1834441700ca058cb8f39fa6e59e40b403a84a1bf70a70f748f28c32032"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.check#1",
+          "declarationSha256": "3a7c342c8d1332d94f6333c205b242380b7114b0606b8c22142c4feb24861b78"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.click#1",
+          "declarationSha256": "181cc52b3d2cd455f51ddb70b01eedbe63713c8816e347acb035c0862c01e0c9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.contentFrame#1",
+          "declarationSha256": "4ed8115bb6325ba8e083dcd23e3590baa809b98665ca20b68a9d7c4bc6adbcf0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.dblclick#1",
+          "declarationSha256": "4cb5a59d28e8c7512207d6fd232e31ddd3f0f72feeb6f65c7bab7fc3c95ebea7"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.dispatchEvent#1",
+          "declarationSha256": "0ae81603708ab86500c9f12f8ff2199086fe94b197b3fdda8864c9e4b9995d29"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.fill#1",
+          "declarationSha256": "f16beadca52c175b67d81978e87771c00a9a6511307d6116ba8043ee4cfdcedd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.focus#1",
+          "declarationSha256": "f8ccd8cf7d7b4d44c08807eec6603ec86f00a6401e4ceaf1cdebc84ebb841237"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.getAttribute#1",
+          "declarationSha256": "96e53a1876d67c76cae2faa35ef19ebfb56897becbc58194322a3ff2558b630f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.hover#1",
+          "declarationSha256": "fc0a9a72b56657d1e1c1e648d8a40d4966d774e2d73ba668227d63d7bde6a4fe"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.innerHTML#1",
+          "declarationSha256": "4adb1799d66a4ac6624d926262f2a4eec6b081d601620e2c21e728ee55356d0d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.innerText#1",
+          "declarationSha256": "cac308f0e3f006c554c303abbaa6448eb361e41974b33dd2b2cc5a2b49b0a970"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.inputValue#1",
+          "declarationSha256": "4932f8b7d48158ab3d7db9f9c466631e4c68010799225f389de8e5cfe1e24bbe"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.isChecked#1",
+          "declarationSha256": "1b7eea87e7aba2da0be3ed7b33014fb62a40072ec946b4bc5884ae3005dc6128"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.isDisabled#1",
+          "declarationSha256": "807116b24da9bb03325c67cb61963f415db1d81602399fc18da1f7fd45d2dcc4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.isEditable#1",
+          "declarationSha256": "7effe0304708895a8f8bc3032c05efb56f860d8214be235bad62d055776283a9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.isEnabled#1",
+          "declarationSha256": "46d8088557d5c895c8de2258928a9174b3f33fb70131067efcea82cffd04af56"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.isHidden#1",
+          "declarationSha256": "9e922a2ead5c2281fa36709ca75e6837aebfadc242c1694a1a370e2b38db4b2b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.isVisible#1",
+          "declarationSha256": "3de6f53a7660838fbae6a663f13b48435b75e6dc6d554c5f6c8371affd929a1b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.ownerFrame#1",
+          "declarationSha256": "cde5701c7909cee4e5afcb43b367829442aa621111685de0285a8fa0d2e24385"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.press#1",
+          "declarationSha256": "f67b8e1fb1334803a772f5ee423d601d9f88b878346310cc7a6b3e2bcba135e2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.screenshot#1",
+          "declarationSha256": "a68b6b8704c7f94fa7116499a3bcf8147e82bfb6e9a855a12017217ca50dfa89"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.selectOption#1",
+          "declarationSha256": "75533eb59fa3a9a08408f88bac1c5242def7b03bfeadfb08485f402c48d034af"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.setChecked#1",
+          "declarationSha256": "e0548f1a8cfb8f974a8a96d65924719e3c853d2a40deaf0384f29b2e9aa331df"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.tap#1",
+          "declarationSha256": "88ecceca0f984a6e7ee636e4df33e22ce3de48d1aec7e23472a858b61b54593e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.textContent#1",
+          "declarationSha256": "2d440db353f60bb418960290516585930576b0686802a2fa96d196d3f51866c5"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.type#1",
+          "declarationSha256": "932fbf1db0801e970be21ca8f7704d10a8af8611fefba20f8832d149704f3e4a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.uncheck#1",
+          "declarationSha256": "fa4cf4763cfd467b16e1964aa2570178a7499f09f2cc35fa6473c135fff06604"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.ElementHandle.waitForElementState#1",
+          "declarationSha256": "466a40cd38601026c6a47a80d44545be7cea52a9dca6e60671c8aed2e2a13b05"
+        }
+      ]
+    },
+    {
+      "id": "tracing",
+      "title": "Tracing",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies.",
+      "limitations": "Live traces, video, group/groupEnd and HAR methods are not implemented in the public Tracing class. live start option rejects through option validation. DOM snapshots cover supported states and same-process frames; unsupported custom-element/out-of-process states fail export explicitly. Public request.newContext remains explicitly unsupported; private native API checkpoints do not establish standalone API request tracing. Manual screenshots/snapshots/sources default false. Runner defaults are separately verified and must not overwrite these manual defaults. Latest public runner checkpoint reuses accepted pre-API trace driver and is focused; no fresh combined full-core/native API/Linux/release/performance acceptance.",
+      "defaults": "Manual screenshots, snapshots and sources default to false. Omitting a stop path discards the archive. Runner policy defaults are separate.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/tracing.ts",
+          "sha256": "a763cc8e8a96e9514ea7fe798294e47417b8af927c53303f042a8e235300ba27"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
+          "sha256": "e91964180bdc7ecf1ba01a5f189bf677da77c8cc149d3883d212b84907a9f85f",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
+          "sha256": "b86450cac1ed6c69d36649e2754748260be4d2d711607109f87f5b8f1dc04a89",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+          "sha256": "03293c9e58dcdcd25ca4f71c601ff431f3598db297f06a8738c93045a740465d",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.start#1",
+          "declarationSha256": "3c8ff47db69290dd71e5815064ab8b65b92b5188498832735559822949ce3242"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.startChunk#1",
+          "declarationSha256": "fc91c686b9d8ceee7554cdbbc315e38611f39539da1734c829e27c23f878fcab"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.stop#1",
+          "declarationSha256": "4104ed9428104fc4f20195255f8e27caeb3defa2765bb4217dfba77acc609a7d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.stopChunk#1",
+          "declarationSha256": "3b876c956c8f1082ceb718a90d5a3f7a5cbee326caac54398f05f214c0a15677"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.start.options.name#1",
+          "declarationSha256": "3249c01624779103e5d348da19639088036707bab6800cb9850e7930ba13dd06"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.start.options.title#1",
+          "declarationSha256": "a613519dcfa47f8dd958cd3a429c549d45301c9a3d1fcc26707f83f298feedbc"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.start.options.screenshots#1",
+          "declarationSha256": "cf4f21d04a4ba2f905f1d232f9451bd0ab5b347ede4e80dd4a425e46d910b3c9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.start.options.snapshots#1",
+          "declarationSha256": "0f057853460cbdc48625ccb0441ae67f9a7b89f6686224d65276c9f579919c9b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.start.options.sources#1",
+          "declarationSha256": "4d57d24b96b9886b526bdd6e0102c563bae1f7d1cb776bef3710bc2736636107"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.startChunk.options.name#1",
+          "declarationSha256": "1ed946531e7076101b64487e1def3dfa0717d88394c062a9e5c8e44667127165"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.startChunk.options.title#1",
+          "declarationSha256": "728d6ff229b3350cc5cdfce721c5b0996b17bc2c429ed15f348a6dee33106b09"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.stop.options.path#1",
+          "declarationSha256": "07563589d29a62ca34096b4d5cb91d5d83aba0e9628c30c27b626c84cad5e5ba"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.stopChunk.options.path#1",
+          "declarationSha256": "3a644d9c2ab855eb589399438832c17cd8c4968f6de13fda7a8c92f7ee265ca9"
+        }
+      ]
+    },
+    {
+      "id": "tracing-missing",
+      "title": "Tracing missing methods",
+      "status": "unsupported",
+      "assessment": "missing",
+      "scope": "These listed methods have no public implementation in the inspected class.",
+      "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/tracing.ts",
+          "sha256": "a763cc8e8a96e9514ea7fe798294e47417b8af927c53303f042a8e235300ba27"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/tracing.ts",
+          "sha256": "a763cc8e8a96e9514ea7fe798294e47417b8af927c53303f042a8e235300ba27",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.group#1",
+          "declarationSha256": "42f558f3bbc64141b0d94a91a904c4d0fdcf5ccd2fdd2849c14fe5a60fa1e455"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.groupEnd#1",
+          "declarationSha256": "3636604627c92ae4a128756c9b029d7e84aed8dd2d28c0d23a93045657cc14db"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.startHar#1",
+          "declarationSha256": "44f421faf8bae5c6785f83de1a754f242db946771e827424dcc2f510cca41ce8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Tracing.stopHar#1",
+          "declarationSha256": "77d9556970572f414696fbaba6d19841371d47b103854d8d9539feaa3f46cf7e"
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "title": "Route",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Page/context callbacks, precedence/fallback/times/removal, original occurrence, method/URL/header/body overrides, binary sizes 0/65537/4MiB/32MiB, JSON and regular-file fulfillment, cookies/redirects/status reason phrases and closure no-replay.",
+      "limitations": "Route.fetch explicitly rejects; APIResponse fulfillment option is not exposed. 32 MiB route body, 1 MiB URL/header text, 4096 headers, 128 UTF-16 method units; regular response files only. Page closure can admit original request to server; no-replay is verified separately from scheduling-dependent zero-or-one arrival. Browser network routes only; private API request engine does not promote this surface.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/routing.ts",
+          "sha256": "4b27af68541e14e732a8133f726c21f68d6b9e55ba724ff0e52f9674f55c6c89"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/routing-checkpoint-2026-10-09.json",
+          "sha256": "afe591c2113ea4ccf80fcc22a3e330edf3a0e470b55fe10f0ee79b2b9439a2d7",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/routing-close-checkpoint-2026-10-09.json",
+          "sha256": "570ab1c5840c4d569766147744b244b77867a963ff023b285f38b3c58b59bb24",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Route.abort#1",
+          "declarationSha256": "c493df3645858a89b263d9ae16d9310810acf6c3ffd941bda9880380f7851da3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Route.continue#1",
+          "declarationSha256": "9a995a53dd097310b678a11a1925fe32d423dad93443abe3df35e2f06f87ed81"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Route.fallback#1",
+          "declarationSha256": "242a0a8ca8232a4b3836c0beaf85b3b05174ef816ae2237f2fa0abb18d2aef66"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Route.fulfill#1",
+          "declarationSha256": "e8b9fe8162160786a6dae0ecffe72ea3b83a53d559a353956fcfe223547c3d87"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Route.request#1",
+          "declarationSha256": "4c3a792a57eeb488a2f8f2d1fb021f7ee900ef381a546d9080b122a341f3dea0"
+        }
+      ]
+    },
+    {
+      "id": "route-explicit-rejection",
+      "title": "Route explicit rejections",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "These listed methods explicitly return UnsupportedFeatureError.",
+      "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/routing.ts",
+          "sha256": "4b27af68541e14e732a8133f726c21f68d6b9e55ba724ff0e52f9674f55c6c89"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/routing.ts",
+          "sha256": "4b27af68541e14e732a8133f726c21f68d6b9e55ba724ff0e52f9674f55c6c89",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Route.fetch#1",
+          "declarationSha256": "af7874db1973019205af9fee7b50d455f100b6ad8d65873059275d3f7e7ba3a7"
+        }
+      ]
+    },
+    {
+      "id": "request",
+      "title": "Request",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Browser HTTP observation, exact original request/response identity, request binary/text bodies, provisional/raw/cookie headers, failure-null response, routing overrides and original Frame after detach/reuse/close. Other getters remain unverified.",
+      "limitations": "Browser Request is separate from native private APIRequestContext/APIResponse. serviceWorker() currently returns null; worker request coverage is not established. redirect getters and resourceType are public implementations but are not promoted by this review. postDataJSON/existingResponse/sizes/timing have no current public implementation. 1024-occurrence/64 MiB completed history budget; chain ownership and event-admission bounds apply separately.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/network.ts",
+          "sha256": "34d4733b5052f9ac23c7a25bca48e78c9816d6251316691b07e9a1648f88dd9e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/routing-checkpoint-2026-10-09.json",
+          "sha256": "afe591c2113ea4ccf80fcc22a3e330edf3a0e470b55fe10f0ee79b2b9439a2d7",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Request.allHeaders#1",
+          "declarationSha256": "e02681ba73249063c36ee04cc85c974e847bb1e19b413e7da3ccc41f76ffd6f4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.failure#1",
+          "declarationSha256": "316fe3e851ac03e607609bb9a5fd0c1a104c5f3a90f6592839089591709b91bb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.frame#1",
+          "declarationSha256": "b8a63589c83cf418b112ab61af485635c7fb946826df723733ebdab555d567dc"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.headers#1",
+          "declarationSha256": "736de7b15a152a4be586269d302aea9f9333685025eb1a934188b0951b499ff6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.headersArray#1",
+          "declarationSha256": "30a2e2cec056ff772371d2f223af02171e4a492d03fa0682bb70ebd266ae9ecc"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.headerValue#1",
+          "declarationSha256": "9b10b4f5b87ef50bb6ec5f2a6d3c3e0fccdcc960e9c47e067086b327d2b3d1a8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.isNavigationRequest#1",
+          "declarationSha256": "264845b1c3d89eb88a4fb8ca51ad2decb7177908b95078669edffca0ce17d716"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.method#1",
+          "declarationSha256": "fd980df8448d4482d88878cb89eda72c0d6aa237391554b6d9b0910da3a4822d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.postData#1",
+          "declarationSha256": "b5c924b3858036d567cd0b166f53682fce6feaa62e388b09ca0d41b2644efec0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.postDataBuffer#1",
+          "declarationSha256": "14af44686264b46cbbec5bb7f0f4b5edf7a4d3e380bf0be9940d49d72a479cd6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.response#1",
+          "declarationSha256": "e5bb56bb787c5c2e8f5b04d829e8737f8746ca70e67f4b7e6fbd69520bec973f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.url#1",
+          "declarationSha256": "2967c87e4c51b4339d6e178ae13e67822ebe4ef691eea0bcc0b5e1196c5662d7"
+        }
+      ]
+    },
+    {
+      "id": "request-missing",
+      "title": "Request missing methods",
+      "status": "unsupported",
+      "assessment": "missing",
+      "scope": "These listed methods have no public implementation in the inspected class.",
+      "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/network.ts",
+          "sha256": "34d4733b5052f9ac23c7a25bca48e78c9816d6251316691b07e9a1648f88dd9e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/network.ts",
+          "sha256": "34d4733b5052f9ac23c7a25bca48e78c9816d6251316691b07e9a1648f88dd9e",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Request.existingResponse#1",
+          "declarationSha256": "7c61e62e72b856156688f350de2882af5f68007aad753a5ba60c17d4e70e7e14"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.postDataJSON#1",
+          "declarationSha256": "8a8878ba81e373ed83b3606ea717ff1ddf7a7a443e1de6baf97f671869dd3310"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.sizes#1",
+          "declarationSha256": "47af5647676651b7759e8b2e46aaaaa49a58e91e369db7953c93ec1f73e3d648"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Request.timing#1",
+          "declarationSha256": "bee2031797fa81b7c6dae9f6cdea6cbea8b50b4b2032e5208b15c0808829eca9"
+        }
+      ]
+    },
+    {
+      "id": "response",
+      "title": "Response",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Browser HTTP response metadata, binary/text/JSON bodies, raw header arrays/repeated set-cookie handling, defensive arrays vs entry mutation characterization, status reason phrases and original Request identity. ok/fromServiceWorker remain unverified.",
+      "limitations": "Response.finished/frame/httpVersion/securityDetails/serverAddr are unexposed. All 300-399 body reads reject, with or without Location; reason phrases include Unknown for unassigned status codes. fromServiceWorker is public metadata getter but broad service-worker interception parity is not established. Native private APIResponse evidence is not browser Response evidence.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/network.ts",
+          "sha256": "34d4733b5052f9ac23c7a25bca48e78c9816d6251316691b07e9a1648f88dd9e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/routing-checkpoint-2026-10-09.json",
+          "sha256": "afe591c2113ea4ccf80fcc22a3e330edf3a0e470b55fe10f0ee79b2b9439a2d7",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Response.allHeaders#1",
+          "declarationSha256": "b406fa9ac369a47b934e4d9fa1c9eb2ab107d6f5e87e6fc4ca58b12a301d1b68"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.body#1",
+          "declarationSha256": "11476e2189e3fc925c147327d5915f419b7986de6d13c80dbe06e6c0d92e95d4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.headers#1",
+          "declarationSha256": "fad0f65f79a668d8b8c009fd1faefaa0b221e036021c75b83b7ddb6aca084741"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.headersArray#1",
+          "declarationSha256": "22ddbd4c036c37eb1a035744c0ae47b60704196bf11a88b4f4877ff1c150a673"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.headerValue#1",
+          "declarationSha256": "84387a361c57544e56640c6dc281fd9db5179576cb7aafdc1d631eed575a0003"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.headerValues#1",
+          "declarationSha256": "26f73fc02cadffe4130547165414f82b84d0bd8c7ac432aaeafe275b9273daf1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.json#1",
+          "declarationSha256": "f0ed82b1837df1d3e5f8e03152de68650f83018d237051de40e3dffff8f515d2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.request#1",
+          "declarationSha256": "d74c6ad67984b40f4862f41632a47d6d40003749790145a86e5295e2c9b3e383"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.status#1",
+          "declarationSha256": "11d5e47d20c6bdfc47002f04d6998797a899a8029e8a270329ab4a339bdc79cf"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.statusText#1",
+          "declarationSha256": "ca43560a226422fd9ba1af054809a2f6accbef7f27060641d5f339be0bdfeb0c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.text#1",
+          "declarationSha256": "04b28719abed6cfcb9412c1534a620b9b9ca131a4dde8267c35cd44162a159cf"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.url#1",
+          "declarationSha256": "15202f5e8eb93e9155afc69900302bfc32d75ee1b8f5f42aa02211d84f805228"
+        }
+      ]
+    },
+    {
+      "id": "response-missing",
+      "title": "Response missing methods",
+      "status": "unsupported",
+      "assessment": "missing",
+      "scope": "These listed methods have no public implementation in the inspected class.",
+      "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/network.ts",
+          "sha256": "34d4733b5052f9ac23c7a25bca48e78c9816d6251316691b07e9a1648f88dd9e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/network.ts",
+          "sha256": "34d4733b5052f9ac23c7a25bca48e78c9816d6251316691b07e9a1648f88dd9e",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Response.finished#1",
+          "declarationSha256": "40000187a43d81c416abbc648fde11270d8227accef4555efcfd584d8d69da97"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.frame#1",
+          "declarationSha256": "e7a20fa497101664769d6be14231517c411c87998db1af80c45b91453dc84fa8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.httpVersion#1",
+          "declarationSha256": "abd8994f5215c066a7a7b606dc62db4e2e9f2deef6942f0a0a767d5befdd793b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.securityDetails#1",
+          "declarationSha256": "d0c38f336fb83c5eb447ba8f76169d505bf4e2f0700991a89e639d383733f9d8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Response.serverAddr#1",
+          "declarationSha256": "782c23482bf5906475be642c456adec4ba9f4603a08a0b0bb27c17c986720075"
+        }
+      ]
+    },
+    {
+      "id": "filechooser",
+      "title": "FileChooser",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Chooser page/element/multiplicity identity, original utility-world element despite replacement/detachment, file assignment and same-process child-frame event. Core checkpoint hash proves successful run-file-chooser-tests and run-file-input-tests.",
+      "limitations": "Removing last listener cancels unpublished native adoption permanently, differing from pinned resubscription race (S4.n). 16 active/queued events per page and 128 per engine; one existing public handle slot per event, bounded background release. Directory/webkitdirectory uploads unsupported; same file limits and invalid-target difference as ElementHandle.setInputFiles. setFiles delegates to original ElementHandle; own options not inferred from shared locator tests without direct fixture assertion.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "Removing the last listener permanently cancels unpublished adoption; a new listener does not receive that cancelled occurrence (S4.n).",
+        "File assignment rejects non-file INPUT targets before mutation (S4.m)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/file-chooser.ts",
+          "sha256": "ec9124ab294e073f3694dafaee61a676af09bdfdf1578eb69c9abf190c505c57"
+        },
+        {
+          "path": "packages/flashwright-core/src/file-inputs.ts",
+          "sha256": "65679b54717632b473cee2bd972d72d9ef72ba693ff3f4b2309a19f1c126c6c2"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/subscribed-events.ts",
+          "sha256": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.FileChooser.element#1",
+          "declarationSha256": "d0b7df037f9159771a831e8b6a5a2d0714a9aafdbb1632bc05bba4101cf20421"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.FileChooser.isMultiple#1",
+          "declarationSha256": "436cf6cf9d40d0d19ed79dda5c0580239289c712cb5369a24b9e4fc3b5ca08b2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.FileChooser.page#1",
+          "declarationSha256": "576604a9f1dde87a5f3d7a87e107a8fb6cdf4d96de1b8b19dc42bab6e0a39ec5"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.FileChooser.setFiles#1",
+          "declarationSha256": "00ec28356151ff711e42a99c0f48f00ba114ce445d21e694a64abd9b07f6d9d2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.on#7",
+          "declarationSha256": "eba45dafa423563c29a5f8e69f2826d6347742e2fe5479648cd756026bd21bd6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.once#7",
+          "declarationSha256": "9cde46bed3e79fdcbd2a9fe8f834ea4102505b655a9cf4bb8d9e286473cacfbe"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addListener#7",
+          "declarationSha256": "43a6c3e618dbaee8af5e673ade6ee0a6aca15ea171c103a311f38ba8b786b1e8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.removeListener#7",
+          "declarationSha256": "e58d7ff56aef01fbc296e2b55dfcce24a5a1f2f5287be8e51fec9a223bb7baee"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.off#7",
+          "declarationSha256": "65339b81806ecfa818ad236a95937533e2d73426674033b8f2d4308216ad9beb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.prependListener#7",
+          "declarationSha256": "f4c386a874852d5c2b5ac7ce36964c66d0881ef6888c1b16f217aa454cd7471a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForEvent#7",
+          "declarationSha256": "e09b6b3b18eca99680e16eb6edb1a8f3b80457f2279b6ee3eb734ed1a027b738"
+        }
+      ]
+    },
+    {
+      "id": "keyboard",
+      "title": "Keyboard",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Page keyboard press pinned 212-key layout, focus/selection/editing shortcuts/delay, and sequential typing Unicode/native events/per-character pacing/focus changes; latest accepted core includes both successful keyboard and sequential-typing runners.",
+      "limitations": "Persistent down/up and direct insertText explicitly reject. Unpaired UTF-16 surrogates reject before focus/input; text/key limited to 100000 UTF-16 units. Page keyboard type retains unbounded public timeout and existing focus; locator deadline/navigation rules do not apply. Linux keyboard checkpoint is amd64 emulation; later full-core checkpoint is macOS development.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/keyboard.ts",
+          "sha256": "73b7410dcb8861721ef3840aade9901d7be48a019fb374e7749dcc0505730a31"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/keyboard-migration-checkpoint-2026-10-07.json",
+          "sha256": "338b75588b0b788c5e67652c8777c0d666e4c68e5a84f51317ff035299b84cdc",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.press#1",
+          "declarationSha256": "b84e537daee40a6756961fa148a24dceadc9a8f1acc6ec75dd9362fd0cda66d8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.type#1",
+          "declarationSha256": "d97a145f77e963f0ea6bbd0b51407cdf71e1b6a1782d21f01155ceaf729fae00"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.press.options.delay#1",
+          "declarationSha256": "4382ad75793579fb77441dd8b04a570d99c5acc295bfa42be39cd4a3a9e436c4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.type.options.delay#1",
+          "declarationSha256": "e570b8d65d060c116d963a9efe68f7a6f358f7b6457a2cb73ed3d1c7985ca6d9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.keyboard#1",
+          "declarationSha256": "f1e6be00e6caa0d51fcb058bb3bced668c3677d625b845864aa8e8aea9dba1b5"
+        }
+      ]
+    },
+    {
+      "id": "keyboard-explicit-rejection",
+      "title": "Keyboard explicit rejections",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "These listed methods explicitly return UnsupportedFeatureError.",
+      "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/keyboard.ts",
+          "sha256": "73b7410dcb8861721ef3840aade9901d7be48a019fb374e7749dcc0505730a31"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/keyboard.ts",
+          "sha256": "73b7410dcb8861721ef3840aade9901d7be48a019fb374e7749dcc0505730a31",
+          "kind": "source-review"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.down#1",
+          "declarationSha256": "7127cd40effdbb3d5c657bc98bb8633488ee2e5d5e3abc697f8bd481a1057766"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.insertText#1",
+          "declarationSha256": "d5487294fdbd82d191d9b2a52d54876622d695ba4a0305f7b94578170ed9b80b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Keyboard.up#1",
+          "declarationSha256": "a7d2e1ea71b8db1c83b99d3fe77ad39bc4e231335ad066088789e47b16d6945f"
+        }
+      ]
+    },
+    {
+      "id": "runner-tracing",
+      "title": "Automatic runner tracing",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Browser-context traces for all eight pinned policy spellings, retention across retries, public stock/module/worker contexts, attachments, source locations and actual pinned viewer loading. 514 public attempts, 21 boundary cases and six viewer cases are retained.",
+      "limitations": "Live traces, video and public standalone API request tracing remain unavailable. Context creation begun without an attempt owner and published during an attempt reports a trace error. Capture limits and diagnostic failures preserve the original test outcome. Focused macOS acceptance on Bun and Node 22/24; no combined native API, Linux or release acceptance.",
+      "defaults": "Trace defaults to off. Enabled runner policies use pinned screenshots/snapshots/sources/attachments defaults; boolean overrides are covered. Missing object mode follows the pinned off default.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-runner/src/index.ts",
+          "sha256": "733b2f96614259ade4212bace05c94785d4de521f8daa0be43ac6aa710566ea0"
+        },
+        {
+          "path": "packages/flashwright-runner/src/trace-policy.ts",
+          "sha256": "aa61b845816753629e5bca1bf5f039c89b983f6ee7093122b76a90027781459b"
+        },
+        {
+          "path": "packages/flashwright-runner/src/runner-artifact-coordinator.ts",
+          "sha256": "173d6ee6e93d2549bf2863954725e9bee4c753ba4cb00eaf75ab92743cf47ed2"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+          "sha256": "03293c9e58dcdcd25ca4f71c601ff431f3598db297f06a8738c93045a740465d",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightWorkerOptions.trace#1",
+          "declarationSha256": "910d8a89627db4136eed01240b9549d3f00c536dfe408d62726cd3689d0b7237"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightWorkerOptions.trace.mode#1",
+          "declarationSha256": "4e2c4fc0d8fe10647a82d51c522cfa2387993a525d867ebf1851d6c0e6d4baa1"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightWorkerOptions.trace.snapshots#1",
+          "declarationSha256": "935ae76f6aca5e12426f054acab3181c9585b3774bff773c8325aee66a506297"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightWorkerOptions.trace.screenshots#1",
+          "declarationSha256": "8b4562df814e863e394b1dba94960965939ca93398b3cad9b68c7522e8b88459"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightWorkerOptions.trace.sources#1",
+          "declarationSha256": "70352316a7d2d017ad06af109a16d96c67eaadb0d33ca59e35f3ac70212505aa"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightWorkerOptions.trace.attachments#1",
+          "declarationSha256": "4ae574fdfa9d1450ed64ec7c7c6c3c0f3daf949dcd588ab6bce44aaaabc1c638"
+        }
+      ]
+    },
+    {
+      "id": "api-request-disabled",
+      "title": "Public API request contexts",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "Public request.newContext explicitly rejects before creating an API context.",
+      "limitations": "Internal native API request implementation and its private tests do not enable the public API, request fixtures or API trace collection.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext#1",
+          "declarationSha256": "3a50f8e81912d97aed5abcedb075c7403c4fcca81a111ee04d53e41d9cd9399e"
+        }
+      ]
+    },
+    {
+      "id": "browser-connections",
+      "title": "Persistent and remote browser connections",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "launchPersistentContext, connect and connectOverCDP reject at the public BrowserType boundary.",
+      "limitations": "Source review establishes explicit rejection. Chromium launch is separate; Firefox/WebKit launch also reject.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserType.connectOverCDP#1",
+          "declarationSha256": "f3e3b7c5f8d2db896eb5a474437bc7cbbf04c7c2c877432c4efbdaf878d0fa67"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserType.connectOverCDP#2",
+          "declarationSha256": "bf8dee2b8910abcb25100d69142c47c7daa55f40392968248700d2051c568021"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserType.connect#1",
+          "declarationSha256": "5b3cd7747fea7abc0a2036a0d8c00fd079636758989a0cf16acfaf51b57573a3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserType.connect#2",
+          "declarationSha256": "0c43fdbb5b7afa7523710ad5fa9bc9131e19373c0433d97b5a35cc65353461c5"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserType.launchPersistentContext#1",
+          "declarationSha256": "5d5cdf466d80c15c24a32d5be924e2128a1d7baefcc93975479fff4de0acc5cd"
+        }
+      ]
+    },
+    {
+      "id": "runner-unavailable-matchers",
+      "title": "Unavailable browser assertions",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "toBeInViewport, toBeOK, toHaveJSProperty, toHaveScreenshot and toMatchAriaSnapshot deliberately reject through the runner matcher adapter.",
+      "limitations": "This does not classify inherited generic expectations or unlisted matcher options.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-runner/src/index.ts",
+          "sha256": "733b2f96614259ade4212bace05c94785d4de521f8daa0be43ac6aa710566ea0"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-runner/src/index.ts",
+          "sha256": "733b2f96614259ade4212bace05c94785d4de521f8daa0be43ac6aa710566ea0",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright/types/test.d.ts.APIResponseAssertions.toBeOK#1",
+          "declarationSha256": "23073209e7e2a8c80abb0f23a24c0305979953f1c8f6f0d6014d2e83be7e72dd"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeInViewport#1",
+          "declarationSha256": "0c0fd15eb770a970ef5bd6c0871cf0426e97f5cd11f1788f1cbc0c3b51fe06e4"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveJSProperty#1",
+          "declarationSha256": "7f3983cb682ee9e0efdd2871cbdf419416b1e312547bc9679ebd995911ad643e"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveScreenshot#1",
+          "declarationSha256": "40c14597a578cc33568a551f2c35e9ccf937d266480046f1b07a1d308930e654"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveScreenshot#2",
+          "declarationSha256": "2f30b5582e3b10c770d1450421d8b20cae32ac525a01354270262a680bb7d8b2"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot#1",
+          "declarationSha256": "783de1a0a95ac116c36a25155ffd82907b048a978ae68516537ae3bfbf6ddf7a"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toMatchAriaSnapshot#2",
+          "declarationSha256": "9c145f5a89595d1bd67c28f8a19c43f84a94c41a3b205b0433a981f98ce4d58a"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PageAssertions.toHaveScreenshot#1",
+          "declarationSha256": "b39af6b73e7f130432f18d4a933f05c092c3cf8d5dece236851f0c59417c56bc"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PageAssertions.toHaveScreenshot#2",
+          "declarationSha256": "920361de598b59b954271e5a5e847aedd2392991cb12321358db65751c309cca"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#1",
+          "declarationSha256": "972b9766bd935601eb4f0f03cae8c67b3c037a487a7c4ab29d84a3e16ac9661b"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PageAssertions.toMatchAriaSnapshot#2",
+          "declarationSha256": "026876ed8a43c1fbd24655aab26c07ae6e1ed1da14cf240cf4e96d15d5e1c2ee"
+        }
+      ]
+    },
+    {
+      "id": "common-matchers",
+      "title": "Nine additional locator assertions",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence.",
+      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified.",
+      "defaults": "Recorded cases include configured/per-call timeouts and pinned predicate defaults; this review does not promote every declaration default.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-runner/src/matchers.ts",
+          "sha256": "84414fabdb8024f3560e3278cd41f4ea8ed1fa04ba5fb8ef6ec0e73b9507fef4"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/common-matchers-checkpoint-2026-10-09.json",
+          "sha256": "6ecdaaa07e303cff970b92807821b52a8fab75727eae348e754952c41c7550b6",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toContainClass#1",
+          "declarationSha256": "1cef69ecd7e263342115308fa1e5d08dc186840209e3f8aeb3f83ed453d15428"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveAccessibleDescription#1",
+          "declarationSha256": "9a3cc84d268c501c04657365ee5368f293437fa375a3e75a0740e24785cca0ce"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveAccessibleErrorMessage#1",
+          "declarationSha256": "86fef4d82f5b0f75dd7bc0c8cdb001f54f2245b64e99311571363e6fd55a3912"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveAccessibleName#1",
+          "declarationSha256": "1be66786b07def156add4a3fa5a3e313cce75931fa39820dd46fc4520d3d62d1"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveClass#1",
+          "declarationSha256": "0e2a13099d94c51ca503cd074428c2a5a040dc502beaa5394cb1ab204bce8d23"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveCSS#1",
+          "declarationSha256": "5a0d0b7d973c7d54fe956b3cb06ddcf6654f1bb2a1e60fe95b94eec91c02a095"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveId#1",
+          "declarationSha256": "ba6ab56a1ff23cdb7e41c425847451beecde5255fcf79f836736295d2a09fd4e"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveRole#1",
+          "declarationSha256": "aeeed9e1d32b960a00885f350d191d60de8ef595d4ee9e5dd6d13772f9a9c676"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveValues#1",
+          "declarationSha256": "973b70dc4783047ee15f1e7d580a9945f819bd19eb18d68a57d26070db7ae09d"
+        }
+      ]
+    },
+    {
+      "id": "core-lifecycle",
+      "title": "Browser, context, page and frame ownership",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures.",
+      "limitations": "Only Chromium is implemented. Cross-process frame APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/frame.ts",
+          "sha256": "0a90c2cbd4694bd5ef8e665d3101201a5d95458371925fcbf87601a2fa45e537"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m1/library-smoke.mjs",
+          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/public-lifecycle-worker.mjs",
+          "sha256": "6fd6e13b7e2b73feffbcb67617a8867f2ce9a777acacde22fb09d2312370e370",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/evaluation-context.mjs",
+          "sha256": "d25f0fdd9e441342aebf00c02997784a2e5dd65c31cb5e60b5a32c317c3d65a2",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/test_lifecycle.py",
+          "sha256": "cde20c909f52e158996e4886cdff7c9d705cfe946a1c6e099cfdc2fced3f65d4",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/navigation.mjs",
+          "sha256": "71ff3fb1ad9d0382a99579d93363d6b7e58e3215bc47a93141e6c8a109173b53",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/routing-payloads.mjs",
+          "sha256": "1468816a34a2d4dd3511ddd9f7c60bbc2bfa7b67b2144d8e916c2ab9283acfd6",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/handles.mjs",
+          "sha256": "7863f89c50e3496282d651aa15cc3abec92c3e2e17d76fa72d07f9e2fff263aa",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/locators.mjs",
+          "sha256": "689a33691b7f02665184cb16cf6a9df4ea13ad5e159df3b9cdc969364dc6fddd",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/navigation-waits.mjs",
+          "sha256": "cdf43813278af9ec4d4f7feca9f15b169c6ec4e3fc7cc6633d70c6c87947e425",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/routing-reference.mjs",
+          "sha256": "f1a8fb86875daa2effdc1c093d0349727abb6cba59a09620fcafb5080b0e49e3",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/routing-errors.mjs",
+          "sha256": "0a76374c7dbf2fac98b7d3acb4992a15a772fc9716a552038995ae97cb366ea6",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.version#1",
+          "declarationSha256": "374496d787c3b053c0aa3d92c70dcb82fe60f17065e3ecbaa86c578664d30ccd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.contexts#1",
+          "declarationSha256": "056ffaf0499e7ead4ee98cae2d2c8f9690bd249218f7b96b75cda080c0ab0ff4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.isConnected#1",
+          "declarationSha256": "868274f7dcd5bc2dc32587844c221f7bdbeb6416b3e823108914e31267e3a124"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.newContext#1",
+          "declarationSha256": "20e6b2ba0c02180a61d462e88d1b277b7e9ca56ac266dc399f57fe2d0a02556d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.newPage#1",
+          "declarationSha256": "e1d80ce5731be5bfd9795d7c4e1d1b78247c51178c48ccaa9ed49b8712366844"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.close#1",
+          "declarationSha256": "648f527ad86fdde7e54bace8df23fe6ef65b113392d818c7b6a35578168de860"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.browser#1",
+          "declarationSha256": "1e84070a95fbb9bb19aa55c0137d349a6e4d405f557595f55b73a4949522b6e5"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.pages#1",
+          "declarationSha256": "fddd4785b751d4aa8422b841325069731f4c581f1325542cd24abe6d60e6a746"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.newPage#1",
+          "declarationSha256": "8234cb2ccf57a070b07eed76f30f0a57ef7a8c3f9044eab1238bf6010b1f6f1c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.close#1",
+          "declarationSha256": "d3d3455c3a9b6db6474bba645e2afcac1acb7ea2b7e8e081c6af1b58925a8c2e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.context#1",
+          "declarationSha256": "5d8c3e8cc2bf1ea2027da6bc09b128c942a0f9a4d7c129043f408dd9ba2e0944"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.isClosed#1",
+          "declarationSha256": "cd1ddd718b4fde47a50419bde0251ac7338d51dfa44ba81dd8f24d2e0dc46f41"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.close#1",
+          "declarationSha256": "10bbb3fb19e290674c9c8a33b1c7c15ad09ad73e63190a3a7bff1f5b53b89856"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.mainFrame#1",
+          "declarationSha256": "d498111968b37f3a4d7f55e748887ab12fba2a5e850df007789759e0fafc1566"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.frames#1",
+          "declarationSha256": "9bae5de27366a4f1127e910cfb79c29eab7c6539bd95c2563e0da101b30b57af"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.frame#1",
+          "declarationSha256": "b9ebdbbb12b849d11a2d4126f584e0e6e1d6c95a1ab152b6c7bb8be830d85995"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.name#1",
+          "declarationSha256": "1bfe0b27a1347d05832820bf9ae1884216b303411666e62bf0d969f1fc114238"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.url#1",
+          "declarationSha256": "7674b04949324d95b4c52aad30cef1c5d13f03088209ef2550569fcc02f50476"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.parentFrame#1",
+          "declarationSha256": "b9107c4002db1b0a2a5ead4f3b2636a0b7ecb422ad074de425eca013fa263835"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.childFrames#1",
+          "declarationSha256": "686e3f99f011a5c0c26de583fcb0e4e9c0142f41aff25e381244e2208597373f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.isDetached#1",
+          "declarationSha256": "47fb3f4de106588b359ca96842b2e118b5e95793ed823456c6eff2d6c78e16b1"
+        }
+      ]
+    },
+    {
+      "id": "core-navigation",
+      "title": "Page navigation and waits",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Document and same-document navigation, history/reload, response observation and host URL matchers preserve invocation boundaries, selected responses, deadlines and close/crash cleanup.",
+      "limitations": "This is Page navigation. Frame navigation convenience methods, popup ownership and general cross-process frames are not established. The method review does not promote every option or URL matcher type.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/navigation.mjs",
+          "sha256": "71ff3fb1ad9d0382a99579d93363d6b7e58e3215bc47a93141e6c8a109173b53",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/history-navigation.mjs",
+          "sha256": "8d110f70ac0aabff5f9c92375c20e5a78e55f5deece953f9262ac28cd1b3ee2c",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/navigation-waits.mjs",
+          "sha256": "cdf43813278af9ec4d4f7feca9f15b169c6ec4e3fc7cc6633d70c6c87947e425",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.goto#1",
+          "declarationSha256": "f6023a3ac616d587dfe96a7e30098a3ebb1d0741da8bdccab62768b93b3c390b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.url#1",
+          "declarationSha256": "798eaa447547f5d5a3c7bea784790a410b0b29b2e983d513d24c2cfdc13484df"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.title#1",
+          "declarationSha256": "ec64fa1378559d42175e7d36eb9ad774befa955a22e2aab92764ebba02f25d58"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForLoadState#1",
+          "declarationSha256": "fc4127001932d40377b91aae4bf6ec483fe407bec0036ebaa47eb9628bc8b6d7"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForResponse#1",
+          "declarationSha256": "2f8b754c2fa7bb2be49ca04ba1b9c6fd29dcf61c1e748ce5b9aa11a77df86557"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.reload#1",
+          "declarationSha256": "b4a63c3b0867e83dc6678238dc2c9b98d49cbbf17312fbe30fc7f5926088f32f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.goBack#1",
+          "declarationSha256": "8fe58bc6e6b2c218fa1ac1b5c295311754852d1e963b416e4b5e7d41aeb854cb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.goForward#1",
+          "declarationSha256": "96c83dba32ab97352c81db06213ec7b1f0d3ae90bbfedb4c7c07f95eca7ba6b6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForNavigation#1",
+          "declarationSha256": "e7133754b3af4d9c16fd763dcba5c5dae2057127672dd0028664cce234c47204"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForURL#1",
+          "declarationSha256": "a10938c671b3f4e4c368708ce0c533acda05bb01fd53d92541d547749a720d93"
+        }
+      ]
+    },
+    {
+      "id": "core-locator-queries",
+      "title": "Locator construction, reads and resolution",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "CSS/text/role/label/test-ID and other listed Page builders, chaining/filtering/composition, live reads, state checks, selector waits and original-element handle resolution have shared fixture coverage.",
+      "limitations": "Only explicitly listed Frame and nested Locator builders are reviewed here. Open shadow DOM and tested same-process child frames are covered; closed shadow DOM, general cross-process frames and unlisted options are not.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/locator.ts",
+          "sha256": "e08f9a1869a9fa84819f467d33b6cd103dbc83d29fefdc7645e43785833d500e"
+        },
+        {
+          "path": "packages/flashwright-core/src/frame.ts",
+          "sha256": "0a90c2cbd4694bd5ef8e665d3101201a5d95458371925fcbf87601a2fa45e537"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/locators.mjs",
+          "sha256": "689a33691b7f02665184cb16cf6a9df4ea13ad5e159df3b9cdc969364dc6fddd",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/element-resolution.mjs",
+          "sha256": "135db1e3f3fdf13a0f556c01f035e5148ef742c440de26b694782924dfe18c35",
+          "kind": "source-review"
+        },
+        {
+          "path": "tools/test-packed-package.mjs",
+          "sha256": "637f191e0511c0ab5e8e2a636c6cf62259e5af658f5f4079c31ebbf6daf01eab",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.locator#1",
+          "declarationSha256": "301c459ce123eb519ce064787b9994d666385e45a3286f9f65ea7998ef62475c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByText#1",
+          "declarationSha256": "4b92e108d62a55123cc2e59e3ebba24dfd1271a30c87fe719b9daf962cdfef6e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByLabel#1",
+          "declarationSha256": "5182abdb32fd5c2debb8de8981f6d7d2d40c8a00cae01dc9bfdfb77abc78d9e0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByTestId#1",
+          "declarationSha256": "aab59362a0f601034f3357b11ed23763ecdf03f9afbd188d1f7a9d3b16fb80f3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByPlaceholder#1",
+          "declarationSha256": "5330ce11e5eb8acddb3b312f3886b0968282d8758ae713e8de4cb48bb078566b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByAltText#1",
+          "declarationSha256": "f262a7c8dbf0eac1429d0056298aab19955b74a1438c45cfef1af8f479c3096d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByTitle#1",
+          "declarationSha256": "91dbbf6af93a3d4dfb2ad2765852c0af3dc073dd4d72035cdf0fa1e8475202ab"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.getByRole#1",
+          "declarationSha256": "745685e243315076e62bb93896c0e051f1820263f912a2a3b5c990d4137801a3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.locator#1",
+          "declarationSha256": "bb9e271062b30c28692555e86ec99dd08fb13c7bcd51e087fd9fb83142d58d0d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.getByLabel#1",
+          "declarationSha256": "3beff0fe3971fd7ef4aba1888aaa398527a00f4b1afe2dafbd7c5c969344e6bb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.getByRole#1",
+          "declarationSha256": "7dd352fe0549241d948735ebc82bd35993631b4e3354a63a50bc1bad88789e57"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.locator#1",
+          "declarationSha256": "6a84dc6cc8b52492ea720863c0e8bd4d6377ee668394c7b3319fe780eaf700fc"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.getByText#1",
+          "declarationSha256": "6f69ec59bc33b08a48dfc014b87994002ff9d9b4209a5f8e1e15291eee500c82"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.filter#1",
+          "declarationSha256": "8279cbba7b81d2d622527f2851911e5e2376d0996ef271fcef9b4374b3553539"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.nth#1",
+          "declarationSha256": "f666c685fdb5b511e7941d97c295bc47a602556e98e06ffcbc2dffa48dd08e93"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.first#1",
+          "declarationSha256": "46226c62e38c77934d7aa258e2272d07e142078a1e45321a52f5f9f965a13754"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.last#1",
+          "declarationSha256": "8d9d465a228f750cbe28cc3dc77ef35f2485a147da0badd1740bafc783a75330"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.and#1",
+          "declarationSha256": "457742d50bd310c55dba6290bdcc8bd0d780e8de10e46a49ff52da7e83148c2f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.or#1",
+          "declarationSha256": "5fe735b5e55c54e0a41b8c85134a31917fb480809dda6bac663ee0ff159d58a4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.count#1",
+          "declarationSha256": "173e2d080a2932f391c96a7f33fa9862fc430f4de580a030a31ee2b53e96eed0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.all#1",
+          "declarationSha256": "8b464d01842128a9385e79b0e9aece139e436ef4a4090a396280f44eecffee3c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.allTextContents#1",
+          "declarationSha256": "3845eb95834b2b8ba1172166febe73dfbd36db9424a4c4ac25e428368da8f518"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.textContent#1",
+          "declarationSha256": "da109015f1e9cce8cd018f05f7cd74a7e1059e0f09728c809a92b4e724cddb30"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.innerText#1",
+          "declarationSha256": "54e622066bfe251079cbd425ae600be83e6b4132e6c1053b757cf5e517b401c6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.getAttribute#1",
+          "declarationSha256": "029cdac2f0c809d93dd6d9361d3d5b78f281517b51508a326f3afb61678d7097"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.inputValue#1",
+          "declarationSha256": "52dda948e49283d520962ff23638f18dde4eac8d483c6026f7e6b6eac8578f23"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.isVisible#1",
+          "declarationSha256": "0c21fbabc66e86bcb865361415323449744ff00e4c81563bb98cca97471c586c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.isHidden#1",
+          "declarationSha256": "3f9680ee2c0aac2e73b413754fdf13f9cb73c2f7ce43f2a7d47ee711309f7927"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.isEnabled#1",
+          "declarationSha256": "06bcd58a67f5ea628e99b05358346b4a5662a65db44cbada4c4874ae6ad1d3e2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.isDisabled#1",
+          "declarationSha256": "26059513909b46ca3ebdbb4ad9dfd063ae6557074dfdc728298346331d752132"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.isEditable#1",
+          "declarationSha256": "f244a0746dfc30d225e17c53a1c48a3943edee546d6316b78f68001690936965"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.isChecked#1",
+          "declarationSha256": "422172a0740269a77b3055091c2625d020882741a0782fd5b80202f5886a08ae"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.waitFor#1",
+          "declarationSha256": "83b872947425466b5dabc3a9bef58ca9d4c28b6ec45ea57f5d687ed02dba8f37"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForSelector#1",
+          "declarationSha256": "4271e12be32c60d729ac323f12ba03332399c434c7b5ae173369283f26fc890e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForSelector#2",
+          "declarationSha256": "ccf435dfe3f1c3adff16fa54c0e5b72958243b106a333e2e3544431badbeb579"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForSelector#4",
+          "declarationSha256": "2a0e25062d8439989e55a76dd8ea0e85e59b24c8ba5a383167a7d0d4d5532542"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForSelector#2",
+          "declarationSha256": "633205352f29f25d876f42a4f072de0b62b37a18ae9ebeaca4e06fa5252e81a1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.elementHandle#1",
+          "declarationSha256": "c2afab976ee0458338ab87cccfdd3e150e87a4193e2db46f2d067b90b2a486af"
+        }
+      ]
+    },
+    {
+      "id": "core-actions",
+      "title": "Locator actions and file assignment",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Trusted pointer and keyboard actions, fill/selection/focus, checkbox operations, sequential typing, original-node selection/scrolling and listed file-assignment paths have shared native fixture evidence.",
+      "limitations": "Native frame stability, interception, cancellation and navigation barriers apply. Directory uploads, persistent held keyboard input and unsupported value/target classes remain excluded. Each method claim covers the fixture subset, not all declared action options.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "File assignment rejects a non-file INPUT before mutation; pinned buffer/clear and path behavior differ (S4.m)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/locator.ts",
+          "sha256": "e08f9a1869a9fa84819f467d33b6cd103dbc83d29fefdc7645e43785833d500e"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/frame.ts",
+          "sha256": "0a90c2cbd4694bd5ef8e665d3101201a5d95458371925fcbf87601a2fa45e537"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/locators.mjs",
+          "sha256": "689a33691b7f02665184cb16cf6a9df4ea13ad5e159df3b9cdc969364dc6fddd",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/pointer.mjs",
+          "sha256": "195a096cef8b19c688a1dc5187b70b2c0ff53d26a11a1f39c21d4de28231c242",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/keyboard.mjs",
+          "sha256": "52755fed8a4cb8fb85608b0d06b18ec3f3a6ce7abb92b748ce44ebc15788ed56",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/sequential-typing.mjs",
+          "sha256": "26da9228c7554bd56a9d6e07493d0c499deb4f31be2ddaaa14198c66b7e49002",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/element-actions.mjs",
+          "sha256": "b4b9165c8fe5ed744f1b03a561a33e628132b379433369ccbf2e63ae9d8fdc11",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/file-inputs.mjs",
+          "sha256": "9f9fae711a6893dfc5ae1ab798794e8f2314e45dc60057383d9bea57cd62c66a",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.fill#1",
+          "declarationSha256": "e62abc82ba3a7a05c8b4a82daf009b1fee23012e2baf62bd53be62561d0eea81"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.clear#1",
+          "declarationSha256": "3264f88154399689fa66efe46c0d6a9e962149db8f99b71f7f81e967ad226ab1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.focus#1",
+          "declarationSha256": "37e9097f54ae9b658d7ff109d3028d31a2fbc64f13bde0124b0d77f982d6ca62"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.blur#1",
+          "declarationSha256": "f9570e8679f3259e6310ce70c2291ce6c27e09c4a9682d8baed572a2ee8ef651"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.selectOption#1",
+          "declarationSha256": "2fad2287bd1fbf777de7292ab380900487c5906d8fb336b8c973b096be8f6ac9"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.click#1",
+          "declarationSha256": "7805af3714ab21084ff0ff64e9a3011bc4a66eda6c0a31006d02e59b8465abb0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.dblclick#1",
+          "declarationSha256": "63ead133f12fe3f83ac5d1e04573236546aa6fe48c827ed1ee16f3e970977ac4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.hover#1",
+          "declarationSha256": "d450a36adb289c58dedf814f57186f58e3cfad53d971517ef77ac47c49dea305"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.check#1",
+          "declarationSha256": "47a1014a5fae26d3971370167737f10453f046516dc32a570c7b67e0de438350"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.uncheck#1",
+          "declarationSha256": "2572be9602fa1a53e318b7d1670526d3bb6ce2e554c701d4597bee9d1b4c0e57"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.setChecked#1",
+          "declarationSha256": "c00f6458dfe066d830bf87878b633fa7406af5eaaaa5ba2bfc77062fb511612b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.press#1",
+          "declarationSha256": "e103928bfe9941e428657c1f8c61c919ab5268463bf9fb466209b9954d168cbd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.pressSequentially#1",
+          "declarationSha256": "b65aaa31f4a9c234f0f1482ebe91ab46c1a1368bf7136cf045dfdfd8f059d19c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.selectText#1",
+          "declarationSha256": "77ebcb960411057b287592dbfec38f4dd8fdfcf4dbe41ff93dd9e9f69dd6cf09"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.scrollIntoViewIfNeeded#1",
+          "declarationSha256": "503235ffaacaeb039d4f0062a711eca6f9ba029a9144070689909ced2e5532ca"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.setInputFiles#1",
+          "declarationSha256": "467fc58fc96d5af7c3d5514c12ba39ea75601e25d0bb264391d1dbb360363e73"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.setInputFiles#1",
+          "declarationSha256": "5da60c914ac99959dc7cd0770cd870d8f8ba147310cedfa0f48144fcb8bd860f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.setInputFiles#1",
+          "declarationSha256": "807c236ee4028e83a7f7405089f500b8d97038c6d2596e9a15bb901b23d6040f"
+        }
+      ]
+    },
+    {
+      "id": "core-evaluation",
+      "title": "Evaluation and handle resolution",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Page/Frame evaluation and Locator evaluation/handle creation preserve supported graph values, original execution context, argument identity and callback lifecycle.",
+      "limitations": "Supported primitives, arrays/plain objects, dates and regular expressions do not establish arbitrary by-value classes. Same-process frames only. Locator evaluation timeout governs element resolution, not subsequent application callback execution.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "Returned primitive BigInt handles retain their value instead of pinned 1.60.0 handle-path data loss (S4.l)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        },
+        {
+          "path": "packages/flashwright-core/src/frame.ts",
+          "sha256": "0a90c2cbd4694bd5ef8e665d3101201a5d95458371925fcbf87601a2fa45e537"
+        },
+        {
+          "path": "packages/flashwright-core/src/locator.ts",
+          "sha256": "e08f9a1869a9fa84819f467d33b6cd103dbc83d29fefdc7645e43785833d500e"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m1/library-smoke.mjs",
+          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/evaluation-context.mjs",
+          "sha256": "d25f0fdd9e441342aebf00c02997784a2e5dd65c31cb5e60b5a32c317c3d65a2",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/handles.mjs",
+          "sha256": "7863f89c50e3496282d651aa15cc3abec92c3e2e17d76fa72d07f9e2fff263aa",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/element-resolution.mjs",
+          "sha256": "135db1e3f3fdf13a0f556c01f035e5148ef742c440de26b694782924dfe18c35",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.evaluate#1",
+          "declarationSha256": "e762a45c62a429f4d8ac52ca015b4fdd8b0004517da83c120c322599842752ae"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.evaluate#2",
+          "declarationSha256": "060cdabcf2af652f9452e4ffccb4f6d4d240f30c4e8cd679e4fb54f89a729311"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.evaluateHandle#1",
+          "declarationSha256": "e2af962b454206616e64f130add7c9c0247b9c0bff48ff95b893ec9db55dad67"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.evaluateHandle#2",
+          "declarationSha256": "af7fee53eef502bf9be4e1b491c0403d680474e827a7fb8165d813448d04cac4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.evaluate#2",
+          "declarationSha256": "92083327b696eebb5426bb62b32f94604bb10982734c5513d3b51621980b565e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.evaluateHandle#2",
+          "declarationSha256": "12cb7061837511564032203b877075662c054bbc9645aebae75d18d4208a47f8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.evaluate#1",
+          "declarationSha256": "49fdb3a67111a94423d732f5ac56e0cc73d5c31a25bea5ddb9e6c8b935023f73"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.evaluate#2",
+          "declarationSha256": "0ddf6e78a40fa680ac6d9719e9df59a003376e76b41a6a017097fd9546c8823b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.evaluateHandle#1",
+          "declarationSha256": "bb5883fa6149cc0d1de04d4b777bbc2bc73c7a1ca2bf7126dc9ec05af0a76ca8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Locator.evaluateHandle#2",
+          "declarationSha256": "b9b9ec99b9905a635c6a7217d0afb589df682371628442aeee66db6a73c79476"
+        }
+      ]
+    },
+    {
+      "id": "core-storage",
+      "title": "Cookies and storage state",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Cookie filtering, add/clear and cookie/localStorage state objects or files have shared fixture coverage, including partition keys and exact UTF-16 storage.",
+      "limitations": "IndexedDB snapshots and replacing state in an existing context remain unsupported. Descendant cookie and storage options are not automatically promoted.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "Temporary storage collection pages bypass service-worker fetch interception and do not execute application code; pinned 1.60.0 can execute a worker-supplied document and mutate the state being collected (S4.j)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/storage.mjs",
+          "sha256": "9aa0a5cf043fe01d98e828b4548c98f89f91d872420e24fffb45391d5c59d711",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.cookies#1",
+          "declarationSha256": "173d9cd8096780739e4ce3e9865e48975c6966408559b9019fdf77880ee1e391"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addCookies#1",
+          "declarationSha256": "6c44f1d640162be7ead2b4a6fd7d3a49e21470fd1881e5a58611e69dd7189fd3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.clearCookies#1",
+          "declarationSha256": "a225dcd7e61dc0b1e42b39866590110f98e6280f676fcfa6edc3e049d88e609f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.storageState#1",
+          "declarationSha256": "adcece9dfc12dd7a5265ed0ec97c9f3fe7b2659321d7ae2dc01a059fb4040eed"
+        }
+      ]
+    },
+    {
+      "id": "core-device-options",
+      "title": "Viewport and operation timeout controls",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Viewport reporting and page/context default action/navigation timeout setters are exercised by the library and navigation/selector fixtures.",
+      "limitations": "This review does not promote every launch/context/device option. Platform-specific device and browser-profile combinations retain their own development evidence and release gates.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/devices.mjs",
+          "sha256": "75e92a325c565a9211ec23a62c821ca0636d68d6ebc0ddbde6148d5558c7952e",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/library-smoke.mjs",
+          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/navigation.mjs",
+          "sha256": "71ff3fb1ad9d0382a99579d93363d6b7e58e3215bc47a93141e6c8a109173b53",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/locators.mjs",
+          "sha256": "689a33691b7f02665184cb16cf6a9df4ea13ad5e159df3b9cdc969364dc6fddd",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/navigation-waits.mjs",
+          "sha256": "cdf43813278af9ec4d4f7feca9f15b169c6ec4e3fc7cc6633d70c6c87947e425",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/element-resolution.mjs",
+          "sha256": "135db1e3f3fdf13a0f556c01f035e5148ef742c440de26b694782924dfe18c35",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/history-navigation.mjs",
+          "sha256": "8d110f70ac0aabff5f9c92375c20e5a78e55f5deece953f9262ac28cd1b3ee2c",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.viewportSize#1",
+          "declarationSha256": "432ee698731f6d36d7240cfa8f398564d3ff8a1a83888db31f837fb83c8760d0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.setDefaultTimeout#1",
+          "declarationSha256": "65a36f7620b6ca92d9e34993e24ac1bcd73ebd5d673d8401f6f6f264af544122"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.setDefaultNavigationTimeout#1",
+          "declarationSha256": "4b8f8b253bc8d5a34c657d5e84981d307ad0ab0fc2e9c468209f7c877f3737e4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.setDefaultTimeout#1",
+          "declarationSha256": "6b233bc9c358632e436357d001c58e73841b947e5cd17dd9118ee2911f65e317"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.setDefaultNavigationTimeout#1",
+          "declarationSha256": "7b7bc593e86fe2d8cbb516d1c51b7328c012f864c177436350fcfba2aa52e6a3"
+        }
+      ]
+    },
+    {
+      "id": "core-init-scripts",
+      "title": "Page and context init scripts",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Function/JSON arguments, strings and content/path sources register scripts with disposable native ownership, including future documents and same-process frames.",
+      "limitations": "Registration does not retroactively execute in existing documents. Known cross-process frames reject; an unsupported cross-process transition with active scripts fails the affected page. Popups and workers remain outside this slice.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/init-scripts.mjs",
+          "sha256": "e4eba98855099fe3c3ce5882de28adf1a3df6ddc4bfc0499884b9e2a9b550b29",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.addInitScript#1",
+          "declarationSha256": "3caa5a7f640b882fefd2d00e3d1e4be1944fe3b1c44dbdec5daaa715747549a4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.addInitScript#1",
+          "declarationSha256": "e08b0599f6f412e5debbb606416664d436093cc2d674d6a153504933d14573f0"
+        }
+      ]
+    },
+    {
+      "id": "core-network-routing",
+      "title": "Page and context routing registration",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Route callbacks, precedence/fallback/times, removal and handler cleanup are covered by the shared routing fixtures.",
+      "limitations": "Browser requests only. Service-worker interception and route.fetch/API response fulfillment are not established. Bounds and original occurrence ownership apply; closure may allow zero or one server arrival but never replay.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/routing-reference.mjs",
+          "sha256": "f1a8fb86875daa2effdc1c093d0349727abb6cba59a09620fcafb5080b0e49e3",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/routing-lifecycle.mjs",
+          "sha256": "afe3b1d98c439ef4462d2cc91dc68d8670f85fe747580f12d8748055c9ae2b02",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/routing-errors.mjs",
+          "sha256": "0a76374c7dbf2fac98b7d3acb4992a15a772fc9716a552038995ae97cb366ea6",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/routing-payloads.mjs",
+          "sha256": "1468816a34a2d4dd3511ddd9f7c60bbc2bfa7b67b2144d8e916c2ab9283acfd6",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.route#1",
+          "declarationSha256": "8839ece2d9fb4915ee7617e72496e560ee8f973137fa184cf5393495fb6815eb"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.unroute#1",
+          "declarationSha256": "b0ff364afbfcbba8bc5913b97c589b1d73d306fe33d8d37bd4b82d6828403796"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.unrouteAll#1",
+          "declarationSha256": "40ecbbd773164c829518dde850b36bac6eedaab936f5598d470f75144dc743da"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.route#1",
+          "declarationSha256": "0d046d6e5472487cff97a1a6d4f80bc60e0efeadee626811eb1316b5dbf3272f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.unroute#1",
+          "declarationSha256": "2b2ea6caaa51e4e760eeeb62eb505e72041ed9cf3de7da0d0b728f044e0e8069"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.unrouteAll#1",
+          "declarationSha256": "59458885d1aba71c53c7896d9071aa8994c61f5eea82a9a09f667afba7a3927f"
+        }
+      ]
+    },
+    {
+      "id": "core-artifacts",
+      "title": "Page screenshots",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "PNG/JPEG bytes and atomic path output, image geometry, fonts/animations/styles and cancellation cleanup are covered by shared screenshot fixtures.",
+      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [
+        "A screenshot that expires while queued never prepares or captures the page later; pinned 1.60.0 can apply temporary style after expiration and leave it behind (S4.k)."
+      ],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/screenshots.mjs",
+          "sha256": "f002f480c7de0e89aacdf1e901e9eebeb1eaea0ac90652dd9177b5d7f90aafbd",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.screenshot#1",
+          "declarationSha256": "d8b891dfe36e0b1edd23049699150289524cbb49d7a8063f3a5f3648215da7c1"
+        }
+      ]
+    },
+    {
+      "id": "chromium-launch",
+      "title": "Chromium launch",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "The public Chromium launcher uses the persistent Rust driver and exact pinned browser, with executable selection, default headless launch, invalid-headless rejection and launch timeout checks.",
+      "limitations": "Firefox and WebKit reject. This method review does not establish all declared launch options, channels, flags or platforms. Browser installation tooling and publication remain open.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m1/library-smoke.mjs",
+          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/runtime-package.mjs",
+          "sha256": "375703d5006badc4515cac50c19ad67ee6d457acbf158c5adbd4f529d29d513d",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m1/evaluation-context.mjs",
+          "sha256": "d25f0fdd9e441342aebf00c02997784a2e5dd65c31cb5e60b5a32c317c3d65a2",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserType.launch#1",
+          "declarationSha256": "01acb691a6fb700649829e3e6d4de650e9c77e8c2b6edb109937bfdc231dee06"
+        }
+      ]
+    },
+    {
+      "id": "storage-replacement-disabled",
+      "title": "Replacing live context storage state",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "BrowserContext.setStorageState rejects. Create a new context with storageState for the implemented authentication snapshot workflow.",
+      "limitations": "Existing-context state replacement is unavailable even though collection and creation-time state are implemented.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "c80ac7faa8ecabee70cccdcc0ef238af9ecd0f1c7027aaffa64afb2adb25364b",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContext.setStorageState#1",
+          "declarationSha256": "1b756072d41610875679a1740e73993e23b71fe612988b775beaedb2ee1b6b68"
+        }
+      ]
+    },
+    {
+      "id": "baseline-matchers",
+      "title": "Core locator and page assertions",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Text/count/value/attribute assertions, visible/hidden/enabled/disabled/editable/attached/empty/focused/checked states, page title and URL assertions have retry, negation, timeout and native-runner fixture evidence.",
+      "limitations": "toHaveURL supports strings/regular expressions; its callback form rejects. Unlisted argument/default combinations and inherited generic matcher behavior remain unverified.",
+      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-runner/src/matchers.ts",
+          "sha256": "84414fabdb8024f3560e3278cd41f4ea8ed1fa04ba5fb8ef6ec0e73b9507fef4"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
+          "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/m2/assertions.mjs",
+          "sha256": "6c1da1f141f24fbd1cbbb24a2ad77e4e7f5b36858b97eb8eb32c2a82c6e3104d",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeAttached#1",
+          "declarationSha256": "baf261f18f221f22c18778bf9698b0b60461b3c20a91a2c4476807dbfb346b0b"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeChecked#1",
+          "declarationSha256": "869d41786f627445cd0b49f89b865fbc0a7b92203d8e2fce2beea962b13e89cf"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeDisabled#1",
+          "declarationSha256": "64eceff7ae1821bf236025e74eb24d41d408bd1f209c98ac3641e858b43ef0a5"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeEditable#1",
+          "declarationSha256": "e55ac1508bc74882eaf47c4645e21c0411a3632427c8a5a848f2f015a33a7678"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeEmpty#1",
+          "declarationSha256": "ab8cdf9b84efde5ac23e9bf16891f8f8f67da67b0d36c8aec410d7ef71f39c2e"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeEnabled#1",
+          "declarationSha256": "88e06ec5f4f620219cd4add162acd58556ab9ef44bb7741d28af132c26403756"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeFocused#1",
+          "declarationSha256": "2327375ca9c518b737b1c4afeeae140d5e4dd57f1ab93da8762b115dd876627f"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeHidden#1",
+          "declarationSha256": "74a3c3038da5b15c52e2c531af2e76fb1ac7f71f02eb94dff49d2969d42dc1da"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toBeVisible#1",
+          "declarationSha256": "d32e25fd163f3753ad97c21f5c8953fbc440bbeeccad58ce3afa8e2ea4f86e0b"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toContainText#1",
+          "declarationSha256": "c6a704d8b6a81f8d606b155852d4a22f83c652b76cd0364c291bdb9bcb6a400c"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveAttribute#1",
+          "declarationSha256": "ad88d5fe97a4218b2cab00a0b3caa33d69dbba9372eac3a4e2253b090cc9628e"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveAttribute#2",
+          "declarationSha256": "ab12819796145dde14453e08012438978a95eefcf10ee2b981d800aef2f5866a"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveCount#1",
+          "declarationSha256": "d9bc09218b2b5570dd025a47a178096aa3b0e8dbf35732f5dca74a1bff629a07"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveText#1",
+          "declarationSha256": "4d3bf776b756bdd451f1f5fd8d718d478cf06cef2d23f3c739117ec50dc2a83a"
+        },
+        {
+          "id": "playwright/types/test.d.ts.LocatorAssertions.toHaveValue#1",
+          "declarationSha256": "c7896aa919fb599eb0f84a8127e89ebc72281acfdab560a644875171ce12d030"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PageAssertions.toHaveTitle#1",
+          "declarationSha256": "e8cf11ab18023318f5a2e0cd2b34ccf0803d920fb897a7651b1ae803922a7872"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PageAssertions.toHaveURL#1",
+          "declarationSha256": "c1b7d6a88bb8ef6021c1650bef84e4b940eeb177349bdf3854414d8365b72174"
+        }
+      ]
+    }
+  ]
+}
