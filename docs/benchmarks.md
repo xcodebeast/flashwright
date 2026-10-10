@@ -8,7 +8,7 @@ Flashwright has not established performance leadership. The current broad compar
 | Playwright | @playwright/test 1.60.0 | Existing seven-flow matched baseline | Pending broader comparison | Historical paired profiles only |
 | Puppeteer | puppeteer-core 25.13.0 | Seven functional flows; five match the checked reference outcomes, with explicit backend/failure differences | No bundled test runner in this comparison class | Not measured |
 | Cypress | cypress 16.1.1 | Separate runner/event model requires its own adapter | Not measured | Not measured |
-| WebdriverIO | webdriverio 10.0.2 | Adapter and negotiated protocol admission pending | Not measured | Not measured |
+| WebdriverIO | webdriverio 10.0.2 | Seven functional flows on Bun/Node 22/24 and both Chromium variants; launch/input/failure differences | Not measured | Not measured |
 
 Startup, complete-suite time, action/assertion latency, CPU, concurrent memory and uncertainty remain unmeasured for the current broad matrix. Earlier Playwright/Flashwright observations retain their original source, browser, runtime and workload scope; see the [benchmark history](../README.md#r3-browser-baselines). They cannot establish a ranking against the additional contenders.
 
@@ -40,8 +40,26 @@ bun test ./tools/test-competitor-contract.mjs
 
 The output directory must be new. The harness records every installed dependency file, selected browser and harness input before execution, verifies they remain unchanged, and rejects missing work, untrusted events, leaked storage or processes, altered launch flags and obsolete resource accounting. The raw reports and final admission decision are retained together.
 
+## WebdriverIO functional admission
+
+WebdriverIO uses its native WebDriver BiDi commands through ChromeDriver 148.0.7778.96. Separate BiDi user contexts provide cookie/localStorage isolation. Native ARIA element commands perform clicks and typing; fixture-specific text/title checks use `waitUntil` with its ordinary 500ms polling interval. The missing-element flow uses `waitForDisplayed`. These are application-outcome checks, not general Playwright assertion or actionability parity.
+
+ChromeDriver adds automation/logging switches, disables two additional features and creates its bootstrap page. The reference `--no-startup-window` switch is removed. The [declared driver policy](../benchmarks/configurations/webdriverio-launch-policy.json) and actual launch arguments remain visible; launch-policy equivalence is explicitly false. Native typing emits 126 trusted input events over 15 saves, and failure diagnostics differ. Complete equivalent-work performance remains unmeasured.
+
+The [WebdriverIO checkpoint](../compatibility/evidence/webdriverio-admission-checkpoint-2026-10-10.json) and [retained reports](../benchmarks/results/webdriverio-admission-2026-10-10/manifest.json) cover native protocol negotiation, browser/driver/runtime/dependency hashes, request and input counts, isolation and cleanup. Verbose ChromeDriver protocol logging is enabled for this admission audit, so timings and resource observations are diagnostic only. The large protocol logs remain private by hash; exported samples retain actual launch arguments and all numeric observations. Earlier failed probes and the Node package-metadata lookup failure remain recorded in the checkpoint.
+
+For macOS arm64 reproduction, install `benchmarks/competitors/webdriverio/package.json` and its `bun.lock` into a new isolated directory with `bun install --frozen-lockfile --ignore-scripts`, as in the Puppeteer example. Obtain ChromeDriver 148.0.7778.96 from the matching [Chrome for Testing manifest](https://googlechromelabs.github.io/chrome-for-testing/148.0.7778.96.json), and compare its archive/executable hashes with the checkpoint. Set `FLASHWRIGHT_COMPETITOR_DIRECTORY`, `FLASHWRIGHT_BROWSER_PATH` and `FLASHWRIGHT_CHROMEDRIVER_PATH`, then run:
+
+```sh
+bun tools/run-competitor-admission.mjs .cache/new-webdriverio-admission webdriverio
+```
+
+Bun is the default workload runtime; `FLASHWRIGHT_COMPETITOR_RUNTIME` selects an absolute Node executable for compatibility checks. Supplying both browser and driver paths prevents automatic browser/driver selection, as described by WebdriverIO's [driver setup documentation](https://webdriver.io/docs/driverbinaries). Its [protocol documentation](https://webdriver.io/docs/automationProtocols) explains BiDi negotiation; the verifier rejects fallback to classic WebDriver.
+
+With the snapshot's recorded source checkout, verify exported hashes and independently recheck every functional admission using `bun tools/verify-competitor-snapshot.mjs benchmarks/results/webdriverio-admission-2026-10-10`. This verifier intentionally rejects changed source bytes and does not confer performance acceptance.
+
 ## Remaining comparison work
 
-Admit Cypress and WebdriverIO using their native APIs, recording differences instead of hiding them behind the Playwright adapter. Cypress documents its [event dispatch behavior](https://docs.cypress.io/app/core-concepts/interacting-with-elements); WebdriverIO documents its [protocol selection](https://webdriver.io/docs/automationProtocols). Actual runner startup, retries, hooks, artifacts and parallel execution need suite-level cases.
+Admit Cypress using its native APIs, recording differences instead of hiding them behind the Playwright adapter. Cypress documents its [event dispatch behavior](https://docs.cypress.io/app/core-concepts/interacting-with-elements). Actual runner startup, retries, hooks, artifacts and parallel execution need suite-level cases.
 
 Before publishing comparisons, verify the current Flashwright binary and sources, run matched independent launches with rotated execution order, and apply the [predeclared statistical and regression policy](../benchmarks/configurations/baseline.json). Include complete preparation and cleanup, uncertainty, CPU/concurrent memory, unexpected failures and contention. A functional pass, one favorable run or a different input contract does not satisfy that gate.

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-functional-admission",
+  "exit": {
+    "code": 0,
+    "signal": null
+  },
+  "functionalAdmissionPassed": true,
+  "performanceAccepted": false,
+  "inputsUnchanged": true,
+  "differences": [
+    {
+      "workload": "failure",
+      "reason": "Native visibility-selector timeout does not establish equivalent Playwright assertion diagnostics or failure work."
+    },
+    {
+      "workload": "backend",
+      "reason": "Native fill emitted 126 trusted input events; reference fill expects 15."
+    }
+  ],
+  "outcomeMatchedWorkloads": [
+    "noop",
+    "interaction",
+    "assertion",
+    "navigation",
+    "setup"
+  ],
+  "limitation": "Matched fixture outcomes do not establish complete actionability, assertion, runner-suite or performance equivalence. Comparative timing still needs current Flashwright verification and the declared independent-launch/resource gates.",
+  "launchPolicyEquivalent": false,
+  "launchPolicyDifference": "ChromeDriver owns launch and the BiDi mapper bootstrap page. Retain its native defaults and report the difference from the reference pipe-only/no-startup-window policy. Launch-policy equivalence is not established.",
+  "files": {
+    "inputs.json": "8816bb3283b52314f7bdda3163ff27482855b8cfb874ab32fbcb5d488c41c84d",
+    "resources.json": "3565605eebb04397a8eb05a44766c6a22a53b480a6abed8d9bb530ea6beb7e21",
+    "sample.json": "7c38d370303b8087fc8e28b57c7499a12ff99f6a26c8d1672946f1cc222a10e0",
+    "stderr.txt": "d961ab9e3436d73d0a57a097d31286b810fd7cfc8793d8972b9f4853a51f61d3",
+    "stdout.txt": "c672e5933e1fdb5e14f4f8db3a066d0c4abc4c836d39690d3ac7c579bac7e4da"
+  },
+  "originalFiles": {
+    "chromedriver.log": "40e6764caccd7c662cfb7a91b08fc399fd495c76f1cb5dee483b5cfa5477b798",
+    "inputs.json": "db1141a871ad771b82547bcf32fde721755d0f655157cb540501031ae23deb9c",
+    "resources.json": "6ad2f3a2a9805954aaeef8e5f2c25f274c8b01f067577e1841b629dc7099f9b6",
+    "sample.json": "9068e4a6aa6efe66b118af9884e37fc39a0b0a64392dd390eadef38bb075f103",
+    "stderr.txt": "d961ab9e3436d73d0a57a097d31286b810fd7cfc8793d8972b9f4853a51f61d3",
+    "stdout.txt": "a49edfed75073038b9444f49fb4d9dc3cd9af85acacfc573d67846d541a5c9c3"
+  },
+  "omittedFiles": {
+    "chromedriver.log": "40e6764caccd7c662cfb7a91b08fc399fd495c76f1cb5dee483b5cfa5477b798"
+  },
+  "pathNormalization": "Workstation paths replaced with <workspace>, <browser-cache> and <isolated-dependencies>; originalFiles retains pre-export receipt hashes."
+}
