@@ -20,6 +20,65 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
   const decodeRequest = units => JSON.parse(units.map(unit => String.fromCharCode(unit)).join(''));
   const expired = deadline => deadline !== null && Date.now() >= deadline;
 
+  /** Split only syntax, never nodes. Rebuild nested selectors from their parsed bodies so
+   * the pinned parser's same-frame prefix removal survives the document boundary. */
+  function prepareFrameSelector(units, structuredRequest) {
+    const request = structuredRequest ? decodeRequest(units) : { selector: codec.decode({ kind: 'string', units }) };
+    if (request.selector === null) return { frames: [], strict: true, missingWaitSatisfied: false, request: units, missingRequest: units };
+    const parsed = injected.parseSelector(request.selector);
+    const chunks = [{ parts: [] }];
+    const entersFrame = part => part.name === 'internal:control' && part.body === 'enter-frame';
+    function checkNested(selector) {
+      for (const part of selector.parts) {
+        if (entersFrame(part)) throw injected.createStacklessError('Frame locators are not allowed inside composite locators');
+        if (part.body?.parsed) checkNested(part.body.parsed);
+      }
+    }
+    for (let index = 0; index < parsed.parts.length; index++) {
+      const part = parsed.parts[index];
+      const chunk = chunks[chunks.length - 1];
+      if (part.body?.parsed) checkNested(part.body.parsed);
+      if (entersFrame(part)) {
+        if (!chunk.parts.length) throw injected.createStacklessError('Selector cannot start with entering frame, select the iframe first');
+        chunks.push({ parts: [] });
+      } else {
+        if (parsed.capture === index) chunk.capture = chunk.parts.length;
+        chunk.parts.push(part);
+      }
+    }
+    const last = chunks[chunks.length - 1];
+    if (!last.parts.length) throw injected.createStacklessError('Selector cannot end with entering frame');
+    if (parsed.capture !== undefined && last.capture === undefined) throw injected.createStacklessError('Can not capture the selector before diving into the frame');
+    function stringify(selector) {
+      return selector.parts.map((part, index) => {
+        const source = part.body?.parsed ? JSON.stringify(stringify(part.body.parsed)) + (part.body.distance === undefined ? '' : `, ${part.body.distance}`) : part.source;
+        return `${selector.capture === index ? '*' : ''}${part.name}=${source}`;
+      }).join(' >> ');
+    }
+    const frames = chunks.slice(0, -1).map(chunk => codec.encode(stringify(chunk)).units);
+    const selector = stringify(last);
+    return {
+      frames,
+      strict: request.strict ?? true,
+      missingWaitSatisfied: request.action === 'waitFor' && ['hidden', 'detached'].includes(request.state),
+      request: codec.encode(structuredRequest ? JSON.stringify({ ...request, selector }) : selector).units,
+      missingRequest: structuredRequest ? codec.encode(JSON.stringify({ ...request, selector: null })).units : [],
+    };
+  }
+
+  /** A private original-document reference is consumed by native frame identity lookup. */
+  function resolveFrameElement(selectorUnits, strict, deadline) {
+    try {
+      if (expired(deadline)) return { outcome: 'success', value: null };
+      const selector = codec.decode({ kind: 'string', units: selectorUnits });
+      const element = injected.querySelector(injected.parseSelector(selector), document, strict);
+      if (element && element.nodeName !== 'IFRAME' && element.nodeName !== 'FRAME') throw injected.createStacklessError(`Selector "${selector}" resolved to ${injected.previewNode(element)}, <iframe> was expected`);
+      return { outcome: 'success', value: element ?? null };
+    } catch (error) {
+      return { outcome: 'exception', failure: JSON.stringify({ outcome: 'exception', stage: 'execution', error: codec.describeError(error, false) }) };
+    }
+  }
+
   /** Supported assertions only read the isolated DOM. Share the pinned evaluator's
    * selector work until this synchronous stack returns, never across await or a
    * browser task. Full predicates still run independently with their own reads. */
@@ -460,6 +519,8 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
   }
 
   return {
+    prepareFrameSelector: (units, structuredRequest) => safely(() => ({ status: 'success', plan: prepareFrameSelector(units, structuredRequest) })),
+    resolveFrameElement,
     resolveElement,
     resolveActionElement,
     runCapturedAction: (element, units, deadline) => safely(() => performCapturedAction(element, decodeRequest(units), deadline)),

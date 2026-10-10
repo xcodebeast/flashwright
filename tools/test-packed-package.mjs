@@ -108,6 +108,18 @@ try {
   await page.setChecked('input[type=checkbox]', true, { strict: true });
   await page.mainFrame().uncheck('input[type=checkbox]');
   assert.equal(await page.getByLabel('Check', { exact: true }).isChecked(), false);
+  await page.evaluate(() => {
+    const frame = document.createElement('iframe'); frame.id = 'packed-frame';
+    frame.srcdoc = '<input aria-label="Frame name"><button onclick="this.textContent=String(event.isTrusted)">Frame button</button>';
+    document.body.append(frame);
+  });
+  const packedFrame = page.frameLocator('#packed-frame');
+  assert(packedFrame instanceof FrameLocator);
+  await packedFrame.getByLabel('Frame name').fill('inside frame');
+  assert.equal(await page.locator('#packed-frame').contentFrame().getByLabel('Frame name').inputValue(), 'inside frame');
+  await packedFrame.getByRole('button').click();
+  assert.equal(await packedFrame.getByRole('button').evaluate(element => element.textContent), 'true');
+  assert.equal(await packedFrame.owner().getAttribute('id'), 'packed-frame');
   await page.getByLabel('Name').fill('packed input');
   assert.equal(await page.getByLabel('Name').inputValue(), 'packed input');
   await page.getByLabel('Name').press('ControlOrMeta+A');
@@ -160,8 +172,8 @@ try {
   await page.close();
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 `;
-await writeFile(join(directory, 'consumer.mjs'), `import assert from 'node:assert/strict';\nimport { chromium } from 'flashwright';\n${body}`);
-await writeFile(join(directory, 'consumer.cjs'), `const assert = require('node:assert/strict');\nconst { chromium } = require('flashwright');\n(async () => { ${body} })().catch(error => { console.error(error); process.exitCode = 1; });`);
+await writeFile(join(directory, 'consumer.mjs'), `import assert from 'node:assert/strict';\nimport { chromium, FrameLocator } from 'flashwright';\n${body}`);
+await writeFile(join(directory, 'consumer.cjs'), `const assert = require('node:assert/strict');\nconst { chromium, FrameLocator } = require('flashwright');\n(async () => { ${body} })().catch(error => { console.error(error); process.exitCode = 1; });`);
 const typeBody = `
 async function example(): Promise<number> {
   const browser: Browser = await chromium.launch({ slowMo: 0 });
@@ -240,6 +252,11 @@ async function example(): Promise<number> {
     await restored.close();
     void cookies;
     const locator: import('flashwright').Locator = page.getByRole('button', { name: /submit/i });
+    const frameLocator: import('flashwright').FrameLocator = page.frameLocator('iframe').first();
+    const frameOwner: import('flashwright').Locator = frameLocator.owner();
+    await frameOwner.contentFrame().getByRole('button').click();
+    // @ts-expect-error Frame selectors preserve their string parameter.
+    page.frameLocator(42);
     const count: number = await locator.count();
     const visible: boolean = await locator.isVisible();
     const options: import('flashwright').ClickOptions = { button: 'left', modifiers: ['ControlOrMeta'], position: { x: 3, y: 4 }, trial: true };

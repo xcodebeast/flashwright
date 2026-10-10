@@ -690,7 +690,7 @@
 | playwright-core/types/types.d.ts.Page.frame.frameSelector.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.frame.frameSelector.url#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.frame.frameSelector.url.url#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.frameLocator#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.frameLocator#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.Page.frameLocator.selector#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.frames#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-lifecycle) |
 | playwright-core/types/types.d.ts.Page.getAttribute#1 | MethodSignature | planned / unverified | Unreviewed |
@@ -1325,7 +1325,7 @@
 | playwright-core/types/types.d.ts.Frame.focus.options.strict#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#selector-actions) |
 | playwright-core/types/types.d.ts.Frame.focus.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.frameElement#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Frame.frameLocator#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Frame.frameLocator#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.Frame.frameLocator.selector#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.getAttribute#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Frame.getAttribute.selector#1 | parameter | planned / unverified | Unreviewed |
@@ -2784,7 +2784,7 @@
 | playwright-core/types/types.d.ts.Locator.click.options.steps#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Locator.click.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Locator.click.options.trial#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.contentFrame#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Locator.contentFrame#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.Locator.count#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-locator-queries) |
 | playwright-core/types/types.d.ts.Locator.dblclick#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-actions) |
 | playwright-core/types/types.d.ts.Locator.dblclick.options#1 | parameter | planned / unverified | Unreviewed |
@@ -2856,7 +2856,7 @@
 | playwright-core/types/types.d.ts.Locator.focus#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-actions) |
 | playwright-core/types/types.d.ts.Locator.focus.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Locator.focus.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Locator.frameLocator#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Locator.frameLocator#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.Locator.frameLocator.selector#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Locator.getAttribute#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-locator-queries) |
 | playwright-core/types/types.d.ts.Locator.getAttribute.name#1 | parameter | planned / unverified | Unreviewed |
@@ -3986,22 +3986,22 @@
 | playwright-core/types/types.d.ts.FileChooser.setFiles.options.noWaitAfter#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FileChooser.setFiles.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.first#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.frameLocator#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.first#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
+| playwright-core/types/types.d.ts.FrameLocator.frameLocator#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.frameLocator.selector#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByAltText#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByAltText#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByAltText.text#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByAltText.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByAltText.options.exact#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByLabel#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByLabel#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByLabel.text#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByLabel.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByLabel.options.exact#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByPlaceholder#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByPlaceholder#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByPlaceholder.text#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByPlaceholder.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByPlaceholder.options.exact#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByRole#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByRole#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByRole.role#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByRole.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByRole.options.checked#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -4014,27 +4014,27 @@
 | playwright-core/types/types.d.ts.FrameLocator.getByRole.options.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByRole.options.pressed#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByRole.options.selected#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByTestId#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByTestId#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByTestId.testId#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByText#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByText#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByText.text#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByText.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByText.options.exact#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.getByTitle#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.getByTitle#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.getByTitle.text#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByTitle.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.getByTitle.options.exact#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.last#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.locator#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.last#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
+| playwright-core/types/types.d.ts.FrameLocator.locator#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.locator.selectorOrLocator#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.locator.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.locator.options.has#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.locator.options.hasNot#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.locator.options.has#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
+| playwright-core/types/types.d.ts.FrameLocator.locator.options.hasNot#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.locator.options.hasNotText#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FrameLocator.locator.options.hasText#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.nth#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.nth#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.FrameLocator.nth.index#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.FrameLocator.owner#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.FrameLocator.owner#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#frame-locators) |
 | playwright-core/types/types.d.ts.Keyboard#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Keyboard.down#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#keyboard-explicit-rejection) |
 | playwright-core/types/types.d.ts.Keyboard.down.key#1 | parameter | planned / unverified | Unreviewed |

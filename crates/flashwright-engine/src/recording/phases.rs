@@ -325,6 +325,7 @@ impl Engine {
                 | "page.evaluateHandle"
                 | "frame.evaluateHandle"
                 | "handle.evaluateHandle"
+                | "frame.waitForSelector"
                 | "frame.setInputFiles"
                 | "elementHandle.setInputFiles"
                 | "elementHandle.selectText"

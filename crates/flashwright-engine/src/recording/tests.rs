@@ -2,6 +2,61 @@ use super::*;
 use std::time::Duration;
 
 #[test]
+fn input_retries_preserve_pending_ownership_and_sealing() {
+    let mut state = RecordingState::default();
+    state.start("recording").unwrap();
+    let recording = state.get_mut("recording").unwrap();
+    recording.start_chunk("chunk").unwrap();
+    for phase in [SnapshotPhase::Before, SnapshotPhase::After] {
+        assert!(recording.admit_phase("chunk", "call", phase).unwrap());
+        recording.settle_phase("chunk", "call", phase).unwrap();
+        assert!(!recording.admit_phase("chunk", "call", phase).unwrap());
+    }
+    for _ in 0..3 {
+        assert!(
+            recording
+                .admit_phase("chunk", "call", SnapshotPhase::Input)
+                .unwrap()
+        );
+        assert!(
+            !recording
+                .admit_phase("chunk", "call", SnapshotPhase::Input)
+                .unwrap()
+        );
+        recording
+            .settle_phase("chunk", "call", SnapshotPhase::Input)
+            .unwrap();
+    }
+    assert_eq!(recording.chunk.as_ref().unwrap().calls["call"].len(), 3);
+    assert!(
+        recording
+            .admit_phase("chunk", "call", SnapshotPhase::Input)
+            .unwrap()
+    );
+    recording.seal_chunk("chunk").unwrap();
+    assert!(
+        !recording
+            .admit_phase("chunk", "call", SnapshotPhase::Input)
+            .unwrap()
+    );
+    assert!(recording.start_chunk("next").is_err());
+    recording
+        .settle_phase("chunk", "call", SnapshotPhase::Input)
+        .unwrap();
+    assert!(
+        !recording
+            .admit_phase("chunk", "call", SnapshotPhase::Input)
+            .unwrap()
+    );
+    recording.start_chunk("next").unwrap();
+    assert!(
+        !recording
+            .admit_phase("chunk", "call", SnapshotPhase::Input)
+            .unwrap()
+    );
+}
+
+#[test]
 fn seal_fences_whole_groups_and_late_phases_stay_with_the_original_chunk() {
     let mut state = RecordingState::default();
     state.start("recording").unwrap();

@@ -1,0 +1,271 @@
+// client.FrameLocator
+class _FrameLocator {
+      constructor(frame, selector) {
+        this._frame = frame;
+        this._frameSelector = selector;
+      }
+      locator(selectorOrLocator, options2) {
+        if (isString(selectorOrLocator))
+          return new Locator(this._frame, this._frameSelector + " >> internal:control=enter-frame >> " + selectorOrLocator, options2);
+        if (selectorOrLocator._frame !== this._frame)
+          throw new Error(`Locators must belong to the same frame.`);
+        return new Locator(this._frame, this._frameSelector + " >> internal:control=enter-frame >> " + selectorOrLocator._selector, options2);
+      }
+      getByTestId(testId) {
+        return this.locator(getByTestIdSelector(testIdAttributeName(), testId));
+      }
+      getByAltText(text2, options2) {
+        return this.locator(getByAltTextSelector(text2, options2));
+      }
+      getByLabel(text2, options2) {
+        return this.locator(getByLabelSelector(text2, options2));
+      }
+      getByPlaceholder(text2, options2) {
+        return this.locator(getByPlaceholderSelector(text2, options2));
+      }
+      getByText(text2, options2) {
+        return this.locator(getByTextSelector(text2, options2));
+      }
+      getByTitle(text2, options2) {
+        return this.locator(getByTitleSelector(text2, options2));
+      }
+      getByRole(role, options2 = {}) {
+        return this.locator(getByRoleSelector(role, options2));
+      }
+      owner() {
+        return new Locator(this._frame, this._frameSelector);
+      }
+      frameLocator(selector) {
+        return new _FrameLocator(this._frame, this._frameSelector + " >> internal:control=enter-frame >> " + selector);
+      }
+      first() {
+        return new _FrameLocator(this._frame, this._frameSelector + " >> nth=0");
+      }
+      last() {
+        return new _FrameLocator(this._frame, this._frameSelector + ` >> nth=-1`);
+      }
+      nth(index) {
+        return new _FrameLocator(this._frame, this._frameSelector + ` >> nth=${index}`);
+      }
+    }
+
+// client.Locator.contentFrame
+contentFrame() {
+        return new FrameLocator(this._frame, this._selector);
+      }
+
+// parseSelector
+function parseSelector(selector) {
+  const parsedStrings = parseSelectorString(selector);
+  const parts = [];
+  for (const part of parsedStrings.parts) {
+    if (part.name === "css" || part.name === "css:light") {
+      if (part.name === "css:light")
+        part.body = ":light(" + part.body + ")";
+      const parsedCSS = parseCSS(part.body, customCSSNames);
+      parts.push({
+        name: "css",
+        body: parsedCSS.selector,
+        source: part.body
+      });
+      continue;
+    }
+    if (kNestedSelectorNames.has(part.name)) {
+      let innerSelector;
+      let distance;
+      try {
+        const unescaped = JSON.parse("[" + part.body + "]");
+        if (!Array.isArray(unescaped) || unescaped.length < 1 || unescaped.length > 2 || typeof unescaped[0] !== "string")
+          throw new InvalidSelectorError(`Malformed selector: ${part.name}=` + part.body);
+        innerSelector = unescaped[0];
+        if (unescaped.length === 2) {
+          if (typeof unescaped[1] !== "number" || !kNestedSelectorNamesWithDistance.has(part.name))
+            throw new InvalidSelectorError(`Malformed selector: ${part.name}=` + part.body);
+          distance = unescaped[1];
+        }
+      } catch (e) {
+        throw new InvalidSelectorError(`Malformed selector: ${part.name}=` + part.body);
+      }
+      const nested = { name: part.name, source: part.body, body: { parsed: parseSelector(innerSelector), distance } };
+      const lastFrame = [...nested.body.parsed.parts].reverse().find((part2) => part2.name === "internal:control" && part2.body === "enter-frame");
+      const lastFrameIndex = lastFrame ? nested.body.parsed.parts.indexOf(lastFrame) : -1;
+      if (lastFrameIndex !== -1 && selectorPartsEqual(nested.body.parsed.parts.slice(0, lastFrameIndex + 1), parts.slice(0, lastFrameIndex + 1)))
+        nested.body.parsed.parts.splice(0, lastFrameIndex + 1);
+      parts.push(nested);
+      continue;
+    }
+    parts.push({ ...part, source: part.body });
+  }
+  if (kNestedSelectorNames.has(parts[0].name))
+    throw new InvalidSelectorError(`"${parts[0].name}" selector cannot be first`);
+  return {
+    capture: parsedStrings.capture,
+    parts
+  };
+}
+
+// splitSelectorByFrame
+function splitSelectorByFrame(selectorText) {
+  const selector = parseSelector(selectorText);
+  const result2 = [];
+  let chunk = {
+    parts: []
+  };
+  let chunkStartIndex = 0;
+  for (let i = 0; i < selector.parts.length; ++i) {
+    const part = selector.parts[i];
+    if (part.name === "internal:control" && part.body === "enter-frame") {
+      if (!chunk.parts.length)
+        throw new InvalidSelectorError("Selector cannot start with entering frame, select the iframe first");
+      result2.push(chunk);
+      chunk = { parts: [] };
+      chunkStartIndex = i + 1;
+      continue;
+    }
+    if (selector.capture === i)
+      chunk.capture = i - chunkStartIndex;
+    chunk.parts.push(part);
+  }
+  if (!chunk.parts.length)
+    throw new InvalidSelectorError(`Selector cannot end with entering frame, while parsing selector ${selectorText}`);
+  result2.push(chunk);
+  if (typeof selector.capture === "number" && typeof result2[result2.length - 1].capture !== "number")
+    throw new InvalidSelectorError(`Can not capture the selector before diving into the frame. Only use * after the last frame has been selected`);
+  return result2;
+}
+
+// stringifySelector
+function stringifySelector(selector, forceEngineName) {
+  if (typeof selector === "string")
+    return selector;
+  return selector.parts.map((p, i) => {
+    let includeEngine = true;
+    if (!forceEngineName && i !== selector.capture) {
+      if (p.name === "css")
+        includeEngine = false;
+      else if (p.name === "xpath" && p.source.startsWith("//") || p.source.startsWith(".."))
+        includeEngine = false;
+    }
+    const prefix = includeEngine ? p.name + "=" : "";
+    return `${i === selector.capture ? "*" : ""}${prefix}${p.source}`;
+  }).join(" >> ");
+}
+
+// visitAllSelectorParts
+function visitAllSelectorParts(selector, visitor) {
+  const visit = (selector2, nested) => {
+    for (const part of selector2.parts) {
+      visitor(part, nested);
+      if (kNestedSelectorNames.has(part.name))
+        visit(part.body.parsed, true);
+    }
+  };
+  visit(selector, false);
+}
+
+// server.resolveFrameForSelector
+async resolveFrameForSelector(selector, options2 = {}, scope) {
+        let frame = this.frame;
+        const frameChunks = splitSelectorByFrame(selector);
+        for (const chunk of frameChunks) {
+          visitAllSelectorParts(chunk, (part, nested) => {
+            if (nested && part.name === "internal:control" && part.body === "enter-frame") {
+              const locator2 = asLocator(this.frame._page.browserContext._browser.sdkLanguage(), selector);
+              throw new InvalidSelectorError(`Frame locators are not allowed inside composite locators, while querying "${locator2}"`);
+            }
+          });
+        }
+        for (let i = 0; i < frameChunks.length - 1; ++i) {
+          const info = this._parseSelector(frameChunks[i], options2);
+          frame = this._jumpToAriaRefFrameIfNeeded(selector, info, frame);
+          const context2 = await frame.context(info.world);
+          const injectedScript = await context2.injectedScript();
+          const handle = await injectedScript.evaluateHandle((injected, { info: info2, scope: scope2, selectorString }) => {
+            const element3 = injected.querySelector(info2.parsed, scope2 || document, info2.strict);
+            if (element3 && element3.nodeName !== "IFRAME" && element3.nodeName !== "FRAME")
+              throw injected.createStacklessError(`Selector "${selectorString}" resolved to ${injected.previewNode(element3)}, <iframe> was expected`);
+            return element3;
+          }, { info, scope: i === 0 ? scope : void 0, selectorString: stringifySelector(info.parsed) });
+          const element2 = handle.asElement();
+          if (!element2)
+            return null;
+          const maybeFrame = await frame._page.delegate.getContentFrame(element2);
+          element2.dispose();
+          if (!maybeFrame)
+            return null;
+          frame = maybeFrame;
+        }
+        if (frame !== this.frame)
+          scope = void 0;
+        const lastChunk = frame.selectors._parseSelector(frameChunks[frameChunks.length - 1], options2);
+        frame = this._jumpToAriaRefFrameIfNeeded(selector, lastChunk, frame);
+        return { frame, info: lastChunk, scope };
+      }
+
+// server.strictness
+_parseSelector(selector, options2) {
+        const strict = typeof options2?.strict === "boolean" ? options2.strict : !!this.frame._page.browserContext._options.strictSelectors;
+        return this.frame._page.browserContext.selectors().parseSelector(selector, strict);
+      }
+
+// server.queryCount
+async queryCount(selector, options2) {
+        const resolved = await this.resolveInjectedForSelector(selector);
+        if (!resolved)
+          throw new Error(`Failed to find frame for selector "${selector}"`);
+        await options2.__testHookBeforeQuery?.();
+        return await resolved.injected.evaluate((injected, { info }) => {
+          const elements = injected.querySelectorAll(info.parsed, document);
+          injected.checkDeprecatedSelectorUsage(info.parsed, elements);
+          return elements.length;
+        }, { info: resolved.info });
+      }
+
+// server._expectInternal
+async _expectInternal(progress2, selector, options2, lastIntermediateResult, noAbort) {
+        const progressLog = (text2) => progress2.log(text2);
+        const callId = progress2.metadata.id;
+        if (noAbort)
+          progress2 = nullProgress;
+        const selectorInFrame = selector ? await progress2.race(this.selectors.resolveFrameForSelector(selector, { strict: true })) : void 0;
+        const { frame, info } = selectorInFrame || { frame: this, info: void 0 };
+        const world = options2.expression === "to.have.property" ? "main" : info?.world ?? "utility";
+        const context2 = await progress2.race(frame.context(world));
+        const injected = await progress2.race(context2.injectedScript());
+        const { log: log2, matches, received, missingReceived } = await progress2.race(injected.evaluate(async (injected2, { info: info2, options: options3, callId: callId2 }) => {
+          const elements = info2 ? injected2.querySelectorAll(info2.parsed, document) : [];
+          if (callId2)
+            injected2.markTargetElements(new Set(elements), callId2);
+          const isArray = options3.expression === "to.have.count" || options3.expression.endsWith(".array");
+          let log3 = "";
+          if (isArray)
+            log3 = `  locator resolved to ${elements.length} element${elements.length === 1 ? "" : "s"}`;
+          else if (elements.length > 1)
+            throw injected2.strictModeViolationError(info2.parsed, elements);
+          else if (elements.length)
+            log3 = `  locator resolved to ${injected2.previewNode(elements[0])}`;
+          if (info2)
+            injected2.checkDeprecatedSelectorUsage(info2.parsed, elements);
+          return { log: log3, ...await injected2.expect(elements[0], options3, elements) };
+        }, { info, options: options2, callId }));
+        if (log2)
+          progressLog(log2);
+        if (matches === options2.isNot) {
+          lastIntermediateResult.errorMessage = missingReceived ? "Error: element(s) not found" : void 0;
+          lastIntermediateResult.received = received;
+          lastIntermediateResult.isSet = true;
+          if (!missingReceived && !Array.isArray(received?.value))
+            progressLog(`  unexpected value "${renderUnexpectedValue(options2.expression, received?.value)}"`);
+        }
+        return { matches, received };
+      }
+
+// chromium.contentFrame
+async _getContentFrame(handle) {
+        const nodeInfo = await this._client.send("DOM.describeNode", {
+          objectId: handle._objectId
+        });
+        if (!nodeInfo || typeof nodeInfo.node.frameId !== "string")
+          return null;
+        return this._page.frameManager.frame(nodeInfo.node.frameId);
+      }

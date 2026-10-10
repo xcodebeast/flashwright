@@ -436,12 +436,33 @@ impl Engine {
                 "locator request exceeds 100000 UTF-16 units",
             ));
         }
+        let mut selector = super::locators::FrameSelector::new(
+            identifier(&parameters, "page", method)?,
+            frame,
+            &request,
+            true,
+            None,
+        );
         let mut attempts = 0;
         loop {
             page.wait_for_input_navigation(0, operation, method).await?;
-            let realm = self
-                .locator_realm(&page, &browser, frame, operation, method)
-                .await?;
+            let realm = match self
+                .resolve_frame_selector(&page, &browser, &mut selector, operation, method)
+                .await
+            {
+                Ok(Some(realm)) => realm,
+                Ok(None) => {
+                    operation
+                        .wait(page.state.while_alive(method, async {
+                            sleep(Duration::from_millis(20)).await;
+                            Ok(())
+                        }))
+                        .await?;
+                    continue;
+                }
+                Err(error) if context_was_destroyed(&error) => continue,
+                Err(error) => return Err(error),
+            };
             let input_lock = operation
                 .wait(
                     page.state
@@ -460,7 +481,7 @@ impl Engine {
                     &page,
                     &browser,
                     &realm,
-                    &request,
+                    &selector.request,
                     operation,
                     method,
                 )
@@ -470,7 +491,7 @@ impl Engine {
                 let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
                     "uniqueContextId": realm.context.unique_identifier,
                     "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.prepareKeyboard(request, deadline); }",
-                    "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }],
+                    "arguments": [{ "value": selector.request }, { "value": operation.renderer_deadline() }],
                     "returnByValue": true, "awaitPromise": true, "userGesture": true,
                 }), Some(&page.session_identifier))?;
                 match operation

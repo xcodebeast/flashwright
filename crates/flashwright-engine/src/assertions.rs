@@ -3,6 +3,7 @@
 use super::locators::{LocatorRealm, check_exception, context_was_destroyed};
 use super::*;
 use flashwright_browser::connection::Command;
+use std::borrow::Cow;
 use tokio::time::sleep;
 
 const METHOD: &str = "assertion.run";
@@ -41,10 +42,10 @@ const EXPRESSIONS: &[&str] = &[
     "to.have.accessible.error.message",
 ];
 
-struct AssertionRequest {
-    expression: String,
+struct AssertionRequest<'request> {
+    expression: &'request str,
     is_not: bool,
-    units: Vec<u16>,
+    units: Cow<'request, [u16]>,
 }
 
 impl Engine {
@@ -67,9 +68,9 @@ impl Engine {
             ));
         }
         let request = AssertionRequest {
-            expression: expression.to_owned(),
+            expression,
             is_not: parse(METHOD, parameters["isNot"].clone())?,
-            units: parse(METHOD, parameters["request"].clone())?,
+            units: Cow::Owned(parse(METHOD, parameters["request"].clone())?),
         };
         if request.units.len() > 100000 {
             return Err(ErrorRecord::new(
@@ -82,17 +83,44 @@ impl Engine {
         let context = self.context(&page.context_identifier, METHOD)?;
         let browser = self.browser(&context.browser_identifier, METHOD)?;
         let frame = identifier(&parameters, "frame", METHOD)?;
+        let mut selector = super::locators::FrameSelector::new(
+            identifier(&parameters, "page", METHOD)?,
+            frame,
+            &request.units,
+            true,
+            Some(true),
+        );
         let mut observation = None;
         let result = async {
             let mut attempts = 0;
             loop {
                 operation.check()?;
                 let result = async {
-                    let realm = self
-                        .locator_realm(&page, &browser, frame, operation, METHOD)
+                    let resolved = self
+                        .resolve_frame_selector(&page, &browser, &mut selector, operation, METHOD)
                         .await?;
-                    self.assertion_attempt(&page, &browser, &realm, &request, operation)
-                        .await
+                    let (realm, units) = match resolved {
+                        Some(realm) => (realm, selector.request.as_ref()),
+                        None => (
+                            self.locator_realm(&page, &browser, frame, operation, METHOD)
+                                .await?,
+                            selector.missing_request.as_slice(),
+                        ),
+                    };
+                    let current = AssertionRequest {
+                        expression: request.expression,
+                        is_not: request.is_not,
+                        units: Cow::Borrowed(units),
+                    };
+                    self.assertion_attempt(
+                        &page,
+                        &browser,
+                        &realm,
+                        &current,
+                        operation,
+                        self.resident_assertions && !selector.crosses_frames(),
+                    )
+                    .await
                 }
                 .await;
                 match result {
@@ -164,7 +192,7 @@ impl Engine {
                     }
                     Err(error) => return Err(error),
                 }
-                if self.resident_assertions {
+                if self.resident_assertions && !selector.crosses_frames() {
                     tokio::task::yield_now().await;
                 } else {
                     let delay = [20, 50, 100][attempts.min(2)];
@@ -194,11 +222,12 @@ impl Engine {
         page: &Page,
         browser: &Arc<Chromium>,
         realm: &LocatorRealm,
-        request: &AssertionRequest,
+        request: &AssertionRequest<'_>,
         operation: &Operation,
+        resident: bool,
     ) -> Result<Value, ErrorRecord> {
         let token = self.identifier("assertion");
-        let function = if self.resident_assertions {
+        let function = if resident {
             "function(request, deadline, expression, isNot, token) { return globalThis.__flashwrightLocatorRuntime.waitForAssertion(request, deadline, expression, isNot, token); }"
         } else {
             "function(request, deadline, expression, isNot) { return globalThis.__flashwrightLocatorRuntime.assertion(request, deadline, expression, isNot); }"
@@ -207,7 +236,7 @@ impl Engine {
             { "value": request.units }, { "value": operation.renderer_deadline() },
             { "value": request.expression }, { "value": request.is_not },
         ]);
-        if self.resident_assertions {
+        if resident {
             arguments
                 .as_array_mut()
                 .unwrap()
@@ -223,8 +252,7 @@ impl Engine {
         {
             Ok(result) => runtime_value(result),
             Err(mut error)
-                if self.resident_assertions
-                    && matches!(error.code, ErrorCode::Timeout | ErrorCode::Cancelled) =>
+                if resident && matches!(error.code, ErrorCode::Timeout | ErrorCode::Cancelled) =>
             {
                 if command.prevent_dispatch() {
                     error.cleanup = Some("notDispatched".into());

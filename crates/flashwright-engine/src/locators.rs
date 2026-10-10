@@ -4,7 +4,9 @@ use super::*;
 use flashwright_protocol::InputDelivery;
 use tokio::time::sleep;
 
+mod frame_selector;
 mod traced_action;
+pub(crate) use frame_selector::FrameSelector;
 
 pub(crate) const LOCATOR_WORLD_NAME: &str = "__flashwright_locator_world__";
 
@@ -121,6 +123,14 @@ impl Engine {
                 "locator request exceeds 100000 UTF-16 units",
             ));
         }
+        let list_read = ["count", "allTextContents", "allInnerTexts"].contains(&action);
+        let mut selector = FrameSelector::new(
+            identifier(&parameters, "page", &method)?,
+            frame,
+            &request,
+            true,
+            list_read.then_some(false),
+        );
         let mut attempt = 0;
         loop {
             operation.check()?;
@@ -136,10 +146,10 @@ impl Engine {
                 None
             };
             let realm = self
-                .locator_realm(&page, &browser, frame, operation, &method)
+                .resolve_frame_selector(&page, &browser, &mut selector, operation, &method)
                 .await;
             let result = match realm {
-                Ok(realm) => {
+                Ok(Some(realm)) => {
                     if ["fill", "selectOption"].contains(&action)
                         && operation
                             .trace_call()
@@ -150,18 +160,43 @@ impl Engine {
                             &page,
                             &browser,
                             &realm,
-                            &request,
+                            &selector.request,
                             operation,
                             &method,
                         )
                         .await
                     } else {
                         self.locator_attempt(
-                            &page, &browser, &realm, &request, action, operation, &method,
+                            &page,
+                            &browser,
+                            &realm,
+                            &selector.request,
+                            action,
+                            operation,
+                            &method,
                         )
                         .await
                     }
                 }
+                Ok(None) => match action {
+                    "count" => return Ok(json!({"kind":"number","value":0})),
+                    "isVisible" | "isHidden" => {
+                        return Ok(json!({"kind":"boolean","value":action == "isHidden"}));
+                    }
+                    "waitFor" if selector.missing_wait_satisfied => {
+                        return Ok(json!({"kind":"undefined"}));
+                    }
+                    "allTextContents" | "allInnerTexts" => {
+                        return Err(ErrorRecord::new(
+                            ErrorCode::Evaluation,
+                            &method,
+                            "Failed to find frame for selector",
+                        ));
+                    }
+                    _ => Ok(
+                        json!({"status":"retry","reason":{"kind":"string","units":"frame selector resolved to no frame".encode_utf16().collect::<Vec<_>>()}}),
+                    ),
+                },
                 Err(error) => Err(error),
             };
             let reason = match result {
