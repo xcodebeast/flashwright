@@ -462,6 +462,7 @@ impl Connection {
             let maximum_pending = if matches!(
                 method,
                 "Page.handleJavaScriptDialog"
+                    | "Browser.cancelDownload"
                     | "Target.closeTarget"
                     | "Target.disposeBrowserContext"
                     | "Browser.close"

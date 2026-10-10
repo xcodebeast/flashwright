@@ -1,0 +1,64 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributions": [
+    {
+      "path": "node_modules/playwright-core/types/types.d.ts",
+      "sha256": "e5b810845dedef5aa0d682efa61be20dcb2e28c27a64ff5cc4cfc122f3f3980f"
+    },
+    {
+      "path": "node_modules/playwright-core/lib/coreBundle.js",
+      "sha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+    }
+  ],
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/download.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/artifact.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/stream.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/download.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/artifact.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crBrowser.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/browserContext.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/browser.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/registry/index.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/utilsBundle.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/downloads.source.txt",
+  "extractSha256": "98761576c371acfddae2c91fbe8d8a6fd3748a37b0a54e7d47ec41bf60861097",
+  "implementation": {
+    "packages/flashwright-core/src/download.ts": "0c1d9bcb5c0cb89765bb26ad1cece35c83c34930cf8523361b7fbb0957a4c1eb",
+    "packages/flashwright-core/src/index.ts": "b25a9e15b14421e9a3e5a1e60f085f95839c8056fc6d256c2a8ec7efb9febf22",
+    "packages/flashwright-core/src/context-settings.ts": "0b987c84983484eef9b4c03ca279862e1c597585479b594e36c6191b3f55eb5f",
+    "packages/flashwright-core/src/engine-contract.ts": "861ab485dbd0c9b42bce61bd25458c6bd558ccfda84cce0a8fc64d920fb58ef9",
+    "packages/flashwright-runner/src/index.ts": "121ac0d44c49f49030d3d84189d99180c625616a92991996317a6dd3bc81d40e",
+    "crates/flashwright-engine/src/downloads.rs": "1f193ec2c2d4e7fece5da7cf099eacdfdfce359ef49763bd4c1b8b3657d6f870",
+    "crates/flashwright-engine/src/lib.rs": "a9d32c63d176a3b9693c65a3f2ee51b2dd23ca2faf82dcda6adb69135c56cbd2",
+    "crates/flashwright-engine/src/context_state.rs": "92971edb3a161e1a9ed0f90827c7e4699b5e27922a772cc582b751107f44c226",
+    "crates/flashwright-engine/src/events.rs": "2f4bb86f4257af5c26ee2917ea5a246b5b8c8be93f01e2f4cb274520609169eb",
+    "crates/flashwright-engine/src/publication.rs": "866fb46b1bec9e2e682fd41e3c1352c4c386822304fa493e5c96ff85ab125ba8",
+    "crates/flashwright-engine/src/operation.rs": "f7a16d1f57c7f17835cec187f941d96d617b116087cf0ca8c87c2e7b06495663",
+    "crates/flashwright-driver/src/main.rs": "baf8f72db10930922740bd23d818623c4a6c54c6e6d98e5bec09ff2815bbc6a1",
+    "crates/flashwright-browser/src/chromium.rs": "5b9f0587e4cff839811bd76aaa295361e7c4660193643ff3356442a48e22fae2",
+    "crates/flashwright-browser/src/guardian_metadata.rs": "2c9700cc14755891ac25e65e678ad06055e7657ddd05d882cd32b00caff2dee9",
+    "crates/flashwright-browser/src/supervision.rs": "e38bc2716595ded60d4285b972da0703ac79beb8ecb0ba8e6ed47d2166ced138",
+    "crates/flashwright-browser/src/connection.rs": "78298e44b31dae892e822b04dfd25d1614bb796d754b5299d6692478f4e20e95"
+  },
+  "adaptations": [
+    "Context settings validate acceptDownloads as a boolean and default it to true; the engine applies Browser.setDownloadBehavior per context with an isolated guardian-owned artifacts directory.",
+    "The native event path associates Browser.downloadWillBegin frame IDs with public pages in the same browser, preserves raw URL and suggested-filename JSON for the client, and tracks completion/cancellation by the original context and GUID.",
+    "The TypeScript Download retains original Page and BrowserContext ownership, validates the event envelope and metadata, exposes path/saveAs/failure/cancel/delete, and manages local Readable streams against context close and download deletion.",
+    "The browser guardian announces its artifact directory over a bounded private pipe and holds artifact liveness while physical file operations and browser cleanup are in flight.",
+    "Current implementation files and hashes are recorded so the extract can be regenerated after implementation edits."
+  ],
+  "observedReferenceConcern": "Pinned ReadableStreamImpl._read is async and awaits channel.read without catching rejection or calling the callback form of Node Readable._read. Context-close stream termination was observed to produce an unhandled rejection or leave the stream read unsettled; this retained source records that behavior and makes no claim that it is safe.",
+  "limitations": [
+    "No out-of-process iframe download ownership claim is made.",
+    "No popup-origin fallback claim is made.",
+    "No remote-connection Download path or stream claim is made.",
+    "No persistent-context download behavior claim is made.",
+    "No disk-quota or total downloaded-file-size guarantee is made.",
+    "This provenance record is not conformance, performance, or release acceptance."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

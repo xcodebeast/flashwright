@@ -214,6 +214,29 @@ impl Operation {
         }
     }
 
+    /// Withdraw queued filesystem work on expiry or waiter loss; started work retains its owners.
+    pub(crate) async fn wait_blocking<T: Send + 'static>(
+        &self,
+        work: impl FnOnce() -> Result<T, ErrorRecord> + Send + 'static,
+    ) -> Result<T, ErrorRecord> {
+        self.check()?;
+        let dispatch = Self::new(
+            self.method.clone(),
+            self.deadline,
+            self.cancellation.clone(),
+        );
+        let mut task = BlockingOperation(tokio::task::spawn_blocking(move || {
+            dispatch.check()?;
+            work()
+        }));
+        self.wait(async {
+            (&mut task.0).await.map_err(|error| {
+                ErrorRecord::new(ErrorCode::Protocol, &self.method, error.to_string())
+            })?
+        })
+        .await
+    }
+
     /// A cancelled allocation still consumes its reply so the new resource can be disposed.
     /// If ownership cannot be recovered in bounded time, terminate this owned browser.
     pub(crate) async fn allocate(
@@ -271,6 +294,15 @@ impl Operation {
                 Err(error)
             }
         }
+    }
+}
+
+/// Tokio cannot stop a running blocking closure, but abort removes work that is still queued.
+struct BlockingOperation<T>(tokio::task::JoinHandle<T>);
+
+impl<T> Drop for BlockingOperation<T> {
+    fn drop(&mut self) {
+        self.0.abort();
     }
 }
 
@@ -361,6 +393,56 @@ mod tests {
     use tokio::io::{
         AsyncBufReadExt, AsyncWriteExt, BufReader, DuplexStream, ReadHalf, WriteHalf, duplex, split,
     };
+
+    #[test]
+    fn queued_blocking_work_withdraws_on_deadline_cancellation_and_waiter_loss() {
+        for reason in ["deadline", "cancellation", "waiter-loss"] {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .max_blocking_threads(1)
+                .build()
+                .unwrap();
+            runtime.block_on(async {
+                let (release, blocked) = std::sync::mpsc::channel();
+                let (started, ready) = tokio::sync::oneshot::channel();
+                let blocker = tokio::task::spawn_blocking(move || {
+                    started.send(()).unwrap();
+                    let _ = blocked.recv();
+                });
+                ready.await.unwrap();
+                let (cancellation, receiver) = watch::channel(false);
+                let deadline =
+                    (reason == "deadline").then(|| Instant::now() + Duration::from_millis(20));
+                let operation = Operation::new("download.saveAs".into(), deadline, receiver);
+                let ran = Arc::new(AtomicBool::new(false));
+                let job_ran = ran.clone();
+                let mut pending = Box::pin(operation.wait_blocking(move || {
+                    job_ran.store(true, Ordering::SeqCst);
+                    Ok(())
+                }));
+                std::future::poll_fn(|context| {
+                    assert!(pending.as_mut().poll(context).is_pending());
+                    std::task::Poll::Ready(())
+                })
+                .await;
+                match reason {
+                    "deadline" => assert_eq!(pending.await.unwrap_err().code, ErrorCode::Timeout),
+                    "cancellation" => {
+                        cancellation.send(true).unwrap();
+                        assert_eq!(pending.await.unwrap_err().code, ErrorCode::Cancelled);
+                    }
+                    _ => drop(pending),
+                }
+                release.send(()).unwrap();
+                blocker.await.unwrap();
+                tokio::task::spawn_blocking(|| ()).await.unwrap();
+                assert!(
+                    !ran.load(Ordering::SeqCst),
+                    "queued work ran after {reason}"
+                );
+            });
+        }
+    }
 
     struct Owner {
         connection: Connection,

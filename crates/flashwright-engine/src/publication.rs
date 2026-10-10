@@ -189,12 +189,24 @@ impl Engine {
                     .and_then(|context| self.browser(&context.browser_identifier, method).ok());
                 match (self.remove_context(identifier), browser) {
                     (Some(context), Some(browser)) => {
-                        dispose(
+                        let cleanup = dispose(
                             browser.as_ref(),
                             ResourceKind::Context,
                             &context.protocol_identifier,
                         )
-                        .await
+                        .await;
+                        if let Some(downloads) = context.state.downloads.get()
+                            && downloads.remove_files().await.is_err()
+                        {
+                            return Some(
+                                operation::close_for_cleanup(
+                                    browser.as_ref(),
+                                    "browserClosedAfterDownloadCleanupFailure",
+                                )
+                                .await,
+                            );
+                        }
+                        cleanup
                     }
                     _ => "ownerAlreadyClosing",
                 }
@@ -214,12 +226,22 @@ impl Engine {
                     page.state.state.lock().unwrap().published = false;
                     self.finish_page(identifier, &page, closed("page"), "close");
                     if let Some(browser) = browser {
-                        dispose(
+                        let cleanup = dispose(
                             browser.as_ref(),
                             ResourceKind::Page,
                             &page.target_identifier,
                         )
-                        .await
+                        .await;
+                        if let Ok(context) = self.context(&page.context_identifier, method)
+                            && let Some(downloads) = context.state.downloads.get()
+                            && downloads
+                                .discard_page(&browser, &context.protocol_identifier, identifier)
+                                .await
+                                .is_err()
+                        {
+                            return Some("browserContinuingUnpublishedDownloadCleanup");
+                        }
+                        cleanup
                     } else {
                         "ownerAlreadyClosing"
                     }

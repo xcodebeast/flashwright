@@ -4,7 +4,7 @@ Flashwright has not established performance leadership. The current broad compar
 
 | Engine | Pinned package | Library-flow admission | Runner-suite measurement | Current broad performance result |
 | --- | --- | --- | --- | --- |
-| Flashwright | Development checkout | 151 functional core groups; earlier measured seven-flow profile | Pending broader migration corpus | Not established |
+| Flashwright | Development checkout | 156 functional core groups; earlier measured seven-flow profile | Pending broader migration corpus | Not established |
 | Playwright | @playwright/test 1.60.0 | Existing seven-flow matched baseline | Pending broader comparison | Current seven-flow paired profile below |
 | Puppeteer | puppeteer-core 25.13.0 | Seven functional flows; five match the checked reference outcomes, with explicit backend/failure differences | No bundled test runner in this comparison class | Not measured |
 | Cypress | cypress 16.1.1 | Default synthetic input and runner isolation are a separate class | 105 outcome-admission tests on each of Bun/Node 22/24; 15 intentional failures per run | Not measured |
@@ -16,7 +16,7 @@ Startup, complete-suite time, action/assertion latency, CPU, concurrent memory a
 
 The [measured checkpoint](../compatibility/evidence/current-performance-checkpoint-2026-10-10.json) passes all 144 core groups at 851 source hashes matching commit `41cbdcea`. The subsequent [16-launch snapshot](../benchmarks/results/current-paired-2026-10-10/summary.json) passes independent verification before and after path normalization. Both engines use Bun 1.4.2 and the same full Chrome 148.0.7778.96 executable and launch policy on the shared native Apple M3 Pro macOS host. This is one worker, seven library flows and artifacts off.
 
-The later [FrameLocator checkpoint](../compatibility/evidence/frame-locators-checkpoint-2026-10-10.json) passes 151 functional core groups. Selector actions, FrameLocator and the accompanying trace changes have not been measured in a fresh matched performance run. The table below applies to the earlier revision only.
+The later [Download checkpoint](../compatibility/evidence/downloads-checkpoint-2026-10-10.json) passes 156 functional core groups. Selector actions, FrameLocator, downloads and the accompanying trace/lifecycle changes have not been measured in a fresh matched performance run. The table below applies to the earlier revision only. Native Linux measurements remain unverified.
 
 Times below are milliseconds, expressed as medians of independent-launch medians. Each operation has 96 measured observations across eight launches, plus three warmups per launch. Ratios are paired Playwright/Flashwright values; above 1 favors Flashwright. Confidence intervals use the predeclared launch-clustered bootstrap. Complete runs include preparation, warmup, semantic verification and cleanup; process wall also includes runtime imports and the sampling wrapper.
 

@@ -24,7 +24,7 @@ runnerHooks.installTraceStart((testInfo, policy) => {
 });
 
 export type { TestInfo, WorkerInfo, TestType, Fixtures, FullConfig, FullProject, PlaywrightTestConfig, ExpectMatcherState, MatcherReturnType } from 'flashwright-upstream-runner/test';
-export type { Browser, BrowserContext, Page, Locator, Dialog } from '@flashwright/core';
+export type { Browser, BrowserContext, Page, Locator, Dialog, Download } from '@flashwright/core';
 export { errors } from '@flashwright/core';
 export const defineConfig = upstream.defineConfig;
 export { devices } from '@flashwright/core';
@@ -98,19 +98,19 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
   baseURL: [async ({}, use) => use(process.env.PLAYWRIGHT_TEST_BASE_URL), { option: true }],
   viewport: [async ({ contextOptions }, use) => use(contextOptions.viewport === undefined ? { width: 1280, height: 720 } : contextOptions.viewport), { option: true }],
   contextOptions: [{}, { option: true }], actionTimeout: [0, { option: true }], navigationTimeout: [0, { option: true }],
-  acceptDownloads: [undefined, { option: true }], bypassCSP: [undefined, { option: true }], colorScheme: [undefined, { option: true }],
+  acceptDownloads: [async ({ contextOptions }, use) => use(contextOptions.acceptDownloads ?? true), { option: true }], bypassCSP: [undefined, { option: true }], colorScheme: [undefined, { option: true }],
   clientCertificates: [undefined, { option: true }], deviceScaleFactor: [async ({ contextOptions }, use) => use(contextOptions.deviceScaleFactor), { option: true }], extraHTTPHeaders: [undefined, { option: true }],
   geolocation: [undefined, { option: true }], hasTouch: [async ({ contextOptions }, use) => use(contextOptions.hasTouch), { option: true }], httpCredentials: [undefined, { option: true }],
   ignoreHTTPSErrors: [async ({ contextOptions }, use) => use(contextOptions.ignoreHTTPSErrors), { option: true }], isMobile: [async ({ contextOptions }, use) => use(contextOptions.isMobile), { option: true }], javaScriptEnabled: [async ({ contextOptions }, use) => use(contextOptions.javaScriptEnabled), { option: true }],
   locale: [undefined, { option: true }], offline: [undefined, { option: true }], permissions: [undefined, { option: true }],
   proxy: [undefined, { option: true }], storageState: [async ({ contextOptions }, use) => use(contextOptions.storageState), { option: true }], timezoneId: [undefined, { option: true }],
   userAgent: [async ({ contextOptions }, use) => use(contextOptions.userAgent), { option: true }], serviceWorkers: [undefined, { option: true }], testIdAttribute: ['data-testid', { option: true }],
-  _validateContextOptions: [async ({ acceptDownloads, bypassCSP, colorScheme, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers, testIdAttribute }, use) => {
-    unsupportedOptions({ acceptDownloads, bypassCSP, colorScheme, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers });
+  _validateContextOptions: [async ({ bypassCSP, colorScheme, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers, testIdAttribute }, use) => {
+    unsupportedOptions({ bypassCSP, colorScheme, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers });
     if (testIdAttribute !== 'data-testid') throw failure('UnsupportedFeatureError', 'test.use.testIdAttribute', 'custom test-ID attributes are not implemented');
     await use();
   }, { auto: true }],
-  _combinedContextOptions: async ({ _validateContextOptions, contextOptions, viewport, baseURL, storageState, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled }, use) => {
+  _combinedContextOptions: async ({ _validateContextOptions, contextOptions, viewport, baseURL, storageState, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled, acceptDownloads }, use) => {
     void _validateContextOptions;
     await use({
       ...contextOptions, viewport,
@@ -120,6 +120,7 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
       ...(hasTouch === undefined ? {} : { hasTouch }),
       ...(ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors }),
       ...(javaScriptEnabled === undefined ? {} : { javaScriptEnabled }),
+      ...(acceptDownloads === undefined ? {} : { acceptDownloads }),
       ...(baseURL === undefined ? {} : { baseURL }),
       ...(storageState === undefined ? {} : { storageState }),
     });

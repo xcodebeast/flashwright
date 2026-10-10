@@ -126,7 +126,7 @@
 | playwright-core/types/types.d.ts.Page.on.event#5 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.on.listener#5 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.on.listener.page#3 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.on#6 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.on#6 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
 | playwright-core/types/types.d.ts.Page.on.event#6 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.on.listener#6 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.on.listener.download#1 | parameter | planned / unverified | Unreviewed |
@@ -202,7 +202,7 @@
 | playwright-core/types/types.d.ts.Page.once.event#5 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.once.listener#5 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.once.listener.page#3 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.once#6 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.once#6 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
 | playwright-core/types/types.d.ts.Page.once.event#6 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.once.listener#6 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.once.listener.download#1 | parameter | planned / unverified | Unreviewed |
@@ -1023,7 +1023,7 @@
 | playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.predicate.page#3 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.timeout#5 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.page#3 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForEvent#6 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.waitForEvent#6 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
 | playwright-core/types/types.d.ts.Page.waitForEvent.event#6 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate#6 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForEvent.optionsOrPredicate.predicate#6 | PropertySignature | planned / unverified | Unreviewed |
@@ -3960,16 +3960,16 @@
 | playwright-core/types/types.d.ts.Disposable.dispose#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Disposable.[Symbol.asyncDispose]#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Download#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.cancel#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.createReadStream#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.delete#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.failure#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.page#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.path#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.saveAs#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.saveAs.path#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.suggestedFilename#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Download.url#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Download.cancel#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.createReadStream#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.delete#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.failure#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.page#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.path#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.saveAs#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.saveAs.path#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.suggestedFilename#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
+| playwright-core/types/types.d.ts.Download.url#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
 | playwright-core/types/types.d.ts.FileChooser#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.FileChooser.element#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#filechooser) |
 | playwright-core/types/types.d.ts.FileChooser.isMultiple#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#filechooser) |
@@ -4868,7 +4868,7 @@
 | playwright-core/types/types.d.ts.ElementHandleWaitForSelectorOptions.strict#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.ElementHandleWaitForSelectorOptions.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.BrowserContextOptions.acceptDownloads#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.BrowserContextOptions.acceptDownloads#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
 | playwright-core/types/types.d.ts.BrowserContextOptions.baseURL#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.bypassCSP#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.clientCertificates#1 | PropertySignature | planned / unverified | Unreviewed |
