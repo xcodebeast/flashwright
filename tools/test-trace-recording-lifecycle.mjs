@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const { Tracing } = require('../packages/flashwright-core/dist/commonjs/tracing.js');
 const { TraceWriter } = require('../packages/flashwright-core/dist/commonjs/trace-writer.js');
 const { failure, fromRecord } = require('../packages/flashwright-core/dist/commonjs/errors.js');
+const { runnerIntegration } = require('../packages/flashwright-core/dist/commonjs/runner-integration.js');
 
 function deferred() {
   let resolve;
@@ -43,6 +44,95 @@ const report = { status: 'running', checks: [] };
 async function check(name, callback) { await callback(); report.checks.push(name); }
 
 try {
+  await check('runner startup retains failed setup cleanup independently of its original result', async () => {
+    const { driver, tracing } = fixture();
+    const stopEntered = deferred();
+    const stopReleased = deferred();
+    const originalFailure = failure('TimeoutError', 'context.trace.recording.start', 'original setup');
+    let firstStart = true;
+    driver.intercept = async method => {
+      if (method === 'context.trace.recording.start' && firstStart) { firstStart = false; throw originalFailure; }
+      if (method === 'context.trace.recording.stop') { stopEntered.resolve(); await stopReleased.promise; }
+    };
+    const startup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() {} });
+    assert(Object.isFrozen(startup));
+    let cleaned = false;
+    void startup.cleanup.then(() => { cleaned = true; });
+    const rejection = assert.rejects(startup.ready, error => error === originalFailure);
+    try {
+      await stopEntered.promise;
+      const concurrent = runnerIntegration.beginTraceRecordingWithActions(11, tracing, {}, { begin() {} });
+      await assert.rejects(concurrent.ready, { name: 'InvalidArgumentError' });
+      await concurrent.cleanup;
+      await rejection;
+      assert.equal(cleaned, false);
+      const pending = runnerIntegration.beginTraceRecordingWithActions(11, tracing, {}, { begin() {} });
+      await assert.rejects(pending.ready, { name: 'ResourceLimitError' });
+      await pending.cleanup;
+      assert.equal(cleaned, false, 'preflight owns none of the original pending cleanup');
+      stopReleased.resolve();
+      await startup.cleanup;
+      assert.equal(cleaned, true);
+      const successor = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() {} });
+      const controls = await successor.ready;
+      await successor.cleanup;
+      assert.equal(runnerIntegration.currentTraceRecording(7, tracing), controls.recording);
+      assert.equal(runnerIntegration.currentTraceChunk(3, tracing), controls.chunk);
+      assert(runnerIntegration.currentTraceChunk(3, tracing), 'successful startup cleanup does not retire live recording');
+      await runnerIntegration.currentTraceChunk(3, tracing).discard();
+      await controls.stop();
+    } finally { stopReleased.resolve(); await rejection; await startup.cleanup; tracing.ownerClosed(); await tracing.cleanup; }
+  });
+  await check('runner startup cleanup rejects separately and no-work preflight never acquires that failure', async () => {
+    const { driver, tracing } = fixture();
+    const originalFailure = failure('TimeoutError', 'context.trace.recording.start', 'original setup');
+    const cleanupFailure = failure('TimeoutError', 'context.trace.recording.stop', 'original cleanup');
+    driver.intercept = async method => {
+      if (method === 'context.trace.recording.start') throw originalFailure;
+      if (method === 'context.trace.recording.stop') throw cleanupFailure;
+    };
+    const startup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() {} });
+    try {
+      await assert.rejects(startup.ready, error => error === originalFailure);
+      await assert.rejects(startup.cleanup, error => error === cleanupFailure);
+      const quarantined = runnerIntegration.beginTraceRecordingWithActions(11, tracing, {}, { begin() {} });
+      await assert.rejects(quarantined.ready, error => error === cleanupFailure);
+      await quarantined.cleanup;
+      assert.equal(driver.recordingCalls('start').length, 1);
+    } finally { tracing.ownerClosed(); await tracing.cleanup; }
+  });
+  await check('runner startup validation owns no native cleanup', async () => {
+    const { driver, tracing } = fixture();
+    for (const [options, observer] of [[{ snapshots: 'invalid' }, { begin() {} }], [{}, {}]]) {
+      const startup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, options, observer);
+      await assert.rejects(startup.ready);
+      await startup.cleanup;
+    }
+    assert.equal(driver.calls.length, 0);
+    assert.throws(() => runnerIntegration.beginTraceRecordingWithActions(10, tracing, {}, { begin() {} }), { name: 'ProtocolError' });
+    tracing.ownerClosed();
+    const closed = runnerIntegration.beginTraceRecordingWithActions(11, tracing, {}, { begin() {} });
+    await assert.rejects(closed.ready, { name: 'TargetClosedError' });
+    await closed.cleanup;
+  });
+  await check('every cleanup rejection quarantines runner startup including falsy JavaScript reasons', async () => {
+    for (const cleanupFailure of [undefined, null, false, 0, '']) {
+      const { driver, tracing } = fixture();
+      const originalFailure = failure('TimeoutError', 'context.trace.recording.start', 'original setup');
+      driver.intercept = async method => {
+        if (method === 'context.trace.recording.start') throw originalFailure;
+        if (method === 'context.trace.recording.stop') throw cleanupFailure;
+      };
+      const startup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() {} });
+      await assert.rejects(startup.ready, error => error === originalFailure);
+      await assert.rejects(startup.cleanup, error => Object.is(error, cleanupFailure));
+      const successor = runnerIntegration.beginTraceRecordingWithActions(11, tracing, {}, { begin() {} });
+      await assert.rejects(successor.ready, error => Object.is(error, cleanupFailure));
+      await successor.cleanup;
+      assert.equal(driver.recordingCalls('start').length, 1);
+      tracing.ownerClosed(); await tracing.cleanup;
+    }
+  });
   await check('uncertain start retains exact cleanup owner beyond foreground grace and blocks successors', async () => {
     const { driver, tracing } = fixture();
     const stopEntered = deferred();

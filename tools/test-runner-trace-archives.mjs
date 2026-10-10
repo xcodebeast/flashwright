@@ -84,7 +84,7 @@ try {
   await check('version and owner validation have no recording side effects; off has no chunk handle', async () => {
     const driver = new RecordingDriver();
     const tracing = new Tracing(driver, 'context', null);
-    assert.equal(runnerIntegration.version, 10);
+    assert.equal(runnerIntegration.version, 11);
     assert.throws(() => runnerIntegration.currentTraceChunk(2, tracing), { name: 'ProtocolError' });
     assert.throws(() => current({}), { name: 'ProtocolError' });
     assert.equal(current(tracing), undefined);
@@ -425,6 +425,47 @@ try {
           await tracing.startChunk(); await tracing.stop();
         } finally { released.resolve(); await rejected; await tracing.cleanup; }
       });
+    });
+  });
+
+  await check('exact chunk retirement includes late archive cleanup after a rejected handoff', async () => {
+    for (const failedCleanup of [false, true]) await fixture(async ({ tracing }) => {
+      const chunk = current(tracing);
+      const writer = tracing.chunk.writer;
+      const originalDispose = writer.dispose.bind(writer);
+      const originalTakeArchive = writer.takeArchive.bind(writer);
+      const originalClock = performance.now;
+      const clockDescriptor = Object.getOwnPropertyDescriptor(performance, 'now');
+      const writerEntered = deferred(); const writerReleased = deferred();
+      const archiveEntered = deferred(); const archiveReleased = deferred();
+      const cleanupFailure = Error('late unhanded archive cleanup failure');
+      writer.dispose = async () => { writerEntered.resolve(); await writerReleased.promise; return originalDispose(); };
+      writer.takeArchive = async (...arguments_) => {
+        const archive = await originalTakeArchive(...arguments_);
+        const dispose = archive.dispose.bind(archive);
+        archive.dispose = async () => {
+          archiveEntered.resolve(); await archiveReleased.promise; await dispose();
+          if (failedCleanup) throw cleanupFailure;
+        };
+        return archive;
+      };
+      const rejected = assert.rejects(chunk.takeArchive(), { name: 'TimeoutError' });
+      let retirement;
+      try {
+        await writerEntered.promise;
+        Object.defineProperty(performance, 'now', { configurable: true, value: () => originalClock.call(performance) + 31000 });
+        writerReleased.resolve(); await rejected; await archiveEntered.promise;
+        retirement = runnerIntegration.discardTraceChunk(11, tracing, chunk);
+        let settled = false; void retirement.then(() => { settled = true; }, () => { settled = true; });
+        await turn(); assert.equal(settled, false, 'original retirement must retain the unhanded archive');
+        const result = failedCleanup ? assert.rejects(retirement, error => error === cleanupFailure) : retirement;
+        archiveReleased.resolve(); await result;
+        await assert.rejects(access(writer.directory), { code: 'ENOENT' });
+      } finally {
+        if (clockDescriptor) Object.defineProperty(performance, 'now', clockDescriptor); else delete performance.now;
+        writerReleased.resolve(); archiveReleased.resolve(); await rejected; await retirement?.catch(() => {});
+      }
+      if (!failedCleanup) { await tracing.startChunk(); await tracing.stop(); }
     });
   });
 

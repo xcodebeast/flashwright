@@ -48,6 +48,7 @@ export function installRunnerTraceFinalizer(testInfo: TestInfo, admission: Runne
 export class RunnerTraceFinalizer {
   readonly cleanup: Promise<void>;
   private resolveCleanup!: () => void;
+  private cleanupCompletedSuccessfully = false;
   private completion: Promise<void> | undefined;
   private readonly errors = new ArtifactErrors('trace-error');
 
@@ -59,6 +60,9 @@ export class RunnerTraceFinalizer {
     this.completion ??= this.finishOwned();
     return this.completion;
   }
+
+  /** Settlement can include quarantined cleanup failures, whose admission remains charged. */
+  get cleanupSucceeded(): boolean { return this.cleanupCompletedSuccessfully; }
 
   /** The pinned worker creates a separate final slot; the main test timeout must remain untouched. */
   private ownFinalTimeout(): void {
@@ -135,13 +139,15 @@ export class RunnerTraceFinalizer {
       // Dispose immediately cancels pending initialization and writes. A late archive belongs
       // to this finalizer until the original export settles, including a dispatched rename.
       const dispose = (owner: { dispose(): Promise<void> } | undefined) => Promise.resolve().then(() => owner?.dispose());
+      let cleanupFailed = false;
       const disposePreparedArchives = async () => {
         const results = await Promise.allSettled([dispose(archive), dispose(unadmittedJournal)]);
-        for (const result of results) if (result.status === 'rejected') this.errors.record(result.reason);
+        for (const result of results) if (result.status === 'rejected') { cleanupFailed = true; this.errors.record(result.reason); }
       };
       const archiveCleanup = work.then(disposePreparedArchives, disposePreparedArchives);
       void Promise.allSettled([dispose(journal), dispose(this.collection), dispose(assembly), archiveCleanup]).then(results => {
-        for (const result of results) if (result.status === 'rejected') this.errors.record(result.reason);
+        for (const result of results) if (result.status === 'rejected') { cleanupFailed = true; this.errors.record(result.reason); }
+        this.cleanupCompletedSuccessfully = !cleanupFailed;
         this.resolveCleanup();
       });
       let grace: ReturnType<typeof setTimeout> | undefined;

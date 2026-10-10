@@ -15,19 +15,19 @@ interface PinnedTestInfo extends TestInfo {
 /** One observer per worker; test/hook recorders own outcome and artifact retention. */
 export class ScreenshotLifecycle {
   private readonly contexts = new Set<BrowserContext>();
-  private readonly capturedPages = new WeakMap<TestInfo, WeakSet<Page>>();
-  private recorder: ScreenshotRecorder | undefined;
+  private readonly scopes: ScreenshotScopes;
   private readonly registration: ReturnType<typeof runnerIntegration.installArtifactContextLifecycle>;
   readonly ready: Promise<void>;
 
-  constructor(private readonly policy: ScreenshotPolicy) {
+  constructor(policy: ScreenshotPolicy) {
+    this.scopes = new ScreenshotScopes(policy, this.contexts);
     this.registration = runnerIntegration.installArtifactContextLifecycle(9, {
       beginContextCreation: () => ({
         didCreateContext: async context => { this.observe(context); },
         complete() {},
       }),
       didCreateUnclaimedContext: context => { this.observe(context); },
-      willCloseContext: async context => { await this.recorder?.beforeContextClose(context); },
+      willCloseContext: async (context, source) => { if (source !== 'browser') await this.scopes.beforeContextClose(context); },
     });
     this.ready = this.registration.ready;
   }
@@ -36,6 +36,26 @@ export class ScreenshotLifecycle {
     this.contexts.add(context);
     context.once('close', () => this.contexts.delete(context));
   }
+
+  start(testInfo: TestInfo): ScreenshotRecorder {
+    return this.scopes.start(testInfo);
+  }
+
+  async finish(recorder: ScreenshotRecorder): Promise<void> {
+    await this.scopes.finish(recorder);
+  }
+
+  async dispose(): Promise<void> {
+    try { await this.registration.dispose(); } finally { this.contexts.clear(); }
+  }
+}
+
+/** Share worker context availability without installing an observer or starting capture. */
+export class ScreenshotScopes {
+  private readonly capturedPages = new WeakMap<TestInfo, WeakSet<Page>>();
+  private recorder: ScreenshotRecorder | undefined;
+
+  constructor(private readonly policy: ScreenshotPolicy, private readonly contexts: ReadonlySet<BrowserContext>) {}
 
   start(testInfo: TestInfo): ScreenshotRecorder {
     if (this.recorder) throw failure('ProtocolError', 'runner.screenshot', 'a screenshot recording scope is already active');
@@ -51,8 +71,8 @@ export class ScreenshotLifecycle {
     await recorder.finish();
   }
 
-  async dispose(): Promise<void> {
-    try { await this.registration.dispose(); } finally { this.contexts.clear(); }
+  async beforeContextClose(context: BrowserContext): Promise<void> {
+    await this.recorder?.beforeContextClose(context);
   }
 }
 

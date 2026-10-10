@@ -4,14 +4,16 @@ import { publicBrowserContexts } from './public-browsers.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { types } from 'node:util';
 
+export type RunnerContextCloseSource = 'context' | 'browser';
+
 export interface RunnerContextLifecycle {
   didCreateContext(context: BrowserContext): void;
-  willCloseContext(context: BrowserContext): Promise<void>;
+  willCloseContext(context: BrowserContext, source?: RunnerContextCloseSource): Promise<void>;
 }
 
 export interface AsyncRunnerContextLifecycle {
   didCreateContext(context: BrowserContext): Promise<void>;
-  willCloseContext(context: BrowserContext): Promise<void>;
+  willCloseContext(context: BrowserContext, source?: RunnerContextCloseSource): Promise<void>;
 }
 
 export interface RunnerContextCreationOwner {
@@ -22,7 +24,7 @@ export interface RunnerContextCreationOwner {
 
 export interface OwnedRunnerContextLifecycle {
   beginContextCreation(): RunnerContextCreationOwner;
-  willCloseContext(context: BrowserContext): Promise<void>;
+  willCloseContext(context: BrowserContext, source?: RunnerContextCloseSource): Promise<void>;
 }
 
 export interface ArtifactContextLifecycle extends OwnedRunnerContextLifecycle {
@@ -38,7 +40,7 @@ export interface RunnerContextLifecycleRegistration {
 interface InstalledLifecycle {
   beginContextCreation?(): RunnerContextCreationOwner;
   didCreateContext(context: BrowserContext, owner?: RunnerContextCreationOwner): Promise<void> | void;
-  willCloseContext(context: BrowserContext): Promise<void>;
+  willCloseContext(context: BrowserContext, source?: RunnerContextCloseSource): Promise<void>;
   didCreateUnclaimedContext?(context: BrowserContext): void;
 }
 
@@ -46,6 +48,7 @@ type ContextCreation = null | number | { generation: number; owner: RunnerContex
 
 let activeLifecycle: InstalledLifecycle | undefined;
 let lifecycleGeneration = 0;
+export function runnerContextLifecycleActive(): boolean { return activeLifecycle !== undefined; }
 // A surviving context must not retain a retired observer and its test artifacts.
 const enrollmentOwners = new WeakMap<BrowserContext, number>();
 const callbackScope = new AsyncLocalStorage<InstalledLifecycle>();
@@ -80,9 +83,9 @@ export function installRunnerContextLifecycle(lifecycle: RunnerContextLifecycle)
       if (observedContexts.has(context)) return;
       observedContexts.add(context);
       enrollmentOwners.set(context, lifecycleGeneration);
-      lifecycle.didCreateContext(context);
+      callbackScope.run(installed, () => lifecycle.didCreateContext(context));
     },
-    willCloseContext: context => lifecycle.willCloseContext(context),
+    willCloseContext: (context, source) => callbackScope.run(installed, () => lifecycle.willCloseContext(context, source)),
   };
   activeLifecycle = installed;
   lifecycleGeneration++;
@@ -188,12 +191,12 @@ function installAsyncLifecycle(lifecycle: AsyncRunnerContextLifecycle | OwnedRun
       enrollments.set(context, enrollment);
       return own(enrollment);
     },
-    willCloseContext(context) {
+    willCloseContext(context, source) {
       closingContexts.add(context);
       return own((async () => {
         // Failed startup still gets the close callback; its error belongs to the original creator.
         await enrollments.get(context)?.catch(() => {});
-        await callbackScope.run(installed, () => lifecycle.willCloseContext(context));
+        await callbackScope.run(installed, () => lifecycle.willCloseContext(context, source));
       })());
     },
   };
@@ -238,6 +241,6 @@ export function didCreateRunnerContext(context: BrowserContext, creation: Contex
 }
 
 /** Undefined preserves the ordinary close path without adding an asynchronous stage. */
-export function willCloseRunnerContext(context: BrowserContext): Promise<void> | undefined {
-  return enrollmentOwners.get(context) === lifecycleGeneration ? activeLifecycle?.willCloseContext(context) : undefined;
+export function willCloseRunnerContext(context: BrowserContext, source: RunnerContextCloseSource = 'context'): Promise<void> | undefined {
+  return enrollmentOwners.get(context) === lifecycleGeneration ? activeLifecycle?.willCloseContext(context, source) : undefined;
 }

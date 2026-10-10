@@ -35,7 +35,7 @@ import { prepareElementResolution, type WaitForSelectorOptions, type WaitForSele
 import { currentRunnerContextDefaults } from './runner-context-defaults.js';
 import { prepareInputFiles, fileInputSelector, type InputFiles, type FrameSetInputFilesOptions, type SetInputFilesOptions } from './file-inputs.js';
 export type { FilePayload, InputFiles, SetInputFilesOptions, FrameSetInputFilesOptions } from './file-inputs.js';
-import { beginRunnerContextCreation, completeRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext, assertRunnerContextCloseAllowed } from './runner-lifecycle.js';
+import { beginRunnerContextCreation, completeRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext, assertRunnerContextCloseAllowed, runnerContextLifecycleActive } from './runner-lifecycle.js';
 import { registerPublicBrowser } from './public-browsers.js';
 import { prepareCookies, filterCookies, cookieFilter, prepareStorageState, decodeStorageState, writeStorageState, type Cookie, type SetCookie, type CookieFilter, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 
@@ -191,8 +191,19 @@ export class Browser extends EventEmitter {
     try { return await context.newOwnedPage(); } catch (error) { await context.close(); throw error; }
   }
   close(): Promise<void> {
+    assertRunnerContextCloseAllowed();
     this.closing ??= (async () => {
-      try { if (!this.disconnected) { if (traceRecordingActive()) await Promise.all([...this.ownedContexts].map(context => context.prepareTraceClose())); await this.client.request('browser.close', { browser: this.identifier }); } }
+      try {
+        if (!this.disconnected) {
+          try {
+            if (traceRecordingActive() || runnerContextLifecycleActive()) {
+              const results = await Promise.allSettled([...this.ownedContexts].map(context => context.prepareOwnerClose('browser')));
+              const rejected = results.find(result => result.status === 'rejected');
+              if (rejected?.status === 'rejected') throw rejected.reason;
+            }
+          } finally { await this.client.request('browser.close', { browser: this.identifier }); }
+        }
+      }
       finally { this.didDisconnect(); await this.releaseDriver(); }
     })();
     return this.closing;
@@ -201,6 +212,7 @@ export class Browser extends EventEmitter {
 
 export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof ContextEvents]: [ContextEvents[Event]] }> {
   private tracingValue: Tracing | undefined;
+  private closingPreparation: Promise<void> | undefined;
   get tracing(): Tracing {
     if (!this.tracingValue) {
       this.tracingValue = new Tracing(this.client, this.identifier, this.viewport);
@@ -209,6 +221,16 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
     return this.tracingValue;
   }
   prepareTraceClose(): Promise<void> | undefined { return this.tracingValue?.beforeOwnerClose(); }
+  /** Context and browser closure share the same artifact handoff before native shutdown. */
+  prepareOwnerClose(source: 'context' | 'browser' = 'context'): Promise<void> | undefined {
+    if (this.closed) return undefined;
+    if (this.closingPreparation) return this.closingPreparation;
+    try {
+      const beforeClose = willCloseRunnerContext(this, source);
+      this.closingPreparation = beforeClose ? beforeClose.finally(() => this.prepareTraceClose()) : this.prepareTraceClose();
+    } catch (error) { this.closingPreparation = Promise.reject(error); }
+    return this.closingPreparation;
+  }
   recordTracePageClosed(pageId: string): void { this.tracingValue?.pageEvent(pageId, false); }
   static {
     instrumentTraceMethods(this.prototype, 'BrowserContext', context => ({ tracing: context.tracing }), {
@@ -305,9 +327,9 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
     this.closing ??= (async () => {
       try {
         try {
-          const beforeClose = willCloseRunnerContext(this);
+          const beforeClose = this.prepareOwnerClose();
           if (beforeClose) await beforeClose;
-        } finally { const traceClose = this.prepareTraceClose(); if (traceClose) await traceClose; await this.client.request('context.close', { context: this.identifier }); }
+        } finally { await this.client.request('context.close', { context: this.identifier }); }
       } finally { this.didClose(); }
     })();
     return this.closing;
