@@ -2,7 +2,7 @@
 
 Failed attempts now attach `error-context.md` by default, including expected failures. Successful attempts produce no failure document. The document contains the test identity, error details, available matcher accessibility diagnostics and a source frame. When a matcher did not supply a diagnostic, Flashwright can capture the first eligible page body before context closure or at final teardown.
 
-The [focused checkpoint](../compatibility/evidence/failure-context-checkpoint-2026-10-10.json) verifies 14 shared cases against Playwright1.60.0 on macOS arm64. Fresh Bun-installed packages pass with Bun1.4.2 and Node22.22.0/24.15.0, including tracing and failure screenshots. The completed document embedded in each trace matches the reporter attachment byte for byte. This is focused development acceptance; the broader merged core and release gates remain open.
+The [focused checkpoint](../compatibility/evidence/failure-context-checkpoint-2026-10-10.json) verifies 14 shared cases against Playwright1.60.0 on macOS arm64. Fresh Bun-installed packages pass with Bun1.4.2 and Node22.22.0/24.15.0, including tracing and failure screenshots. The completed document embedded in each trace matches the reporter attachment byte for byte. The [combined integration checkpoint](../compatibility/evidence/artifact-integration-checkpoint-2026-10-10.json) passes all 179 core groups at source `666a2a8f`, plus fresh ARIA and failure-document consumers on Bun and both Node versions. The screenshot differential preserves all 30 cases on each runtime. Native Linux, performance and release acceptance remain open.
 
 | Behavior | Verified scope |
 | --- | --- |
