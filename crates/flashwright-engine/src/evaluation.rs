@@ -6,6 +6,8 @@ use crate::locators::check_exception;
 use handles::{Handle, HandleArguments, HandleReference};
 
 const EVALUATION_RUNTIME: &str = include_str!("../../../packages/resident-runtime/evaluation.cjs");
+const FUNCTION_WAIT_RUNTIME: &str =
+    include_str!("../../../packages/resident-runtime/function-wait.cjs");
 const METHOD: &str = "page.evaluate";
 
 pub(crate) struct EvaluationRuntime {
@@ -27,6 +29,22 @@ pub(crate) struct PreparedEvaluation {
 }
 
 impl PreparedEvaluation {
+    /// The controller allocation does not execute the predicate; its separate start reply owns that work.
+    pub(crate) fn waiter_parameters(&self, group: &str, polling: Value) -> Value {
+        let mut parameters = self.command_parameters(Some(group));
+        let arguments = parameters["arguments"].as_array_mut().unwrap();
+        arguments.insert(6, json!({ "value": polling }));
+        parameters["functionDeclaration"] = json!(
+            "function(runtime, sourceUnits, isFunction, argument, primitiveHandles, receiverIndex, polling, ...handles) { return runtime.waiter(sourceUnits, isFunction, argument, handles, primitiveHandles, polling); }"
+        );
+        parameters["awaitPromise"] = json!(false);
+        parameters
+    }
+
+    pub(crate) fn retained_arguments(&self) -> Vec<Handle> {
+        self.handles.retained.clone()
+    }
+
     pub fn command_parameters(&self, group: Option<&str>) -> Value {
         let mut arguments = vec![
             json!({ "objectId": self.runtime_object }),
@@ -453,7 +471,33 @@ async fn initialize_runtime(
     context: &ExecutionContext,
 ) -> Result<String, ErrorRecord> {
     let expression = format!(
-        "(() => {{ const exports = {{}}; {VALUE_CODEC}; {EVALUATION_RUNTIME}; const invoke = (asHandle, sourceUnits, isFunction, argument, handles = [], primitiveHandles = [], receiverIndex = null) => {{ const codec = exports.createValueCodec(); return exports[asHandle ? 'runHandleEvaluation' : 'runEvaluation'](codec, codec.decode({{kind:'string',units:sourceUnits}}), isFunction, argument, handles, primitiveHandles, receiverIndex); }}; const runtime = (...args) => invoke(false, ...args); runtime.handle = (...args) => invoke(true, ...args); return runtime; }})()"
+        r#"(() => {{
+        const exports = {{}};
+        {VALUE_CODEC}
+        {EVALUATION_RUNTIME}
+        {FUNCTION_WAIT_RUNTIME}
+        const invoke = (asHandle, sourceUnits, isFunction, argument, handles = [], primitiveHandles = [], receiverIndex = null) => {{
+            const codec = exports.createValueCodec();
+            return exports[asHandle ? 'runHandleEvaluation' : 'runEvaluation'](
+                codec, codec.decode({{ kind: 'string', units: sourceUnits }}), isFunction,
+                argument, handles, primitiveHandles, receiverIndex
+            );
+        }};
+        const runtime = (...arguments_) => invoke(false, ...arguments_);
+        runtime.handle = (...arguments_) => invoke(true, ...arguments_);
+        let createWaiter;
+        runtime.waiter = (sourceUnits, isFunction, argument, handles, primitiveHandles, polling) => {{
+            const codec = exports.createValueCodec();
+            try {{
+                createWaiter ??= exports.createFunctionWaitFactory();
+                return createWaiter(codec, codec.decode({{ kind: 'string', units: sourceUnits }}),
+                    isFunction, argument, handles, primitiveHandles, polling);
+            }} catch (error) {{
+                return exports.failedFunctionWaiter(codec, error);
+            }}
+        }};
+        return runtime;
+    }})()"#
     );
     let result = page
         .state

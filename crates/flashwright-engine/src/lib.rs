@@ -47,6 +47,7 @@ mod screenshots;
 mod snapshots;
 mod storage;
 mod trace_diagnostics;
+mod wait_for_function;
 pub use api_requests::RetainedValue;
 pub use dialogs::PreparedDialogHandling;
 pub use downloads::PreparedDownload;
@@ -150,6 +151,7 @@ pub const CAPABILITIES: &[&str] = &[
     "diagnostics.pageSnapshot",
     "keyboard.press",
     "keyboard.type",
+    "frame.waitForFunction",
 ];
 
 pub struct Engine {
@@ -468,6 +470,7 @@ impl Engine {
                     .await
             }
             "frame.waitForSelector" => self.wait_for_selector(parameters, operation).await,
+            "frame.waitForFunction" => self.wait_for_function(parameters, operation).await,
             "frame.setInputFiles" | "elementHandle.setInputFiles" => {
                 self.set_input_files(method, parameters, operation).await
             }

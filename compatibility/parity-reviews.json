@@ -3629,6 +3629,161 @@
           "declarationSha256": "ffe8753220b8320488d25e70903e05f2a7565e1a0a22f9a6dc63470418240d67"
         }
       ]
+    },
+    {
+      "id": "requested-function-polling",
+      "title": "Requested Page and Frame function polling",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Twelve shared behavior groups pass against Playwright 1.60.0 on pinned Chromium revision 1223 full Chrome and headless shell in main and same-process child worlds. Eight native fault cases pass per distribution. Three-call trace archives and four pinned viewer archives retain successful/timeout outcomes, snapshots and embedded caller source. Fresh typed ESM/CommonJS packed consumers pass five outcomes per format on Bun 1.4.2 and Node 22.22.0/24.15.0 using Bun installs and a private driver override.",
+      "limitations": "Remote renderer Frame polling and cleanup, native Linux, canonical integrated core/release packaging and performance remain unverified. This functional checkpoint does not establish a 2x speedup or default adoption readiness. Application code queued behind a blocked renderer can execute before cancellation reaches that renderer; no stronger suppression guarantee is made.",
+      "defaults": "Immediate first predicate attempt, then cached animation-frame polling; finite positive numeric polling uses its exact interval. Timeout inherits Page/Context action defaults, and explicit 0 is unbounded. One original host deadline covers document retries. Promise truthiness is tested before one-shot assimilation, including a resolved falsy JSHandle. String expressions returning functions retain them without invoking them.",
+      "differences": [
+        "Predicate source and normalized source are bounded to 100,000 UTF-16 units; oversized input fails with ResourceLimitError before predicate dispatch.",
+        "Unknown options and malformed polling/timeout values fail explicitly before trace or owner capture.",
+        "Handle admission is bounded to 4096 per page including deferred cancellation custody; exhaustion fails before predicate execution. Diagnostic and publication envelopes retain existing bounded protocol limits."
+      ],
+      "implementation": [
+        {
+          "path": "crates/flashwright-engine/src/wait_for_function.rs",
+          "sha256": "cd99ef4ce1fa1fc4b9c29dae8ea34e1e2e827818e93a497d459f4be67ec1f9cd"
+        },
+        {
+          "path": "crates/flashwright-engine/src/evaluation.rs",
+          "sha256": "8c13d0966dbb9b31cdff2189cec66612ade2c8bc5c70ea98af2233fad580e142"
+        },
+        {
+          "path": "crates/flashwright-engine/src/handles.rs",
+          "sha256": "407bc6d88c2769b709edfe80238b66444193de271ccd29afaebd8e4891661833"
+        },
+        {
+          "path": "crates/flashwright-engine/src/handle_allocation.rs",
+          "sha256": "43254b336a61993b07366a80050c9aaa1b5657c67d9d1bb05bcdb29f536ab4be"
+        },
+        {
+          "path": "crates/flashwright-engine/src/publication.rs",
+          "sha256": "84141dc1d7aa83c28e84b394064980b84a93aefaff2ad889642a2336d97e5a72"
+        },
+        {
+          "path": "crates/flashwright-engine/src/recording/phases.rs",
+          "sha256": "8198507bca5ea283df0a258711da1712abe262640a97eead82248b4108c9c3b9"
+        },
+        {
+          "path": "packages/resident-runtime/function-wait.cjs",
+          "sha256": "7fd378d98ac249b088e62de22db2ff4fc3aedc25d2a4c88ab100eaee983956bf"
+        },
+        {
+          "path": "packages/flashwright-core/src/function-wait.ts",
+          "sha256": "a002c5ba0c6d78f8e1542bc0f12d8e3bac81643704a3712e5e497d952b1b5c28"
+        },
+        {
+          "path": "packages/flashwright-core/src/frame.ts",
+          "sha256": "93d0c915163395adb8bbbd50b36dfa6052c68db7230e36271b5ac4716654c74e"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "e990f8b1b04249ca5b0a3c5fd48133f866044f41fbcbea7b90767c08a4c9a825"
+        },
+        {
+          "path": "packages/flashwright-core/src/client.ts",
+          "sha256": "835c768e67b2b396f5a177bbd40b2005b7390cb9e77655cef2f0e991bcf31ac1"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/function-wait-checkpoint-2026-10-10.json",
+          "sha256": "d51a62ac7d66cc73192ca61d78e7ed8e913e96f03ddc2d1488997d8145da3b74",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/function-wait-checkpoint-2026-10-10.json",
+          "sha256": "d51a62ac7d66cc73192ca61d78e7ed8e913e96f03ddc2d1488997d8145da3b74",
+          "kind": "package"
+        },
+        {
+          "path": "compatibility/upstream/function-wait-provenance.json",
+          "sha256": "391cfdc4929d6c968aa8975f2e40154fb26ce10913e702f78291453ebb11ed70",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction#1",
+          "declarationSha256": "489d5ea497ce47b8707340e2747e851b29e7078a21d8b3423737c0acc4a25192"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction.pageFunction#1",
+          "declarationSha256": "e5a70bcef6e5b589432dcfdabab0be3b8a81474048d208d908bb4cc9a009e5dd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction.arg#1",
+          "declarationSha256": "146669761176a03168fe3da16a0329b50e01d387842be327067ff89b046ff249"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction.options#1",
+          "declarationSha256": "ada38e1547784e3c005071e4f249d8544635d9a9a1ece4106fe48aaec62597bd"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction#2",
+          "declarationSha256": "e81496f3b0f13202caf4f5aed1c76a8e57ee7e752f4c02cea5cf916638b9f0ee"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction.pageFunction#2",
+          "declarationSha256": "97d6d370bb1bd507760cf85e67a7df65134941b417a2a6336c8f41c684e88ba7"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction.arg#2",
+          "declarationSha256": "070c7d2bca31a8cfae999658dd4e009beda2fce53034555df78679612a7b7076"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Page.waitForFunction.options#2",
+          "declarationSha256": "bc7f5a0acf742df06d50708a29c789602998baad87118304c15db98d888a898a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction#1",
+          "declarationSha256": "87328ef3e6982c87c8bb0747c5b10910d273d9789df794732f45af66c9037763"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction.pageFunction#1",
+          "declarationSha256": "03ca5f9756c44db7de9ca80c56a42a91ecf21de43046ad0880b19a6cca3e7f35"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction.arg#1",
+          "declarationSha256": "878ed3684fae12a65521c23350cbd44fbc86e8f1652e85f5abf629d27255da0f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction.options#1",
+          "declarationSha256": "9ae90173fc9fb3c1b1f8413b8f62bb1b17810fc9ee8baa3d4f6799643ef0abe0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction#2",
+          "declarationSha256": "84b7d9c9f65a378bf0d52ed68c0fe98644f424f53f50a6af545946b611d41d64"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction.pageFunction#2",
+          "declarationSha256": "f43bf1140a2d768f74e4838435b0c16cc84048811efe834387f4aba98318492a"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction.arg#2",
+          "declarationSha256": "c719a01679f97b7d4a8a441c335fa1f81616ac3b27c37bbb063ca61ea9da9234"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Frame.waitForFunction.options#2",
+          "declarationSha256": "ed21c4bc7a44029f9dfadc07b7fd0a69eb9f78bc965b442ad65de484bc350343"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.PageWaitForFunctionOptions#1",
+          "declarationSha256": "8b00d8a983133eecf5b9236d8ce1e1c93575bf30ca43933abd20fb2cb560966d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.PageWaitForFunctionOptions.polling#1",
+          "declarationSha256": "4bd2c36ad39b39dce1dbf207bc4fb99290d7c81a07ca611828bc2007e06694c8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.PageWaitForFunctionOptions.timeout#1",
+          "declarationSha256": "63acf045a5529093e2ac5144bbdaf9f8251ae2fef8c4833c5209352ef209020e"
+        }
+      ]
     }
   ]
 }

@@ -66,6 +66,7 @@ impl Engine {
                 | "handle.getProperty"
                 | "handle.getProperties"
                 | "frame.waitForSelector"
+                | "frame.waitForFunction"
         ) {
             return self.prepare_handle_publication(result, None, prepare);
         }
@@ -185,6 +186,7 @@ impl Engine {
                 | "handle.getProperty"
                 | "handle.getProperties"
                 | "frame.waitForSelector"
+                | "frame.waitForFunction"
         ) {
             return self.discard_handle_allocation(result).await;
         }

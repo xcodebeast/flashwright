@@ -18,6 +18,7 @@ export const requiredCapabilities = [
   'context.trace.filmstrip.take',
   'locator.run', 'assertion.run', 'keyboard.press', 'keyboard.type',
   'frame.waitForSelector',
+  'frame.waitForFunction',
   'frame.setInputFiles', 'elementHandle.setInputFiles',
   'elementHandle.selectText', 'elementHandle.scrollIntoViewIfNeeded',
   'page.evaluateHandle', 'frame.evaluate', 'frame.evaluateHandle', 'handle.evaluate', 'handle.evaluateHandle',

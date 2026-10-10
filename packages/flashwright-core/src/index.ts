@@ -39,6 +39,8 @@ import { validateOptions as options } from './validation.js';
 import { prepareDeviceOptions, type DeviceOptions } from './devices.js';
 import { prepareContextSettings, type ContextSettings } from './context-settings.js';
 import { prepareElementResolution, type WaitForSelectorOptions, type WaitForSelectorOptionsNotHidden } from './element-resolution.js';
+import { prepareFunctionWait, prepareFunctionWaitArguments, type PageWaitForFunctionOptions } from './function-wait.js';
+export type { PageWaitForFunctionOptions } from './function-wait.js';
 import { currentRunnerContextDefaults } from './runner-context-defaults.js';
 import { prepareInputFiles, fileInputSelector, type InputFiles, type FrameSetInputFilesOptions, type SetInputFilesOptions } from './file-inputs.js';
 export type { FilePayload, InputFiles, SetInputFilesOptions, FrameSetInputFilesOptions } from './file-inputs.js';
@@ -368,6 +370,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
       ariaSnapshot: { className: 'Frame', parameters: ['options'], prepareArguments: prepareAriaSnapshotArguments, capture: 'filmstrip' },
       ...selectorActionTraceMethods,
       waitForSelector: { className: 'Frame', parameters: ['selector', 'options'] },
+      waitForFunction: { className: 'Frame', parameters: ['expression', 'arg', 'options'], prepareArguments: prepareFunctionWaitArguments },
       setInputFiles: { className: 'Frame', parameters: ['selector', 'files', 'options'] },
       addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'], completion: 'independent' }, waitForNavigation: { parameters: ['options'], completion: 'independent' }, waitForURL: { parameters: ['url', 'options'], completion: 'independent' }, waitForResponse: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForEvent: eventWaitTrace, close: {},
     });
@@ -817,6 +820,23 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
   async evaluateHandle<Result>(pageFunction: string | (() => Result | Promise<Result>)): Promise<SmartHandle<Result>>;
   async evaluateHandle(pageFunction: string | Function, argument?: unknown): Promise<JSHandle> {
     return this.runEvaluation('page.evaluateHandle', pageFunction, argument) as Promise<JSHandle>;
+  }
+  async waitForFunction<Result, Argument>(pageFunction: string | ((argument: Unboxed<Argument>) => Result | Promise<Result>), argument: Argument, options?: PageWaitForFunctionOptions): Promise<SmartHandle<Result>>;
+  async waitForFunction<Result>(pageFunction: string | (() => Result | Promise<Result>), argument?: unknown, options?: PageWaitForFunctionOptions): Promise<SmartHandle<Result>>;
+  async waitForFunction(pageFunction: string | Function, argument?: unknown, options: PageWaitForFunctionOptions = {}): Promise<JSHandle> {
+    return this.mainFrame().waitForFunction(pageFunction as string | ((argument: unknown) => unknown), argument, options);
+  }
+  /** A polling result enters the same original-world handle publication boundary as evaluation. */
+  async runFunctionWait(frame: string, pageFunction: string | Function, argument: unknown, options: PageWaitForFunctionOptions): Promise<JSHandle> {
+    const method = 'frame.waitForFunction';
+    this.checkOpen(method);
+    const prepared = prepareFunctionWait(method, pageFunction, options);
+    const timeout = validateTimeout(options.timeout ?? this.timeout(), method);
+    const encoded = encodeEvaluationArgument(argument, this.client, method);
+    const result = await this.client.request(method, { page: this.identifier, frame, ...prepared, ...encoded }, timeout);
+    const handles = receivedHandles(this, this.client, this.identifier, result);
+    if (handles.length !== 1) throw failure('ProtocolError', method, 'driver omitted a unique predicate result handle');
+    return handles[0]!.handle;
   }
   async runEvaluation(method: string, pageFunction: string | Function, argument?: unknown, target: { frame?: string; handle?: string } = {}): Promise<unknown> {
     this.checkOpen(method);
