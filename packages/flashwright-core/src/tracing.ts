@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import type { EngineClient } from './client.js';
 import { failure } from './errors.js';
@@ -17,13 +17,14 @@ import { TraceNetworkChannel } from './trace-network.js';
 import { beginRunnerAction, captureRunnerActionObserver, type RunnerAction, type RunnerActionObserver } from './runner-actions.js';
 import { registerRunnerTraceOwner, type RunnerTraceChunk, type RunnerTraceRecording, type RunnerTraceRecordingWithActions, type RunnerTraceStartup, type RunnerTraceOperation } from './runner-trace-archives.js';
 import type { SealedTraceArchive } from './trace-archive.js';
-import { apiTraceAttempt } from './trace-api-network.js';
+import { apiTraceAttempt, apiTraceBodyExtension, apiTraceBodySnapshot, type APITraceAttempt } from './trace-api-network.js';
 
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
 export type TraceBackend = 'browser' | 'api';
-interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; accepting: boolean }
+interface APIEntrySlot { attempt: APITraceAttempt; resolve(snapshot: Record<string, unknown>): void }
+interface TraceChunk { identifier: string; writer: TraceWriter; runner: RunnerTraceChunk; retireCleanup(cleanup: Promise<void>): void; actionObserver?: RunnerActionObserver; channel?: TraceDiagnosticChannel; filmstrip?: TraceFilmstripChannel; native?: NativeTraceChunk; nativeOwner?: NativeTraceRecording; network?: TraceNetworkChannel; snapshots?: TraceSnapshotChannel; networkExport?: Promise<void>; completions?: Set<Promise<void>>; apiAttempts?: Set<string>; apiPendingResponses?: Map<string, APIEntrySlot>; apiEntries?: Set<APIEntrySlot>; apiEntryBytes?: number; apiEntryTail?: Promise<void>; accepting: boolean }
 interface StartedRecording { recording: RunnerTraceRecording; chunk: RunnerTraceChunk }
 type TraceChunkDestination = { kind: 'file'; path: string | undefined } | { kind: 'runner'; signal: AbortSignal | undefined };
 export interface TraceCall { identifier: string; chunk: TraceChunk; completed: boolean; evaluates: boolean; pageId: string | undefined; capture: TraceCaptureMode; nativeTrace?: TraceCallMetadata; runnerAction?: RunnerAction; assertionIsNot?: boolean }
@@ -32,10 +33,12 @@ let nextCall = 0;
 let nextContext = 0;
 const captureAPIRequestAttempt = Symbol('capture API request attempt');
 const captureAPIRequestFailure = Symbol('capture API request failure');
+const captureAPIResponse = Symbol('capture API response body');
 const requestNetworkSignal = new AbortController().signal;
 
 export function recordAPITraceAttempt(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestAttempt](value); }
 export function recordAPITraceFailure(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestFailure](value); }
+export function recordAPITraceResponse(tracing: Tracing, generation: string, call: string, responseIdentifier: string, readBody: () => Promise<Buffer>): void { tracing[captureAPIResponse](generation, call, responseIdentifier, readBody); }
 
 /** Manual action tracing owns context diagnostics and independent, bounded archive chunks. */
 export class Tracing {
@@ -58,6 +61,28 @@ export class Tracing {
   private cleanupFailure: { error: unknown } | undefined;
   private retiringChunk: TraceChunk | undefined;
   private exportCancellation: AbortController | undefined;
+  private queueAPIEntry(chunk: TraceChunk, attempt: APITraceAttempt): APIEntrySlot {
+    const bytes = Buffer.byteLength(JSON.stringify(attempt.snapshot));
+    const entries = chunk.apiEntries ??= new Set();
+    if (bytes > 256 * 1024 || entries.size >= 1024 || (chunk.apiEntryBytes ?? 0) + bytes > 16 * 1024 * 1024) {
+      throw failure('ResourceLimitError', 'tracing.api', 'pending API trace entries exceed their count or byte allowance');
+    }
+    let fulfill!: (snapshot: Record<string, unknown>) => void;
+    const ready = new Promise<Record<string, unknown>>(resolve => { fulfill = resolve; });
+    let settled = false;
+    const slot: APIEntrySlot = { attempt, resolve(snapshot) { if (settled) return; settled = true; fulfill(snapshot); } };
+    entries.add(slot);
+    chunk.apiEntryBytes = (chunk.apiEntryBytes ?? 0) + bytes;
+    const write = (chunk.apiEntryTail ?? Promise.resolve()).then(async () => {
+      const snapshot = await ready;
+      await chunk.writer.appendNetwork({ type: 'resource-snapshot', snapshot }, requestNetworkSignal);
+    }).finally(() => {
+      entries.delete(slot);
+      chunk.apiEntryBytes = (chunk.apiEntryBytes ?? 0) - bytes;
+    });
+    chunk.apiEntryTail = write.then(() => {}, error => { chunk.writer.fail(error); });
+    return slot;
+  }
   [captureAPIRequestAttempt](value: unknown): void {
     const chunk = this.chunk;
     if (this.backend !== 'api' || !chunk?.accepting || this.ownerIsClosed) return;
@@ -67,16 +92,49 @@ export class Tracing {
       const attempts = chunk.apiAttempts ??= new Set();
       if (attempts.size >= 16384) throw failure('ResourceLimitError', 'tracing.api', 'API trace exceeds 16384 wire attempts');
       if (attempts.has(attempt.attempt)) throw failure('ProtocolError', 'tracing.api', 'duplicate API wire attempt identity');
+      if (attempt.responseIdentifier && chunk.apiPendingResponses?.has(attempt.call)) throw failure('ProtocolError', 'tracing.api', 'public API call owns multiple final wire responses');
       attempts.add(attempt.attempt);
-      const completion = chunk.writer.appendNetwork({ type: 'resource-snapshot', snapshot: attempt.snapshot }, requestNetworkSignal);
-      const completions = chunk.completions ??= new Set();
-      completions.add(completion);
-      void completion.then(() => completions.delete(completion), error => { completions.delete(completion); chunk.writer.fail(error); });
+      const slot = this.queueAPIEntry(chunk, attempt);
+      if (attempt.responseIdentifier) {
+        const pending = chunk.apiPendingResponses ??= new Map();
+        pending.set(attempt.call, slot);
+      } else slot.resolve(attempt.snapshot);
     } catch (error) { chunk.writer.fail(error); }
+  }
+  [captureAPIResponse](generation: string, call: string, responseIdentifier: string, readBody: () => Promise<Buffer>): void {
+    const chunk = this.chunk;
+    if (this.backend !== 'api' || !chunk?.accepting || chunk.identifier !== generation || this.ownerIsClosed) return;
+    const pending = chunk.apiPendingResponses?.get(call);
+    if (!pending || pending.attempt.responseIdentifier !== responseIdentifier || !this.resources) {
+      chunk.writer.fail(failure('ProtocolError', 'tracing.api', 'final API response lost its original wire attempt'));
+      return;
+    }
+    chunk.apiPendingResponses!.delete(call);
+    const resources = this.resources;
+    const completion = (async () => {
+      const response = pending.attempt.snapshot.response as { content: { size: number } };
+      if (response.content.size > 16 * 1024 * 1024) throw failure('ResourceLimitError', 'tracing.api', 'API response body exceeds the trace resource limit');
+      const bytes = await readBody();
+      if (bytes.length !== response.content.size) throw failure('ProtocolError', 'tracing.api', 'API trace response body length changed after native publication');
+      const alias = `${createHash('sha1').update(bytes).digest('hex')}.${apiTraceBodyExtension(pending.attempt)}`;
+      const resource = await resources.captureBytes(bytes, requestNetworkSignal);
+      chunk.writer.addResource(`resources/${alias}`, resource);
+      pending.resolve(apiTraceBodySnapshot(pending.attempt, alias));
+    })();
+    const completions = chunk.completions ??= new Set();
+    completions.add(completion);
+    void completion.then(() => completions.delete(completion), error => {
+      pending.resolve(apiTraceBodySnapshot(pending.attempt, undefined, 'original response body was unavailable'));
+      completions.delete(completion); chunk.writer.fail(error);
+    });
   }
   [captureAPIRequestFailure](value: unknown): void {
     const chunk = this.chunk;
     if (this.backend !== 'api' || !chunk?.accepting || this.ownerIsClosed) return;
+    if (typeof value === 'string') {
+      if (value === chunk.identifier) chunk.writer.fail(failure('ResourceLimitError', 'tracing.api', 'native API trace capture exceeds negotiated value limits'));
+      return;
+    }
     if (!value || typeof value !== 'object' || Array.isArray(value)) { chunk.writer.fail(failure('ProtocolError', 'tracing.api', 'invalid API trace failure')); return; }
     const event = value as Record<string, unknown>;
     if (event.generation !== chunk.identifier) return;
@@ -454,6 +512,9 @@ export class Tracing {
 
   private async retireCollectors(chunk: TraceChunk, signal?: AbortSignal): Promise<void> {
     await this.drainCompletions(chunk);
+    for (const pending of chunk.apiPendingResponses?.values() ?? []) pending.resolve(apiTraceBodySnapshot(pending.attempt, undefined, 'response was not published before trace seal'));
+    chunk.apiPendingResponses?.clear();
+    await chunk.apiEntryTail;
     try { await chunk.native?.seal(); }
     catch (error) { chunk.writer.fail(error); chunk.snapshots?.fail(error); }
     if (chunk.native && chunk.network && !chunk.networkExport) chunk.networkExport = chunk.network.exportChunk(chunk.native, chunk.writer, page => this.pageIdentity(page), signal);
@@ -495,7 +556,7 @@ export class Tracing {
     if (!chunk?.accepting || this.ownerIsClosed || chunk.writer.failure) return undefined;
     if (this.calls.size >= 1024) { chunk.writer.fail(failure('ResourceLimitError', 'tracing', 'trace exceeds 1024 unfinished public calls')); return undefined; }
     const call: TraceCall = { identifier: `${processIdentity}@${++nextCall}`, chunk, completed: false, evaluates: method.includes('eval'), pageId: owner.pageId, capture };
-    if (capture === 'metadata-only' || this.includeScreenshots || chunk.native || this.backend === 'api') call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier,
+    if (this.backend === 'api' ? this.includeSnapshots : capture === 'metadata-only' || this.includeScreenshots || chunk.native) call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier,
       ...(this.backend === 'api' ? { call: call.identifier } : chunk.native && capture !== 'metadata-only' ? { recording: chunk.native.identity.recording, call: call.identifier } : {}) });
     this.calls.add(call);
     if (capture !== 'metadata-only') chunk.filmstrip?.activity(owner.pageId);
@@ -552,6 +613,13 @@ export class Tracing {
   private async captureCompletion(call: TraceCall, value: unknown, error: unknown, failed: boolean): Promise<void> {
     try {
       if (!call.chunk.accepting) return;
+      if (failed) {
+        const pending = call.chunk.apiPendingResponses?.get(call.identifier);
+        if (pending) {
+          call.chunk.apiPendingResponses!.delete(call.identifier);
+          pending.resolve(apiTraceBodySnapshot(pending.attempt, undefined, 'public API request failed before response publication'));
+        }
+      }
       const result = failed ? undefined : { value: call.evaluates ? serializedTracePreview(value) : tracePreview(value) };
       const capturedError = failed ? traceError(error) : undefined;
       const assertionFailed = call.assertionIsNot !== undefined && traceBooleanField(value, 'matches') === call.assertionIsNot;
@@ -647,7 +715,16 @@ export class Tracing {
     }
     if (chunk || resources || network) {
       this.ownCleanup((async () => {
-        try { if (chunk) await this.drainCompletions(chunk); await Promise.all([chunk?.filmstrip?.stop(), chunk?.snapshots?.stop(), network?.stop()]); await chunk?.writer.dispose(); }
+        try {
+          if (chunk) {
+            await this.drainCompletions(chunk);
+            for (const pending of chunk.apiPendingResponses?.values() ?? []) pending.resolve(apiTraceBodySnapshot(pending.attempt, undefined, 'original request context closed'));
+            chunk.apiPendingResponses?.clear();
+            await chunk.apiEntryTail;
+          }
+          await Promise.all([chunk?.filmstrip?.stop(), chunk?.snapshots?.stop(), network?.stop()]);
+          await chunk?.writer.dispose();
+        }
         finally { await resources?.retire(); }
       })());
       chunk?.retireCleanup(this.currentCleanupOutcome());

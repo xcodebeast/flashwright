@@ -72,6 +72,9 @@ try {
   assert.deepEqual(snapshots.map(snapshot => snapshot.request.url), [`${origin}/redirect`, `${origin}/final`, `${origin}/auth`, `${origin}/auth`]);
   assert.ok(snapshots.every(snapshot => snapshot._apiRequest === true));
   assert.equal(snapshots[1].response.content.size, 8);
+  assert.match(snapshots[1].response.content._sha1, /^[a-f0-9]{40}\.txt$/);
+  assert.equal(execFileSync('unzip', ['-p', destination, `resources/${snapshots[1].response.content._sha1}`], { encoding: 'utf8' }), 'finished');
+  assert.equal(snapshots[0].response.content._sha1, undefined);
   assert.equal(snapshots[2].request.headers.some(header => header.name === 'authorization'), false);
   assert.equal(snapshots[3].request.headers.some(header => header.name === 'authorization'), true);
   referenceContext = await referenceRequest.newContext({ httpCredentials: { username: 'trace-user', password: 'trace-password', send: 'unauthorized' } });
@@ -105,6 +108,29 @@ try {
   await recording.stop();
   await response.dispose();
   await authenticated.dispose();
+  const metadataOnlyStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: false }, { begin() { return undefined; } });
+  const metadataOnlyRecording = await metadataOnlyStartup.ready;
+  const metadataOnlyResponse = await context.get(`${origin}/final`);
+  await metadataOnlyResponse.dispose();
+  const metadataOnlyArchive = await metadataOnlyRecording.chunk.takeArchive();
+  const metadataOnlyDestination = join(directory, 'metadata-only.zip');
+  await metadataOnlyArchive.export(metadataOnlyDestination, new AbortController().signal);
+  assert.equal(execFileSync('unzip', ['-p', metadataOnlyDestination, 'trace.network'], { encoding: 'utf8' }).length, 0);
+  await metadataOnlyArchive.dispose();
+  await metadataOnlyRecording.stop();
+  const failedStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
+  const failedRecording = await failedStartup.ready;
+  await assert.rejects(context.get('http://127.0.0.1:1/refused', { timeout: 1500 }));
+  const failedArchive = await failedRecording.chunk.takeArchive();
+  const failedDestination = join(directory, 'failed-attempt.zip');
+  await failedArchive.export(failedDestination, new AbortController().signal);
+  const failedSnapshots = execFileSync('unzip', ['-p', failedDestination, 'trace.network'], { encoding: 'utf8' }).trim().split('\n').map(line => JSON.parse(line).snapshot);
+  assert.equal(failedSnapshots.length, 1);
+  assert.equal(failedSnapshots[0].response.status, -1);
+  assert.equal(failedSnapshots[0].response.content.size, -1);
+  assert.equal(failedSnapshots[0].time, -1);
+  await failedArchive.dispose();
+  await failedRecording.stop();
   const closingStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
   const closingRecording = await closingStartup.ready;
   const pending = context.get(`${origin}/slow`, { timeout: 5000 });
@@ -114,6 +140,31 @@ try {
   await pendingRejection;
   await runnerIntegration.settleClosedTraceCleanup(11, tracing);
   await assert.rejects(closingRecording.chunk.takeArchive(), error => error.name === 'TargetClosedError');
+  let acceptEnrollment;
+  let observeCreatedContext;
+  const enrollment = new Promise(resolve => { acceptEnrollment = resolve; });
+  const createdContext = new Promise(resolve => { observeCreatedContext = resolve; });
+  const lifecycleEvents = [];
+  const lifecycle = runnerIntegration.installArtifactRequestLifecycle(12, {
+    beginRequestCreation() {
+      lifecycleEvents.push('claim');
+      return {
+        async didCreateContext(created) { lifecycleEvents.push('enroll'); observeCreatedContext(created); await enrollment; },
+        complete() { lifecycleEvents.push('complete'); },
+      };
+    },
+    didCreateUnclaimedContext() { throw new Error('creation was reassigned'); },
+    async willDisposeContext() { lifecycleEvents.push('dispose'); },
+    async didCloseContext() { lifecycleEvents.push('close'); },
+  });
+  const pendingCreation = request.newContext();
+  const closingContext = await createdContext;
+  const closingDisposal = closingContext.dispose();
+  acceptEnrollment();
+  await assert.rejects(pendingCreation, error => error.name === 'TargetClosedError');
+  await closingDisposal;
+  await lifecycle.dispose();
+  assert.deepEqual(lifecycleEvents, ['claim', 'enroll', 'dispose', 'close', 'complete']);
   console.log(JSON.stringify({ status: 'passed', attempts: snapshots.length, events: events.length }));
 } finally {
   finishSlowRequest?.();

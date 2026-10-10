@@ -50,8 +50,10 @@ struct AttemptParameters<'value> {
     http_version: &'static str,
     response_headers: &'value [Header],
     response_body_size: Option<usize>,
+    response_identifier: Option<&'value str>,
     started_wall_time: f64,
     elapsed_milliseconds: f64,
+    failed: bool,
 }
 
 #[derive(Serialize)]
@@ -60,6 +62,14 @@ struct FailureEvent<'value> {
     target: &'value str,
     event: &'static str,
     parameters: FailureParameters<'value>,
+}
+
+#[derive(Serialize)]
+struct ScalarFailureEvent<'value> {
+    kind: &'static str,
+    target: &'value str,
+    event: &'static str,
+    parameters: &'value str,
 }
 
 #[derive(Serialize)]
@@ -83,8 +93,18 @@ pub(super) struct WireAttempt<'value> {
     pub(super) request_body_size: usize,
     pub(super) response: &'value ResponseMetadata,
     pub(super) response_body_size: Option<usize>,
+    pub(super) response_identifier: Option<&'value str>,
     pub(super) started_wall_time: f64,
     pub(super) started: Instant,
+}
+
+pub(super) struct FailedAttempt<'value> {
+    pub(super) identifier: &'value str,
+    pub(super) url: &'value str,
+    pub(super) method: &'value str,
+    pub(super) request_headers: &'value [Header],
+    pub(super) request_body_size: usize,
+    pub(super) started_wall_time: f64,
 }
 
 pub(super) async fn record_attempt(
@@ -93,22 +113,100 @@ pub(super) async fn record_attempt(
     capture: &TraceCapture,
     attempt: WireAttempt<'_>,
 ) {
-    let header_bytes = attempt
+    let event = AttemptEvent {
+        kind: "event",
+        target: &context.identifier,
+        event: "apiRequest.traceAttempt",
+        parameters: AttemptParameters {
+            generation: &capture.generation,
+            call: &capture.call,
+            attempt: attempt.identifier,
+            url: attempt.url,
+            method: attempt.method,
+            request_headers: attempt.request_headers,
+            request_body_size: attempt.request_body_size,
+            status: attempt.response.status,
+            status_text: &attempt.response.status_text,
+            http_version: match attempt.response.version {
+                http::Version::HTTP_09 => "0.9",
+                http::Version::HTTP_10 => "1.0",
+                http::Version::HTTP_11 => "1.1",
+                http::Version::HTTP_2 => "2.0",
+                http::Version::HTTP_3 => "3.0",
+                _ => "?",
+            },
+            response_headers: &attempt.response.headers,
+            response_body_size: attempt.response_body_size,
+            response_identifier: attempt.response_identifier,
+            started_wall_time: attempt.started_wall_time,
+            elapsed_milliseconds: attempt.started.elapsed().as_secs_f64() * 1000.0,
+            failed: false,
+        },
+    };
+    publish_attempt(engine, context, capture, event).await;
+}
+
+pub(super) async fn record_failed_attempt(
+    engine: &Engine,
+    context: &Arc<RequestContext>,
+    capture: &TraceCapture,
+    attempt: FailedAttempt<'_>,
+) {
+    let event = AttemptEvent {
+        kind: "event",
+        target: &context.identifier,
+        event: "apiRequest.traceAttempt",
+        parameters: AttemptParameters {
+            generation: &capture.generation,
+            call: &capture.call,
+            attempt: attempt.identifier,
+            url: attempt.url,
+            method: attempt.method,
+            request_headers: attempt.request_headers,
+            request_body_size: attempt.request_body_size,
+            status: 0,
+            status_text: "",
+            http_version: "1.1",
+            response_headers: &[],
+            response_body_size: None,
+            response_identifier: None,
+            started_wall_time: attempt.started_wall_time,
+            elapsed_milliseconds: 0.0,
+            failed: true,
+        },
+    };
+    publish_attempt(engine, context, capture, event).await;
+}
+
+async fn publish_attempt(
+    engine: &Engine,
+    context: &Arc<RequestContext>,
+    capture: &TraceCapture,
+    event: AttemptEvent<'_>,
+) {
+    let parameters = &event.parameters;
+    let header_bytes = parameters
         .request_headers
         .iter()
-        .chain(&attempt.response.headers)
+        .chain(parameters.response_headers)
         .fold(0usize, |total, header| {
             total
                 .saturating_add(header.name.len())
                 .saturating_add(header.value.len())
                 .saturating_add(64)
         });
-    let overhead = attempt
+    let overhead = parameters
         .url
         .len()
-        .saturating_add(attempt.method.len())
-        .saturating_add(attempt.response.status_text.len());
-    if header_bytes.saturating_add(overhead) > MAXIMUM_TRACE_HEADER_BYTES {
+        .saturating_add(parameters.method.len())
+        .saturating_add(parameters.status_text.len());
+    if header_bytes.saturating_add(overhead) > MAXIMUM_TRACE_HEADER_BYTES
+        || parameters
+            .request_headers
+            .len()
+            .saturating_add(parameters.response_headers.len())
+            > 512
+    {
         fail(
             engine,
             context,
@@ -138,34 +236,34 @@ pub(super) async fn record_attempt(
             return;
         }
     };
-    let event = AttemptEvent {
-        kind: "event",
-        target: &context.identifier,
-        event: "apiRequest.traceAttempt",
-        parameters: AttemptParameters {
-            generation: &capture.generation,
-            call: &capture.call,
-            attempt: attempt.identifier,
-            url: attempt.url,
-            method: attempt.method,
-            request_headers: attempt.request_headers,
-            request_body_size: attempt.request_body_size,
-            status: attempt.response.status,
-            status_text: &attempt.response.status_text,
-            http_version: match attempt.response.version {
-                http::Version::HTTP_09 => "0.9",
-                http::Version::HTTP_10 => "1.0",
-                http::Version::HTTP_11 => "1.1",
-                http::Version::HTTP_2 => "2.0",
-                http::Version::HTTP_3 => "3.0",
-                _ => "?",
-            },
-            response_headers: &attempt.response.headers,
-            response_body_size: attempt.response_body_size,
-            started_wall_time: attempt.started_wall_time,
-            elapsed_milliseconds: attempt.started.elapsed().as_secs_f64() * 1000.0,
-        },
+    let parameters = match serde_json::to_value(&event.parameters) {
+        Ok(parameters) => parameters,
+        Err(_) => {
+            fail(
+                engine,
+                context,
+                capture,
+                "API trace attempt could not serialize its parameters",
+            )
+            .await;
+            return;
+        }
     };
+    if engine
+        .api_requests
+        .limits
+        .validate_value(&parameters)
+        .is_err()
+    {
+        fail(
+            engine,
+            context,
+            capture,
+            "API trace attempt exceeds negotiated value limits",
+        )
+        .await;
+        return;
+    }
     let mut frame = match EncodedFrame::encode(
         &event,
         engine
@@ -204,10 +302,91 @@ async fn fail(
             message,
         },
     };
-    if let Ok(mut frame) =
-        EncodedFrame::encode(&event, engine.maximum_control_frame_bytes.min(4096))
+    let parameters = serde_json::to_value(&event.parameters);
+    if parameters
+        .as_ref()
+        .is_ok_and(|value| engine.api_requests.limits.validate_value(value).is_ok())
+        && let Ok(mut frame) =
+            EncodedFrame::encode(&event, engine.maximum_control_frame_bytes.min(4096))
     {
         frame.retain_reservation(context.clone());
         let _ = engine.outgoing.send(DriverOutput::Frame(frame)).await;
+        return;
+    }
+    // A scalar retains the recording identity even at valueDepth/valueNodes = 1.
+    let fallback = ScalarFailureEvent {
+        kind: "event",
+        target: &context.identifier,
+        event: "apiRequest.traceFailure",
+        parameters: &capture.generation,
+    };
+    if let Ok(mut frame) = EncodedFrame::encode(&fallback, engine.maximum_control_frame_bytes) {
+        frame.retain_reservation(context.clone());
+        let _ = engine.outgoing.send(DriverOutput::Frame(frame)).await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::options::ContextOptions;
+    use super::*;
+    use flashwright_protocol::{FrameWriter, ResourceLimits};
+    use serde_json::json;
+    use tokio::sync::{mpsc, watch};
+
+    #[tokio::test]
+    async fn negotiated_single_node_failure_keeps_the_recording_identity() {
+        let limits = ResourceLimits {
+            value_depth: 1,
+            value_nodes: 1,
+            ..ResourceLimits::default()
+        };
+        let (outgoing, mut receiver) = mpsc::channel(1);
+        let (fatal, _) = watch::channel(false);
+        let engine = Engine::new(None, outgoing, fatal, limits.clone());
+        let context = engine
+            .api_requests
+            .create(
+                "original-context".into(),
+                ContextOptions::parse(json!({})).unwrap(),
+            )
+            .unwrap();
+        let capture = TraceCapture {
+            generation: "original-generation".into(),
+            call: "original-call".into(),
+        };
+        let structured = serde_json::to_value(FailureParameters {
+            generation: &capture.generation,
+            call: &capture.call,
+            message: "capture failed",
+        })
+        .unwrap();
+        assert!(limits.validate_value(&structured).is_err());
+        record_failed_attempt(
+            &engine,
+            &context,
+            &capture,
+            FailedAttempt {
+                identifier: "attempt-1",
+                url: "http://127.0.0.1:1/refused",
+                method: "GET",
+                request_headers: &[],
+                request_body_size: 0,
+                started_wall_time: 1.0,
+            },
+        )
+        .await;
+        let DriverOutput::Frame(frame) = receiver.recv().await.unwrap() else {
+            panic!("failure frame expected")
+        };
+        let mut bytes = Vec::new();
+        FrameWriter::new(&mut bytes, limits.control_frame_bytes)
+            .write_frame(&frame)
+            .await
+            .unwrap();
+        let event: serde_json::Value = serde_json::from_slice(&bytes[4..]).unwrap();
+        assert_eq!(event["event"], "apiRequest.traceFailure");
+        assert_eq!(event["parameters"], "original-generation");
+        assert!(limits.validate_value(&event["parameters"]).is_ok());
     }
 }
