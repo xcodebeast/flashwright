@@ -313,6 +313,12 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       else element = injected.querySelector(selector, document, true);
     }
     const result = await injected._expectCore(element, options, elements);
+    const fullAriaSnapshot = expression === 'to.match.aria' && (options.ariaSnapshotCapture === 'always' ||
+      (options.ariaSnapshotCapture === 'mismatch' && !result.matches));
+    if (fullAriaSnapshot && result.received &&
+        [result.received.raw, result.received.regex].some(value => value.length > 100000)) {
+      return { status: 'snapshotLimit' };
+    }
     let truncated = false;
     let diagnosticUnits = 16384;
     const bound = value => {
@@ -328,7 +334,10 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       }
       return value;
     };
-    return { status: 'observation', matches: result.matches, missingReceived: !!result.missingReceived, received: codec.encode(bound(result.received)), diagnosticTruncated: truncated };
+    const received = expression === 'to.match.aria' && result.received
+      ? fullAriaSnapshot ? result.received : { raw: bound(result.received.raw), regex: bound(result.received.regex) }
+      : bound(result.received);
+    return { status: 'observation', matches: result.matches, missingReceived: !!result.missingReceived, received: codec.encode(received), diagnosticTruncated: truncated };
   }
 
   function assertion(units, deadline, expression, isNot) {

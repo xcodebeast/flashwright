@@ -1,0 +1,104 @@
+{
+  "referenceVersion": "1.60.0",
+  "sources": [
+    {
+      "path": "node_modules/playwright/lib/matchers/expect.js",
+      "sha256": "10b9442388bd9cfaae64e3f76c74081548687ab89e7d1f1ea20c93de6bd02358"
+    },
+    {
+      "path": "node_modules/playwright-core/lib/coreBundle.js",
+      "sha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+    },
+    {
+      "path": "packages/resident-runtime/playwright-injected.js",
+      "sha256": "7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a"
+    }
+  ],
+  "upstream": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/matchers/toMatchAriaSnapshot.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/isomorphic/ariaSnapshot.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/injected/src/ariaSnapshot.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/aria-matcher.source.txt",
+  "extractSha256": "1d9bc70a05680ea0f31dbdb743639b077dd700591a29f52a353a5e877d6739f3",
+  "snippets": {
+    "toMatchAriaSnapshot": {
+      "path": "node_modules/playwright/lib/matchers/expect.js",
+      "firstLine": 12599,
+      "lastLine": 12704,
+      "sha256": "447d99f27a9831c7273478d319d1afbe236e9533b20b752bf72de087aa8fa716"
+    },
+    "unshift": {
+      "path": "node_modules/playwright/lib/matchers/expect.js",
+      "firstLine": 12705,
+      "lastLine": 12716,
+      "sha256": "c239d24fd06f86d845ade372081781d97319d9cae9f6a1c33faa211b32a85d4f"
+    },
+    "indent2": {
+      "path": "node_modules/playwright/lib/matchers/expect.js",
+      "firstLine": 12717,
+      "lastLine": 12719,
+      "sha256": "f6c6e820ade59fd6ae1776a7d46c5dbf6845b13ce64f9d8e87c9106983c7c71d"
+    },
+    "parseAriaSnapshotUnsafe": {
+      "path": "node_modules/playwright-core/lib/coreBundle.js",
+      "firstLine": 52,
+      "lastLine": 57,
+      "sha256": "450cfd5d288ccc85abb2de154647080e1e7d3b86f0674c4626292624e57c0fad"
+    },
+    "parseAriaSnapshot": {
+      "path": "node_modules/playwright-core/lib/coreBundle.js",
+      "firstLine": 58,
+      "lastLine": 203,
+      "sha256": "cf23951e1ce0703279ed40a445f791a80ac774873e8a5974684365ad1ab22e9d"
+    },
+    "generateAriaTree": {
+      "path": "packages/resident-runtime/playwright-injected.js",
+      "firstLine": 3817,
+      "lastLine": 3917,
+      "sha256": "2ea678fb78420b9e91fb2cafecbaa6c9bb5e52de7d7b34c542271bed95c71c7b"
+    },
+    "matchesExpectAriaTemplate": {
+      "path": "packages/resident-runtime/playwright-injected.js",
+      "firstLine": 4072,
+      "lastLine": 4082,
+      "sha256": "ec09aa33e473cdfc313341c545b35d3b237811c176471d0aaa50fc304bc8abbe"
+    },
+    "renderAriaTree": {
+      "path": "packages/resident-runtime/playwright-injected.js",
+      "firstLine": 4229,
+      "lastLine": 4332,
+      "sha256": "6486d646b4aba83c965424f270c00517982030fae7de86a7346f1fbfe8e59630"
+    }
+  },
+  "implementation": {
+    "packages/flashwright-runner/src/aria-matcher.ts": "0f2f693db6814092bab75925c99c91706f2e82e84ce9677b9414bc4061d44ad4",
+    "packages/flashwright-runner/src/index.ts": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619",
+    "packages/flashwright-core/src/assertions.ts": "c1967c3b8dda934a6da302fce4348fbed4ba1dd8d92fa2ea411ef9f4b5a13d02",
+    "packages/flashwright-core/src/index.ts": "7d899501f102cb0f0fe593e08ea83b278dd6fa8469e13da9e74181c21528c1b3",
+    "packages/resident-runtime/locator-runtime.js": "6690f9129ca1700346c88ff14f3a494aadd587fccc09f2da29c2f0c6f4b3acd9",
+    "packages/resident-runtime/condition-registry.js": "a42b4aba99fd2243e75b1661ce6d9af17d29a42b2b038ba2f559a9a3e9fe2182",
+    "crates/flashwright-engine/src/assertions.rs": "4eca904e2a2675727a2fdfe8f42028393a2251466637ade8966b6f55625975d0",
+    "tools/test-aria-template-limits.mjs": "0cd6bf00de33620470191ed4169c2ee147073af7032a59714b27f64d5a9bc8df",
+    "tools/run-aria-assertion-tests.mjs": "d34b44fb2df654e0c2f299454e7688fd3fd5a538cd0c47da477f9f46d2b4226b",
+    "compatibility/m2/aria-assertions/assertions.spec.cjs": "72b57052f25058d89b9aa8f8ac5fb199e5f61b7b1a1bb152c76d7d6adbb476b2",
+    "compatibility/m2/aria-assertions/baseline.spec.cjs": "69699a493619480b2debe8d552ebcc2dcab744d0ef479e8b2659e3943f46334c",
+    "compatibility/m2/aria-assertions/playwright.config.cjs": "ee2091313f54f441e38fb15ee72b491943c95e7ed020fae15ae4cd389aa3a136",
+    "compatibility/m2/aria-assertions/children.spec.cjs": "a00f4836b65137ebabb7143be9a94f8c0144297ba78056f450a516cefe9df5dd"
+  },
+  "relationship": "Host baseline policy is adapted from the pinned matcher and uses the owned runner snapshot paths and completion metadata. The pinned YAML parser produces the template consumed by the retained injected accessibility predicate through the independent native assertion lifecycle.",
+  "adaptations": [
+    "Keep inline/file baseline selection, legacy naming, child matching configuration, ignore/update policies, negation and missing-baseline non-retriability.",
+    "Parse before native dispatch and retain the original assertion deadline. Same-process frame paths reuse existing frame ownership; this predicate does not enable shared selector caching.",
+    "Bound ordinary raw/regex diagnostics separately. Baseline generation retains complete strings from the same observation or returns a typed resource failure instead of writing truncated content.",
+    "Validate raw template size before normalization, bound baseline UTF-8 reads and preserve existing baselines on resource failure.",
+    "Bun inline generation/update policies reject before browser dispatch because the pinned runner cannot resolve their rebaseline property column. Ordinary inline matching and named file baselines remain available; Node supports inline proposals.",
+    "Public ariaSnapshot methods, default failure-context artifacts and out-of-process frame support are separate capabilities.",
+    "Source provenance and controlled host validation alone do not establish browser conformance or release acceptance."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright",
+  "licenseSha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
+  "noticeSha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d"
+}

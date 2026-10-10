@@ -9,6 +9,7 @@ use tokio::time::sleep;
 const METHOD: &str = "assertion.run";
 const DIAGNOSTIC_CLEANUP_BUDGET: Duration = Duration::from_millis(50);
 const EXPRESSIONS: &[&str] = &[
+    "to.match.aria",
     "to.have.text",
     "to.have.text.array",
     "to.contain.text.array",
@@ -163,6 +164,13 @@ impl Engine {
                                 ErrorCode::ResourceLimit,
                                 METHOD,
                                 "document condition limit exceeded",
+                            ));
+                        }
+                        Some("snapshotLimit") => {
+                            return Err(ErrorRecord::new(
+                                ErrorCode::ResourceLimit,
+                                METHOD,
+                                "ARIA baseline exceeds 100000 UTF-16 units per snapshot string",
                             ));
                         }
                         Some("error") => {

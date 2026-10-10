@@ -1,0 +1,1851 @@
+{
+  "schemaVersion": 1,
+  "status": "focused-verified",
+  "platform": "darwin-arm64",
+  "referenceVersion": "1.60.0",
+  "sourceBaseCommit": "aef408550c42c7342caa1b4ca5687271a0a87d57",
+  "nativeLaunchRepair": "b111f62a79177edfd63b6412b54e6aaacbe0af8b",
+  "implementation": {
+    "packages/flashwright-runner/src/aria-matcher.ts": "0f2f693db6814092bab75925c99c91706f2e82e84ce9677b9414bc4061d44ad4",
+    "packages/flashwright-runner/src/index.ts": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619",
+    "packages/flashwright-core/src/assertions.ts": "c1967c3b8dda934a6da302fce4348fbed4ba1dd8d92fa2ea411ef9f4b5a13d02",
+    "packages/flashwright-core/src/index.ts": "7d899501f102cb0f0fe593e08ea83b278dd6fa8469e13da9e74181c21528c1b3",
+    "packages/resident-runtime/locator-runtime.js": "6690f9129ca1700346c88ff14f3a494aadd587fccc09f2da29c2f0c6f4b3acd9",
+    "packages/resident-runtime/condition-registry.js": "a42b4aba99fd2243e75b1661ce6d9af17d29a42b2b038ba2f559a9a3e9fe2182",
+    "crates/flashwright-engine/src/assertions.rs": "4eca904e2a2675727a2fdfe8f42028393a2251466637ade8966b6f55625975d0",
+    "tools/test-aria-template-limits.mjs": "0cd6bf00de33620470191ed4169c2ee147073af7032a59714b27f64d5a9bc8df",
+    "tools/run-aria-assertion-tests.mjs": "d34b44fb2df654e0c2f299454e7688fd3fd5a538cd0c47da477f9f46d2b4226b",
+    "compatibility/m2/aria-assertions/assertions.spec.cjs": "72b57052f25058d89b9aa8f8ac5fb199e5f61b7b1a1bb152c76d7d6adbb476b2",
+    "compatibility/m2/aria-assertions/baseline.spec.cjs": "69699a493619480b2debe8d552ebcc2dcab744d0ef479e8b2659e3943f46334c",
+    "compatibility/m2/aria-assertions/playwright.config.cjs": "ee2091313f54f441e38fb15ee72b491943c95e7ed020fae15ae4cd389aa3a136",
+    "compatibility/m2/aria-assertions/children.spec.cjs": "a00f4836b65137ebabb7143be9a94f8c0144297ba78056f450a516cefe9df5dd"
+  },
+  "runs": [
+    {
+      "runtime": "Bun1.4.2",
+      "reportSha256": "add6f0a5f504ae3242ab460f92bd34af80eab2bcdda5e6c2f9d36cdd55cc91bb",
+      "driverSha256": "8b1f5b63c6cfecb39952bb2d1fd9313065cc571f56f88cb31bab3b1aae910b63",
+      "sourceManifestSha256": "020370e8e30800a179e991297fa52c75a358e4a80648cc753a07b931bd6bed0a",
+      "runnerChecks": 25,
+      "cases": [
+        {
+          "engine": "playwright",
+          "name": "predicates",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "page assertion preserves indented role tree and states",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "locator assertion scopes the tree and matches name expressions",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "children containment and equality keep their full predicates",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "resident retry sees accessibility mutations under the original deadline",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "negated retry waits for the observed tree to change",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "same-process frame locator keeps the child document",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "shadow content participates while hidden content is omitted",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "missing targets and strict selector errors remain failures",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "invalid templates reject before waiting on a missing target",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "soft snapshot mismatch reaches the runner and execution continues",
+              "expectedStatus": "failed",
+              "results": [
+                "failed"
+              ]
+            },
+            {
+              "title": "configured assertion timeout reports the retained tree and call site",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "configured-children",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "configured children policy and explicit template override",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "existing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-none",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-create",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "changed",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "changed-long",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "01257731613dc7dc62d1e5ba5c56b5140661998856ca7ca35c8883b68ebfb3e6"
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-target-update",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        },
+        {
+          "engine": "playwright",
+          "name": "all",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "negated-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "ignored",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "b1b80a5f953709c2593ebb4104a6a8c4bbab4ee29004a60a4d471f88097476b6"
+        },
+        {
+          "engine": "playwright",
+          "name": "inline-missing",
+          "passed": true,
+          "outcomeClass": "pinned-bun-empty-patch",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": true,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "predicates",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "page assertion preserves indented role tree and states",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "locator assertion scopes the tree and matches name expressions",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "children containment and equality keep their full predicates",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "resident retry sees accessibility mutations under the original deadline",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "negated retry waits for the observed tree to change",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "same-process frame locator keeps the child document",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "shadow content participates while hidden content is omitted",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "missing targets and strict selector errors remain failures",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "invalid templates reject before waiting on a missing target",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "soft snapshot mismatch reaches the runner and execution continues",
+              "expectedStatus": "failed",
+              "results": [
+                "failed"
+              ]
+            },
+            {
+              "title": "configured assertion timeout reports the retained tree and call site",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "configured-children",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "configured children policy and explicit template override",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "existing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-none",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-create",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "changed",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "changed-long",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "01257731613dc7dc62d1e5ba5c56b5140661998856ca7ca35c8883b68ebfb3e6"
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-target-update",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        },
+        {
+          "engine": "flashwright",
+          "name": "all",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "negated-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "ignored",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "b1b80a5f953709c2593ebb4104a6a8c4bbab4ee29004a60a4d471f88097476b6"
+        },
+        {
+          "engine": "flashwright",
+          "name": "inline-missing",
+          "passed": true,
+          "outcomeClass": "explicit-bun-inline-update-rejection",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "oversized-capture",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        }
+      ]
+    },
+    {
+      "runtime": "Node24.15.0",
+      "reportSha256": "ca7dd05e2ca2944c8e29842ba2a34f155f6f5d4fc0bc12f27f61d941fd75ca0d",
+      "driverSha256": "8b1f5b63c6cfecb39952bb2d1fd9313065cc571f56f88cb31bab3b1aae910b63",
+      "sourceManifestSha256": "020370e8e30800a179e991297fa52c75a358e4a80648cc753a07b931bd6bed0a",
+      "runnerChecks": 25,
+      "cases": [
+        {
+          "engine": "playwright",
+          "name": "predicates",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "page assertion preserves indented role tree and states",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "locator assertion scopes the tree and matches name expressions",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "children containment and equality keep their full predicates",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "resident retry sees accessibility mutations under the original deadline",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "negated retry waits for the observed tree to change",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "same-process frame locator keeps the child document",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "shadow content participates while hidden content is omitted",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "missing targets and strict selector errors remain failures",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "invalid templates reject before waiting on a missing target",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "soft snapshot mismatch reaches the runner and execution continues",
+              "expectedStatus": "failed",
+              "results": [
+                "failed"
+              ]
+            },
+            {
+              "title": "configured assertion timeout reports the retained tree and call site",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "configured-children",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "configured children policy and explicit template override",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "existing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-none",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-create",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "changed",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "changed-long",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "01257731613dc7dc62d1e5ba5c56b5140661998856ca7ca35c8883b68ebfb3e6"
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-target-update",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        },
+        {
+          "engine": "playwright",
+          "name": "all",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "negated-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "ignored",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "b1b80a5f953709c2593ebb4104a6a8c4bbab4ee29004a60a4d471f88097476b6"
+        },
+        {
+          "engine": "playwright",
+          "name": "inline-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": true,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "predicates",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "page assertion preserves indented role tree and states",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "locator assertion scopes the tree and matches name expressions",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "children containment and equality keep their full predicates",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "resident retry sees accessibility mutations under the original deadline",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "negated retry waits for the observed tree to change",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "same-process frame locator keeps the child document",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "shadow content participates while hidden content is omitted",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "missing targets and strict selector errors remain failures",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "invalid templates reject before waiting on a missing target",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "soft snapshot mismatch reaches the runner and execution continues",
+              "expectedStatus": "failed",
+              "results": [
+                "failed"
+              ]
+            },
+            {
+              "title": "configured assertion timeout reports the retained tree and call site",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "configured-children",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "configured children policy and explicit template override",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "existing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-none",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-create",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "changed",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "changed-long",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "01257731613dc7dc62d1e5ba5c56b5140661998856ca7ca35c8883b68ebfb3e6"
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-target-update",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        },
+        {
+          "engine": "flashwright",
+          "name": "all",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "negated-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "ignored",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "b1b80a5f953709c2593ebb4104a6a8c4bbab4ee29004a60a4d471f88097476b6"
+        },
+        {
+          "engine": "flashwright",
+          "name": "inline-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": true,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "oversized-capture",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        }
+      ]
+    },
+    {
+      "runtime": "Node22.22.0",
+      "reportSha256": "c7787262b41b523d4f8680a3e4d3e71e72e8ef9b17e717f6df5c941f882a598e",
+      "driverSha256": "8b1f5b63c6cfecb39952bb2d1fd9313065cc571f56f88cb31bab3b1aae910b63",
+      "sourceManifestSha256": "020370e8e30800a179e991297fa52c75a358e4a80648cc753a07b931bd6bed0a",
+      "runnerChecks": 25,
+      "cases": [
+        {
+          "engine": "playwright",
+          "name": "predicates",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "page assertion preserves indented role tree and states",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "locator assertion scopes the tree and matches name expressions",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "children containment and equality keep their full predicates",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "resident retry sees accessibility mutations under the original deadline",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "negated retry waits for the observed tree to change",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "same-process frame locator keeps the child document",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "shadow content participates while hidden content is omitted",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "missing targets and strict selector errors remain failures",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "invalid templates reject before waiting on a missing target",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "soft snapshot mismatch reaches the runner and execution continues",
+              "expectedStatus": "failed",
+              "results": [
+                "failed"
+              ]
+            },
+            {
+              "title": "configured assertion timeout reports the retained tree and call site",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "configured-children",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "configured children policy and explicit template override",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "existing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-none",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-create",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "changed",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "changed-long",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "01257731613dc7dc62d1e5ba5c56b5140661998856ca7ca35c8883b68ebfb3e6"
+        },
+        {
+          "engine": "playwright",
+          "name": "missing-target-update",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        },
+        {
+          "engine": "playwright",
+          "name": "all",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "playwright",
+          "name": "negated-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "playwright",
+          "name": "ignored",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "b1b80a5f953709c2593ebb4104a6a8c4bbab4ee29004a60a4d471f88097476b6"
+        },
+        {
+          "engine": "playwright",
+          "name": "inline-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": true,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "predicates",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "page assertion preserves indented role tree and states",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "locator assertion scopes the tree and matches name expressions",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "children containment and equality keep their full predicates",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "resident retry sees accessibility mutations under the original deadline",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "negated retry waits for the observed tree to change",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "same-process frame locator keeps the child document",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "shadow content participates while hidden content is omitted",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "missing targets and strict selector errors remain failures",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "invalid templates reject before waiting on a missing target",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            },
+            {
+              "title": "soft snapshot mismatch reaches the runner and execution continues",
+              "expectedStatus": "failed",
+              "results": [
+                "failed"
+              ]
+            },
+            {
+              "title": "configured assertion timeout reports the retained tree and call site",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "configured-children",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "configured children policy and explicit template override",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "existing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-none",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-create",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "changed",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "changed-long",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "01257731613dc7dc62d1e5ba5c56b5140661998856ca7ca35c8883b68ebfb3e6"
+        },
+        {
+          "engine": "flashwright",
+          "name": "missing-target-update",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        },
+        {
+          "engine": "flashwright",
+          "name": "all",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "19222525110250dc5adbb65ad89c9c366f7f3e0005b38fcc160027d85ecc0644"
+        },
+        {
+          "engine": "flashwright",
+          "name": "negated-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "ignored",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 0,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "passed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "b1b80a5f953709c2593ebb4104a6a8c4bbab4ee29004a60a4d471f88097476b6"
+        },
+        {
+          "engine": "flashwright",
+          "name": "inline-missing",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": true,
+          "baselineSha256": null
+        },
+        {
+          "engine": "flashwright",
+          "name": "oversized-capture",
+          "passed": true,
+          "outcomeClass": "shared",
+          "unexpected": 1,
+          "tests": [
+            {
+              "title": "snapshot baseline policy",
+              "expectedStatus": "passed",
+              "results": [
+                "failed"
+              ]
+            }
+          ],
+          "patchGenerated": false,
+          "baselineSha256": "4b8268cd1ae020ee709094ccceeea19e930736e4a11fa7dd62eef1e24bd9b5b7"
+        }
+      ]
+    }
+  ],
+  "priorRuns": [
+    {
+      "name": "initial Node22 matcher gate",
+      "status": "passed",
+      "runnerChecks": 23,
+      "reportSha256": "c76b57183c275cd5c4ffeaf4a79b2cfa7959c75dc5f0dc17b235f5c54225cbdf"
+    },
+    {
+      "name": "initial Bun reference inline rebaseline gate",
+      "status": "failed",
+      "completedChecks": 10,
+      "reportSha256": "4415b9ba703bbe3f32e82555082dcc3400486fdd31b2f46f1a7e6183366c383a",
+      "failure": "Pinned reference generated a header-only inline rebaseline patch."
+    },
+    {
+      "name": "Bun direct-call fixture probe",
+      "status": "failed",
+      "completedChecks": 10,
+      "reportSha256": "afcc350f63403448b5841358fe94901c729ff0c12f409e777c6c7c41d8da9f7b",
+      "failure": "Direct matcher call on its own source line still generated a header-only reference patch."
+    }
+  ],
+  "limits": [
+    "Experimental runner matcher slice; no release, package or performance claim.",
+    "Bun inline generation/update policies reject before browser dispatch. Use named file baselines or run the update under Node. Existing inline comparisons remain available.",
+    "Public Page/Locator ariaSnapshot methods, automatic failure-context artifacts and out-of-process frames remain separate incomplete capabilities.",
+    "Native Linux execution remains unverified.",
+    "Raw browser/runner/resource artifacts are retained privately; this checkpoint preserves their original report hashes and all gate outcomes."
+  ]
+}
