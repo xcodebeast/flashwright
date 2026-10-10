@@ -100,6 +100,12 @@ struct CaptureRequest {
     cancellation: watch::Receiver<bool>,
     reservation: CaptureReservation,
     result: Option<oneshot::Sender<Result<PreparedSnapshot, SnapshotFailure>>>,
+    stage: CaptureStage,
+}
+
+enum CaptureStage {
+    Collecting,
+    Deciding,
 }
 
 struct Shared {
@@ -370,6 +376,7 @@ impl SnapshotDocument {
                 cancellation,
                 reservation,
                 result: Some(sender),
+                stage: CaptureStage::Collecting,
             })
             .map_err(|_| failure(ErrorCode::ResourceLimit, "snapshot worker is unavailable"))?;
         tokio::select! {
@@ -541,6 +548,7 @@ impl DocumentWorker {
             };
             match self.prepare(&mut request).await {
                 Ok((prepared, decision)) => {
+                    request.stage = CaptureStage::Deciding;
                     let _ = request.result.take().unwrap().send(Ok(prepared));
                     if let Err(error) = self.decide(&mut request, decision).await {
                         *self.shared.failure.lock().unwrap() = Some(error);
@@ -800,7 +808,12 @@ impl DocumentWorker {
             ));
         }
         self.check_document()?;
-        self.check_frames(&request.options)
+        // Serialized child mappings describe the captured moment. Only the original
+        // parent factory owns the later cache decision and its cleanup.
+        if matches!(request.stage, CaptureStage::Collecting) {
+            self.check_frames(&request.options)?;
+        }
+        Ok(())
     }
 
     async fn wait_for_evaluation(

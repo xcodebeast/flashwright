@@ -3,9 +3,12 @@
 use super::handle_allocation::{release_group, wait_for_allocation};
 use super::locators::{LocatorRealm, check_exception, context_was_destroyed};
 use super::*;
+use flashwright_browser::connection::Command;
 use flashwright_protocol::InputDelivery;
 use serde::Serialize;
 use tokio::time::sleep;
+
+mod completion;
 
 #[derive(Clone, Copy, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -105,6 +108,7 @@ struct PointerAttempt<'action, 'operation> {
     pressed_modifiers: Vec<Modifier>,
     completed_input: bool,
     objects_released: bool,
+    resident_released: bool,
 }
 
 enum Outcome {
@@ -248,6 +252,7 @@ impl PointerAction<'_> {
                 pressed_modifiers: Vec::new(),
                 completed_input: false,
                 objects_released: false,
+                resident_released: false,
             };
             let result = attempt.perform(retry_count).await;
             if !matches!(attempt.delivery, InputDelivery::NotDispatched) {
@@ -375,12 +380,22 @@ impl PointerAttempt<'_, '_> {
             parameters,
             Some(&self.action.page.session_identifier),
         )?;
+        self.allocation_response(realm, &mut command, executes_user_code)
+            .await
+    }
+
+    async fn allocation_response(
+        &self,
+        realm: &LocatorRealm,
+        command: &mut Command,
+        executes_user_code: bool,
+    ) -> Result<Value, ErrorRecord> {
         match wait_for_allocation(
             &self.action.browser.connection,
             &self.action.page,
             &realm.context,
             self.action.operation,
-            &mut command,
+            command,
             executes_user_code,
         )
         .await
@@ -557,14 +572,71 @@ impl PointerAttempt<'_, '_> {
                 }
             }
         };
-        let finished = tokio::select! {
-            biased;
-            _ = navigation_started => None,
-            result = self.runtime(&self.realm, "function(token) { return globalThis.__flashwrightLocatorRuntime.finishPointer(token); }", json!([{ "value": self.token }]), true) => Some(result),
+        // Completion returns a value and disposes its resident attempt. It cannot adopt
+        // a node into a reused numeric context; its command names the original unique world.
+        let mut completion = self.action.browser.connection.start_command("Runtime.callFunctionOn", json!({
+            "uniqueContextId": self.realm.context.unique_identifier,
+            "functionDeclaration": "async function(token) { try { return await globalThis.__flashwrightLocatorRuntime.finishPointer(token); } catch { return {status:'error',message:{units:Array.from('Pointer completion runtime failed', character => character.charCodeAt(0))}}; } }",
+            "arguments": [{ "value": self.token }], "awaitPromise": true, "returnByValue": true, "userGesture": true,
+        }), Some(&self.realm.context.session_identifier))?;
+        let mut reply_consumed = false;
+        let observed = self
+            .action
+            .operation
+            .wait(
+                self.action
+                    .page
+                    .state
+                    .while_execution_context(&self.realm.context, async {
+                        tokio::select! {
+                            biased;
+                            _ = navigation_started => Ok(None),
+                            result = completion.response() => {
+                                reply_consumed = true;
+                                result.map(Some)
+                            },
+                        }
+                    }),
+            )
+            .await;
+        let finished = match observed {
+            Ok(None) => {
+                completion::retain(completion);
+                None
+            }
+            Ok(Some(value)) => Some(Ok(value)),
+            Err(error) if reply_consumed => Some(Err(error)),
+            Err(error) => {
+                let mut failure = super::handle_allocation::recover_failed_allocation(
+                    &self.action.browser.connection,
+                    &self.action.page,
+                    &self.realm.context,
+                    &mut completion,
+                    true,
+                    error,
+                )
+                .await;
+                if failure.reply_pending {
+                    failure.error.cleanup = Some(
+                        dispose(
+                            self.action.browser.as_ref(),
+                            ResourceKind::Page,
+                            &self.action.page.target_identifier,
+                        )
+                        .await
+                        .into(),
+                    );
+                }
+                Some(Err(failure.error))
+            }
         };
         let result = match finished {
             None => Outcome::Complete,
-            Some(Ok(value)) => outcome(value, &self.action.method)?,
+            Some(Ok(value)) => {
+                check_exception(&value, &self.action.method)?;
+                self.resident_released = true;
+                outcome(value["result"]["value"].clone(), &self.action.method)?
+            }
             Some(Err(error)) if context_was_destroyed(&error) => Outcome::Complete,
             Some(Err(error)) => return Err(error),
         };
@@ -574,7 +646,7 @@ impl PointerAttempt<'_, '_> {
 
     fn navigation_can_stall(&self) -> bool {
         let state = self.action.page.state.state.lock().unwrap();
-        let mut identifier = Some(self.action.frame.as_str());
+        let mut identifier = Some(self.realm.context.frame_identifier.as_str());
         while let Some(frame) = identifier.and_then(|identifier| state.frames.get(identifier)) {
             if frame.pending_navigation.is_some() {
                 return true;
@@ -888,8 +960,8 @@ impl PointerAttempt<'_, '_> {
                 modifiers &= !mask;
                 connection.call("Input.dispatchKeyEvent", json!({ "type": "keyUp", "key": key, "code": code, "windowsVirtualKeyCode": virtual_key, "location": 1, "modifiers": modifiers }), session).await?;
             }
-            if !self.completed_input || !self.navigation_can_stall() {
-                let cleared = connection.call("Runtime.callFunctionOn", json!({ "uniqueContextId": self.realm.context.unique_identifier, "functionDeclaration": "function(token) { globalThis.__flashwrightLocatorRuntime.cleanupPointer(token); return true; }", "arguments": [{ "value": self.token }], "returnByValue": true }), session).await;
+            if !self.resident_released && (!self.completed_input || !self.navigation_can_stall()) {
+                let cleared = connection.call("Runtime.callFunctionOn", json!({ "uniqueContextId": self.realm.context.unique_identifier, "functionDeclaration": "function(token) { globalThis.__flashwrightLocatorRuntime.cleanupPointer(token); return true; }", "arguments": [{ "value": self.token }], "returnByValue": true }), Some(&self.realm.context.session_identifier)).await;
                 match cleared {
                     Ok(value) => check_exception(&value, &self.action.method)?,
                     Err(error) if context_was_destroyed(&error) => {}

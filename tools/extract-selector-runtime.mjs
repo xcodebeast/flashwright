@@ -50,11 +50,12 @@ await save('compatibility/upstream/selector-provenance.json', JSON.stringify({
   pointerAdaptations: {
     source: 'https://github.com/microsoft/playwright/tree/v1.60.0/packages/playwright-core/src/server',
     referenceFiles: ['dom.ts', 'input.ts', 'frames.ts', 'chromium/crInput.ts', 'chromium/crPage.ts'],
-    implementations: ['crates/flashwright-engine/src/pointer.rs', 'packages/resident-runtime/locator-runtime.js'],
+    implementations: ['crates/flashwright-engine/src/pointer.rs', 'crates/flashwright-engine/src/pointer/completion.rs', 'packages/resident-runtime/locator-runtime.js'],
     changes: [
       'Ported content-quad clipping, two-decimal point truncation, frame-owner targeting and native modifier/input sequencing into Rust',
       'Wrapped pinned actionability and hit-target helpers with fresh cancellable animation-frame stability checks and bounded attempt ownership',
       'Observed terminal native events through the pinned interceptor hook to release retained nodes and preserve noWaitAfter during pending navigation',
+      'Release resident attempts inside completion and retain dispatched by-value completion commands through navigation until their original reply or connection loss',
       'Adapted main-frame commit/failure barriers to the owned Chromium event registry and host deadlines',
     ],
   },
