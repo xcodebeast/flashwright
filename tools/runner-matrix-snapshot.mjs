@@ -32,6 +32,76 @@ const contained = path => {
 };
 const nested = (parent, child) => { const suffix = relative(parent, child); return suffix === '' || (!suffix.startsWith('..') && !isAbsolute(suffix)); };
 const declaredRedactions = [{ file: 'environmental-confound.json', field: 'creationOperation', replacement: 'private-worktree-creation', reason: 'Private desktop worktree operation identity; original file byte hash retained.' }];
+const reporterStreamNormalization = {
+  fields: 'runner.suites[].specs[].tests[].results[].stdout and stderr; recursively nested suites; runner-report.json uses the runner root',
+  representation: 'UTF-8 text chunks, retaining the original chunk count and ordered joined content. Original chunk encoding and boundaries may change.',
+  content: 'Joined byte content changes only through declared exact path normalization. Original file hashes retain exact original chunk evidence.',
+};
+const maximumStreamBytes = 32 * 1024 * 1024;
+
+/** Decode only the reporter schema's chunk fields; validate UTF-8 after joining arbitrary byte boundaries. */
+function normalizeReporterStream(entries, normalizeText, description) {
+  assert.ok(Array.isArray(entries), `Reporter stream must be an array: ${description}`);
+  let totalBytes = 0;
+  const chunks = entries.map(entry => {
+    assert.ok(entry && typeof entry === 'object' && !Array.isArray(entry), `Invalid reporter chunk: ${description}`);
+    const keys = Object.keys(entry);
+    assert.ok(keys.length === 1 && ['text', 'buffer'].includes(keys[0]), `Reporter chunk must contain exactly text or buffer: ${description}`);
+    let bytes;
+    if (keys[0] === 'buffer') {
+      assert.ok(typeof entry.buffer === 'string' && entry.buffer.length <= Math.ceil(maximumStreamBytes / 3) * 4, `Oversized or invalid reporter buffer: ${description}`);
+      assert.ok(/^[A-Za-z0-9+/]*={0,2}$/.test(entry.buffer) && entry.buffer.length % 4 === 0, `Malformed reporter base64: ${description}`);
+      bytes = Buffer.from(entry.buffer, 'base64');
+      assert.equal(bytes.toString('base64'), entry.buffer, `Noncanonical reporter base64: ${description}`);
+    } else {
+      assert.equal(typeof entry.text, 'string', `Invalid reporter text: ${description}`);
+      assert.ok(Buffer.byteLength(entry.text) <= maximumStreamBytes, `Oversized reporter text: ${description}`);
+      bytes = Buffer.from(entry.text);
+      assert.equal(decode(bytes), entry.text, `Invalid reporter text encoding: ${description}`);
+    }
+    totalBytes += bytes.length;
+    assert.ok(totalBytes <= maximumStreamBytes, `Oversized reporter stream: ${description}`);
+    return bytes;
+  });
+  const original = decode(Buffer.concat(chunks, totalBytes));
+  const normalized = Buffer.from(normalizeText(original, description));
+  assert.ok(normalized.length <= maximumStreamBytes, `Oversized normalized reporter stream: ${description}`);
+  const output = [];
+  let offset = 0;
+  for (const [index, chunk] of chunks.entries()) {
+    let end = index === chunks.length - 1 ? normalized.length : Math.min(offset + chunk.length, normalized.length);
+    // Chunk boundaries are representation only; never split a Unicode code point in emitted text chunks.
+    while (end < normalized.length && (normalized[end] & 0xc0) === 0x80) end++;
+    output.push({ text: decode(normalized.subarray(offset, end)) });
+    offset = end;
+  }
+  assert.equal(output.map(entry => entry.text).join(''), normalized.toString(), `Reporter normalization dropped joined content: ${description}`);
+  return output;
+}
+
+function normalizeReporterDocument(bytes, path, normalizeText) {
+  const document = JSON.parse(decode(bytes));
+  const runner = path.endsWith('/runner-report.json') ? document : document.runner;
+  assert.ok(runner && Array.isArray(runner.suites), `Missing runner reporter schema: ${path}`);
+  function visit(suites, description) {
+    assert.ok(Array.isArray(suites), `Invalid reporter suites: ${description}`);
+    for (const [suiteIndex, suite] of suites.entries()) {
+      const location = `${description}/suites/${suiteIndex}`;
+      if (suite.suites !== undefined) visit(suite.suites, location);
+      for (const [specificationIndex, specification] of (suite.specs ?? []).entries()) {
+        for (const [testIndex, test] of specification.tests.entries()) {
+          for (const [resultIndex, result] of test.results.entries()) {
+            for (const stream of ['stdout', 'stderr']) if (result[stream] !== undefined) {
+              result[stream] = normalizeReporterStream(result[stream], normalizeText, `${location}/specs/${specificationIndex}/tests/${testIndex}/results/${resultIndex}/${stream}`);
+            }
+          }
+        }
+      }
+    }
+  }
+  visit(runner.suites, path);
+  return serialize(document);
+}
 
 /** Bound every read, including logs, and refuse links, special files and files changing during the read. */
 async function retainedBytes(directory, path) {
@@ -135,11 +205,8 @@ export function normalizeRunnerMatrixEvidence(files, mappings) {
     replacements.push([original, replacement]);
   }
   replacements.sort(([left], [right]) => right.length - left.length);
-  const output = {};
-  for (const [path, bytes] of Object.entries(files)) {
-    contained(path);
-    assert.match(path, /\.(?:json|txt|md|mjs)$/);
-    let text = decode(bytes);
+  const normalizeText = (contents, path) => {
+    let text = contents;
     for (const [original, replacement] of replacements) text = text.replaceAll(original, (match, offset, whole) => {
       const before = whole[offset - 1];
       const after = whole[offset + match.length];
@@ -153,7 +220,15 @@ export function normalizeRunnerMatrixEvidence(files, mappings) {
     assert.ok(!privatePath.test(text) && !privatePath.test(inspected), `Unmapped private path in ${path}`);
     assert.ok(!/(?:file:\/\/|\/(?:Users|home|private|var|tmp|workspace|retained|browser|runtime|driver|environment)\/)[^\s"'<>]*%[a-f0-9]{2}/i.test(text), `Unreviewed percent-escaped path in ${path}`);
     assert.ok(!/(?:\.\.\/)+(?:Users|home|p\/|\.codex\/)/.test(inspected), `Unmapped private relative path in ${path}`);
-    output[path] = Buffer.from(text);
+    return text;
+  };
+  const output = {};
+  for (const [path, bytes] of Object.entries(files)) {
+    contained(path);
+    assert.match(path, /\.(?:json|txt|md|mjs)$/);
+    const reporterDocument = /^(?:evidence\/)?pair-\d{2}-(?:playwright|flashwright)\/(?:sample\.json|runner-report\.json|stdout\.txt)$/.test(path);
+    const readable = reporterDocument ? normalizeReporterDocument(bytes, path, normalizeText) : bytes;
+    output[path] = Buffer.from(normalizeText(decode(readable), path));
   }
   return output;
 }
@@ -356,6 +431,7 @@ export async function verifyRunnerMatrixSnapshot(directory) {
   assert.equal(manifest.sourceIdentitiesPreserved, true);
   assert.equal(manifest.numericObservationsPreserved, true);
   assert.deepEqual(manifest.redactions, declaredRedactions);
+  assert.deepEqual(manifest.reporterStreamNormalization, reporterStreamNormalization);
   const exported = Object.fromEntries(Object.entries(all).filter(([path]) => path !== 'manifest.json'));
   assert.deepEqual(hashes(exported), manifest.exportedFiles, 'Snapshot inventory or byte custody changed');
   const files = Object.fromEntries(Object.entries(exported).filter(([path]) => path.startsWith('evidence/')).map(([path, bytes]) => [path.slice('evidence/'.length), bytes]));
@@ -453,7 +529,7 @@ export async function exportRunnerMatrix({ sourceDirectory, destination, recorde
       scope: 'Raw admission verifies the frozen recorded checkout, installed dependency bytes and executable identities. Portable verification checks retained custody and original semantic decisions; it does not freshly validate installed dependencies or executables. The referenced 179-group core receipt is historical and was not rerun.' });
     const manifest = { schemaVersion: 1, kind: 'portable-runner-matrix', originalVerification: 'recorded-source-checkout-with-live-identities', portableVerification: 'independent-retained-custody-and-semantic-admission',
       liveExecutableBytesVerified: false, installedDependencyBytesVerified: false, sourceIdentitiesPreserved: true, numericObservationsPreserved: true,
-      originalFiles, originalNumericObservationHashes: observationHashes(originals), exportedFiles: hashes(exported), recordedSources: preflight.sources, sourceCommit: preflight.sourceCommit, exportToolSources, redactions: declaredRedactions,
+      originalFiles, originalNumericObservationHashes: observationHashes(originals), exportedFiles: hashes(exported), recordedSources: preflight.sources, sourceCommit: preflight.sourceCommit, exportToolSources, redactions: declaredRedactions, reporterStreamNormalization,
       coreReceiptReference: { sha256: preflight.coreReportSha256, groups: preflight.originalCoreGroups, sourceCommit: preflight.originalCoreSourceCommit, rerun: false } };
     for (const path of ['matrix-result.json', 'table.md', 'commands.json']) await writeFile(join(staging, path), exported[path], { flag: 'wx' });
     await writeFile(join(staging, 'manifest.json'), serialize(manifest), { flag: 'wx' });

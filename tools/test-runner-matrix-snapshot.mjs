@@ -44,6 +44,65 @@ for (const bytes of [Buffer.from([0]), Buffer.from([255]), Buffer.from([0xc3])])
   test(`rejects binary or invalid UTF-8 log ${bytes.toString('hex')}`, () => assert.throws(() => normalizeRunnerMatrixEvidence({ 'stderr.txt': bytes }, [])));
 }
 
+function reporterFiles(entries, stream = 'stderr') {
+  const runner = { suites: [{ suites: [{ specs: [{ tests: [{ results: [{ duration: 123.456, [stream]: entries }] }] }] }] }] };
+  const joined = Buffer.concat(entries.map(entry => entry.text !== undefined ? Buffer.from(entry.text) : Buffer.from(entry.buffer, 'base64'))).toString();
+  const report = { completeMilliseconds: 567.89, [stream === 'stderr' ? 'runnerStderr' : 'runnerStdout']: joined, runner };
+  return { 'pair-00-flashwright/runner-report.json': serialize(runner), 'pair-00-flashwright/sample.json': serialize(report), 'pair-00-flashwright/stdout.txt': Buffer.from(JSON.stringify(report) + '\n') };
+}
+
+function streamText(bytes, raw = false, stream = 'stderr') {
+  const document = JSON.parse(bytes);
+  const runner = raw ? document : document.runner;
+  return runner.suites[0].suites[0].specs[0].tests[0].results[0][stream].map(entry => entry.text ?? Buffer.from(entry.buffer, 'base64').toString()).join('');
+}
+
+for (const stream of ['stdout', 'stderr']) test(`normalizes the real reporter buffer form across path and UTF-8 boundaries in ${stream}`, () => {
+  const original = '\u001b[2Kflashwright:browser <launching> {"executable":"/Users/example/Chrome Testing","arguments":["--flag"]}\nUnicode: æ🙂\n';
+  const bytes = Buffer.from(original);
+  const cuts = [original.indexOf('/Users') + 8, bytes.indexOf(Buffer.from('æ')) + 1, bytes.length - 1];
+  const chunks = [];
+  let offset = 0;
+  for (const cut of [...cuts, bytes.length]) { chunks.push({ buffer: bytes.subarray(offset, cut).toString('base64') }); offset = cut; }
+  const files = reporterFiles(chunks, stream);
+  const normalized = normalizeRunnerMatrixEvidence(files, mappings);
+  const expected = original.replace('/Users/example/Chrome Testing', '/browser/executable');
+  for (const [path, output] of Object.entries(normalized)) {
+    assert.equal(streamText(output, path.endsWith('/runner-report.json'), stream), expected);
+    assert.deepEqual(numericApplicationObservations(JSON.parse(output)), numericApplicationObservations(JSON.parse(files[path])));
+    const document = JSON.parse(output);
+    if (document.runner) assert.equal(document[stream === 'stderr' ? 'runnerStderr' : 'runnerStdout'], expected, 'Live-forwarded copy and recorded reporter stream must stay equal');
+    const runner = document.runner ?? document;
+    const entries = runner.suites[0].suites[0].specs[0].tests[0].results[0][stream];
+    assert.equal(entries.length, chunks.length);
+    assert.ok(entries.every(entry => Object.keys(entry).join() === 'text'));
+  }
+  assert.deepEqual(JSON.parse(normalized['pair-00-flashwright/sample.json']).runner, JSON.parse(normalized['pair-00-flashwright/runner-report.json']));
+  assert.deepEqual(normalizeRunnerMatrixEvidence(normalized, []), normalized, 'Independent portable stream inspection must be idempotent');
+});
+
+test('mixed reporter text/buffer chunks normalize relative paths spanning representations while retaining every byte', () => {
+  const chunks = [{ text: '\u001b[2K../../../../p/example/' }, { buffer: Buffer.from('.cache/matrix/pair-00').toString('base64') }, { text: '/project\n123.456\n' }];
+  const output = normalizeRunnerMatrixEvidence(reporterFiles(chunks), mappings);
+  assert.equal(streamText(output['pair-00-flashwright/sample.json']), '\u001b[2K/retained/runner-matrix/pair-00/project\n123.456\n');
+});
+
+for (const buffer of ['AA', 'AA==\n', 'AA--', 'AB==', '!!!!', Buffer.from([255]).toString('base64'), Buffer.from([0]).toString('base64')]) {
+  test(`rejects malformed base64, binary or invalid UTF-8 reporter bytes ${buffer}`, () => assert.throws(() => normalizeRunnerMatrixEvidence(reporterFiles([{ buffer }]), [])));
+}
+
+test('independent privacy validation inspects encoded reporter streams and rejects hidden private paths', () => {
+  for (const privatePath of ['/Users/unknown/private', 'file:///%55sers/unknown/private', '/tmp/unknown/private']) {
+    const chunks = [{ buffer: Buffer.from(privatePath.slice(0, 4)).toString('base64') }, { buffer: Buffer.from(privatePath.slice(4)).toString('base64') }];
+    const rawReportPath = 'pair-00-flashwright/runner-report.json';
+    const encodedOnly = { [rawReportPath]: reporterFiles(chunks)[rawReportPath] };
+    assert.throws(() => normalizeRunnerMatrixEvidence(encodedOnly, []), /private path/);
+    const snapshotFiles = Object.fromEntries(Object.entries(encodedOnly).map(([path, bytes]) => [`evidence/${path}`, bytes]));
+    assert.throws(() => normalizeRunnerMatrixEvidence(snapshotFiles, []), /private path/);
+  }
+  assert.throws(() => normalizeRunnerMatrixEvidence(reporterFiles([{ text: 'safe', buffer: 'c2FmZQ==' }]), []), /exactly text or buffer/);
+});
+
 const sourceLines = commonSource.toString().split('\n');
 const assertionLine = sourceLines.findIndex(line => line.includes("await expect(page.locator('#missing')).toBeVisible")) + 1;
 const declarationLine = sourceLines.findIndex(line => line.includes('test(`${workload}/${phase}/${iteration}`')) + 1;
@@ -135,6 +194,9 @@ async function portableFixture() {
     const arguments_ = policy.headless.map(argument => argument.replace('__FLASHWRIGHT_PROFILE__', '/environment/browser-profile-0'));
     const runnerStderr = engine === 'playwright' ? `pw:browser <launching> ${browser.executablePath} ${arguments_.join(' ')}\n`
       : `flashwright:browser <launching> ${JSON.stringify({ executable: browser.executablePath, arguments: arguments_ })}\n`;
+    const launchPrefixLength = runnerStderr.indexOf('<launching> ') + '<launching> '.length;
+    specifications[0].tests[0].results[0].stderr = [{ buffer: Buffer.from(runnerStderr.slice(0, launchPrefixLength)).toString('base64') },
+      { buffer: Buffer.from(runnerStderr.slice(launchPrefixLength)).toString('base64') }];
     const report = { engine, launchIndex: index, runtime, comparisonClass: 'runner-fixture', configuration, browser, driverSha256: preflight.driverSha256, failures: [], runnerExit: { code: 1, signal: null },
       completeMilliseconds: 20000 + index, runnerStderr, backend: { documents: 120, backendRequests: 15 }, runner: { errors: [], config: { configFile: launch.runnerCommand[3], workers: 1, fullyParallel: false, maxFailures: 0, projects: [{ retries: 0, repeatEach: 1 }] },
         suites: [{ specs: specifications }], stats: { expected: 90, unexpected: 15, flaky: 0, skipped: 0, duration: 19000 + index,
@@ -143,9 +205,11 @@ async function portableFixture() {
       maximumSampledConcurrentRssBytes: 1000000 + index, observedCpuSeconds: 2, elapsedSeconds: 30, command: ['/runtime/executable', 'benchmarks/runner-suite-sample.mjs', recordedDirectory] };
     run['inputs.json'] = serialize(inputs);
     run['sample.json'] = serialize(report);
-    run['stdout.txt'] = Buffer.from(JSON.stringify(report) + '\n');
+    run['stdout.txt'] = serialize(report);
     run['runner-report.json'] = serialize(report.runner);
     run['resources.json'] = serialize(resources);
+    const reporterDocuments = normalizeRunnerMatrixEvidence(Object.fromEntries(['sample.json', 'stdout.txt', 'runner-report.json'].map(path => [`${root}/${path}`, run[path]])), []);
+    for (const [path, bytes] of Object.entries(reporterDocuments)) run[path.slice(root.length + 1)] = bytes;
     await writeFiles(join(directory, 'evidence', root), run);
     const diagnosticAdmission = await verifyRunnerFailureDiagnostics(report, join(directory, 'evidence', root), { recordedDirectory });
     const admission = { status: 'passed-runner-outcomes', exit: { code: 0, signal: null }, inputsUnchanged: true, ...verifyRunnerSuite(report, resources, configuration, policy), diagnosticAdmission };
@@ -167,6 +231,11 @@ async function portableFixture() {
   const manifest = { schemaVersion: 1, kind: 'portable-runner-matrix', originalVerification: 'recorded-source-checkout-with-live-identities', portableVerification: 'independent-retained-custody-and-semantic-admission',
     liveExecutableBytesVerified: false, installedDependencyBytesVerified: false, sourceIdentitiesPreserved: true, numericObservationsPreserved: true,
     redactions: [{ file: 'environmental-confound.json', field: 'creationOperation', replacement: 'private-worktree-creation', reason: 'Private desktop worktree operation identity; original file byte hash retained.' }],
+    reporterStreamNormalization: {
+      fields: 'runner.suites[].specs[].tests[].results[].stdout and stderr; recursively nested suites; runner-report.json uses the runner root',
+      representation: 'UTF-8 text chunks, retaining the original chunk count and ordered joined content. Original chunk encoding and boundaries may change.',
+      content: 'Joined byte content changes only through declared exact path normalization. Original file hashes retain exact original chunk evidence.',
+    },
     originalFiles: hashes(files), originalNumericObservationHashes: Object.fromEntries(Object.entries(files).filter(([path]) => path.endsWith('.json')).map(([path, bytes]) => [path, hash(serialize(numericApplicationObservations(JSON.parse(bytes))))])),
     exportedFiles: hashes(exported), recordedSources: sources, sourceCommit: preflight.sourceCommit, exportToolSources,
     coreReceiptReference: { sha256: preflight.coreReportSha256, groups: 179, sourceCommit: '666a2a8f', rerun: false } };
