@@ -130,8 +130,11 @@ function verifyDocumentLocation(file, directory, sourcePath) {
 }
 
 /** Admit useful diagnostics only for this static controlled fixture; this is not general artifact or byte parity. */
-export async function verifyRunnerFailureDiagnostics(report, directory) {
-  const originalDirectory = resolve(directory);
+export async function verifyRunnerFailureDiagnostics(report, directory, { recordedDirectory = resolve(directory) } = {}) {
+  const physicalDirectory = resolve(directory);
+  assert.ok(typeof recordedDirectory === 'string' && isAbsolute(recordedDirectory) && resolve(recordedDirectory) === recordedDirectory && !recordedDirectory.includes('%'),
+    'Recorded diagnostic directory must be an exact normalized absolute path');
+  const originalDirectory = recordedDirectory;
   assert.ok(['playwright', 'flashwright'].includes(report.engine), 'Unknown diagnostic engine');
   const configuration = report.configuration;
   assert.deepEqual(configuration.workloads, controlledWorkloads, 'Diagnostics admission supports only the controlled seven-workload fixture');
@@ -143,7 +146,7 @@ export async function verifyRunnerFailureDiagnostics(report, directory) {
   assert.ok(Number.isInteger(configuration.expectedFailureTimeoutMilliseconds) && configuration.expectedFailureTimeoutMilliseconds > 0, 'Invalid expected failure timeout');
   assert.ok(Number.isInteger(report.launchIndex) && report.launchIndex >= 0, 'Invalid launch index');
   const sourcePath = join(originalDirectory, 'project', 'workloads.spec.mjs');
-  const sourceBytes = await readRetainedFile(originalDirectory, sourcePath, maximumSourceBytes);
+  const sourceBytes = await readRetainedFile(physicalDirectory, join(physicalDirectory, 'project', 'workloads.spec.mjs'), maximumSourceBytes);
   const commonSourceBytes = await readFile(new URL('./runner-suite/workloads.spec.mjs', import.meta.url));
   assert.deepEqual(sourceBytes, commonSourceBytes, 'Retained source must equal the common controlled fixture');
   const sourceLines = sourceBytes.toString('utf8').split('\n');
@@ -215,7 +218,8 @@ export async function verifyRunnerFailureDiagnostics(report, directory) {
       `${title}: attachment must belong to this original attempt within test-output`);
     assert.ok(!paths.has(documentPath), `${title}: borrowed diagnostic attachment`);
     paths.add(documentPath);
-    const documentBytes = await readRetainedFile(originalDirectory, documentPath, maximumDocumentBytes);
+    // Verify the recorded attachment first, then map only its verified relative suffix into retained custody.
+    const documentBytes = await readRetainedFile(physicalDirectory, join(physicalDirectory, relative(originalDirectory, documentPath)), maximumDocumentBytes);
     const document = documentBytes.toString('utf8');
     verifyDiagnosticMeaning(document, configuration.expectedFailureTimeoutMilliseconds, title);
     for (const heading of ['Test info', 'Error details', 'Test source']) {
