@@ -558,8 +558,8 @@
     }
   },
   "httpExpectationAdmission": {
-    "status": "proposed-unverified",
-    "derivation": "Static inspection of six unchanged test bodies, lazy worker creation and application fetches; the first rejected attempt observed six stylesheet requests per engine, all 404 because its fixture omitted all.css. The repaired fixture must produce six successful stylesheet responses.",
+    "status": "verified-local-functional-admission",
+    "derivation": "The complete corrected six-test corpus observed six document/page-script/stylesheet HTTP200 responses, four demo SVG responses and six SVGO worker responses on each engine. Strict policies remain unchanged. The first rejected distribution observed six stylesheet HTTP404 responses per engine; that failure remains retained.",
     "finishLine": "Complete Playwright and Flashwright baseline admission must retain every raw request and verify or explain each proposed count before any timing claim; counts must not be weakened silently",
     "optionalResources": "No mandatory count for gzip/Prism workers, fonts, icons, manifest, maps or changelog; app scheduling and teardown can affect requests"
   },
@@ -693,8 +693,8 @@
     "stableNoticeSource": "Complete unchanged published 0.1.8 README includes its MIT notice"
   },
   "admission": {
-    "status": "source-materialized-unverified",
-    "scope": "Original app/worker/test/notice bytes retained, with shared declared HTML and generated setup/import adaptations. Stylesheet and referenced CSS maps restore the omitted resource closure; this repaired distribution has not completed functional admission.",
+    "status": "passed-local-functional-admission",
+    "scope": "Complete six-test upstream SVGOMG corpus passed on both engines in the macOS arm64 installed development checkout with Bun 1.4.2 and pinned Chrome for Testing 148.0.7778.96. Original app/worker/test/notice bytes and shared declared HTML/setup/import adaptations were unchanged during the run; this is functional admission only.",
     "performanceAccepted": false,
     "nativeLinux": "unverified",
     "priorRejectedDistribution": {
@@ -719,7 +719,16 @@
       },
       "cause": "The original fixture omitted the HTML preload stylesheet all.css. Both engines requested it six times with HTTP404; five tests then failed on pointer interception. These failures do not establish an engine API gap.",
       "performanceAccepted": false
-    }
+    },
+    "measuredInputs": {
+      "sourceCommit": "797559e68791071477b106eaadc3da5c76fc7040",
+      "manifestSha256": "b63a607f3478958e72df1c52059936381be717fa33f1974d00927abf4d3abdaa",
+      "receiptSha256": "81273af4339067b89ddeb1fb273132fb9bd1056e522373d7a846818db3bd77ed",
+      "inputsSha256": "1457a95c9853cd2fe4de43986dd5a4f620f5c5f3986981e5ca01f32c4ad29be6",
+      "verifierStdoutSha256": "015a388b605becaf587f5bdcc361c777a39cb0e135d166037b694080542faf02",
+      "portableSnapshotManifestSha256": "7d48d5391113a1ff909d39322e1a0c8ebc8b7c1877518f24d13965edea6cccd1"
+    },
+    "documentationBinding": "Admission metadata was added after measurement. The measured source commit and manifest hash above identify the immutable input; this post-admission manifest is not the measured manifest. All retained upstream file identities, test bodies, adaptations and HTTP policies are unchanged."
   },
   "resourceClosure": {
     "scope": "Static resource attributes parsed with HTMLParser, inline style elements/attributes, compiled CSS URLs/imports and source-map comments. Dynamic JavaScript and browser admission remain separate.",
@@ -729,6 +738,8 @@
     "compiledStylesheets": 1,
     "unretainedStaticResourceReferences": 0,
     "runtimeVerified": false,
-    "sourceMaps": "Four original JavaScript maps and two CSS maps are retained; no mandatory request count for maps"
+    "sourceMaps": "Four original JavaScript maps and two CSS maps are retained; no mandatory request count for maps",
+    "selectedCorpusRuntimeVerified": true,
+    "runtimeVerificationScope": "All six original tests passed on each engine with declared successful HTTP requests. Optional source maps were not requested by this corpus; the static map closure is retained without a runtime fetch claim."
   }
 }
