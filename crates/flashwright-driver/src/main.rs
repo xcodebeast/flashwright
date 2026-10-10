@@ -16,8 +16,7 @@ use tokio::sync::{mpsc, watch};
 use tokio::task::JoinSet;
 use tokio::time::{Duration, Instant};
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let arguments: Vec<_> = std::env::args_os().skip(1).collect();
     if arguments
         .first()
@@ -30,10 +29,17 @@ async fn main() {
         }
         std::process::exit(0);
     }
-    if let Err(error) = run().await {
-        eprintln!("flashwright-driver: {error}");
-        std::process::exit(1);
-    }
+    // The guardian is synchronous and must not allocate the driver's async worker pool.
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .expect("failed building the driver runtime")
+        .block_on(async {
+            if let Err(error) = run().await {
+                eprintln!("flashwright-driver: {error}");
+                std::process::exit(1);
+            }
+        });
 }
 
 async fn run() -> Result<(), Box<dyn std::error::Error>> {

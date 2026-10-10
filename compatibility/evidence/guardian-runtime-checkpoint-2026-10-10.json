@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-focused-resource-correction",
+  "scope": "Dispatch the synchronous browser guardian before constructing the unchanged driver Tokio runtime. No browser policy, input, deadline, driver executor count or protocol change.",
+  "baselineCommit": "42dde127c95bd9bb26e9612377043a053463f37a",
+  "sourceHashes": {
+    "crates/flashwright-driver/src/main.rs": "b31d10ef5550e27e0fd2bf3cab9f24a58b9a480f8675ce5359e31d5db2b3438a",
+    "crates/flashwright-browser/src/supervision.rs": "e38bc2716595ded60d4285b972da0703ac79beb8ecb0ba8e6ed47d2166ced138",
+    "compatibility/m1/test_lifecycle.py": "cde20c909f52e158996e4886cdff7c9d705cfe946a1c6e099cfdc2fced3f65d4",
+    "compatibility/m1/lifecycle-worker.mjs": "ec1984b0015e12f6809a83d639f7e4b442a649fa86ff0ccfce9185b0fdaadbab"
+  },
+  "drivers": {
+    "baseline": "9ccf58c1920ca76608dc22e3e089650396c4e529f9cac8d9c55fc4eed21ebe59",
+    "candidate": "2de2edf43907d39ac102b7cac6a791f980ccdc8418db9b6b0c56eaabe0ca2fca"
+  },
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2",
+    "sha256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5"
+  },
+  "platform": "darwin-arm64",
+  "logicalProcessors": 11,
+  "browser": {
+    "version": "148.0.7778.96",
+    "fullChromeSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+    "headlessShellSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b"
+  },
+  "threadInventory": {
+    "baseline": [
+      {
+        "guardianThreadCount": 14,
+        "driverThreadCount": 12
+      },
+      {
+        "guardianThreadCount": 14,
+        "driverThreadCount": 12
+      },
+      {
+        "guardianThreadCount": 14,
+        "driverThreadCount": 12
+      }
+    ],
+    "candidate": [
+      {
+        "guardianThreadCount": 3,
+        "driverThreadCount": 12
+      },
+      {
+        "guardianThreadCount": 3,
+        "driverThreadCount": 12
+      },
+      {
+        "guardianThreadCount": 3,
+        "driverThreadCount": 12
+      }
+    ]
+  },
+  "validation": {
+    "format": "passed",
+    "strictDriverClippy": "passed",
+    "driverUnitTests": 16,
+    "canonicalReleaseBuild": "passed",
+    "hostSourcesUnchanged": true,
+    "nativeInputsUnchanged": true,
+    "lifecycleCasesPerDistribution": 7,
+    "distributions": [
+      "full-chromium",
+      "chromium-headless-shell"
+    ],
+    "allWatchdogsClean": true
+  },
+  "lifecycleCoverage": [
+    "driver crash",
+    "worker death",
+    "worker death with stopped driver",
+    "caller deadline with stopped driver",
+    "blocked-renderer interruption and recovery",
+    "closed diagnostic pipe",
+    "original profile cleanup after failed setup and test bodies"
+  ],
+  "retainedFirstFailure": {
+    "attempt": "native-001",
+    "classification": "Inventory harness error: macOS ps -M overrides requested output columns. The initial parser encountered the header. Engine behavior was not judged; cleanup passed.",
+    "correction": "A separately retained parser reads and stores the native thread listing. Original probe and controller bytes are unchanged."
+  },
+  "rawEvidence": {
+    "retention": "Private original reports, logs, binaries and scripts remain preserved; this portable checkpoint excludes local paths and raw process listings.",
+    "directory": ".cache/guardian-runtime-001",
+    "sha256": {
+      "preparation.json": "ea8c2938bd4434862b3d86c6066c599eb50a3d2d08e07511999e17196d25cf89",
+      "candidate.patch": "7356cf00cd93c449b9724dabb2259f820b61569b393e5c2001a645a188c4551f",
+      "host-001/report.json": "5f9f1a33bc34e8c17adaf0ef4f96d26a9248cb72463120957c7c3290cb822f2a",
+      "host-001/sources-before.json": "1d7f31ff7e0a95c2a436e54fa3d7ecec4347a9990c27b3ffceb0e32f649bc437",
+      "host-001/sources-after.json": "1d7f31ff7e0a95c2a436e54fa3d7ecec4347a9990c27b3ffceb0e32f649bc437",
+      "native-001/report.json": "33b1e962e0bd8040102aec20e16a79b1bceb7b8501acc6236d08e8bfc6ee53d3",
+      "native-001/baseline-inventory.txt": "99fba18d961a37b8180f2d0d35cd174244d1498424eefbc7bfeed22204979187",
+      "probe.py": "b28c56539c0ac027ad314998a7cfaa4b3e8f0a40d704b283238e05543cc1bd0a",
+      "run-native.py": "229a02cb78c70ad2235e58b9d4cebd2992e6e590fcf116aa96bf17eb2a034388",
+      "probe-002.py": "d377a138e3b2acc7f628faccf216fe8bc8ddb0c465b6fd0896c9e172e80181db",
+      "run-native-002.py": "22a27bf6e951e9294916ebc7400c0fa1feaa972032c591d124950b6d618a08f3",
+      "native-002/report.json": "d44562178b202004a7ee36ef42e32b1742b8a29e3d08e5d3be2dad2b2e7eb382",
+      "native-002/baseline-inventory.json": "007b392c79f2bdde911b903259e1b55577b2444627e4c6712cfef6ee60a2b3c7",
+      "native-002/candidate-inventory.json": "bce3c2eb38ca4ac98cd5f02d304c0db65840a5d5ef59a4fd33151e3971fbbe2a",
+      "native-002/baseline-inventory.txt": "b3d2942ca2069f70c7ebbb5e92b72bdfa19bfd4d6e4aab80946de077e556fe4c",
+      "native-002/baseline-inventory-resources.json": "8bd89efc3032e1f79d35ed827cddf218daa305f173826887d59f2899713beac0",
+      "native-002/candidate-inventory.txt": "31d7a9f1396d75b019fa661a701407059c78426bc7afa8d9ebb1f625c2ea2cdf",
+      "native-002/candidate-inventory-resources.json": "3ba86d4733b3d7be49eb9299327c683cf78bd1868df067ea14b08dbb84c2e697",
+      "native-002/candidate-full-lifecycle.txt": "8bbd5b21956de161249cca09fecd66ebc76d95b900a9db6699cf7d7d12cc8e44",
+      "native-002/candidate-full-lifecycle-resources.json": "ab2cbaa1252d9a45c97cc8cb7ae057eff909aaacd58a314fc825e2946b323c65",
+      "native-002/candidate-shell-lifecycle.txt": "6c7ac84a0fda8abe990d45cea1d953579365b53c0401be22835266cd8c5c577a",
+      "native-002/candidate-shell-lifecycle-resources.json": "e33fdf674eaa246d0b197a3317b294c9d5b2ec38cb83306b89c3826c1ef1347e",
+      "host-001/00.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "host-001/00-resources.json": "1dfc723c08caee814a6f9730a214bc4cac78b7c66225fd87b0449cceea72d476",
+      "host-001/01.txt": "6005a365393b83b92fe1a0d67b7cf4b0f1cb3b1e55c094141067390cac013c87",
+      "host-001/01-resources.json": "14e8171853707d62fe0546ed9953cf335d5e6087e896a624d7afceb35231424d",
+      "host-001/02.txt": "080d935c32704cda0f791ad95babcf0f3b9ea8defc643afd5b265ca573cdbb19",
+      "host-001/02-resources.json": "2305330e8a3cb36c5d6a7db543886a8046d17a0a23de004124651a7ca8b9a76b",
+      "host-001/03.txt": "88a643e4aee3bb3ca1fd30f5414c5f95d8fffde7c2fad9d0a88a228dcb7fdf40",
+      "host-001/03-resources.json": "0d014c80a0572b788afb3e48c98ee4018d4830c4d6a67418328c3954ad6a552c"
+    }
+  },
+  "limitations": [
+    "Thread inventory is three observations of one fresh original guardian per candidate; it is not a distribution or throughput measurement.",
+    "The real-driver thread count remains unchanged.",
+    "The full core checkpoint is the earlier fe71e022 baseline; no post-guardian integrated core run is claimed.",
+    "Native Linux performance remains unverified by user direction.",
+    "No wall-time, memory-byte, 2x or fastest claim follows from removing these unused threads."
+  ]
+}
