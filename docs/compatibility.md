@@ -734,7 +734,7 @@ Intentional differences:
 
 Page.ariaSnapshot and Locator.ariaSnapshot return pinned default-mode accessibility trees with tested depth, boxes, strictness, retries, Unicode, timeout and same-process frame behavior. Twelve shared browser groups and fresh ESM/CommonJS typed consumers pass on Bun and Node 22/24; the combined implementation also passes the full macOS core gate.
 
-Limits: Public AI mode, recursive child-document composition and out-of-process frame evaluation remain unsupported. Page capture excludes child documents. Output bounds do not bound renderer tree allocations or synchronous DOM traversal. Native Linux and release coverage remain unverified.
+Limits: Public AI mode, recursive child-document composition and out-of-process ARIA snapshot capture remain unsupported. Page capture excludes child documents. Output bounds do not bound renderer tree allocations or synchronous DOM traversal. Native Linux and release coverage remain unverified.
 
 Runtime defaults: Default mode, boxes false, depth 0 unlimited and inherited timeout; negative depth returns an empty tree and explicit timeout 0 is unbounded. Page capture retries a missing body; Locator capture is strict and retries a missing target.
 
