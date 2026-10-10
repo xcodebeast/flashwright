@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { comparePaired, quantile } from './statistics.mjs';
 
 export const finalGoalScenarioIds = ['runner-interaction', 'runner-assertion', 'runner-navigation', 'runner-setup',
@@ -140,36 +141,63 @@ function maximumIntervalConcurrency(intervals, ownerInterval) {
   return maximum;
 }
 
-function verifyTests(report, scenario, cell) {
+function verifyTests(report, resources, scenario, cell) {
   assert.equal(report.tests.length, scenario.expectedTests.length, 'Incomplete original suite');
   const actual = new Map(report.tests.map(test => [test.id, test]));
   assert.equal(actual.size, report.tests.length, 'Duplicate test observation');
   const contexts = new Set();
   const testIntervals = [];
   const usedWorkers = new Set();
+  const failures = [];
+  const workers = new Map(resources.workerIntervals.map(worker => [worker.identity, worker]));
   for (const expected of scenario.expectedTests) {
     const test = actual.get(expected.id);
     assert.ok(test, `Missing original test: ${expected.id}`);
     assert.equal(test.bodySha256, expected.bodySha256, 'Original callback body changed');
-    assert.equal(test.status, expected.outcome === 'intentional-failure' ? 'failed' : 'passed', 'Original test outcome differs');
+    assert.ok(['passed', 'failed', 'timedOut', 'skipped', 'interrupted'].includes(test.status), 'Invalid original test status');
+    const expectedStatus = expected.outcome === 'intentional-failure' ? 'failed' : 'passed';
+    if (test.status !== expectedStatus) {
+      assert.ok(Array.isArray(test.errors) && (test.errors.length || ['skipped', 'interrupted'].includes(test.status)
+        && typeof test.skipReason === 'string' && test.skipReason), 'Original failed/skipped attempt diagnostic is missing');
+      failures.push({ testId: test.id, expectedStatus, observedStatus: test.status, originalErrors: test.errors, skipReason: test.skipReason });
+    }
+    if (test.status === 'passed') {
+      assert.ok(Array.isArray(test.errors), 'Original test error inventory is missing');
+      if (test.errors.length) failures.push({ testId: test.id, reason: 'Passed status retains unexpected original errors', originalErrors: test.errors });
+    }
     assert.equal(test.attemptCount, 1, 'Retries or missing attempts change complete work');
     assert.equal(test.retry, 0);
+    for (const [name, value] of Object.entries(expected.observations)) if (!isDeepStrictEqual(test.observations?.[name], value))
+      failures.push({ testId: test.id, reason: `Required application observation differs: ${name}` });
+    if (expected.outcome === 'intentional-failure') {
+      if (!isDeepStrictEqual(test.diagnostics?.identity, expected.diagnosticIdentity) || test.diagnostics?.originalPredicateRetained !== true)
+        failures.push({ testId: test.id, reason: 'Original predicate diagnostic is missing or differs; later fallback is insufficient' });
+      if (test.diagnostics?.evidence?.length) requireEvidence(test.diagnostics.evidence, 'Malformed original failure artifacts');
+      else failures.push({ testId: test.id, reason: 'Missing original failure artifacts' });
+    }
+  }
+  assert.ok(Array.isArray(report.unexpectedErrors), 'Original runner errors must be retained');
+  failures.push(...report.unexpectedErrors.map(error => ({ reason: 'Original unexpected runner error', originalError: error })));
+  assert.equal(report.runnerExitCode, report.tests.some(test => ['failed', 'timedOut', 'interrupted'].includes(test.status)) || report.unexpectedErrors.length ? 1 : 0);
+  // Failed attempts may never create contexts or reach worker execution. Preserve them before success-only admission.
+  if (failures.length) return failures;
+  for (const test of report.tests) {
     assert.ok(typeof test.contextIdentity === 'string' && test.contextIdentity && !contexts.has(test.contextIdentity), 'Fresh test context was reused or unrecorded');
     contexts.add(test.contextIdentity);
     assert.ok(typeof test.workerIdentity === 'string' && test.workerIdentity, 'Missing original test worker identity');
     usedWorkers.add(test.workerIdentity);
+    const worker = workers.get(test.workerIdentity);
+    assert.ok(worker && test.interval.startMilliseconds >= worker.startMilliseconds
+      && test.interval.endMilliseconds <= worker.endMilliseconds, 'Original test interval escapes its logical worker lifetime');
     testIntervals.push({ identity: test.id, ...test.interval });
-    for (const [name, value] of Object.entries(expected.observations)) assert.deepEqual(test.observations[name], value, `Required application observation differs: ${name}`);
-    if (expected.outcome === 'intentional-failure') {
-      assert.deepEqual(test.diagnostics.identity, expected.diagnosticIdentity, 'Original failure diagnostic identity differs');
-      assert.equal(test.diagnostics.originalPredicateRetained, true, 'Later fallback cannot replace original predicate evidence');
-      requireEvidence(test.diagnostics.evidence, 'Missing original failure artifacts');
-    }
   }
-  assert.deepEqual(report.unexpectedErrors, []);
-  assert.equal(report.runnerExitCode, scenario.expectedTests.some(test => test.outcome === 'intentional-failure') ? 1 : 0);
   assert.ok(usedWorkers.size >= cell.workers, 'Declared workers did not execute original tests');
   assert.equal(maximumIntervalConcurrency(testIntervals, report.ownerInterval), cell.workers, 'Original tests do not prove actual matched concurrency');
+  for (const identity of usedWorkers) {
+    const intervals = report.tests.filter(test => test.workerIdentity === identity).map(test => ({ identity: test.id, ...test.interval }));
+    assert.equal(maximumIntervalConcurrency(intervals, report.ownerInterval), 1, 'Tests assigned to the same logical worker overlap');
+  }
+  return failures;
 }
 
 /** Derive sampled RSS and observed CPU once per original namespace/PID/start identity. */
@@ -247,7 +275,7 @@ function verifyRun(run, engine, scenario, cell, configuration, declaration) {
   assert.deepEqual(identity.scheduling, scenario.scheduling[cell.id]);
   assert.equal(identity.applicationPolicySha256, scenario.applicationPolicySha256);
   requireHash(scenario.applicationPolicySha256, 'Missing matched application/backend/isolation policy');
-  verifyTests(report, scenario, cell);
+  const behaviorFailures = verifyTests(report, resources, scenario, cell);
   const interval = report.ownerInterval;
   assert.ok(Number.isFinite(interval.startMilliseconds) && Number.isFinite(interval.endMilliseconds)
     && interval.endMilliseconds > interval.startMilliseconds, 'Invalid complete owner interval');
@@ -267,16 +295,17 @@ function verifyRun(run, engine, scenario, cell, configuration, declaration) {
   const observations = observedResources(resources, scenario, interval);
   assert.equal(resources.sampledConcurrentBytes, observations.sampledConcurrentBytes, 'Reported memory differs from retained process samples');
   assert.equal(resources.observedProcessTreeCpuSeconds, observations.observedProcessTreeCpuSeconds, 'Reported CPU differs from retained original identities');
-  const concurrency = maximumIntervalConcurrency(resources.workerIntervals, interval);
-  assert.equal(concurrency, cell.workers, 'Configured worker count does not prove actual matched concurrency');
-  for (const test of report.tests) assert.ok(resources.workerIntervals.some(worker => worker.identity === test.workerIdentity)
-    && resources.ownedProcesses.some(process => process.identity === test.workerIdentity && process.components.includes('workers')),
-  'Original test worker is absent from owned process evidence');
+  if (!behaviorFailures.length) {
+    const concurrency = maximumIntervalConcurrency(resources.workerIntervals, interval);
+    assert.equal(concurrency, cell.workers, 'Configured worker count does not prove actual matched concurrency');
+  }
+  for (const worker of resources.workerIntervals) assert.ok(resources.ownedProcesses.some(process => process.identity === worker.hostProcessIdentity
+    && process.components.includes('workers')), 'Logical worker host is absent from owned process evidence');
   const reasons = observations.reasons;
   if (resources.sampledConcurrentBytes > configuration.resourcePolicy.maximumSampledConcurrentBytes) reasons.push('Sampled complete tree exceeds the 8 GiB ceiling');
   assert.ok(Array.isArray(report.backgroundConfounds));
   reasons.push(...report.backgroundConfounds.map(() => 'Observed background resource confound'));
-  return { reasons, interval, report, resources };
+  return { reasons, behaviorFailures, interval, report, resources };
 }
 
 function analyzeCell(result, scenario, cell, configuration, declaration, campaignIntervals) {
@@ -303,6 +332,7 @@ function analyzeCell(result, scenario, cell, configuration, declaration, campaig
   }
   assert.equal(result.attempts.length, configuration.independentPairs, 'Selective or incomplete launch pairs');
   const reasons = [];
+  const behaviorFailures = [];
   const runs = { playwright: [], flashwright: [] };
   for (const [index, pair] of result.attempts.entries()) {
     assert.equal(pair.id, `${scenario.id}/${cell.id}/${index}`, 'Relabelled or duplicate pair identity');
@@ -317,9 +347,13 @@ function analyzeCell(result, scenario, cell, configuration, declaration, campaig
       previousEnd = run.interval.endMilliseconds;
       campaignIntervals.push({ scenarioId: scenario.id, cellId: cell.id, launchIndex: index, engine, ...run.interval });
       reasons.push(...run.reasons);
+      behaviorFailures.push(...run.behaviorFailures.map(failure => ({ engine, launchIndex: index, ...failure })));
       runs[engine].push(run);
     }
   }
+  if (behaviorFailures.length) return { id: cell.id, status: 'failed', evidenceComplete: true, confirmedWin: false,
+    pointEstimateWin: false, behaviorFailures, reasons: ['Original attempted behavior differs', ...new Set(reasons)], retainedAttempts: result.attempts,
+    supportedRegression: scenario.previouslySupported[cell.id] === true };
   if (reasons.length) return { id: cell.id, status: 'noncomparable', evidenceComplete: true, confirmedWin: false,
     pointEstimateWin: false, reasons: [...new Set(reasons)], retainedAttempts: result.attempts };
   assert.equal(result.status, 'comparable', 'Successful comparable raw pairs cannot be relabelled to hide a regression');
