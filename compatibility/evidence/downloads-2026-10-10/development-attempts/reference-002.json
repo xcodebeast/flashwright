@@ -1,0 +1,171 @@
+{
+  "status": "characterized",
+  "reference": "1.60.0",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+  "sourceSha256": "0a1e9c1ca7e463156a9c6fc39801e51f75368c7efb9c02d54661f2c01c58017c",
+  "outcomes": [
+    {
+      "name": "completed-default",
+      "status": "fulfilled",
+      "value": {
+        "pageIdentity": true,
+        "url": "<origin>/file",
+        "filename": "fixture.txt",
+        "byteLength": 21504,
+        "sha256": "52e6b3377526ef8d35202f9688b0353530b56fe390303320003bddd4554ba6fa",
+        "savedSha256": "52e6b3377526ef8d35202f9688b0353530b56fe390303320003bddd4554ba6fa",
+        "streamedSha256": "52e6b3377526ef8d35202f9688b0353530b56fe390303320003bddd4554ba6fa",
+        "failure": null,
+        "cancelAfterCompletion": {
+          "status": "fulfilled"
+        },
+        "temporaryPathExistsAfterClose": false,
+        "savedPathExistsAfterClose": true,
+        "failureAfterClose": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "failure: Target page, context or browser has been closed"
+        },
+        "pathAfterClose": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "path: Target page, context or browser has been closed"
+        }
+      }
+    },
+    {
+      "name": "accept-downloads-false",
+      "status": "fulfilled",
+      "value": {
+        "filename": "fixture.txt",
+        "failure": "Pass { acceptDownloads: true } when you are creating your browser context.",
+        "path": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "path: Pass { acceptDownloads: true } when you are creating your browser context."
+        },
+        "saveAs": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "saveAs: Pass { acceptDownloads: true } when you are creating your browser context."
+        },
+        "stream": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "createReadStream: Pass { acceptDownloads: true } when you are creating your browser context."
+        },
+        "delete": {
+          "status": "fulfilled"
+        }
+      }
+    },
+    {
+      "name": "cancel-active",
+      "status": "fulfilled",
+      "value": {
+        "failure": "canceled",
+        "secondCancel": {
+          "status": "fulfilled"
+        },
+        "path": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "path: canceled"
+        },
+        "stream": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "createReadStream: canceled"
+        }
+      }
+    },
+    {
+      "name": "save-before-completion",
+      "status": "fulfilled",
+      "value": {
+        "settledBeforeCompletion": false,
+        "savedSha256": "52e6b3377526ef8d35202f9688b0353530b56fe390303320003bddd4554ba6fa",
+        "failure": null
+      }
+    },
+    {
+      "name": "delete-completed",
+      "status": "fulfilled",
+      "value": {
+        "temporaryPathExists": false,
+        "failure": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "failure: Target page, context or browser has been closed"
+        },
+        "path": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "path: Target page, context or browser has been closed"
+        },
+        "secondDelete": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "delete: Target page, context or browser has been closed"
+        },
+        "saveAs": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "saveAs: Target page, context or browser has been closed"
+        }
+      }
+    },
+    {
+      "name": "context-close-active",
+      "status": "fulfilled",
+      "value": {
+        "path": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "path: canceled"
+        },
+        "saveAs": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "saveAs: canceled"
+        },
+        "failure": {
+          "status": "rejected",
+          "errorName": "Error",
+          "message": "failure: Target page, context or browser has been closed"
+        }
+      }
+    },
+    {
+      "name": "page-close-active",
+      "status": "fulfilled",
+      "value": {
+        "pageIdentity": true,
+        "failure": {
+          "status": "fulfilled",
+          "value": null
+        },
+        "path": {
+          "status": "fulfilled",
+          "value": "52e6b3377526ef8d35202f9688b0353530b56fe390303320003bddd4554ba6fa"
+        }
+      }
+    },
+    {
+      "name": "blob-and-suggested-name",
+      "status": "fulfilled",
+      "value": {
+        "filename": "example-é.svg",
+        "urlScheme": "blob",
+        "text": "<svg></svg>",
+        "failure": null
+      }
+    }
+  ],
+  "sourceChangedDuringVerification": false,
+  "browserChangedDuringVerification": false
+}

@@ -9,6 +9,7 @@ mod cookies;
 mod devices;
 mod diagnostic_sessions;
 mod dialogs;
+mod downloads;
 mod element_actions;
 mod element_resolution;
 mod evaluation;
@@ -44,6 +45,7 @@ mod storage;
 mod trace_diagnostics;
 pub use api_requests::RetainedValue;
 pub use dialogs::PreparedDialogHandling;
+pub use downloads::PreparedDownload;
 pub use operation::Operation;
 use operation::{ResourceKind, close_resource, dispose};
 pub use trace_diagnostics::RetainedDiagnostics;
@@ -72,6 +74,13 @@ pub const CAPABILITIES: &[&str] = &[
     "browser.newContext.deviceEmulation",
     "browser.newContext.ignoreHTTPSErrors",
     "browser.newContext.javaScriptEnabled",
+    "browser.newContext.acceptDownloads",
+    "page.event.download",
+    "download.path",
+    "download.failure",
+    "download.saveAs",
+    "download.cancel",
+    "download.delete",
     "context.newPage",
     "context.close",
     "context.cookies",
@@ -155,6 +164,7 @@ pub struct Engine {
     filmstrip_budget: OnceLock<Arc<filmstrip::FrameBudget>>,
     diagnostic_sessions: Arc<diagnostic_sessions::DiagnosticSessions>,
     dialog_budget: Arc<dialogs::DialogBudget>,
+    download_budget: Arc<downloads::DownloadBudget>,
     snapshot_budget: OnceLock<Arc<snapshots::SnapshotBudget>>,
     trace_network_budget: OnceLock<Arc<recording::network::NetworkBudget>>,
     trace_diagnostic_budget: OnceLock<Arc<tokio::sync::Semaphore>>,
@@ -240,6 +250,7 @@ impl Engine {
             filmstrip_budget: OnceLock::new(),
             diagnostic_sessions: Arc::new(diagnostic_sessions::DiagnosticSessions::default()),
             dialog_budget: dialogs::DialogBudget::engine(),
+            download_budget: Arc::new(downloads::DownloadBudget::default()),
             snapshot_budget: OnceLock::new(),
             trace_network_budget: OnceLock::new(),
             trace_diagnostic_budget: OnceLock::new(),
@@ -467,6 +478,13 @@ impl Engine {
             "handle.jsonValue" => self.handle_json_value(parameters, operation).await,
             "handle.getProperty" => self.handle_get_property(parameters, operation).await,
             "handle.getProperties" => self.handle_get_properties(parameters, operation).await,
+            "download.path" | "download.failure" | "download.saveAs" | "download.cancel"
+            | "download.delete" => {
+                self.prepare_download_operation(method, &parameters, operation)
+                    .expect("download method")?
+                    .finish(operation)
+                    .await
+            }
             "handle.dispose" => self.dispose_handle(parameters, operation).await,
             "handle.discard" => self.discard_handle_group(parameters).await,
             "browser.close" => {
@@ -511,6 +529,7 @@ impl Engine {
             .unwrap()
             .contexts
             .get(identifier)
+            .filter(|context| context.state.closed.borrow().is_none())
             .cloned()
             .ok_or_else(|| closed(method))
     }
@@ -546,6 +565,7 @@ impl Engine {
                 "hasTouch",
                 "ignoreHTTPSErrors",
                 "javaScriptEnabled",
+                "acceptDownloads",
             ],
         )?;
         let storage = parameters
@@ -574,6 +594,17 @@ impl Engine {
         }
         let devices = devices::DeviceOptions::parse(&parameters, viewport.as_ref())?;
         let settings = context_settings::ContextSettings::parse(&parameters)?;
+        let accept_downloads = match parameters.get("acceptDownloads") {
+            None => true,
+            Some(Value::Bool(accepted)) => *accepted,
+            Some(_) => {
+                return Err(ErrorRecord::new(
+                    ErrorCode::InvalidArgument,
+                    method,
+                    "acceptDownloads must be a boolean",
+                ));
+            }
+        };
         let protocol_identifier = operation
             .allocate(
                 browser.as_ref(),
@@ -589,6 +620,12 @@ impl Engine {
                 return Err(closed(method));
             }
             let identifier = self.identifier("context");
+            let state = Arc::new(context_state::ContextState::default());
+            let _ = state.downloads.set(Arc::new(downloads::Downloads::new(
+                browser.artifacts_directory.join(&identifier),
+                accept_downloads,
+                self.download_budget.clone(),
+            )));
             registry.contexts.insert(
                 identifier.clone(),
                 Context {
@@ -597,18 +634,31 @@ impl Engine {
                     viewport,
                     devices,
                     settings,
-                    state: Arc::new(context_state::ContextState::default()),
+                    state,
                     published: false,
                 },
             );
             Ok(json!({ "identifier": identifier }))
         })();
-        if let (Ok(created), Some(storage)) = (&result, storage) {
+        let mut created_downloads = None;
+        if let Ok(created) = &result {
             let identifier = identifier(created, "identifier", method)?.to_owned();
-            if let Err(error) = self
-                .restore_initial_storage(&identifier, storage, operation)
-                .await
-            {
+            created_downloads = self
+                .context(&identifier, method)?
+                .state
+                .downloads
+                .get()
+                .cloned();
+            let initialized = async {
+                self.initialize_downloads(&identifier, operation).await?;
+                if let Some(storage) = storage {
+                    self.restore_initial_storage(&identifier, storage, operation)
+                        .await?;
+                }
+                Ok(())
+            }
+            .await;
+            if let Err(error) = initialized {
                 self.remove_context(&identifier);
                 result = Err(error);
             }
@@ -623,6 +673,11 @@ impl Engine {
                 .await
                 .into(),
             );
+            if let Some(downloads) = created_downloads
+                && let Err(cleanup) = downloads.remove_files().await
+            {
+                error.cleanup = Some(format!("downloadCleanupFailed: {}", cleanup.message).into());
+            }
             return Err(error);
         }
         result
@@ -723,6 +778,13 @@ impl Engine {
                     .await
                     .into(),
             );
+            if let Some(downloads) = context.state.downloads.get()
+                && let Err(cleanup) = downloads
+                    .discard_page(&browser, &context.protocol_identifier, &page_identifier)
+                    .await
+            {
+                error.cleanup = cleanup.cleanup.clone();
+            }
             return Err(error);
         }
         result
@@ -744,18 +806,71 @@ impl Engine {
         Ok(())
     }
 
-    async fn close_context(&self, identifier: &str) -> Result<(), ErrorRecord> {
-        let context = self.remove_context(identifier);
-        if let Some(context) = context {
-            let browser = self.browser(&context.browser_identifier, "context.close")?;
-            close_resource(
-                browser.as_ref(),
-                ResourceKind::Context,
-                &context.protocol_identifier,
-            )
-            .await;
-        }
-        Ok(())
+    async fn close_context(self: &Arc<Self>, identifier: &str) -> Result<(), ErrorRecord> {
+        let Some(context) = self
+            .registry
+            .lock()
+            .unwrap()
+            .contexts
+            .get(identifier)
+            .cloned()
+        else {
+            return Ok(());
+        };
+        let mut completion = {
+            let mut cleanup = context.state.cleanup.lock().unwrap();
+            if let Some(completion) = cleanup.as_ref() {
+                completion.clone()
+            } else {
+                let browser = self.browser(&context.browser_identifier, "context.close")?;
+                let engine = self.clone();
+                let identifier = identifier.to_owned();
+                let closing_context = context.clone();
+                context.state.closed.send_replace(Some(closed("context")));
+                if let Some(downloads) = context.state.downloads.get() {
+                    downloads.begin_close();
+                }
+                let (sender, receiver) = watch::channel(None);
+                tokio::spawn(async move {
+                    if let Some(downloads) = closing_context.state.downloads.get() {
+                        downloads
+                            .cancel_active(&browser, &closing_context.protocol_identifier)
+                            .await;
+                    }
+                    close_resource(
+                        browser.as_ref(),
+                        ResourceKind::Context,
+                        &closing_context.protocol_identifier,
+                    )
+                    .await;
+                    // Keep original download ownership visible through disposal's event/reply barrier.
+                    engine.remove_context(&identifier);
+                    let result = if let Some(downloads) = closing_context.state.downloads.get() {
+                        downloads.remove_files().await
+                    } else {
+                        Ok(())
+                    };
+                    sender.send_replace(Some(result));
+                });
+                *cleanup = Some(receiver.clone());
+                receiver
+            }
+        };
+        completion
+            .wait_for(|result| result.is_some())
+            .await
+            .map_err(|_| {
+                ErrorRecord::new(
+                    ErrorCode::Protocol,
+                    "context.close",
+                    "context cleanup owner was lost",
+                )
+            })?;
+        completion
+            .borrow()
+            .as_ref()
+            .expect("context cleanup completed")
+            .clone()
     }
 
     async fn close_browser(&self, identifier: &str) -> Result<(), ErrorRecord> {
@@ -789,6 +904,9 @@ impl Engine {
             let mut registry = self.registry.lock().unwrap();
             for context in registry.contexts.values() {
                 context.state.close_trace();
+                if let Some(downloads) = context.state.downloads.get() {
+                    downloads.retire(closed("context"));
+                }
                 context.state.closed.send_replace(Some(closed("context")));
             }
             registry.contexts.clear();

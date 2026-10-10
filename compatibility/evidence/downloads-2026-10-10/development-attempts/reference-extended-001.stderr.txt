@@ -1,0 +1,12 @@
+110 |     const errors = [];
+111 |     stream.on('error', error => errors.push({ name: error.name, message: error.message }));
+112 |     await context.close();
+113 |     const result = await outcome(async () => {
+114 |       const chunks = [];
+115 |       for await (const chunk of stream) chunks.push(chunk);
+                             ^
+error: _read: Target page, context or browser has been closed
+      at <workspace>/.cache/download-001/extended.mjs:115:24
+      at outcome (<workspace>/.cache/download-001/extended.mjs:39:52)
+      at outcome (<workspace>/.cache/download-001/extended.mjs:39:52)
+      at withPage (<workspace>/.cache/download-001/extended.mjs:48:44)

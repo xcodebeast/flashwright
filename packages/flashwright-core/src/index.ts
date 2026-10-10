@@ -12,6 +12,8 @@ export { ConsoleMessage } from './console.js';
 export type { ConsoleMessageType } from './console.js';
 import { FileChooser, fileChooser } from './file-chooser.js';
 export { FileChooser } from './file-chooser.js';
+import { Download, receivedDownload } from './download.js';
+export { Download } from './download.js';
 import { JSHandle, ElementHandle, receivedHandles, encodeEvaluationArgument, type Unboxed, type SmartHandle } from './handles.js';
 import { pageError } from './page-errors.js';
 import { prepareScreenshot, type PageScreenshotOptions } from './screenshots.js';
@@ -59,8 +61,8 @@ const codec = createValueCodec();
 const eventWaitTrace: TraceMethod = {
   parameters: ['event', 'options'],
   completion: 'independent',
-  // A modal's recipient must receive its recovery object before renderer diagnostics can run.
-  capture: arguments_ => arguments_[0] === 'dialog' ? 'metadata-only' : 'default',
+  // Modal recovery and download artifacts must not wait for renderer diagnostics.
+  capture: arguments_ => arguments_[0] === 'dialog' || arguments_[0] === 'download' ? 'metadata-only' : 'default',
 };
 
 export interface LaunchOptions { executablePath?: string; headless?: boolean; timeout?: number; slowMo?: number }
@@ -72,7 +74,9 @@ export interface WaitForNavigationOptions extends NavigationWaitOptions { url?: 
 export interface NavigationOptions extends NavigationWaitOptions { referer?: string }
 interface PageInitialization { identifier: string; frames: FrameSnapshot[]; mainFrame: string; initialEvents?: ObjectEvent[]; navigationSequence: number }
 interface ContextEvents { page: Page; close: BrowserContext; console: ConsoleMessage; dialog: Dialog }
-interface PageEvents { dialog: Dialog; filechooser: FileChooser; console: ConsoleMessage; response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
+interface PageEvents { dialog: Dialog; download: Download; filechooser: FileChooser; console: ConsoleMessage; response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
+// Validate original ownership without exposing engine context identities in the public API.
+const contextOwners = new WeakMap<BrowserContext, { identifier: string; isClosed: () => boolean }>();
 
 
 function identifier(value: unknown): string {
@@ -154,7 +158,7 @@ export class Browser extends EventEmitter {
       if (runnerDefaults && contextOptions && typeof contextOptions === 'object' && !Array.isArray(contextOptions)) {
         contextOptions = { ...runnerDefaults.contextOptions, ...contextOptions };
       }
-      options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState', 'screen', 'userAgent', 'deviceScaleFactor', 'isMobile', 'hasTouch', 'defaultBrowserType', 'ignoreHTTPSErrors', 'javaScriptEnabled']);
+      options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState', 'screen', 'userAgent', 'deviceScaleFactor', 'isMobile', 'hasTouch', 'defaultBrowserType', 'ignoreHTTPSErrors', 'javaScriptEnabled', 'acceptDownloads']);
       const deviceOptions = prepareDeviceOptions(contextOptions);
       const contextSettings = prepareContextSettings(contextOptions);
       if (contextOptions.baseURL !== undefined && typeof contextOptions.baseURL !== 'string') throw failure('InvalidArgumentError', 'browser.newContext.baseURL', 'expected a string');
@@ -249,6 +253,7 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
   private defaultNavigationTimeout: number | undefined;
   constructor(private readonly client: EngineClient, private readonly identifier: string, private readonly owner: Browser, readonly viewport: ViewportSize | null, readonly baseURL: string | undefined) {
     super({ console: enabled => client.setConsoleSubscription('context', identifier, enabled), dialog: enabled => client.setDialogSubscription('context', identifier, enabled) });
+    contextOwners.set(this, { identifier, isClosed: () => this.closed });
     this.routeRegistry = new RouteRegistry(client, 'context', identifier, baseURL);
     this.unsubscribe = client.subscribeObject(identifier, event => {
       if (event.event === 'close' || event.event === 'transportclosed') this.didClose();
@@ -445,6 +450,15 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
         const contextObserved = this.owner.emit('dialog', dialog);
         const pageObserved = this.emit('dialog', dialog);
         if (!contextObserved && !pageObserved) handleUnobservedDialog(dialog, this.client);
+      }
+      else if (event === 'download') {
+        let download: Download;
+        try {
+          const context = contextOwners.get(this.owner)!;
+          download = receivedDownload(this, this.client, this.identifier, context.identifier, parameters, () => this.owner.tracing, context.isClosed);
+        }
+        catch (error) { this.client.rejectProtocol(error); return; }
+        this.emit('download', download);
       }
       else if (event === 'filechooser') {
         if (!this.listenerCount('filechooser') || this.closed) {
@@ -711,7 +725,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     await this.client.request('page.waitForLoadState', { page: this.identifier, state }, validateTimeout(waitOptions.timeout ?? this.navigationTimeout(), 'page.waitForLoadState'));
   }
   async waitForEvent<Event extends keyof PageEvents>(event: Event, waitOptions: EventWaitOptions<PageEvents[Event]> | ((value: PageEvents[Event]) => boolean | Promise<boolean>) = {}): Promise<PageEvents[Event]> {
-    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror', 'console', 'filechooser', 'dialog'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
+    if (!['response', 'request', 'requestfinished', 'requestfailed', 'framenavigated', 'frameattached', 'framedetached', 'close', 'crash', 'load', 'domcontentloaded', 'pageerror', 'console', 'filechooser', 'dialog', 'download'].includes(event)) throw failure('UnsupportedFeatureError', 'page.waitForEvent', 'event is not implemented');
     this.checkOpen('page.waitForEvent');
     const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
     options('page.waitForEvent', configured, ['predicate', 'timeout']);

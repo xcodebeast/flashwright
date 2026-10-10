@@ -210,6 +210,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                                 .or_else(|| engine.execute_control(&method, &parameters, &operation).map(|result| result.map(OperationResult::Value)))
                         } else { None };
                         let dialog_handling = if input.is_none() { engine.prepare_dialog_handling(&method, &parameters, &operation) } else { None };
+                        let download = if input.is_none() { engine.prepare_download_operation(&method, &parameters, &operation) } else { None };
                         let engine = engine.clone();
                         let limits = limits.clone();
                         let outgoing = outgoing.clone();
@@ -222,6 +223,9 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
                                     operation.attach_input(attachment)?;
                                 }
                                 if let Some(prepared) = dialog_handling {
+                                    return prepared?.finish(&operation).await.map(OperationResult::Value);
+                                }
+                                if let Some(prepared) = download {
                                     return prepared?.finish(&operation).await.map(OperationResult::Value);
                                 }
                                 match control_result {

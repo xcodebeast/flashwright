@@ -1,0 +1,24 @@
+{
+  "status": "reference-characterization-only",
+  "attempts": [
+    {
+      "directory": "reference-001",
+      "exitCode": 1,
+      "observedCases": 8,
+      "completedCases": 4,
+      "failures": "Four active-transfer cases did not trigger a download before timeout when only one byte of a 21-byte response had arrived. Unobserved waiter rejections also made the process fail. The report incorrectly used characterized status and error names overwrote case names; all original bytes are retained.",
+      "source": "reference-001/source.mjs"
+    },
+    {
+      "directory": "reference-002",
+      "exitCode": 0,
+      "observedCases": 8,
+      "completedCases": 8,
+      "changes": "Use21504 total bytes and4096 initial bytes to permit Chromium download detection; await click and event together; preserve case names independently of errors; reject incomplete characterization status."
+    }
+  ],
+  "limitations": [
+    "No Flashwright implementation or parity claim.",
+    "Context-close cancellation error text may be schedule-dependent; retain typed closure and cancellation separately."
+  ]
+}

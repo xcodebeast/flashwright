@@ -1,0 +1,66 @@
+45 |     report.outcomes.push({ name, ...(await outcome(() => operation(page, context))) });
+46 |   } finally { await context.close(); }
+47 | }
+48 | async function download(page, path = '/file') {
+49 |   await page.locator('#link').evaluate((element, path) => { element.href = path; }, path);
+50 |   const event = page.waitForEvent('download');
+                          ^
+TimeoutError: waitForEvent: Timeout 3000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================
+      at download (<workspace>/.cache/download-001/reference.mjs:50:22)
+      at <workspace>/.cache/download-001/reference.mjs:72:24
+      at outcome (<workspace>/.cache/download-001/reference.mjs:36:52)
+      at withPage (<workspace>/.cache/download-001/reference.mjs:45:44)
+      at processTicksAndRejections (native:7:39)
+45 |     report.outcomes.push({ name, ...(await outcome(() => operation(page, context))) });
+46 |   } finally { await context.close(); }
+47 | }
+48 | async function download(page, path = '/file') {
+49 |   await page.locator('#link').evaluate((element, path) => { element.href = path; }, path);
+50 |   const event = page.waitForEvent('download');
+                          ^
+TimeoutError: waitForEvent: Timeout 3000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================
+      at download (<workspace>/.cache/download-001/reference.mjs:50:22)
+      at <workspace>/.cache/download-001/reference.mjs:77:24
+      at outcome (<workspace>/.cache/download-001/reference.mjs:36:52)
+      at withPage (<workspace>/.cache/download-001/reference.mjs:45:44)
+      at processTicksAndRejections (native:7:39)
+45 |     report.outcomes.push({ name, ...(await outcome(() => operation(page, context))) });
+46 |   } finally { await context.close(); }
+47 | }
+48 | async function download(page, path = '/file') {
+49 |   await page.locator('#link').evaluate((element, path) => { element.href = path; }, path);
+50 |   const event = page.waitForEvent('download');
+                          ^
+TimeoutError: waitForEvent: Timeout 3000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================
+      at download (<workspace>/.cache/download-001/reference.mjs:50:22)
+      at <workspace>/.cache/download-001/reference.mjs:93:24
+      at outcome (<workspace>/.cache/download-001/reference.mjs:36:52)
+      at withPage (<workspace>/.cache/download-001/reference.mjs:45:44)
+      at processTicksAndRejections (native:7:39)
+45 |     report.outcomes.push({ name, ...(await outcome(() => operation(page, context))) });
+46 |   } finally { await context.close(); }
+47 | }
+48 | async function download(page, path = '/file') {
+49 |   await page.locator('#link').evaluate((element, path) => { element.href = path; }, path);
+50 |   const event = page.waitForEvent('download');
+                          ^
+TimeoutError: waitForEvent: Timeout 3000ms exceeded while waiting for event "download"
+=========================== logs ===========================
+waiting for event "download"
+============================================================
+      at download (<workspace>/.cache/download-001/reference.mjs:50:22)
+      at <workspace>/.cache/download-001/reference.mjs:100:24
+      at outcome (<workspace>/.cache/download-001/reference.mjs:36:52)
+      at withPage (<workspace>/.cache/download-001/reference.mjs:45:44)
+      at processTicksAndRejections (native:7:39)
+
+Bun v1.4.2 (macOS arm64)

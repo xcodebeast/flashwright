@@ -22,7 +22,16 @@ const installation = await installPackedConsumer(directory, [...Object.values(ar
 const body = `
 const { createServer } = await import('node:http');
 const { once } = await import('node:events');
-const server = createServer((_request, response) => response.end('<title>Packed consumer</title><h1>real HTTP</h1><label>Name<input></label><button onclick="this.textContent=String(event.isTrusted)">Click</button><label><input type="checkbox">Check</label>'));
+const { readFile, stat } = await import('node:fs/promises');
+const downloadBytes = Buffer.from([0, 255, 65, 195, 169, 0]);
+const server = createServer((request, response) => {
+  if (request.url === '/packed-download') {
+    response.writeHead(200, { 'content-type': 'application/octet-stream', 'content-disposition': 'attachment; filename="packed.bin"' });
+    response.end(downloadBytes);
+    return;
+  }
+  response.end('<title>Packed consumer</title><h1>real HTTP</h1><label>Name<input></label><button onclick="this.textContent=String(event.isTrusted)">Click</button><label><input type="checkbox">Check</label><a href="/packed-download">Packed download</a>');
+});
 server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const browser = await chromium.launch({ slowMo: 0 });
@@ -169,19 +178,56 @@ try {
     assert.deepEqual(await restored.cookies(), []);
     await restored.close();
   }
+  const downloadStarted = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Packed download' }).click();
+  const download = await downloadStarted;
+  assert(download instanceof Download);
+  assert.equal(download.page(), page);
+  assert.equal(download.url(), new URL('/packed-download', page.url()).href);
+  assert.equal(download.suggestedFilename(), 'packed.bin');
+  const temporaryPath = await download.path();
+  assert.deepEqual(await readFile(temporaryPath), downloadBytes);
+  assert.equal(await download.failure(), null);
+  await download.saveAs('downloads/packed-copy.bin');
+  assert.deepEqual(await readFile('downloads/packed-copy.bin'), downloadBytes);
+  const downloadChunks = [];
+  for await (const chunk of await download.createReadStream()) downloadChunks.push(chunk);
+  assert.deepEqual(Buffer.concat(downloadChunks), downloadBytes);
+  await download.cancel();
+  await download.delete();
+  assert.equal(await stat(temporaryPath).then(() => true, () => false), false);
+  assert.deepEqual(await readFile('downloads/packed-copy.bin'), downloadBytes);
+  assert.equal(download.page(), page);
+  assert.equal(download.suggestedFilename(), 'packed.bin');
   await page.close();
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 `;
-await writeFile(join(directory, 'consumer.mjs'), `import assert from 'node:assert/strict';\nimport { chromium, FrameLocator } from 'flashwright';\n${body}`);
-await writeFile(join(directory, 'consumer.cjs'), `const assert = require('node:assert/strict');\nconst { chromium, FrameLocator } = require('flashwright');\n(async () => { ${body} })().catch(error => { console.error(error); process.exitCode = 1; });`);
+await writeFile(join(directory, 'consumer.mjs'), `import assert from 'node:assert/strict';\nimport { chromium, FrameLocator, Download } from 'flashwright';\n${body}`);
+await writeFile(join(directory, 'consumer.cjs'), `const assert = require('node:assert/strict');\nconst { chromium, FrameLocator, Download } = require('flashwright');\n(async () => { ${body} })().catch(error => { console.error(error); process.exitCode = 1; });`);
 const typeBody = `
 async function example(): Promise<number> {
   const browser: Browser = await chromium.launch({ slowMo: 0 });
   try {
-    const context: BrowserContext = await browser.newContext({ ignoreHTTPSErrors: true, javaScriptEnabled: false });
+    const context: BrowserContext = await browser.newContext({ ignoreHTTPSErrors: true, javaScriptEnabled: false, acceptDownloads: true });
     // @ts-expect-error Context settings preserve boolean option types.
     await browser.newContext({ javaScriptEnabled: 'false' });
+    // @ts-expect-error Download policy preserves boolean option types.
+    await browser.newContext({ acceptDownloads: 'false' });
     const page: Page = await context.newPage();
+    const download: import('flashwright').Download = await page.waitForEvent('download', { predicate: received => received.suggestedFilename() === 'packed.bin' });
+    const downloadPage: Page = download.page();
+    const downloadURL: string = download.url();
+    const downloadFilename: string = download.suggestedFilename();
+    const downloadPath: string = await download.path();
+    const downloadFailure: string | null = await download.failure();
+    const downloadStream: import('node:stream').Readable = await download.createReadStream();
+    const savedDownload: void = await download.saveAs('saved.bin');
+    const canceledDownload: void = await download.cancel();
+    const deletedDownload: void = await download.delete();
+    // @ts-expect-error Download destinations are strings.
+    await download.saveAs(42);
+    void downloadPage; void downloadURL; void downloadFilename; void downloadPath; void downloadFailure;
+    void downloadStream; void savedDownload; void canceledDownload; void deletedDownload;
     const registration: import('flashwright').Disposable = await context.addInitScript(({ name }: { name: string }) => { window.name = name; }, { name: 'packed' });
     await registration.dispose(); await registration[Symbol.asyncDispose]();
     await page.addInitScript({ content: 'window.name = "packed";' });
@@ -314,7 +360,7 @@ const evidence = {
   consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH ?? null,
   packagedRuntime: runtimePackagePath ? { packageName: runtimePackageName, archiveSha256: createHash('sha256').update(await readFile(runtimeArchive)).digest('hex'), manifest: JSON.parse(await readFile(join(dirname(runtimePackagePath), 'runtime.json'), 'utf8')), installation: 'offline local tarballs, lifecycle scripts disabled, Cargo absent from consumer PATH' } : null,
   driverSha256: createHash('sha256').update(await readFile(selectedDriver)).digest('hex'),
-  checks: ['Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  checks: ['Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'default Download event, class/page identity, exact binary path/save/stream bytes, cancellation and deletion in both module formats', 'all nine Download method declarations and boolean acceptDownloads policy', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
 const destination = join(reportDirectory, `packed-library-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`);

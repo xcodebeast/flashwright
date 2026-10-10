@@ -5,8 +5,11 @@ use std::collections::BTreeSet;
 use std::future::Future;
 
 pub(crate) const MAXIMUM_STORAGE_ORIGINS: usize = 1024;
+type CleanupCompletion = watch::Receiver<Option<Result<(), ErrorRecord>>>;
 
 pub(crate) struct ContextState {
+    pub downloads: OnceLock<Arc<crate::downloads::Downloads>>,
+    pub cleanup: Mutex<Option<CleanupCompletion>>,
     pub origins: Mutex<BTreeSet<String>>,
     pub routing_registered: std::sync::atomic::AtomicBool,
     pub trace_enabled: std::sync::atomic::AtomicBool,
@@ -27,6 +30,8 @@ pub(crate) struct ContextState {
 impl Default for ContextState {
     fn default() -> Self {
         Self {
+            downloads: OnceLock::new(),
+            cleanup: Mutex::new(None),
             origins: Mutex::new(BTreeSet::new()),
             routing_registered: std::sync::atomic::AtomicBool::new(false),
             trace_enabled: std::sync::atomic::AtomicBool::new(false),

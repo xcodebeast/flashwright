@@ -113,6 +113,12 @@ impl Engine {
         browser_identifier: &str,
         event: Event,
     ) -> Result<(), ErrorRecord> {
+        if matches!(
+            event.method.as_str(),
+            "Browser.downloadWillBegin" | "Browser.downloadProgress"
+        ) {
+            return self.download_event(browser_identifier, &event);
+        }
         if event.method == "Page.screencastFrame" {
             self.receive_filmstrip_frame(browser_identifier, &event);
             return Ok(());
@@ -465,6 +471,9 @@ impl Engine {
         }
         if let Some(context) = &context {
             context.state.close_trace();
+            if let Some(downloads) = context.state.downloads.get() {
+                downloads.retire(error.clone());
+            }
             context.state.closed.send_replace(Some(error));
             if context.published {
                 self.emit(identifier, "close", Value::Null);

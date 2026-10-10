@@ -9,4 +9,5 @@ pub mod values;
 pub use chromium::{Chromium, LaunchOptions};
 pub use connection::Connection;
 
+mod guardian_metadata;
 mod process_group;

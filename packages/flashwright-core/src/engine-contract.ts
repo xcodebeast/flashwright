@@ -6,6 +6,8 @@ export const requiredCapabilities = [
   'page.navigation.capture', 'page.navigation.next', 'page.navigation.complete',
   'page.fileChooser.subscribe', 'page.console.subscribe', 'context.console.subscribe',
   'page.dialog.subscribe', 'context.dialog.subscribe', 'dialog.accept', 'dialog.dismiss',
+  'browser.newContext.acceptDownloads', 'page.event.download',
+  'download.path', 'download.failure', 'download.saveAs', 'download.cancel', 'download.delete',
   'context.trace.start', 'context.trace.pull', 'context.trace.stop',
   'context.trace.filmstrip.clock',
   'context.trace.filmstrip.activity',

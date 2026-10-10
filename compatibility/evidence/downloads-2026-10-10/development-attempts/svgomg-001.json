@@ -1,0 +1,869 @@
+{
+  "installation": {
+    "packageManager": "bun@1.4.2",
+    "command": [
+      "<workspace>/.tools/bun-v1.4.2-darwin-arm64/bin/bun",
+      "install",
+      "--ignore-scripts",
+      "--registry",
+      "http://127.0.0.1:58130/"
+    ],
+    "code": 0,
+    "registryRequests": [
+      {
+        "method": "GET",
+        "path": "@flashwright/core"
+      },
+      {
+        "method": "GET",
+        "path": "@flashwright/runner"
+      },
+      {
+        "method": "GET",
+        "path": "@flashwright/test"
+      },
+      {
+        "method": "GET",
+        "path": "@playwright/test"
+      },
+      {
+        "method": "GET",
+        "path": "@types/node"
+      },
+      {
+        "method": "GET",
+        "path": "flashwright"
+      },
+      {
+        "method": "GET",
+        "path": "@flashwright/driver-darwin-arm64"
+      },
+      {
+        "method": "GET",
+        "path": "playwright"
+      },
+      {
+        "method": "GET",
+        "path": "playwright-core"
+      },
+      {
+        "method": "GET",
+        "path": "@flashwright/driver-linux-x64"
+      },
+      {
+        "method": "GET",
+        "path": "artifacts/@flashwright/core"
+      },
+      {
+        "method": "GET",
+        "path": "artifacts/@flashwright/runner"
+      },
+      {
+        "method": "GET",
+        "path": "artifacts/@flashwright/test"
+      },
+      {
+        "method": "GET",
+        "path": "artifacts/flashwright"
+      },
+      {
+        "method": "GET",
+        "path": "undici-types"
+      },
+      {
+        "method": "GET",
+        "path": "fsevents"
+      }
+    ],
+    "logSha256": "6c31343c47c4844bb8ac6970cee28f2f2f80401598420e15dd26b407710df88c",
+    "log": "<temporary>/flashwright-packed-migration-PuqwCy/install.log"
+  },
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "node": null,
+  "nodeCompatibility": "v26.3.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "consumerDirectory": "<temporary>/flashwright-packed-migration-PuqwCy",
+  "browserPath": "<browser-cache>/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+  "browserExecutableSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+  "driverSha256": "f534fdaca6cc76621c53670e3eb94db03137f6a841c85393fe8c15aea8cc3107",
+  "sources": [
+    {
+      "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+      "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+      "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+      "changes": [
+        "package import specifiers only"
+      ]
+    }
+  ],
+  "archives": {
+    "flashwright-core": {
+      "archive": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright-core-0.0.0.tgz",
+      "sha256": "5d7e308372de0bd14ae4e93593db5eb51eea8f47b51cc647c15a125154ae3812"
+    },
+    "flashwright": {
+      "archive": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright-0.0.0.tgz",
+      "sha256": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+    },
+    "flashwright-runner": {
+      "archive": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright-runner-0.0.0.tgz",
+      "sha256": "868ee8bdacaba7ad29d2c502fe423a9268f8ce0f56087b8ca05163b5d4d373b9"
+    },
+    "flashwright-test": {
+      "archive": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright-test-0.0.0.tgz",
+      "sha256": "f8cd18e59d69daa8f8cc01755a89f02d5129466764e1a411a1b718d7598a49b8"
+    }
+  },
+  "runs": {
+    "reference": {
+      "code": 0,
+      "report": {
+        "config": {
+          "configFile": "<temporary>/flashwright-packed-migration-PuqwCy/reference.config.mjs",
+          "rootDir": "<temporary>/flashwright-packed-migration-PuqwCy/reference/tests",
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "<temporary>/flashwright-packed-migration-PuqwCy/reference-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "<temporary>/flashwright-packed-migration-PuqwCy/reference/tests",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list",
+              null
+            ],
+            [
+              "json",
+              {
+                "outputFile": "reference-report.json"
+              }
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.60.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "example.spec.ts",
+            "file": "example.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "verify menu items",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 1871,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-10T07:43:26.915Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a30a6eba6312f6b87ea5-b957b4c30ade9b6b197c",
+                "file": "example.spec.ts",
+                "line": 12,
+                "column": 0
+              },
+              {
+                "title": "open svg",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 1583,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-10T07:43:37.688Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a30a6eba6312f6b87ea5-469d651d90b1943ca1c2",
+                "file": "example.spec.ts",
+                "line": 90,
+                "column": 0
+              }
+            ],
+            "suites": [
+              {
+                "title": "demo tests",
+                "file": "example.spec.ts",
+                "line": 21,
+                "column": 5,
+                "specs": [
+                  {
+                    "title": "verify default global settings",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 2313,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:29.294Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-4745aea38f1084ece47b",
+                    "file": "example.spec.ts",
+                    "line": 26,
+                    "column": 2
+                  },
+                  {
+                    "title": "verify default features",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 1515,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:31.618Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-92dbfc8e974a70bcd7df",
+                    "file": "example.spec.ts",
+                    "line": 42,
+                    "column": 2
+                  },
+                  {
+                    "title": "reset settings",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 2265,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:33.143Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-58ebeee9f9c762975c6e",
+                    "file": "example.spec.ts",
+                    "line": 69,
+                    "column": 2
+                  },
+                  {
+                    "title": "download result",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 2265,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:35.416Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-1371d8c847253c4be4b3",
+                    "file": "example.spec.ts",
+                    "line": 77,
+                    "column": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-10T07:43:26.553Z",
+          "duration": 13070.715,
+          "expected": 6,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "tests": [
+        {
+          "title": "example.spec.ts > verify menu items",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > open svg",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > verify default global settings",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > verify default features",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > reset settings",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > download result",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    "flashwright": {
+      "code": 1,
+      "report": {
+        "config": {
+          "configFile": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright.config.mjs",
+          "rootDir": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests",
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list",
+              null
+            ],
+            [
+              "json",
+              {
+                "outputFile": "flashwright-report.json"
+              }
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.60.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "example.spec.ts",
+            "file": "example.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "verify menu items",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 1635,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-10T07:43:41.939Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a30a6eba6312f6b87ea5-b957b4c30ade9b6b197c",
+                "file": "example.spec.ts",
+                "line": 12,
+                "column": 0
+              },
+              {
+                "title": "open svg",
+                "ok": false,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "failed",
+                        "duration": 1633,
+                        "error": {
+                          "message": "UnsupportedFeatureError: frame.waitForSelector: evaluation in out-of-process frames is not implemented",
+                          "stack": "UnsupportedFeatureError: frame.waitForSelector: evaluation in out-of-process frames is not implemented\n    at fromRecord (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/errors.ts:44:3)\n    at consume (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/client.ts:554:25)\n    at request (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/client.ts:277:22)\n    at runSelectorWait (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/index.ts:540:38)\n    at waitForSelector (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/frame.ts:92:23)\n    at elementHandle (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/locator.ts:196:28)\n    at withElement (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/locator.ts:200:32)\n    at evaluate (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/locator.ts:210:17)\n    at <temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests/example.spec.ts:105:71",
+                          "location": {
+                            "file": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests/example.spec.ts",
+                            "column": 71,
+                            "line": 105
+                          },
+                          "snippet": "  103 |\n  104 |   // Verify provided svg was rendered.\n> 105 |   const markup = await page.frameLocator('.svg-frame').locator('svg').evaluate(svg => svg.outerHTML);\n      |                                                                       ^\n  106 |   expect(markup).toMatch(/<svg.*<\\/svg>/);\n  107 | });\n  108 |"
+                        },
+                        "errors": [
+                          {
+                            "location": {
+                              "file": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests/example.spec.ts",
+                              "column": 71,
+                              "line": 105
+                            },
+                            "message": "UnsupportedFeatureError: frame.waitForSelector: evaluation in out-of-process frames is not implemented\n\n  103 |\n  104 |   // Verify provided svg was rendered.\n> 105 |   const markup = await page.frameLocator('.svg-frame').locator('svg').evaluate(svg => svg.outerHTML);\n      |                                                                       ^\n  106 |   expect(markup).toMatch(/<svg.*<\\/svg>/);\n  107 | });\n  108 |\n    at fromRecord (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/errors.ts:44:3)\n    at consume (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/client.ts:554:25)\n    at request (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/client.ts:277:22)\n    at runSelectorWait (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/index.ts:540:38)\n    at waitForSelector (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/frame.ts:92:23)\n    at elementHandle (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/locator.ts:196:28)\n    at withElement (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/locator.ts:200:32)\n    at evaluate (<temporary>/flashwright-packed-migration-PuqwCy/node_modules/@flashwright/core/src/locator.ts:210:17)\n    at <temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests/example.spec.ts:105:71"
+                          }
+                        ],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-10T07:43:50.965Z",
+                        "annotations": [],
+                        "attachments": [],
+                        "errorLocation": {
+                          "file": "<temporary>/flashwright-packed-migration-PuqwCy/flashwright/tests/example.spec.ts",
+                          "column": 71,
+                          "line": 105
+                        }
+                      }
+                    ],
+                    "status": "unexpected"
+                  }
+                ],
+                "id": "a30a6eba6312f6b87ea5-469d651d90b1943ca1c2",
+                "file": "example.spec.ts",
+                "line": 90,
+                "column": 0
+              }
+            ],
+            "suites": [
+              {
+                "title": "demo tests",
+                "file": "example.spec.ts",
+                "line": 21,
+                "column": 5,
+                "specs": [
+                  {
+                    "title": "verify default global settings",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 1550,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:44.103Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-4745aea38f1084ece47b",
+                    "file": "example.spec.ts",
+                    "line": 26,
+                    "column": 2
+                  },
+                  {
+                    "title": "verify default features",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 1567,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:45.663Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-92dbfc8e974a70bcd7df",
+                    "file": "example.spec.ts",
+                    "line": 42,
+                    "column": 2
+                  },
+                  {
+                    "title": "reset settings",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 1990,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:47.240Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-58ebeee9f9c762975c6e",
+                    "file": "example.spec.ts",
+                    "line": 69,
+                    "column": 2
+                  },
+                  {
+                    "title": "download result",
+                    "ok": true,
+                    "tags": [],
+                    "tests": [
+                      {
+                        "timeout": 30000,
+                        "annotations": [],
+                        "expectedStatus": "passed",
+                        "projectId": "",
+                        "projectName": "",
+                        "results": [
+                          {
+                            "workerIndex": 0,
+                            "parallelIndex": 0,
+                            "status": "passed",
+                            "duration": 1712,
+                            "errors": [],
+                            "stdout": [],
+                            "stderr": [],
+                            "retry": 0,
+                            "startTime": "2026-10-10T07:43:49.242Z",
+                            "annotations": [],
+                            "attachments": []
+                          }
+                        ],
+                        "status": "expected"
+                      }
+                    ],
+                    "id": "a30a6eba6312f6b87ea5-1371d8c847253c4be4b3",
+                    "file": "example.spec.ts",
+                    "line": 77,
+                    "column": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-10T07:43:41.548Z",
+          "duration": 11169.782,
+          "expected": 5,
+          "skipped": 0,
+          "unexpected": 1,
+          "flaky": 0
+        }
+      },
+      "tests": [
+        {
+          "title": "example.spec.ts > verify menu items",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > open svg",
+          "status": "unexpected",
+          "attempts": [
+            "failed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > verify default global settings",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > verify default features",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > reset settings",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "title": "example.spec.ts > demo tests > download result",
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    }
+  },
+  "status": "failed",
+  "project": "svgomg",
+  "scope": "Import/config-only migration of 6 preserved upstream svgomg tests through freshly packed packages. External public demo application; functional evidence, not a matched performance comparison. Application identities cover listed same-origin code/data assets, not third-party analytics or all optional resources.",
+  "remaining": [
+    "offline application reproduction",
+    "complete preview and replacement capability gates"
+  ],
+  "applicationBefore": {
+    "https://demo.playwright.dev/svgomg/": {
+      "sha256": "e703a86268fab6a22d635557112b48d2efdf896b07d3301902c6474c76ad189b",
+      "bytes": 20429
+    },
+    "https://demo.playwright.dev/svgomg/js/page.js": {
+      "sha256": "02788bb386509c97aa1fee70b6c8392f18ab860ecaea1c60668ac8cf2b6e031f",
+      "bytes": 27551
+    },
+    "https://demo.playwright.dev/svgomg/js/svgo-worker.js": {
+      "sha256": "fd41b758048512530a654a02405fb5b47a3ada05feaaa63f19086f70260123be",
+      "bytes": 428350
+    },
+    "https://demo.playwright.dev/svgomg/js/gzip-worker.js": {
+      "sha256": "d39d126f98b628cdc8ff0aa12ab31f52e1350f1a16915be888531d8f02aa647f",
+      "bytes": 27164
+    },
+    "https://demo.playwright.dev/svgomg/js/prism-worker.js": {
+      "sha256": "9f8798ffeed291b1f47b4bdb0518595260f68c7e0d4fcc8c4992c4625bd3731a",
+      "bytes": 19020
+    },
+    "https://demo.playwright.dev/svgomg/test-svgs/car-lite.svg": {
+      "sha256": "9b940dfea98e7b6e19fa692848591e01152f4802f0e9f434b09d098e41e7ebfe",
+      "bytes": 26539
+    },
+    "https://demo.playwright.dev/svgomg/changelog.json": {
+      "sha256": "c496da821d5b0017e847c770549b8a3d3134b3af1cfdc4409e7119a6d91c131f",
+      "bytes": 5125
+    }
+  },
+  "failure": {
+    "name": "AssertionError",
+    "message": "flashwright migration run failed\n\n1 !== 0\n",
+    "stack": "AssertionError [ERR_ASSERTION]: flashwright migration run failed\n\n1 !== 0\n\n    at <workspace>/tools/test-packed-migration.mjs:131:12\n    at processTicksAndRejections (native:7:39)"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "checks": [
+    "journal factory enforces its private version without exposing a public constructor",
+    "synchronous admission snapshots records and bodies while filesystem initialization is blocked",
+    "pre-initialization queues fail at the same admission limits and retain cleanup until creation settles",
+    "initialization failure preserves its original error and cleans resources for both factory forms",
+    "a late original file-open completion stays owned after disposal and cannot enter a successor",
+    "final timeout and original context clocks survive ordered incremental journal replay in the pinned loader",
+    "body attachments snapshot synchronously while file attachments and sources observe final export bytes",
+    "source-only admission shares final reads and deduplication without adding runner events",
+    "source-only admission works during initialization and discarded or disabled sources perform no reads",
+    "source-only admission rejects accessors, proxies, excessive input and closed journals without caller effects",
+    "source-only paths share cumulative path count and byte limits with ordinary journal stacks",
+    "runner source UTF-8 decoding matches Buffer decoding across chunk boundaries and preserves binary attachment bytes",
+    "disabled attachments and sources never inspect or capture supplied paths and bodies",
+    "missing paths remain unresolved and nonregular files cannot stall runner finalization",
+    "metadata admission never invokes accessors, proxy traps or serialization hooks",
+    "oversized metadata and binary stdio fail before serialization or body copying",
+    "queued body count and bytes are admitted before copying and remain owned through blocked writes",
+    "pending event writes have a bounded queue and disposal waits for the original write owner",
+    "cancellation during final path capture cannot transfer a late archive",
+    "sealed archive readers own final files after journal disposal until their own cleanup settles",
+    "journal corruption rejects the whole archive and preserves a preexisting export destination",
+    "event and disk stream limits include completed writes rather than resetting when their queue drains",
+    "archive cleanup attempts resource removal even when stream-directory removal fails",
+    "all emitted archives have independently valid ZIP CRCs"
+  ],
+  "archiveCount": 10
+}

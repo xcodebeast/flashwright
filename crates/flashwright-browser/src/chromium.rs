@@ -3,7 +3,7 @@ use std::os::unix::net::UnixStream as StandardUnixStream;
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Stdio;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use command_fds::{CommandFdExt, FdMapping};
 use flashwright_protocol::{ErrorCode, ErrorRecord};
@@ -54,6 +54,8 @@ pub struct Chromium {
     pub connection: Connection,
     pub version: String,
     pub headless: bool,
+    pub artifacts_directory: PathBuf,
+    pub artifact_jobs: Arc<tokio::sync::RwLock<()>>,
     child: Mutex<Option<Child>>,
     process_group: Pid,
     liveness: Mutex<Option<StandardUnixStream>>,
@@ -74,6 +76,9 @@ impl Chromium {
             ));
         }
         let (liveness, guardian_liveness) = StandardUnixStream::pair().map_err(launch_error)?;
+        let metadata = liveness.try_clone().map_err(launch_error)?;
+        metadata.set_nonblocking(true).map_err(launch_error)?;
+        let mut metadata = UnixStream::from_std(metadata).map_err(launch_error)?;
         let (outgoing, browser_input) = StandardUnixStream::pair().map_err(launch_error)?;
         let (browser_output, incoming) = StandardUnixStream::pair().map_err(launch_error)?;
         outgoing.set_nonblocking(true).map_err(launch_error)?;
@@ -125,11 +130,17 @@ impl Chromium {
             connection: Connection::new(incoming, outgoing),
             version: String::new(),
             headless: options.headless,
+            artifacts_directory: PathBuf::new(),
+            artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
             child: Mutex::new(Some(child)),
             process_group,
             liveness: Mutex::new(Some(liveness)),
             shutdown: Mutex::new(None),
         };
+        browser.artifacts_directory = crate::guardian_metadata::read_directory(&mut metadata)
+            .await
+            .map_err(launch_error)?;
+        drop(metadata);
         let identity = browser
             .connection
             .call("Browser.getVersion", json!({}), None)
@@ -154,6 +165,20 @@ impl Chromium {
         self.process_group.as_raw() as u32
     }
 
+    /// Physical filesystem work keeps the guardian alive even if its async waiter disappears.
+    pub fn retain_artifact_liveness(&self) -> Result<OwnedFd, ErrorRecord> {
+        self.liveness
+            .lock()
+            .unwrap()
+            .as_ref()
+            .ok_or_else(|| {
+                ErrorRecord::new(ErrorCode::TargetClosed, "download", "browser is closing")
+            })?
+            .try_clone()
+            .map(OwnedFd::from)
+            .map_err(launch_error)
+    }
+
     /// All callers share cleanup completion; abandoning a wait cannot kill its independent owner.
     pub async fn close(&self) -> Result<(), ErrorRecord> {
         let mut completion = {
@@ -165,7 +190,9 @@ impl Chromium {
                 let child = self.child.lock().unwrap().take();
                 let liveness = self.liveness.lock().unwrap().take();
                 let connection = self.connection.clone();
+                let artifact_jobs = self.artifact_jobs.clone();
                 tokio::spawn(async move {
+                    let _artifacts = artifact_jobs.write().await;
                     let _ = timeout(
                         Duration::from_secs(1),
                         connection.call("Browser.close", json!({}), None),
@@ -215,10 +242,13 @@ impl Chromium {
 impl Drop for Chromium {
     fn drop(&mut self) {
         self.connection.close();
-        self.liveness.get_mut().unwrap().take();
+        let liveness = self.liveness.get_mut().unwrap().take();
+        let artifacts = self.artifact_jobs.clone();
         // The guardian must outlive this value long enough to kill Chromium and remove its profile.
         if let Some(mut child) = self.child.get_mut().unwrap().take() {
             tokio::spawn(async move {
+                let _artifacts = artifacts.write().await;
+                drop(liveness);
                 let _ = child.wait().await;
             });
         }
@@ -234,6 +264,50 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    async fn physical_artifact_lease_survives_async_waiter_abort() {
+        use tokio::io::AsyncReadExt;
+        let (liveness, peer) = StandardUnixStream::pair().unwrap();
+        peer.set_nonblocking(true).unwrap();
+        let mut peer = UnixStream::from_std(peer).unwrap();
+        let browser = Chromium {
+            connection: Connection::new(tokio::io::empty(), tokio::io::sink()),
+            version: String::new(),
+            headless: true,
+            artifacts_directory: PathBuf::new(),
+            artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
+            child: Mutex::new(None),
+            process_group: Pid::from_raw(0),
+            liveness: Mutex::new(Some(liveness)),
+            shutdown: Mutex::new(None),
+        };
+        let artifacts = browser.artifact_jobs.clone().read_owned().await;
+        let liveness = browser.retain_artifact_liveness().unwrap();
+        let (release, completion) = std::sync::mpsc::channel();
+        let physical = tokio::task::spawn_blocking(move || {
+            let _artifacts = artifacts;
+            let _liveness = liveness;
+            let _ = completion.recv();
+        });
+        let waiter = tokio::spawn(async move { physical.await.unwrap() });
+        waiter.abort();
+        drop(browser);
+        let mut byte = [0];
+        assert!(
+            timeout(Duration::from_millis(20), peer.read(&mut byte))
+                .await
+                .is_err()
+        );
+        release.send(()).unwrap();
+        assert_eq!(
+            timeout(Duration::from_secs(1), peer.read(&mut byte))
+                .await
+                .unwrap()
+                .unwrap(),
+            0
+        );
+    }
+
+    #[tokio::test]
     async fn guardian_cleanup_survives_cancelled_waiters_and_the_previous_kill_budget() {
         let child = Command::new("sleep")
             .arg("2.1")
@@ -246,6 +320,8 @@ mod tests {
             connection: Connection::new(tokio::io::empty(), tokio::io::sink()),
             version: String::new(),
             headless: true,
+            artifacts_directory: PathBuf::new(),
+            artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
             child: Mutex::new(Some(child)),
             process_group,
             liveness: Mutex::new(Some(liveness)),

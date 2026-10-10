@@ -44,6 +44,12 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
     let profile = tempfile::Builder::new()
         .prefix("flashwright-chromium-")
         .tempdir()?;
+    let artifacts = profile.path().join("flashwright-artifacts");
+    std::fs::create_dir(&artifacts)?;
+    crate::guardian_metadata::write_directory(
+        &mut File::from(driver_liveness.try_clone()?),
+        &artifacts,
+    )?;
     let mut command = Command::new(executable);
     let mut profile_arguments = 0;
     for argument in &arguments[1..] {
@@ -119,6 +125,7 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         });
     }
     drop(lost_parent);
+    let mut browser_exited = false;
     loop {
         // Do not reap the browser before signalling its group: its unreaped PID protects ownership.
         match events.recv_timeout(Duration::from_millis(50)) {
@@ -134,15 +141,19 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
                 if node_pipe && getppid() == parent {
                     let _ = kill(parent, Signal::SIGKILL);
                 }
-                crate::process_group::terminate(browser_group)?;
-                let _ = browser.wait();
+                if !browser_exited {
+                    crate::process_group::terminate(browser_group)?;
+                    let _ = browser.wait();
+                }
                 break;
             }
             Err(mpsc::RecvTimeoutError::Timeout) => {
-                if child_exited_without_reaping(browser_group)? {
+                if !browser_exited && child_exited_without_reaping(browser_group)? {
                     crate::process_group::terminate(browser_group)?;
                     let _ = browser.wait();
-                    break;
+                    // A live driver may still own file I/O after the browser exits.
+                    // Its liveness lease ends only after those jobs drain, or it dies.
+                    browser_exited = true;
                 }
             }
             Err(mpsc::RecvTimeoutError::Disconnected) => break,
