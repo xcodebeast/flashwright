@@ -147,6 +147,7 @@ const commands = [
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-harness.mjs', './tools/test-protocol-profile.mjs', './tools/test-attachments.mjs', './tools/test-input-attachments.mjs'],
   ['python3', '-m', 'unittest', 'discover', '-s', 'tools', '-p', 'test_*.py', '-v'],
   [process.execPath, 'tools/run-library-smoke.mjs'],
+  [process.execPath, 'tools/run-concurrent-launch-tests.mjs', join(destination, 'concurrent-launch')],
   [process.execPath, 'tools/run-lifecycle-tests.mjs'],
   [process.execPath, 'tools/run-navigation-tests.mjs'],
   [process.execPath, 'tools/run-network-header-tests.mjs'],

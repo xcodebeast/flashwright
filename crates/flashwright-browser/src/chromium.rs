@@ -50,6 +50,11 @@ fn launch_arguments(headless: bool) -> &'static [String] {
 
 type ShutdownCompletion = watch::Receiver<Option<Result<(), ErrorRecord>>>;
 
+// macOS creates pipes/socket pairs and sets CLOEXEC in separate system calls. Another
+// launch must not fork in that window and inherit a launch-status or liveness writer.
+#[cfg(target_os = "macos")]
+static DESCRIPTOR_INHERITANCE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
 pub struct Chromium {
     pub connection: Connection,
     pub version: String,
@@ -75,6 +80,8 @@ impl Chromium {
                 "executablePath must name an existing Chromium executable",
             ));
         }
+        #[cfg(target_os = "macos")]
+        let descriptor_inheritance_guard = DESCRIPTOR_INHERITANCE.lock().await;
         let (liveness, guardian_liveness) = StandardUnixStream::pair().map_err(launch_error)?;
         let metadata = liveness.try_clone().map_err(launch_error)?;
         metadata.set_nonblocking(true).map_err(launch_error)?;
@@ -124,6 +131,8 @@ impl Chromium {
         command.kill_on_drop(false);
         let child = command.spawn().map_err(launch_error)?;
         drop(command);
+        #[cfg(target_os = "macos")]
+        drop(descriptor_inheritance_guard);
         let process_group =
             Pid::from_raw(child.id().expect("new child has a process identifier") as i32);
         let mut browser = Self {
