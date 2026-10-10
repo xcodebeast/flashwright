@@ -6,13 +6,14 @@
   "license": "MIT",
   "licenseFile": "hyper/LICENSE",
   "patch": "hyper-original-response-metadata.patch",
-  "patchSha256": "209d9e362f2043282052d553708cf70c1d427838e86a34527641b24eba7e54f5",
+  "patchSha256": "f2c5deb43f7f2328a987d41ea9418ad9e025610191415ad9da1c4c912e404f7b",
   "changes": [
     "Add opt-in original-response-metadata feature and OriginalResponseHeaders extension.",
     "Copy only the parsed initial HTTP/1 response header block, retaining original field order and casing with existing value normalization.",
     "Reject blocks above 256 KiB or more than 1024 fields before the extension allocation. No HTTP framing, socket, server or HTTP/2 changes.",
     "Expose original validated reason-phrase bytes from the retained header block, preserving Latin-1 bytes that httparse intentionally omits from its string view. No additional wire copy or parser acceptance change.",
-    "Add opt-in connection-custody feature retaining an opaque original transport allowance as the last Incoming field until body drop, including after EOF. Consumers retain Incoming while consuming the response head or dependent frames."
+    "Add opt-in connection-custody feature retaining an opaque original transport allowance as the last Incoming field until body drop, including after EOF. Consumers retain Incoming while consuming the response head or dependent frames.",
+    "Retain raw HTTP/1 Trailer header values and defer matching until actual trailers arrive; sort only actual trailer names and compare declared tokens with streamed ASCII folding without allocating declared HeaderNames. Preserve client/server wire filtering. Account for the optional custody Arc in the private Incoming size regression."
   ],
   "files": [
     {
@@ -41,7 +42,7 @@
     },
     {
       "path": "hyper/src/body/incoming.rs",
-      "sha256": "32af6b9555f7fb6732bc902015b11c573b5a0f3fcf390bf5b6dbc3c06a8c6f55"
+      "sha256": "b9e442ecec354901476d779022d14374dc81dca1b92c95e61c081d79ab3eb382"
     },
     {
       "path": "hyper/src/body/length.rs",
@@ -201,7 +202,7 @@
     },
     {
       "path": "hyper/src/proto/h1/encode.rs",
-      "sha256": "b9b09f703b81d72732ca59103276bb6be0d8311e512e5d173c333f41a64f75f5"
+      "sha256": "84326f75045c6ca28ee282015c5c7a82e38a1bf13d84f4cfdf4e503ca2a49a8f"
     },
     {
       "path": "hyper/src/proto/h1/io.rs",
@@ -213,7 +214,7 @@
     },
     {
       "path": "hyper/src/proto/h1/role.rs",
-      "sha256": "fc7e6c7de111937282100e0baa5beb8af3b2b8d5f8d0fb86288db0c91eb98d84"
+      "sha256": "6161c1b13b065150d0abeddef43d8614a31d10199793211d3045c57482787ed1"
     },
     {
       "path": "hyper/src/proto/h2/client.rs",

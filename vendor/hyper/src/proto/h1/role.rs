@@ -669,7 +669,7 @@ impl Server {
         };
 
         let mut encoder = Encoder::length(0);
-        let mut allowed_trailer_fields: Option<Vec<HeaderName>> = None;
+        let mut allowed_trailer_fields: Option<Vec<HeaderValue>> = None;
         let mut wrote_date = false;
         let mut cur_name = None;
         let mut is_name_written = false;
@@ -877,24 +877,12 @@ impl Server {
                         extend(dst, value.as_bytes());
                     }
 
-                    // Parse the Trailer header value into HeaderNames.
-                    // The value may contain comma-separated names.
-                    // HeaderName normalizes to lowercase for case-insensitive matching.
-                    if let Ok(value_str) = value.to_str() {
-                        let names: Vec<HeaderName> = value_str
-                            .split(',')
-                            .filter_map(|s| HeaderName::from_bytes(s.trim().as_bytes()).ok())
-                            .collect();
-
-                        match &mut allowed_trailer_fields {
-                            Some(fields) => {
-                                fields.extend(names);
-                            }
-                            None => {
-                                allowed_trailer_fields = Some(names);
-                            }
-                        }
-                    }
+                    // Keep the original value until actual trailers arrive. Parsing
+                    // every declared name here amplifies repeated comma tokens even
+                    // when the body never produces a trailer frame.
+                    allowed_trailer_fields
+                        .get_or_insert_with(Vec::new)
+                        .push(value);
 
                     continue 'headers;
                 }
@@ -984,7 +972,7 @@ impl Server {
 
         if encoder.is_chunked() {
             if let Some(allowed_trailer_fields) = allowed_trailer_fields {
-                encoder = encoder.into_chunked_with_trailing_fields(allowed_trailer_fields);
+                encoder = encoder.into_chunked_with_trailer_values(allowed_trailer_fields);
             }
         }
 
@@ -1436,19 +1424,13 @@ impl Client {
 
         let encoder = encoder.map(|enc| {
             if enc.is_chunked() {
-                // Parse Trailer header values into HeaderNames.
-                // Each Trailer header value may contain comma-separated names.
-                // HeaderName normalizes to lowercase, enabling case-insensitive matching.
-                let allowed_trailer_fields: Vec<HeaderName> = headers
-                    .get_all(header::TRAILER)
-                    .iter()
-                    .filter_map(|hv| hv.to_str().ok())
-                    .flat_map(|s| s.split(','))
-                    .filter_map(|s| HeaderName::from_bytes(s.trim().as_bytes()).ok())
-                    .collect();
+                // Preserve values without materializing each comma-separated name.
+                // Matching is deferred until an actual trailer frame is encoded.
+                let allowed_trailer_fields: Vec<HeaderValue> =
+                    headers.get_all(header::TRAILER).iter().cloned().collect();
 
                 if !allowed_trailer_fields.is_empty() {
-                    return enc.into_chunked_with_trailing_fields(allowed_trailer_fields);
+                    return enc.into_chunked_with_trailer_values(allowed_trailer_fields);
                 }
             }
 
@@ -1699,6 +1681,23 @@ mod tests {
     use bytes::BytesMut;
 
     use super::*;
+
+    #[cfg(feature = "client")]
+    #[test]
+    fn known_request_body_retains_raw_trailer_values() {
+        let declaration = HeaderValue::from_str(&"a,".repeat(524_288)).unwrap();
+        let mut head = RequestHead::default();
+        head.headers.insert(
+            header::TRANSFER_ENCODING,
+            HeaderValue::from_static("chunked"),
+        );
+        head.headers.insert(header::TRAILER, declaration.clone());
+        let encoder = Client::set_length(&mut head, Some(BodyLength::Known(1)));
+        assert_eq!(
+            encoder,
+            Encoder::chunked().into_chunked_with_trailer_values(vec![declaration])
+        );
+    }
 
     #[cfg(feature = "server")]
     #[test]

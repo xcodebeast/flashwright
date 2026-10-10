@@ -500,6 +500,10 @@ mod tests {
 
         let body_size = mem::size_of::<Incoming>();
         let body_expected_size = mem::size_of::<u64>() * 5;
+        // The opt-in custody owner deliberately adds one optional fat Arc.
+        #[cfg(feature = "connection-custody")]
+        let body_expected_size = body_expected_size
+            + mem::size_of::<Option<std::sync::Arc<dyn std::fmt::Debug + Send + Sync>>>();
         assert!(
             body_size <= body_expected_size,
             "Body size = {} <= {}",
