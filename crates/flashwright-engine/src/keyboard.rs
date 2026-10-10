@@ -493,7 +493,7 @@ impl Engine {
                     "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.prepareKeyboard(request, deadline); }",
                     "arguments": [{ "value": selector.request }, { "value": operation.renderer_deadline() }],
                     "returnByValue": true, "awaitPromise": true, "userGesture": true,
-                }), Some(&page.session_identifier))?;
+                }), Some(&realm.context.session_identifier))?;
                 match operation
                     .wait(page.state.while_alive(method, command.response()))
                     .await

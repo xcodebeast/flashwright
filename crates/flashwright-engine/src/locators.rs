@@ -321,7 +321,7 @@ impl Engine {
                 browser.connection.call(
                     "Page.createIsolatedWorld",
                     json!({ "frameId": frame_identifier, "worldName": LOCATOR_WORLD_NAME }),
-                    Some(&page.session_identifier),
+                    Some(&main_context.session_identifier),
                 ),
             ))
             .await?;
@@ -334,7 +334,7 @@ impl Engine {
             .lock()
             .unwrap()
             .execution_contexts
-            .get(&(page.session_identifier.as_str().into(), context_identifier))
+            .get(&(main_context.session_identifier.clone(), context_identifier))
             .filter(|context| context.frame_identifier == frame_identifier)
             .cloned()
             .ok_or_else(evaluation::context_destroyed)?;
@@ -351,7 +351,7 @@ impl Engine {
             self.condition_instrumentation,
         );
         let initialized = operation.wait(page.state.while_alive(method, browser.connection.call(
-            "Runtime.evaluate", json!({ "expression": expression, "uniqueContextId": realm.context.unique_identifier, "returnByValue": true }), Some(&page.session_identifier),
+            "Runtime.evaluate", json!({ "expression": expression, "uniqueContextId": realm.context.unique_identifier, "returnByValue": true }), Some(&realm.context.session_identifier),
         ))).await?;
         check_exception(&initialized, method)?;
         if !super::element_resolution::same_document(page, &realm, &realm.main_context) {
@@ -379,7 +379,7 @@ impl Engine {
             "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.run(request, deadline); }",
             "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }], "returnByValue": true, "awaitPromise": true,
             "userGesture": true,
-        }), Some(&page.session_identifier))?;
+        }), Some(&realm.context.session_identifier))?;
         let result = operation
             .wait(page.state.while_alive(method, command.response()))
             .await;

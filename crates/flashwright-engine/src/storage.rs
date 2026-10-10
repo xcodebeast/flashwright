@@ -225,7 +225,7 @@ impl Engine {
                     "Runtime.evaluate", json!({
                         "expression": format!("(() => {{ const exports = {{}}; {STORAGE_RUNTIME}; return {invocation}; }})()"),
                         "uniqueContextId": execution_context.unique_identifier, "returnByValue": true,
-                    }), Some(&page.session_identifier),
+                    }), Some(&execution_context.session_identifier),
                 )).await?;
                 crate::locators::check_exception(&result, method)?;
                 let value = &result["result"]["value"];

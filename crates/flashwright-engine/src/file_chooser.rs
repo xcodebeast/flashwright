@@ -286,12 +286,12 @@ impl Engine {
             uses_object_group: true,
         };
         let result = async {
-            let mut command = browser.connection.start_raw_command("DOM.resolveNode", json!({"backendNodeId": pending.backend_node, "executionContextId": realm.context.identifier, "objectGroup": allocation.group}), Some(&page.session_identifier))?;
+            let mut command = browser.connection.start_raw_command("DOM.resolveNode", json!({"backendNodeId": pending.backend_node, "executionContextId": realm.context.identifier, "objectGroup": allocation.group}), Some(&realm.context.session_identifier))?;
             let response = allocation.wait(&mut command, false).await?;
             let resolved: ResolvedNode = serde_json::from_str(response.get()).map_err(|error| invalid(METHOD, &error.to_string()))?;
             if resolved.object.subtype.as_deref() != Some("node") || resolved.object.object_id.is_none() { return Err(evaluation::context_destroyed()); }
             if !same_document(page, &realm, &pending.context) { return Err(evaluation::context_destroyed()); }
-            let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({"objectId": resolved.object.object_id, "functionDeclaration": "function() { return !!this.multiple; }", "returnByValue": true}), Some(&page.session_identifier))?;
+            let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({"objectId": resolved.object.object_id, "functionDeclaration": "function() { return !!this.multiple; }", "returnByValue": true}), Some(&realm.context.session_identifier))?;
             let response = allocation.wait(&mut command, false).await?;
             check_exception(&response, METHOD)?;
             let multiple = response["result"]["value"].as_bool().ok_or_else(|| invalid(METHOD, "file input omitted its multiplicity"))?;

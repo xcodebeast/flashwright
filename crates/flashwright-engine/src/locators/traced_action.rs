@@ -36,7 +36,7 @@ impl Engine {
                 "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveActionElement(request, deadline); }",
                 "arguments": [{"value":request}, {"value":operation.renderer_deadline()}],
                 "objectGroup": allocation.group, "returnByValue": false, "awaitPromise": true,
-            }), Some(&page.session_identifier))?;
+            }), Some(&realm.context.session_identifier))?;
             let response = allocation.wait(&mut command, true).await?;
             let element = allocation.evaluation_value(&response).await?;
             if element.primitive(method)? == Some(json!({"kind":"boolean","value":false})) {
@@ -58,7 +58,7 @@ impl Engine {
                 "functionDeclaration":"function(element, request, deadline) { return globalThis.__flashwrightLocatorRuntime.runCapturedAction(element, request, deadline); }",
                 "arguments":[{"objectId":object_identifier},{"value":request},{"value":operation.renderer_deadline()}],
                 "objectGroup":allocation.group,"returnByValue":true,"awaitPromise":true,"userGesture":true,
-            }), Some(&page.session_identifier))?;
+            }), Some(&realm.context.session_identifier))?;
             let result = allocation.wait(&mut command, true).await.map_err(|mut error| {
                 if !context_was_not_found(&error) && !command.prevent_dispatch() {
                     error.input_delivery = InputDelivery::Uncertain;

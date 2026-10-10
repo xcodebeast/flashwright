@@ -73,7 +73,7 @@ impl Engine {
                     "functionDeclaration": "function(request, structured) { return globalThis.__flashwrightLocatorRuntime.prepareFrameSelector(request, structured); }",
                     "arguments": [{"value":selector.request},{"value":selector.structured_request}],
                     "returnByValue": true, "awaitPromise": true,
-                }), Some(&page.session_identifier),
+                }), Some(&realm.context.session_identifier),
             ))).await?;
             check_exception(&response, method)?;
             let result = &response["result"]["value"];
@@ -172,13 +172,13 @@ impl Engine {
                 "functionDeclaration":"function(selector, strict, deadline) { return globalThis.__flashwrightLocatorRuntime.resolveFrameElement(selector, strict, deadline); }",
                 "arguments":[{"value":selector},{"value":strict},{"value":operation.renderer_deadline()}],
                 "objectGroup":allocation.group,"returnByValue":false,
-            }), Some(&page.session_identifier))?;
+            }), Some(&realm.context.session_identifier))?;
             let response = allocation.wait(&mut command, true).await?;
             let element = allocation.evaluation_value(&response).await?;
             if element.primitive(method)? == Some(json!({"kind":"null"})) { return Ok(None); }
             if element.subtype.as_deref() != Some("node") { return Err(invalid(method, "frame selector omitted its DOM node")); }
             let object = element.object_id.ok_or_else(|| invalid(method, "frame selector omitted its object identity"))?;
-            let mut describe = browser.connection.start_command("DOM.describeNode", json!({"objectId":object}), Some(&page.session_identifier))?;
+            let mut describe = browser.connection.start_command("DOM.describeNode", json!({"objectId":object}), Some(&realm.context.session_identifier))?;
             let description = allocation.wait(&mut describe, false).await?;
             if !same_document(page, realm, &realm.context) { return Err(evaluation::context_destroyed()); }
             let Some(child) = description["node"]["frameId"].as_str() else { return Ok(None); };
