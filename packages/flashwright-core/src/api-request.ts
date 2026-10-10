@@ -11,6 +11,9 @@ import { fileMimeType } from './file-mime-types.js';
 import { writeAtomicFile } from './files.js';
 import { decodeStorageState, prepareCookies, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 import { validateBoolean, validateOptions } from './validation.js';
+import { Tracing, recordAPITraceAttempt, recordAPITraceFailure } from './tracing.js';
+import { instrumentTraceMethods, traceAPICommandMetadata } from './trace-hooks.js';
+import { beginRunnerRequestCreation, publishRunnerRequestContext, beforeRunnerRequestDispose, notifyRunnerRequestClosed, assertRunnerRequestDisposeAllowed, type RequestCreationClaim } from './runner-request-lifecycle.js';
 
 const maximumBodyBytes = 32 * 1024 * 1024;
 const maximumMetadataBytes = 1024 * 1024;
@@ -599,20 +602,26 @@ function responseMetadata(value: unknown, owner: string, client: EngineClient): 
   return response as unknown as ResponseMetadata;
 }
 
-class UnsupportedRequestTracing {
-  async start(_options?: object): Promise<never> { return this.unsupported('start'); }
-  async startChunk(_options?: object): Promise<never> { return this.unsupported('startChunk'); }
-  async stopChunk(_options?: object): Promise<never> { return this.unsupported('stopChunk'); }
-  async stop(_options?: object): Promise<never> { return this.unsupported('stop'); }
-  async group(_name: string, _options?: object): Promise<never> { return this.unsupported('group'); }
-  async groupEnd(): Promise<never> { return this.unsupported('groupEnd'); }
-  private unsupported(method: string): never { throw failure('UnsupportedFeatureError', `APIRequestContext.tracing.${method}`, 'standalone request tracing is not implemented'); }
+const requestTraceOwners = new WeakMap<APIRequestContext, Tracing>();
+const requestTraceClients = new WeakMap<APIRequestContext, EngineClient>();
+
+/** Private runner boundary; APIRequestContext has no public tracing property. */
+export function runnerRequestTraceOwner(context: APIRequestContext): object {
+  let tracing = requestTraceOwners.get(context);
+  if (!tracing) {
+    const client = requestTraceClients.get(context);
+    if (!client) throw failure('ProtocolError', 'runner.request', 'unknown API request trace owner');
+    context.assertLive('runner.request');
+    tracing = new Tracing(client, context.identifier, null, 'api');
+    requestTraceOwners.set(context, tracing);
+  }
+  return tracing;
 }
 
 /** One native standalone cookie jar and response owner, retaining its implicit engine exactly once. */
 export class APIRequestContext {
-  readonly tracing = new UnsupportedRequestTracing();
   private closed = false;
+  private locallyClosed = false;
   private closeReason: string | undefined;
   private released = false;
   private unsubscribe: (() => void) | undefined;
@@ -620,7 +629,11 @@ export class APIRequestContext {
   private readonly responses = new Set<APIResponse>();
   private readonly preparationAborted = new AbortController();
   constructor(private readonly client: EngineClient, readonly identifier: string, private readonly defaults: ContextDefaults) {
+    requestTraceClients.set(this, client);
     this.unsubscribe = client.subscribeObject(identifier, event => {
+      const tracing = requestTraceOwners.get(this);
+      if (tracing && event.event === 'apiRequest.traceAttempt') recordAPITraceAttempt(tracing, event.parameters);
+      if (tracing && event.event === 'apiRequest.traceFailure') recordAPITraceFailure(tracing, event.parameters);
       if (event.event === 'transportclosed') {
         this.closeLocally();
         void this.release().catch(() => {});
@@ -631,12 +644,16 @@ export class APIRequestContext {
     if (this.closed || this.client.isClosed()) throw failure('TargetClosedError', method, this.closeReason ?? 'API request context has been disposed');
   }
   private closeLocally(): void {
+    if (this.locallyClosed) return;
+    this.locallyClosed = true;
+    requestTraceOwners.get(this)?.ownerClosed();
     this.closed = true;
     this.preparationAborted.abort(failure('TargetClosedError', 'APIRequestContext.fetch', this.closeReason ?? 'API request context has been disposed'));
     for (const response of this.responses) response.ownerClosed();
     this.responses.clear();
     this.unsubscribe?.();
     this.unsubscribe = undefined;
+    notifyRunnerRequestClosed(this);
   }
   private async release(): Promise<void> {
     if (this.released) return;
@@ -655,6 +672,7 @@ export class APIRequestContext {
   async head(url: string, options: APIRequestOptions = {}): Promise<APIResponse> { return this.performFetch(url, options, 'HEAD'); }
   private async performFetch(urlOrRequest: string | object, options: APIRequestOptions, forcedMethod: string | undefined): Promise<APIResponse> {
     const started = performance.now();
+    const trace = traceAPICommandMetadata();
     const method = `APIRequestContext.${forcedMethod?.toLowerCase() ?? 'fetch'}`;
     this.assertLive(method);
     validateOptions(method, options, ['method', 'headers', 'params', 'data', 'form', 'multipart', 'timeout', 'maxRedirects', 'maxRetries', 'failOnStatusCode', 'ignoreHTTPSErrors']);
@@ -674,7 +692,7 @@ export class APIRequestContext {
       const values = headers(options.headers, `${method}.headers`);
       const body = await preparation.wait(prepareBody(options, values, this.defaults.hasContentType, deadline, method, preparation), deadline);
       this.assertLive(method);
-      const parameters = { context: this.identifier, url, method: verb, headers: values, maxRedirects, maxRetries, failOnStatusCode: options.failOnStatusCode ?? this.defaults.failOnStatusCode, hasBody: body !== undefined, ...(options.ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors: options.ignoreHTTPSErrors }) };
+      const parameters = { context: this.identifier, url, method: verb, headers: values, maxRedirects, maxRetries, failOnStatusCode: options.failOnStatusCode ?? this.defaults.failOnStatusCode, hasBody: body !== undefined, ...(options.ignoreHTTPSErrors === undefined ? {} : { ignoreHTTPSErrors: options.ignoreHTTPSErrors }), ...(trace?.context === this.identifier && trace.call ? { trace: { generation: trace.generation, call: trace.call } } : {}) };
       const remaining = remainingTime(deadline, method);
       const result = body === undefined ? await this.client.request('apiRequest.fetch', parameters, remaining) : await this.client.requestWithInput('apiRequest.fetch', parameters, [body], remaining);
       const metadata = responseMetadata(result, this.identifier, this.client);
@@ -701,20 +719,23 @@ export class APIRequestContext {
     return state;
   }
   async dispose(options: { reason?: string } = {}): Promise<void> {
+    assertRunnerRequestDisposeAllowed();
     validateOptions('APIRequestContext.dispose', options, ['reason']);
     if (options.reason !== undefined) requireString(options.reason, 'APIRequestContext.dispose.reason');
     if (this.disposal) return this.disposal;
     if (this.closed) return this.release();
     this.closeReason = options.reason;
-    this.closeLocally();
+    this.closed = true;
+    this.preparationAborted.abort(failure('TargetClosedError', 'APIRequestContext.fetch', this.closeReason ?? 'API request context has been disposed'));
     this.disposal = (async () => {
+      await beforeRunnerRequestDispose(this);
       try { await this.client.request('apiRequest.dispose', { context: this.identifier, ...(options.reason === undefined ? {} : { reason: options.reason }) }); }
       catch (error) {
         if (!(error instanceof Error && ['TargetClosedError', 'BrowserDisconnectedError'].includes(error.name))) {
           this.client.rejectProtocol(error);
           throw error;
         }
-      } finally { await this.release(); }
+      } finally { this.closeLocally(); await this.release(); }
     })();
     return this.disposal;
   }
@@ -775,6 +796,12 @@ export class APIResponse {
 
 export class APIRequest {
   async newContext(options: APIRequestContextOptions = {}): Promise<APIRequestContext> {
+    const claim = beginRunnerRequestCreation();
+    try { return await this.createContext(options, claim); }
+    finally { claim.complete(); }
+  }
+
+  private async createContext(options: APIRequestContextOptions, claim: RequestCreationClaim): Promise<APIRequestContext> {
     const started = performance.now();
     const method = 'request.newContext';
     validateOptions(method, options, ['baseURL', 'extraHTTPHeaders', 'userAgent', 'timeout', 'ignoreHTTPSErrors', 'httpCredentials', 'storageState', 'maxRedirects', 'failOnStatusCode', 'proxy', 'clientCertificates']);
@@ -818,9 +845,25 @@ export class APIRequest {
           client.rejectProtocol(error);
           throw error;
         }
-        return new APIRequestContext(client, result.identifier, { baseURL: options.baseURL, timeout, maxRedirects, failOnStatusCode: options.failOnStatusCode ?? false, hasContentType: extraHTTPHeaders.some(header => header.name.toLowerCase() === 'content-type') });
+        const context = new APIRequestContext(client, result.identifier, { baseURL: options.baseURL, timeout, maxRedirects, failOnStatusCode: options.failOnStatusCode ?? false, hasContentType: extraHTTPHeaders.some(header => header.name.toLowerCase() === 'content-type') });
+        await publishRunnerRequestContext(context, claim);
+        return context;
       } catch (error) { await client.release(); throw error; }
     } finally { preparation.release(); }
   }
 }
 export const request = new APIRequest();
+
+instrumentTraceMethods(APIRequestContext.prototype, 'APIRequestContext', context => {
+  const tracing = requestTraceOwners.get(context);
+  return tracing ? { tracing } : undefined;
+}, {
+  fetch: { parameters: ['urlOrRequest', 'options'], apiName: 'request.fetch' },
+  get: { method: 'fetch', parameters: ['url', 'options'], apiName: 'request.get' },
+  post: { method: 'fetch', parameters: ['url', 'options'], apiName: 'request.post' },
+  put: { method: 'fetch', parameters: ['url', 'options'], apiName: 'request.put' },
+  patch: { method: 'fetch', parameters: ['url', 'options'], apiName: 'request.patch' },
+  delete: { method: 'fetch', parameters: ['url', 'options'], apiName: 'request.delete' },
+  head: { method: 'fetch', parameters: ['url', 'options'], apiName: 'request.head' },
+  storageState: { parameters: ['options'] },
+});

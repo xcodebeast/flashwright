@@ -17,6 +17,7 @@ mod registry;
 mod resolver;
 mod response_decoder;
 mod tls;
+mod trace;
 mod transport_error;
 
 pub(crate) use registry::RequestRegistry;

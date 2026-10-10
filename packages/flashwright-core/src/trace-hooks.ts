@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Tracing, TraceCall } from './tracing.js';
 
 export interface TraceCallMetadata { readonly context: string; readonly generation: string; readonly recording?: string; readonly call?: string }
-interface CallScope { internal: boolean; traceCall?: TraceCallMetadata }
+interface CallScope { internal: boolean; traceCall?: TraceCallMetadata; apiTraceCall?: TraceCallMetadata }
 export interface TraceOwner { tracing: Tracing; pageId?: string; selector?: string }
 export type TraceCaptureMode = 'default' | 'metadata-only';
 export interface TraceMethod { className?: string; method?: string | ((arguments_: readonly unknown[]) => string); apiName?: string; parameters?: readonly string[]; capture?: TraceCaptureMode | ((arguments_: readonly unknown[]) => TraceCaptureMode); completion?: 'independent' }
@@ -19,6 +19,7 @@ export function runTraceInternal<Value>(callback: () => Value): Value { return a
 export function runTraceUserCallback<Value>(callback: () => Value): Value { return activeChunks || scope.getStore() ? scope.exit(callback) : callback(); }
 /** Capture at request invocation so a later chunk cannot acquire an old call's work. */
 export function traceCommandMetadata(): TraceCallMetadata | undefined { return activeChunks ? scope.getStore()?.traceCall : undefined; }
+export function traceAPICommandMetadata(): TraceCallMetadata | undefined { return activeChunks ? scope.getStore()?.apiTraceCall : undefined; }
 
 /** Inventory only public operations; native helpers and nested public delegation share one call. */
 export function instrumentTraceMethods<Owner extends object>(prototype: Owner, className: string, ownerFor: (owner: Owner) => TraceOwner | undefined, methods: Partial<Record<Exclude<keyof Owner, keyof Object>, TraceMethod>>, publicClassName = className): void {
@@ -35,7 +36,7 @@ export function instrumentTraceMethods<Owner extends object>(prototype: Owner, c
       const call: TraceCall | undefined = owner.tracing.begin(configuration.className ?? className, method, configuration.apiName ?? `${publicClassName === 'BrowserContext' ? 'browserContext' : publicClassName.toLowerCase()}.${name}`, owner, configuration.parameters ?? [], arguments_, capture);
       if (!call) return original.apply(this, arguments_);
       let result: unknown;
-      try { result = scope.run({ internal: true, ...(call.nativeTrace ? { traceCall: call.nativeTrace } : {}) }, () => original.apply(this, arguments_)); }
+      try { result = scope.run({ internal: true, ...(call.nativeTrace ? className === 'APIRequestContext' ? { apiTraceCall: call.nativeTrace } : { traceCall: call.nativeTrace } : {}) }, () => original.apply(this, arguments_)); }
       catch (error) { owner.tracing.completeSynchronously(call, error); throw error; }
       if (configuration.completion === 'independent') return Promise.resolve(result).then(
         value => { owner.tracing.completeIndependently(call, value, undefined, false); return value; },
