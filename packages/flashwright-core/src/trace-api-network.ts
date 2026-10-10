@@ -31,6 +31,46 @@ function nonnegative(value: unknown, name: string): number {
   return value;
 }
 
+function responseCookie(header: string, url: URL, now: number): Record<string, unknown> | undefined {
+  const pairs = header.split(';').map(pair => pair.trim()).filter(Boolean);
+  if (!pairs.length) return undefined;
+  const firstEquals = pairs[0]!.indexOf('=');
+  const cookie: Record<string, unknown> = {
+    name: (firstEquals < 0 ? pairs[0]! : pairs[0]!.slice(0, firstEquals)).trim(),
+    value: firstEquals < 0 ? '' : pairs[0]!.slice(firstEquals + 1).trim(),
+    domain: '', path: '', httpOnly: false, secure: false, sameSite: 'Lax',
+  };
+  let expires = -1;
+  for (const pair of pairs.slice(1)) {
+    const equals = pair.indexOf('=');
+    const name = (equals < 0 ? pair : pair.slice(0, equals)).trim().toLowerCase();
+    const value = equals < 0 ? '' : pair.slice(equals + 1).trim();
+    if (name === 'expires') {
+      const parsed = Date.parse(value);
+      if (Number.isFinite(parsed)) expires = parsed <= 0 ? 0 : Math.min(parsed / 1000, 253402300799);
+    } else if (name === 'max-age') {
+      const age = Number.parseInt(value, 10);
+      if (Number.isFinite(age)) expires = age <= 0 ? 0 : Math.min(now / 1000 + age, 253402300799);
+    } else if (name === 'domain') {
+      let domain = value.toLocaleLowerCase();
+      if (domain && !domain.startsWith('.') && domain.includes('.')) domain = `.${domain}`;
+      cookie.domain = domain;
+    } else if (name === 'path') cookie.path = value;
+    else if (name === 'secure') cookie.secure = true;
+    else if (name === 'httponly') cookie.httpOnly = true;
+    else if (name === 'samesite' && ['none', 'lax', 'strict'].includes(value.toLowerCase())) cookie.sameSite = value[0]!.toUpperCase() + value.slice(1).toLowerCase();
+  }
+  if (!cookie.domain) cookie.domain = url.hostname;
+  const domain = cookie.domain as string;
+  if (domain !== url.hostname && !(domain.startsWith('.') && `.${url.hostname}`.endsWith(domain))) return undefined;
+  if (!(cookie.path as string).startsWith('/')) cookie.path = '/' + url.pathname.slice(1).split('/').slice(0, -1).join('/');
+  if (expires !== -1) {
+    const date = new Date(expires);
+    if (Number.isFinite(date.valueOf())) cookie.expires = date.toISOString();
+  }
+  return cookie;
+}
+
 /** Build the pinned viewer's API HAR shape from one original native wire attempt. */
 export function apiTraceAttempt(value: unknown): APITraceAttempt {
   if (!value || typeof value !== 'object' || Array.isArray(value)) invalid('invalid API trace attempt');
@@ -58,11 +98,17 @@ export function apiTraceAttempt(value: unknown): APITraceAttempt {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') invalid('invalid API trace URL scheme');
   const contentType = responseHeaders.find(header => header.name.toLowerCase() === 'content-type')?.value ?? 'x-unknown';
   const redirectURL = responseHeaders.find(header => header.name.toLowerCase() === 'location')?.value ?? '';
+  const requestCookies = requestHeaders.filter(header => header.name.toLowerCase() === 'cookie').flatMap(header => header.value.split(';').map(value => {
+    const equals = value.indexOf('=');
+    return { name: (equals < 0 ? value : value.slice(0, equals)).trim(), value: equals < 0 ? '' : value.slice(equals + 1).trim() };
+  }));
+  const responseCookies = responseHeaders.filter(header => header.name.toLowerCase() === 'set-cookie')
+    .flatMap(header => responseCookie(header.value, url, startedWallTime + elapsedMilliseconds) ?? []);
   const snapshot = {
     startedDateTime: new Date(startedWallTime).toISOString(), time: failed ? -1 : elapsedMilliseconds,
-    request: { method: event.method, url: url.toString(), httpVersion: 'HTTP/1.1', cookies: [], headers: requestHeaders,
+    request: { method: event.method, url: url.toString(), httpVersion: 'HTTP/1.1', cookies: requestCookies, headers: requestHeaders,
       queryString: [...url.searchParams].map(([name, value]) => ({ name, value })), headersSize: -1, bodySize: requestBodySize, postData: null },
-    response: { status: failed ? -1 : status, statusText: event.statusText, httpVersion: failed ? 'HTTP/1.1' : event.httpVersion, cookies: [], headers: responseHeaders,
+    response: { status: failed ? -1 : status, statusText: event.statusText, httpVersion: failed ? 'HTTP/1.1' : event.httpVersion, cookies: responseCookies, headers: responseHeaders,
       content: { size: failed ? -1 : responseBodySize, mimeType: contentType }, headersSize: -1, bodySize: failed ? -1 : responseBodySize, redirectURL, _transferSize: -1 },
     cache: {}, timings: { send: -1, wait: failed ? -1 : elapsedMilliseconds, receive: -1 }, _apiRequest: true,
   };

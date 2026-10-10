@@ -34,7 +34,7 @@ const server = createServer((incoming, outgoing) => {
     return;
   }
   if (incoming.url === '/redirect') {
-    outgoing.writeHead(302, { location: '/final', 'set-cookie': 'original=1; Path=/' });
+    outgoing.writeHead(302, { location: '/final', 'set-cookie': ['original=1; Path=/', 'flags=yes; HttpOnly; Secure; SameSite=None; Path=/'] });
     outgoing.end();
     return;
   }
@@ -98,6 +98,11 @@ try {
   assert.match(snapshots[1].response.content._sha1, /^[a-f0-9]{40}\.txt$/);
   assert.equal(execFileSync('unzip', ['-p', destination, `resources/${snapshots[1].response.content._sha1}`], { encoding: 'utf8' }), 'finished');
   assert.equal(snapshots[0].response.content._sha1, undefined);
+  assert.deepEqual(snapshots[0].response.cookies, [
+    { name: 'original', value: '1', domain: '127.0.0.1', path: '/', httpOnly: false, secure: false, sameSite: 'Lax' },
+    { name: 'flags', value: 'yes', domain: '127.0.0.1', path: '/', httpOnly: true, secure: true, sameSite: 'None' },
+  ]);
+  assert.deepEqual(snapshots[1].request.cookies, [{ name: 'original', value: '1' }]);
   assert.equal(snapshots[2].request.headers.some(header => header.name === 'authorization'), false);
   assert.equal(snapshots[3].request.headers.some(header => header.name === 'authorization'), true);
   assert.equal(snapshots[4].request.postData.mimeType, 'application/octet-stream');
@@ -122,6 +127,8 @@ try {
   assert.deepEqual(snapshots.map(snapshot => snapshot.response.status), referenceSnapshots.map(snapshot => snapshot.response.status));
   assert.deepEqual(snapshots.map(snapshot => new URL(snapshot.request.url).pathname), referenceSnapshots.map(snapshot => new URL(snapshot.request.url).pathname));
   assert.deepEqual(snapshots.map(snapshot => snapshot.response.httpVersion), referenceSnapshots.map(snapshot => snapshot.response.httpVersion));
+  assert.deepEqual(snapshots.map(snapshot => snapshot.request.cookies), referenceSnapshots.map(snapshot => snapshot.request.cookies));
+  assert.deepEqual(snapshots.map(snapshot => snapshot.response.cookies), referenceSnapshots.map(snapshot => snapshot.response.cookies));
   if (process.env.FLASHWRIGHT_CHECK_TRACE_VIEWER === '1') {
     viewer = await upstreamServer.startTraceViewerServer({ host: '127.0.0.1', allowedFileRoots: [directory] });
     browser = await chromium.launch({ executablePath: process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath() });
