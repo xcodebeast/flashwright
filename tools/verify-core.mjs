@@ -95,6 +95,7 @@ const commands = [
   [process.execPath, 'tools/probe-snapshot-trace-integration.mjs', join(destination, 'snapshot-public')],
   [process.execPath, 'tools/test-traced-locator-mutation.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-pointer-completion.mjs'],
+  ['python3', 'tools/watchdog.py', '--timeout', '90', '--report-directory', join(destination, 'pointer-cleanup-resources'), '--', process.execPath, 'tools/test-pointer-cleanup.mjs', join(destination, 'pointer-cleanup')],
   [process.execPath, 'tools/test-caller-locations.mjs'],
   [process.execPath, 'compatibility/m1/client-request-order.mjs'],
   [process.execPath, 'compatibility/m1/navigation-watermark.mjs'],
