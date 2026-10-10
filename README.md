@@ -96,7 +96,7 @@ Chromium's default argument lists are extracted from the pinned reference, and t
 
 ## R3 Browser baselines
 
-The [broader comparison status](docs/benchmarks.md) records the pinned Playwright, Puppeteer, Cypress and WebdriverIO contender set. Puppeteer functional admission now checks real browser outcomes and exposes input/failure differences; the broad performance and runner-suite matrix remains incomplete.
+The [broader comparison status](docs/benchmarks.md) records the pinned Playwright, Puppeteer, Cypress and WebdriverIO contender set. Puppeteer and WebdriverIO functional admission check real browser outcomes and expose launch/input/failure differences; the broad performance and runner-suite matrix remains incomplete.
 
 Install the pinned reference Chromium explicitly if it is absent. No dependency install script downloads a browser
 

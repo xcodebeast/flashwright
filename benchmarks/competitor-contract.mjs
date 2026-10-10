@@ -5,10 +5,29 @@ export function verifyPuppeteerAdmission(report, resources, baseline, competitor
   assert.equal(report.engine, 'puppeteer');
   assert.equal(report.package.name, 'puppeteer-core');
   assert.equal(report.package.version, competitors.competitors.find(competitor => competitor.id === 'puppeteer').version);
+  assert.deepEqual(report.launchArguments, launchPolicy.headless);
+  return verifyFixtureAdmission(report, resources, baseline);
+}
+
+/** Require the observed native driver policy without claiming reference-policy equivalence. */
+export function verifyWebdriverAdmission(report, resources, baseline, competitors, launchPolicy, driverPolicy) {
+  assert.equal(report.engine, 'webdriverio');
+  assert.equal(report.package.name, 'webdriverio');
+  assert.equal(report.package.version, competitors.competitors.find(competitor => competitor.id === 'webdriverio').version);
+  assert.equal(report.protocol, 'webdriver-bidi');
+  assert.equal(report.driver.version, driverPolicy.driverVersion);
+  assert.equal(report.negotiatedDriverVersion.split(' ')[0], driverPolicy.driverVersion);
+  assert.deepEqual(report.driverPolicy, driverPolicy);
+  const expectedArguments = launchPolicy.headless.filter(argument => !driverPolicy.removedReferenceSwitches.includes(argument)).map(argument => argument.startsWith('--disable-features=') ? argument.replace('=', `=${driverPolicy.additionalDisabledFeatures.join(',')},`) : argument);
+  expectedArguments.push(...driverPolicy.additionalDriverArguments);
+  assert.deepEqual([...report.launchArguments].sort(), [...new Set(expectedArguments)].sort());
+  return { ...verifyFixtureAdmission(report, resources, baseline), launchPolicyEquivalent: false, launchPolicyDifference: driverPolicy.reason };
+}
+
+function verifyFixtureAdmission(report, resources, baseline) {
   assert.deepEqual(report.configuration, baseline);
   assert.equal(report.browser.version, baseline.browserVersion);
   assert.equal(report.browserVersion, baseline.browserVersion);
-  assert.deepEqual(report.launchArguments, launchPolicy.headless);
   assert.deepEqual(report.failures, []);
   assert.deepEqual(report.isolation, { storage: null, cookies: '' });
   assert.equal(resources.schemaVersion, 2);
