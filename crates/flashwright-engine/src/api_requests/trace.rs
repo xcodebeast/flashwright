@@ -45,6 +45,7 @@ struct AttemptParameters<'value> {
     method: &'value str,
     request_headers: &'value [Header],
     request_body_size: usize,
+    request_body_present: bool,
     status: u16,
     status_text: &'value str,
     http_version: &'static str,
@@ -91,6 +92,7 @@ pub(super) struct WireAttempt<'value> {
     pub(super) method: &'value str,
     pub(super) request_headers: &'value [Header],
     pub(super) request_body_size: usize,
+    pub(super) request_body_present: bool,
     pub(super) response: &'value ResponseMetadata,
     pub(super) response_body_size: Option<usize>,
     pub(super) response_identifier: Option<&'value str>,
@@ -104,6 +106,7 @@ pub(super) struct FailedAttempt<'value> {
     pub(super) method: &'value str,
     pub(super) request_headers: &'value [Header],
     pub(super) request_body_size: usize,
+    pub(super) request_body_present: bool,
     pub(super) started_wall_time: f64,
 }
 
@@ -125,6 +128,7 @@ pub(super) async fn record_attempt(
             method: attempt.method,
             request_headers: attempt.request_headers,
             request_body_size: attempt.request_body_size,
+            request_body_present: attempt.request_body_present,
             status: attempt.response.status,
             status_text: &attempt.response.status_text,
             http_version: match attempt.response.version {
@@ -164,6 +168,7 @@ pub(super) async fn record_failed_attempt(
             method: attempt.method,
             request_headers: attempt.request_headers,
             request_body_size: attempt.request_body_size,
+            request_body_present: attempt.request_body_present,
             status: 0,
             status_text: "",
             http_version: "1.1",
@@ -372,6 +377,7 @@ mod tests {
                 method: "GET",
                 request_headers: &[],
                 request_body_size: 0,
+                request_body_present: false,
                 started_wall_time: 1.0,
             },
         )

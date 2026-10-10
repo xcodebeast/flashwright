@@ -238,6 +238,7 @@ async fn request_chain(
         response_identifier,
     } = initial_request;
     let mut redirects = 0u32;
+    let mut request_body_present = options.has_body;
     let mut redirect_headers: Option<RequestHeaders> = None;
     loop {
         operation.check()?;
@@ -303,6 +304,7 @@ async fn request_chain(
             .map(|_| engine.identifier("api-attempt"));
         let request_method = options.trace.as_ref().map(|_| method.to_string());
         let request_body_size = body.len();
+        let attempt_request_body_present = request_body_present;
         let started_wall_time = super::unix_milliseconds();
         let started = Instant::now();
         let exchange = exchange::start(
@@ -326,6 +328,7 @@ async fn request_chain(
                             method: request_method.as_deref().unwrap_or(method.as_str()),
                             request_headers: &outgoing,
                             request_body_size,
+                            request_body_present: attempt_request_body_present,
                             started_wall_time,
                         },
                     )
@@ -357,6 +360,7 @@ async fn request_chain(
                             method: request_method.as_deref().unwrap_or(method.as_str()),
                             request_headers: &outgoing,
                             request_body_size,
+                            request_body_present: attempt_request_body_present,
                             response: &exchange.metadata,
                             response_body_size: None,
                             response_identifier: None,
@@ -393,6 +397,7 @@ async fn request_chain(
                 {
                     method = Method::GET;
                     body = Bytes::new();
+                    request_body_present = false;
                     for name in [
                         "content-encoding",
                         "content-language",
@@ -426,6 +431,7 @@ async fn request_chain(
                             method: request_method.as_deref().unwrap_or(method.as_str()),
                             request_headers: &outgoing,
                             request_body_size,
+                            request_body_present: attempt_request_body_present,
                             response: &exchange.metadata,
                             response_body_size: None,
                             response_identifier: None,
@@ -459,6 +465,7 @@ async fn request_chain(
                         method: request_method.as_deref().unwrap_or(method.as_str()),
                         request_headers: &outgoing,
                         request_body_size,
+                        request_body_present: attempt_request_body_present,
                         response: &exchange.metadata,
                         response_body_size: None,
                         response_identifier: None,
@@ -491,6 +498,7 @@ async fn request_chain(
                             method: request_method.as_deref().unwrap_or(method.as_str()),
                             request_headers: &outgoing,
                             request_body_size,
+                            request_body_present: attempt_request_body_present,
                             started_wall_time,
                         },
                     )
@@ -510,6 +518,7 @@ async fn request_chain(
                     method: request_method.as_deref().unwrap_or(method.as_str()),
                     request_headers: &outgoing,
                     request_body_size,
+                    request_body_present: attempt_request_body_present,
                     response: &metadata,
                     response_body_size: Some(body.bytes.len()),
                     response_identifier: Some(response_identifier),

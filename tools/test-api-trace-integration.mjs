@@ -44,6 +44,12 @@ const server = createServer((incoming, outgoing) => {
     outgoing.end();
     return;
   }
+  if (incoming.url === '/post-get-redirect') {
+    outgoing.writeHead(302, { location: '/submit' });
+    incoming.resume();
+    outgoing.end();
+    return;
+  }
   if (incoming.url === '/auth' && !incoming.headers.authorization) {
     outgoing.writeHead(401, { 'www-authenticate': 'Basic realm="trace"' });
     outgoing.end();
@@ -82,6 +88,10 @@ try {
   assert.equal(redirectedPost.status(), 200);
   const formResponse = await context.post(`${origin}/submit`, { form: { a: 'one', b: 'two' } });
   assert.equal(formResponse.status(), 200);
+  const emptyPosted = await context.post(`${origin}/submit`, { data: Buffer.alloc(0) });
+  assert.equal(emptyPosted.status(), 200);
+  const emptyRedirectedPost = await context.post(`${origin}/post-get-redirect`, { data: Buffer.alloc(0) });
+  assert.equal(emptyRedirectedPost.status(), 200);
   archive = await recording.chunk.takeArchive();
   const destination = join(directory, 'api-trace.zip');
   await archive.export(destination, new AbortController().signal);
@@ -90,9 +100,9 @@ try {
   assert.equal(contextOptions.browserName, '');
   assert.deepEqual(contextOptions.options, {});
   const snapshots = execFileSync('unzip', ['-p', destination, 'trace.network'], { encoding: 'utf8' }).trim().split('\n').map(line => JSON.parse(line).snapshot);
-  assert.equal(snapshots.length, 8);
-  assert.deepEqual(snapshots.map(snapshot => snapshot.response.status), [302, 200, 401, 200, 200, 307, 200, 200]);
-  assert.deepEqual(snapshots.map(snapshot => snapshot.request.url), [`${origin}/redirect`, `${origin}/final`, `${origin}/auth`, `${origin}/auth`, `${origin}/submit`, `${origin}/post-redirect`, `${origin}/submit`, `${origin}/submit`]);
+  assert.equal(snapshots.length, 11);
+  assert.deepEqual(snapshots.map(snapshot => snapshot.response.status), [302, 200, 401, 200, 200, 307, 200, 200, 200, 302, 200]);
+  assert.deepEqual(snapshots.map(snapshot => snapshot.request.url), [`${origin}/redirect`, `${origin}/final`, `${origin}/auth`, `${origin}/auth`, `${origin}/submit`, `${origin}/post-redirect`, `${origin}/submit`, `${origin}/submit`, `${origin}/submit`, `${origin}/post-get-redirect`, `${origin}/submit`]);
   assert.ok(snapshots.every(snapshot => snapshot._apiRequest === true));
   assert.equal(snapshots[1].response.content.size, 8);
   assert.match(snapshots[1].response.content._sha1, /^[a-f0-9]{40}\.txt$/);
@@ -112,6 +122,12 @@ try {
   assert.equal(snapshots[6].request.postData._sha1, snapshots[4].request.postData._sha1);
   assert.deepEqual(snapshots[7].request.postData.params, [{ name: 'a', value: 'one' }, { name: 'b', value: 'two' }]);
   assert.equal(execFileSync('unzip', ['-p', destination, `resources/${snapshots[7].request.postData._sha1}`], { encoding: 'utf8' }), 'a=one&b=two');
+  assert.equal(snapshots[8].request.bodySize, 0);
+  assert.match(snapshots[8].request.postData._sha1, /^[a-f0-9]{40}\.bin$/);
+  assert.deepEqual(execFileSync('unzip', ['-p', destination, `resources/${snapshots[8].request.postData._sha1}`]), Buffer.alloc(0));
+  assert.equal(snapshots[9].request.postData._sha1, snapshots[8].request.postData._sha1);
+  assert.equal(snapshots[10].request.method, 'GET');
+  assert.equal(snapshots[10].request.postData, undefined);
   referenceContext = await referenceRequest.newContext({ httpCredentials: { username: 'trace-user', password: 'trace-password', send: 'unauthorized' } });
   await referenceContext.tracing.start({ snapshots: true });
   await referenceContext.get(`${origin}/redirect`);
@@ -119,6 +135,8 @@ try {
   await referenceContext.post(`${origin}/submit`, { data: postBody, headers: { 'content-type': 'application/octet-stream' } });
   await referenceContext.post(`${origin}/post-redirect`, { data: postBody, headers: { 'content-type': 'application/octet-stream' } });
   await referenceContext.post(`${origin}/submit`, { form: { a: 'one', b: 'two' } });
+  await referenceContext.post(`${origin}/submit`, { data: Buffer.alloc(0) });
+  await referenceContext.post(`${origin}/post-get-redirect`, { data: Buffer.alloc(0) });
   const referenceDestination = join(directory, 'playwright-api-trace.zip');
   await referenceContext.tracing.stop({ path: referenceDestination });
   const referenceSnapshots = execFileSync('unzip', ['-p', referenceDestination, 'trace.network'], { encoding: 'utf8' }).trim().split('\n').map(line => JSON.parse(line).snapshot).filter(snapshot => snapshot._apiRequest);
@@ -129,6 +147,9 @@ try {
   assert.deepEqual(snapshots.map(snapshot => snapshot.response.httpVersion), referenceSnapshots.map(snapshot => snapshot.response.httpVersion));
   assert.deepEqual(snapshots.map(snapshot => snapshot.request.cookies), referenceSnapshots.map(snapshot => snapshot.request.cookies));
   assert.deepEqual(snapshots.map(snapshot => snapshot.response.cookies), referenceSnapshots.map(snapshot => snapshot.response.cookies));
+  assert.deepEqual(snapshots[8].request.postData, referenceSnapshots[8].request.postData);
+  assert.deepEqual(snapshots[9].request.postData, referenceSnapshots[9].request.postData);
+  assert.deepEqual(snapshots[10].request.postData, referenceSnapshots[10].request.postData);
   if (process.env.FLASHWRIGHT_CHECK_TRACE_VIEWER === '1') {
     viewer = await upstreamServer.startTraceViewerServer({ host: '127.0.0.1', allowedFileRoots: [directory] });
     browser = await chromium.launch({ executablePath: process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath() });
@@ -151,6 +172,8 @@ try {
   await posted.dispose();
   await redirectedPost.dispose();
   await formResponse.dispose();
+  await emptyPosted.dispose();
+  await emptyRedirectedPost.dispose();
   const metadataOnlyStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: false }, { begin() { return undefined; } });
   const metadataOnlyRecording = await metadataOnlyStartup.ready;
   const metadataOnlyResponse = await context.get(`${origin}/final`);
