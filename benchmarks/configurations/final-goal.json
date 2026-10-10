@@ -1,0 +1,509 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "referenceVersion": "1.60.0",
+  "browserVersion": "148.0.7778.96",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "minimumSpeedup": 2,
+  "minimumApplicationWins": 2,
+  "independentPairs": 8,
+  "statistics": {
+    "bootstrapReplicates": 10000,
+    "confidenceLevel": 0.95,
+    "seed": 41723,
+    "minimumSamplesForP95": 200,
+    "minimumSamplesForP99": 1000
+  },
+  "resourcePolicy": {
+    "logicalCpuCount": 11,
+    "physicalMemoryBytes": 38654705664,
+    "maximumSampledConcurrentBytes": 8589934592,
+    "operatingSystemEnforcedLimits": false
+  },
+  "maximumRegressionRatios": {
+    "completeMedian": 1.05,
+    "completeObservedMaximum": 1.15,
+    "sampledConcurrentMemoryMaximum": 1.1,
+    "observedProcessTreeCpuMedian": 1.1
+  },
+  "regressionAggregation": "Candidate/reference: medians of complete wall and observed process-tree CPU; observed maxima of complete wall and sampled simultaneous complete-tree RSS. All valid comparable cells participate, including nonwinning cells. Missing/noncomparable/failed observations never fabricate numeric ratios.",
+  "cells": [
+    {
+      "id": "single-worker",
+      "workers": 1
+    },
+    {
+      "id": "matched-throughput",
+      "workers": 4
+    }
+  ],
+  "clockBoundary": "fixture-backend-initialization-through-all-process-shutdown-and-artifact-flush",
+  "requiredGateIds": [
+    "current-source-core",
+    "reference-baseline-admission",
+    "candidate-functional-admission",
+    "resource-collector-admission"
+  ],
+  "samplingPolicy": "Eight independent paired launches per cell. Alternate first engine by pair index and rotate scenario order. Retain all attempts. No selective reruns or removal. An external interruption invalidates the entire affected run; retain its original evidence. No serving process or database seed may be prepared outside the complete clock. Identical disclosed one-time package/application compilation may be outside.",
+  "confidencePolicy": "Point wins use median paired ratio >= 2; confirmed wins also require per-cell 95% paired confidence lower bound >= 2. Count each distinct scenario once, requiring both resource cells. At least five of nine confirmed scenarios and at least two of three application wins. No simultaneous 95% majority-confidence claim.",
+  "resourceCoveragePolicy": "Same declared whole host and worker limits for both engines, serial executions, no competing test/build jobs. Record background confounds. Include all test-owned backend/database/mail work. Missing required coverage or sampled tree RSS above 8 GiB makes a cell noncomparable; never silently exclude it. Sampled bounds are not OS-enforced limits; retain short-lived/reparented-process limitations.",
+  "sealingRequirements": [
+    "Final source/dependency/executable/host manifests",
+    "Exact dynamically admitted original test inventories/callback hashes and application policies",
+    "Reviewed complete-clock and resource collectors, including owned database and mail coverage",
+    "Behavior/lifecycle and independent Playwright 1.60 baseline admission",
+    "Premeasurement root approval and collector ordering evidence"
+  ],
+  "scope": "Initial native macOS arm64 only. Native Linux unverified at human request and separately open. Historical engineering configs/results remain unchanged. This draft cannot accept any performance claim.",
+  "scenarios": [
+    {
+      "id": "runner-interaction",
+      "countingGroup": "runner-interaction",
+      "kind": "controlled",
+      "family": "interaction",
+      "suiteSource": "benchmarks/runner-suite/workloads.spec.mjs",
+      "expectedTestCount": 15,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "fullyParallel": false,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "fullyParallel": true,
+          "retries": 0,
+          "repeatEach": 1
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "fixture-backend"
+      ],
+      "completeWork": {
+        "tests": 15,
+        "preparationIterations": 3,
+        "operationSamples": 12,
+        "includeAllIterationsInCompleteTime": true,
+        "freshContextPerTest": true,
+        "delayedAssertionMilliseconds": 8,
+        "backendDelayMilliseconds": 20,
+        "intentionalFailureTimeoutMilliseconds": 250
+      },
+      "admissionState": "Pending final complete-clock, per-family and observed-concurrency adapters. Keep original workload bodies. Historical sequential seven-family harness is unchanged."
+    },
+    {
+      "id": "runner-assertion",
+      "countingGroup": "runner-assertion",
+      "kind": "controlled",
+      "family": "assertion",
+      "suiteSource": "benchmarks/runner-suite/workloads.spec.mjs",
+      "expectedTestCount": 15,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "fullyParallel": false,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "fullyParallel": true,
+          "retries": 0,
+          "repeatEach": 1
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "fixture-backend"
+      ],
+      "completeWork": {
+        "tests": 15,
+        "preparationIterations": 3,
+        "operationSamples": 12,
+        "includeAllIterationsInCompleteTime": true,
+        "freshContextPerTest": true,
+        "delayedAssertionMilliseconds": 8,
+        "backendDelayMilliseconds": 20,
+        "intentionalFailureTimeoutMilliseconds": 250
+      },
+      "admissionState": "Pending final complete-clock, per-family and observed-concurrency adapters. Keep original workload bodies. Historical sequential seven-family harness is unchanged."
+    },
+    {
+      "id": "runner-navigation",
+      "countingGroup": "runner-navigation",
+      "kind": "controlled",
+      "family": "navigation",
+      "suiteSource": "benchmarks/runner-suite/workloads.spec.mjs",
+      "expectedTestCount": 15,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "fullyParallel": false,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "fullyParallel": true,
+          "retries": 0,
+          "repeatEach": 1
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "fixture-backend"
+      ],
+      "completeWork": {
+        "tests": 15,
+        "preparationIterations": 3,
+        "operationSamples": 12,
+        "includeAllIterationsInCompleteTime": true,
+        "freshContextPerTest": true,
+        "delayedAssertionMilliseconds": 8,
+        "backendDelayMilliseconds": 20,
+        "intentionalFailureTimeoutMilliseconds": 250
+      },
+      "admissionState": "Pending final complete-clock, per-family and observed-concurrency adapters. Keep original workload bodies. Historical sequential seven-family harness is unchanged."
+    },
+    {
+      "id": "runner-setup",
+      "countingGroup": "runner-setup",
+      "kind": "controlled",
+      "family": "setup",
+      "suiteSource": "benchmarks/runner-suite/workloads.spec.mjs",
+      "expectedTestCount": 15,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "fullyParallel": false,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "fullyParallel": true,
+          "retries": 0,
+          "repeatEach": 1
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "fixture-backend"
+      ],
+      "completeWork": {
+        "tests": 15,
+        "preparationIterations": 3,
+        "operationSamples": 12,
+        "includeAllIterationsInCompleteTime": true,
+        "freshContextPerTest": true,
+        "delayedAssertionMilliseconds": 8,
+        "backendDelayMilliseconds": 20,
+        "intentionalFailureTimeoutMilliseconds": 250
+      },
+      "admissionState": "Pending final complete-clock, per-family and observed-concurrency adapters. Keep original workload bodies. Historical sequential seven-family harness is unchanged."
+    },
+    {
+      "id": "runner-backend",
+      "countingGroup": "runner-backend",
+      "kind": "controlled",
+      "family": "backend",
+      "suiteSource": "benchmarks/runner-suite/workloads.spec.mjs",
+      "expectedTestCount": 15,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "fullyParallel": false,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "fullyParallel": true,
+          "retries": 0,
+          "repeatEach": 1
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "fixture-backend"
+      ],
+      "completeWork": {
+        "tests": 15,
+        "preparationIterations": 3,
+        "operationSamples": 12,
+        "includeAllIterationsInCompleteTime": true,
+        "freshContextPerTest": true,
+        "delayedAssertionMilliseconds": 8,
+        "backendDelayMilliseconds": 20,
+        "intentionalFailureTimeoutMilliseconds": 250
+      },
+      "admissionState": "Pending final complete-clock, per-family and observed-concurrency adapters. Keep original workload bodies. Historical sequential seven-family harness is unchanged."
+    },
+    {
+      "id": "runner-failure",
+      "countingGroup": "runner-failure",
+      "kind": "controlled",
+      "family": "failure",
+      "suiteSource": "benchmarks/runner-suite/workloads.spec.mjs",
+      "expectedTestCount": 15,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "fullyParallel": false,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "fullyParallel": true,
+          "retries": 0,
+          "repeatEach": 1
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "fixture-backend"
+      ],
+      "completeWork": {
+        "tests": 15,
+        "preparationIterations": 3,
+        "operationSamples": 12,
+        "includeAllIterationsInCompleteTime": true,
+        "freshContextPerTest": true,
+        "delayedAssertionMilliseconds": 8,
+        "backendDelayMilliseconds": 20,
+        "intentionalFailureTimeoutMilliseconds": 250
+      },
+      "admissionState": "Pending final complete-clock, per-family and observed-concurrency adapters. Keep original workload bodies. Historical sequential seven-family harness is unchanged."
+    },
+    {
+      "id": "application-todomvc",
+      "countingGroup": "application-todomvc",
+      "kind": "application",
+      "expectedTestCount": 24,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "preserveUpstreamScheduling": true,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "preserveUpstreamScheduling": true,
+          "retries": 0,
+          "repeatEach": 1,
+          "requiresIndependentSharedStateAdmission": true
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "application-server"
+      ],
+      "admissionState": "Pending exact inventory, preserved application policies and complete-clock/resource adapters; all test bodies remain unchanged.",
+      "suiteSource": "compatibility/migration-projects/offline-todomvc/provenance.json"
+    },
+    {
+      "id": "application-svgomg",
+      "countingGroup": "application-svgomg",
+      "kind": "application",
+      "expectedTestCount": 6,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "preserveUpstreamScheduling": true,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "preserveUpstreamScheduling": true,
+          "retries": 0,
+          "repeatEach": 1,
+          "requiresIndependentSharedStateAdmission": true
+        }
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "application-server"
+      ],
+      "admissionState": "Pinned offline reproduction absent in reviewed integration checkout. External-demo functional evidence cannot be promoted to final speed acceptance.",
+      "suiteSource": "compatibility/migration-projects/svgomg/tests/example.spec.ts"
+    },
+    {
+      "id": "application-backend-corpus",
+      "countingGroup": "application-backend-corpus",
+      "kind": "application",
+      "expectedTestCount": 62,
+      "expectedTests": null,
+      "sourceManifest": null,
+      "applicationPolicySha256": null,
+      "previouslySupported": null,
+      "scheduling": {
+        "single-worker": {
+          "preserveUpstreamScheduling": true,
+          "retries": 0,
+          "repeatEach": 1
+        },
+        "matched-throughput": {
+          "preserveUpstreamScheduling": true,
+          "retries": 0,
+          "repeatEach": 1,
+          "requiresIndependentSharedStateAdmission": true
+        }
+      },
+      "artifacts": {
+        "trace": "on-first-retry",
+        "video": "off",
+        "screenshot": "off",
+        "defaultFailureDocuments": true
+      },
+      "requiredResourceComponents": [
+        "runner",
+        "workers",
+        "browser",
+        "driver",
+        "application-server",
+        "backend",
+        "database",
+        "mail"
+      ],
+      "admissionState": "Pending real PostgreSQL/backend/Mailpit, generated PrivateService client, whole-clock ownership, isolated seeded state, auth setup/storageState dependencies, APIRequestContext Mailpit helper and independent four-worker admission.",
+      "suiteSource": "fastapi/full-stack-fastapi-template/frontend/tests",
+      "upstream": {
+        "repository": "https://github.com/fastapi/full-stack-fastapi-template",
+        "commit": "7257e606cb94eada1dca40173e2b7f99dd549bc6",
+        "referenceVersion": "1.63.0",
+        "comparisonReferenceVersion": "1.60.0",
+        "configurationAdaptation": "Common pinned dependency, browser/resource and reporter/environment configuration only; unchanged test/helper bodies. Independently admit baseline on 1.60.0.",
+        "lexicalSpecTestCounts": {
+          "admin": 12,
+          "items": 9,
+          "login": 9,
+          "reset-password": 6,
+          "sign-up": 11,
+          "user-settings": 14
+        },
+        "lexicalSetupTestCount": 1,
+        "retainedSourceManifest": {
+          "LICENSE": "0bd4e76cdd06ab24cce2de5e74f490920897f90a22ad35e8403ed006d4560f48",
+          "backend/pyproject.toml": "a12c0fdd65a800761b020e2b66fd2260b306bf3258d166c89dde4a0ec6734029",
+          "compose.yml": "1fd1f559a68a462fa5f72295b7dec6982279bb121cb75514a7933b4534dfefd1",
+          "frontend/package.json": "f6ca10df45c26bab9bec167873aff9fb307b18f623e484fe330bef252d57915d",
+          "frontend/tests/admin.spec.ts": "35c18e92e5ef812d8eff0e56bbd61a176fd8f7a9c5409d5fbdca813d29ad3f8e",
+          "frontend/tests/auth.setup.ts": "cb5df1cfc7ac7cb94442c230d79524cfe9cb9cd957ccc855e6d349b352598163",
+          "frontend/tests/config.ts": "a2094f4033a4b5f0ce799d5da74f9d7bdf277c60c3b81f34b4c2bfec3964eacd",
+          "frontend/tests/items.spec.ts": "147fff53441b6e3fe923ce694f87d9b080089ef7ae1523a3bcae94dde7193929",
+          "frontend/tests/login.spec.ts": "829cbe94ba6eb3e5a35aca84c0893ab7275fdbd614072daa3c0189b0f8b1f0c5",
+          "frontend/tests/reset-password.spec.ts": "4b5c6a88b16b94f3a5b7c4d30374ef429912850877f6753736e6120834532c02",
+          "frontend/tests/sign-up.spec.ts": "c7d3f6586bd2bb7b21a516679b1c102ffb4b0591145e6153554e463a7a254392",
+          "frontend/tests/user-settings.spec.ts": "7e7af9cd5d19b714cb395422418e6b199881aedc8cf556c86d97115536eb6644",
+          "frontend/tests/utils/mailpit.ts": "fc1784e8e2aabbe5f0aed55a3e065814f18467d469c25df8ffe56727d6953584",
+          "frontend/tests/utils/privateApi.ts": "90beb583387ffbe003aed7046011de41118963ae7a6a436db722fa4fe818fa9d",
+          "frontend/tests/utils/random.ts": "9d449fd1d5ea2a07b1638380c28e1916de7cc7bf2613a4d8963bb2499c23d502",
+          "frontend/tests/utils/user.ts": "161c6c87d3da96ad4c51243a63af5c1948bf86bf64a1e48d8a7998194efd9dbc",
+          "frontend/playwright.config.ts": "6b2552f656b75af4dca3a99b780bd1e0241d833df9e4350dbc0f9e98b27bf34f",
+          "compose.override.yml": "eee327dadb2e34d2e338bb623a676ecf476bc3d7f2d896b6ac24c7ef4ce05b79"
+        },
+        "sourceInventoryStage": "Source-only lexical review; expected count 62 includes complete Chromium 61 tests and auth setup. Dynamic original test inventory remains required."
+      }
+    }
+  ],
+  "comparisonClass": "complete-native-runner-final-goal",
+  "resourceObservationLimitations": "Observed CPU derives the last observed cumulative CPU once per original process namespace/PID/start identity; short-lived or reparented processes may be missed. Sampled simultaneous RSS sums observed process RSS and is neither physical footprint nor an OS-enforced hard limit. Missing known required identities or approved collector coverage makes a cell noncomparable. Collector algorithm and coverage receipts must bind admitted source hashes before sealing."
+}
