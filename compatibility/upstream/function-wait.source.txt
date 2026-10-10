@@ -1,0 +1,173 @@
+// server.frame.waitForFunctionExpression
+async waitForFunctionExpression(progress2, expression2, isFunction2, arg, options2, world = "main") {
+        if (typeof options2.pollingInterval === "number")
+          assert(options2.pollingInterval > 0, "Cannot poll with non-positive interval: " + options2.pollingInterval);
+        expression2 = normalizeEvaluationExpression(expression2, isFunction2);
+        return this.retryWithProgressAndTimeouts(progress2, [100], async () => {
+          const context2 = world === "main" ? await progress2.race(this.mainContext()) : await progress2.race(this.utilityContext());
+          const injectedScript = await progress2.race(context2.injectedScript());
+          const handle = await progress2.race(injectedScript.evaluateHandle((injected, { expression: expression3, isFunction: isFunction3, polling, arg: arg2 }) => {
+            let evaledExpression;
+            const predicate = () => {
+              let result3 = evaledExpression ?? globalThis.eval(expression3);
+              if (isFunction3 === true) {
+                evaledExpression = result3;
+                result3 = result3(arg2);
+              } else if (isFunction3 === false) {
+                result3 = result3;
+              } else {
+                if (typeof result3 === "function") {
+                  evaledExpression = result3;
+                  result3 = result3(arg2);
+                }
+              }
+              return result3;
+            };
+            let fulfill;
+            let reject;
+            let aborted = false;
+            const result2 = new Promise((f, r) => {
+              fulfill = f;
+              reject = r;
+            });
+            const next = () => {
+              if (aborted)
+                return;
+              try {
+                const success = predicate();
+                if (success) {
+                  fulfill(success);
+                  return;
+                }
+                if (typeof polling !== "number")
+                  injected.utils.builtins.requestAnimationFrame(next);
+                else
+                  injected.utils.builtins.setTimeout(next, polling);
+              } catch (e) {
+                reject(e);
+              }
+            };
+            next();
+            return { result: result2, abort: () => aborted = true };
+          }, { expression: expression2, isFunction: isFunction2, polling: options2.pollingInterval, arg }));
+          try {
+            return await progress2.race(handle.evaluateHandle((h) => h.result));
+          } catch (error) {
+            await handle.evaluate((h) => h.abort()).catch(() => {
+            });
+            throw error;
+          } finally {
+            handle.dispose();
+          }
+        });
+      }
+
+// server.frame.retryWithProgressAndTimeouts
+async retryWithProgressAndTimeouts(progress2, timeouts, action) {
+        const continuePolling = Symbol("continuePolling");
+        timeouts = [0, ...timeouts];
+        let timeoutIndex = 0;
+        while (true) {
+          const timeout = timeouts[Math.min(timeoutIndex++, timeouts.length - 1)];
+          if (timeout) {
+            const actionPromise = new Promise((f) => setTimeout(f, timeout));
+            await progress2.race(LongStandingScope.raceMultiple([
+              this._page.openScope,
+              this._detachedScope
+            ], actionPromise));
+          }
+          try {
+            const result2 = await action(progress2, continuePolling);
+            if (result2 === continuePolling)
+              continue;
+            return result2;
+          } catch (e) {
+            if (this.isNonRetriableError(e))
+              throw e;
+            continue;
+          }
+        }
+      }
+
+// server.frame.isNonRetriableError
+isNonRetriableError(e) {
+        if (isAbortError(e))
+          return true;
+        if (isJavaScriptErrorInEvaluate(e) || isSessionClosedError(e))
+          return true;
+        if (isNonRecoverableDOMError(e) || isInvalidSelectorError(e))
+          return true;
+        if (this._isDetached())
+          return true;
+        return false;
+      }
+
+// client.frame.waitForFunction
+async waitForFunction(pageFunction, arg, options2 = {}) {
+        if (typeof options2.polling === "string")
+          assert(options2.polling === "raf", "Unknown polling option: " + options2.polling);
+        const result2 = await this._channel.waitForFunction({
+          ...options2,
+          pollingInterval: options2.polling === "raf" ? void 0 : options2.polling,
+          expression: String(pageFunction),
+          isFunction: typeof pageFunction === "function",
+          arg: serializeArgument(arg),
+          timeout: this._timeout(options2)
+        });
+        return JSHandle2.from(result2.handle);
+      }
+
+// client.page.waitForFunction
+async waitForFunction(pageFunction, arg, options2) {
+        return await this._mainFrame.waitForFunction(pageFunction, arg, options2);
+      }
+
+// evaluation.normalizeEvaluationExpression
+function normalizeEvaluationExpression(expression2, isFunction2) {
+  expression2 = expression2.trim();
+  if (isFunction2) {
+    try {
+      new Function("(" + expression2 + ")");
+    } catch (e1) {
+      if (expression2.startsWith("async "))
+        expression2 = "async function " + expression2.substring("async ".length);
+      else
+        expression2 = "function " + expression2;
+      try {
+        new Function("(" + expression2 + ")");
+      } catch (e2) {
+        throw new Error("Passed function is not well-serializable!");
+      }
+    }
+  }
+  if (/^(async)?\s*function(\s|\()/.test(expression2))
+    expression2 = "(" + expression2 + ")";
+  return expression2;
+}
+
+// injected.utilityScript.builtins
+constructor(global, isUnderTest) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    this.global = global;
+    this.isUnderTest = isUnderTest;
+    if (global.__pwClock) {
+      this.builtins = global.__pwClock.builtins;
+    } else {
+      this.builtins = {
+        setTimeout: (_a = global.setTimeout) == null ? void 0 : _a.bind(global),
+        clearTimeout: (_b = global.clearTimeout) == null ? void 0 : _b.bind(global),
+        setInterval: (_c = global.setInterval) == null ? void 0 : _c.bind(global),
+        clearInterval: (_d = global.clearInterval) == null ? void 0 : _d.bind(global),
+        requestAnimationFrame: (_e = global.requestAnimationFrame) == null ? void 0 : _e.bind(global),
+        cancelAnimationFrame: (_f = global.cancelAnimationFrame) == null ? void 0 : _f.bind(global),
+        requestIdleCallback: (_g = global.requestIdleCallback) == null ? void 0 : _g.bind(global),
+        cancelIdleCallback: (_h = global.cancelIdleCallback) == null ? void 0 : _h.bind(global),
+        performance: global.performance,
+        Intl: global.Intl,
+        Date: global.Date,
+        AbortSignal: global.AbortSignal
+      };
+    }
+    if (this.isUnderTest)
+      global.builtins = this.builtins;
+  }

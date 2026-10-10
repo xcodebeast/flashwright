@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 1,
+  "status": "focused-candidate-verified-integration-pending",
+  "referenceVersion": "1.60.0",
+  "platform": "darwin-arm64",
+  "baseline": "fe71e022074d67b0c1950ccc0597d80af0f68383",
+  "driverSha256": "014009e7c1b5eaced67bdbcd2c1f6926dd3ef1d64e63b8a99f69e6186f1aa5b5",
+  "functionalBuild": {
+    "profile": "dev",
+    "incremental": "0",
+    "devDebug": "0",
+    "testDebug": "0",
+    "pathRemapping": "home and checkout prefixes sanitized; private functional target"
+  },
+  "scope": "Verified macOS functional subset on pinned Chromium revision 1223 full Chrome and headless shell. Typed fresh packed ESM/CommonJS consumers pass on Bun 1.4.2 and Node 22.22.0/24.15.0 using Bun as package manager and an explicit private compact driver override.",
+  "unverified": [
+    "remote renderer Frame polling/cleanup",
+    "native Linux",
+    "canonical release/core gate on the final integrated source",
+    "performance or 2x/fastest claims"
+  ],
+  "productionSources": {
+    "crates/flashwright-engine/src/wait_for_function.rs": "cd99ef4ce1fa1fc4b9c29dae8ea34e1e2e827818e93a497d459f4be67ec1f9cd",
+    "crates/flashwright-engine/src/evaluation.rs": "8c13d0966dbb9b31cdff2189cec66612ade2c8bc5c70ea98af2233fad580e142",
+    "crates/flashwright-engine/src/handles.rs": "407bc6d88c2769b709edfe80238b66444193de271ccd29afaebd8e4891661833",
+    "crates/flashwright-engine/src/handle_allocation.rs": "43254b336a61993b07366a80050c9aaa1b5657c67d9d1bb05bcdb29f536ab4be",
+    "crates/flashwright-engine/src/publication.rs": "84141dc1d7aa83c28e84b394064980b84a93aefaff2ad889642a2336d97e5a72",
+    "crates/flashwright-engine/src/recording/phases.rs": "8198507bca5ea283df0a258711da1712abe262640a97eead82248b4108c9c3b9",
+    "packages/resident-runtime/function-wait.cjs": "7fd378d98ac249b088e62de22db2ff4fc3aedc25d2a4c88ab100eaee983956bf",
+    "packages/flashwright-core/src/function-wait.ts": "a002c5ba0c6d78f8e1542bc0f12d8e3bac81643704a3712e5e497d952b1b5c28",
+    "packages/flashwright-core/src/frame.ts": "93d0c915163395adb8bbbd50b36dfa6052c68db7230e36271b5ac4716654c74e",
+    "packages/flashwright-core/src/index.ts": "e990f8b1b04249ca5b0a3c5fd48133f866044f41fbcbea7b90767c08a4c9a825",
+    "packages/flashwright-core/src/client.ts": "835c768e67b2b396f5a177bbd40b2005b7390cb9e77655cef2f0e991bcf31ac1"
+  },
+  "testSources": {
+    "compatibility/m1/test_function_waits.py": "3bceed42b2e5188ce262c182e7a2b17df03e0af3d95deba10539e8a3306f1b87",
+    "compatibility/m2/function-waits.mjs": "9a5d412bc2487aba60d8720ca25f7a4810d05778f5f4d522a2a483502d9aa904",
+    "compatibility/m2/runner/function-wait-types.ts": "f838b01dfa39bd7b9328c99b59e885d4be83f38e7931c014dffaf5162f735d62",
+    "tools/run-function-wait-tests.mjs": "0a3278b9f704ffd183fc1f12b765c8c6cd71f11a58c8ce40c11f5623f6e55d22",
+    "tools/run-function-wait-native-tests.mjs": "487be4e7bee5f916f318434945ca0b592a0aeb7bad2da7af5e4f28b0458e752d",
+    "tools/test-function-wait-runtime.mjs": "34d61a89ffcd3c035a0869828f3c199ffe267deb662ae79a060871847fde8a6c",
+    "tools/test-function-wait-host.mjs": "350e324485aa3dc8a861e51313c571b9c291ec27c9c74709d54a145ae9f1290c",
+    "tools/test-packed-function-waits.mjs": "baa51025675c5341ba7d3ce22b32a1f57910dda020556a672403b9b035131f4c",
+    "tools/test-function-wait-viewer.mjs": "0a0949562e80d5df68e2d9575e2b88edfce939e520e5d469861d9ed97d171b4b",
+    "tools/verify-function-wait-trace.py": "7911ce381b53bc3356bb51e48e3b6008f5e525699836b2d4e0926a641ad857ee",
+    "tools/record-function-wait-provenance.mjs": "7e640e95871858fd2b826da0adfab365fdcc87207484c491ae96f351d2793388"
+  },
+  "artifacts": {
+    "full-chrome-third": {
+      "reportSha256": "a5130a1c4a3fa452c24c1b031d1096416dbf30ce84efb44ca5a75174b46e0a0f",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "full-chromium",
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Page/Frame.waitForFunction functional differentials; no performance, platform release or default-adoption claim.",
+      "testSourceDifferences": [
+        "tools/test-function-wait-viewer.mjs"
+      ],
+      "outcomes": {
+        "playwright": [
+          "immediate-functions-expression-values-and-method-syntax",
+          "real-raf-and-numeric-polling",
+          "nested-handle-arguments-graph-values-and-element-results",
+          "one-shot-async-and-thenable-assimilation-and-terminal-user-errors",
+          "finite-timeout-stops-polling-never-settling-and-late-async-results",
+          "inherited-default-and-explicit-zero-timeouts",
+          "logical-frame-document-navigation-retry",
+          "child-main-world-results-original-handles-and-frame-detachment",
+          "known-frame-detachment-precedes-navigation-backoff-deadline",
+          "parent-context-closure",
+          "document-cached-schedulers-and-performance-clock-getter-non-use",
+          "first-wait-observes-existing-scheduler-patches"
+        ],
+        "flashwright": [
+          "immediate-functions-expression-values-and-method-syntax",
+          "real-raf-and-numeric-polling",
+          "nested-handle-arguments-graph-values-and-element-results",
+          "one-shot-async-and-thenable-assimilation-and-terminal-user-errors",
+          "finite-timeout-stops-polling-never-settling-and-late-async-results",
+          "inherited-default-and-explicit-zero-timeouts",
+          "logical-frame-document-navigation-retry",
+          "child-main-world-results-original-handles-and-frame-detachment",
+          "known-frame-detachment-precedes-navigation-backoff-deadline",
+          "parent-context-closure",
+          "document-cached-schedulers-and-performance-clock-getter-non-use",
+          "first-wait-observes-existing-scheduler-patches"
+        ]
+      },
+      "traces": {
+        "playwright": {
+          "outcomes": {
+            "successfulWaits": 2,
+            "timedOutWaits": 1
+          },
+          "status": "passed",
+          "sha256": "de8be76149f5af9dedba023804dfb6fe21ab9a9990d505d22da6bd1b96f8558b",
+          "predicateCalls": 3,
+          "failures": 1,
+          "snapshots": 8,
+          "sources": 1
+        },
+        "flashwright": {
+          "outcomes": {
+            "successfulWaits": 2,
+            "timedOutWaits": 1
+          },
+          "status": "passed",
+          "sha256": "98fe8978c6620fb5ee79f42e4973beaa255d8b02610c1a321c68209a7649edac",
+          "predicateCalls": 3,
+          "failures": 1,
+          "snapshots": 11,
+          "sources": 1
+        }
+      }
+    },
+    "shell-first": {
+      "reportSha256": "415d47c6b0abaa89976aacba7389ae57e0d3229ca77067706c53b3985dc34f6e",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "chromium-headless-shell",
+        "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Page/Frame.waitForFunction functional differentials; no performance, platform release or default-adoption claim.",
+      "testSourceDifferences": [
+        "tools/test-function-wait-viewer.mjs"
+      ],
+      "outcomes": {
+        "playwright": [
+          "immediate-functions-expression-values-and-method-syntax",
+          "real-raf-and-numeric-polling",
+          "nested-handle-arguments-graph-values-and-element-results",
+          "one-shot-async-and-thenable-assimilation-and-terminal-user-errors",
+          "finite-timeout-stops-polling-never-settling-and-late-async-results",
+          "inherited-default-and-explicit-zero-timeouts",
+          "logical-frame-document-navigation-retry",
+          "child-main-world-results-original-handles-and-frame-detachment",
+          "known-frame-detachment-precedes-navigation-backoff-deadline",
+          "parent-context-closure",
+          "document-cached-schedulers-and-performance-clock-getter-non-use",
+          "first-wait-observes-existing-scheduler-patches"
+        ],
+        "flashwright": [
+          "immediate-functions-expression-values-and-method-syntax",
+          "real-raf-and-numeric-polling",
+          "nested-handle-arguments-graph-values-and-element-results",
+          "one-shot-async-and-thenable-assimilation-and-terminal-user-errors",
+          "finite-timeout-stops-polling-never-settling-and-late-async-results",
+          "inherited-default-and-explicit-zero-timeouts",
+          "logical-frame-document-navigation-retry",
+          "child-main-world-results-original-handles-and-frame-detachment",
+          "known-frame-detachment-precedes-navigation-backoff-deadline",
+          "parent-context-closure",
+          "document-cached-schedulers-and-performance-clock-getter-non-use",
+          "first-wait-observes-existing-scheduler-patches"
+        ]
+      },
+      "traces": {
+        "playwright": {
+          "outcomes": {
+            "successfulWaits": 2,
+            "timedOutWaits": 1
+          },
+          "status": "passed",
+          "sha256": "26ad56eaef11669b2826f9f3a51b39697fe56c192b98567f3ad58fcf9dd48392",
+          "predicateCalls": 3,
+          "failures": 1,
+          "snapshots": 8,
+          "sources": 1
+        },
+        "flashwright": {
+          "outcomes": {
+            "successfulWaits": 2,
+            "timedOutWaits": 1
+          },
+          "status": "passed",
+          "sha256": "d79652b5a5f128b5c3edcec9cf94de0b7fc90e9dcb76976e09e37eca838c4b5c",
+          "predicateCalls": 3,
+          "failures": 1,
+          "snapshots": 11,
+          "sources": 1
+        }
+      }
+    },
+    "native-full-first": {
+      "reportSha256": "18be0d5f37e8eb492210c93cf38ad0f3f91780519f1172cd521a03260db48104",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "full-chromium",
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Real native driver ownership, cancellation, blocked Chromium and application code, admission and failed publication. Controlled fault injection; compact functional build; no performance or release acceptance.",
+      "testSourceDifferences": [
+        "tools/test-function-wait-viewer.mjs"
+      ],
+      "nativeLogSha256": "6d9b45187025134d4470ca8b3c5e47f4a9fc699ba3424345bede55a5afac57f9"
+    },
+    "native-shell-first": {
+      "reportSha256": "2c47cbef42adc771c872ae5ac151c714e186fe3ddcc9cb2b9aab4449d1ccb98d",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "chromium-headless-shell",
+        "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Real native driver ownership, cancellation, blocked Chromium and application code, admission and failed publication. Controlled fault injection; compact functional build; no performance or release acceptance.",
+      "testSourceDifferences": [
+        "tools/test-function-wait-viewer.mjs"
+      ],
+      "nativeLogSha256": "0044996ddffe26422ba09b25eb6f65b4f27100f565e9841244e7117c0d23a81f"
+    },
+    "packed-full-first": {
+      "reportSha256": "f5b486724f9767044c802e2695378a2312f86644a3b2582da42da5fb56ef6d48",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "full-chromium",
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Fresh packed library consumer, ESM/CommonJS identity, Page/Frame predicate declarations and runtime. Compact functional driver only; no release or performance claim.",
+      "testSourceDifferences": [],
+      "outcomes": [
+        {
+          "format": "esm",
+          "outcomes": 5
+        },
+        {
+          "format": "commonjs",
+          "outcomes": 5
+        }
+      ],
+      "archives": {
+        "flashwright-core": "dce3d89b8d67346a33f2a67bb43856acd3c181b7348c88a639b8495dc4edea0e",
+        "flashwright": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+      }
+    },
+    "packed-node22-first": {
+      "reportSha256": "0b9a77e6221c0f2383adf32608d84895da0c020f3a8f45f5c7001ef578d252bb",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "full-chromium",
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+      },
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "scope": "Fresh packed library consumer, ESM/CommonJS identity, Page/Frame predicate declarations and runtime. Compact functional driver only; no release or performance claim.",
+      "testSourceDifferences": [],
+      "outcomes": [
+        {
+          "format": "esm",
+          "outcomes": 5
+        },
+        {
+          "format": "commonjs",
+          "outcomes": 5
+        }
+      ],
+      "archives": {
+        "flashwright-core": "dce3d89b8d67346a33f2a67bb43856acd3c181b7348c88a639b8495dc4edea0e",
+        "flashwright": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+      }
+    },
+    "packed-node24-first": {
+      "reportSha256": "720ea296ffca4afd5128e9328c006c7903dc5d76c579b05c5336695f53c03555",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "full-chromium",
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+      },
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "scope": "Fresh packed library consumer, ESM/CommonJS identity, Page/Frame predicate declarations and runtime. Compact functional driver only; no release or performance claim.",
+      "testSourceDifferences": [],
+      "outcomes": [
+        {
+          "format": "esm",
+          "outcomes": 5
+        },
+        {
+          "format": "commonjs",
+          "outcomes": 5
+        }
+      ],
+      "archives": {
+        "flashwright-core": "dce3d89b8d67346a33f2a67bb43856acd3c181b7348c88a639b8495dc4edea0e",
+        "flashwright": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+      }
+    },
+    "viewer-full-third": {
+      "reportSha256": "c4a96ff9f2d21db92b8d9e83b6a28ec99773df80ce906dd8384c81a9ce1f9d1e",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "full-chromium",
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Pinned viewer renders predicate actions, original embedded source and retained timeout. No pixel equality or performance claim.",
+      "viewer": {
+        "playwright": {
+          "status": "passed",
+          "errors": [],
+          "sourceFallbacks": [],
+          "sourceSha256": "9a5d412bc2487aba60d8720ca25f7a4810d05778f5f4d522a2a483502d9aa904",
+          "screenshotSha256": "ec7312ecb3867bf1e5d548f4a052e18a88c14c86c9a60f26259662db47cdfcd1"
+        },
+        "flashwright": {
+          "status": "passed",
+          "errors": [],
+          "sourceFallbacks": [],
+          "sourceSha256": "9a5d412bc2487aba60d8720ca25f7a4810d05778f5f4d522a2a483502d9aa904",
+          "screenshotSha256": "7b3b74c3b0ec145e9d0f1f9cce708bc59e737673d292b50d8ab0dd363a45f917"
+        }
+      }
+    },
+    "viewer-shell-first": {
+      "reportSha256": "42f167288ddc279acd2fb2ec9aa40d23f121f2e3d19384befa1039a50972f063",
+      "browser": {
+        "version": "148.0.7778.96",
+        "distribution": "chromium-headless-shell",
+        "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b"
+      },
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "scope": "Pinned viewer renders predicate actions, original embedded source and retained timeout. No pixel equality or performance claim.",
+      "viewer": {
+        "playwright": {
+          "status": "passed",
+          "errors": [],
+          "sourceFallbacks": [],
+          "sourceSha256": "9a5d412bc2487aba60d8720ca25f7a4810d05778f5f4d522a2a483502d9aa904",
+          "screenshotSha256": "f844b3a81a6d61d4d08c55ed9a7f37f6397c3e77e72c93f243cda4c7899668d0"
+        },
+        "flashwright": {
+          "status": "passed",
+          "errors": [],
+          "sourceFallbacks": [],
+          "sourceSha256": "9a5d412bc2487aba60d8720ca25f7a4810d05778f5f4d522a2a483502d9aa904",
+          "screenshotSha256": "8043dee0f405a9ecd218bcaaf621729865a0fa1240f895d3fdb97bffc4c91967"
+        }
+      }
+    }
+  },
+  "counts": {
+    "differentialGroupsPerEnginePerBrowser": 12,
+    "traceCallsPerEnginePerBrowser": 3,
+    "nativeFaultsPerBrowser": 8,
+    "viewerArchives": 4,
+    "packedOutcomesPerFormatPerRuntime": 5
+  },
+  "host": {
+    "finalEngineUnitTests": 332,
+    "finalUnitLogSha256": "bbcd4abda6703c098fd8f3a31ddad519ef9dae717a4a2e82ab2bbd858f2f7706",
+    "strictClippyLogSha256": "17323b44c6f3bc541c08e54f235905e6cf1b5f9ceaa99368dc722ccab88ee21f"
+  },
+  "priorFailures": [
+    {
+      "label": "full-chrome-first",
+      "reportSha256": "942bcf70a0e915f1c6d1f4cadba89246c30b6ff1bcd7280fbb76be6b01892f7c",
+      "reason": "full-chrome-first: pinned reference detachment wording excluded by fixture matcher"
+    },
+    {
+      "label": "full-chrome-second",
+      "reportSha256": "485d81d9ca40567f64d7b5ab98599920bf4110b5c4ae1082c5d0fb8c7f61df6a",
+      "reason": "full-chrome-second: native before-snapshot admission omitted frame.waitForFunction"
+    },
+    {
+      "label": "viewer-full-first",
+      "reportSha256": "7f2ac18fdb6af61204b814f7ae00980e51a28c38ec9c01d65993ce8a21319e73",
+      "reason": "viewer-full-first: pinned viewer humanizes the method name"
+    }
+  ],
+  "sourceDifferenceAssessment": "Only the unused viewer harness changed between behavior/native reports and final source: its UI selector was corrected and its runtime/tool digest receipt was added. All implementation and workload sources remain identical.",
+  "initialHost": {
+    "rendererRuntimeTestsPassed": 10,
+    "hostTestsPassed": 3,
+    "typecheckedProjects": 2,
+    "workspaceUnitTestsPassed": 436,
+    "workspaceUnitTestsIgnored": 1,
+    "compiler": {
+      "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)",
+      "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+      "bun": "1.4.2"
+    },
+    "stageReceipts": {
+      "runtime-first.log": {
+        "exitCode": 0,
+        "testsPassed": 10,
+        "sha256": "8b539c40be539fbcbe1b45cbd0d1588167f0477dcef9bf2836579bf7f84d9fe2"
+      },
+      "install-first.log": {
+        "exitCode": 0,
+        "sha256": "4cc8f7a3d800993585d6061c43326a9e4fb83ebd74dc9c75bac68c9b313791d4"
+      },
+      "format-first.log": {
+        "exitCode": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "package-build-second.log": {
+        "exitCode": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "clippy-third.log": {
+        "exitCode": 0,
+        "sha256": "81d407eccc7f4645a76ce1685fbb00d4f92d025adc4ae139db7c930f00acc1b1"
+      },
+      "host-first.log": {
+        "exitCode": 0,
+        "testsPassed": 3,
+        "sha256": "2fd619bfcbf75d00d313210cad81e2542c8dc72e805a18c9d61039e2c3333d6b"
+      },
+      "typecheck-first.log": {
+        "exitCode": 0,
+        "projects": 2,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rust-unit-first.log": {
+        "exitCode": 0,
+        "testsPassed": 436,
+        "testsIgnored": 1,
+        "sha256": "bf48d1c3335bf8aea6f45638ef28a2edb5477bd6c8a2cbcc2736344a9c243d90"
+      },
+      "driver-build-first.log": {
+        "exitCode": 0,
+        "sha256": "5d5cd9d062fbabd02fbae9e8868ae338963485abd17522bb422a8e5388e3ccc7"
+      },
+      "format-check-final.log": {
+        "exitCode": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "provenance-first.log": {
+        "exitCode": 0,
+        "sha256": "7386c10bad32fbafcb9985f84f729138ef01d410fb98136387fb3dbd9111d924"
+      },
+      "provenance-check-final.log": {
+        "exitCode": 0,
+        "sha256": "7386c10bad32fbafcb9985f84f729138ef01d410fb98136387fb3dbd9111d924"
+      }
+    },
+    "scope": "Earlier workspace/host checks preceded native detachment and trace-admission corrections. The final engine unit and lint checks cover the final runtime sources; TypeScript and renderer sources stayed unchanged."
+  },
+  "priorHostFailures": [
+    {
+      "label": "package-build-first.log",
+      "exitCode": 1,
+      "retainedFailure": "Page-to-Frame TypeScript overload delegation",
+      "sha256": "79cc9e0c0b57b74f38257edd4602d2cd7bb94626e9326a4c239403d10d2b56c8"
+    },
+    {
+      "label": "clippy-first.log",
+      "exitCode": 101,
+      "retainedFailure": "Invalid serde_json::Value accessor",
+      "sha256": "08b302a52b1102dd0ef876108b639eaeaa4a76a87fae94469aaa4c234bdca87e"
+    },
+    {
+      "label": "clippy-second.log",
+      "exitCode": 101,
+      "retainedFailure": "collapsible_if",
+      "sha256": "34b6fad4f190bc6ea8f7845e3513e3c04f1795dfcaf8de08845cd4187475d27b"
+    }
+  ],
+  "testRegistration": {
+    "path": "tools/verify-core.mjs",
+    "sha256": "7e978dd66e5d7d2245804c9b366c0f2bbf840cfbe3c84356d1f74a4d8f84918d",
+    "addedCommands": 6,
+    "status": "registration-only-unrun",
+    "scope": "Registration added after focused functional verification. Whole core was not rerun during another agent execution window."
+  },
+  "performanceBoundary": {
+    "waiterModuleBytes": 4353,
+    "scope": "Ordinary first evaluation installs and parses the waiter module in its world even when no predicate wait is requested. Scheduling builtins are captured lazily on first wait. This payload cost has not been measured; integrated performance review remains required."
+  },
+  "staleChecks": {
+    "existingProvenance": [
+      "compatibility/upstream/aria-matcher-provenance.json",
+      "compatibility/upstream/context-settings-provenance.json",
+      "compatibility/upstream/dialog-provenance.json",
+      "compatibility/upstream/downloads-provenance.json",
+      "compatibility/upstream/element-actions-provenance.json",
+      "compatibility/upstream/element-resolution-provenance.json",
+      "compatibility/upstream/failure-context-provenance.json",
+      "compatibility/upstream/file-chooser-provenance.json",
+      "compatibility/upstream/file-inputs-provenance.json",
+      "compatibility/upstream/filmstrip-provenance.json",
+      "compatibility/upstream/frame-locators-provenance.json",
+      "compatibility/upstream/history-navigation-provenance.json",
+      "compatibility/upstream/manual-tracing-provenance.json",
+      "compatibility/upstream/navigation-waits-provenance.json",
+      "compatibility/upstream/network-headers-provenance.json",
+      "compatibility/upstream/public-aria-provenance.json",
+      "compatibility/upstream/routing-provenance.json",
+      "compatibility/upstream/runner-screenshots-provenance.json",
+      "compatibility/upstream/runner-trace-boundaries-provenance.json",
+      "compatibility/upstream/selector-actions-provenance.json",
+      "compatibility/upstream/sequential-typing-provenance.json",
+      "compatibility/upstream/snapshot-provenance.json"
+    ],
+    "existingParityImplementationBindings": "Shared source references in prior review groups remain stale; root integration refreshes them together with generated inventory/tables. No whole-manifest/inventory pass is claimed."
+  },
+  "rawArtifacts": "Retained locally with exact hashes. Raw host paths, caller stacks, profiles, trace archives, screenshots and private binaries are intentionally excluded from this public checkpoint."
+}

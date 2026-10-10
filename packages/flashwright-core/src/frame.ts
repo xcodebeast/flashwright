@@ -9,12 +9,13 @@ import { SelectorActions, selectorActionTraceMethods, type SelectorOptions } fro
 import type { JSHandle, ElementHandle, Unboxed, SmartHandle } from './handles.js';
 import type { WaitForSelectorOptions, WaitForSelectorOptionsNotHidden } from './element-resolution.js';
 import type { InputFiles, FrameSetInputFilesOptions } from './file-inputs.js';
+import { prepareFunctionWaitArguments, type PageWaitForFunctionOptions } from './function-wait.js';
 
 export interface FrameSnapshot { identifier: string; parent: string | null; name: string; url: string; navigationSequence: number; loader: string }
 
 /** Identity is stable while the frame's document and URL can change. */
 export class Frame extends LocatorScope {
-  static { instrumentTraceMethods(this.prototype, 'Frame', frame => tracePageOwner(frame.owner), { ...selectorActionTraceMethods, runAssertion: { method: 'expect', apiName: 'frame._expect', parameters: ['selector', 'options', 'timeout'] }, evaluate: { method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, waitForSelector: { parameters: ['selector', 'options'] }, setInputFiles: { parameters: ['selector', 'files', 'options'] } }); }
+  static { instrumentTraceMethods(this.prototype, 'Frame', frame => tracePageOwner(frame.owner), { ...selectorActionTraceMethods, runAssertion: { method: 'expect', apiName: 'frame._expect', parameters: ['selector', 'options', 'timeout'] }, evaluate: { method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, waitForSelector: { parameters: ['selector', 'options'] }, waitForFunction: { parameters: ['expression', 'arg', 'options'], prepareArguments: prepareFunctionWaitArguments }, setInputFiles: { parameters: ['selector', 'files', 'options'] } }); }
 
   private detached = false;
   async setInputFiles(selector: string, files: InputFiles, options: FrameSetInputFilesOptions = {}): Promise<void> {
@@ -101,6 +102,12 @@ export class Frame extends LocatorScope {
   async evaluate(pageFunction: string | Function, argument?: unknown): Promise<unknown> {
     if (this.detached) throw failure('EvaluationError', 'frame.evaluate', 'frame has been detached');
     return this.owner.runEvaluation('frame.evaluate', pageFunction, argument, { frame: this.snapshot.identifier });
+  }
+  async waitForFunction<Result, Argument>(pageFunction: string | ((argument: Unboxed<Argument>) => Result | Promise<Result>), argument: Argument, options?: PageWaitForFunctionOptions): Promise<SmartHandle<Result>>;
+  async waitForFunction<Result>(pageFunction: string | (() => Result | Promise<Result>), argument?: unknown, options?: PageWaitForFunctionOptions): Promise<SmartHandle<Result>>;
+  async waitForFunction(pageFunction: string | Function, argument?: unknown, options: PageWaitForFunctionOptions = {}): Promise<JSHandle> {
+    if (this.detached) throw failure('TargetClosedError', 'frame.waitForFunction', 'frame has been detached');
+    return this.owner.runFunctionWait(this.snapshot.identifier, pageFunction, argument, options);
   }
   async evaluateHandle<Result, Argument>(pageFunction: string | ((argument: Unboxed<Argument>) => Result | Promise<Result>), argument: Argument): Promise<SmartHandle<Result>>;
   async evaluateHandle<Result>(pageFunction: string | (() => Result | Promise<Result>)): Promise<SmartHandle<Result>>;
