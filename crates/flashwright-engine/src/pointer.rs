@@ -897,7 +897,12 @@ impl PointerAttempt<'_, '_> {
                 }
             }
             if !self.objects_released {
-                release_group(connection, &self.action.page, &self.token).await?;
+                release_group(
+                    connection,
+                    &self.realm.context.session_identifier,
+                    &self.token,
+                )
+                .await?;
             }
             Ok::<(), ErrorRecord>(())
         };

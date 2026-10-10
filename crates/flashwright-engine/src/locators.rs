@@ -334,7 +334,7 @@ impl Engine {
             .lock()
             .unwrap()
             .execution_contexts
-            .get(&context_identifier)
+            .get(&(page.session_identifier.as_str().into(), context_identifier))
             .filter(|context| context.frame_identifier == frame_identifier)
             .cloned()
             .ok_or_else(evaluation::context_destroyed)?;

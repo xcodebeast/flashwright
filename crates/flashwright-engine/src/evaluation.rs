@@ -80,7 +80,7 @@ impl Engine {
         let mut command = prepared.browser.connection.start_command(
             "Runtime.callFunctionOn",
             prepared.command_parameters(None),
-            Some(&prepared.page.session_identifier),
+            Some(&prepared.runtime.context.session_identifier),
         )?;
         let result = operation
             .wait(
@@ -108,7 +108,7 @@ impl Engine {
                         prepared.browser.connection.call(
                             "Runtime.terminateExecution",
                             json!({}),
-                            Some(&prepared.page.session_identifier),
+                            Some(&prepared.runtime.context.session_identifier),
                         ),
                     )
                     .await;
@@ -346,10 +346,10 @@ pub(crate) async fn ready_runtime(
             {
                 let mut cached = page.state.evaluation_runtimes.lock().unwrap();
                 if cached
-                    .get(&runtime.context.frame_identifier)
+                    .get(&runtime.context.unique_identifier)
                     .is_some_and(|cached| Arc::ptr_eq(cached, runtime))
                 {
-                    cached.remove(&runtime.context.frame_identifier);
+                    cached.remove(&runtime.context.unique_identifier);
                 }
             }
             if matches!(error.code, ErrorCode::Cancelled | ErrorCode::Timeout) {
@@ -431,7 +431,7 @@ async fn initialize_runtime(
                     "expression": expression, "uniqueContextId": context.unique_identifier,
                     "returnByValue": false, "objectGroup": "flashwright-evaluation-runtime",
                 }),
-                Some(&page.session_identifier),
+                Some(&context.session_identifier),
             ),
         )
         .await?;
@@ -461,11 +461,81 @@ async fn initialize_runtime(
                     json!({
                         "objectId": identifier,
                     }),
-                    Some(&page.session_identifier),
+                    Some(&context.session_identifier),
                 ),
             )
             .await;
         return Err(context_destroyed());
     }
     Ok(identifier.to_owned())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn failed_helper_retires_only_its_original_cache_entry() {
+        let page = Page {
+            context_identifier: "context".into(),
+            target_identifier: "target".into(),
+            session_identifier: "root-session".into(),
+            state: Arc::new(PageState::default()),
+        };
+        let context = ExecutionContext {
+            session_identifier: "child-session".into(),
+            identifier: 1,
+            unique_identifier: "unique-world".into(),
+            frame_identifier: "frame".into(),
+        };
+        page.state
+            .state
+            .lock()
+            .unwrap()
+            .execution_contexts
+            .insert(context.key(), context.clone());
+        let failure = invalid(METHOD, "helper preparation failed");
+        let (_, outcome) = watch::channel(Some(Err(failure)));
+        let failed = Arc::new(EvaluationRuntime {
+            context: context.clone(),
+            outcome,
+        });
+        let (_cancellation, receiver) = watch::channel(false);
+        let operation = Operation::new(METHOD.into(), None, receiver);
+        page.state
+            .evaluation_runtimes
+            .lock()
+            .unwrap()
+            .insert(context.unique_identifier.clone(), failed.clone());
+        assert_eq!(
+            ready_runtime(&page, &failed, &operation, METHOD)
+                .await
+                .unwrap_err()
+                .code,
+            ErrorCode::InvalidArgument
+        );
+        assert!(page.state.evaluation_runtimes.lock().unwrap().is_empty());
+
+        let (_, outcome) = watch::channel(Some(Ok("replacement-helper".into())));
+        let replacement = Arc::new(EvaluationRuntime {
+            context: context.clone(),
+            outcome,
+        });
+        page.state
+            .evaluation_runtimes
+            .lock()
+            .unwrap()
+            .insert(context.unique_identifier.clone(), replacement.clone());
+        assert_eq!(
+            ready_runtime(&page, &failed, &operation, METHOD)
+                .await
+                .unwrap_err()
+                .code,
+            ErrorCode::InvalidArgument
+        );
+        assert!(Arc::ptr_eq(
+            &page.state.evaluation_runtimes.lock().unwrap()[&context.unique_identifier],
+            &replacement
+        ));
+    }
 }

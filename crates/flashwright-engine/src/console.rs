@@ -119,6 +119,7 @@ impl Engine {
         self: &Arc<Self>,
         page_identifier: &str,
         page: &Page,
+        session_identifier: &str,
         method: &str,
         raw: &str,
     ) -> Result<(), ErrorRecord> {
@@ -132,7 +133,7 @@ impl Engine {
             let event: LogEvent = serde_json::from_str(raw).map_err(|error| {
                 ErrorRecord::new(ErrorCode::Protocol, "console", error.to_string())
             })?;
-            self.discard_console_objects(page, &browser, event.entry.args)?;
+            self.discard_console_objects(page, &browser, session_identifier, event.entry.args)?;
             let state = page.state.state.lock().unwrap();
             if context.state.trace_enabled.load(Ordering::Relaxed)
                 && event.entry.source != "worker"
@@ -170,7 +171,7 @@ impl Engine {
                 && state.failure.is_none()
                 && state
                     .execution_contexts
-                    .contains_key(&event.execution_context_id)
+                    .contains_key(&(session_identifier.into(), event.execution_context_id))
             {
                 context.state.trace_diagnostics.lock().unwrap().capture(
                     page_identifier,
@@ -185,14 +186,14 @@ impl Engine {
             {
                 state
                     .execution_contexts
-                    .get(&event.execution_context_id)
+                    .get(&(session_identifier.into(), event.execution_context_id))
                     .cloned()
             } else {
                 None
             }
         };
         let Some(execution_context) = execution_context else {
-            return self.discard_console_objects(page, &browser, event.args);
+            return self.discard_console_objects(page, &browser, session_identifier, event.args);
         };
         let group = self.identifier("console-group");
         let mut initializations = Vec::new();
@@ -223,6 +224,7 @@ impl Engine {
         self: &Arc<Self>,
         page: &Page,
         browser: &Arc<Chromium>,
+        session_identifier: &str,
         objects: Vec<RemoteObject>,
     ) -> Result<(), ErrorRecord> {
         let identifiers: Vec<_> = objects
@@ -234,7 +236,10 @@ impl Engine {
             browser,
             identifiers
                 .into_iter()
-                .map(RemoteReference::Object)
+                .map(|identifier| RemoteReference::Object {
+                    session_identifier: session_identifier.into(),
+                    identifier,
+                })
                 .collect(),
         )
     }
@@ -258,16 +263,23 @@ impl Engine {
                 return Ok(false);
             };
             let uses_group = owner.uses_object_group;
+            let session_identifier = owner.context.session_identifier.clone();
             let identifiers: Vec<_> = handles
                 .extract_if(|_, handle| handle.group == group)
                 .filter_map(|(_, handle)| handle.object_identifier)
                 .collect();
             if uses_group {
-                vec![RemoteReference::Group(group.to_owned())]
+                vec![RemoteReference::Group {
+                    session_identifier,
+                    identifier: group.to_owned(),
+                }]
             } else {
                 identifiers
                     .into_iter()
-                    .map(RemoteReference::Object)
+                    .map(|identifier| RemoteReference::Object {
+                        session_identifier: session_identifier.clone(),
+                        identifier,
+                    })
                     .collect()
             }
         };
@@ -322,10 +334,7 @@ impl Engine {
                 // IDs, without introducing an unrelated timeout for that application task.
                 let result = page
                     .state
-                    .while_alive(
-                        "event.cleanup",
-                        release_event_references(&browser, &page, &batch),
-                    )
+                    .while_alive("event.cleanup", release_event_references(&browser, &batch))
                     .await;
                 page.state.event_handle_cleanup.lock().unwrap().pending -= batch.len();
                 if let Err(error) = result {

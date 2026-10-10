@@ -53,7 +53,7 @@ pub(crate) struct DocumentState {
     pub frames: HashMap<String, FrameState>,
     pub main_frame: Option<String>,
     pub main_worlds: HashMap<String, ExecutionContext>,
-    pub execution_contexts: HashMap<u64, ExecutionContext>,
+    pub execution_contexts: HashMap<(Arc<str>, u64), ExecutionContext>,
     pub requests: NetworkRequests,
     pub interception: crate::routing_state::RequestInterception,
     pub completed_lifecycle: HashMap<String, HashSet<String>>,
@@ -94,9 +94,16 @@ pub(crate) enum NavigationOutcome {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct ExecutionContext {
+    pub session_identifier: Arc<str>,
     pub identifier: u64,
     pub unique_identifier: String,
     pub frame_identifier: String,
+}
+
+impl ExecutionContext {
+    pub fn key(&self) -> (Arc<str>, u64) {
+        (self.session_identifier.clone(), self.identifier)
+    }
 }
 
 #[derive(Default)]
@@ -246,9 +253,9 @@ impl DocumentState {
         Ok(request)
     }
 
-    /// Numeric IDs can be reused; retained objects belong to the exact original world.
+    /// Numeric IDs can be reused within a session and collide across renderer sessions.
     pub fn context_is_alive(&self, context: &ExecutionContext) -> bool {
-        self.execution_contexts.get(&context.identifier) == Some(context)
+        self.execution_contexts.get(&context.key()) == Some(context)
     }
 
     /// Keep diagnostics private until the owning page's allocation reply can be published.
@@ -321,9 +328,20 @@ impl DocumentState {
         self.frames.values().map(FrameState::snapshot).collect()
     }
 
+    #[cfg(test)]
     pub fn observe(&mut self, method: &str, parameters: &Value) -> Vec<(&'static str, Value)> {
+        self.observe_in_session("", method, parameters)
+    }
+
+    pub fn observe_in_session(
+        &mut self,
+        session_identifier: &str,
+        method: &str,
+        parameters: &Value,
+    ) -> Vec<(&'static str, Value)> {
         self.observe_event(
             NetworkEvent {
+                session_identifier,
                 method,
                 parameters,
                 ingress: NetworkIngress {
@@ -341,6 +359,7 @@ impl DocumentState {
     ) -> Vec<(&'static str, Value)> {
         self.interception.clear();
         let event = NetworkEvent {
+            session_identifier: "",
             method: "Fetch.disable",
             parameters: &Value::Null,
             ingress: NetworkIngress {
@@ -367,6 +386,7 @@ impl DocumentState {
     ) -> Vec<(&'static str, Value)> {
         let method = event.method;
         let parameters = event.parameters;
+        let session_identifier = event.session_identifier;
         self.record_idle();
         self.sequence += 1;
         let mut events = Vec::new();
@@ -393,6 +413,7 @@ impl DocumentState {
                     ) {
                         (Some(identifier), Some(unique_identifier), Some(frame_identifier)) => {
                             let context = ExecutionContext {
+                                session_identifier: session_identifier.into(),
                                 identifier,
                                 unique_identifier: unique_identifier.to_owned(),
                                 frame_identifier: frame_identifier.to_owned(),
@@ -401,10 +422,10 @@ impl DocumentState {
                                 && let Some(previous) = self.main_worlds.get(frame_identifier)
                                 && previous != &context
                             {
-                                self.execution_contexts.remove(&previous.identifier);
+                                self.execution_contexts.remove(&previous.key());
                             }
                             if self.execution_contexts.len() >= MAXIMUM_EXECUTION_CONTEXTS
-                                && !self.execution_contexts.contains_key(&identifier)
+                                && !self.execution_contexts.contains_key(&context.key())
                             {
                                 self.failure = Some(ErrorRecord::new(
                                     ErrorCode::ResourceLimit,
@@ -413,9 +434,12 @@ impl DocumentState {
                                 ));
                             } else {
                                 self.main_worlds.retain(|_, previous| {
-                                    previous.identifier != identifier || previous == &context
+                                    previous.session_identifier.as_ref() != session_identifier
+                                        || previous.identifier != identifier
+                                        || previous == &context
                                 });
-                                self.execution_contexts.insert(identifier, context.clone());
+                                self.execution_contexts
+                                    .insert(context.key(), context.clone());
                                 if is_default {
                                     self.main_worlds
                                         .insert(frame_identifier.to_owned(), context);
@@ -434,6 +458,9 @@ impl DocumentState {
             }
             "Runtime.executionContextDestroyed" => {
                 self.execution_contexts.retain(|_, context| {
+                    if context.session_identifier.as_ref() != session_identifier {
+                        return true;
+                    }
                     if let Some(unique) = parameters["executionContextUniqueId"].as_str() {
                         context.unique_identifier != unique
                     } else {
@@ -441,12 +468,14 @@ impl DocumentState {
                     }
                 });
                 self.main_worlds.retain(|_, context| {
-                    self.execution_contexts.get(&context.identifier) == Some(context)
+                    self.execution_contexts.get(&context.key()) == Some(context)
                 });
             }
             "Runtime.executionContextsCleared" => {
-                self.main_worlds.clear();
-                self.execution_contexts.clear();
+                self.main_worlds
+                    .retain(|_, context| context.session_identifier.as_ref() != session_identifier);
+                self.execution_contexts
+                    .retain(|_, context| context.session_identifier.as_ref() != session_identifier);
             }
             "Page.frameAttached" => {
                 let identifier = text(parameters, "frameId");
@@ -1011,6 +1040,88 @@ mod tests {
     }
 
     #[test]
+    fn numeric_context_collisions_and_clearing_are_scoped_to_the_original_session() {
+        let mut state = DocumentState::default();
+        for (session, frame, unique) in [
+            ("parent-session", "main", "parent-world"),
+            ("child-session", "child", "child-world"),
+        ] {
+            state.observe_in_session(
+                session,
+                "Runtime.executionContextCreated",
+                &json!({
+                    "context": { "id": 1, "uniqueId": unique,
+                        "auxData": { "frameId": frame, "isDefault": true } }
+                }),
+            );
+        }
+        let parent = state.main_worlds["main"].clone();
+        let child = state.main_worlds["child"].clone();
+        assert_eq!(state.execution_contexts.len(), 2);
+        assert!(state.context_is_alive(&parent));
+        assert!(state.context_is_alive(&child));
+
+        // Even a matching unique ID from another session has no authority over this world.
+        state.observe_in_session(
+            "parent-session",
+            "Runtime.executionContextDestroyed",
+            &json!({
+                "executionContextId": 1, "executionContextUniqueId": "child-world"
+            }),
+        );
+        assert!(state.context_is_alive(&parent));
+        assert!(state.context_is_alive(&child));
+        state.observe_in_session(
+            "parent-session",
+            "Runtime.executionContextsCleared",
+            &json!({}),
+        );
+        assert!(!state.context_is_alive(&parent));
+        assert!(state.context_is_alive(&child));
+        assert!(!state.main_worlds.contains_key("main"));
+        assert_eq!(state.main_worlds["child"], child);
+
+        state.observe_in_session(
+            "child-session",
+            "Runtime.executionContextDestroyed",
+            &json!({
+                "executionContextId": 1
+            }),
+        );
+        assert!(!state.context_is_alive(&child));
+        assert!(state.execution_contexts.is_empty());
+        assert!(state.main_worlds.is_empty());
+    }
+
+    #[test]
+    fn renderer_sessions_share_one_page_execution_context_allowance() {
+        let mut state = DocumentState::default();
+        for identifier in 0..MAXIMUM_EXECUTION_CONTEXTS {
+            state.observe_in_session(
+                &format!("session-{identifier}"),
+                "Runtime.executionContextCreated",
+                &json!({ "context": { "id": 1, "uniqueId": format!("world-{identifier}"),
+                    "auxData": { "frameId": format!("frame-{identifier}"), "isDefault": true } } }),
+            );
+        }
+        assert!(state.failure.is_none());
+        state.observe_in_session(
+            "extra-session",
+            "Runtime.executionContextCreated",
+            &json!({
+                "context": { "id": 1, "uniqueId": "extra-world",
+                    "auxData": { "frameId": "extra-frame", "isDefault": true } }
+            }),
+        );
+        assert_eq!(
+            state.failure.as_ref().unwrap().code,
+            ErrorCode::ResourceLimit
+        );
+        assert_eq!(state.execution_contexts.len(), MAXIMUM_EXECUTION_CONTEXTS);
+        assert!(!state.main_worlds.contains_key("extra-frame"));
+    }
+
+    #[test]
     fn context_events_can_precede_frame_initialization() {
         let mut state = DocumentState::default();
         create_context(&mut state, "main", 1, "main-world");
@@ -1048,7 +1159,11 @@ mod tests {
                 "auxData": { "frameId": "main", "isDefault": false },
             } }),
         );
-        let isolated = state.execution_contexts.get(&2).unwrap().clone();
+        let isolated = state
+            .execution_contexts
+            .get(&("".into(), 2))
+            .unwrap()
+            .clone();
         assert!(state.context_is_alive(&isolated));
         for (identifier, reason) in [(3, "swap"), (4, "remove")] {
             state.observe(
@@ -1061,7 +1176,11 @@ mod tests {
                 &json!({ "frameId": "child", "reason": reason }),
             );
             assert!(!state.main_worlds.contains_key("child"));
-            assert!(!state.execution_contexts.contains_key(&identifier));
+            assert!(
+                !state
+                    .execution_contexts
+                    .contains_key(&("".into(), identifier))
+            );
             assert!(state.context_is_alive(&isolated));
             assert_eq!(
                 state.main_execution_context().unwrap().unique_identifier,
@@ -1109,7 +1228,11 @@ mod tests {
                 }}),
             );
         }
-        let isolated = state.execution_contexts.get(&2).unwrap().clone();
+        let isolated = state
+            .execution_contexts
+            .get(&("".into(), 2))
+            .unwrap()
+            .clone();
         state.observe(
             "Runtime.executionContextDestroyed",
             &json!({
@@ -1164,10 +1287,18 @@ mod tests {
         assert!(state.frames.get("child").unwrap().remote);
         assert!(!state.frames.contains_key("nested"));
         for identifier in [2, 3, 12, 13] {
-            assert!(!state.execution_contexts.contains_key(&identifier));
+            assert!(
+                !state
+                    .execution_contexts
+                    .contains_key(&("".into(), identifier))
+            );
         }
         for identifier in [1, 4, 11, 14] {
-            assert!(state.execution_contexts.contains_key(&identifier));
+            assert!(
+                state
+                    .execution_contexts
+                    .contains_key(&("".into(), identifier))
+            );
         }
     }
 
