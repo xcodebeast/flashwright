@@ -218,7 +218,7 @@ bun tools/verify-driver-comparison.mjs benchmarks/results/<retained-driver-compa
 
 ## R4 Upstream sources
 
-Pinned Playwright declarations supply the compatibility inventory. Selected upstream test bodies are retained unchanged under compatibility/migration-projects, with source URLs and hashes beside them. The packed migration harness now executes the three TodoMVC tests; SVGOMG remains a target for the later frame, download and file API work. Migration results are functional evidence and do not establish a performance advantage
+Pinned Playwright declarations supply the compatibility inventory. Selected upstream test bodies are retained unchanged under compatibility/migration-projects, with source URLs and hashes beside them. The packed migration harness executes the three TodoMVC tests and all six unchanged SVGOMG tests. The [renderer-ownership checkpoint](compatibility/evidence/renderer-ownership-checkpoint-2026-10-10.json) records SVGOMG on Bun and Node 22/24, remote evaluation, application worker liveness and original-session cleanup. Remote input, network delivery and artifacts remain outside that slice. Migration results are functional evidence and do not establish a performance advantage
 
 [Third-party notices](THIRD_PARTY_NOTICES.md) identify reused sources. The Flashwright execution path uses its own Rust Chromium connection; the plain library is independent of the test runner. The separate adapter depends on a pinned, isolated Playwright Test scheduler and generic assertion infrastructure
 

@@ -13,7 +13,7 @@ import { runtimeMetadata } from './javascript-runtime.mjs';
 // Run only under the repository's process watchdog, with exclusive browser-test ownership.
 const destination = resolve(process.argv[2] ?? '.cache/public-aria-snapshots');
 await mkdir(destination, { recursive: true });
-const report = { status: 'running', ...runtimeMetadata, source: await sourceManifest(), referenceVersion: '1.60.0', outcomes: {}, traces: {}, scope: 'Public default snapshots only; AI and remote frame evaluation remain unsupported; no performance claim' };
+const report = { status: 'running', ...runtimeMetadata, source: await sourceManifest(), referenceVersion: '1.60.0', outcomes: {}, traces: {}, scope: 'Public default snapshots only; AI mode and remote-frame ARIA snapshots remain unsupported; no performance claim' };
 try {
   report.driverSha256 = createHash('sha256').update(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)).digest('hex');
   report.browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? reference.executablePath());

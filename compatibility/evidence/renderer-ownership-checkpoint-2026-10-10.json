@@ -1,0 +1,1554 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-experimental-development-checkpoint",
+  "reference": "Playwright 1.60.0",
+  "platform": "macOS arm64",
+  "browser": {
+    "version": "148.0.7778.96",
+    "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+  },
+  "sourceBoundary": {
+    "fullCoreCommit": "58fcbecf4167598bd1350690bc4526403e253248",
+    "terminalGuardCommit": "c21382cf8289dcef4883b2843f0324e2fd5af97c",
+    "fullCoreDriverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+    "terminalGuardDriverSha256": "3b3909d1123768ac8fef802d0842c09f755e7c6efd457fab0ee8e9c648596f05",
+    "statement": "The full 179-check core gate applies to the renderer/configuration foundation. The later terminal/publication guard has the focused checks below; no post-guard full-core run is claimed."
+  },
+  "scope": [
+    "Original renderer/session/context ownership for remote Frame evaluation, supported handles and lazy FrameLocator element evaluation. Captured callbacks never replay in successor documents.",
+    "URL, blob and nested application workers and audio worklets resume and execute; this does not implement public Worker APIs.",
+    "Both registration orders reject unsupported remote scripts/routes and preserve bounded cleanup. Remote attachment permanently makes that context storage collection unsupported.",
+    "Root detachment rejects unpublished allocation, closes a published page once and settles pending operations while preserving the original failure. Child detachment keeps its parent usable.",
+    "Six unchanged upstream SVGOMG tests pass through fresh packed consumers with package-import changes only. The live demo assets are identified before/after; this is not an offline corpus."
+  ],
+  "sharedCases": [
+    {
+      "case": "nested remote and same-process application scripts complete load",
+      "messages": [
+        "child",
+        "local",
+        "remote"
+      ]
+    },
+    {
+      "case": "URL, blob, and nested application workers execute without public worker APIs"
+    },
+    {
+      "case": "audio worklet module and processor execute normally"
+    },
+    {
+      "case": "sandboxed data SVG loads and resolves through FrameLocator"
+    },
+    {
+      "case": "Frame evaluation, handles, and nested remote/same-process lazy locator evaluation"
+    },
+    {
+      "case": "original handle and pending callback retire without replay; lazy locator and Frame follow renderer return"
+    },
+    {
+      "case": "remote child returns to parent renderer and detaches"
+    },
+    {
+      "case": "parent closure during child attachment",
+      "iterations": 3
+    }
+  ],
+  "candidateBoundaries": [
+    "Remote locator fill remains explicitly unsupported",
+    "page scripts: configuration before attachment rejects explicitly, child executes, storage limitation persists",
+    "page scripts: attachment before configuration rejects explicitly, child executes, storage limitation persists",
+    "page routes: configuration before attachment rejects explicitly, child executes, storage limitation persists",
+    "page routes: attachment before configuration rejects explicitly, child executes, storage limitation persists",
+    "context scripts: configuration before attachment rejects explicitly, child executes, storage limitation persists",
+    "context scripts: attachment before configuration rejects explicitly, child executes, storage limitation persists",
+    "context routes: configuration before attachment rejects explicitly, child executes, storage limitation persists",
+    "context routes: attachment before configuration rejects explicitly, child executes, storage limitation persists"
+  ],
+  "runtimeMatrix": [
+    {
+      "attempt": "public-differential-004",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "sharedGroupsPerEngine": 8,
+      "candidateBoundaries": 9,
+      "sourceFiles": 1029,
+      "sourcesUnchanged": true,
+      "driverUnchanged": true,
+      "browserUnchanged": true,
+      "reportSha256": "90cbd3301ecc555cf1b9a74d768f161b4630942d7aec9561a88437349aa4f8e5"
+    },
+    {
+      "attempt": "public-differential-node22-002",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "sharedGroupsPerEngine": 8,
+      "candidateBoundaries": 9,
+      "sourceFiles": 1029,
+      "sourcesUnchanged": true,
+      "driverUnchanged": true,
+      "browserUnchanged": true,
+      "reportSha256": "beb0d4eec133ed1127505ae5f581a96abf4328b8a4c76e02e842ddb9b3c17173"
+    },
+    {
+      "attempt": "public-differential-node24-002",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "sharedGroupsPerEngine": 8,
+      "candidateBoundaries": 9,
+      "sourceFiles": 1029,
+      "sourcesUnchanged": true,
+      "driverUnchanged": true,
+      "browserUnchanged": true,
+      "reportSha256": "dabefe165d320a4a0f35859fd830bf22c696040180286abc540987b49ba7f8fb"
+    },
+    {
+      "attempt": "public-differential-005",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "3b3909d1123768ac8fef802d0842c09f755e7c6efd457fab0ee8e9c648596f05",
+      "sharedGroupsPerEngine": 8,
+      "candidateBoundaries": 9,
+      "sourceFiles": 1029,
+      "sourcesUnchanged": true,
+      "driverUnchanged": true,
+      "browserUnchanged": true,
+      "reportSha256": "c5793e8b86a308d3e4160b37539f75bad4feb0be53ea439c3517e75bcd859c88"
+    }
+  ],
+  "svgomgAttempts": [
+    {
+      "attempt": "migration-svgomg-bun-001",
+      "status": "failed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "e7b1d31c01245a003266a0f5af45733422d663b1048eac86bfe4f57a9e44e2af",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "unexpected",
+            "attempts": [
+              "timedOut"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "unexpected",
+            "attempts": [
+              "timedOut"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "unexpected",
+            "attempts": [
+              "failed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": null,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "0079f4305405d47eb293795fc69a3485129f63a39a5e28af1a70d72a46ceca47"
+    },
+    {
+      "attempt": "migration-svgomg-bun-002",
+      "status": "passed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "0ba54559e0c90124c145d5118f1b3bd8c5e7429443a018d158ea757a2af4d975",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "c6c07bea0cde9ab3ddc86b365660e9ad5fa9ab68ba1903d188a3b6b801ae427c"
+    },
+    {
+      "attempt": "migration-svgomg-bun-003",
+      "status": "passed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "e139fe23d808b4ac051c0cc3801f9c74f0840cb00ecb9c3923ebe415bec26bd7",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "9015c69838443f8ad831be045f8347b1fb52049d7c1a482e812db8640790030f"
+    },
+    {
+      "attempt": "migration-svgomg-bun-004",
+      "status": "passed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "c2fc2229445463a6a65adcf0e6f3fbc4ae8986bf09b1247f0b7d0e72b3cca04a"
+    },
+    {
+      "attempt": "migration-svgomg-bun-005",
+      "status": "passed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "driverSha256": "3b3909d1123768ac8fef802d0842c09f755e7c6efd457fab0ee8e9c648596f05",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "910d7b260bbe6120e612c9614f17853882e0ca7fc39f9c06f11faa8b0517fb93"
+    },
+    {
+      "attempt": "migration-svgomg-node22-001",
+      "status": "passed",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "driverSha256": "03785101a1e011f3490539273a1cc546f043407cee7e166edef07f1611154689",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "dc27d3cb1f79599412d15b48fd034a6101755f16623cfbe8173b1b29d9777460"
+    },
+    {
+      "attempt": "migration-svgomg-node22-002",
+      "status": "passed",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "9379a4f18a9a3e0fd721514f1687e34dcb9028d8fdae8c4dc7a65f4389886619"
+    },
+    {
+      "attempt": "migration-svgomg-node24-001",
+      "status": "passed",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "driverSha256": "03785101a1e011f3490539273a1cc546f043407cee7e166edef07f1611154689",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "575585988a7bfac3f1295d88c3eefdba0fd0dd74e8218410b53d553d61b12fbe"
+    },
+    {
+      "attempt": "migration-svgomg-node24-002",
+      "status": "passed",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "tests": {
+        "reference": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ],
+        "flashwright": [
+          {
+            "title": "example.spec.ts > verify menu items",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > open svg",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default global settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > verify default features",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > reset settings",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          },
+          {
+            "title": "example.spec.ts > demo tests > download result",
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      "applicationAssetsUnchanged": true,
+      "sourceChanges": [
+        {
+          "path": "compatibility/migration-projects/svgomg/tests/example.spec.ts",
+          "originalSha256": "ed547f96ef813be93ac790d3d693a46333f3c5b25a63cf9ee4d5509a84e30747",
+          "migratedSha256": "90ee0e5fe299662b64500a3a4dcd278298d3bbc701a31479352894d482f0ae79",
+          "changes": [
+            "package import specifiers only"
+          ]
+        }
+      ],
+      "reportSha256": "139e3145ad0eea92e207b14fcab44a7f1fd4b40546c9f8705ec8d7bc57f694ef"
+    }
+  ],
+  "nativeRootDetachAttempts": [
+    {
+      "attempt": "root-detachment-before-publication-001",
+      "mode": "before-publication",
+      "status": "failed",
+      "classification": "harness-error",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "d1b6e0be487538d91183a1da8079c8392ffc495e9cb2576d5c53eeaf88cac98c",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 0,
+      "nativeDetachReplies": [],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "8d38bd4c550803f3f808fa8aaef0cbd7e0930975e37b1c6670bc423094bbfb15"
+    },
+    {
+      "attempt": "root-detachment-before-publication-002",
+      "mode": "before-publication",
+      "status": "failed",
+      "classification": "engine-regression",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "1eaf187773b9c2b1ea048cfb261b6a6f5165a0bc71c94cd39a194f05676d7d07",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": true,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "14ce200e175a084183c411cb7493b5616d4c5cf6b556ed24402afaa37c8583ff",
+      "observedFailure": "Missing expected rejection (closed)."
+    },
+    {
+      "attempt": "root-detachment-before-publication-003",
+      "mode": "before-publication",
+      "status": "failed",
+      "classification": "engine-regression",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "3f92f8fede4ca6e38ff20e9503866a493d349e1b2b0acb46bc14b3a265d301a3",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": true,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "13e8fbff5fadf5c68a8650fe3e8537f9ed1c31cfafb7335e9205632d806de43c",
+      "observedFailure": "Missing expected rejection (closed)."
+    },
+    {
+      "attempt": "root-detachment-before-publication-004",
+      "mode": "before-publication",
+      "status": "passed",
+      "classification": "passed-fix",
+      "driverSha256": "3b3909d1123768ac8fef802d0842c09f755e7c6efd457fab0ee8e9c648596f05",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "3f92f8fede4ca6e38ff20e9503866a493d349e1b2b0acb46bc14b3a265d301a3",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": true,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "7781bd1c28f8295d90ccade6bae4d423ca7da73f6fc7ff4fe0eb87a98faf6dbe"
+    },
+    {
+      "attempt": "root-detachment-child-control-001",
+      "mode": "child-control",
+      "status": "failed",
+      "classification": "harness-error",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "d1b6e0be487538d91183a1da8079c8392ffc495e9cb2576d5c53eeaf88cac98c",
+      "nativeDetachRequested": 0,
+      "nativeDetachObserved": 0,
+      "nativeDetachReplies": [],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "12546ce363372a708e3932d7458cbce33fc080008f60831ea4d5bd63cfe1e924"
+    },
+    {
+      "attempt": "root-detachment-child-control-002",
+      "mode": "child-control",
+      "status": "failed",
+      "classification": "harness-error",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "1eaf187773b9c2b1ea048cfb261b6a6f5165a0bc71c94cd39a194f05676d7d07",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 0,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": {
+            "code": -32602,
+            "message": "No session with given id"
+          }
+        }
+      ],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "8426f51e10e54d0f68555647321c12fe17586715a2542934f3cce0a60c0a6142"
+    },
+    {
+      "attempt": "root-detachment-child-control-003",
+      "mode": "child-control",
+      "status": "passed",
+      "classification": "passed-control",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "3f92f8fede4ca6e38ff20e9503866a493d349e1b2b0acb46bc14b3a265d301a3",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": 0,
+      "reportSha256": "4f56e32a1077c306d993c089a4675b85a4a9080e4b0516d1fcb20aaf802f90b8"
+    },
+    {
+      "attempt": "root-detachment-child-control-004",
+      "mode": "child-control",
+      "status": "passed",
+      "classification": "passed-control",
+      "driverSha256": "3b3909d1123768ac8fef802d0842c09f755e7c6efd457fab0ee8e9c648596f05",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "3f92f8fede4ca6e38ff20e9503866a493d349e1b2b0acb46bc14b3a265d301a3",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": 0,
+      "reportSha256": "2324746d94504ac704839fecdd0cb3b18f05eaf2a56f3a0b032a6971f37e13e1"
+    },
+    {
+      "attempt": "root-detachment-published-waiter-001",
+      "mode": "published-waiter",
+      "status": "failed",
+      "classification": "harness-error",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "d1b6e0be487538d91183a1da8079c8392ffc495e9cb2576d5c53eeaf88cac98c",
+      "nativeDetachRequested": 0,
+      "nativeDetachObserved": 0,
+      "nativeDetachReplies": [],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": false,
+      "closeEvents": null,
+      "reportSha256": "23b036d6d967ba922a6834739d2c4c1d9fbd8db8cb346fd22ee0f77e68ef8008"
+    },
+    {
+      "attempt": "root-detachment-published-waiter-002",
+      "mode": "published-waiter",
+      "status": "failed",
+      "classification": "engine-regression",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "1eaf187773b9c2b1ea048cfb261b6a6f5165a0bc71c94cd39a194f05676d7d07",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": true,
+      "closeEvents": null,
+      "reportSha256": "b1dd8d48eb83fd9d58e7e038227430aae1654b61c93291594132ae60115b5be5",
+      "observedFailure": "Harness observation deadline: public timeout remains explicitly unbounded"
+    },
+    {
+      "attempt": "root-detachment-published-waiter-003",
+      "mode": "published-waiter",
+      "status": "failed",
+      "classification": "engine-regression",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "3f92f8fede4ca6e38ff20e9503866a493d349e1b2b0acb46bc14b3a265d301a3",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": true,
+      "closeEvents": null,
+      "reportSha256": "7649c78734106dbc8876651452eb1c35912dbf59feae8b052e558e808260fb78",
+      "observedFailure": "Harness observation deadline: public timeout remains explicitly unbounded"
+    },
+    {
+      "attempt": "root-detachment-published-waiter-004",
+      "mode": "published-waiter",
+      "status": "passed",
+      "classification": "passed-fix",
+      "driverSha256": "3b3909d1123768ac8fef802d0842c09f755e7c6efd457fab0ee8e9c648596f05",
+      "fixtureSha256": "ce5a5088542ccc8cad61841535f5eb7ede46af771db82f5eeb48f72fc37f03ec",
+      "proxySha256": "3f92f8fede4ca6e38ff20e9503866a493d349e1b2b0acb46bc14b3a265d301a3",
+      "nativeDetachRequested": 1,
+      "nativeDetachObserved": 1,
+      "nativeDetachReplies": [
+        {
+          "kind": "nativeRootDetachReply",
+          "error": null
+        }
+      ],
+      "treeReplyReleasedAfterDetach": false,
+      "selectorProbeAcknowledged": true,
+      "closeEvents": 1,
+      "reportSha256": "dacf076a4d2c7f02784e3da8ea5aa5dec113d681601e33e00b1512eecff189eb"
+    }
+  ],
+  "configurationAttempts": [
+    {
+      "status": "passed",
+      "mode": "defer-init-reply",
+      "scope": "context",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "000d3ef9bbc2b46ea89039f14f27a6a4f5c529e26293a0a0346d03f83a893590",
+      "proxySha256": "fd5979905c13baa6d9ff9eed372fc8d60c841cca4ea6fbf6b028ef7ac7d0ac1d",
+      "observations": [
+        "Remote attachment forced before init-script native reply; rejected registration rolls back and later remote page remains usable"
+      ],
+      "childExecutions": 2,
+      "attempt": "configuration-defer-init-reply-context-002",
+      "reportSha256": "b3b9888e554583a65a6640aa5d96e4fe86cbf2b4d0de1db0f8a6da4b5fc85098"
+    },
+    {
+      "status": "passed",
+      "mode": "defer-init-reply",
+      "scope": "page",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "000d3ef9bbc2b46ea89039f14f27a6a4f5c529e26293a0a0346d03f83a893590",
+      "proxySha256": "fd5979905c13baa6d9ff9eed372fc8d60c841cca4ea6fbf6b028ef7ac7d0ac1d",
+      "observations": [
+        "Remote attachment forced before init-script native reply; rejected registration rolls back and later remote page remains usable"
+      ],
+      "childExecutions": 2,
+      "attempt": "configuration-defer-init-reply-page-002",
+      "reportSha256": "490d933c967470999ca4a0e02061c1a5cc118791f79a62ef8306372ba97044e0"
+    },
+    {
+      "status": "passed",
+      "mode": "second-disable-error",
+      "scope": "context",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "000d3ef9bbc2b46ea89039f14f27a6a4f5c529e26293a0a0346d03f83a893590",
+      "proxySha256": "fd5979905c13baa6d9ff9eed372fc8d60c841cca4ea6fbf6b028ef7ac7d0ac1d",
+      "observations": [
+        "Partial disable failure retires original context instead of claiming published route settlement was undone"
+      ],
+      "childExecutions": 0,
+      "attempt": "configuration-second-disable-error-context-002",
+      "reportSha256": "3c37837fea6074de4bdd59b50850e2a1df9db0bca227b5db0864fb37537ba9bf"
+    },
+    {
+      "status": "failed",
+      "mode": "second-enable-error",
+      "scope": "context",
+      "driverSha256": "03785101a1e011f3490539273a1cc546f043407cee7e166edef07f1611154689",
+      "fixtureSha256": "000d3ef9bbc2b46ea89039f14f27a6a4f5c529e26293a0a0346d03f83a893590",
+      "proxySha256": "fd5979905c13baa6d9ff9eed372fc8d60c841cca4ea6fbf6b028ef7ac7d0ac1d",
+      "observations": [],
+      "childExecutions": 0,
+      "attempt": "configuration-second-enable-error-context-001",
+      "reportSha256": "7f218c0951eaaa4a9085025ddfea19d6699506cdd74b805838944ce88491694c",
+      "observedFailure": "failed native configuration retires that page only when remaining pages can restore\n\n0 !== 1\n"
+    },
+    {
+      "status": "passed",
+      "mode": "second-enable-error",
+      "scope": "context",
+      "driverSha256": "2a2b2bd1a6e1696ae352cf277c014dbc51ce3c7f9d4049cda68b1a5df6be0899",
+      "fixtureSha256": "000d3ef9bbc2b46ea89039f14f27a6a4f5c529e26293a0a0346d03f83a893590",
+      "proxySha256": "fd5979905c13baa6d9ff9eed372fc8d60c841cca4ea6fbf6b028ef7ac7d0ac1d",
+      "observations": [
+        "Second-page enable failure retires that page, restores first-page native interception and context registration, and permits later remote attachments"
+      ],
+      "childExecutions": 2,
+      "attempt": "configuration-second-enable-error-context-002",
+      "reportSha256": "33a098107f90792be2b97cd2a2b809b1740119c51ef91d549eb82d960a64ef32"
+    }
+  ],
+  "placement": [
+    {
+      "attempt": "placement-chrome-flashwright-001",
+      "status": "passed",
+      "engine": "flashwright",
+      "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+      "fixtureSha256": "1968151f198c3f237dea0bfb7dabff4559c9e5d12b538439321ec4392f053a51",
+      "iframeAttachmentCount": 1,
+      "defaultWorldSessionCount": 2,
+      "defaultWorldFrameCount": 2,
+      "reportSha256": "4b93a595e00f26601ce7e713d8e41717d5257dac318d7ea43ef4db956e630165"
+    },
+    {
+      "attempt": "placement-chrome-reference-001",
+      "status": "passed",
+      "engine": "reference",
+      "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+      "fixtureSha256": "1968151f198c3f237dea0bfb7dabff4559c9e5d12b538439321ec4392f053a51",
+      "iframeAttachmentCount": 1,
+      "defaultWorldSessionCount": 2,
+      "defaultWorldFrameCount": 2,
+      "reportSha256": "736a38b47a7625e0f1a7616cff5ddd3cb193cf6c1b7d0fd0dff7e5d9b9d69738"
+    },
+    {
+      "attempt": "placement-shell-flashwright-001",
+      "status": "passed",
+      "engine": "flashwright",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "fixtureSha256": "1968151f198c3f237dea0bfb7dabff4559c9e5d12b538439321ec4392f053a51",
+      "iframeAttachmentCount": 0,
+      "defaultWorldSessionCount": 1,
+      "defaultWorldFrameCount": 2,
+      "reportSha256": "a57d99adfea0f4b813bf65e8ae32110e507101b5341ad8676548acafa8ec3d78"
+    },
+    {
+      "attempt": "placement-shell-reference-001",
+      "status": "passed",
+      "engine": "reference",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "fixtureSha256": "1968151f198c3f237dea0bfb7dabff4559c9e5d12b538439321ec4392f053a51",
+      "iframeAttachmentCount": 0,
+      "defaultWorldSessionCount": 1,
+      "defaultWorldFrameCount": 2,
+      "reportSha256": "bca45aef79a46f1fd205a1f4e988e08852030f07d695cd16a76207bdad3e4fe8"
+    }
+  ],
+  "controlledAttachment": {
+    "omittedSwap": {
+      "status": "passed",
+      "reportSha256": "40661554a19afa24ef8d06f569081a764ce7cf9a27f416e66f863dabe82f23f8",
+      "scope": "Metadata relay omits Page.frameDetached swap events to exercise direct attachment admission independently."
+    },
+    "missingResumeReply": {
+      "status": "passed",
+      "mode": "missing-reply",
+      "applicationExecutions": 1,
+      "lateChildExecutions": 1,
+      "workerStarts": [
+        "blob",
+        "url"
+      ],
+      "scope": "Injected local setup failure/timeout cleanup only. No performance claim.",
+      "reportSha256": "acfb68bdbafd216974f23b6ae3cd34dcb4d4728eb1c2eab99be0df2d4c6ccc59"
+    }
+  },
+  "fullCore": {
+    "checks": 179,
+    "sourceFiles": 1029,
+    "reportSha256": "fdc684c3793b9cdbdd0dea55ed0ecb9cde6669ec632fa67674491adcfe1ff3d5",
+    "watchdogReportSha256": "e9a69b904451cc086d708ba550efd142d4a77ee2ae0d523633dd4886d2756ef9",
+    "checkpointSha256": "23186a875f6a29cae0cb0ce7f3cb0a18d46162bae945899cb4122fbc5372c3dc",
+    "sourcesAndDriverAndBrowserUnchanged": true,
+    "remainingOwnedProcesses": 0
+  },
+  "terminalGuard": {
+    "engineHostTests": 332,
+    "lifecycleGroups": 23,
+    "lifecycleTests": 141,
+    "formatAndEngineClippy": "passed",
+    "checkpointSha256": "25df6327766c3f02ff0abfedcc007fb6e0502a98529266a4d760946f88d86761",
+    "nativeTargetCleanup": "Both root cases retain Target.closeTarget and original Target.targetDestroyed before context disposal.",
+    "lifecycleRunBoundary": "The aggregate watchdog expired after 18 completed, individually successful modules; the remaining five modules passed under separate watchdogs. All 23 individual module watchdogs exited cleanly without survivors.",
+    "interruptedAggregateReportSha256": "29b4583097a306a4d34052f3e850bed1aa4c536778344cd5164615443140b951"
+  },
+  "retainedDevelopmentFailures": [
+    "Initial SVGOMG attempt passed three candidate tests and failed three while application workers remained paused; all six passed after worker resume and remote evaluation fixes.",
+    "Initial routing restoration probe closed the whole context because the cleanup cancellation sender was dropped. Retaining the sender makes the identical controlled enable-failure probe preserve the remaining page.",
+    "Stock headless shell kept the cross-site fixture in one renderer on both engines. Its failed remote-boundary assertion is a fixture-placement mismatch, not remote-frame conformance. Full Chrome produced actual remote sessions on both engines.",
+    "Root-detachment attempts001 used an invalid protocol command ID and unrecognized encoded sentinels; child attempt002 addressed detach through the wrong parent. These are harness errors, retained separately from native engine regressions.",
+    "Terminal host compile and assertion corrections are retained privately; runtime code was unchanged by those test corrections."
+  ],
+  "reproduction": {
+    "sharedFixture": "compatibility/m2/remote-frame-evaluation.mjs",
+    "sharedCommand": "bun compatibility/m2/remote-frame-evaluation.mjs <new-output-directory>",
+    "packedMigrationCommand": "bun tools/test-packed-migration.mjs svgomg <new-report.json>",
+    "environment": "Set FLASHWRIGHT_BROWSER_PATH to the pinned full Chrome binary and FLASHWRIGHT_DRIVER_PATH to a remapped build for the selected source commit. Use the external tools/watchdog.py supervisor.",
+    "nativeHostCommand": "cargo test -p flashwright-engine --lib --locked",
+    "coreCommand": "bun tools/verify-core.mjs",
+    "artifactPolicy": "This is a portable development summary with original report hashes and selected complete outcome tables, not a raw-evidence export. Raw protocol, watchdog, reporter and fault-harness records remain private development evidence."
+  },
+  "limitations": [
+    "No performance, native Linux, release or exhaustive Playwright parity claim.",
+    "Remote locator input, general locator reads/assertions, remote network delivery/body custody, console/pageerror delivery and remote DOM/ARIA artifacts remain outside this slice.",
+    "Remote routing/init scripts, storage collection and networkidle are rejected explicitly within the stated admission boundaries.",
+    "Stock headless-shell remote placement is unverified; no altered browser placement flags were used.",
+    "The reviewed entry count remains unchanged; broader API options require their own evidence."
+  ]
+}

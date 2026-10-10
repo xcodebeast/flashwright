@@ -35,6 +35,9 @@ for (const path of [
   'crates/flashwright-engine/src/file_inputs.rs', 'crates/flashwright-engine/src/keyboard.rs', 'crates/flashwright-engine/src/pointer.rs',
   'crates/flashwright-engine/src/recording/phases.rs',
   'crates/flashwright-engine/src/recording.rs',
+  'crates/flashwright-engine/src/evaluation.rs', 'crates/flashwright-engine/src/page_state.rs',
+  'crates/flashwright-engine/src/renderer_sessions.rs', 'crates/flashwright-engine/src/renderer_setup.rs',
+  'crates/flashwright-engine/src/events.rs',
 ]) implementation[path] = hash(await readFile(path));
 const outputs = {
   'compatibility/upstream/frame-locators.source.txt': extract,
@@ -49,8 +52,9 @@ const outputs = {
       'Frame-path assertions use ordinary host retries to re-resolve changing ancestor selectors; known-frame assertions retain existing document residency.',
       'Selector-to-handle resolution captures the before phase, and uploads capture their original selected node before assignment while retaining document and cancellation guards.',
       'Completed input phases may be captured again on a later native attempt; pending capture ownership and single before/after boundaries remain deduplicated.',
+      'Remote selector-to-handle and captured evaluation use ready original renderer sessions; retired sessions retain bounded initialization and cleanup ownership without borrowing successors.',
     ],
-    limitations: ['Same-process frame routing only; out-of-process frame actions remain explicitly unsupported.', 'This provenance record is not conformance, performance or release acceptance.'],
+    limitations: ['Remote frame coverage is limited to selector-to-handle resolution and evaluation; remote locator input, reads, assertions, networking and artifacts remain outside this slice.', 'This provenance record is not conformance, performance or release acceptance.'],
     license: 'Apache-2.0', licensePath: 'compatibility/upstream/LICENSE.playwright', noticePath: 'compatibility/upstream/NOTICE.playwright',
   }, null, 2) + '\n',
 };
