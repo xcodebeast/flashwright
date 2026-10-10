@@ -114,6 +114,35 @@ impl Engine {
                     state.observe_in_session(parent_session, "Target.attachedToTarget", parameters);
                 (owner, events)
             };
+            if !owner.is_retired()
+                && state
+                    .frames
+                    .get(&target)
+                    .is_some_and(|frame| frame.session_identifier.as_ref() == session)
+            {
+                context.state.storage_failure.lock().unwrap().get_or_insert_with(|| {
+                    ErrorRecord::new(
+                        ErrorCode::UnsupportedFeature,
+                        "context.storageState",
+                        "storage collection from out-of-process child frames is not implemented",
+                    )
+                });
+                if state.failure.is_none() {
+                    let has_init_scripts = !page.state.init_scripts.lock().unwrap().is_empty()
+                        || registry.init_scripts.values().any(|script| {
+                            script.context_identifier == page.context_identifier
+                                && script
+                                    .page_identifier
+                                    .as_deref()
+                                    .is_none_or(|owner| owner == page_identifier)
+                        });
+                    let has_routes = state.interception.enabled
+                        || page.state.routing_transition.load(Ordering::Acquire)
+                        || page.state.routing_registered.load(Ordering::Acquire)
+                        || context.state.routing_registered.load(Ordering::Acquire);
+                    state.failure = unsupported_remote_configuration(has_init_scripts, has_routes);
+                }
+            }
             page.state
                 .evaluation_runtimes
                 .lock()
@@ -332,6 +361,31 @@ impl Engine {
             page.state.changed.send_replace(state.sequence);
         }
     }
+}
+
+/// A direct attachment has the same configuration limits as a renderer swap.
+pub(crate) fn unsupported_remote_configuration(
+    has_init_scripts: bool,
+    has_routes: bool,
+) -> Option<ErrorRecord> {
+    let (method, message) = if has_init_scripts {
+        (
+            "addInitScript",
+            "init scripts in out-of-process child frames are not implemented",
+        )
+    } else if has_routes {
+        (
+            "route.configure",
+            "request routing in out-of-process child frames is not implemented",
+        )
+    } else {
+        return None;
+    };
+    Some(ErrorRecord::new(
+        ErrorCode::UnsupportedFeature,
+        method,
+        message,
+    ))
 }
 
 #[cfg(test)]

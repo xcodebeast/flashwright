@@ -31,6 +31,7 @@ pub(crate) struct PageState {
     pub renderer_sessions: Mutex<super::renderer_sessions::RendererSessions>,
     pub purpose: PagePurpose,
     pub routing_registered: std::sync::atomic::AtomicBool,
+    pub routing_transition: std::sync::atomic::AtomicBool,
     pub diagnostic_session_destroyed: std::sync::atomic::AtomicBool,
     pub state: Mutex<DocumentState>,
     pub changed: watch::Sender<u64>,
@@ -133,6 +134,7 @@ impl Default for PageState {
             renderer_sessions: Mutex::new(super::renderer_sessions::RendererSessions::default()),
             purpose: PagePurpose::Public,
             routing_registered: std::sync::atomic::AtomicBool::new(false),
+            routing_transition: std::sync::atomic::AtomicBool::new(false),
             diagnostic_session_destroyed: std::sync::atomic::AtomicBool::new(false),
             state: Mutex::new(DocumentState {
                 idle_since: Some(Instant::now()),

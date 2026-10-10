@@ -321,6 +321,14 @@ impl Engine {
                         .context(&page.context_identifier, "context.storageState")
                         .ok();
                     let mut state = page.state.state.lock().unwrap();
+                    let is_owned_renderer_swap = event.method == "Page.frameDetached"
+                        && parameters["reason"] == "swap"
+                        && parameters["frameId"]
+                            .as_str()
+                            .and_then(|identifier| state.frames.get(identifier))
+                            .is_some_and(|frame| {
+                                frame.session_identifier.as_ref() == source_session
+                            });
                     let mut recording_state = context
                         .as_ref()
                         .filter(|context| {
@@ -376,22 +384,19 @@ impl Engine {
                     {
                         state.failure = Some(error);
                     }
-                    if event.method == "Page.frameDetached"
-                        && parameters["reason"] == "swap"
-                        && !page.state.init_scripts.lock().unwrap().is_empty()
-                    {
-                        state.failure = Some(ErrorRecord::new(
-                            ErrorCode::UnsupportedFeature,
-                            "addInitScript",
-                            "init scripts in out-of-process child frames are not implemented",
-                        ));
+                    if is_owned_renderer_swap && state.failure.is_none() {
+                        state.failure = crate::renderer_setup::unsupported_remote_configuration(
+                            !page.state.init_scripts.lock().unwrap().is_empty(),
+                            state.interception.enabled
+                                || page.state.routing_transition.load(Ordering::Acquire)
+                                || page.state.routing_registered.load(Ordering::Acquire)
+                                || context.as_ref().is_some_and(|context| {
+                                    context.state.routing_registered.load(Ordering::Acquire)
+                                }),
+                        );
                     }
-                    if state.published
-                        && event.method == "Page.frameDetached"
-                        && parameters["reason"] == "swap"
-                        && let Some(context) = &context
-                    {
-                        *context.state.storage_failure.lock().unwrap() = Some(ErrorRecord::new(
+                    if is_owned_renderer_swap && let Some(context) = &context {
+                        context.state.storage_failure.lock().unwrap().get_or_insert_with(|| ErrorRecord::new(
                             ErrorCode::UnsupportedFeature,
                             "context.storageState",
                             "storage collection from out-of-process child frames is not implemented",
@@ -482,8 +487,25 @@ impl Engine {
     }
 
     fn remove_context_with_error(&self, identifier: &str, error: ErrorRecord) -> Option<Context> {
+        self.remove_context_if_owned(identifier, error, None)
+    }
+
+    pub(crate) fn remove_context_if_owned(
+        &self,
+        identifier: &str,
+        error: ErrorRecord,
+        owner: Option<&Context>,
+    ) -> Option<Context> {
         let (context, pages) = {
             let mut registry = self.registry.lock().unwrap();
+            if owner.is_some_and(|owner| {
+                !registry
+                    .contexts
+                    .get(identifier)
+                    .is_some_and(|current| Arc::ptr_eq(&current.state, &owner.state))
+            }) {
+                return None;
+            }
             let identifiers: Vec<_> = registry
                 .pages
                 .iter()
@@ -550,6 +572,87 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn remote_configuration_guard_ignores_a_swap_from_the_previous_renderer() {
+        let (outgoing, _messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = Arc::new(Engine::new(
+            None,
+            outgoing,
+            fatal,
+            ResourceLimits::default(),
+        ));
+        let page = Page {
+            context_identifier: "context".into(),
+            target_identifier: "root".into(),
+            session_identifier: "root-session".into(),
+            state: Arc::new(PageState::default()),
+        };
+        let context = Context {
+            browser_identifier: "browser".into(),
+            protocol_identifier: "native-context".into(),
+            viewport: None,
+            devices: crate::devices::DeviceOptions::default(),
+            settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+            state: Arc::new(context_state::ContextState::default()),
+            published: false,
+        };
+        page.state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .register_root("root", "root-session")
+            .unwrap();
+        {
+            let mut state = page.state.state.lock().unwrap();
+            state.initialize_main_frame("root", "root-session");
+            state.observe_in_session(
+                "root-session",
+                "Page.frameAttached",
+                &json!({"frameId":"child", "parentFrameId":"root"}),
+            );
+            state.observe_in_session("root-session", "Target.attachedToTarget", &json!({"sessionId":"successor-session", "targetInfo":{"type":"iframe", "targetId":"child"}}));
+        }
+        page.state.routing_registered.store(true, Ordering::Release);
+        engine
+            .registry
+            .lock()
+            .unwrap()
+            .contexts
+            .insert("context".into(), context.clone());
+        engine
+            .registry
+            .lock()
+            .unwrap()
+            .pages
+            .insert("page".into(), page.clone());
+        engine
+            .handle_event(
+                "browser",
+                Event {
+                    sequence: 1,
+                    received_at: std::time::Instant::now(),
+                    method: "Page.frameDetached".into(),
+                    session_identifier: Some("root-session".into()),
+                    parameters: Some(
+                        serde_json::value::to_raw_value(
+                            &json!({"frameId":"child", "reason":"swap"}),
+                        )
+                        .unwrap(),
+                    ),
+                },
+            )
+            .unwrap();
+        assert!(page.state.state.lock().unwrap().failure.is_none());
+        assert!(context.state.storage_failure.lock().unwrap().is_none());
+        assert_eq!(
+            page.state.state.lock().unwrap().frames["child"]
+                .session_identifier
+                .as_ref(),
+            "successor-session"
+        );
+    }
 
     #[test]
     fn target_crashes_require_root_identity_but_owned_frame_inspector_crashes_fail_the_page() {

@@ -18,11 +18,12 @@ const driverPath = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/
 const report = {
   schemaVersion: 1, status: 'running', reference: '1.60.0', ...runtimeMetadata,
   platform: process.platform, architecture: process.arch, outcomes: {}, candidateBoundaries: [],
-  scope: 'Application worker and audio worklet liveness, sandboxed SVG previews, cross-site Frame and handle evaluation, lazy FrameLocator element resolution, nested renderer documents, interrupted callbacks without replay, renderer return, and context closure. Remote input, network, diagnostics, performance, and release acceptance are outside this fixture.',
+  scope: 'Application worker and audio worklet liveness, sandboxed SVG previews, cross-site Frame and handle evaluation, lazy FrameLocator element resolution, nested renderer documents, interrupted callbacks without replay, renderer return, and context closure. Candidate-only checks reject unsupported remote init scripts, routing, and storage collection in either configuration order. Remote input, network delivery, diagnostics, performance, and release acceptance are outside this fixture.',
 };
 
 let port;
 const workerStarts = [];
+const boundaryStarts = new Set();
 const server = createServer((request, response) => {
   response.setHeader('Content-Type', 'text/html');
   const path = request.url.split('?')[0];
@@ -38,6 +39,15 @@ const server = createServer((request, response) => {
   } else if (path === '/worker-start') {
     workerStarts.push(new URL(request.url, 'http://fixture').searchParams.get('kind'));
     response.end('ok');
+  } else if (path === '/boundary-start') {
+    boundaryStarts.add(new URL(request.url, 'http://fixture').searchParams.get('token'));
+    response.end('ok');
+  } else if (path === '/boundary-parent') {
+    const token = new URL(request.url, 'http://fixture').searchParams.get('token');
+    response.end(`<iframe src="http://localhost:${port}/boundary-child?token=${encodeURIComponent(token)}"></iframe>`);
+  } else if (path === '/boundary-child') {
+    const token = new URL(request.url, 'http://fixture').searchParams.get('token');
+    response.end(`<script>fetch('/boundary-start?token='+${JSON.stringify(token)})</script><body>boundary</body>`);
   } else if (path === '/parent') {
     response.end(`<script>window.received=[];addEventListener('message',event=>received.push(event.data));addEventListener('load',()=>window.rootLoaded=true)</script><iframe id="child" src="http://localhost:${port}/child"></iframe>`);
   } else if (path === '/child') {
@@ -166,7 +176,64 @@ async function run(engine, chromium) {
       await closingContext.close();
     }
     observations.push({ case: 'parent closure during child attachment', iterations: 3 });
+    if (engine === 'flashwright') await verifyCandidateBoundaries(browser);
   } finally { await browser.close(); }
+}
+
+/** Unsupported remote configuration must be explicit in either registration order. */
+async function verifyCandidateBoundaries(browser) {
+  const unsupported = error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message);
+  for (const scope of ['page', 'context']) {
+    for (const feature of ['scripts', 'routes']) {
+      for (const configureFirst of [true, false]) {
+        const token = `${scope}-${feature}-${configureFirst}`;
+        const context = await browser.newContext();
+        try {
+          const page = await context.newPage();
+          const owner = scope === 'page' ? page : context;
+          const configure = () => feature === 'scripts'
+            ? owner.addInitScript(() => { window.boundaryInitScript = true; })
+            : owner.route('**/never-matches-this-fixture', route => route.continue());
+          const navigate = () => page.goto(`http://127.0.0.1:${port}/boundary-parent?token=${token}`, { timeout: 5000 });
+          if (configureFirst) {
+            await configure();
+            await assert.rejects(navigate(), unsupported);
+          } else {
+            await navigate();
+            await assert.rejects(configure(), unsupported);
+            assert.equal(await page.evaluate(() => document.querySelectorAll('iframe').length), 1);
+            // Rejected registration must not affect a later remote attachment.
+            if (scope === 'context') {
+              const followingPage = await context.newPage();
+              await followingPage.goto(`http://127.0.0.1:${port}/boundary-parent?token=${token}-following`, { timeout: 5000 });
+              await followingPage.close();
+            } else {
+              await page.evaluate(url => {
+                const child = document.createElement('iframe');
+                child.src = url;
+                document.body.append(child);
+              }, `http://localhost:${port}/boundary-child?token=${token}-following`);
+              const followingDeadline = Date.now() + 5000;
+              while (!boundaryStarts.has(`${token}-following`)) {
+                assert.ok(Date.now() < followingDeadline, 'rejected page registration must not poison later attachment');
+                await new Promise(resolve => setTimeout(resolve, 20));
+              }
+              assert.equal(await page.evaluate(() => document.querySelectorAll('iframe').length), 2);
+            }
+          }
+          const deadline = Date.now() + 5000;
+          while (!boundaryStarts.has(token)) {
+            assert.ok(Date.now() < deadline, `rejected configuration must release the original child: ${token}`);
+            await new Promise(resolve => setTimeout(resolve, 20));
+          }
+          await assert.rejects(context.storageState(), unsupported);
+          await page.close();
+          await assert.rejects(context.storageState(), unsupported);
+          report.candidateBoundaries.push(`${scope} ${feature}: ${configureFirst ? 'configuration before attachment' : 'attachment before configuration'} rejects explicitly, child executes, storage limitation persists`);
+        } finally { await context.close(); }
+      }
+    }
+  }
 }
 
 try {
@@ -181,7 +248,7 @@ try {
   await run('flashwright', candidateChromium);
   assert.deepEqual(report.outcomes.flashwright, report.outcomes.reference);
   assert.equal(report.outcomes.flashwright.length, 8);
-  assert.equal(report.candidateBoundaries.length, 1);
+  assert.equal(report.candidateBoundaries.length, 9);
   report.sourceChangedDuringVerification = JSON.stringify(await sourceManifest()) !== JSON.stringify(report.sources);
   report.driverChangedDuringVerification = hash(await readFile(driverPath)) !== report.driverSha256;
   report.browserChangedDuringVerification = hash(await readFile(browserPath)) !== report.browser.sha256;
