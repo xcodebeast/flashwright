@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 import sys
 import zipfile
+from urllib.parse import unquote, urlsplit
 
 
 NATIVE_INPUT_METHODS = {'click', 'fill', 'press', 'type', 'setInputFiles'}
@@ -121,17 +122,34 @@ def archive_stacks(archive):
     return stacks
 
 
-def source_evidence(archive, calls, report):
+def source_evidence(archive, calls, report, engine):
     """Bind fixture call sites to archived source bytes, without reading live files."""
     sidecar_stacks = archive_stacks(archive)
     fixture_sources = {}
+    observations = []
     for call in calls:
         stack = call.get('stack') or sidecar_stacks.get(call['callId'], [])
         fixture_frames = [frame for frame in stack
                           if frame['file'].replace('\\', '/').endswith('/compatibility/m2/frame-locators.mjs')]
         require(fixture_frames, f'{call["callId"]}: missing fixture call site')
+        actual_frames = [frame for frame in fixture_frames if frame['file'].startswith('/')]
+        require(actual_frames, f'{call["callId"]}: missing filesystem fixture call site')
         for frame in fixture_frames:
-            source_name = 'resources/src@' + hashlib.sha1(frame['file'].encode()).hexdigest() + '.txt'
+            source_path = frame['file']
+            if engine == 'reference' and source_path.startswith('async file:///'):
+                # The pinned parser leaves Node's anonymous async prefix in the file field.
+                # Bind it only to an independently archived caller in this same stack.
+                location = urlsplit(source_path.removeprefix('async '))
+                require(not location.netloc and not location.query and not location.fragment,
+                        'Invalid reference async source location')
+                canonical_path = unquote(location.path)
+                require(any(actual['file'] == canonical_path for actual in actual_frames),
+                        'Reference async source has no matching filesystem caller')
+                observations.append({'callId': call['callId'], 'observedFile': source_path,
+                                     'archivedFile': canonical_path,
+                                     'reason': 'pinned reference parser retains anonymous async prefix'})
+                source_path = canonical_path
+            source_name = 'resources/src@' + hashlib.sha1(source_path.encode()).hexdigest() + '.txt'
             require(source_name in archive.namelist(), f'Missing source artifact: {source_name}')
             source = archive.read(source_name)
             require(sha256(source) == report['fixtureSha256'],
@@ -141,7 +159,7 @@ def source_evidence(archive, calls, report):
             require(type(frame['column']) is int and frame['column'] > 0,
                     f'{call["callId"]}: invalid source column')
             fixture_sources[source_name] = sha256(source)
-    return fixture_sources
+    return fixture_sources, observations
 
 
 def jpeg_dimensions(content):
@@ -323,12 +341,13 @@ def review_archive(directory, engine, report):
                 native_evidence.append({'callId': call['callId'], 'method': call['method'],
                                         'selector': call['params']['selector'],
                                         'inputSnapshot': event['inputSnapshot'], 'targets': targets})
+        fixture_sources, source_observations = source_evidence(archive, frame_calls, report, engine)
         return {'sha256': archive_hash, 'calls': len(before), 'frameLocatorCalls': len(frame_calls),
                 'snapshots': sum(len(captures) for captures in snapshots.by_name.values()),
                 'snapshotNames': len(snapshots.by_name), 'validatedBackreferences': snapshots.backreferences,
                 'boundFrameCallPhases': dict(phase_counts), 'inputEvents': len(input_events),
                 'nativeInputCalls': len(native_calls), 'nativeInputs': native_evidence,
-                'fixtureSources': source_evidence(archive, frame_calls, report),
+                'fixtureSources': fixture_sources, 'sourceFrameObservations': source_observations,
                 'filmstrip': filmstrip_evidence(archive, events, input_pages),
                 'phaseObservations': differences, 'failures': failures}
 
