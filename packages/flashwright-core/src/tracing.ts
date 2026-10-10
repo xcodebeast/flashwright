@@ -143,7 +143,7 @@ export class Tracing {
       if (attempts.size >= 16384) throw failure('ResourceLimitError', 'tracing.api', 'API trace exceeds 16384 wire attempts');
       if (attempts.has(attempt.attempt)) throw failure('ProtocolError', 'tracing.api', 'duplicate API wire attempt identity');
       if (attempt.responseIdentifier && chunk.apiPendingResponses?.has(attempt.call)) throw failure('ProtocolError', 'tracing.api', 'public API call owns multiple final wire responses');
-      if ((attempt.snapshot.request as { bodySize: number }).bodySize > 0) {
+      if (attempt.requestBodyPresent) {
         const body = chunk.apiRequestBodies?.get(attempt.call);
         if (!body) throw failure('ProtocolError', 'tracing.api', 'wire attempt lost its prepared request body');
         const request = attempt.snapshot.request as { headers: { name: string; value: string }[] };

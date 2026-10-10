@@ -6,6 +6,7 @@ export interface APITraceAttempt {
   call: string;
   attempt: string;
   responseIdentifier: string | undefined;
+  requestBodyPresent: boolean;
   snapshot: Record<string, unknown>;
 }
 
@@ -88,6 +89,7 @@ export function apiTraceAttempt(value: unknown): APITraceAttempt {
   const failed = event.failed;
   if ((!failed && (status < 100 || status > 999)) || (failed && status !== 0)) invalid('invalid API trace status');
   const requestBodySize = nonnegative(event.requestBodySize, 'request body size');
+  if (typeof event.requestBodyPresent !== 'boolean' || (!event.requestBodyPresent && requestBodySize !== 0)) invalid('invalid API trace request body presence');
   const responseBodySize = event.responseBodySize === null ? 0 : nonnegative(event.responseBodySize, 'response body size');
   if (event.responseIdentifier !== null && (typeof event.responseIdentifier !== 'string' || !event.responseIdentifier || event.responseIdentifier.length > 128)) invalid('invalid API trace response identity');
   const requestHeaders = headers(event.requestHeaders);
@@ -107,13 +109,14 @@ export function apiTraceAttempt(value: unknown): APITraceAttempt {
   const snapshot = {
     startedDateTime: new Date(startedWallTime).toISOString(), time: failed ? -1 : elapsedMilliseconds,
     request: { method: event.method, url: url.toString(), httpVersion: 'HTTP/1.1', cookies: requestCookies, headers: requestHeaders,
-      queryString: [...url.searchParams].map(([name, value]) => ({ name, value })), headersSize: -1, bodySize: requestBodySize, postData: null },
+      queryString: [...url.searchParams].map(([name, value]) => ({ name, value })), headersSize: -1, bodySize: requestBodySize },
     response: { status: failed ? -1 : status, statusText: event.statusText, httpVersion: failed ? 'HTTP/1.1' : event.httpVersion, cookies: responseCookies, headers: responseHeaders,
       content: { size: failed ? -1 : responseBodySize, mimeType: contentType }, headersSize: -1, bodySize: failed ? -1 : responseBodySize, redirectURL, _transferSize: -1 },
     cache: {}, timings: { send: -1, wait: failed ? -1 : elapsedMilliseconds, receive: -1 }, _apiRequest: true,
   };
   return { generation: event.generation as string, call: event.call as string, attempt: event.attempt as string,
-    responseIdentifier: event.responseIdentifier === null ? undefined : event.responseIdentifier as string, snapshot };
+    responseIdentifier: event.responseIdentifier === null ? undefined : event.responseIdentifier as string,
+    requestBodyPresent: event.requestBodyPresent, snapshot };
 }
 
 export function apiTraceBodyExtension(attempt: APITraceAttempt): string {
