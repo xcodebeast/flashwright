@@ -4,14 +4,31 @@ import { failure } from './errors.js';
 import { installRunnerContextLifecycle, installAsyncRunnerContextLifecycle, installOwnedRunnerContextLifecycle, installArtifactContextLifecycle, type RunnerContextLifecycle, type AsyncRunnerContextLifecycle, type OwnedRunnerContextLifecycle, type ArtifactContextLifecycle, type RunnerContextLifecycleRegistration } from './runner-lifecycle.js';
 import { installRunnerContextDefaults, type RunnerContextDefaults } from './runner-context-defaults.js';
 import { installRunnerActionObserver, type RunnerActionObserver } from './runner-actions.js';
-import { currentRunnerTraceChunk, currentRunnerTraceRecording, startRunnerTraceRecording, startRunnerTraceRecordingWithActions, type RunnerTraceChunk, type RunnerTraceRecording, type RunnerTraceRecordingWithActions } from './runner-trace-archives.js';
-import type { TracingStartOptions } from './tracing.js';
+import { currentRunnerTraceChunk, currentRunnerTraceRecording, startRunnerTraceRecording, startRunnerTraceRecordingWithActions, beginRunnerTraceRecordingWithActions, discardRunnerTraceChunk, settleClosedRunnerTraceCleanup, type RunnerTraceChunk, type RunnerTraceRecording, type RunnerTraceRecordingWithActions, type RunnerTraceStartup } from './runner-trace-archives.js';
+import { beginRunnerTraceRecordingChunk } from './runner-trace-archives.js';
+import type { TracingStartOptions, TracingChunkOptions } from './tracing.js';
 import { TraceArchiveAssembly } from './trace-archive-assembly.js';
 import { RunnerTraceJournal, type RunnerTraceJournalOptions } from './runner-trace-journal.js';
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 10,
+  version: 11,
+  beginTraceRecordingChunk(version: number, tracing: object, recording: RunnerTraceRecording, observer: RunnerActionObserver, options: TracingChunkOptions = {}): ReturnType<typeof beginRunnerTraceRecordingChunk> {
+    if (version !== 11) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return beginRunnerTraceRecordingChunk(tracing, recording, observer, options);
+  },
+  discardTraceChunk(version: number, tracing: object, chunk: RunnerTraceChunk): Promise<void> {
+    if (version !== 11) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return discardRunnerTraceChunk(tracing, chunk);
+  },
+  settleClosedTraceCleanup(version: number, tracing: object): Promise<void> {
+    if (version !== 11) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return settleClosedRunnerTraceCleanup(tracing);
+  },
+  beginTraceRecordingWithActions(version: number, tracing: object, options: TracingStartOptions, observer: RunnerActionObserver): RunnerTraceStartup {
+    if (version !== 11) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return beginRunnerTraceRecordingWithActions(tracing, options, observer);
+  },
   startTraceRecordingWithActions(version: number, tracing: object, options: TracingStartOptions, observer: RunnerActionObserver): Promise<RunnerTraceRecordingWithActions> {
     if (version !== 10) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return startRunnerTraceRecordingWithActions(tracing, options, observer);

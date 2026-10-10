@@ -49,6 +49,81 @@ async function check(name, callback) {
 }
 
 try {
+  await check('legacy synchronous observer callbacks reject recursive owner operations', async () => {
+    const fixture = browserFixture();
+    let creations = 0;
+    let closures = 0;
+    const uninstall = runnerIntegration.installContextLifecycle(1, {
+      didCreateContext(context) {
+        creations++;
+        assert.throws(() => context.close(), error => error.name === 'ProtocolError');
+        assert.throws(() => fixture.browser.close(), error => error.name === 'ProtocolError');
+      },
+      async willCloseContext(context) {
+        closures++;
+        await setImmediate();
+        assert.throws(() => context.close(), error => error.name === 'ProtocolError');
+        assert.throws(() => fixture.browser.close(), error => error.name === 'ProtocolError');
+      },
+    });
+    try {
+      await fixture.browser.newContext();
+      await fixture.browser.close();
+      assert.equal(creations, 1); assert.equal(closures, 1);
+      assert.deepEqual(fixture.requests.map(value => value.method), ['browser.newContext', 'browser.close']);
+    } finally { uninstall(); await fixture.browser.close(); }
+  });
+
+  await check('browser close waits for every artifact callback and still closes after one fails', async () => {
+    const fixture = browserFixture();
+    const first = await fixture.browser.newContext();
+    const second = await fixture.browser.newContext();
+    const cleanup = deferred();
+    const original = new Error('original close artifact failure');
+    const observed = [];
+    const registration = runnerIntegration.installAsyncContextLifecycle(2, {
+      async didCreateContext() {},
+      async willCloseContext(context) {
+        observed.push(context);
+        assert.throws(() => fixture.browser.close(), error => error.name === 'ProtocolError');
+        if (context === first) throw original;
+        await cleanup.promise;
+      },
+    });
+    try {
+      await registration.ready;
+      const closure = fixture.browser.close();
+      const rejected = assert.rejects(closure, error => error === original);
+      await until(() => observed.length === 2);
+      assert(!fixture.requests.some(request => request.method === 'browser.close'));
+      cleanup.resolve(); await rejected;
+      assert.deepEqual(observed, [first, second]);
+      assert.equal(fixture.requests.filter(request => request.method === 'browser.close').length, 1);
+      assert.deepEqual(fixture.browser.contexts(), []);
+      assert.equal(fixture.browser.close(), closure);
+    } finally { cleanup.resolve(); await registration.dispose(); await fixture.browser.close().catch(() => {}); }
+  });
+
+  await check('concurrent browser and context closure retain the first owner source once', async () => {
+    for (const browserFirst of [false, true]) {
+      const fixture = browserFixture();
+      const context = await fixture.browser.newContext();
+      const cleanup = deferred();
+      const sources = [];
+      const registration = runnerIntegration.installAsyncContextLifecycle(2, {
+        async didCreateContext() {}, async willCloseContext(_context, source) { sources.push(source); await cleanup.promise; },
+      });
+      try {
+        await registration.ready;
+        const closures = browserFirst ? [fixture.browser.close(), context.close()] : [context.close(), fixture.browser.close()];
+        await until(() => sources.length === 1);
+        assert(!fixture.requests.some(request => request.method.endsWith('.close')));
+        cleanup.resolve(); await Promise.all(closures);
+        assert.deepEqual(sources, [browserFirst ? 'browser' : 'context']);
+      } finally { cleanup.resolve(); await registration.dispose(); await fixture.browser.close(); }
+    }
+  });
+
   await check('disabled and synchronous observers retain the original native command sequence', async () => {
     const fixture = browserFixture();
     try {
@@ -155,7 +230,7 @@ try {
     } finally { startup.resolve(); await registration.dispose(); await fixture.browser.close(); }
   });
 
-  await check('browser destruction while startup waits cannot publish its dead context', async () => {
+  await check('browser closure waits for startup without publishing its closing context', async () => {
     const fixture = browserFixture();
     const startup = deferred();
     let entered = false;
@@ -166,10 +241,13 @@ try {
       await registration.ready;
       const rejected = assert.rejects(fixture.browser.newContext(), error => error.name === 'TargetClosedError');
       await until(() => entered);
-      await fixture.browser.close();
+      const closure = fixture.browser.close();
+      await setImmediate();
+      assert.deepEqual(fixture.requests.map(value => value.method), ['browser.newContext']);
       startup.resolve();
-      await rejected;
-      assert.deepEqual(fixture.requests.map(value => value.method), ['browser.newContext', 'browser.close']);
+      await Promise.all([closure, rejected]);
+      assert.equal(fixture.requests.filter(value => value.method === 'browser.close').length, 1);
+      assert.deepEqual(fixture.browser.contexts(), []);
     } finally { startup.resolve(); await registration.dispose(); await fixture.browser.close(); }
   });
 

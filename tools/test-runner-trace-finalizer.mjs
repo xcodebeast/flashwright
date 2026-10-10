@@ -91,9 +91,11 @@ try {
         return originalPush(...attachments);
       } });
       const finalizer = installRunnerTraceFinalizer(testInfo, admission);
+      assert.equal(finalizer.cleanupSucceeded, false);
       assert.equal(installRunnerTraceFinalizer(testInfo, admission), finalizer);
       assert.throws(() => installRunnerTraceFinalizer(testInfo, { journal: owner }), { name: 'ProtocolError' });
       const first = testInfo._tracing.stopIfNeeded(); assert.equal(first, finalizer.finish()); await first; await finalizer.cleanup;
+      assert.equal(finalizer.cleanupSucceeded, true);
       assert.deepEqual(outcome(testInfo), original); assert.equal(testInfo._timeoutManager._running.slot.timeout, 0);
       assert.equal(testInfo.attachments.length, 1); assert.equal(testInfo.attachments[0].name, 'trace');
       assert.equal(owner.failure, undefined, 'final attachment steps cannot reenter their sealed journal');
@@ -126,11 +128,13 @@ try {
       const completion = finalizer.finish(); timers.fire(30000); await turn();
       assert.equal(signal.aborted, true); assert.equal(disposed, 1); timers.fire(2000); await completion;
       let cleaned = false; void finalizer.cleanup.then(() => { cleaned = true; }); await turn(); assert.equal(cleaned, false);
+      assert.equal(finalizer.cleanupSucceeded, false);
       assert.match(diagnostics(testInfo), /30 seconds/); assert.match(diagnostics(testInfo), /cleanup remains pending/);
       const successor = information(); const successorFinalizer = installRunnerTraceFinalizer(successor, { journal: journal() });
       await successorFinalizer.finish(); await successorFinalizer.cleanup; archives.push(successor.attachments[0].path);
       prepared.resolve({ export: async () => { throw Error('late archive must never export'); }, dispose: async () => { archiveDisposed++; } });
       releaseCleanup.resolve(); await finalizer.cleanup;
+      assert.equal(finalizer.cleanupSucceeded, true);
       assert.equal(archiveDisposed, 1); assert.deepEqual(outcome(testInfo), original);
       assert.equal(testInfo.attachments.some(attachment => attachment.name === 'trace'), false);
     });
@@ -228,6 +232,7 @@ try {
     });
     await finalizer.finish(); await finalizer.cleanup;
     assert.equal(inputDisposals, 2); assert.equal(journalDisposed, 1); assert.equal(collectionDisposed, 1); assert.deepEqual(outcome(testInfo), original);
+    assert.equal(finalizer.cleanupSucceeded, false);
     assert.equal(await filesystem.readFile(destination, 'utf8'), 'previous destination');
     assert.match(diagnostics(testInfo), /outside its original archive role/);
     assert.match(diagnostics(testInfo), /synchronous journal cleanup failure/); assert.match(diagnostics(testInfo), /synchronous collection cleanup failure/);

@@ -8,7 +8,7 @@ import { setImmediate } from 'node:timers/promises';
 
 const require = createRequire(resolve('packages/flashwright-runner/package.json'));
 const { screenshotPolicy } = require(resolve('packages/flashwright-runner/dist/commonjs/screenshot-policy.js'));
-const { ScreenshotLifecycle } = require(resolve('packages/flashwright-runner/dist/commonjs/screenshot-recorder.js'));
+const { ScreenshotLifecycle, ScreenshotScopes } = require(resolve('packages/flashwright-runner/dist/commonjs/screenshot-recorder.js'));
 const { didCreateRunnerContext, willCloseRunnerContext } = require(resolve('packages/flashwright-core/dist/commonjs/runner-lifecycle.js'));
 const { runnerIntegration } = require('@flashwright/core/runner-integration');
 const root = await mkdtemp(join(tmpdir(), 'flashwright-screenshot-unit-'));
@@ -150,5 +150,54 @@ try {
     assert.ok(retentionInfo.attachments[0].path.endsWith('test-failed-1.png'));
   } finally { await lifecycle.dispose(); }
   assert.equal(willCloseRunnerContext(await context([])), undefined);
+  const sharedContexts = new Set();
+  const sharedScopes = new ScreenshotScopes(screenshotPolicy('only-on-failure'), sharedContexts);
+  const observeSharedContext = value => {
+    sharedContexts.add(value);
+    value.once('close', () => sharedContexts.delete(value));
+  };
+  const sharedRegistration = runnerIntegration.installArtifactContextLifecycle(9, {
+    beginContextCreation: () => ({ didCreateContext: async value => { observeSharedContext(value); }, complete() {} }),
+    didCreateUnclaimedContext: observeSharedContext,
+    willCloseContext: value => sharedScopes.beforeContextClose(value),
+  });
+  let releaseEarlyCapture;
+  const earlyCaptureReleased = new Promise(resolve => { releaseEarlyCapture = resolve; });
+  let earlyCaptureStarted;
+  const earlyCapture = new Promise(resolve => { earlyCaptureStarted = resolve; });
+  let earlyCaptures = 0;
+  let finishCaptures = 0;
+  try {
+    await sharedRegistration.ready;
+    const earlyContext = await context([page(async () => { earlyCaptures++; earlyCaptureStarted(); await earlyCaptureReleased; })]);
+    const sharedInfo = information();
+    const sharedRecorder = sharedScopes.start(sharedInfo);
+    assert.equal(earlyCaptures, 0, 'shared scopes observe available contexts without starting capture');
+    const finishContext = await context([page(async () => { finishCaptures++; })]);
+    assert.deepEqual([...sharedContexts], [earlyContext, finishContext], 'the external observer owns shared context availability');
+    const closing = willCloseRunnerContext(earlyContext);
+    await earlyCapture;
+    sharedInfo.status = 'failed';
+    let finished = false;
+    const finishing = sharedScopes.finish(sharedRecorder).then(() => { finished = true; });
+    await setImmediate();
+    assert.equal(finished, false, 'shared finish retains the external pre-close capture');
+    releaseEarlyCapture();
+    await closing; earlyContext.emit('close');
+    await finishing;
+    assert.equal(earlyCaptures, 1); assert.equal(finishCaptures, 1);
+    assert.equal(sharedInfo.attachments.length, 2, 'pre-close and newly available finish pages retain screenshots');
+    for (const attachment of sharedInfo.attachments) {
+      assert.equal(attachment.name, 'screenshot');
+      assert.equal(await readFile(attachment.path, 'utf8'), 'complete-image');
+    }
+    assert.equal(sharedInfo._onDidFinishTestFunctionCallbacks.size, 0);
+    const repeatedRecorder = sharedScopes.start(sharedInfo);
+    await sharedScopes.finish(repeatedRecorder);
+    await sharedScopes.beforeContextClose(finishContext);
+    assert.equal(finishCaptures, 1, 'repeated original-TestInfo scopes preserve captured-page identity');
+    finishContext.emit('close');
+    assert.equal(sharedContexts.size, 0);
+  } finally { releaseEarlyCapture(); await sharedRegistration.dispose(); }
   console.log('Screenshot policy, lifecycle identity, bounded concurrency, pending cleanup, outcome retention and error diagnostics passed.');
 } finally { await rm(root, { recursive: true, force: true }); }

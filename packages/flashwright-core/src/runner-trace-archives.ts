@@ -25,11 +25,26 @@ export interface RunnerTraceRecordingWithActions {
   stop(): Promise<void>;
 }
 
+export interface RunnerTraceStartedRecording extends RunnerTraceRecordingWithActions {
+  readonly chunk: RunnerTraceChunk;
+}
+
+export interface RunnerTraceOperation<Value> {
+  readonly ready: Promise<Value>;
+  /** Successful cleanup of this operation; live recordings retain their later obligations. */
+  readonly cleanup: Promise<void>;
+}
+export type RunnerTraceStartup = RunnerTraceOperation<RunnerTraceStartedRecording>;
+
 interface RunnerTraceOwner {
   currentChunk(): RunnerTraceChunk | undefined;
   currentRecording(): RunnerTraceRecording | undefined;
   startRecording(options: TracingStartOptions): Promise<RunnerTraceRecording>;
   startRecordingWithActions(options: TracingStartOptions, observer: RunnerActionObserver): Promise<RunnerTraceRecordingWithActions>;
+  beginRecordingWithActions(options: TracingStartOptions, observer: RunnerActionObserver): RunnerTraceStartup;
+  discardChunk(chunk: RunnerTraceChunk): Promise<void>;
+  beginRecordingChunk(recording: RunnerTraceRecording, observer: RunnerActionObserver, options: TracingChunkOptions): RunnerTraceOperation<RunnerTraceChunk>;
+  settleClosedCleanup(): Promise<void>;
 }
 
 const traceOwners = new WeakMap<object, RunnerTraceOwner>();
@@ -49,3 +64,7 @@ export function currentRunnerTraceChunk(owner: object): RunnerTraceChunk | undef
 export function currentRunnerTraceRecording(owner: object): RunnerTraceRecording | undefined { return traceOwner(owner).currentRecording(); }
 export function startRunnerTraceRecording(owner: object, options: TracingStartOptions): Promise<RunnerTraceRecording> { return traceOwner(owner).startRecording(options); }
 export function startRunnerTraceRecordingWithActions(owner: object, options: TracingStartOptions, observer: RunnerActionObserver): Promise<RunnerTraceRecordingWithActions> { return traceOwner(owner).startRecordingWithActions(options, observer); }
+export function beginRunnerTraceRecordingWithActions(owner: object, options: TracingStartOptions, observer: RunnerActionObserver): RunnerTraceStartup { return traceOwner(owner).beginRecordingWithActions(options, observer); }
+export function discardRunnerTraceChunk(owner: object, chunk: RunnerTraceChunk): Promise<void> { return traceOwner(owner).discardChunk(chunk); }
+export function settleClosedRunnerTraceCleanup(owner: object): Promise<void> { return traceOwner(owner).settleClosedCleanup(); }
+export function beginRunnerTraceRecordingChunk(owner: object, recording: RunnerTraceRecording, observer: RunnerActionObserver, options: TracingChunkOptions): RunnerTraceOperation<RunnerTraceChunk> { return traceOwner(owner).beginRecordingChunk(recording, observer, options); }
