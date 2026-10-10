@@ -159,6 +159,7 @@ const commands = [
   [process.execPath, 'tools/generate-inventory.mjs', '--check'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-parity-catalog.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-competitor-contract.mjs', './tools/test-competitor-sampling.mjs', './tools/test-broad-matrix.mjs', './tools/test-broad-matrix-snapshot.mjs', './tools/test-cypress-contract.mjs', './tools/test-runner-suite-contract.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-runner-suite-diagnostics.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-rust-dependency-notices.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-benchmark-backend-guard.mjs'],
   [process.execPath, 'tools/typecheck.mjs'],
