@@ -82,8 +82,7 @@ pub(super) struct RequestContext {
     closed: watch::Sender<bool>,
     strict_client: OnceLock<HttpClient>,
     ignoring_client: OnceLock<HttpClient>,
-    strict_pool_custody: Arc<tls::PoolCustody>,
-    ignoring_pool_custody: Arc<tls::PoolCustody>,
+    pool_custody: Arc<tls::PoolCustody>,
     // Keep configuration and owner credits after every object that uses them.
     _configuration: PairedReservation,
     owner: Arc<Reservation>,
@@ -143,8 +142,7 @@ impl RequestRegistry {
             super::unix_milliseconds(),
             method,
         )?;
-        let strict_pool_custody = tls::pool_custody(&budget.metadata, owner.clone())?;
-        let ignoring_pool_custody = tls::pool_custody(&budget.metadata, owner.clone())?;
+        let pool_custody = tls::pool_custody(&budget.metadata, owner.clone())?;
         let (closed, _) = watch::channel(false);
         let context = Arc::new(RequestContext {
             identifier: identifier.clone(),
@@ -161,8 +159,7 @@ impl RequestRegistry {
             local_dates: super::local_dates::PendingDates::default(),
             strict_client: OnceLock::new(),
             ignoring_client: OnceLock::new(),
-            strict_pool_custody,
-            ignoring_pool_custody,
+            pool_custody,
             _configuration: configuration,
             owner,
         });
@@ -363,16 +360,11 @@ impl RequestContext {
                 closed,
                 self.owner.clone(),
             );
-            let pool_custody = if ignore {
-                &self.ignoring_pool_custody
-            } else {
-                &self.strict_pool_custody
-            };
             tls::client(
                 connector,
                 ignore,
                 self.budget.connections.clone(),
-                pool_custody.clone(),
+                self.pool_custody.clone(),
             )
         })
     }
@@ -631,8 +623,9 @@ mod tests {
         let context = context(&registry);
         let metadata = context.budget.metadata.clone();
         let original = Arc::downgrade(&context);
-        let pool = Arc::downgrade(&context.strict_pool_custody);
+        let pool = Arc::downgrade(&context.pool_custody);
         let client = context.client(false).clone();
+        let ignoring_client = context.client(true).clone();
         registry.dispose_context(&context.identifier);
         drop(context);
         assert!(
@@ -642,6 +635,9 @@ mod tests {
         assert!(pool.upgrade().is_some());
         assert_eq!(metadata.retained(), tls::POOL_WORKING_BYTES);
         drop(client);
+        assert!(pool.upgrade().is_some());
+        assert_eq!(metadata.retained(), tls::POOL_WORKING_BYTES);
+        drop(ignoring_client);
         assert!(pool.upgrade().is_none());
         assert_eq!(metadata.retained(), 0);
     }

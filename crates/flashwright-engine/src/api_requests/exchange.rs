@@ -21,6 +21,8 @@ use std::sync::Arc;
 const HEADER_WORKING_BYTES: usize = 2 * 1024 * 1024;
 const MAXIMUM_REQUEST_METADATA_BYTES: usize = 1024 * 1024;
 const MAXIMUM_REQUEST_HEADERS: usize = 4096;
+// The connector permits at most 1024 hostname bytes; allow port and IPv6 punctuation.
+const MAXIMUM_AUTHORITY_BYTES: usize = 1040;
 
 /// Bound the final merged request before Hyper serializes it into a connection buffer.
 /// Count the full URI conservatively and leave room for generated Host and framing fields.
@@ -47,6 +49,13 @@ fn validate_request_metadata(request: &Request<Full<Bytes>>) -> Result<(), Error
         count(scheme.len())?;
     }
     if let Some(authority) = destination.authority() {
+        if authority.as_str().len() > MAXIMUM_AUTHORITY_BYTES {
+            return Err(ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                "apiRequest.fetch",
+                "API request authority exceeds 1040 bytes",
+            ));
+        }
         count(authority.as_str().len())?;
         count(authority.as_str().len())?;
     }
@@ -422,10 +431,10 @@ mod tests {
         assert_eq!(exchange.metadata.headers[0].name, "X-Mixed");
         assert_eq!(exchange.metadata.headers[1].name, "x-mIXED");
         assert_eq!(exchange.metadata.first("x-latin"), Some("ÿ"));
-        assert!(budget.metadata.retained() >= HEADER_WORKING_BYTES);
+        assert!(budget.metadata.retained() >= tls::POOL_WORKING_BYTES + HEADER_WORKING_BYTES);
         let (metadata, body) = exchange.finish(&budget, || Ok(())).await.unwrap();
         assert_eq!(body.bytes.as_slice(), b"original decoded bytes");
-        assert!(budget.metadata.retained() < HEADER_WORKING_BYTES);
+        assert!(budget.metadata.retained() < tls::POOL_WORKING_BYTES + HEADER_WORKING_BYTES);
         drop((metadata, body));
         assert_eq!(budget.bodies.retained(), 0);
         closed.send_replace(true);
@@ -511,6 +520,24 @@ mod tests {
         assert_eq!(exchange.metadata.status, 200);
         drop(exchange.finish(&budget, || Ok(())).await.unwrap());
         server.await.unwrap();
+    }
+
+    #[test]
+    fn authority_admission_bounds_compact_pool_key_text() {
+        for (length, admitted) in [
+            (MAXIMUM_AUTHORITY_BYTES, true),
+            (MAXIMUM_AUTHORITY_BYTES + 1, false),
+        ] {
+            let request = Request::get(format!("http://{}/", "a".repeat(length)))
+                .body(Full::new(Bytes::new()))
+                .unwrap();
+            let result = validate_request_metadata(&request);
+            assert_eq!(result.is_ok(), admitted);
+            if let Err(error) = result {
+                assert_eq!(error.code, ErrorCode::ResourceLimit);
+                assert!(error.message.contains("authority"));
+            }
+        }
     }
 
     #[test]
