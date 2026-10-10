@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { startFixtureServer } from './fixture-server.mjs';
@@ -16,6 +16,9 @@ assert.ok(reportPath, 'Pass a new report path to preserve partial admission work
 const phase = name => process.stderr.write(`puppeteer admission: ${name}\n`);
 phase('load configuration');
 const configuration = JSON.parse(await readFile('benchmarks/configurations/baseline.json', 'utf8'));
+const sampling = process.argv[3] === undefined ? undefined : { launchIndex: Number(process.argv[3]), reportPersistence: 'after-completion', isolationProbe: 'separate-admission', protocolLogging: 'off' };
+assert.ok(process.argv.length <= 4);
+if (sampling) assert.ok(Number.isInteger(sampling.launchIndex) && sampling.launchIndex >= 0 && sampling.launchIndex < configuration.independentLaunches);
 const contenderConfiguration = JSON.parse(await readFile('benchmarks/configurations/competitors.json', 'utf8'));
 const contender = contenderConfiguration.competitors.find(competitor => competitor.id === 'puppeteer');
 const dependencyDirectory = process.env.FLASHWRIGHT_COMPETITOR_DIRECTORY;
@@ -31,7 +34,8 @@ phase('import pinned package');
 const { default: puppeteer } = await import(pathToFileURL(dependencyRequire.resolve('puppeteer-core')).href);
 phase('identify browser');
 assert.ok(process.env.FLASHWRIGHT_BROWSER_PATH, 'Set FLASHWRIGHT_BROWSER_PATH to the pinned Chromium executable');
-const browserIdentity = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH);
+const browserIdentity = sampling ? JSON.parse(await readFile(join(dirname(reportPath), 'launch-inputs.json'), 'utf8')).browser : await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH);
+assert.equal(browserIdentity.executablePath, resolve(process.env.FLASHWRIGHT_BROWSER_PATH));
 assert.equal(browserIdentity.version, contenderConfiguration.browserVersion);
 const policy = JSON.parse(await readFile('crates/flashwright-browser/src/chromium-launch-policy.json', 'utf8'));
 const profile = await mkdtemp(join(tmpdir(), 'flashwright-puppeteer-profile-'));
@@ -39,7 +43,8 @@ const arguments_ = policy.headless.map(argument => argument === '--user-data-dir
 const report = {
   schemaVersion: 1, engine: contender.id, ...runtimeMetadata, package: { name: packageManifest.name, version: packageManifest.version, manifestSha256: hash(await readFile(packagePath)), lockSha256: hash(await readFile(join(dependencyDirectory, 'bun.lock'))) },
   browser: browserIdentity, configuration, launchArguments: null, workloads: [], failures: [], isolation: null,
-  scope: 'Functional admission only. Elapsed times are retained observations, excluded from comparative performance acceptance.',
+  ...(sampling ? { sampling } : {}),
+  scope: sampling ? 'Library sampling outcomes only. Separate isolation admission and current-source comparative gates remain required.' : 'Functional admission only. Elapsed times are retained observations, excluded from comparative performance acceptance.',
   adaptations: [
     'Pinned reference Chromium flags replace Puppeteer default flags; initial blank-page waiting is disabled because the shared policy uses no-startup-window. CDP pipe and the configured viewport remain explicit.',
     'Native Puppeteer locators retain their default visibility, enabled, viewport and two-frame stability checks. ARIA selectors identify buttons and the labelled input.',
@@ -49,7 +54,7 @@ const report = {
   ],
 };
 const save = () => writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
-await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+if (!sampling) await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
 const started = performance.now();
 let server;
 let browser;
@@ -61,19 +66,25 @@ try {
   report.launchMilliseconds = performance.now() - launchStarted;
   report.launchArguments = browser.process().spawnargs.slice(1).map(argument => argument.startsWith('--user-data-dir=') ? '--user-data-dir=__FLASHWRIGHT_PROFILE__' : argument);
   report.browserVersion = (await browser.version()).replace(/^(?:HeadlessChrome|Chrome)\//, '');
-  await save();
-  phase('context isolation');
-  const contexts = [await browser.createBrowserContext(), await browser.createBrowserContext()];
-  try {
-    const first = await contexts[0].newPage();
-    const second = await contexts[1].newPage();
-    await first.goto(`${server.origin}/fixture`);
-    await first.evaluate(() => { localStorage.setItem('isolation', 'first'); document.cookie = 'isolation=first'; });
-    await second.goto(`${server.origin}/fixture`);
-    report.isolation = await second.evaluate(() => ({ storage: localStorage.getItem('isolation'), cookies: document.cookie }));
-  } finally { await Promise.all(contexts.map(context => context.close())); }
-  await save();
-  for (const name of configuration.workloads) {
+  if (!sampling) await save();
+  if (!sampling) {
+    phase('context isolation');
+    const contexts = [];
+    try {
+      contexts.push(await browser.createBrowserContext());
+      contexts.push(await browser.createBrowserContext());
+      const first = await contexts[0].newPage();
+      const second = await contexts[1].newPage();
+      await first.goto(`${server.origin}/fixture`);
+      await first.evaluate(() => { localStorage.setItem('isolation', 'first'); document.cookie = 'isolation=first'; });
+      await second.goto(`${server.origin}/fixture`);
+      report.isolation = await second.evaluate(() => ({ storage: localStorage.getItem('isolation'), cookies: document.cookie }));
+    } finally { await Promise.all(contexts.map(context => context.close())); }
+    await save();
+  }
+  const offset = (sampling?.launchIndex ?? 0) % configuration.workloads.length;
+  const order = configuration.workloads.slice(offset).concat(configuration.workloads.slice(0, offset));
+  for (const name of order) {
     phase(name);
     const record = { name, samples: [], warmupSamples: [], failures: [] };
     report.workloads.push(record);
@@ -88,10 +99,10 @@ try {
           try { record[phase].push({ iteration, ...await workload.run(), milliseconds: performance.now() - sampleStarted }); }
           catch (error) {
             record.failures.push({ phase, iteration, milliseconds: performance.now() - sampleStarted, error: error.stack });
-            await save();
+            if (!sampling) await save();
             break measurement;
           }
-          await save();
+          if (!sampling) await save();
         }
       }
       record.observations = await workload.observe();
@@ -99,7 +110,7 @@ try {
     finally {
       try { await workload?.close(); } catch (error) { record.failures.push({ phase: 'cleanup', error: error.stack }); }
       record.completeMilliseconds = performance.now() - workloadStarted;
-      await save();
+      if (!sampling) await save();
     }
     if (record.failures.length) {
       report.abortedAfterUnexpectedFailure = name;
@@ -113,6 +124,6 @@ finally {
   try { await rm(profile, { recursive: true, force: true }); } catch (error) { report.failures.push(error.stack); }
   report.completeMilliseconds = performance.now() - started;
   report.backend = server?.counts;
-  await save();
+  if (!sampling) await save();
   process.stdout.write(JSON.stringify(report) + '\n');
 }

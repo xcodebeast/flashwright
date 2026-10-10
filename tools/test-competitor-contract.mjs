@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { verifyPuppeteerAdmission, verifyWebdriverAdmission } from '../benchmarks/competitor-contract.mjs';
+import { verifyPuppeteerAdmission, verifyWebdriverAdmission, verifyPuppeteerSample, verifyWebdriverSample } from '../benchmarks/competitor-contract.mjs';
 import { closeWebdriverContexts } from '../benchmarks/webdriverio-workloads.mjs';
 
 test('WebdriverIO cleanup attempts every context and retains operation and cleanup failures', async () => {
@@ -62,6 +62,51 @@ for (const [name, change] of [
 ]) test(`WebdriverIO rejects ${name}`, () => { const state = webdriverFixture(); change(state); assert.throws(() => verifyWebdriver(state)); });
 
 const verify = state => verifyPuppeteerAdmission(state.report, state.resources, state.baseline, state.competitors, state.policy);
+
+function samplingFixture(engine) {
+  const state = engine === 'webdriverio' ? webdriverFixture() : fixture();
+  state.baseline.independentLaunches = 8;
+  state.report.sampling = { launchIndex: 3, reportPersistence: 'after-completion', isolationProbe: 'separate-admission', protocolLogging: engine === 'webdriverio' ? 'warning' : 'off' };
+  state.report.isolation = null;
+  state.report.backend.documents -= 2;
+  const workloads = state.report.workloads;
+  state.report.workloads = workloads.slice(3).concat(workloads.slice(0, 3));
+  for (const workload of workloads) {
+    workload.samples[0].iteration = 0;
+    workload.warmupSamples[0].iteration = 0;
+  }
+  return state;
+}
+
+const verifySample = state => (state.report.engine === 'webdriverio' ? verifyWebdriverSample : verifyPuppeteerSample)(state.report, state.resources, state.baseline, state.competitors, state.policy, state.driverPolicy);
+
+for (const engine of ['puppeteer', 'webdriverio']) {
+  test(`${engine} sampling verifies rotated outcomes without claiming isolation or speed acceptance`, () => {
+    const state = samplingFixture(engine);
+    const result = verifySample(state);
+    assert.equal(result.samplingOutcomesPassed, true);
+    assert.equal(result.functionalAdmissionPassed, false);
+    assert.equal(result.performanceAccepted, false);
+    assert.deepEqual(result.outcomeMatchedWorkloads, state.baseline.workloads.filter(name => name !== 'failure'));
+    assert.throws(() => engine === 'webdriverio' ? verifyWebdriver(state) : verify(state));
+  });
+  for (const [name, mutate] of [
+    ['missing sampling identity', state => { delete state.report.sampling; }],
+    ['out-of-range launch index', state => { state.report.sampling.launchIndex = 8; }],
+    ['fractional launch index', state => { state.report.sampling.launchIndex = 0.5; }],
+    ['unrotated workloads', state => { state.report.workloads.reverse(); }],
+    ['admission-only documents', state => { state.report.backend.documents += 2; }],
+    ['isolation probe in sample', state => { state.report.isolation = { storage: null, cookies: '' }; }],
+    ['per-iteration persistence', state => { state.report.sampling.reportPersistence = 'per-iteration'; }],
+    ['verbose protocol logging', state => { state.report.sampling.protocolLogging = 'verbose'; }],
+    ['duplicated iteration identity', state => { state.report.workloads[0].samples[0].iteration = 1; }],
+    ['skipped request', state => { state.report.backend.backendRequests--; }],
+  ]) test(`${engine} sampling rejects ${name}`, () => {
+    const state = samplingFixture(engine);
+    mutate(state);
+    assert.throws(() => verifySample(state));
+  });
+}
 
 test('functional admission never becomes performance acceptance', () => {
   const result = verify(fixture());
