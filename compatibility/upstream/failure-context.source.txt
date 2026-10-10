@@ -1,0 +1,355 @@
+// fixTestInstructions: node_modules/playwright/lib/errorContext.js:39
+fixTestInstructions = `# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+`
+
+// buildErrorContext: node_modules/playwright/lib/errorContext.js:45
+function buildErrorContext(options) {
+  const { titlePath, location, errors, pageSnapshot } = options;
+  const meaningfulErrors = errors.filter((e) => !!e.message);
+  if (!meaningfulErrors.length && !pageSnapshot)
+    return void 0;
+  const lines = [
+    fixTestInstructions,
+    "# Test info",
+    "",
+    `- Name: ${titlePath.join(" >> ")}`,
+    `- Location: ${(0, import_util.relativeFilePath)(location.file)}:${location.line}:${location.column}`
+  ];
+  if (meaningfulErrors.length) {
+    lines.push("", "# Error details");
+    for (const error of meaningfulErrors) {
+      lines.push(
+        "",
+        "```",
+        stripAnsiEscapes(error.message || ""),
+        "```"
+      );
+      if (error.errorContext) {
+        lines.push(
+          "",
+          "```yaml",
+          error.errorContext,
+          "```"
+        );
+      }
+    }
+  }
+  if (pageSnapshot) {
+    lines.push(
+      "",
+      "# Page snapshot",
+      "",
+      "```yaml",
+      pageSnapshot,
+      "```"
+    );
+  }
+  const lastError = meaningfulErrors[meaningfulErrors.length - 1];
+  const codeFrame = lastError ? buildCodeFrame(lastError, location) : void 0;
+  if (codeFrame) {
+    lines.push(
+      "",
+      "# Test source",
+      "",
+      "```ts",
+      codeFrame,
+      "```"
+    );
+  }
+  return lines.join("\n");
+}
+
+// buildCodeFrame: node_modules/playwright/lib/errorContext.js:100
+function buildCodeFrame(error, testLocation) {
+  const stack = error.stack;
+  if (!stack)
+    return void 0;
+  const parsed = parseErrorStack(stack, import_path.default.sep);
+  const errorLocation = parsed.location;
+  if (!errorLocation)
+    return void 0;
+  let source;
+  try {
+    source = import_fs.default.readFileSync(errorLocation.file, "utf8");
+  } catch {
+    return void 0;
+  }
+  const sourceLines = source.split("\n");
+  const linesAbove = 100;
+  const linesBelow = 100;
+  const start = Math.max(0, errorLocation.line - linesAbove - 1);
+  const end = Math.min(sourceLines.length, errorLocation.line + linesBelow);
+  const scope = sourceLines.slice(start, end);
+  const lineNumberWidth = String(end).length;
+  const message = stripAnsiEscapes(error.message || "").split("\n")[0] || void 0;
+  const frame = scope.map((line, index) => `${start + index + 1 === errorLocation.line ? "> " : "  "}${(start + index + 1).toString().padEnd(lineNumberWidth, " ")} | ${line}`);
+  if (message)
+    frame.splice(errorLocation.line - start, 0, `${" ".repeat(lineNumberWidth + 2)} | ${" ".repeat(Math.max(0, errorLocation.column - 2))} ^ ${message}`);
+  return frame.join("\n");
+}
+
+// ArtifactsRecorder.willCloseBrowserContext: node_modules/playwright/lib/index.js:618
+async willCloseBrowserContext(context) {
+    await this._stopTracing(context, context.tracing);
+    await this._screenshotRecorder.captureTemporary(context);
+    await this._takePageSnapshot(context);
+  }
+
+// ArtifactsRecorder._takePageSnapshot: node_modules/playwright/lib/index.js:623
+async _takePageSnapshot(context) {
+    if (process.env.PLAYWRIGHT_NO_COPY_PROMPT)
+      return;
+    if (this._testInfo.errors.length === 0)
+      return;
+    if (this._testInfo.errors.some((e) => e.errorContext))
+      return;
+    if (this._pageSnapshot)
+      return;
+    const page = context.pages()[0];
+    if (!page)
+      return;
+    try {
+      await page._wrapApiCall(async () => {
+        this._pageSnapshot = await page.ariaSnapshot({ mode: "ai", timeout: 5e3 });
+      }, { internal: true });
+    } catch {
+    }
+  }
+
+// ArtifactsRecorder.didFinishTest: node_modules/playwright/lib/index.js:651
+async didFinishTest() {
+    await this.didFinishTestFunction();
+    const leftoverContexts = this._playwright._allContexts();
+    const leftoverApiRequests = Array.from(this._playwright.request._contexts);
+    await Promise.all(leftoverContexts.map(async (context2) => {
+      await this._stopTracing(context2, context2.tracing);
+    }).concat(leftoverApiRequests.map(async (context2) => {
+      await this._stopTracing(context2, context2.tracing);
+    })));
+    await this._screenshotRecorder.persistTemporary();
+    const context = leftoverContexts[0];
+    if (context)
+      await this._takePageSnapshot(context);
+    if (this._testInfo.errors.length > 0) {
+      const hasMatcherAriaSnapshot = this._testInfo.errors.some((e) => e.errorContext);
+      const errorContextContent = (0, import_errorContext.buildErrorContext)({
+        titlePath: this._testInfo.titlePath,
+        location: { file: this._testInfo.file, line: this._testInfo.line, column: this._testInfo.column },
+        errors: this._testInfo.errors,
+        pageSnapshot: hasMatcherAriaSnapshot ? void 0 : this._pageSnapshot
+      });
+      if (errorContextContent) {
+        const filePath = this._testInfo.outputPath("error-context.md");
+        await import_fs.default.promises.writeFile(filePath, errorContextContent, "utf8");
+        this._testInfo._attach({
+          name: "error-context",
+          contentType: "text/markdown",
+          path: filePath
+        }, void 0);
+      }
+    }
+  }
+
+// WorkerMain._runTest: node_modules/playwright/lib/worker/workerProcessEntry.js:2947
+async _runTest(test, retry, nextTest) {
+    const testInfo = new TestInfoImpl(this._config, this._project, this._params, test, retry, {
+      onStepBegin: (payload) => this.dispatchEvent("stepBegin", payload),
+      onStepEnd: (payload) => this.dispatchEvent("stepEnd", payload),
+      onAttach: (payload) => this.dispatchEvent("attach", payload),
+      onTestPaused: (payload) => {
+        this._resumePromise = new ManualPromise5();
+        this.dispatchEvent("testPaused", payload);
+        return this._resumePromise;
+      }
+    });
+    const processAnnotation = (annotation) => {
+      testInfo.annotations.push(annotation);
+      switch (annotation.type) {
+        case "fixme":
+        case "skip":
+          testInfo.expectedStatus = "skipped";
+          break;
+        case "fail":
+          if (testInfo.expectedStatus !== "skipped")
+            testInfo.expectedStatus = "failed";
+          break;
+        case "slow":
+          testInfo._timeoutManager.slow();
+          break;
+      }
+    };
+    if (!this._isStopped)
+      this._fixtureRunner.setPool(test._pool);
+    const suites = getSuites(test);
+    const reversedSuites = suites.slice().reverse();
+    const nextSuites = new Set(getSuites(nextTest));
+    testInfo._timeoutManager.setTimeout(test.timeout);
+    for (const annotation of test.annotations)
+      processAnnotation(annotation);
+    for (const suite of suites) {
+      const extraAnnotations = this._activeSuites.get(suite) || [];
+      for (const annotation of extraAnnotations)
+        processAnnotation(annotation);
+    }
+    this._currentTest = testInfo;
+    globals.setCurrentTestInfo(testInfo);
+    (0, import_expect.setExpectConfig)({
+      testInfo,
+      filteredStackTrace,
+      ignoreSnapshots: testInfo._projectInternal.project.ignoreSnapshots,
+      updateSnapshots: testInfo.config.updateSnapshots,
+      timeout: testInfo._projectInternal.expect?.timeout,
+      toHaveScreenshot: testInfo._projectInternal.expect?.toHaveScreenshot,
+      toMatchSnapshot: testInfo._projectInternal.expect?.toMatchSnapshot,
+      toMatchAriaSnapshot: testInfo._projectInternal.expect?.toMatchAriaSnapshot,
+      toPass: testInfo._projectInternal.expect?.toPass
+    });
+    this.dispatchEvent("testBegin", buildTestBeginPayload(testInfo));
+    const isSkipped = testInfo.expectedStatus === "skipped";
+    const hasAfterAllToRunBeforeNextTest = reversedSuites.some((suite) => {
+      return this._activeSuites.has(suite) && !nextSuites.has(suite) && suite._hooks.some((hook) => hook.type === "afterAll");
+    });
+    if (isSkipped && nextTest && !hasAfterAllToRunBeforeNextTest) {
+      testInfo.status = "skipped";
+      this.dispatchEvent("testEnd", buildTestEndPayload(testInfo));
+      return;
+    }
+    this._totalRunningTests++;
+    this._lastRunningTests.push(test);
+    if (this._lastRunningTests.length > 10)
+      this._lastRunningTests.shift();
+    let shouldRunAfterEachHooks = false;
+    testInfo._allowSkips = true;
+    await (async () => {
+      await testInfo._runWithTimeout({ type: "test" }, async () => {
+        const traceFixtureRegistration = test._pool.resolve("trace");
+        if (!traceFixtureRegistration)
+          return;
+        if (typeof traceFixtureRegistration.fn === "function")
+          throw new Error(`"trace" option cannot be a function`);
+        await testInfo._tracing.startIfNeeded(traceFixtureRegistration.fn);
+      });
+      if (this._isStopped || isSkipped) {
+        testInfo.status = "skipped";
+        return;
+      }
+      await removeFolders([testInfo.outputDir]);
+      let testFunctionParams = null;
+      await testInfo._runAsStep({ title: "Before Hooks", category: "hook" }, async () => {
+        for (const suite of suites)
+          await this._runBeforeAllHooksForSuite(suite, testInfo);
+        shouldRunAfterEachHooks = true;
+        await this._runEachHooksForSuites(suites, "beforeEach", testInfo);
+        const params = await this._fixtureRunner.resolveParametersForFunction(test.fn, testInfo, "test", { type: "test" });
+        if (params !== null)
+          testFunctionParams = params.result;
+      });
+      if (testFunctionParams === null) {
+        return;
+      }
+      await testInfo._runWithTimeout({ type: "test" }, async () => {
+        const fn = test.fn;
+        await fn(testFunctionParams, testInfo);
+      });
+    })().catch(() => {
+    });
+    testInfo.duration = testInfo._timeoutManager.defaultSlot().elapsed | 0;
+    testInfo._allowSkips = true;
+    const afterHooksTimeout = calculateMaxTimeout(this._project.project.timeout, testInfo.timeout);
+    const afterHooksSlot = { timeout: afterHooksTimeout, elapsed: 0 };
+    await testInfo._runAsStep({ title: "After Hooks", category: "hook" }, async () => {
+      let firstAfterHooksError;
+      try {
+        await testInfo._runWithTimeout({ type: "test", slot: afterHooksSlot }, () => testInfo._didFinishTestFunction());
+      } catch (error) {
+        firstAfterHooksError = firstAfterHooksError ?? error;
+      }
+      try {
+        if (shouldRunAfterEachHooks)
+          await this._runEachHooksForSuites(reversedSuites, "afterEach", testInfo, afterHooksSlot);
+      } catch (error) {
+        firstAfterHooksError = firstAfterHooksError ?? error;
+      }
+      testInfo._tracing.didFinishTestFunctionAndAfterEachHooks();
+      try {
+        await this._fixtureRunner.teardownScope("test", testInfo, { type: "test", slot: afterHooksSlot });
+      } catch (error) {
+        firstAfterHooksError = firstAfterHooksError ?? error;
+      }
+      for (const suite of reversedSuites) {
+        if (!nextSuites.has(suite) || testInfo._isFailure()) {
+          try {
+            await this._runAfterAllHooksForSuite(suite, testInfo);
+          } catch (error) {
+            firstAfterHooksError = firstAfterHooksError ?? error;
+          }
+        }
+      }
+      if (firstAfterHooksError)
+        throw firstAfterHooksError;
+    }).catch(() => {
+    });
+    if (testInfo._isFailure())
+      this._isStopped = true;
+    if (this._isStopped) {
+      this._didRunFullCleanup = true;
+      await testInfo._runAsStep({ title: "Worker Cleanup", category: "hook" }, async () => {
+        let firstWorkerCleanupError;
+        const teardownSlot = { timeout: this._project.project.timeout, elapsed: 0 };
+        try {
+          await this._fixtureRunner.teardownScope("test", testInfo, { type: "test", slot: teardownSlot });
+        } catch (error) {
+          firstWorkerCleanupError = firstWorkerCleanupError ?? error;
+        }
+        for (const suite of reversedSuites) {
+          try {
+            await this._runAfterAllHooksForSuite(suite, testInfo);
+          } catch (error) {
+            firstWorkerCleanupError = firstWorkerCleanupError ?? error;
+          }
+        }
+        try {
+          await this._fixtureRunner.teardownScope("worker", testInfo, { type: "teardown", slot: teardownSlot });
+        } catch (error) {
+          firstWorkerCleanupError = firstWorkerCleanupError ?? error;
+        }
+        if (firstWorkerCleanupError)
+          throw firstWorkerCleanupError;
+      }).catch(() => {
+      });
+    }
+    const tracingSlot = { timeout: this._project.project.timeout, elapsed: 0 };
+    await testInfo._runWithTimeout({ type: "test", slot: tracingSlot }, async () => {
+      await testInfo._tracing.stopIfNeeded();
+    }).catch(() => {
+    });
+    testInfo.duration = testInfo._timeoutManager.defaultSlot().elapsed + afterHooksSlot.elapsed | 0;
+    this._currentTest = null;
+    globals.setCurrentTestInfo(null);
+    (0, import_expect.setExpectConfig)({ testInfo: null, filteredStackTrace, ignoreSnapshots: false, updateSnapshots: "missing" });
+    this.dispatchEvent("testEnd", buildTestEndPayload(testInfo));
+    const preserveOutput = this._config.config.preserveOutput === "always" || this._config.config.preserveOutput === "failures-only" && testInfo._isFailure();
+    if (!preserveOutput)
+      await removeFolders([testInfo.outputDir]);
+  }
+
+// InjectedScript.incrementalAriaSnapshot: packages/resident-runtime/playwright-injected.js:6655
+incrementalAriaSnapshot(node, options) {
+    if (node.nodeType !== Node.ELEMENT_NODE)
+      throw this.createStacklessError("Can only capture aria snapshot of Element nodes.");
+    const ariaSnapshot = generateAriaTree(node, options);
+    const rendered = renderAriaTree(ariaSnapshot, options);
+    let incremental;
+    if (options.track) {
+      const previousSnapshot = this._lastAriaSnapshotForTrack.get(options.track);
+      if (previousSnapshot)
+        incremental = renderAriaTree(ariaSnapshot, options, previousSnapshot).text;
+      this._lastAriaSnapshotForTrack.set(options.track, ariaSnapshot);
+    }
+    this._lastAriaSnapshotForQuery = ariaSnapshot;
+    return { full: rendered.text, incremental, iframeRefs: ariaSnapshot.iframeRefs, iframeDepths: rendered.iframeDepths };
+  }

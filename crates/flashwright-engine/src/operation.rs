@@ -120,6 +120,16 @@ impl Operation {
         self.trace_call.as_ref()
     }
 
+    /// Optional diagnostics cannot inherit an unbounded caller or outlive its cancellation.
+    pub(crate) fn bounded_diagnostic(&self, allowance: Duration) -> Self {
+        let ceiling = Instant::now() + allowance;
+        Self::new(
+            self.method.clone(),
+            Some(self.deadline.unwrap_or(ceiling).min(ceiling)),
+            self.cancellation.clone(),
+        )
+    }
+
     /// Diagnostic work shares the original deadline and cancellation; it never extends the action.
     pub(crate) fn snapshot_allowance(&self) -> (Instant, watch::Receiver<bool>) {
         let ceiling = Instant::now() + Duration::from_secs(2);
@@ -393,6 +403,30 @@ mod tests {
     use tokio::io::{
         AsyncBufReadExt, AsyncWriteExt, BufReader, DuplexStream, ReadHalf, WriteHalf, duplex, split,
     };
+
+    #[tokio::test]
+    async fn diagnostic_allowance_caps_unbounded_work_and_preserves_cancellation() {
+        let (sender, cancellation) = watch::channel(false);
+        let original = Operation::new("diagnostics.pageSnapshot".into(), None, cancellation);
+        let before = Instant::now();
+        let bounded = original.bounded_diagnostic(Duration::from_secs(5));
+        assert!(bounded.deadline.unwrap() >= before + Duration::from_secs(5));
+        assert!(bounded.deadline.unwrap() <= Instant::now() + Duration::from_secs(5));
+        sender.send_replace(true);
+        assert!(bounded.check().is_err());
+
+        let (_, cancellation) = watch::channel(false);
+        let deadline = Instant::now() + Duration::from_millis(10);
+        let original = Operation::new(
+            "diagnostics.pageSnapshot".into(),
+            Some(deadline),
+            cancellation,
+        );
+        assert_eq!(
+            original.bounded_diagnostic(Duration::from_secs(5)).deadline,
+            Some(deadline)
+        );
+    }
 
     #[test]
     fn queued_blocking_work_withdraws_on_deadline_cancellation_and_waiter_loss() {

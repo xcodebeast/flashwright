@@ -14,6 +14,7 @@ mod element_actions;
 mod element_resolution;
 mod evaluation;
 mod events;
+mod failure_context;
 mod file_chooser;
 mod file_inputs;
 mod filmstrip;
@@ -142,6 +143,7 @@ pub const CAPABILITIES: &[&str] = &[
     "network.headers",
     "locator.run",
     "assertion.run",
+    "diagnostics.pageSnapshot",
     "keyboard.press",
     "keyboard.type",
 ];
@@ -468,6 +470,10 @@ impl Engine {
                 self.run_element_action(method, parameters, operation).await
             }
             "assertion.run" => self.run_assertion(parameters, operation).await,
+            "diagnostics.pageSnapshot" => {
+                self.capture_failure_context_snapshot(parameters, operation)
+                    .await
+            }
             "keyboard.press" => self.press_page_key(parameters, operation).await,
             "keyboard.type" => self.type_page_text(parameters, operation).await,
             "page.evaluate" | "frame.evaluate" | "handle.evaluate" => self

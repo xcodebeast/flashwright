@@ -1,3 +1,4 @@
+import { captureFailureContextSnapshot } from './failure-context-snapshot.js';
 import { runTraceInternal } from './trace-hooks.js';
 import { installSourcePositionMapper, type SourcePositionMapper } from './call-sites.js';
 import { failure } from './errors.js';
@@ -14,7 +15,11 @@ import { runnerRequestTraceOwner, type APIRequestContext } from './api-request.j
 
 /** Internal, versioned runner boundary; deliberately absent from the public library facade. */
 export const runnerIntegration = Object.freeze({
-  version: 12,
+  version: 13,
+  captureFailureContextSnapshot(version: number, page: object, timeoutMilliseconds: number): Promise<string> {
+    if (version !== 13) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
+    return runTraceInternal(() => captureFailureContextSnapshot(page, timeoutMilliseconds));
+  },
   installArtifactRequestLifecycle(version: number, lifecycle: ArtifactRequestLifecycle): RunnerRequestLifecycleRegistration {
     if (version !== 12) throw failure('ProtocolError', 'runner.integration', `unsupported runner integration version ${version}`);
     return installArtifactRequestLifecycle(lifecycle);

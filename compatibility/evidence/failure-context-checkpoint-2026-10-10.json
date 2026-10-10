@@ -1,0 +1,2430 @@
+{
+  "schemaVersion": 1,
+  "status": "focused-verified",
+  "platform": "darwin-arm64",
+  "referenceVersion": "1.60.0",
+  "sourceBaseCommit": "0d6ed2eb6a9e4b5e64cbdd1de409e2d5ce151fdf",
+  "implementation": {
+    "crates/flashwright-engine/src/failure_context.rs": "b5ca60d2ce1f467e93bbd5859b142e3aa26c297efe5adbd7873082d7e033cbd2",
+    "crates/flashwright-engine/src/operation.rs": "896f406ba28ae9617bbea467dd04073892c21b4c61c932c1913c74f4d36b4ce3",
+    "crates/flashwright-engine/src/locators.rs": "eb0f46419b98d9254553e5ccd6a1109e766ac36c8cc30f4b2b7005261a655714",
+    "crates/flashwright-engine/src/lib.rs": "8f241d82b11e507c101fc8bf4a2f577a67486df8c8672b32b462fd13d7e80d4d",
+    "packages/resident-runtime/failure-context-snapshot.js": "b5638c7181e8119e3c861a45527b07dbe18351ec842c0fd951fcc4da1d169971",
+    "packages/resident-runtime/locator-runtime.js": "f90fabd5803d1c9871fb1b484accb98510128e0defb08e2103b47070ebca846a",
+    "packages/resident-runtime/sources.txt": "9e131d3e8ca9ab916bfcabc47124fe75d19e29195f6ff20a2757fc241b2c5ddb",
+    "packages/flashwright-core/src/failure-context-snapshot.ts": "9730781fa693f615bed9b13b4845fcb68b57b773b27afab7929d4b24f3d74294",
+    "packages/flashwright-core/src/index.ts": "94ab9bf502d2c8f66e33c3e199349461ab4084fbca665f82debd0f9e679f2675",
+    "packages/flashwright-core/src/runner-integration.ts": "81cb3c45e9e98ab59ad9d74892f00babde0a660f4da1d296b3b98684005e6548",
+    "packages/flashwright-runner/src/failure-context-format.ts": "647270c40a49be211a3b249d12c508cb06de47c370cf5d5c6aa9d41585970162",
+    "packages/flashwright-runner/src/failure-context-recorder.ts": "9e9afd1dcf80729eb4a984c48205e1d934788d043e73ea1b1b0d23579ba6c225",
+    "packages/flashwright-runner/src/runner-artifact-coordinator.ts": "339c8097972ac5a92b9524e3c9c60ef5afe6916cdfa5888969021ca44ed0f80d",
+    "packages/flashwright-runner/src/runner-trace-finalizer.ts": "a60a7ece1cca2e73a454ddae7ec10c612d448c9bba2063d404e3a160c11f4e97",
+    "packages/flashwright-runner/src/screenshot-recorder.ts": "5504f3fab03c2ccda13c7f4c5bc6dde48f11b0de08d59f4ac65f531374275e9c",
+    "packages/flashwright-runner/src/artifact-errors.ts": "1d428bacc30857c28cdf1d9808fc3090164af30dd20e9132698f821c7a4555de",
+    "tools/test-failure-context-format.mjs": "8da203331cebfbfb2ec4ce220f562cdac3b61f1c4ac37f8347af5144b5a86472",
+    "tools/test-failure-context-recorder.mjs": "fd7ae8458d5eb88b48640f5e98990d551c223e2594e3ec1f76222695c49db276",
+    "tools/test-failure-context-snapshot.mjs": "53721b08be538cf6003a4c06f7f8944c5bafd2979ce2ea83aedc6939d7908109",
+    "tools/test-failure-context-operation.mjs": "421cd3f06f200c90dc452fe286e376ec5a293057e33938d8ce979605f7f9019d",
+    "tools/test-screenshot-ownership.mjs": "18120d3c398a2781482afac669639e73895caf3b44263b242ebdcc0b10f68cf2",
+    "tools/test-runner-artifact-coordinator.mjs": "a02ee2aed979db42f602cab32b3ecee59ea6ccbbe2637f8f44d30b06249b1fb1",
+    "tools/test-runner-trace-finalizer.mjs": "89e47be622c5fa539067379962da5d92f713075bebb7d77a7a07f82fc863e34e",
+    "tools/run-failure-context-tests.mjs": "e291ace01667a3c2929fc49d49fbbe988916264703d41c0707019ebedcc70294",
+    "compatibility/m2/failure-context/playwright.config.cjs": "f81816a76e7b8e32de3eb14107efb1e020d6ba99cad99602ab532e025621f655",
+    "compatibility/m2/failure-context/artifacts.spec.cjs": "f73333bccd98e5041960f15a1f578f8cb737e1092c3960582bb1357d65062e88"
+  },
+  "runs": [
+    {
+      "name": "final-packed-artifacts-bun",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "reportSha256": "d2a46c8d8bf51bc96d64bde180ac7eb100d5d3dc71bdd635a6fd1216cd4caf47",
+      "sourceManifestSha256": "bdc67ffdf890177b55ddfe4838ee21165b473cbd419bc8798b954354ffd423f5",
+      "driverSha256": "67f36fa011f8a26c74cea1ad66d30827b4c54bf28ea3d28986d99703b027030f",
+      "browser": {
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+        "version": "148.0.7778.96",
+        "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+        "distribution": "full-chromium"
+      },
+      "packed": true,
+      "traceAndScreenshots": true,
+      "noCopyPrompt": false,
+      "cases": [
+        {
+          "title": "successful attempt has no failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "matcher observation supplies original diagnostic",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5b04711e92fecddd6949fcb5f32e54753a68ace5256948dd9d90e77b20de90b8",
+                "traceDocumentSha256": "5b04711e92fecddd6949fcb5f32e54753a68ace5256948dd9d90e77b20de90b8",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9e0f77a0fe6e718a79f959ccf1634c607e68acc0d009f793ecfb65dc14f99db9",
+                "traceDocumentSha256": "9e0f77a0fe6e718a79f959ccf1634c607e68acc0d009f793ecfb65dc14f99db9",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "generic failure captures first page body",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "f1ec2d404e631277ebd587a4b53ff8cf96442144febdd3270afea24833c240d2",
+                "traceDocumentSha256": "f1ec2d404e631277ebd587a4b53ff8cf96442144febdd3270afea24833c240d2",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "fa0738f633ecee8df21042e0f5bc8832be8fd4ea604a440538af4e8bbc2ddafb",
+                "traceDocumentSha256": "fa0738f633ecee8df21042e0f5bc8832be8fd4ea604a440538af4e8bbc2ddafb",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "count failure uses page fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "371f0878e6c82bec76d799b2fa4317f4a8fe8868cb611b7518fa3d2080213e85",
+                "traceDocumentSha256": "371f0878e6c82bec76d799b2fa4317f4a8fe8868cb611b7518fa3d2080213e85",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "6f357c54db9efd643d2b2463e53fdaa40259b9a50f2b40ed9c9d60e586918fef",
+                "traceDocumentSha256": "6f357c54db9efd643d2b2463e53fdaa40259b9a50f2b40ed9c9d60e586918fef",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "context close retains its original page",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "f677413aa75ac1c4a1901d176dc28b0b7d92a80046593fc3b6dad052210798c2",
+                "traceDocumentSha256": "f677413aa75ac1c4a1901d176dc28b0b7d92a80046593fc3b6dad052210798c2",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d59a85b5023768779a3d26a94e5d164c4bfa95ac9fa370f30adae14a150e31fb",
+                "traceDocumentSha256": "d59a85b5023768779a3d26a94e5d164c4bfa95ac9fa370f30adae14a150e31fb",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "ordinary page close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c42d199b33338e1797b4762dd565edba0788954b1c1712081bd69de7b8fba435",
+                "traceDocumentSha256": "c42d199b33338e1797b4762dd565edba0788954b1c1712081bd69de7b8fba435",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "986d5caf446860aebedf980d48a16997aa68cfd3334943a1e9b02ca92c658d6a",
+                "traceDocumentSha256": "986d5caf446860aebedf980d48a16997aa68cfd3334943a1e9b02ca92c658d6a",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "owned page close captures context fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "3096130246def168f60a9218fe56bbc55feca6f9c506bec85b91ccb898c8bd71",
+                "traceDocumentSha256": "3096130246def168f60a9218fe56bbc55feca6f9c506bec85b91ccb898c8bd71",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "aa61a092922dbd12eebd4678ef94725d37bf66a8f855ef1651bbc427dd1d485a",
+                "traceDocumentSha256": "aa61a092922dbd12eebd4678ef94725d37bf66a8f855ef1651bbc427dd1d485a",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "direct browser close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d2e02906510d5a19538ba833e82ab72baf84237031de8e05059aebc0694a1f4c",
+                "traceDocumentSha256": "d2e02906510d5a19538ba833e82ab72baf84237031de8e05059aebc0694a1f4c",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "3332bf18d1d7fe5cf80c091b1094d108814c5de8995ca9f77913e8badd1f1c10",
+                "traceDocumentSha256": "3332bf18d1d7fe5cf80c091b1094d108814c5de8995ca9f77913e8badd1f1c10",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "browser-free failure still publishes document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "14eee6ec689d98b39a710cc4de43a17e0306a3d9ca7174a25fc4b9d285ff76c0",
+                "traceDocumentSha256": "14eee6ec689d98b39a710cc4de43a17e0306a3d9ca7174a25fc4b9d285ff76c0",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "e0e1957e6a81889d8380d4fbd4c5b6058beb54f10eb74ff37e8ee54e2b242ee3",
+                "traceDocumentSha256": "e0e1957e6a81889d8380d4fbd4c5b6058beb54f10eb74ff37e8ee54e2b242ee3",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "child frame fallback is a declared limitation",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "73af4cbf25115eb65bc1720228cafd94fb2d464e9adf0e9c2cb1039d90072675",
+                "traceDocumentSha256": "73af4cbf25115eb65bc1720228cafd94fb2d464e9adf0e9c2cb1039d90072675",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": {
+                  "utf16Units": 133,
+                  "sha256": "1d083fd86d69e3353ce3107a126482b05c7bda498143799802828597492e79a0"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "e5ecee0094e1c4f5a78582bbed5af907d0846b2623374c5c1f6d6d13ce29415e",
+                "traceDocumentSha256": "e5ecee0094e1c4f5a78582bbed5af907d0846b2623374c5c1f6d6d13ce29415e",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 1
+              }
+            ]
+          }
+        },
+        {
+          "title": "oversized fallback is explicitly bounded",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "1ca0ff440178e1cc89f066ec80658e5a82c47f53649da34937a4c9e5ddd77154",
+                "traceDocumentSha256": "1ca0ff440178e1cc89f066ec80658e5a82c47f53649da34937a4c9e5ddd77154",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 66898,
+                  "sha256": "21bb861943f3a7470b711885383eebb2b11fe5a782fabd93d296517927900f4e"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "a5afd0a3a923d659590b2e920bff013d8ad78776a01ceaf1032ff873c25d5785",
+                "traceDocumentSha256": "a5afd0a3a923d659590b2e920bff013d8ad78776a01ceaf1032ff873c25d5785",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 16384,
+                  "sha256": "6765eb4ea51efe3df428e1d4db8b7c350ee5db118ceb58bd7a4b56a35105d1c5"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "retry does not inherit previous failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "7c45a9b3ff2c5a88539610b2c6fc12589586c977a97600226b8ff28d4fa76c45",
+                "traceDocumentSha256": "7c45a9b3ff2c5a88539610b2c6fc12589586c977a97600226b8ff28d4fa76c45",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d7f13ddbf838055b550434c0ba13b9b2f273205ff32c7f4763e9ef1a06dffa73",
+                "traceDocumentSha256": "d7f13ddbf838055b550434c0ba13b9b2f273205ff32c7f4763e9ef1a06dffa73",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "suite context survives hook scopes",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 2,
+                "documentSha256": "c1629719d98a94152b2a54a5cb0295c2ab67ea6798240ce44cf7a2c228b00adf",
+                "traceDocumentSha256": "c1629719d98a94152b2a54a5cb0295c2ab67ea6798240ce44cf7a2c228b00adf",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "bca1460e13afcd6aaa2b94badd07128e49534a29def8b52fc5f6da05ec0b8fdd",
+                "traceDocumentSha256": "bca1460e13afcd6aaa2b94badd07128e49534a29def8b52fc5f6da05ec0b8fdd",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "afterAll error remains in final document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "763cea31a015c9473bcff83fb85fa1438559b37502c870e54cee80808e13ef2a",
+                "traceDocumentSha256": "763cea31a015c9473bcff83fb85fa1438559b37502c870e54cee80808e13ef2a",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "53c391298294f7180bd4b6bc189f601a26295eaaa7713a9a2fc8c345001a0ec0",
+                "traceDocumentSha256": "53c391298294f7180bd4b6bc189f601a26295eaaa7713a9a2fc8c345001a0ec0",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        }
+      ],
+      "resources": {
+        "playwright": {
+          "sha256": "f4fa2b404402cebdbbf461a6633e9378ba4a802ab7c67be1e3ea70485e358004",
+          "clean": true
+        },
+        "flashwright": {
+          "sha256": "8c9d2d8a39606334a99cd5046b354edbe8f93ead67becb450e7087baee471463",
+          "clean": true
+        }
+      },
+      "packages": {
+        "flashwright-core": "d80e449f1d97c36ad82f47e6ce7bc8111084da025003ace5ab727917ea6ad09a",
+        "flashwright": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64",
+        "flashwright-runner": "f6143e2bde4b77913db4aa3d5fa78923d14888bcafb48242810bd1b6cc22e04d",
+        "flashwright-test": "f8cd18e59d69daa8f8cc01755a89f02d5129466764e1a411a1b718d7598a49b8"
+      }
+    },
+    {
+      "name": "final-packed-artifacts-node22-002",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "reportSha256": "fbb7ef8f6ce6979daca727a6f914d543b8e81c5a74ccc28b566fd42e5191a285",
+      "sourceManifestSha256": "bdc67ffdf890177b55ddfe4838ee21165b473cbd419bc8798b954354ffd423f5",
+      "driverSha256": "67f36fa011f8a26c74cea1ad66d30827b4c54bf28ea3d28986d99703b027030f",
+      "browser": {
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+        "version": "148.0.7778.96",
+        "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+        "distribution": "full-chromium"
+      },
+      "packed": true,
+      "traceAndScreenshots": true,
+      "noCopyPrompt": false,
+      "cases": [
+        {
+          "title": "successful attempt has no failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "matcher observation supplies original diagnostic",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5d3be7dd91b57de65883f6bb7864db40fd8081d834f9fbc1267c873c7c1a0c52",
+                "traceDocumentSha256": "5d3be7dd91b57de65883f6bb7864db40fd8081d834f9fbc1267c873c7c1a0c52",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "27251d9023af77b9e52232281dc1c08e68ee305b53d7bdf050f924db73636662",
+                "traceDocumentSha256": "27251d9023af77b9e52232281dc1c08e68ee305b53d7bdf050f924db73636662",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "generic failure captures first page body",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9d7e017632824a8cf4baed54238826873a2852a130502fb0190c82e8d9222028",
+                "traceDocumentSha256": "9d7e017632824a8cf4baed54238826873a2852a130502fb0190c82e8d9222028",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5f0e8d7d932deca42e0b60817ec9dc0c81f77c75734a07ede4e46b05615f70c9",
+                "traceDocumentSha256": "5f0e8d7d932deca42e0b60817ec9dc0c81f77c75734a07ede4e46b05615f70c9",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "count failure uses page fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b71e0d951247f56ecc6f8113edee639c266bd8c18de9331401ef57504e8262e8",
+                "traceDocumentSha256": "b71e0d951247f56ecc6f8113edee639c266bd8c18de9331401ef57504e8262e8",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "4f341ff630988dc7771b8bfa28f25671b09670c67351c74971039e211d682847",
+                "traceDocumentSha256": "4f341ff630988dc7771b8bfa28f25671b09670c67351c74971039e211d682847",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "context close retains its original page",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "106c85b56ae740ad4bfb8edd0e873ae020fb4fba5e6cee796d2e0cb6b488b9d1",
+                "traceDocumentSha256": "106c85b56ae740ad4bfb8edd0e873ae020fb4fba5e6cee796d2e0cb6b488b9d1",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "a35a78d64d29114c9c5ee7b77d0586fc5ce5a5c41205dc7cc9374add820dc039",
+                "traceDocumentSha256": "a35a78d64d29114c9c5ee7b77d0586fc5ce5a5c41205dc7cc9374add820dc039",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "ordinary page close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "75aa3036e02388af61aa499355411401bf697f3bdc4f5d51334ef0ba673ded8f",
+                "traceDocumentSha256": "75aa3036e02388af61aa499355411401bf697f3bdc4f5d51334ef0ba673ded8f",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "0abd0aafa83a2b38165172879780149bd366b5afea876da0a4fa5852cad9ade4",
+                "traceDocumentSha256": "0abd0aafa83a2b38165172879780149bd366b5afea876da0a4fa5852cad9ade4",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "owned page close captures context fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "6b620b672a3ce788ac27fea94b2308f998f36b80534135de5f7a6bb02578cd12",
+                "traceDocumentSha256": "6b620b672a3ce788ac27fea94b2308f998f36b80534135de5f7a6bb02578cd12",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "7b3f3a774c4f73d85d12414810cc6fbd94af7ae1440f47f46c69d19a26a51f18",
+                "traceDocumentSha256": "7b3f3a774c4f73d85d12414810cc6fbd94af7ae1440f47f46c69d19a26a51f18",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "direct browser close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "e5f682fe4a0701f77552a3bae606e91ce984da7e0f07580d73eb570867dbb119",
+                "traceDocumentSha256": "e5f682fe4a0701f77552a3bae606e91ce984da7e0f07580d73eb570867dbb119",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c7e8c83653c38819de5054f8899dec578e6c9810be149b465dac9fe240b3be4e",
+                "traceDocumentSha256": "c7e8c83653c38819de5054f8899dec578e6c9810be149b465dac9fe240b3be4e",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "browser-free failure still publishes document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c68ce3415de4282436adbcb6d4f54ff08e63270ac60383cbe2a44716509ca2a2",
+                "traceDocumentSha256": "c68ce3415de4282436adbcb6d4f54ff08e63270ac60383cbe2a44716509ca2a2",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b8ff35366c8e900a7fa78ebb9684664b3804586553b78a52ea3a6a6d0e71440f",
+                "traceDocumentSha256": "b8ff35366c8e900a7fa78ebb9684664b3804586553b78a52ea3a6a6d0e71440f",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "child frame fallback is a declared limitation",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "872094d85cfd0965d9e44dc2d507cf3c0a1133fa29f653e18fe60fe57d2f00c3",
+                "traceDocumentSha256": "872094d85cfd0965d9e44dc2d507cf3c0a1133fa29f653e18fe60fe57d2f00c3",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": {
+                  "utf16Units": 133,
+                  "sha256": "1d083fd86d69e3353ce3107a126482b05c7bda498143799802828597492e79a0"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "63f95e1c8907385da769c865392e6be3cb84d90fa01255bce4235a48dd701272",
+                "traceDocumentSha256": "63f95e1c8907385da769c865392e6be3cb84d90fa01255bce4235a48dd701272",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 1
+              }
+            ]
+          }
+        },
+        {
+          "title": "oversized fallback is explicitly bounded",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9f73173137e42834292434cc7f7e1528af9c04d0dec3951b79d4fccceb01ef6d",
+                "traceDocumentSha256": "9f73173137e42834292434cc7f7e1528af9c04d0dec3951b79d4fccceb01ef6d",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 66898,
+                  "sha256": "21bb861943f3a7470b711885383eebb2b11fe5a782fabd93d296517927900f4e"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5a06f328415376714833f037d6c40278e8f2fb91f8691d111fc254c52b5a37cd",
+                "traceDocumentSha256": "5a06f328415376714833f037d6c40278e8f2fb91f8691d111fc254c52b5a37cd",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 16384,
+                  "sha256": "6765eb4ea51efe3df428e1d4db8b7c350ee5db118ceb58bd7a4b56a35105d1c5"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "retry does not inherit previous failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d66416298baa1e8a3a999df303d5179ad3b42d65cf91a9f7462a6ff955ed2d47",
+                "traceDocumentSha256": "d66416298baa1e8a3a999df303d5179ad3b42d65cf91a9f7462a6ff955ed2d47",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "15d02a7a962997e5e873f57750b6aa0f4667adcd8ae32bac0c0100ce8de42dee",
+                "traceDocumentSha256": "15d02a7a962997e5e873f57750b6aa0f4667adcd8ae32bac0c0100ce8de42dee",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "suite context survives hook scopes",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 2,
+                "documentSha256": "f96f09d3aa48bd830bc91eccdf32bd4727c32fde01c4dea03c44e79c2ca8df6d",
+                "traceDocumentSha256": "f96f09d3aa48bd830bc91eccdf32bd4727c32fde01c4dea03c44e79c2ca8df6d",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "427cac53c001446d10dcbfbdb0fc766f55197fe00b28cd8a810caaef2b6303af",
+                "traceDocumentSha256": "427cac53c001446d10dcbfbdb0fc766f55197fe00b28cd8a810caaef2b6303af",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "afterAll error remains in final document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9770b4ecd5735f24e91a4cfdb221c283eace599ccf22db165b3c79452b5646fc",
+                "traceDocumentSha256": "9770b4ecd5735f24e91a4cfdb221c283eace599ccf22db165b3c79452b5646fc",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b522867c1a6dc21f33caa3d58fdd508786ba2f0ff776d84ee6f8925b7435f618",
+                "traceDocumentSha256": "b522867c1a6dc21f33caa3d58fdd508786ba2f0ff776d84ee6f8925b7435f618",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        }
+      ],
+      "resources": {
+        "playwright": {
+          "sha256": "fe291db4622f20c2ea9709d0eaa80b58fc444631cf40eb46c494825615de9e99",
+          "clean": true
+        },
+        "flashwright": {
+          "sha256": "b71b9e6a6545dfe4a2c1fab02dbc97157ffdf9bc3f84340ec4687d951ca9f056",
+          "clean": true
+        }
+      },
+      "packages": {
+        "flashwright-core": "d80e449f1d97c36ad82f47e6ce7bc8111084da025003ace5ab727917ea6ad09a",
+        "flashwright": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64",
+        "flashwright-runner": "f6143e2bde4b77913db4aa3d5fa78923d14888bcafb48242810bd1b6cc22e04d",
+        "flashwright-test": "f8cd18e59d69daa8f8cc01755a89f02d5129466764e1a411a1b718d7598a49b8"
+      }
+    },
+    {
+      "name": "final-packed-artifacts-node24-002",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "reportSha256": "bb4aa3f3ba2872784e91ef8303b81d9c70816d60a5874f8d93350549f094bb2f",
+      "sourceManifestSha256": "bdc67ffdf890177b55ddfe4838ee21165b473cbd419bc8798b954354ffd423f5",
+      "driverSha256": "67f36fa011f8a26c74cea1ad66d30827b4c54bf28ea3d28986d99703b027030f",
+      "browser": {
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+        "version": "148.0.7778.96",
+        "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+        "distribution": "full-chromium"
+      },
+      "packed": true,
+      "traceAndScreenshots": true,
+      "noCopyPrompt": false,
+      "cases": [
+        {
+          "title": "successful attempt has no failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "matcher observation supplies original diagnostic",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5d3be7dd91b57de65883f6bb7864db40fd8081d834f9fbc1267c873c7c1a0c52",
+                "traceDocumentSha256": "5d3be7dd91b57de65883f6bb7864db40fd8081d834f9fbc1267c873c7c1a0c52",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "27251d9023af77b9e52232281dc1c08e68ee305b53d7bdf050f924db73636662",
+                "traceDocumentSha256": "27251d9023af77b9e52232281dc1c08e68ee305b53d7bdf050f924db73636662",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "generic failure captures first page body",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9d7e017632824a8cf4baed54238826873a2852a130502fb0190c82e8d9222028",
+                "traceDocumentSha256": "9d7e017632824a8cf4baed54238826873a2852a130502fb0190c82e8d9222028",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5f0e8d7d932deca42e0b60817ec9dc0c81f77c75734a07ede4e46b05615f70c9",
+                "traceDocumentSha256": "5f0e8d7d932deca42e0b60817ec9dc0c81f77c75734a07ede4e46b05615f70c9",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "count failure uses page fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "ef2aa3166ddc34d4a4ffc5d43005db779dbce92189363c4753fd8673045b2168",
+                "traceDocumentSha256": "ef2aa3166ddc34d4a4ffc5d43005db779dbce92189363c4753fd8673045b2168",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "4f341ff630988dc7771b8bfa28f25671b09670c67351c74971039e211d682847",
+                "traceDocumentSha256": "4f341ff630988dc7771b8bfa28f25671b09670c67351c74971039e211d682847",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "context close retains its original page",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "106c85b56ae740ad4bfb8edd0e873ae020fb4fba5e6cee796d2e0cb6b488b9d1",
+                "traceDocumentSha256": "106c85b56ae740ad4bfb8edd0e873ae020fb4fba5e6cee796d2e0cb6b488b9d1",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "a35a78d64d29114c9c5ee7b77d0586fc5ce5a5c41205dc7cc9374add820dc039",
+                "traceDocumentSha256": "a35a78d64d29114c9c5ee7b77d0586fc5ce5a5c41205dc7cc9374add820dc039",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "ordinary page close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "75aa3036e02388af61aa499355411401bf697f3bdc4f5d51334ef0ba673ded8f",
+                "traceDocumentSha256": "75aa3036e02388af61aa499355411401bf697f3bdc4f5d51334ef0ba673ded8f",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "0abd0aafa83a2b38165172879780149bd366b5afea876da0a4fa5852cad9ade4",
+                "traceDocumentSha256": "0abd0aafa83a2b38165172879780149bd366b5afea876da0a4fa5852cad9ade4",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "owned page close captures context fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "6b620b672a3ce788ac27fea94b2308f998f36b80534135de5f7a6bb02578cd12",
+                "traceDocumentSha256": "6b620b672a3ce788ac27fea94b2308f998f36b80534135de5f7a6bb02578cd12",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "7b3f3a774c4f73d85d12414810cc6fbd94af7ae1440f47f46c69d19a26a51f18",
+                "traceDocumentSha256": "7b3f3a774c4f73d85d12414810cc6fbd94af7ae1440f47f46c69d19a26a51f18",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "direct browser close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "e5f682fe4a0701f77552a3bae606e91ce984da7e0f07580d73eb570867dbb119",
+                "traceDocumentSha256": "e5f682fe4a0701f77552a3bae606e91ce984da7e0f07580d73eb570867dbb119",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c7e8c83653c38819de5054f8899dec578e6c9810be149b465dac9fe240b3be4e",
+                "traceDocumentSha256": "c7e8c83653c38819de5054f8899dec578e6c9810be149b465dac9fe240b3be4e",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "browser-free failure still publishes document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c68ce3415de4282436adbcb6d4f54ff08e63270ac60383cbe2a44716509ca2a2",
+                "traceDocumentSha256": "c68ce3415de4282436adbcb6d4f54ff08e63270ac60383cbe2a44716509ca2a2",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b8ff35366c8e900a7fa78ebb9684664b3804586553b78a52ea3a6a6d0e71440f",
+                "traceDocumentSha256": "b8ff35366c8e900a7fa78ebb9684664b3804586553b78a52ea3a6a6d0e71440f",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "child frame fallback is a declared limitation",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "872094d85cfd0965d9e44dc2d507cf3c0a1133fa29f653e18fe60fe57d2f00c3",
+                "traceDocumentSha256": "872094d85cfd0965d9e44dc2d507cf3c0a1133fa29f653e18fe60fe57d2f00c3",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": {
+                  "utf16Units": 133,
+                  "sha256": "1d083fd86d69e3353ce3107a126482b05c7bda498143799802828597492e79a0"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "63f95e1c8907385da769c865392e6be3cb84d90fa01255bce4235a48dd701272",
+                "traceDocumentSha256": "63f95e1c8907385da769c865392e6be3cb84d90fa01255bce4235a48dd701272",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 1
+              }
+            ]
+          }
+        },
+        {
+          "title": "oversized fallback is explicitly bounded",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9f73173137e42834292434cc7f7e1528af9c04d0dec3951b79d4fccceb01ef6d",
+                "traceDocumentSha256": "9f73173137e42834292434cc7f7e1528af9c04d0dec3951b79d4fccceb01ef6d",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 66898,
+                  "sha256": "21bb861943f3a7470b711885383eebb2b11fe5a782fabd93d296517927900f4e"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5a06f328415376714833f037d6c40278e8f2fb91f8691d111fc254c52b5a37cd",
+                "traceDocumentSha256": "5a06f328415376714833f037d6c40278e8f2fb91f8691d111fc254c52b5a37cd",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 16384,
+                  "sha256": "6765eb4ea51efe3df428e1d4db8b7c350ee5db118ceb58bd7a4b56a35105d1c5"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "retry does not inherit previous failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d66416298baa1e8a3a999df303d5179ad3b42d65cf91a9f7462a6ff955ed2d47",
+                "traceDocumentSha256": "d66416298baa1e8a3a999df303d5179ad3b42d65cf91a9f7462a6ff955ed2d47",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "15d02a7a962997e5e873f57750b6aa0f4667adcd8ae32bac0c0100ce8de42dee",
+                "traceDocumentSha256": "15d02a7a962997e5e873f57750b6aa0f4667adcd8ae32bac0c0100ce8de42dee",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "suite context survives hook scopes",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 2,
+                "documentSha256": "f96f09d3aa48bd830bc91eccdf32bd4727c32fde01c4dea03c44e79c2ca8df6d",
+                "traceDocumentSha256": "f96f09d3aa48bd830bc91eccdf32bd4727c32fde01c4dea03c44e79c2ca8df6d",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "427cac53c001446d10dcbfbdb0fc766f55197fe00b28cd8a810caaef2b6303af",
+                "traceDocumentSha256": "427cac53c001446d10dcbfbdb0fc766f55197fe00b28cd8a810caaef2b6303af",
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": {
+                  "utf16Units": 106,
+                  "sha256": "3a21347694baaf0333d787a95e3d5630022c984834c2dcef200c6efa5fafaa1d"
+                },
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "afterAll error remains in final document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "9770b4ecd5735f24e91a4cfdb221c283eace599ccf22db165b3c79452b5646fc",
+                "traceDocumentSha256": "9770b4ecd5735f24e91a4cfdb221c283eace599ccf22db165b3c79452b5646fc",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b522867c1a6dc21f33caa3d58fdd508786ba2f0ff776d84ee6f8925b7435f618",
+                "traceDocumentSha256": "b522867c1a6dc21f33caa3d58fdd508786ba2f0ff776d84ee6f8925b7435f618",
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        }
+      ],
+      "resources": {
+        "playwright": {
+          "sha256": "76b146db55dc054ae2de5185147f4e8872d29369624116581e720ebe2079883f",
+          "clean": true
+        },
+        "flashwright": {
+          "sha256": "95058ca27c7b66bcd2970d0a44e2a2085c1b94605f134b403d37ec5b189f76ea",
+          "clean": true
+        }
+      },
+      "packages": {
+        "flashwright-core": "d80e449f1d97c36ad82f47e6ce7bc8111084da025003ace5ab727917ea6ad09a",
+        "flashwright": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64",
+        "flashwright-runner": "f6143e2bde4b77913db4aa3d5fa78923d14888bcafb48242810bd1b6cc22e04d",
+        "flashwright-test": "f8cd18e59d69daa8f8cc01755a89f02d5129466764e1a411a1b718d7598a49b8"
+      }
+    },
+    {
+      "name": "final-no-copy-bun",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "reportSha256": "3a2b6fe8b636411bf1756997a5b330b9b7b90a79bd87305d0e2aa65b2588dde9",
+      "sourceManifestSha256": "bdc67ffdf890177b55ddfe4838ee21165b473cbd419bc8798b954354ffd423f5",
+      "driverSha256": "67f36fa011f8a26c74cea1ad66d30827b4c54bf28ea3d28986d99703b027030f",
+      "browser": {
+        "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+        "version": "148.0.7778.96",
+        "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+        "distribution": "full-chromium"
+      },
+      "packed": false,
+      "traceAndScreenshots": false,
+      "noCopyPrompt": true,
+      "cases": [
+        {
+          "title": "successful attempt has no failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "passed",
+                "retry": 0,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "matcher observation supplies original diagnostic",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5b04711e92fecddd6949fcb5f32e54753a68ace5256948dd9d90e77b20de90b8",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c897a0753e12c2f0881ddb1994bfcabce1bd6a95bdf0a35cc7abe4bdc712ec0c",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": true,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "generic failure captures first page body",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "40aa1f53529dc2acde1c8a9b30fa604fb71344129d1791879857bc01c936fd39",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "40aa1f53529dc2acde1c8a9b30fa604fb71344129d1791879857bc01c936fd39",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "count failure uses page fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "1b2623067a1d1c7bb4effd1ec1efe39b950c63d4d407f44b2464819456691a57",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "5557e71aa4f5528693bea9ed197e447fc66f2e407bc401f6abdb6e554496fec5",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "context close retains its original page",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b2a896e6b65296190fe5a5488c8beb838711b660e8e1f479b630a272fe4d471c",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "b2a896e6b65296190fe5a5488c8beb838711b660e8e1f479b630a272fe4d471c",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "ordinary page close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c42d199b33338e1797b4762dd565edba0788954b1c1712081bd69de7b8fba435",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c42d199b33338e1797b4762dd565edba0788954b1c1712081bd69de7b8fba435",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "owned page close captures context fallback",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "85df8bf08eb064768582d9fca3ac6b674f9767e25e97d90d370dc7cd3c395fec",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "85df8bf08eb064768582d9fca3ac6b674f9767e25e97d90d370dc7cd3c395fec",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "direct browser close has no fallback capture",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d2e02906510d5a19538ba833e82ab72baf84237031de8e05059aebc0694a1f4c",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "d2e02906510d5a19538ba833e82ab72baf84237031de8e05059aebc0694a1f4c",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "browser-free failure still publishes document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "14eee6ec689d98b39a710cc4de43a17e0306a3d9ca7174a25fc4b9d285ff76c0",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "14eee6ec689d98b39a710cc4de43a17e0306a3d9ca7174a25fc4b9d285ff76c0",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "child frame fallback is a declared limitation",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c88f8df675caf96be59f2df66cc9422e71c07018c90ee40772c1ae661a0c727e",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "c88f8df675caf96be59f2df66cc9422e71c07018c90ee40772c1ae661a0c727e",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "oversized fallback is explicitly bounded",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "cd002ae4ff490aa301b4db81d278841cce1f3ad3e54fb4e423602be42ed13ea3",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "cd002ae4ff490aa301b4db81d278841cce1f3ad3e54fb4e423602be42ed13ea3",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "retry does not inherit previous failure document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "784b1396a16aea6a26816ab4873fd465b80d3d7a3769050eb27216a6c53805d7",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "784b1396a16aea6a26816ab4873fd465b80d3d7a3769050eb27216a6c53805d7",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              },
+              {
+                "status": "passed",
+                "retry": 1,
+                "errors": 0,
+                "document": false,
+                "documentAttachments": 0,
+                "documentSha256": null,
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "suite context survives hook scopes",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 2,
+                "documentSha256": "ee666ba389ec4e7a77859942c9c0d9fbbc8932ff2c35520c029dd0cfbcdbdffa",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "ee666ba389ec4e7a77859942c9c0d9fbbc8932ff2c35520c029dd0cfbcdbdffa",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        },
+        {
+          "title": "afterAll error remains in final document",
+          "engines": {
+            "playwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "763cea31a015c9473bcff83fb85fa1438559b37502c870e54cee80808e13ef2a",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ],
+            "flashwright": [
+              {
+                "status": "failed",
+                "retry": 0,
+                "errors": 1,
+                "document": true,
+                "documentAttachments": 1,
+                "documentSha256": "763cea31a015c9473bcff83fb85fa1438559b37502c870e54cee80808e13ef2a",
+                "traceDocumentSha256": null,
+                "originalMatcherDiagnostic": false,
+                "pageSnapshot": null,
+                "optionalDiagnostics": 0
+              }
+            ]
+          }
+        }
+      ],
+      "resources": {
+        "playwright": {
+          "sha256": "d4e619e2b1795034686984ed30056fe793b8b695190a5ab01452b431beece5de",
+          "clean": true
+        },
+        "flashwright": {
+          "sha256": "3daa6c207316aa749f431c1f2a87b26b6b78bb76e2da5945551ffa2096b51584",
+          "clean": true
+        }
+      }
+    }
+  ],
+  "hostChecks": [
+    {
+      "name": "bun-test-failure-context-format",
+      "outputSha256": "c7cd295e20e2b0807e32b3d07c1c2b825e5bca69945d2dc97de4dcc8f054d7b8"
+    },
+    {
+      "name": "bun-test-failure-context-recorder",
+      "outputSha256": "f4f9f628e3f074593e651438031ebd351a3267bf81fa299386edd5719f39b2c4"
+    },
+    {
+      "name": "bun-test-failure-context-snapshot",
+      "outputSha256": "3b92e61e012d1a7845b9b6abeb384b180c37005acd208b040e628d2977ec56c7"
+    },
+    {
+      "name": "bun-test-runner-artifact-coordinator",
+      "outputSha256": "22a79cd8c1fff7567e57482ca234a96a2ce7d07ef6922339a82d07da210bc89d"
+    },
+    {
+      "name": "bun-test-runner-screenshots",
+      "outputSha256": "3a176226caed537205dc58d2b9593eecdeffa827cd93e7a919206ecf0d38c5fe"
+    },
+    {
+      "name": "bun-test-runner-trace-finalizer",
+      "outputSha256": "ea90ce54bba9e9c523990947b7ef8215bef8d62b28d7fb3900a0a54ded4b1290"
+    },
+    {
+      "name": "bun-test-screenshot-ownership",
+      "outputSha256": "b4af56f11308780bf526b27d1f80da98db9e887b7e37b4cb51f6245c66ab0987"
+    },
+    {
+      "name": "node22-test-failure-context-format",
+      "outputSha256": "d9cd1b67ce1ea5a125052f92ee08802e8f6a6e606927e9dc3eafdde83fb60612"
+    },
+    {
+      "name": "node22-test-failure-context-recorder",
+      "outputSha256": "5ad28e8678857e9694a8698dbca8a3587866fc849821218e26ac83a84b2ff69b"
+    },
+    {
+      "name": "node22-test-failure-context-snapshot",
+      "outputSha256": "3b92e61e012d1a7845b9b6abeb384b180c37005acd208b040e628d2977ec56c7"
+    },
+    {
+      "name": "node22-test-runner-artifact-coordinator",
+      "outputSha256": "22a79cd8c1fff7567e57482ca234a96a2ce7d07ef6922339a82d07da210bc89d"
+    },
+    {
+      "name": "node22-test-runner-screenshots",
+      "outputSha256": "3a176226caed537205dc58d2b9593eecdeffa827cd93e7a919206ecf0d38c5fe"
+    },
+    {
+      "name": "node22-test-runner-trace-finalizer",
+      "outputSha256": "ea90ce54bba9e9c523990947b7ef8215bef8d62b28d7fb3900a0a54ded4b1290"
+    },
+    {
+      "name": "node22-test-screenshot-ownership",
+      "outputSha256": "43ed8f8201ebbe73208a7cc8ba7fbe57ca12f5e62e6639213dc1761d4a133ff3"
+    },
+    {
+      "name": "node24-test-failure-context-format",
+      "outputSha256": "e5c6e58fdbcd7905e2cc630fab5566e6ebe2dea2dcbe94e31f7fe4ed2bc9200c"
+    },
+    {
+      "name": "node24-test-failure-context-recorder",
+      "outputSha256": "9d906eaf1a8d8fe9ad3134c027030a115900b6e8901b6c0f65d9f35adeb54434"
+    },
+    {
+      "name": "node24-test-failure-context-snapshot",
+      "outputSha256": "3b92e61e012d1a7845b9b6abeb384b180c37005acd208b040e628d2977ec56c7"
+    },
+    {
+      "name": "node24-test-runner-artifact-coordinator",
+      "outputSha256": "22a79cd8c1fff7567e57482ca234a96a2ce7d07ef6922339a82d07da210bc89d"
+    },
+    {
+      "name": "node24-test-runner-screenshots",
+      "outputSha256": "3a176226caed537205dc58d2b9593eecdeffa827cd93e7a919206ecf0d38c5fe"
+    },
+    {
+      "name": "node24-test-runner-trace-finalizer",
+      "outputSha256": "ea90ce54bba9e9c523990947b7ef8215bef8d62b28d7fb3900a0a54ded4b1290"
+    },
+    {
+      "name": "node24-test-screenshot-ownership",
+      "outputSha256": "4bcb8429199e0614ad49b4cab2be6766e064db073d37aa83c2b820b6e23ceffa"
+    },
+    {
+      "name": "native-operation-bun",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "checks": [
+        "private version, ownership and finite budget reject before native dispatch",
+        "native route rejects a foreign frame and unknown keys",
+        "blocked renderer obeys caller deadline and recovers without a late snapshot",
+        "missing body retries within the original operation",
+        "native five-second ceiling survives an unbounded caller",
+        "context closure settles the original pending capture and successor remains healthy"
+      ],
+      "outputSha256": "6f8049e945df8d63768128c373a1ee15914706384926355b7b5845706271351f",
+      "resourceSha256": "5edfc8dc7045885afec3e8b97b44919c3203348fbe3f4a156008794e9f39910f"
+    },
+    {
+      "name": "native-operation-node22",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "checks": [
+        "private version, ownership and finite budget reject before native dispatch",
+        "native route rejects a foreign frame and unknown keys",
+        "blocked renderer obeys caller deadline and recovers without a late snapshot",
+        "missing body retries within the original operation",
+        "native five-second ceiling survives an unbounded caller",
+        "context closure settles the original pending capture and successor remains healthy"
+      ],
+      "outputSha256": "2c0aa8ced40ad41a088df27454c371e67ff9071cdbeb5627eb1a4a2a897e9cf2",
+      "resourceSha256": "540d73d0586387073b29254e3aeb1ef6a91e6a0107fc3fc4c899d7f668dde89b"
+    },
+    {
+      "name": "native-operation-node24",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "checks": [
+        "private version, ownership and finite budget reject before native dispatch",
+        "native route rejects a foreign frame and unknown keys",
+        "blocked renderer obeys caller deadline and recovers without a late snapshot",
+        "missing body retries within the original operation",
+        "native five-second ceiling survives an unbounded caller",
+        "context closure settles the original pending capture and successor remains healthy"
+      ],
+      "outputSha256": "83794aa9eab1d224e243b43b0d0416ed8fcc7c14b32d1bb08312381b09ca051c",
+      "resourceSha256": "81bc73a94b069dc39b03d6286137deb2151a921b0e822981b61d65cb06f0d8a3"
+    }
+  ],
+  "retainedPriorRuns": [
+    {
+      "name": "browser-bun-002",
+      "reportSha256": "e652ab71518f2e9d9f47354410ba3d6b08f3d3840d20e9645d3b2e2846578c4d",
+      "reason": "Reference attaches the same final document twice across suite hook scopes; classified and verified as an intentional once-only publication difference."
+    },
+    {
+      "name": "final-packed-artifacts-node22",
+      "reportSha256": "183be8046c96512539552a5b41978b535f0cf37023684c2f03f65abfc42a3b04",
+      "reason": "Packaging preflight rejected PATH Bun1.4.0 before browser work; rerun with explicit pinned Bun1.4.2."
+    },
+    {
+      "name": "final-trace-off-bun",
+      "reportSha256": "d24216cf8499be312acfdeb0324c6a068661d099920e0efd43b051525e750e18",
+      "reason": "Copied fixture resolved a different worktree runner instance; rerun inside the verification workspace."
+    },
+    {
+      "name": "trace-off-artifact-free-control",
+      "reportSha256": "139f96fb644eb3c5d65e111dd4dab7045d17dfb2456e97f21538963ac0435099",
+      "reason": "The internal reference base runner excludes default artifact fixtures; new candidate failure documents required an explicit independently verified comparison class."
+    }
+  ],
+  "disabledTrace": {
+    "status": "passed",
+    "reportSha256": "5376b22efb3a775ae9ac0d51f803c91923667ad975c94a8c55c839cb2ca0e9f2",
+    "scope": "Artifact-free upstream base-runner control; candidate default failure documents separately asserted. Public steps, outcomes, explicit attachments and stdio match; candidate journal remains empty."
+  },
+  "limits": [
+    "Focused source and packed acceptance only; broader merged core gate remains pending.",
+    "Fallback covers one main document. Rendered child-frame composition is explicitly omitted with an optional diagnostic. Public ARIA modes remain separately gated.",
+    "Failure document256KiB,16 errors,32768 UTF-16-unit fields/stacks,1024 stack lines; source8MiB and64KiB retained window. Fallback16384 UTF-16 units includes its truncation marker. These are retained/output limits, not browser CPU bounds.",
+    "Original attempt owns fallback and publication through hook teardown, late creation, retry and optional capture errors. Expected failures publish documents; successful attempts do not.",
+    "Native Linux remains unverified. No performance or release claim; the frozen70dc299f broad benchmark predates default failure-document work.",
+    "Raw runner documents, traces, screenshots, reports and watchdog records remain private; exact hashes bind this portable focused receipt."
+  ]
+}

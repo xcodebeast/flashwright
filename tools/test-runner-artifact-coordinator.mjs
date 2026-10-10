@@ -12,6 +12,8 @@ const { TraceWriter } = require('../packages/flashwright-core/dist/commonjs/trac
 const { adoptRunnerTraceAtStart } = require('../packages/flashwright-runner/dist/commonjs/runner-trace-journal.js');
 const { installRunnerTraceFinalizer } = require('../packages/flashwright-runner/dist/commonjs/runner-trace-finalizer.js');
 const { runnerIntegration } = require('../packages/flashwright-core/dist/commonjs/runner-integration.js');
+const { instrumentTraceMethods } = require('../packages/flashwright-core/dist/commonjs/trace-hooks.js');
+const runnerGlobals = require('../packages/flashwright-runner/dist/upstream/lib/globals.js');
 const { beginRunnerContextCreation, completeRunnerContextCreation, didCreateRunnerContext, willCloseRunnerContext } = require('../packages/flashwright-core/dist/commonjs/runner-lifecycle.js');
 const { beginRunnerRequestCreation, publishRunnerRequestContext } = require('../packages/flashwright-core/dist/commonjs/runner-request-lifecycle.js');
 const { APIRequestContext } = require('../packages/flashwright-core/dist/commonjs/api-request.js');
@@ -464,6 +466,140 @@ try {
       const second = information(); coordinator.start(second); await coordinator.ready(); await second._tracing.stopIfNeeded();
       assert.equal((await libraries(second)).length, 1);
     } finally { release(); TraceWriter.prototype.dispose = originalDispose; await manual?.catch(() => {}); await value.close(); await coordinator.dispose(); }
+  });
+  await check('final stop closes creation and action admission before blocked failure-context sealing and publishes once', async () => {
+    const coordinator = new RunnerArtifactCoordinator();
+    const originalContext = context();
+    const lateContext = context();
+    const steps = [];
+    let signalSealing;
+    const sealingStarted = new Promise(resolve => { signalSealing = resolve; });
+    let releaseSealing;
+    const sealingReleased = new Promise(resolve => { releaseSealing = resolve; });
+    let pendingClaim;
+    let fallbackChecks = 0;
+    const testInfo = Object.assign(information({ snapshots: true }), {
+      status: 'failed', errors: [Object.freeze({ message: 'original lifecycle failure' })],
+      titlePath: ['coordinator', 'original lifecycle failure'],
+      file: join(directory, 'missing-source.ts'), line: 1, column: 1,
+      _addStep(data) {
+        const step = { ...data, stepId: `owned-step-${steps.length + 1}`, complete() {} };
+        steps.push(step);
+        this._stepMap.set(step.stepId, step);
+        return step;
+      },
+    });
+    class Operations {
+      constructor(tracing) { this.tracing = tracing; }
+      async evaluate(expression) { return expression; }
+    }
+    instrumentTraceMethods(Operations.prototype, 'Frame', operation => ({ tracing: operation.tracing }), {
+      evaluate: { method: 'evaluateExpression', parameters: ['expression'] },
+    });
+    try {
+      coordinator.start(testInfo);
+      await coordinator.ready();
+      await publish(originalContext);
+      runnerGlobals.setCurrentTestInfo(testInfo);
+      const operations = new Operations(originalContext.tracing);
+      assert.equal(await operations.evaluate('before final stop'), 'before final stop');
+      assert.equal(steps.length, 1, 'the active original attempt records ordinary actions');
+      pendingClaim = beginRunnerContextCreation();
+      originalContext.driver.intercept = async method => {
+        if (method === 'context.trace.chunk.seal') { signalSealing(); await sealingReleased; }
+      };
+      originalContext.pages = () => { fallbackChecks++; return []; };
+      const completion = testInfo._tracing.stopIfNeeded();
+      assert.equal(testInfo._tracing.stopIfNeeded(), completion);
+      await turn();
+      assert.equal(fallbackChecks, 0, 'fallback waits for original admitted creation and trace sealing');
+      assert.equal(await operations.evaluate('during pending original creation'), 'during pending original creation');
+      assert.equal(steps.length, 1, 'final-stop admission closes before its first asynchronous wait');
+      await publish(lateContext);
+      assert.deepEqual(lateContext.calls, [], 'creation begun during final stop cannot start another original trace');
+      completeRunnerContextCreation(pendingClaim);
+      pendingClaim = undefined;
+      await sealingStarted;
+      assert.equal(fallbackChecks, 0, 'fallback cannot begin before the original native seal returns');
+      assert.equal(await operations.evaluate('during native seal'), 'during native seal');
+      assert.equal(steps.length, 1);
+      releaseSealing();
+      await completion;
+      assert.equal(testInfo._tracing.stopIfNeeded(), completion);
+      await testInfo._tracing.stopIfNeeded();
+      assert.equal(fallbackChecks, 1);
+      assert.equal(testInfo.attachments.filter(attachment => attachment.name === 'error-context').length, 1);
+      assert.equal(testInfo.attachments.filter(attachment => attachment.name === 'error-context-error').length, 0);
+      assert.equal(testInfo.attachments.filter(attachment => attachment.name === 'trace').length, 1);
+      assert.equal((await libraries(testInfo)).length, 1);
+      assert.equal(testInfo.errors.length, 1);
+      assert.equal(testInfo.errors[0].message, 'original lifecycle failure');
+      assert.equal(testInfo.status, 'failed');
+    } finally {
+      if (pendingClaim !== undefined) completeRunnerContextCreation(pendingClaim);
+      releaseSealing();
+      runnerGlobals.setCurrentTestInfo(undefined);
+      await originalContext.close();
+      await lateContext.close();
+      await coordinator.dispose();
+    }
+  });
+  await check('failed final preflight and hostile matcher diagnostics still release original failure-context ownership', async () => {
+    for (const mode of ['accessor', 'preflight']) {
+      const coordinator = new RunnerArtifactCoordinator();
+      const lateContext = context();
+      let pageReads = 0;
+      lateContext.pages = () => { pageReads++; return [{}]; };
+      let throwDiagnostic = mode === 'accessor';
+      const originalError = Object.freeze({
+        message: `original ${mode} failure`,
+        get errorContext() {
+          if (throwDiagnostic) throw Error('hostile matcher diagnostic getter');
+          return undefined;
+        },
+      });
+      const originalInfo = Object.assign(information({ off: true }), {
+        status: 'failed', errors: [originalError], titlePath: ['coordinator', mode],
+        file: join(directory, 'missing-source.ts'), line: 1, column: 1,
+      });
+      let originalStops = 0;
+      originalInfo._tracing.stopIfNeeded = async () => { originalStops++; };
+      if (mode === 'preflight') originalInfo._timeoutManager._running.runnable.type = 'beforeAll';
+      let originalClaim;
+      try {
+        coordinator.start(originalInfo);
+        await coordinator.ready();
+        originalClaim = beginRunnerContextCreation();
+        const completion = originalInfo._tracing.stopIfNeeded();
+        await completion;
+        assert.equal(originalInfo._tracing.stopIfNeeded(), completion);
+        assert.equal(originalStops, 1);
+        assert.equal(originalInfo.status, 'failed');
+        assert.equal(originalInfo.errors[0], originalError);
+        const diagnostics = originalInfo.attachments.filter(attachment => attachment.name === 'error-context-error');
+        assert(diagnostics.length > 0);
+        assert.match(diagnostics.map(attachment => attachment.body.toString()).join('\n'), mode === 'accessor' ? /hostile matcher diagnostic getter/ : /outside its separate timeout slot/);
+        throwDiagnostic = false;
+        const successorInfo = information({ off: true });
+        let successorStops = 0;
+        successorInfo._tracing.stopIfNeeded = async () => { successorStops++; };
+        coordinator.start(successorInfo);
+        await coordinator.ready();
+        await publish(lateContext, originalClaim);
+        originalClaim = undefined;
+        await lateContext.close();
+        await successorInfo._tracing.stopIfNeeded();
+        assert.equal(pageReads, 0, 'a finalization failure cannot leave its old creation claim eligible for later fallback');
+        assert.deepEqual(lateContext.calls, [], 'original trace-off creation never acquires a successor trace');
+        assert.equal(successorStops, 1);
+        assert.equal(successorInfo.attachments.length, 0);
+        assert.equal(successorInfo.errors.length, 0);
+      } finally {
+        if (originalClaim !== undefined) completeRunnerContextCreation(originalClaim);
+        await lateContext.close();
+        await coordinator.dispose();
+      }
+    }
   });
   report.status = 'passed';
 } catch (error) { report.status = 'failed'; report.error = error.stack ?? String(error); process.exitCode = 1; }

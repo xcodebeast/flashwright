@@ -7,7 +7,7 @@ export class ArtifactErrors {
   private count = 0;
   private published = false;
 
-  constructor(private readonly name: 'trace-error' | 'screenshot-error', private readonly includeStack = false) {}
+  constructor(private readonly name: 'trace-error' | 'screenshot-error' | 'error-context-error', private readonly includeStack = false) {}
 
   record(error: unknown): void {
     ++this.count;
@@ -34,7 +34,7 @@ export class ArtifactErrors {
     if (this.published || !this.count) return;
     this.published = true;
     const omitted = this.count - this.messages.length;
-    const kind = this.name === 'trace-error' ? 'trace' : 'screenshot';
+    const kind = this.name === 'trace-error' ? 'trace' : this.name === 'screenshot-error' ? 'screenshot' : 'failure context';
     const body = Buffer.from(this.messages.join('\n\n') + (omitted ? `\n\n${omitted} additional ${kind} errors omitted.` : ''));
     testInfo.attachments.push({ name: this.name, contentType: 'text/plain', body });
   }

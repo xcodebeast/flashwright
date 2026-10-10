@@ -11,6 +11,8 @@ type Archive = Awaited<ReturnType<Journal['takeArchive']>>;
 /** Original-attempt capture owns every pending or rejected handoff until its disposal settles. */
 export interface RunnerTraceCollection {
   closeAdmission(): void;
+  /** Optional earlier sealing shares this original monotonic deadline with final export. */
+  preparationDeadline?(): number;
   /** Hand off in admission order; the callback takes custody only when it returns successfully. */
   collect(acceptArchive: (archive: Archive) => void, signal: AbortSignal): Promise<void>;
   dispose(): Promise<void>;
@@ -26,6 +28,17 @@ interface PinnedTestInfo extends TestInfo {
     setTimeout(timeout: number): void;
   };
   _tracing: { stopIfNeeded(): Promise<void>; _shouldAbandonTrace(): boolean } & Partial<Record<typeof journalAppenders[number], (...arguments_: unknown[]) => void>>;
+}
+
+/** The pinned worker creates a separate final slot; the main test timeout must remain untouched. */
+export function ownRunnerArtifactFinalTimeout(testInfo: TestInfo): void {
+  const manager = (testInfo as PinnedTestInfo)._timeoutManager;
+  const running = manager?._running;
+  if (!running || running.runnable.type !== 'test' || running.runnable.fixture !== undefined ||
+      running.runnable.slot !== running.slot || running.slot === manager.defaultSlot()) {
+    throw failure('ProtocolError', 'runner.tracing', 'final runner trace stop is outside its separate timeout slot');
+  }
+  manager.setTimeout(0);
 }
 
 const finalizers = new WeakMap<object, RunnerTraceFinalizer>();
@@ -64,16 +77,6 @@ export class RunnerTraceFinalizer {
   /** Settlement can include quarantined cleanup failures, whose admission remains charged. */
   get cleanupSucceeded(): boolean { return this.cleanupCompletedSuccessfully; }
 
-  /** The pinned worker creates a separate final slot; the main test timeout must remain untouched. */
-  private ownFinalTimeout(): void {
-    const manager = this.testInfo._timeoutManager;
-    const running = manager?._running;
-    if (!running || running.runnable.type !== 'test' || running.runnable.fixture !== undefined ||
-        running.runnable.slot !== running.slot || running.slot === manager.defaultSlot()) {
-      throw failure('ProtocolError', 'runner.tracing', 'final runner trace stop is outside its separate timeout slot');
-    }
-    manager.setTimeout(0);
-  }
 
   private async finishOwned(): Promise<void> {
     const journal = this.admission.journal;
@@ -88,13 +91,13 @@ export class RunnerTraceFinalizer {
     for (const name of journalAppenders) this.testInfo._tracing[name] = discard;
     try {
       this.collection?.closeAdmission();
-      this.ownFinalTimeout();
+      ownRunnerArtifactFinalTimeout(this.testInfo);
       if (!this.testInfo._tracing._shouldAbandonTrace()) {
         if (this.admission.failure !== undefined) throw this.admission.failure;
         if (!journal) throw failure('ProtocolError', 'runner.tracing', 'runner trace admission has no journal');
         const timeout = this.testInfo.timeout;
         const destination = this.testInfo.outputPath('trace.zip');
-        const deadline = performance.now() + 30000;
+        const deadline = this.collection?.preparationDeadline?.() ?? performance.now() + 30000;
         const deadlineError = () => failure('TimeoutError', 'runner.tracing', 'runner trace preparation exceeded 30 seconds before atomic commit');
         const checkPreparation = () => {
           cancellation.signal.throwIfAborted();
@@ -105,9 +108,10 @@ export class RunnerTraceFinalizer {
             const error = deadlineError();
             cancellation.abort(error);
             reject(error);
-          }, 30000);
+          }, Math.max(0, deadline - performance.now()));
         });
         work = (async () => {
+          checkPreparation();
           if (this.collection) {
             const originalAssembly = runnerIntegration.createTraceArchiveAssembly(4);
             assembly = originalAssembly;

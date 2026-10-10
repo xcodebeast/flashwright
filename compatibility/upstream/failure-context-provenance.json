@@ -1,0 +1,66 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributions": {
+    "node_modules/playwright/lib/errorContext.js": "7fdc8216d80ba10c5edea9617463da2e76ba56d966a14a963176952415d03871",
+    "node_modules/playwright/lib/index.js": "36faa53b7c6fa8f76788f2bcfa21d72edc22e5f528c45328b71d07e215d79a32",
+    "node_modules/playwright/lib/worker/workerProcessEntry.js": "0f7b9c0a004787e0bef22a95ea38a4fa9d8879d4be52d8fad07795eddb93cc51",
+    "packages/resident-runtime/playwright-injected.js": "7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a"
+  },
+  "upstream": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/errorContext.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/workerMain.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/injected/src/injectedScript.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/failure-context.source.txt",
+  "extractSha256": "8ca023b13b5d8442d7f1af6e22eca47b8fd98e7ea9a00950a7ddf931301c9a9b",
+  "implementation": {
+    "crates/flashwright-engine/src/failure_context.rs": "b5ca60d2ce1f467e93bbd5859b142e3aa26c297efe5adbd7873082d7e033cbd2",
+    "crates/flashwright-engine/src/operation.rs": "896f406ba28ae9617bbea467dd04073892c21b4c61c932c1913c74f4d36b4ce3",
+    "crates/flashwright-engine/src/locators.rs": "eb0f46419b98d9254553e5ccd6a1109e766ac36c8cc30f4b2b7005261a655714",
+    "crates/flashwright-engine/src/lib.rs": "8f241d82b11e507c101fc8bf4a2f577a67486df8c8672b32b462fd13d7e80d4d",
+    "packages/resident-runtime/failure-context-snapshot.js": "b5638c7181e8119e3c861a45527b07dbe18351ec842c0fd951fcc4da1d169971",
+    "packages/resident-runtime/locator-runtime.js": "f90fabd5803d1c9871fb1b484accb98510128e0defb08e2103b47070ebca846a",
+    "packages/resident-runtime/sources.txt": "9e131d3e8ca9ab916bfcabc47124fe75d19e29195f6ff20a2757fc241b2c5ddb",
+    "packages/flashwright-core/src/failure-context-snapshot.ts": "9730781fa693f615bed9b13b4845fcb68b57b773b27afab7929d4b24f3d74294",
+    "packages/flashwright-core/src/index.ts": "94ab9bf502d2c8f66e33c3e199349461ab4084fbca665f82debd0f9e679f2675",
+    "packages/flashwright-core/src/runner-integration.ts": "81cb3c45e9e98ab59ad9d74892f00babde0a660f4da1d296b3b98684005e6548",
+    "packages/flashwright-runner/src/failure-context-format.ts": "647270c40a49be211a3b249d12c508cb06de47c370cf5d5c6aa9d41585970162",
+    "packages/flashwright-runner/src/failure-context-recorder.ts": "9e9afd1dcf80729eb4a984c48205e1d934788d043e73ea1b1b0d23579ba6c225",
+    "packages/flashwright-runner/src/runner-artifact-coordinator.ts": "339c8097972ac5a92b9524e3c9c60ef5afe6916cdfa5888969021ca44ed0f80d",
+    "packages/flashwright-runner/src/runner-trace-finalizer.ts": "a60a7ece1cca2e73a454ddae7ec10c612d448c9bba2063d404e3a160c11f4e97",
+    "packages/flashwright-runner/src/screenshot-recorder.ts": "5504f3fab03c2ccda13c7f4c5bc6dde48f11b0de08d59f4ac65f531374275e9c",
+    "packages/flashwright-runner/src/artifact-errors.ts": "1d428bacc30857c28cdf1d9808fc3090164af30dd20e9132698f821c7a4555de",
+    "tools/test-failure-context-format.mjs": "8da203331cebfbfb2ec4ce220f562cdac3b61f1c4ac37f8347af5144b5a86472",
+    "tools/test-failure-context-recorder.mjs": "fd7ae8458d5eb88b48640f5e98990d551c223e2594e3ec1f76222695c49db276",
+    "tools/test-failure-context-snapshot.mjs": "53721b08be538cf6003a4c06f7f8944c5bafd2979ce2ea83aedc6939d7908109",
+    "tools/test-failure-context-operation.mjs": "421cd3f06f200c90dc452fe286e376ec5a293057e33938d8ce979605f7f9019d",
+    "tools/test-screenshot-ownership.mjs": "18120d3c398a2781482afac669639e73895caf3b44263b242ebdcc0b10f68cf2",
+    "tools/test-runner-artifact-coordinator.mjs": "a02ee2aed979db42f602cab32b3ecee59ea6ccbbe2637f8f44d30b06249b1fb1",
+    "tools/test-runner-trace-finalizer.mjs": "89e47be622c5fa539067379962da5d92f713075bebb7d77a7a07f82fc863e34e",
+    "tools/run-failure-context-tests.mjs": "e291ace01667a3c2929fc49d49fbbe988916264703d41c0707019ebedcc70294",
+    "compatibility/m2/failure-context/playwright.config.cjs": "f81816a76e7b8e32de3eb14107efb1e020d6ba99cad99602ab532e025621f655",
+    "compatibility/m2/failure-context/artifacts.spec.cjs": "f73333bccd98e5041960f15a1f578f8cb737e1092c3960582bb1357d65062e88"
+  },
+  "relationship": "The formatter adapts the pinned Markdown instructions, sections and ordinary source-frame layout with independently bounded streaming source reads. The original-attempt recorder independently implements publication and lifecycle ownership. Private native fallback invokes the already attributed pinned injected AI renderer in the existing isolated locator realm; it is not a public AI snapshot implementation.",
+  "contracts": [
+    "Default documents are independent of trace and screenshot policies. Matcher observation diagnostics take precedence over fallback. PLAYWRIGHT_NO_COPY_PROMPT suppresses fallback only.",
+    "Creation claims and late cleanup retain their original TestInfo; explicit successor adoption takes precedence. Once-only worker final stop follows all hooks, seals original action/creation admission, and releases failure ownership even when optional preflight diagnostics fail.",
+    "Pre-context-close work seals traces, captures requested screenshots, then captures fallback. Ordinary page closure and direct browser closure do not add fallback. Only the first owned leftover context is considered at final stop.",
+    "Native fallback validates the original main frame, shares one caller deadline with its five-second ceiling, retries body/document transitions, and settles on cancellation or owner closure. An attempt shares a five-second fallback window and128 pending close slots.",
+    "Pre-fallback trace sealing and final trace export share the same original30-second monotonic preparation deadline. Late admitted work retains original cleanup custody and cannot publish on a successor.",
+    "Atomic publication preserves original test status/errors and records optional failures in a bounded error-context-error attachment. Final reporter bytes and trace resources contain the same completed document."
+  ],
+  "differences": [
+    "Failure documents are at most256KiB; fields/stacks32768 UTF-16 units,16 errors,1024 stack lines. Source input is at most8MiB with a64KiB retained window. Omissions are explicit.",
+    "Fallback retains at most16384 UTF-16 units including a truncation marker. This is an output limit, not a DOM traversal or browser CPU bound.",
+    "Rendered child-frame composition is unsupported for this private fallback; omission is diagnostic and does not replace the test failure. Public ARIA modes remain independently gated.",
+    "Pinned hook teardown can attach the same document path twice; Flashwright publishes once after all hooks.",
+    "This provenance record establishes source relationships, not functional or performance admission."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright",
+  "licenseSha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb",
+  "noticeSha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d"
+}

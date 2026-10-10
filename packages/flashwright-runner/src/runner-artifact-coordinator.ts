@@ -1,8 +1,11 @@
+import { performance } from 'node:perf_hooks';
+import { ArtifactErrors } from './artifact-errors.js';
+import { FailureContextScopes } from './failure-context-recorder.js';
 import { failure, type BrowserContext } from '@flashwright/core';
 import { runnerIntegration } from '@flashwright/core/runner-integration';
 import type { TestInfo } from 'flashwright-upstream-runner/test';
 import { adoptRunnerTraceAtStart, type RunnerJournalAdmission } from './runner-trace-journal.js';
-import { installRunnerTraceFinalizer, type RunnerTraceCollection } from './runner-trace-finalizer.js';
+import { ownRunnerArtifactFinalTimeout, installRunnerTraceFinalizer, type RunnerTraceCollection } from './runner-trace-finalizer.js';
 import { createOwnedTraceSteps, type OwnedTraceSteps } from './trace-steps.js';
 import { ScreenshotScopes } from './screenshot-recorder.js';
 import type { ScreenshotPolicy } from './screenshot-policy.js';
@@ -16,7 +19,7 @@ interface CreationOwner {
   complete(): void;
 }
 interface TraceOptions { screenshots: boolean; snapshots: boolean }
-interface PinnedTestInfo extends TestInfo { _tracing: { traceOptions(): TraceOptions | undefined } }
+interface PinnedTestInfo extends TestInfo { _tracing: { traceOptions(): TraceOptions | undefined; stopIfNeeded(): Promise<void> } }
 interface RecordingOwner {
   readonly context: object;
   readonly tracing: object;
@@ -36,6 +39,10 @@ const maximumWorkerRecordings = 128;
 export class RunnerArtifactCoordinator {
   readonly contexts = new Set<BrowserContext>();
   private readonly attempts = new WeakMap<TestInfo, TraceAttempt>();
+  private readonly failureFinalizers = new WeakSet<TestInfo>();
+  private readonly failureContexts = new FailureContextScopes({
+    capture: (page, timeoutMilliseconds) => runnerIntegration.captureFailureContextSnapshot(13, page, timeoutMilliseconds),
+  });
   private readonly requestContexts = new Set<RequestContext>();
   private readonly recordings = new Map<object, RecordingOwner>();
   private readonly activeCaptures = new WeakMap<object, ContextCapture>();
@@ -49,11 +56,14 @@ export class RunnerArtifactCoordinator {
 
   /** Called synchronously at the owned normalized-policy boundary, before live or fixture work. */
   start(testInfo: TestInfo, policyFailure?: { error: unknown }): boolean {
+    this.failureContexts.start(testInfo, this.contexts);
     const previous = this.attempts.get(testInfo);
     if (previous) return true;
     const admission = adoptRunnerTraceAtStart(testInfo);
     if (!admission) {
       this.current = undefined;
+      this.installFailureContextFinalizer(testInfo);
+      if (!this.registration) this.observeContexts();
       this.readiness = this.retireIdleRecordings().catch(() => {});
       return false;
     }
@@ -62,6 +72,7 @@ export class RunnerArtifactCoordinator {
     this.current = attempt;
     this.attempts.set(testInfo, attempt);
     const finalizer = installRunnerTraceFinalizer(testInfo, admission, attempt);
+    this.installFailureContextFinalizer(testInfo);
     void finalizer.cleanup.then(() => { if (finalizer.cleanupSucceeded) this.outstandingCaptures -= attempt.captureCount; });
     if (policyFailure) {
       attempt.fail(policyFailure.error);
@@ -84,6 +95,32 @@ export class RunnerArtifactCoordinator {
     await this.registration?.ready.catch(error => this.current?.fail(error));
     await this.requestRegistration?.ready.catch(error => this.current?.fail(error));
     await this.readiness.catch(error => this.current?.fail(error));
+  }
+
+  /** Hook fixture scopes share TestInfo; only the worker's final stop seals the whole attempt. */
+  private installFailureContextFinalizer(testInfo: TestInfo): void {
+    if (this.failureFinalizers.has(testInfo)) return;
+    this.failureFinalizers.add(testInfo);
+    const tracing = (testInfo as PinnedTestInfo)._tracing;
+    const stopTracing = tracing.stopIfNeeded.bind(tracing);
+    let completion: Promise<void> | undefined;
+    tracing.stopIfNeeded = () => completion ??= (async () => {
+      const errors = new ArtifactErrors('error-context-error');
+      try {
+        this.attempts.get(testInfo)?.closeAdmission();
+        ownRunnerArtifactFinalTimeout(testInfo);
+        if (testInfo.errors.length && !testInfo.errors.some(error => error.errorContext) && !process.env.PLAYWRIGHT_NO_COPY_PROMPT) {
+          try { await this.attempts.get(testInfo)?.sealBeforeFailureContext(); }
+          catch (error) { errors.record(error); }
+        }
+      } catch (error) { errors.record(error); }
+      try { await this.failureContexts.finish(testInfo, this.contexts); }
+      catch (error) { errors.record(error); }
+      finally {
+        try { errors.publish(testInfo); } catch {}
+        await stopTracing();
+      }
+    })();
   }
 
   configureScreenshots(policy: ScreenshotPolicy): ScreenshotScopes | undefined {
@@ -147,8 +184,12 @@ export class RunnerArtifactCoordinator {
     this.registration = runnerIntegration.installArtifactContextLifecycle(9, {
       beginContextCreation: () => {
         const owner = this.current?.claim();
+        const failureOwner = this.failureContexts.claim();
+        const screenshotOwner = this.screenshots?.claim();
         return {
           didCreateContext: async context => {
+            failureOwner?.didCreateContext(context);
+            screenshotOwner?.didCreateContext(context);
             if (owner) { this.observe(context); await owner.didCreateContext(context, context.tracing); }
             else this.observeUnclaimed(context);
           },
@@ -157,8 +198,11 @@ export class RunnerArtifactCoordinator {
       },
       didCreateUnclaimedContext: context => this.observeUnclaimed(context),
       willCloseContext: async (context, source) => {
-        if (source !== 'browser') await this.screenshots?.beforeContextClose(context);
         await this.beforeOwnerClose(context);
+        if (source !== 'browser') {
+          await this.screenshots?.beforeContextClose(context);
+          await this.failureContexts.beforeContextClose(context);
+        }
       },
     });
   }
@@ -251,6 +295,7 @@ class TraceAttempt implements RunnerTraceCollection {
   private accepting = true;
   private captureFailure: { error: unknown } | undefined;
   private disposal: Promise<void> | undefined;
+  private tracePreparationDeadline: number | undefined;
 
   constructor(readonly coordinator: RunnerArtifactCoordinator, testInfo: TestInfo, admission: RunnerJournalAdmission, readonly options: TraceOptions) {
     this.steps = admission.journal ? createOwnedTraceSteps(testInfo, admission.journal) : undefined;
@@ -282,6 +327,39 @@ class TraceAttempt implements RunnerTraceCollection {
   async ready(): Promise<void> { await Promise.all(this.captures.map(capture => capture.claimSettled)); }
 
   closeAdmission(): void { this.accepting = false; this.steps?.close(); }
+
+  preparationDeadline(): number { return this.tracePreparationDeadline ??= performance.now() + 30000; }
+
+  /** Seal original native chunks before fallback under the finalizer's original preparation budget. */
+  async sealBeforeFailureContext(): Promise<void> {
+    const cancellation = new AbortController();
+    const deadline = this.preparationDeadline();
+    const deadlineError = () => failure('TimeoutError', 'runner.tracing', 'trace sealing before failure context exceeded the original preparation deadline');
+    const checkDeadline = () => {
+      cancellation.signal.throwIfAborted();
+      if (performance.now() >= deadline) throw deadlineError();
+    };
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const work = (async () => {
+      await this.ready();
+      checkDeadline();
+      await Promise.all(this.captures.map(capture => { checkDeadline(); return capture.seal(cancellation.signal); }));
+      checkDeadline();
+    })();
+    try {
+      await Promise.race([
+        work,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => {
+            const error = deadlineError();
+            cancellation.abort(error);
+            reject(error);
+          }, Math.max(0, deadline - performance.now()));
+        }),
+      ]);
+    } catch (error) { cancellation.abort(error); throw error; }
+    finally { clearTimeout(timer); }
+  }
 
   async collect(acceptArchive: (archive: Archive) => void, signal: AbortSignal): Promise<void> {
     await this.ready();
