@@ -26,7 +26,7 @@ async fn renderer_command(
     let result = connection
         .call(method, parameters, Some(&owner.session_identifier))
         .await;
-    if result.as_ref().is_err_and(|error| session_is_gone(error)) {
+    if result.as_ref().is_err_and(session_is_gone) {
         owner.mark_destroyed();
     }
     result

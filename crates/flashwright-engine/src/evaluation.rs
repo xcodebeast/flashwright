@@ -257,16 +257,16 @@ impl Engine {
                         let state = page.state.state.lock().unwrap();
                         state.check(method)?;
                         let selected = frame.or(state.main_frame.as_deref());
-                        if let Some(selected) = selected {
-                            if let Some(context) = ready_frame_context(
+                        if let Some(selected) = selected
+                            && let Some(context) = ready_frame_context(
                                 &page.state,
                                 &state,
                                 selected,
                                 method,
                                 allow_remote_frame,
-                            )? {
-                                break Ok(context);
-                            }
+                            )?
+                        {
+                            break Ok(context);
                         }
                     }
                     changes.changed().await.map_err(|_| closed(method))?;
