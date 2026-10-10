@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, symlink, truncate, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { analyzeFinalGoal, finalGoalHash, renderFinalGoalReport } from '../benchmarks/final-goal-contract.mjs';
-import { verifyFinalGoalEvidence } from './verify-final-goal.mjs';
+import { finalGoalEvidenceLimits, verifyFinalGoalEvidence } from './verify-final-goal.mjs';
 
 const draft = JSON.parse(await readFile(new URL('../benchmarks/configurations/final-goal.json', import.meta.url), 'utf8'));
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -94,6 +94,31 @@ function refreshConfiguration(state) {
 function nonwinner(status) {
   return { id: 'single-worker', status, reason: 'Original retained admission failure', evidence: [receipt('original-admission.json')],
     attempts: [{ failure: { code: 'UnsupportedFeatureError', message: 'Original unsupported feature failure' }, evidence: [receipt('original-attempt.json')] }] };
+}
+
+/** Retain a complete unmeasured draft inventory without inventing runtime admission. */
+async function retainedDraft(directory) {
+  const configuration = structuredClone(draft);
+  const declaration = { status: 'draft', configurationSha256: finalGoalHash(configuration) };
+  const writtenBytes = new Map();
+  async function writeJson(path, value) {
+    const bytes = Buffer.from(JSON.stringify(value));
+    await writeFile(join(directory, path), bytes);
+    writtenBytes.set(path, bytes.length);
+    return { path, sha256: hash(bytes) };
+  }
+  const campaign = { schemaVersion: 1, configuration: await writeJson('configuration.json', configuration),
+    declaration: await writeJson('declaration.json', declaration), scenarios: [] };
+  const scenarios = configuration.scenarios.map(scenario => ({ id: scenario.id,
+    cells: configuration.cells.map(cell => ({ id: cell.id, status: 'unmeasured', attempts: [] })) }));
+  for (const scenario of scenarios) campaign.scenarios.push({ ...await writeJson(`${scenario.id}.json`, scenario), scenarioId: scenario.id });
+  async function saveCampaign() { await writeJson('campaign.json', campaign); }
+  async function saveScenario(index) {
+    campaign.scenarios[index] = { ...await writeJson(`${scenarios[index].id}.json`, scenarios[index]), scenarioId: scenarios[index].id };
+    await saveCampaign();
+  }
+  await saveCampaign();
+  return { configuration, declaration, campaign, scenarios, writtenBytes, writeJson, saveCampaign, saveScenario };
 }
 
 test('fixed majority requires five distinct confirmed scenarios and two application suites', () => {
@@ -336,13 +361,8 @@ test('analyzer leaves retained input immutable and public renderer omits private
 test('file loader binds draft bytes and rejects changed evidence, traversal and symlinks', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-contract-'));
   try {
-    const configuration = structuredClone(draft), declaration = { status: 'draft', configurationSha256: finalGoalHash(configuration) };
-    const configurationBytes = Buffer.from(JSON.stringify(configuration)), declarationBytes = Buffer.from(JSON.stringify(declaration));
-    await writeFile(join(directory, 'configuration.json'), configurationBytes);
-    await writeFile(join(directory, 'declaration.json'), declarationBytes);
-    const campaign = { schemaVersion: 1, configuration: { path: 'configuration.json', sha256: hash(configurationBytes) },
-      declaration: { path: 'declaration.json', sha256: hash(declarationBytes) }, scenarios: [] };
-    await writeFile(join(directory, 'campaign.json'), JSON.stringify(campaign));
+    const { campaign } = await retainedDraft(directory);
+    const configurationBytes = await readFile(join(directory, 'configuration.json'));
     assert.equal((await verifyFinalGoalEvidence(directory)).analysis.goalAccepted, false);
     await writeFile(join(directory, 'configuration.json'), Buffer.concat([configurationBytes, Buffer.from('\n')]));
     await assert.rejects(verifyFinalGoalEvidence(directory), /bytes changed/);
@@ -354,5 +374,126 @@ test('file loader binds draft bytes and rejects changed evidence, traversal and 
     await symlink('configuration.json', join(directory, 'configuration-link.json'));
     await writeFile(join(directory, 'campaign.json'), JSON.stringify(campaign));
     await assert.rejects(verifyFinalGoalEvidence(directory), /symbolic link/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('loader rejects incomplete or repeated scenario topology before opening referenced files', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-topology-'));
+  try {
+    const state = await retainedDraft(directory), original = structuredClone(state.campaign.scenarios);
+    for (const mutate of [
+      entries => entries.pop(),
+      entries => { entries[1].scenarioId = entries[0].scenarioId; },
+      entries => { entries[0].scenarioId = 'unapproved-scenario'; },
+      entries => { entries[1].path = entries[0].path; },
+    ]) {
+      state.campaign.scenarios = structuredClone(original);
+      for (const entry of state.campaign.scenarios) entry.path = `missing/${entry.path}`;
+      mutate(state.campaign.scenarios);
+      await state.saveCampaign();
+      await assert.rejects(verifyFinalGoalEvidence(directory), /nine declared scenarios|paths must be distinct/);
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('loader rejects invalid cells and attempt topology before visiting receipts', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-attempts-'));
+  try {
+    const state = await retainedDraft(directory), original = structuredClone(state.scenarios[0]);
+    for (const [mutate, expectedError] of [
+      [scenario => scenario.cells.pop(), /two declared cells/],
+      [scenario => { scenario.cells[1].id = scenario.cells[0].id; }, /two declared cells/],
+      [scenario => { scenario.cells[0].attempts = Array.from({ length: 9 }, () => ({})); }, /eight declared attempts/],
+      [scenario => { scenario.cells[0].attempts = [{}]; }, /Unmeasured cell/],
+      [scenario => { scenario.cells[0].status = 'comparable'; }, /retained original attempts/],
+      [scenario => { scenario.cells[0].status = 'comparable'; scenario.cells[0].attempts = [{}]; }, /all eight declared pairs/],
+      [scenario => { scenario.cells[0].status = 'failed'; scenario.cells[0].attempts = [{ runs: { unapprovedEngine: {} } }]; }, /Unknown attempted engine/],
+    ]) {
+      state.scenarios[0] = structuredClone(original);
+      mutate(state.scenarios[0]);
+      state.scenarios[0].cells[0].evidence = [{ path: 'must-not-open.json', sha256: hash('missing') }];
+      await state.saveScenario(0);
+      await assert.rejects(verifyFinalGoalEvidence(directory), expectedError);
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('loader charges repeated JSON reads and rejects the aggregate boundary before parsing', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-budget-'));
+  try {
+    const state = await retainedDraft(directory);
+    const approval = await state.writeJson('approval.json', { status: 'approved-before-measurement',
+      configurationSha256: state.declaration.configurationSha256 });
+    state.declaration.approvalEvidence = [approval, approval];
+    state.campaign.declaration = await state.writeJson('declaration.json', state.declaration);
+    await state.saveCampaign();
+    const expectedBytes = [...state.writtenBytes.values()].reduce((sum, length) => sum + length, 0)
+      + state.writtenBytes.get('approval.json');
+    const result = await verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes: expectedBytes });
+    assert.equal(result.inputBudget.aggregateJsonBytes, expectedBytes);
+    assert.equal(result.inputBudget.maximumAggregateJsonBytes, expectedBytes);
+    assert.equal(result.analysis.goalAccepted, false);
+    await assert.rejects(verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes: expectedBytes - 1 }), /budget exceeded before parsing/);
+    await writeFile(join(directory, 'campaign.json'), 'this is deliberately invalid JSON');
+    await assert.rejects(verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes: 1 }), /budget exceeded before parsing/);
+    await assert.rejects(verifyFinalGoalEvidence(directory, {
+      maximumAggregateJsonBytes: finalGoalEvidenceLimits.maximumAggregateJsonBytes + 1,
+    }), /cannot exceed the declared limit/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('loader streams opaque receipts and preserves raw JSON equality and path identities', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-streaming-'));
+  try {
+    const state = await retainedDraft(directory);
+    const opaqueBytes = Buffer.alloc(finalGoalEvidenceLimits.opaqueReadChunkBytes * 2 + 17, 0x61);
+    await writeFile(join(directory, 'original-artifact.bin'), opaqueBytes);
+    const opaque = { path: 'original-artifact.bin', sha256: hash(opaqueBytes) };
+    const report = { tests: [] }, resources = { source: 'original retained resource fixture' };
+    const reportReceipt = { ...await state.writeJson('report.json', report), kind: 'report' };
+    const resourceReceipt = { ...await state.writeJson('resources.json', resources), kind: 'resources' };
+    const cell = state.scenarios[0].cells[0];
+    cell.status = 'failed';
+    cell.reason = 'Original partial admission failure retained';
+    cell.evidence = [opaque];
+    cell.attempts = [{ failure: { code: 'OriginalFailure', message: 'Original retained failure' }, evidence: [opaque],
+      runs: { flashwright: { report, resources, evidence: [opaque, reportReceipt, resourceReceipt] } } }];
+    await state.saveScenario(0);
+    const result = await verifyFinalGoalEvidence(directory);
+    assert.equal(result.checkedFiles[opaque.path], opaque.sha256);
+    assert.equal(result.checkedFiles[reportReceipt.path], reportReceipt.sha256);
+    assert.equal(result.analysis.goalAccepted, false);
+    assert.match(result.inputBudget.scope, /RSS are not bounded/);
+
+    report.tests.push({ originalError: 'Changed inline data cannot replace original bytes' });
+    await state.saveScenario(0);
+    await assert.rejects(verifyFinalGoalEvidence(directory), /Inline report differs/);
+    report.tests.pop();
+    cell.attempts[0].evidence = [{ ...opaque, sha256: hash('conflicting identity') }];
+    await state.saveScenario(0);
+    await assert.rejects(verifyFinalGoalEvidence(directory), /conflicting identities/);
+    cell.attempts[0].evidence = [opaque];
+    await state.saveScenario(0);
+    await writeFile(join(directory, opaque.path), Buffer.concat([opaqueBytes, Buffer.from('changed')]));
+    await assert.rejects(verifyFinalGoalEvidence(directory), /bytes changed/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('loader requires digests for every JSON receipt', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-receipt-'));
+  try {
+    const state = await retainedDraft(directory);
+    delete state.campaign.configuration.sha256;
+    await state.saveCampaign();
+    await assert.rejects(verifyFinalGoalEvidence(directory));
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('loader rejects oversized files before reserving JSON bytes or reading file content', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-file-limit-'));
+  try {
+    await writeFile(join(directory, 'campaign.json'), '');
+    await truncate(join(directory, 'campaign.json'), finalGoalEvidenceLimits.maximumFileBytes + 1);
+    await assert.rejects(verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes: 1 }), /Oversized evidence file/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
