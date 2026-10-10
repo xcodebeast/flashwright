@@ -60,7 +60,8 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
           unexpectedErrors: [], backgroundConfounds: [], runnerExitCode: scenario.id === 'runner-failure' ? 1 : 0,
           tests: scenario.expectedTests.map((expected, index) => ({ id: expected.id, bodySha256: expected.bodySha256,
             status: expected.outcome === 'intentional-failure' ? 'failed' : 'passed', attemptCount: 1, retry: 0,
-            contextIdentity: `${start}/context/${index}`, workerIdentity: ownedProcesses[index % cell.workers].identity,
+            contextIdentity: `${start}/context/${index}`, workerIdentity: `${start}/logical-worker/${index % cell.workers}`,
+            errors: expected.outcome === 'intentional-failure' ? [{ message: 'Original missing-element assertion failure' }] : [],
             interval: { startMilliseconds: start + 10 + Math.floor(index / cell.workers) * 2,
               endMilliseconds: start + 11 + Math.floor(index / cell.workers) * 2 }, observations: structuredClone(expected.observations),
             ...(expected.diagnosticIdentity ? { diagnostics: { identity: structuredClone(expected.diagnosticIdentity), originalPredicateRetained: true,
@@ -68,7 +69,7 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
         const resources = { collectorSha256: declaration.resourceCollectorSha256, ownerExitCode: 0, timedOut: false, interrupted: false,
           remainingOwnedProcesses: [], cleanupSignals: [], missingRequiredProcessIdentities: [], ownedProcesses, samples, sampledConcurrentBytes: ownedProcesses.length * 1000,
           observedProcessTreeCpuSeconds: observedCpu, captureInterval: { startMilliseconds: start - 1, endMilliseconds: start + duration + 1 },
-          workerIntervals: ownedProcesses.filter(process => process.components.includes('workers')).map(process => ({ identity: process.identity,
+          workerIntervals: ownedProcesses.filter(process => process.components.includes('workers')).map((process, index) => ({ identity: `${start}/logical-worker/${index}`, hostProcessIdentity: process.identity,
             startMilliseconds: start + 1, endMilliseconds: start + duration - 1 })) };
         runs[engine] = { report, resources, evidence: ['report', 'resources'].map(kind => ({
           ...receipt(`${scenario.id}/${cell.id}/${launchIndex}/${engine}/${kind}.json`), kind })) };
@@ -223,6 +224,68 @@ test('known collector coverage gaps cannot be hidden behind supplied completenes
   assert.equal(cell.confirmedWin, false);
 });
 
+test('logical thread generations may share one host without counting its CPU or RSS repeatedly', () => {
+  const state = fixture();
+  for (const pair of state.scenarioResults[0].cells[1].attempts) {
+    const run = pair.runs.flashwright;
+    const sharedHost = run.resources.ownedProcesses.find(process => process.components.includes('workers'));
+    run.resources.ownedProcesses = run.resources.ownedProcesses.filter(process => !process.components.includes('workers') || process === sharedHost);
+    const retainedIdentities = new Set(run.resources.ownedProcesses.map(process => process.identity));
+    for (const sample of run.resources.samples) sample.processes = sample.processes.filter(process => retainedIdentities.has(process.identity));
+    for (const worker of run.resources.workerIntervals) worker.hostProcessIdentity = sharedHost.identity;
+    updateResources(run);
+  }
+  const cell = analyzeFinalGoal(state).scenarios[0].cells[1];
+  assert.equal(cell.confirmedWin, true);
+  assert.ok(cell.regressionRatios.sampledConcurrentMemoryMaximum < 1);
+  assert.ok(cell.regressionRatios.observedProcessTreeCpuMedian < 1);
+});
+
+test('test lifetimes stay inside their logical worker and never overlap on one worker', () => {
+  for (const mutate of [run => { run.report.tests[0].interval.startMilliseconds = run.report.ownerInterval.startMilliseconds; },
+    run => { run.report.tests[1].workerIdentity = run.report.tests[0].workerIdentity; }]) {
+    const state = fixture(); mutate(state.scenarioResults[0].cells[1].attempts[0].runs.flashwright);
+    assert.throws(() => analyzeFinalGoal(state), /logical worker/);
+  }
+});
+
+test('eight complete raw pairs containing a genuine failure remain explicit nonwinners', () => {
+  for (const suppliedStatus of ['comparable', 'failed', 'noncomparable']) {
+    const state = fixture(), cell = state.scenarioResults[0].cells[0];
+    state.configuration.scenarios[0].previouslySupported['single-worker'] = true;
+    refreshConfiguration(state);
+    cell.status = suppliedStatus;
+    cell.reason = 'Original assertion failure, with all attempted pairs retained';
+    const run = cell.attempts[0].runs.flashwright;
+    run.report.tests[0].status = 'failed';
+    run.report.tests[0].errors = [{ code: 'AssertionError', message: 'Original application predicate failed' }];
+    run.report.runnerExitCode = 1;
+    const analysis = analyzeFinalGoal(state), failed = analysis.scenarios[0].cells[0];
+    assert.equal(failed.status, 'failed');
+    assert.equal(failed.evidenceComplete, true);
+    assert.equal(failed.retainedAttempts.length, 8);
+    assert.equal(failed.behaviorFailures[0].originalErrors[0].message, 'Original application predicate failed');
+    assert.equal(failed.regressionRatios, undefined);
+    assert.equal(failed.supportedRegression, true);
+    assert.equal(analysis.goalAccepted, false);
+  }
+});
+
+test('genuine failed/skipped execution does not invent missing worker or context admission', () => {
+  const state = fixture(), run = candidate(state);
+  run.report.tests[0].status = 'failed';
+  run.report.tests[0].errors = [{ message: 'Original fixture setup failed before a context existed' }];
+  run.report.tests[0].contextIdentity = null;
+  run.report.tests[0].workerIdentity = null;
+  run.report.tests[0].interval = null;
+  run.report.runnerExitCode = 1;
+  const cell = analyzeFinalGoal(state).scenarios[0].cells[0];
+  assert.equal(cell.status, 'failed');
+  assert.equal(cell.evidenceComplete, true);
+  assert.equal(cell.confirmedWin, false);
+  assert.match(cell.behaviorFailures[0].originalErrors[0].message, /before a context existed/);
+});
+
 for (const [name, mutate] of [
   ['duplicate scenario', state => state.scenarioResults.push(state.scenarioResults[0])],
   ['unknown scenario', state => { state.scenarioResults[0].id = 'renamed-easy-row'; }],
@@ -253,7 +316,10 @@ for (const [name, mutate] of [
 test('original failure evidence and clean owned-process exit are mandatory', () => {
   const state = fixture(), run = state.scenarioResults[5].cells[0].attempts[0].runs.flashwright;
   run.report.tests[0].diagnostics.originalPredicateRetained = false;
-  assert.throws(() => analyzeFinalGoal(state), /Later fallback/);
+  const analysis = analyzeFinalGoal(state);
+  assert.equal(analysis.scenarios[5].cells[0].status, 'failed');
+  assert.equal(analysis.scenarios[5].cells[0].confirmedWin, false);
+  assert.match(analysis.scenarios[5].cells[0].behaviorFailures[0].reason, /later fallback/);
   const leaked = fixture(); candidate(leaked).resources.remainingOwnedProcesses.push('original-driver');
   assert.throws(() => analyzeFinalGoal(leaked));
 });
