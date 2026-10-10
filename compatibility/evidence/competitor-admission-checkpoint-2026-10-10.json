@@ -1,0 +1,374 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-focused-competitor-admission-checkpoint",
+  "verificationBaseCommit": "3f7eeb6868681c82cd3c87567b532e097c7a41d9",
+  "performanceAccepted": false,
+  "scope": "Puppeteer native-API fixture admission only. Four Node runtime/browser configurations pass 420 iterations. Five workload categories match checked outcomes; backend input events and failure diagnostics differ. No comparative timing, complete-runner or performance-leadership claim.",
+  "contenderSet": {
+    "schemaVersion": 1,
+    "referenceVersion": "1.60.0",
+    "browserVersion": "148.0.7778.96",
+    "selectionDate": "2026-10-10",
+    "selectionPolicy": "A declared initial set spanning the compatibility reference, direct Chrome automation, an integrated browser test runner and the WebDriver/BiDi ecosystem. Inclusion does not assert a popularity rank or an unmeasured speed ranking. Expand the set when a relevant faster contender is identified.",
+    "competitors": [
+      {
+        "id": "playwright",
+        "package": "@playwright/test",
+        "version": "1.60.0",
+        "reason": "Compatibility reference and established end-to-end runner; existing matched library-flow baseline.",
+        "comparisonClasses": [
+          "library-flow",
+          "runner-suite"
+        ],
+        "source": "https://playwright.dev/docs/intro"
+      },
+      {
+        "id": "puppeteer",
+        "package": "puppeteer-core",
+        "version": "25.13.0",
+        "reason": "Direct Chrome automation contender with native locator readiness and low-level browser control; useful for testing whether the independent engine beats an automation library as well as a runner.",
+        "comparisonClasses": [
+          "library-flow"
+        ],
+        "source": "https://pptr.dev/guides/page-interactions"
+      },
+      {
+        "id": "cypress",
+        "package": "cypress",
+        "version": "16.1.1",
+        "reason": "Integrated end-to-end runner with browser-side command execution and retrying assertions; its event model and runner costs require a separate suite comparison.",
+        "comparisonClasses": [
+          "runner-suite"
+        ],
+        "source": "https://docs.cypress.io/app/core-concepts/interacting-with-elements"
+      },
+      {
+        "id": "webdriverio",
+        "package": "webdriverio",
+        "version": "10.0.2",
+        "reason": "WebDriver/BiDi ecosystem contender with native user interactions and standalone or runner execution; record the actual negotiated protocol and browser driver.",
+        "comparisonClasses": [
+          "library-flow",
+          "runner-suite"
+        ],
+        "source": "https://webdriver.io/docs/automationProtocols"
+      }
+    ],
+    "admission": {
+      "workloads": [
+        "noop",
+        "interaction",
+        "assertion",
+        "navigation",
+        "setup",
+        "backend",
+        "failure"
+      ],
+      "workers": 1,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "artifacts": {
+        "trace": "off",
+        "video": "off",
+        "screenshot": "off"
+      },
+      "policy": "Functional admission runs retain observations and elapsed time but do not enter performance tables as comparative measurements. Successful application outcomes, exact request counts, trusted events, fresh-context isolation, launch identity and clean watchdog exit are mandatory. Deviations from the reference operation/event contract must be reported explicitly."
+    },
+    "performancePolicy": "Use the independent-launch sampling, exclusion, uncertainty and regression thresholds in baseline.json. Library-flow observations do not stand in for full runner-suite or contention results. No current broad competitor leadership claim."
+  },
+  "machine": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "cpu": "Apple M3 Pro",
+    "memoryBytes": 38654705664
+  },
+  "cases": [
+    {
+      "name": "node22-shell",
+      "status": "passed-functional-admission",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "runtimeSha256": "913b144fdb40638b1acef7974ab3c33fbd527cc0974cb5da467ab1e6ac51b4d4",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "successfulIterations": 105,
+      "failures": 0,
+      "differences": [
+        {
+          "workload": "failure",
+          "reason": "Native visibility-selector timeout does not establish equivalent Playwright assertion diagnostics or failure work."
+        },
+        {
+          "workload": "backend",
+          "reason": "Native fill emitted 126 trusted input events; reference fill expects 15."
+        }
+      ],
+      "outcomeMatchedWorkloads": [
+        "noop",
+        "interaction",
+        "assertion",
+        "navigation",
+        "setup"
+      ],
+      "sourceAndDependencyBytesUnchanged": true,
+      "cleanProcessExit": true,
+      "report": "benchmarks/results/competitor-admission-2026-10-10/node22-shell/admission.json",
+      "reportSha256": "168c18bc4140e0347454e174506997acdb26b42016c11d544272d7aedd3d10f7"
+    },
+    {
+      "name": "node24-shell",
+      "status": "passed-functional-admission",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "runtimeSha256": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "successfulIterations": 105,
+      "failures": 0,
+      "differences": [
+        {
+          "workload": "failure",
+          "reason": "Native visibility-selector timeout does not establish equivalent Playwright assertion diagnostics or failure work."
+        },
+        {
+          "workload": "backend",
+          "reason": "Native fill emitted 126 trusted input events; reference fill expects 15."
+        }
+      ],
+      "outcomeMatchedWorkloads": [
+        "noop",
+        "interaction",
+        "assertion",
+        "navigation",
+        "setup"
+      ],
+      "sourceAndDependencyBytesUnchanged": true,
+      "cleanProcessExit": true,
+      "report": "benchmarks/results/competitor-admission-2026-10-10/node24-shell/admission.json",
+      "reportSha256": "78a5d16f0aa18019b9fccf91e5b9844bf7317347308d1753588925dac2e3329b"
+    },
+    {
+      "name": "node22-full",
+      "status": "passed-functional-admission",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "runtimeSha256": "913b144fdb40638b1acef7974ab3c33fbd527cc0974cb5da467ab1e6ac51b4d4",
+      "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+      "successfulIterations": 105,
+      "failures": 0,
+      "differences": [
+        {
+          "workload": "failure",
+          "reason": "Native visibility-selector timeout does not establish equivalent Playwright assertion diagnostics or failure work."
+        },
+        {
+          "workload": "backend",
+          "reason": "Native fill emitted 126 trusted input events; reference fill expects 15."
+        }
+      ],
+      "outcomeMatchedWorkloads": [
+        "noop",
+        "interaction",
+        "assertion",
+        "navigation",
+        "setup"
+      ],
+      "sourceAndDependencyBytesUnchanged": true,
+      "cleanProcessExit": true,
+      "report": "benchmarks/results/competitor-admission-2026-10-10/node22-full/admission.json",
+      "reportSha256": "5aee2cc42c8a7dfa48b4e1637b42b3f4e7e641cd04664764675d37fec545da09"
+    },
+    {
+      "name": "node24-full",
+      "status": "passed-functional-admission",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "runtimeSha256": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32",
+      "browserSha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+      "successfulIterations": 105,
+      "failures": 0,
+      "differences": [
+        {
+          "workload": "failure",
+          "reason": "Native visibility-selector timeout does not establish equivalent Playwright assertion diagnostics or failure work."
+        },
+        {
+          "workload": "backend",
+          "reason": "Native fill emitted 126 trusted input events; reference fill expects 15."
+        }
+      ],
+      "outcomeMatchedWorkloads": [
+        "noop",
+        "interaction",
+        "assertion",
+        "navigation",
+        "setup"
+      ],
+      "sourceAndDependencyBytesUnchanged": true,
+      "cleanProcessExit": true,
+      "report": "benchmarks/results/competitor-admission-2026-10-10/node24-full/admission.json",
+      "reportSha256": "bd782305c545c8d7996d9937c08d6904fcbe1bd5c1e3b0ab16a3457b647551fb"
+    },
+    {
+      "name": "bun-shell",
+      "status": "failed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "runtimeSha256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5",
+      "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+      "successfulIterations": 15,
+      "failures": 1,
+      "differences": [],
+      "outcomeMatchedWorkloads": [],
+      "sourceAndDependencyBytesUnchanged": true,
+      "cleanProcessExit": true,
+      "report": "benchmarks/results/competitor-admission-2026-10-10/bun-shell/admission.json",
+      "reportSha256": "755fd6a3ad624ad4e442cc6baaafc1172103f0cbc76c6b3fc6d032d96bb53731"
+    }
+  ],
+  "publicSnapshot": {
+    "manifest": "benchmarks/results/competitor-admission-2026-10-10/manifest.json",
+    "sha256": "d674de5a5b12e7377cd29c2371cc50d914538c04c1a25011aaae0e75859c2226",
+    "verification": "All exported receipt/file hashes and current input hashes rechecked; stdout equals retained report; independent contract passes four Node cases and rejects Bun. Numeric observations unchanged; only workstation path strings and their receipt hashes are normalized."
+  },
+  "verification": {
+    "contractTestsPerRuntime": 23,
+    "checks": [
+      {
+        "runtime": "bun",
+        "exitCode": 0,
+        "logSha256": "1e6b5645b64ed2846cd410ed5f99f0206fda245bb3ce12949d7c713ec1da6452"
+      },
+      {
+        "runtime": "node22",
+        "exitCode": 0,
+        "logSha256": "07f2d1da5ac8fcf0327de74acc81c55ce09fb55f4341b80e177475dcb44a9ff4"
+      },
+      {
+        "runtime": "node24",
+        "exitCode": 0,
+        "logSha256": "2595f491dec371478d981d14f938668251e51dea00378e6540c48c42ea995356"
+      },
+      {
+        "check": "inventory",
+        "exitCode": 0,
+        "logSha256": "618a76f3a945640d949a10c5317e5ccf4a1322e3bcb423774fa1764094b429d7"
+      }
+    ],
+    "pinNegativeControls": [
+      {
+        "changedPin": "package.json",
+        "exitCode": 1,
+        "rejectedBeforeBrowserLaunch": true
+      },
+      {
+        "changedPin": "bun.lock",
+        "exitCode": 1,
+        "rejectedBeforeBrowserLaunch": true
+      }
+    ]
+  },
+  "developmentalAttempts": [
+    {
+      "attempt": "probe-shell-bun",
+      "scope": "Developmental attempt retained privately; superseded harness, excluded from the final functional matrix and all performance acceptance.",
+      "timedOut": true,
+      "timeoutSeconds": 90.0,
+      "exitCode": -9,
+      "remainingObservedProcesses": [],
+      "files": {
+        "resources.json": "ac073cc4b4106fb77da78da1171dfc6c3451159ea3ba84184a86c0eb722879ab",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "attempt": "probe-shell-bun-diagnostic",
+      "scope": "Developmental attempt retained privately; superseded harness, excluded from the final functional matrix and all performance acceptance.",
+      "timedOut": true,
+      "timeoutSeconds": 45.0,
+      "exitCode": -9,
+      "remainingObservedProcesses": [],
+      "files": {
+        "partial.json": "5288bd596f6fa097eb0873578ae702313cffcae4334a82d5aa3941f04a4ab5fb",
+        "resources.json": "056c910032c27df7cc94e2d82503983ce83b36dfc2418620deec2937c1b98281",
+        "stderr.txt": "f5d7583ad199135d79adeaeda46e436fb981a8d05160539bf86fb052a9a9c324",
+        "stdout.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "attempt": "probe-shell-node",
+      "scope": "Developmental attempt retained privately; superseded harness, excluded from the final functional matrix and all performance acceptance.",
+      "timedOut": false,
+      "timeoutSeconds": 90.0,
+      "exitCode": 0,
+      "remainingObservedProcesses": [],
+      "files": {
+        "admission.json": "28d7b88cbb50fd4a8efe17fdd012e45c4146c0f72fbef5c577834b747b84b370",
+        "partial.json": "5da3aa86ab53b08f706282df649b63fa4a676ba5efc91dedfc95419d4d130dcd",
+        "resources.json": "7acbe47070debad5ea404ff9f43e06ad96aadc2ef354433eb7ccb23a110a4a0c",
+        "stderr.txt": "cb442a5ec52613d75b82c02a43b0294e2218753b247fe8dfe74de692fb6d4aae",
+        "stdout.json": "8e362d775b2c16e0c28896f9c6e1fde9975a9a159c846060aea7de3b61cbf8b6"
+      }
+    },
+    {
+      "attempt": "probe-full-node24",
+      "scope": "Developmental attempt retained privately; superseded harness, excluded from the final functional matrix and all performance acceptance.",
+      "timedOut": false,
+      "timeoutSeconds": 90.0,
+      "exitCode": 0,
+      "remainingObservedProcesses": [],
+      "files": {
+        "partial.json": "cf64f4b5b55a3f6fc65bbf2d81732bf52f46837e7eb07b26ad11b059c7b0f857",
+        "resources.json": "ef584f23673ef4482dd8219e8daa893c1fc3b8189bda3610d1495184005db148",
+        "stderr.txt": "cb442a5ec52613d75b82c02a43b0294e2218753b247fe8dfe74de692fb6d4aae",
+        "stdout.json": "0c60fc6ef41fef6ee7349d2658d3f707ce9aeab9897f6eb0738dcad5e8b1e15b"
+      }
+    }
+  ],
+  "earlierMatrix": {
+    "scope": "Four Node passes and one Bun failure retained privately before runtime-executable hashing, explicit installed-pin comparison and failed-iteration elapsed retention. Not the final acceptance snapshot.",
+    "resultsSha256": "78bcc21418f8601ae902302df70d86bb64e2a5ebdfd437f9ef64a91b22c4ca95",
+    "receipts": {
+      "bun-shell": "1d6d70d106d9a6b7bbd8ff38142fcadef9a4288f63727152b6be12a2adc24598",
+      "node22-full": "e0a78daf93986208bea8f7d0ea0427dadaab26caa440cb7be80632a391b0b6f2",
+      "node22-shell": "6425eb09b72a8cc96e14d2fcef496aef2d46fef70db359903ec117660dc2180d",
+      "node24-full": "5031f2f105f3a837bec487e8057f0b4b306ad918ac904ae1a0383132e066ce2d",
+      "node24-shell": "3b42fc04a5e64fec6067b844e5e71bb6fa63e72ad0564388ca3b5f4b12c8af66"
+    }
+  },
+  "limitations": [
+    "Native Puppeteer fill emits 126 trusted input events in 15 backend iterations; the reference expects 15. Equal final values do not imply equal application work.",
+    "Native missing-element visibility timeout is not a Playwright assertion diagnostic comparison.",
+    "Bun 1.4.2 native locator interaction times out; exact cause remains unresolved. The failure aborts admission and is not excluded from reporting.",
+    "Puppeteer uses a small fixture-specific mutation-polling assertion helper. Complete actionability, assertion, runner and browser-version support remain outside this admission.",
+    "Functional jobs used up to two concurrent harnesses; timings and resource observations are diagnostic and cannot establish comparative performance.",
+    "No fresh Flashwright binary acceptance, Cypress/WebdriverIO execution, native Linux matrix, representative broader runner corpus or complete competitor table yet."
+  ],
+  "sources": {
+    "README.md": "77831e67ab28332896febed428a54d43fe09a4752241e68d35db41d068220084",
+    "SPECS.md": "5c1218b74f9e8e5c3e4ec60a729d53cef013c5c2424bebfd9c5780b674ef43a4",
+    "package.json": "6a28cc16f8d6456d219160e7c04d41657dfbd87ef0afb731d382ec1251632ed9",
+    "tools/verify-core.mjs": "c6a874964f378ec63048c13e5b1300e591292c0a2c330e4d9bf21510b93633e0",
+    "compatibility/milestones.json": "eada7aea187005fa75873d6fa22afbddec513f916e3324d608df0d0731833d9e",
+    "benchmarks/configurations/competitors.json": "b9f1e62f360444af4718b1d664e1d71890c7e8598b87b336da9b2a2e67972537",
+    "benchmarks/competitors/puppeteer/package.json": "9f00b06ceb8b3a38e9ebe27bdd1294c33c658a8a65de40bb80abae92e5168bc9",
+    "benchmarks/competitors/puppeteer/bun.lock": "5ef753a999d3ab0b2af0d049f70abff96416140e7583697cda12af09122feb5c",
+    "benchmarks/puppeteer-workloads.mjs": "d426306dc1a6a7338b7dcb9988a1f4d1c683f736d172c3b91aa923ada974b1af",
+    "benchmarks/puppeteer-admission.mjs": "c2af6575ac3f5462e8c6a91053933a1323611e00500993f4b53178d583089037",
+    "benchmarks/competitor-contract.mjs": "72734bd9b66efb8f8bd9d2421d12fd675afc5ebe3c07263e9314e2d53e63db1b",
+    "tools/run-competitor-admission.mjs": "bf9b155a6ad8e247922e728a3f626f0196e41b8ba1dd21344de6bbe5b1c24e93",
+    "tools/test-competitor-contract.mjs": "37cb5f1b1355357a44ad8e07b390abad9ca68ae58f1351cd58b8293268b1d176",
+    "docs/benchmarks.md": "f60c830008ca73fc4f06d7da2e56133d39767a14ceed425956b17d003d1e70d1"
+  }
+}

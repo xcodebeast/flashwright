@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "referenceVersion": "1.60.0",
+  "browserVersion": "148.0.7778.96",
+  "selectionDate": "2026-10-10",
+  "selectionPolicy": "A declared initial set spanning the compatibility reference, direct Chrome automation, an integrated browser test runner and the WebDriver/BiDi ecosystem. Inclusion does not assert a popularity rank or an unmeasured speed ranking. Expand the set when a relevant faster contender is identified.",
+  "competitors": [
+    {
+      "id": "playwright",
+      "package": "@playwright/test",
+      "version": "1.60.0",
+      "reason": "Compatibility reference and established end-to-end runner; existing matched library-flow baseline.",
+      "comparisonClasses": ["library-flow", "runner-suite"],
+      "source": "https://playwright.dev/docs/intro"
+    },
+    {
+      "id": "puppeteer",
+      "package": "puppeteer-core",
+      "version": "25.13.0",
+      "reason": "Direct Chrome automation contender with native locator readiness and low-level browser control; useful for testing whether the independent engine beats an automation library as well as a runner.",
+      "comparisonClasses": ["library-flow"],
+      "source": "https://pptr.dev/guides/page-interactions"
+    },
+    {
+      "id": "cypress",
+      "package": "cypress",
+      "version": "16.1.1",
+      "reason": "Integrated end-to-end runner with browser-side command execution and retrying assertions; its event model and runner costs require a separate suite comparison.",
+      "comparisonClasses": ["runner-suite"],
+      "source": "https://docs.cypress.io/app/core-concepts/interacting-with-elements"
+    },
+    {
+      "id": "webdriverio",
+      "package": "webdriverio",
+      "version": "10.0.2",
+      "reason": "WebDriver/BiDi ecosystem contender with native user interactions and standalone or runner execution; record the actual negotiated protocol and browser driver.",
+      "comparisonClasses": ["library-flow", "runner-suite"],
+      "source": "https://webdriver.io/docs/automationProtocols"
+    }
+  ],
+  "admission": {
+    "workloads": ["noop", "interaction", "assertion", "navigation", "setup", "backend", "failure"],
+    "workers": 1,
+    "viewport": { "width": 1280, "height": 720 },
+    "artifacts": { "trace": "off", "video": "off", "screenshot": "off" },
+    "policy": "Functional admission runs retain observations and elapsed time but do not enter performance tables as comparative measurements. Successful application outcomes, exact request counts, trusted events, fresh-context isolation, launch identity and clean watchdog exit are mandatory. Deviations from the reference operation/event contract must be reported explicitly."
+  },
+  "performancePolicy": "Use the independent-launch sampling, exclusion, uncertainty and regression thresholds in baseline.json. Library-flow observations do not stand in for full runner-suite or contention results. No current broad competitor leadership claim."
+}

@@ -129,6 +129,8 @@ n. Deliver a complete benchmark comparison table covering the fastest relevant c
 
 M0 records numeric acceptance thresholds in versioned benchmark configuration, with rationale. Until then this spec defines an optimization objective, not an invented speed guarantee
 
+The initial broader contender set is Playwright, Puppeteer, Cypress and WebdriverIO, alongside Flashwright. Pin their versions and selection rationale in `benchmarks/configurations/competitors.json`. Library-flow comparisons and actual test-runner suite comparisons are separate classes. First admit each adapter against real fixture outcomes, browser identity/launch flags, trusted input, backend requests, context isolation and cleanup; functional admission is not speed acceptance. Preserve native competitor APIs and document any assertion helper, polling choice, launch-policy override or input-event difference. Do not disable native action readiness to manufacture a faster comparator. A competitor that cannot execute equivalent work remains explicitly unmeasured or noncomparable for that case. Current Flashwright source/driver verification and S6 sampling/resource gates still precede a comparative performance claim.
+
 ## S7 TypeScript packages, types and migration
 
 Proposed public packages:

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "engine": "puppeteer",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "node": null,
+  "nodeCompatibility": "v26.3.0",
+  "package": {
+    "name": "puppeteer-core",
+    "version": "25.13.0",
+    "manifestSha256": "ec328f5aa9eebec0013911d5b07d5e81f93355e87aa065ce0eca2166feb032b4",
+    "lockSha256": "5ef753a999d3ab0b2af0d049f70abff96416140e7583697cda12af09122feb5c"
+  },
+  "browser": {
+    "executablePath": "<browser-cache>/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+    "sha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "chromium-headless-shell"
+  },
+  "configuration": {
+    "schemaVersion": 1,
+    "referenceVersion": "1.60.0",
+    "browserVersion": "148.0.7778.96",
+    "independentLaunches": 8,
+    "warmupIterations": 3,
+    "measuredIterations": 12,
+    "workloads": [
+      "noop",
+      "interaction",
+      "assertion",
+      "navigation",
+      "setup",
+      "backend",
+      "failure"
+    ],
+    "workers": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "headless": true,
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    },
+    "delayedAssertionMilliseconds": 8,
+    "backendDelayMilliseconds": 20,
+    "expectedFailureTimeoutMilliseconds": 25,
+    "statistics": {
+      "unit": "independent launch median",
+      "bootstrapReplicates": 10000,
+      "confidenceLevel": 0.95,
+      "seed": 41723,
+      "minimumSamplesForP95": 200,
+      "minimumSamplesForP99": 1000
+    },
+    "acceptance": {
+      "minimumMaterialImprovementFraction": 0.1,
+      "maximumMedianRegressionFraction": 0.05,
+      "maximumObservedTailRegressionFraction": 0.15,
+      "maximumConcurrentResidentMemoryRegressionFraction": 0.1,
+      "allowedUnexpectedFailures": 0,
+      "rationale": "Require at least a 10% complete-flow improvement with a launch-clustered confidence interval excluding parity. Reject median regressions above 5%, observed tail regressions above 15%, and memory growth above 10% unless explicitly reviewed. Baseline-only data establishes variability; it cannot pass a speed comparison. Tail claims need the stated sample counts."
+    },
+    "exclusionPolicy": "Retain every attempted launch and sample. Unexpected errors invalidate a comparison, not individual slow observations. Only an explicitly documented external interruption can invalidate an entire run. Never rerun selectively.",
+    "executionOrder": "Rotate workloads by launch index; paired engine comparisons must alternate which engine starts each launch pair.",
+    "resourceCoverage": "External watchdog samples the observed descendant process tree, including separately grouped browser processes. Short-lived processes between samples may be missed; report this limitation."
+  },
+  "launchArguments": [
+    "--disable-field-trial-config",
+    "--disable-background-networking",
+    "--disable-background-timer-throttling",
+    "--disable-backgrounding-occluded-windows",
+    "--disable-back-forward-cache",
+    "--disable-breakpad",
+    "--disable-client-side-phishing-detection",
+    "--disable-component-extensions-with-background-pages",
+    "--disable-component-update",
+    "--no-default-browser-check",
+    "--disable-default-apps",
+    "--disable-dev-shm-usage",
+    "--disable-edgeupdater",
+    "--disable-extensions",
+    "--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion",
+    "--enable-features=CDPScreenshotNewSurface",
+    "--allow-pre-commit-input",
+    "--disable-hang-monitor",
+    "--disable-ipc-flooding-protection",
+    "--disable-popup-blocking",
+    "--disable-prompt-on-repost",
+    "--disable-renderer-backgrounding",
+    "--force-color-profile=srgb",
+    "--metrics-recording-only",
+    "--no-first-run",
+    "--password-store=basic",
+    "--use-mock-keychain",
+    "--no-service-autorun",
+    "--export-tagged-pdf",
+    "--disable-search-engine-choice-screen",
+    "--unsafely-disable-devtools-self-xss-warnings",
+    "--edge-skip-compat-layer-relaunch",
+    "--disable-infobars",
+    "--disable-search-engine-choice-screen",
+    "--disable-sync",
+    "--enable-unsafe-swiftshader",
+    "--headless",
+    "--hide-scrollbars",
+    "--mute-audio",
+    "--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4",
+    "--no-sandbox",
+    "--user-data-dir=__FLASHWRIGHT_PROFILE__",
+    "--remote-debugging-pipe",
+    "--no-startup-window"
+  ],
+  "workloads": [
+    {
+      "name": "noop",
+      "samples": [
+        {
+          "iteration": 0,
+          "milliseconds": 0.37429199999996854
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 0.42012499999998454
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 0.4125419999999167
+        },
+        {
+          "iteration": 3,
+          "milliseconds": 0.3208750000000009
+        },
+        {
+          "iteration": 4,
+          "milliseconds": 0.21308400000009442
+        },
+        {
+          "iteration": 5,
+          "milliseconds": 0.202666000000022
+        },
+        {
+          "iteration": 6,
+          "milliseconds": 0.21525000000008276
+        },
+        {
+          "iteration": 7,
+          "milliseconds": 0.22891600000002654
+        },
+        {
+          "iteration": 8,
+          "milliseconds": 0.36208299999998417
+        },
+        {
+          "iteration": 9,
+          "milliseconds": 0.2005420000000413
+        },
+        {
+          "iteration": 10,
+          "milliseconds": 0.23066700000003948
+        },
+        {
+          "iteration": 11,
+          "milliseconds": 0.23991699999999128
+        }
+      ],
+      "warmupSamples": [
+        {
+          "iteration": 0,
+          "milliseconds": 0.6176250000000891
+        },
+        {
+          "iteration": 1,
+          "milliseconds": 0.24874999999997272
+        },
+        {
+          "iteration": 2,
+          "milliseconds": 0.5091249999999263
+        }
+      ],
+      "failures": [],
+      "preparationMilliseconds": 68.91891699999996,
+      "observations": {
+        "trustedClicks": 0,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 173.405167
+    },
+    {
+      "name": "interaction",
+      "samples": [],
+      "warmupSamples": [],
+      "failures": [
+        {
+          "phase": "warmupSamples",
+          "iteration": 0,
+          "milliseconds": 5005.91475,
+          "error": "TimeoutError: Timed out after waiting 5000ms\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/puppeteer/common/util.js:221:23)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:1944:31)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:1001:9)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:704:12)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:2288:20)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:1368:12)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:1357:22)\n    at <anonymous> (<isolated-dependencies>/node_modules/puppeteer-core/lib/third_party/rxjs/rxjs.js:1435:26)"
+        }
+      ],
+      "preparationMilliseconds": 73.59395900000004,
+      "observations": {
+        "trustedClicks": 0,
+        "untrustedClicks": 0,
+        "trustedChanges": 0,
+        "untrustedChanges": 0,
+        "applicationCount": 0,
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibilityState": "visible",
+        "focused": true
+      },
+      "completeMilliseconds": 5084.635875
+    }
+  ],
+  "failures": [],
+  "isolation": {
+    "storage": null,
+    "cookies": ""
+  },
+  "scope": "Functional admission only. Elapsed times are retained observations, excluded from comparative performance acceptance.",
+  "adaptations": [
+    "Pinned reference Chromium flags replace Puppeteer default flags; initial blank-page waiting is disabled because the shared policy uses no-startup-window. CDP pipe and the configured viewport remain explicit.",
+    "Native Puppeteer locators retain their default visibility, enabled, viewport and two-frame stability checks. ARIA selectors identify buttons and the labelled input.",
+    "Text/title assertions use a small explicit page.waitForFunction helper with mutation polling, unique text targets and a 5-second deadline. This is a workload predicate, not Playwright matcher parity.",
+    "The expected missing-element failure uses native waitForSelector visibility and its actual TimeoutError. It is not a Playwright assertion diagnostic comparison.",
+    "Native input-event counts are retained. A changed count is a semantic difference, never silently normalized."
+  ],
+  "launchMilliseconds": 134.928791,
+  "browserVersion": "148.0.7778.96",
+  "abortedAfterUnexpectedFailure": "interaction",
+  "completeMilliseconds": 5614.645542,
+  "backend": {
+    "documents": 4,
+    "backendRequests": 0,
+    "otherRequests": 0
+  }
+}
