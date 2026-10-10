@@ -1,22 +1,60 @@
 # Benchmark comparison status
 
-Flashwright has not established performance leadership. The current broad comparison is incomplete. The [declared contender set](../benchmarks/configurations/competitors.json) includes the compatibility reference, direct Chrome automation, an integrated browser runner and the WebDriver/BiDi ecosystem. Versions are pinned; inclusion is not a speed ranking.
+Flashwright has not established performance leadership. The [five-engine checkpoint](../compatibility/evidence/broad-performance-checkpoint-2026-10-10.json) records 40 passing sampled launches after a 162-group core gate. All 926 recorded source files match commit `70dc299f`. The [complete comparison table](../benchmarks/results/broad-matrix-2026-10-10/evidence/table.md) includes every workload, preparation-inclusive totals, startup, CPU, concurrent memory, uncertainty and recorded semantic differences.
 
-| Engine | Pinned package | Library-flow admission | Runner-suite measurement | Current broad performance result |
-| --- | --- | --- | --- | --- |
-| Flashwright | Development checkout | 156 functional core groups; earlier measured seven-flow profile | Pending broader migration corpus | Not established |
-| Playwright | @playwright/test 1.60.0 | Existing seven-flow matched baseline | Pending broader comparison | Current seven-flow paired profile below |
-| Puppeteer | puppeteer-core 25.13.0 | Seven functional flows; five match the checked reference outcomes, with explicit backend/failure differences | No bundled test runner in this comparison class | Not measured |
-| Cypress | cypress 16.1.1 | Default synthetic input and runner isolation are a separate class | 105 outcome-admission tests on each of Bun/Node 22/24; 15 intentional failures per run | Not measured |
-| WebdriverIO | webdriverio 10.0.2 | Seven functional flows on Bun/Node 22/24 and both Chromium variants; launch/input/failure differences | Not measured | Not measured |
+## Latest measured broad comparison
 
-Startup, complete-suite time, action/assertion latency, CPU, concurrent memory and uncertainty remain unmeasured for the current broad matrix. Earlier Playwright/Flashwright observations retain their original source, browser, runtime and workload scope; see the [benchmark history](../README.md#r3-browser-baselines). They cannot establish a ranking against the additional contenders.
+Eight rotated blocks ran on native macOS arm64 with full Chrome 148.0.7778.96. Bun 1.4.2 coordinated the run; every shared library workload used Node 22.22.0. Each library flow has three warmups and 12 measured observations per launch. Complete work includes preparation, warmup, semantic verification and cleanup; child process wall also includes imports and the sampling wrapper. Brackets below are 95% launch-clustered intervals.
 
-## Latest measured Playwright comparison
+| Engine | Version | Class | Startup ms | Complete ms | Child process wall ms | CPU s | Median launch peak RSS MiB | Maximum sampled RSS MiB | Failures |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| flashwright | development checkout | library-flow | 500.5 [413.2, 829.1] | 8478.8 [8317.0, 8872.5] | 9117.7 [8722.9, 9551.5] | 8.12 [7.79, 8.37] | 946.9 [942.6, 950.2] | 951.4 | 0 expected, 0 unexpected |
+| playwright | 1.60.0 | library-flow | 523.2 [375.1, 579.7] | 8423.6 [8264.4, 9110.7] | 8940.3 [8715.8, 9493.2] | 8.87 [8.37, 8.95] | 930.9 [927.0, 936.2] | 937.0 | 0 expected, 0 unexpected |
+| puppeteer | 25.13.0 | library-flow | 433.1 [386.2, 456.4] | 8695.8 [8409.2, 8806.2] | 8954.7 [8721.0, 9119.4] | 7.90 [7.68, 8.20] | 862.6 [853.6, 865.3] | 865.5 | 0 expected, 0 unexpected |
+| cypress | 16.1.1 | runner-outcome | Not isolated | 17516.8 [16923.2, 18682.0] | 17833.5 [17297.0, 19002.1] | 25.45 [24.13, 26.00] | 1876.1 [1801.5, 1924.9] | 1932.0 | 120 expected, 0 unexpected |
+| webdriverio | 10.0.2 | library-flow | 1824.4 [1670.4, 1911.3] | 53807.8 [53270.8, 55482.8] | 54073.2 [53450.5, 55783.5] | 66.86 [66.36, 69.56] | 2179.1 [2117.4, 2845.5] | 2855.2 | 0 expected, 0 unexpected |
+
+The four library-flow rows and Cypress runner-outcome row do not perform equivalent complete work. Puppeteer and WebdriverIO retain different input counts and failure diagnostics; WebdriverIO also retains its native ChromeDriver launch policy. Cypress uses synthetic input, its proxy/runner and per-test storage reset. Its 120 intentional failures remain actual failed tests. The complete table preserves all these distinctions; the numbers do not establish an overall ranking.
+
+This frozen source precedes matcher accessibility diagnostics in `1a49a790`. The measured failure fixture checks method/selector text, not the full error context or automatic failure document. Those newer diagnostics need a fresh measurement after their own acceptance gates. Native Linux, contention and representative matched runner suites remain unverified.
+
+## Paired analysis of the broad blocks
+
+[Recomputed paired results](../benchmarks/results/broad-matrix-2026-10-10-paired.json) use the same eight blocks, with each Playwright/Flashwright pair identified by its block index. The engines are not always adjacent. Values are milliseconds; ratios above 1 favor Flashwright.
+
+| Metric | Playwright ms | Flashwright ms | Paired ratio | 95% interval |
+| --- | ---: | ---: | ---: | --- |
+| Complete run | 8423.648 | 8478.787 | 0.997 | 0.941–1.028 |
+| Process wall | 8940.302 | 9117.717 | 1.004 | 0.940–1.022 |
+| Cold browser launch | 523.215 | 500.461 | 0.946 | 0.556–1.334 |
+| Noop | 0.337 | 0.318 | 1.035 | 0.740–1.587 |
+| Interaction | 16.582 | 16.461 | 1.006 | 0.994–1.016 |
+| Assertion | 25.554 | 10.657 | 2.423 | 2.276–2.438 |
+| Navigation | 57.380 | 55.935 | 1.027 | 0.982–1.056 |
+| Setup | 236.414 | 243.937 | 0.968 | 0.929–1.041 |
+| Backend | 47.100 | 41.835 | 1.129 | 1.010–1.180 |
+| Failure | 24.775 | 26.554 | 0.929 | 0.913–0.936 |
+
+The complete-run estimate is unresolved: 0.997× with an interval spanning 0.941–1.028×. It fails the predeclared 10% material improvement target. Failure median latency breaches the 5% regression limit; observed maxima breach the 15% limit for interaction, setup, backend and failure. These maxima are individual observations, not population-tail estimates. Memory remains within policy. No p95/p99 claim follows from this sample count.
+
+Setup accounts for about 44.0% of Flashwright complete time. Its delayed assertion flow is about 2.42× faster, but that gain does not produce a faster complete run. The paired CPU ratio is 1.072 with interval 1.039–1.117; sampled process-tree memory is slightly higher for Flashwright. The watchdog may miss short-lived or already-reparented processes.
+
+The [portable manifest](../benchmarks/results/broad-matrix-2026-10-10/manifest.json) retains all 437 original files by original/exported hashes. Every numeric JSON/JSONL observation and the complete table remain unchanged. Core stdout may intentionally contain malformed protocol bytes; the exporter preserves those bytes outside exact path substitutions. The original and portable matrices pass the same recorded-source verifier. Paired analysis is byte-identical across Bun 1.4.2 and Node 22.22.0/24.15.0.
+
+To recheck, retain or recreate the exact `70dc299f` checkout and its locked dependencies, then run from this checkout:
+
+```sh
+bun tools/broad-matrix-snapshot.mjs verify benchmarks/results/broad-matrix-2026-10-10 /absolute/path/to/recorded-checkout
+bun tools/analyze-broad-pair.mjs benchmarks/results/broad-matrix-2026-10-10/evidence /absolute/path/to/recorded-checkout .cache/new-paired-analysis.json
+```
+
+The verifier deliberately uses the recorded checkout. These commands verify retained evidence; they do not verify current executable bytes or accept newer source revisions. The [export procedure](broad-matrix-export.md) describes custody and normalization.
+
+## Earlier Bun paired baseline (`41cbdcea`)
 
 The [measured checkpoint](../compatibility/evidence/current-performance-checkpoint-2026-10-10.json) passes all 144 core groups at 851 source hashes matching commit `41cbdcea`. The subsequent [16-launch snapshot](../benchmarks/results/current-paired-2026-10-10/summary.json) passes independent verification before and after path normalization. Both engines use Bun 1.4.2 and the same full Chrome 148.0.7778.96 executable and launch policy on the shared native Apple M3 Pro macOS host. This is one worker, seven library flows and artifacts off.
 
-The later [Download checkpoint](../compatibility/evidence/downloads-checkpoint-2026-10-10.json) passes 156 functional core groups. Selector actions, FrameLocator, downloads and the accompanying trace/lifecycle changes have not been measured in a fresh matched performance run. The table below applies to the earlier revision only. Native Linux measurements remain unverified.
+The subsequent [Download checkpoint](../compatibility/evidence/downloads-checkpoint-2026-10-10.json) passes 156 functional core groups. Those changes were not measured at that checkpoint; the newer Node22 broad comparison above includes them. The following Bun table applies to the earlier revision only. Native Linux measurements remain unverified.
 
 Times below are milliseconds, expressed as medians of independent-launch medians. Each operation has 96 measured observations across eight launches, plus three warmups per launch. Ratios are paired Playwright/Flashwright values; above 1 favors Flashwright. Confidence intervals use the predeclared launch-clustered bootstrap. Complete runs include preparation, warmup, semantic verification and cleanup; process wall also includes runtime imports and the sampling wrapper.
 
@@ -132,7 +170,7 @@ For a coordinated run, set `FLASHWRIGHT_BROAD_RUNTIME` to one absolute runtime e
 
 Only after coordinating exclusive measurement time, run `FLASHWRIGHT_BROAD_RUN=1 bun benchmarks/broad-matrix.mjs --sample-library` for library sampling, or omit the flag for repeated diagnostic admission. Both retain every attempted launch and any failures in a new result directory. Engine order rotates, with Playwright/Flashwright order alternating. All process-wall cells use the common watchdog's child interval, so parent dependency verification does not inflate competitor times. A complete admitted run produces `summary.json` and `table.md`, including all seven workloads, preparation-inclusive totals, launch-clustered uncertainty, sampled CPU and concurrent memory, intentional failures, instrumentation and semantic differences. Cypress startup and preparation-inclusive workload intervals remain explicitly unisolated.
 
-Recheck a collected run using `bun tools/verify-broad-matrix.mjs RETAINED_DIRECTORY` from its recorded source checkout. The verifier checks retained hashes, core logs, runtime/dependency identities, every original semantic admission and the recomputed statistics/table. No broad matrix has yet been run with this coordinator. Raw outputs can contain workstation paths and must be normalized and reverified before public retention under S19.i.
+Recheck a collected run using `bun tools/verify-broad-matrix.mjs RETAINED_DIRECTORY` from its recorded source checkout. The verifier checks retained hashes, core logs, runtime/dependency identities, every original semantic admission and the recomputed statistics/table. The retained 40-launch matrix above uses its library sampling mode; it does not establish broad performance leadership. Raw outputs can contain workstation paths and must be normalized and reverified before public retention under S19.i.
 
 ## Native runner fixture suite
 
