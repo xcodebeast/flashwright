@@ -116,6 +116,16 @@ struct Shared {
     session_lifetime: SessionLifetime,
 }
 
+impl Shared {
+    fn closed_failure(&self) -> SnapshotFailure {
+        self.failure
+            .lock()
+            .unwrap()
+            .clone()
+            .unwrap_or_else(|| failure(ErrorCode::TargetClosed, "snapshot owner is closed"))
+    }
+}
+
 pub(crate) struct SnapshotDocument {
     requests: mpsc::Sender<CaptureRequest>,
     shared: Arc<Shared>,
@@ -335,15 +345,7 @@ impl SnapshotDocument {
     ) -> Result<PreparedSnapshot, SnapshotFailure> {
         options.validate()?;
         if *self.shared.stopping.borrow() {
-            return Err(self
-                .shared
-                .failure
-                .lock()
-                .unwrap()
-                .clone()
-                .unwrap_or_else(|| {
-                    failure(ErrorCode::TargetClosed, "snapshot owner is stopping")
-                }));
+            return Err(self.shared.closed_failure());
         }
         let deadline = operation_deadline.min(Instant::now() + CAPTURE_BUDGET);
         if *cancellation.borrow() {
@@ -358,27 +360,25 @@ impl SnapshotDocument {
                 "snapshot allowance expired before admission",
             ));
         }
-        let reservation = self
-            .shared
-            .reservation
-            .lock()
-            .unwrap()
-            .as_ref()
-            .ok_or_else(|| failure(ErrorCode::TargetClosed, "snapshot owner is closed"))?
-            .reserve_capture()
-            .map_err(admission)?;
+        // A waiter occupies one of the existing two queue slots before waiting for
+        // host ingestion; a full payload budget must not create an unbounded queue.
+        let queue = self.requests.try_reserve().map_err(|error| match error {
+            mpsc::error::TrySendError::Full(_) => {
+                failure(ErrorCode::ResourceLimit, "snapshot worker queue is full")
+            }
+            mpsc::error::TrySendError::Closed(_) => self.shared.closed_failure(),
+        })?;
+        let reservation = self.reserve_capture(deadline, cancellation.clone()).await?;
         let (sender, receiver) = oneshot::channel();
         let mut waiting_cancellation = cancellation.clone();
-        self.requests
-            .try_send(CaptureRequest {
-                options,
-                deadline,
-                cancellation,
-                reservation,
-                result: Some(sender),
-                stage: CaptureStage::Collecting,
-            })
-            .map_err(|_| failure(ErrorCode::ResourceLimit, "snapshot worker is unavailable"))?;
+        queue.send(CaptureRequest {
+            options,
+            deadline,
+            cancellation,
+            reservation,
+            result: Some(sender),
+            stage: CaptureStage::Collecting,
+        });
         tokio::select! {
             biased;
             _ = waiting_cancellation.wait_for(|cancelled| *cancelled) => {
@@ -387,7 +387,71 @@ impl SnapshotDocument {
             _ = sleep_until(deadline) => {
                 Err(failure(ErrorCode::Timeout, "snapshot diagnostic allowance expired while queued"))
             },
-            result = receiver => result.map_err(|_| failure(ErrorCode::TargetClosed, "snapshot worker is closed"))?,
+            result = receiver => result.map_err(|_| self.shared.closed_failure())?,
+        }
+    }
+
+    /// Retained payloads release their count only after immutable host ingestion.
+    async fn reserve_capture(
+        &self,
+        deadline: Instant,
+        mut cancellation: watch::Receiver<bool>,
+    ) -> Result<CaptureReservation, SnapshotFailure> {
+        let mut stopping = self.shared.stopping.subscribe();
+        let mut available = self
+            .shared
+            .reservation
+            .lock()
+            .unwrap()
+            .as_ref()
+            .ok_or_else(|| self.shared.closed_failure())?
+            .admission_changes();
+        loop {
+            if *cancellation.borrow() {
+                return Err(failure(
+                    ErrorCode::Cancelled,
+                    "snapshot call was cancelled before admission",
+                ));
+            }
+            if *stopping.borrow() {
+                return Err(self.shared.closed_failure());
+            }
+            if Instant::now() >= deadline {
+                return Err(failure(
+                    ErrorCode::Timeout,
+                    "snapshot allowance expired before admission",
+                ));
+            }
+            let reservation = self
+                .shared
+                .reservation
+                .lock()
+                .unwrap()
+                .as_ref()
+                .ok_or_else(|| self.shared.closed_failure())?
+                .reserve_capture();
+            match reservation {
+                Ok(reservation) => return Ok(reservation),
+                Err(AdmissionError::PayloadLimit) => {}
+                Err(error) => return Err(admission(error)),
+            }
+            tokio::select! {
+                biased;
+                _ = cancellation.wait_for(|cancelled| *cancelled) => {
+                    return Err(failure(ErrorCode::Cancelled, "snapshot call was cancelled before admission"));
+                },
+                _ = stopping.wait_for(|stopped| *stopped) => {
+                    return Err(self.shared.closed_failure());
+                },
+                _ = sleep_until(deadline) => {
+                    return Err(failure(ErrorCode::Timeout, "snapshot allowance expired before admission"));
+                },
+                result = available.changed() => {
+                    if result.is_err() {
+                        return Err(self.shared.closed_failure());
+                    }
+                },
+            }
         }
     }
 
@@ -515,13 +579,7 @@ impl DocumentWorker {
         self.shared.stopping.send_replace(true);
         requests.close();
         while let Ok(mut queued) = requests.try_recv() {
-            let error = self
-                .shared
-                .failure
-                .lock()
-                .unwrap()
-                .clone()
-                .unwrap_or_else(|| failure(ErrorCode::TargetClosed, "snapshot owner is closed"));
+            let error = self.shared.closed_failure();
             let _ = queued.result.take().unwrap().send(Err(error));
         }
     }
@@ -837,7 +895,7 @@ impl DocumentWorker {
                 error = self.interrupted(request) => return Err(error),
                 result = available.changed() => {
                     if result.is_err() {
-                        return Err(failure(ErrorCode::TargetClosed, "snapshot admission owner is closed"));
+                        return Err(self.shared.closed_failure());
                     }
                 },
             }
