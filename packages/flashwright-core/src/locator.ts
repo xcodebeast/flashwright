@@ -1,3 +1,4 @@
+import { prepareAriaSnapshotArguments, type AriaSnapshotOptions } from './aria-snapshot.js';
 import { instrumentTraceMethods, tracePageOwner } from './trace-hooks.js';
 import type { AssertionOptions, AssertionResult } from './assertions.js';
 import type { Frame } from './frame.js';
@@ -119,6 +120,7 @@ export class Locator extends LocatorScope {
       return owner ? { ...owner, selector: locator.selector } : undefined;
     }, {
         runAssertion: { method: 'expect', apiName: 'locator._expect', parameters: ['options', 'timeout'] },
+        ariaSnapshot: { parameters: ['options'], prepareArguments: prepareAriaSnapshotArguments, capture: 'filmstrip' },
         elementHandle: { method: 'waitForSelector', parameters: ['options'] },
         evaluate: { method: 'evaluateExpression', parameters: ['expression', 'arg', 'options'] },
         evaluateHandle: { method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] },
@@ -241,6 +243,9 @@ export class Locator extends LocatorScope {
   async all(): Promise<Locator[]> { return Array.from({ length: await this.count() }, (_, index) => this.nth(index)); }
   allTextContents(): Promise<string[]> { return this.run('allTextContents'); }
   allInnerTexts(): Promise<string[]> { return this.run('allInnerTexts'); }
+  async ariaSnapshot(options: AriaSnapshotOptions = {}): Promise<string> {
+    return this.ownerFrame.runAriaSnapshot(this.selector, options);
+  }
   textContent(options: LocatorTimeoutOptions = {}): Promise<string | null> { return this.run('textContent', {}, options); }
   innerText(options: LocatorTimeoutOptions = {}): Promise<string> { return this.run('innerText', {}, options); }
   innerHTML(options: LocatorTimeoutOptions = {}): Promise<string> { return this.run('innerHTML', {}, options); }

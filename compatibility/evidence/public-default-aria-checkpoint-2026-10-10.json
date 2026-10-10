@@ -1,0 +1,865 @@
+{
+  "schemaVersion": 1,
+  "status": "focused-candidate-verified-integration-pending",
+  "baseline": "70dc299fce4208f82f4354cf86d75f07143f9b71",
+  "candidateCommit": "9303891c0297752c8f3df1f06f5141c4d3831e1b",
+  "platform": "darwin-arm64",
+  "scope": "Default public Page/Locator ARIA snapshots on one full Chromium build; no root integration, full merged suite, other platform, AI, remote execution, performance or release claim. Raw artifacts remain local; receipts identify them without publishing host paths.",
+  "driverSha256": "d7661d9705744ec5a15a6363f4e4c9736949209718119e3c4838b9c0a1117f5e",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+  },
+  "referenceVersion": "1.60.0",
+  "productionSources": {
+    "crates/flashwright-engine/src/aria_snapshots.rs": "ddaa94509260bfc7cc14b416a81e303bd04ede51acdcfc10bc61f3b1375b1ebf",
+    "crates/flashwright-engine/src/lib.rs": "eea3301a105c20706013ccbffd73ab1ec1c54ec24ba624df1c25a8c17ea891cb",
+    "crates/flashwright-engine/src/locators.rs": "96476e16231491c26535975e8f2231f5e629dcd4e446e382dd0a051456b45cd7",
+    "packages/flashwright-core/src/aria-snapshot.ts": "a303e7f5db8b1479bd2cfed4759c520603d44784ee9af7d8db97ed40d818ca06",
+    "packages/flashwright-core/src/frame.ts": "b363e9d426c2c6a76a0a7be823cd27939b3f0727539471f08631e95db03b402b",
+    "packages/flashwright-core/src/index.ts": "5d18fd77c0ac66d676daf778e661e879edb0323249752d6cb4abde3b68a1922f",
+    "packages/flashwright-core/src/locator.ts": "7455e797ad480b3d3472a7cb38983ce42c312dfa59d82172d0c3f0f348cb6842",
+    "packages/flashwright-core/src/trace-hooks.ts": "103fcc2da8942a42e67c769bcb528049efab6e34b2e8496f529f90d957fdf3ff",
+    "packages/flashwright-core/src/tracing.ts": "616e2801247cb8b1c92129f8b61592b3abbf7a25a2617c24d4a263ff3b8b13c1",
+    "packages/resident-runtime/aria-snapshot.js": "f8ef489bf099481f8baff3c08caa2addd5be306e2e9ae96f4c264d230295e03c",
+    "packages/resident-runtime/locator-runtime.js": "5bb2af1129bcd31e097e3b1147eac36f848d40f010a36f17476a17ccd5e39afb",
+    "packages/resident-runtime/sources.txt": "5659e10bb134ae6ec785346c8de0795983017e2c8587d9af58df1cb2916c4b02"
+  },
+  "testSources": {
+    "compatibility/m2/public-aria-snapshots.mjs": "4ce7f0877aaa6a4690e3c069d513104eec714c11ced488c4e09c17d23a5c156a",
+    "tools/frame-placement-proxy.py": "f46dd37bb338e3284515758fecbea4fa230e5c1072ed8a9ad07e698aa460a393",
+    "tools/public-aria-remote-target.mjs": "5c2000bad67308fc2cf461c48d2ebe5d83e3df5f62a8b94c37093a40b95c08d1",
+    "tools/run-public-aria-remote-rejection.mjs": "0a95291a0126d2c066519873669ee6bcd2071cb7568c9526d0f3fc7d082062f8",
+    "tools/run-public-aria-snapshot-tests.mjs": "a221e83f55976c8bdd2115db17b78e38c71e1992f781f0aa47703f728ec598fb",
+    "tools/test-packed-public-aria.mjs": "e9790e027f87be6502d85197dce21493cd0614306e5f35bb23eb19e01dbca359",
+    "tools/test-public-aria-packaged-validation.mjs": "3bfa07712dfe02d7a0804db2afef2639f8995d1f1ab1cf33ddab3bb622aa1f73",
+    "tools/test-public-aria-remote-target.mjs": "f69955497c7851fe1fd4196c0490d392a16187de501858574bfd47453e6e348e",
+    "tools/test-public-aria-snapshot.mjs": "9e9599d5e25b42b619c5ee1d31ae43c5c2cd003da5082fe63a993c42914b3ee4",
+    "tools/test-public-aria-viewer.mjs": "3f27b555ad166f75fca96397421d9d1ed332d0c0b595dc30d8fd0838d01963a6",
+    "tools/verify-public-aria-trace.py": "2ab7abbe932ab89436183cc165dcb60eac63c26fdbf6c45ec6e33ebc191f8fae"
+  },
+  "host": {
+    "bun": {
+      "controlled": {
+        "path": ".cache/aria-final-host/bun-controlled.json",
+        "sha256": "e1d7953c3926df520093615c2ff1a3a67ba4451f1cbd981aac199c2c78177b70",
+        "checks": 11
+      },
+      "packaged": {
+        "path": ".cache/aria-final-host/bun-packaged.json",
+        "sha256": "ceafc15c0dd581b3224a0a3346d9afa608772a2f6411ca53c4ec360eb23f8ecc",
+        "checks": 22
+      },
+      "remoteEvidenceChecks": {
+        "path": ".cache/aria-final-host/bun-remote.txt",
+        "sha256": "79b1b80663765a6a8fca6d3668dee58f943cec6de0b8072fc760790949219ae6",
+        "checks": 9
+      }
+    },
+    "node22": {
+      "controlled": {
+        "path": ".cache/aria-final-host/node22-controlled.json",
+        "sha256": "e1d7953c3926df520093615c2ff1a3a67ba4451f1cbd981aac199c2c78177b70",
+        "checks": 11
+      },
+      "packaged": {
+        "path": ".cache/aria-final-host/node22-packaged.json",
+        "sha256": "ceafc15c0dd581b3224a0a3346d9afa608772a2f6411ca53c4ec360eb23f8ecc",
+        "checks": 22
+      },
+      "remoteEvidenceChecks": {
+        "path": ".cache/aria-final-host/node22-remote.txt",
+        "sha256": "eaf9c34a2085d69b4185925be326379156b3cc14a74f808cb32b26040e779b66",
+        "checks": 9
+      }
+    },
+    "node24": {
+      "controlled": {
+        "path": ".cache/aria-final-host/node24-controlled.json",
+        "sha256": "e1d7953c3926df520093615c2ff1a3a67ba4451f1cbd981aac199c2c78177b70",
+        "checks": 11
+      },
+      "packaged": {
+        "path": ".cache/aria-final-host/node24-packaged.json",
+        "sha256": "ceafc15c0dd581b3224a0a3346d9afa608772a2f6411ca53c4ec360eb23f8ecc",
+        "checks": 22
+      },
+      "remoteEvidenceChecks": {
+        "path": ".cache/aria-final-host/node24-remote.txt",
+        "sha256": "57c84339382670b59c744b6c2b2b97d0efe51ee54f39a4b734370dc16aeb0fbe",
+        "checks": 9
+      }
+    }
+  },
+  "browserDifferentials": [
+    {
+      "path": ".cache/public-aria-bun-004/report.json",
+      "sha256": "aa95fd68ded9302b44d95ea82e9387512b64bc95bf3451ed7d3318aa503faf1a",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "cleanup": {
+        "path": ".cache/public-aria-bun-004/resources.json",
+        "sha256": "026ebf8b42623872123068d65b373414f3105b895bfe24ad63c10991537c9e0a",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "sharedOutcomes": [
+        {
+          "name": "default, explicit, zero, negative and bounded depth",
+          "value": [
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list:\n    - listitem: First\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list:\n    - listitem: First\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list\n  - button \"Save\""
+          ]
+        },
+        {
+          "name": "strict, hidden, absent and inherited timeout",
+          "value": ""
+        },
+        {
+          "name": "late Locator target with explicit zero timeout",
+          "value": "- button \"Later\""
+        },
+        {
+          "name": "Page retries absent body",
+          "value": "- button \"Body returned\""
+        },
+        {
+          "name": "Unicode, shadow content and rounded boxes",
+          "value": [
+            "- button \"Name \\ud800 \ud83d\ude00\": Save\n- button \"Shadow\"",
+            "- button \"Name \\ud800 \ud83d\ude00\" [box=10,21,100,31]: Save"
+          ]
+        },
+        {
+          "name": "same-process frame path and Page excludes child document",
+          "value": [
+            "- button \"Parent\"\n- iframe",
+            "- button \"Child\""
+          ]
+        },
+        {
+          "name": "frame path retries replacement while preserving original root",
+          "value": "- button \"Replacement\""
+        },
+        {
+          "name": "Locator waits delayed navigation with a live predecessor match",
+          "value": "- button \"Successor\""
+        },
+        {
+          "name": "pending Locator retries root navigation",
+          "value": "- button \"New document\""
+        },
+        {
+          "name": "deadline while renderer is blocked and late reply isolation",
+          "value": "- button \"After block\""
+        },
+        {
+          "name": "owner closure cancels unbounded capture behind a blocked renderer",
+          "value": ""
+        },
+        {
+          "name": "closure interrupts missing target",
+          "value": ""
+        }
+      ],
+      "traces": {
+        "playwright": {
+          "values": {
+            "pageSnapshot": "- button \"Trace snapshot\"",
+            "locatorSnapshot": "- button \"Trace snapshot\" [box=8,8,107,21]"
+          },
+          "status": "passed",
+          "engine": "playwright",
+          "sha256": "aed7072ec0f18327ae13a7fba9e0b8d007c30080a22baf90714f25a8e45f1d28",
+          "snapshotActions": 2,
+          "frameSnapshots": 0,
+          "filmstripFrames": 2,
+          "embeddedSources": 1,
+          "scope": "Frame ownership, successful actions, and filmstrip without DOM snapshot references; no pixel-fidelity claim"
+        },
+        "flashwright": {
+          "values": {
+            "pageSnapshot": "- button \"Trace snapshot\"",
+            "locatorSnapshot": "- button \"Trace snapshot\" [box=8,8,107,21]"
+          },
+          "status": "passed",
+          "engine": "flashwright",
+          "sha256": "e97aa461aeb57b2f4f21899c0f7c5a6a6d5bcc8eb214ad2ece4c7a962dbc7399",
+          "snapshotActions": 2,
+          "frameSnapshots": 0,
+          "filmstripFrames": 1,
+          "embeddedSources": 1,
+          "scope": "Frame ownership, successful actions, and filmstrip without DOM snapshot references; no pixel-fidelity claim"
+        }
+      },
+      "candidateChecks": [
+        "Page/Locator AI rejection",
+        "Page/Locator atomic oversized-output rejection",
+        "healthy operation after oversized output",
+        "invalid options add no trace actions"
+      ]
+    },
+    {
+      "path": ".cache/public-aria-node22-002/report.json",
+      "sha256": "3add944077f2cad4a06c4102064d3098e426e77d03a987bf568beabd1f845535",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "cleanup": {
+        "path": ".cache/public-aria-node22-002/resources.json",
+        "sha256": "492a41a57fe5200f4cab87ddbb3ef070c264edda240398f1d2df07eec0222ed8",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "sharedOutcomes": [
+        {
+          "name": "default, explicit, zero, negative and bounded depth",
+          "value": [
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list:\n    - listitem: First\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list:\n    - listitem: First\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list\n  - button \"Save\""
+          ]
+        },
+        {
+          "name": "strict, hidden, absent and inherited timeout",
+          "value": ""
+        },
+        {
+          "name": "late Locator target with explicit zero timeout",
+          "value": "- button \"Later\""
+        },
+        {
+          "name": "Page retries absent body",
+          "value": "- button \"Body returned\""
+        },
+        {
+          "name": "Unicode, shadow content and rounded boxes",
+          "value": [
+            "- button \"Name \\ud800 \ud83d\ude00\": Save\n- button \"Shadow\"",
+            "- button \"Name \\ud800 \ud83d\ude00\" [box=10,21,100,31]: Save"
+          ]
+        },
+        {
+          "name": "same-process frame path and Page excludes child document",
+          "value": [
+            "- button \"Parent\"\n- iframe",
+            "- button \"Child\""
+          ]
+        },
+        {
+          "name": "frame path retries replacement while preserving original root",
+          "value": "- button \"Replacement\""
+        },
+        {
+          "name": "Locator waits delayed navigation with a live predecessor match",
+          "value": "- button \"Successor\""
+        },
+        {
+          "name": "pending Locator retries root navigation",
+          "value": "- button \"New document\""
+        },
+        {
+          "name": "deadline while renderer is blocked and late reply isolation",
+          "value": "- button \"After block\""
+        },
+        {
+          "name": "owner closure cancels unbounded capture behind a blocked renderer",
+          "value": ""
+        },
+        {
+          "name": "closure interrupts missing target",
+          "value": ""
+        }
+      ],
+      "traces": {
+        "playwright": {
+          "values": {
+            "pageSnapshot": "- button \"Trace snapshot\"",
+            "locatorSnapshot": "- button \"Trace snapshot\" [box=8,8,107,21]"
+          },
+          "status": "passed",
+          "engine": "playwright",
+          "sha256": "1814c91c4d7f558a5aafedb30eba332e0824585912a41942affae292a563fa1d",
+          "snapshotActions": 2,
+          "frameSnapshots": 0,
+          "filmstripFrames": 2,
+          "embeddedSources": 1,
+          "scope": "Frame ownership, successful actions, and filmstrip without DOM snapshot references; no pixel-fidelity claim"
+        },
+        "flashwright": {
+          "values": {
+            "pageSnapshot": "- button \"Trace snapshot\"",
+            "locatorSnapshot": "- button \"Trace snapshot\" [box=8,8,107,21]"
+          },
+          "status": "passed",
+          "engine": "flashwright",
+          "sha256": "b4bfe50d8f8f1dd08c3061b6d03e170bc277830dcf587f6b21419b9c097ee8f5",
+          "snapshotActions": 2,
+          "frameSnapshots": 0,
+          "filmstripFrames": 1,
+          "embeddedSources": 1,
+          "scope": "Frame ownership, successful actions, and filmstrip without DOM snapshot references; no pixel-fidelity claim"
+        }
+      },
+      "candidateChecks": [
+        "Page/Locator AI rejection",
+        "Page/Locator atomic oversized-output rejection",
+        "healthy operation after oversized output",
+        "invalid options add no trace actions"
+      ]
+    },
+    {
+      "path": ".cache/public-aria-node24-001/report.json",
+      "sha256": "c373a0142917c59007aafe6569fa0eb8f9168e63c8825e2b6de5083377d3ab43",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "cleanup": {
+        "path": ".cache/public-aria-node24-001/resources.json",
+        "sha256": "b10f572ce3f984903f1954f226521eaa5034736b17bada87c1dede6d001d47ed",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "sharedOutcomes": [
+        {
+          "name": "default, explicit, zero, negative and bounded depth",
+          "value": [
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list:\n    - listitem: First\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list:\n    - listitem: First\n  - button \"Save\"",
+            "- main:\n  - heading \"Heading\" [level=1]\n  - list\n  - button \"Save\""
+          ]
+        },
+        {
+          "name": "strict, hidden, absent and inherited timeout",
+          "value": ""
+        },
+        {
+          "name": "late Locator target with explicit zero timeout",
+          "value": "- button \"Later\""
+        },
+        {
+          "name": "Page retries absent body",
+          "value": "- button \"Body returned\""
+        },
+        {
+          "name": "Unicode, shadow content and rounded boxes",
+          "value": [
+            "- button \"Name \\ud800 \ud83d\ude00\": Save\n- button \"Shadow\"",
+            "- button \"Name \\ud800 \ud83d\ude00\" [box=10,21,100,31]: Save"
+          ]
+        },
+        {
+          "name": "same-process frame path and Page excludes child document",
+          "value": [
+            "- button \"Parent\"\n- iframe",
+            "- button \"Child\""
+          ]
+        },
+        {
+          "name": "frame path retries replacement while preserving original root",
+          "value": "- button \"Replacement\""
+        },
+        {
+          "name": "Locator waits delayed navigation with a live predecessor match",
+          "value": "- button \"Successor\""
+        },
+        {
+          "name": "pending Locator retries root navigation",
+          "value": "- button \"New document\""
+        },
+        {
+          "name": "deadline while renderer is blocked and late reply isolation",
+          "value": "- button \"After block\""
+        },
+        {
+          "name": "owner closure cancels unbounded capture behind a blocked renderer",
+          "value": ""
+        },
+        {
+          "name": "closure interrupts missing target",
+          "value": ""
+        }
+      ],
+      "traces": {
+        "playwright": {
+          "values": {
+            "pageSnapshot": "- button \"Trace snapshot\"",
+            "locatorSnapshot": "- button \"Trace snapshot\" [box=8,8,107,21]"
+          },
+          "status": "passed",
+          "engine": "playwright",
+          "sha256": "bb484cd34e6349258f450d5c18329d469ca06ab8d13d53d5add0da4da60cc1f2",
+          "snapshotActions": 2,
+          "frameSnapshots": 0,
+          "filmstripFrames": 2,
+          "embeddedSources": 1,
+          "scope": "Frame ownership, successful actions, and filmstrip without DOM snapshot references; no pixel-fidelity claim"
+        },
+        "flashwright": {
+          "values": {
+            "pageSnapshot": "- button \"Trace snapshot\"",
+            "locatorSnapshot": "- button \"Trace snapshot\" [box=8,8,107,21]"
+          },
+          "status": "passed",
+          "engine": "flashwright",
+          "sha256": "bb3406b0b9db4881123a1811c7ebd33d91cef647b0d0c3bdb7240306ce7d122e",
+          "snapshotActions": 2,
+          "frameSnapshots": 0,
+          "filmstripFrames": 1,
+          "embeddedSources": 1,
+          "scope": "Frame ownership, successful actions, and filmstrip without DOM snapshot references; no pixel-fidelity claim"
+        }
+      },
+      "candidateChecks": [
+        "Page/Locator AI rejection",
+        "Page/Locator atomic oversized-output rejection",
+        "healthy operation after oversized output",
+        "invalid options add no trace actions"
+      ]
+    }
+  ],
+  "packedConsumers": [
+    {
+      "path": ".cache/public-aria-packed-bun-001/artifacts/report.json",
+      "sha256": "d1b97b1be928332c6a5b704a23784c74afbe6975c4e92eba5a6a47538069f9ee",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "cleanup": {
+        "path": ".cache/public-aria-packed-bun-001/resources.json",
+        "sha256": "6575b7ab7305d87f402091c33add2d92277c758ad0d2b5ccd18fd4d73bb5e9b2",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "archives": {
+        "flashwright-core": {
+          "path": ".cache/public-aria-packed-bun-001/artifacts/flashwright-core-0.0.0.tgz",
+          "sha256": "1923159b37b6ce18e1b4491eb8ed17efb0ca3d3a5f74662c1902abdc6f0574ce"
+        },
+        "flashwright": {
+          "path": ".cache/public-aria-packed-bun-001/artifacts/flashwright-0.0.0.tgz",
+          "sha256": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+        }
+      },
+      "installer": "bun@1.4.2",
+      "installationLog": {
+        "path": ".cache/public-aria-packed-bun-001/artifacts/consumer/install.log",
+        "sha256": "29d8984b030b29ad37d669bef0fa9b9d39abc4012ce87369e7fe9605637dcef7"
+      },
+      "outcomes": [
+        {
+          "format": "esm",
+          "snapshot": "- button \"Packed snapshot\"\n- iframe",
+          "locator": "- button \"Packed snapshot\" [box=8,147,118,21]",
+          "child": "- button \"Child snapshot\""
+        },
+        {
+          "format": "commonjs",
+          "snapshot": "- button \"Packed snapshot\"\n- iframe",
+          "locator": "- button \"Packed snapshot\" [box=8,147,118,21]",
+          "child": "- button \"Child snapshot\""
+        }
+      ],
+      "publicDeclarations": "positive and expected-error cases passed TypeScript compiler",
+      "resolution": "fresh consumer node_modules, ESM/CommonJS class identity"
+    },
+    {
+      "path": ".cache/public-aria-packed-node22-001/artifacts/report.json",
+      "sha256": "5485bfaa18e55e3f15b2dcfabb82d70a209116f2d0b67a1d747a9f7453110178",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "cleanup": {
+        "path": ".cache/public-aria-packed-node22-001/resources.json",
+        "sha256": "6fd617a34b46354eaf21c75094ef140e45f363599d4173ae83c45aee82d6b7eb",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "archives": {
+        "flashwright-core": {
+          "path": ".cache/public-aria-packed-node22-001/artifacts/flashwright-core-0.0.0.tgz",
+          "sha256": "1923159b37b6ce18e1b4491eb8ed17efb0ca3d3a5f74662c1902abdc6f0574ce"
+        },
+        "flashwright": {
+          "path": ".cache/public-aria-packed-node22-001/artifacts/flashwright-0.0.0.tgz",
+          "sha256": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+        }
+      },
+      "installer": "bun@1.4.2",
+      "installationLog": {
+        "path": ".cache/public-aria-packed-node22-001/artifacts/consumer/install.log",
+        "sha256": "b69135571e6db1a6d432b2f4985780769e520b2b9dd38018577cb09cbcedf144"
+      },
+      "outcomes": [
+        {
+          "format": "esm",
+          "snapshot": "- button \"Packed snapshot\"\n- iframe",
+          "locator": "- button \"Packed snapshot\" [box=8,147,118,21]",
+          "child": "- button \"Child snapshot\""
+        },
+        {
+          "format": "commonjs",
+          "snapshot": "- button \"Packed snapshot\"\n- iframe",
+          "locator": "- button \"Packed snapshot\" [box=8,147,118,21]",
+          "child": "- button \"Child snapshot\""
+        }
+      ],
+      "publicDeclarations": "positive and expected-error cases passed TypeScript compiler",
+      "resolution": "fresh consumer node_modules, ESM/CommonJS class identity"
+    },
+    {
+      "path": ".cache/public-aria-packed-node24-001/artifacts/report.json",
+      "sha256": "5b0e871b35bc8730738bd735a9c7a1068297b317843e66495ba2fbad2026f9d0",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "cleanup": {
+        "path": ".cache/public-aria-packed-node24-001/resources.json",
+        "sha256": "860f7e7e5be2136a1e3086ba31e0ef03832602074a8a0d12814886791a440e20",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "archives": {
+        "flashwright-core": {
+          "path": ".cache/public-aria-packed-node24-001/artifacts/flashwright-core-0.0.0.tgz",
+          "sha256": "1923159b37b6ce18e1b4491eb8ed17efb0ca3d3a5f74662c1902abdc6f0574ce"
+        },
+        "flashwright": {
+          "path": ".cache/public-aria-packed-node24-001/artifacts/flashwright-0.0.0.tgz",
+          "sha256": "b2c5dfc7d375c62c0a7da17ff42fce7560b2fa4be573586f25f1807ffb669b64"
+        }
+      },
+      "installer": "bun@1.4.2",
+      "installationLog": {
+        "path": ".cache/public-aria-packed-node24-001/artifacts/consumer/install.log",
+        "sha256": "0e85f487a068bdd2eff9d3879dedd283752e56331d4bed308eafe5dce445a49f"
+      },
+      "outcomes": [
+        {
+          "format": "esm",
+          "snapshot": "- button \"Packed snapshot\"\n- iframe",
+          "locator": "- button \"Packed snapshot\" [box=8,147,118,21]",
+          "child": "- button \"Child snapshot\""
+        },
+        {
+          "format": "commonjs",
+          "snapshot": "- button \"Packed snapshot\"\n- iframe",
+          "locator": "- button \"Packed snapshot\" [box=8,147,118,21]",
+          "child": "- button \"Child snapshot\""
+        }
+      ],
+      "publicDeclarations": "positive and expected-error cases passed TypeScript compiler",
+      "resolution": "fresh consumer node_modules, ESM/CommonJS class identity"
+    }
+  ],
+  "remoteRejection": {
+    "path": ".cache/public-aria-remote-bun-003/report.json",
+    "sha256": "727a4effdcb5ed9c8779a39f5046ca6c815052aec8a570013e89390f1473eec5",
+    "cleanup": {
+      "path": ".cache/public-aria-remote-bun-003/resources.json",
+      "sha256": "c8dcfcb6a572876a4956be7d8f373a17343c514421ec9381ff9deba1d97b0d19",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": []
+    },
+    "wire": {
+      "path": ".cache/public-aria-remote-bun-003/wire/protocol-48258.jsonl",
+      "sha256": "3decb6d5e35eebf5a9e016536152f6c2ef3232c749f5728269d2a6907abe0236"
+    },
+    "recordRange": {
+      "before": 107,
+      "after": 127
+    },
+    "rejection": {
+      "name": "UnsupportedFeatureError",
+      "message": "aria.snapshot: evaluation in out-of-process frames is not implemented"
+    },
+    "placement": "live discovered remote iframe plus original child process swap, same proof before and after rejection",
+    "childSession": null,
+    "offlineReplay": "both exact record prefixes match recorded proofs",
+    "scope": "remote rejection only; no child-world execution"
+  },
+  "viewer": {
+    "path": ".cache/public-aria-viewer-003/artifacts/report.json",
+    "sha256": "16483e2f17de7d87c3dbd37c18a14791b4b35d7165a8377098825bf5b60e9186",
+    "cleanup": {
+      "path": ".cache/public-aria-viewer-003/resources.json",
+      "sha256": "2136a755a2288e02e1f0eaf0037f3980dcc50a9246bf3f84edfe25a92a138ef0",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": []
+    },
+    "sourceReportSha256": "aa95fd68ded9302b44d95ea82e9387512b64bc95bf3451ed7d3318aa503faf1a",
+    "cases": {
+      "playwright": {
+        "status": "passed",
+        "errors": [],
+        "call": "Aria snapshot\nTIME\nstart:\n13ms\nduration:\n14ms\nPARAMETERS\ntimeout:\n30000\nRETURN VALUE\nsnapshot:\n\"- button \"Trace snapshot\"\"",
+        "sourceSha256": "4ce7f0877aaa6a4690e3c069d513104eec714c11ced488c4e09c17d23a5c156a",
+        "highlightedSource": "192\n    const pageSnapshot = await page.ariaSnapshot();",
+        "screenshot": {
+          "path": ".cache/public-aria-viewer-003/artifacts/playwright.png",
+          "sha256": "649a72cb20d1077e8c3962a30daf0848932e067135aa9a634e9a80ad32503ad0"
+        }
+      },
+      "flashwright": {
+        "status": "passed",
+        "errors": [],
+        "call": "page.ariaSnapshot\nTIME\nstart:\n3ms\nduration:\n29ms\nPARAMETERS\noptions:\n{}\nRETURN VALUE\nvalue:\n\"- button \"Trace snapshot\"\"",
+        "sourceSha256": "4ce7f0877aaa6a4690e3c069d513104eec714c11ced488c4e09c17d23a5c156a",
+        "highlightedSource": "192\n    const pageSnapshot = await page.ariaSnapshot();",
+        "screenshot": {
+          "path": ".cache/public-aria-viewer-003/artifacts/flashwright.png",
+          "sha256": "546bccc498bc7cd1a89b3b8c0efe902a82eb2875801f903d1148cd8fb3e1455e"
+        }
+      }
+    },
+    "sourceCheck": "actual editor bytes match embedded ZIP source bytes",
+    "filter": "Getters enabled",
+    "scope": "action/result/embedded caller rendering; no pixel-fidelity or network-fallback claim"
+  },
+  "native": {
+    "tests": {
+      "path": ".cache/aria-final-native-tests.log",
+      "sha256": "57397d24b7264ec7b7719ac2c0c268a79ed3c92415725ec56bb7ec8da7a8f025"
+    },
+    "clippy": {
+      "path": ".cache/aria-final-native-clippy.log",
+      "sha256": "94d592cef957c96395c2de97b1516fabc8be8abb5cbf2240e00d78e6e311e27b"
+    },
+    "testCount": 311,
+    "clippyScope": "engine all targets, -D warnings; existing hyper-util dependency unused-variable warning"
+  },
+  "builds": [
+    {
+      "path": ".cache/aria-native-build-003.log",
+      "sha256": "c77dc239a4e4f52fc360d862dd2f159191d3bcae7d76606f9461aae6d412e472"
+    },
+    {
+      "path": ".cache/aria-packages-build-002.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "retainedFailedAttempts": [
+    {
+      "directory": ".cache/public-aria-bun-001",
+      "classification": "fixture",
+      "explanation": "Single accessible name over 900 characters is omitted by pinned renderer; replaced with many ordinary-sized names.",
+      "cleanup": {
+        "path": ".cache/public-aria-bun-001/resources.json",
+        "sha256": "5b79567c44821cd8aabe4b6afb61ce89a89fd8f3f44c5e276f3294c6d8718d94",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "files": [
+        {
+          "path": ".cache/public-aria-bun-001/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-bun-001/report.json",
+          "sha256": "711bfb43fe84931b7d406b69acd550fb4000070434a8103eec683277eb7e65de"
+        },
+        {
+          "path": ".cache/public-aria-bun-001/resources.json",
+          "sha256": "5b79567c44821cd8aabe4b6afb61ce89a89fd8f3f44c5e276f3294c6d8718d94"
+        },
+        {
+          "path": ".cache/public-aria-bun-001/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "directory": ".cache/public-aria-bun-002",
+      "classification": "implementation",
+      "explanation": "Getter trace had missing DOM references and extra captures; corrected to observed filmstrip-only getter policy.",
+      "cleanup": {
+        "path": ".cache/public-aria-bun-002/resources.json",
+        "sha256": "7168245a5b201b65165e2c10e06b4d1c3164ac1d84fb05edf90dd6c133a07df8",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "files": [
+        {
+          "path": ".cache/public-aria-bun-002/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-bun-002/report.json",
+          "sha256": "ac819b807d93f286433f78a73c3a984093781fcc046581d653a5632bc24116c0"
+        },
+        {
+          "path": ".cache/public-aria-bun-002/flashwright-aria.zip",
+          "sha256": "80a05208ec1e84d199834ca09634f3da1f7196397b9e6201f2b04eaf4547a499"
+        },
+        {
+          "path": ".cache/public-aria-bun-002/resources.json",
+          "sha256": "7168245a5b201b65165e2c10e06b4d1c3164ac1d84fb05edf90dd6c133a07df8"
+        },
+        {
+          "path": ".cache/public-aria-bun-002/stderr.txt",
+          "sha256": "9c439629623454487d81dfd1a33dee6023fca4331adf03018e61c12393b08019"
+        },
+        {
+          "path": ".cache/public-aria-bun-002/playwright-aria.zip",
+          "sha256": "89b507e478f64d3600185e3ef2c5c545b231c2c16bfa8d1d9ce894feafe44bf6"
+        }
+      ]
+    },
+    {
+      "directory": ".cache/public-aria-remote-bun-001",
+      "classification": "fixture prerequisite",
+      "explanation": "Existing page.goto remote-child lifecycle rejection happened before ARIA; revised fixture loads parent then dynamically installs remote SVG.",
+      "cleanup": {
+        "path": ".cache/public-aria-remote-bun-001/resources.json",
+        "sha256": "a0f721d32343eac21d24583a69575e0bab829ff3d4d5c4b096a7c39959336ea8",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "files": [
+        {
+          "path": ".cache/public-aria-remote-bun-001/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-remote-bun-001/report.json",
+          "sha256": "6f1be6eb7a5b10922624fca3c00ebcfbafea8beb47cc93c59aecb1fd214b6ca8"
+        },
+        {
+          "path": ".cache/public-aria-remote-bun-001/resources.json",
+          "sha256": "a0f721d32343eac21d24583a69575e0bab829ff3d4d5c4b096a7c39959336ea8"
+        },
+        {
+          "path": ".cache/public-aria-remote-bun-001/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-remote-bun-001/wire/protocol-22646.jsonl",
+          "sha256": "97a7eee85fd9c5ea2c7e16c5d42673f58c10c9b9f909f3afefaa04c7c1700829"
+        }
+      ]
+    },
+    {
+      "directory": ".cache/public-aria-viewer-001",
+      "classification": "fixture",
+      "explanation": "Pinned viewer hides getters by default; enabled Getters filter.",
+      "cleanup": {
+        "path": ".cache/public-aria-viewer-001/resources.json",
+        "sha256": "a312a1c5490bed41b75ebf8e3e10f705818b670c337fd4ba2eb93586bf2bd04b",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "files": [
+        {
+          "path": ".cache/public-aria-viewer-001/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-viewer-001/resources.json",
+          "sha256": "a312a1c5490bed41b75ebf8e3e10f705818b670c337fd4ba2eb93586bf2bd04b"
+        },
+        {
+          "path": ".cache/public-aria-viewer-001/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-viewer-001/artifacts/report.json",
+          "sha256": "d165a729ca821ce23f3b1586da66d30486013eb402bdecd4549d3c59e65804e7"
+        }
+      ]
+    },
+    {
+      "directory": ".cache/public-aria-viewer-002",
+      "classification": "fixture",
+      "explanation": "Source filename precedes editor readiness; wait for actual CodeMirror source value.",
+      "cleanup": {
+        "path": ".cache/public-aria-viewer-002/resources.json",
+        "sha256": "e478cdf53799b39dc4b64c8cf6b167689f03fe5d68b491b77ea9c07befb4c279",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "files": [
+        {
+          "path": ".cache/public-aria-viewer-002/stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-viewer-002/resources.json",
+          "sha256": "e478cdf53799b39dc4b64c8cf6b167689f03fe5d68b491b77ea9c07befb4c279"
+        },
+        {
+          "path": ".cache/public-aria-viewer-002/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".cache/public-aria-viewer-002/artifacts/report.json",
+          "sha256": "4bdde607cff2186d33293395a0ce5ac56848a11e118b518b9ca1f9c1801241c1"
+        }
+      ]
+    }
+  ],
+  "retainedInitialBuildFailure": {
+    "path": ".cache/aria-native-build.log",
+    "sha256": "ed8a4bd6c7a48acb5fa424e5e7b96174d266bf38bed367c6900aaa1659664925",
+    "reason": "Missing check_exception import, corrected in later successful build."
+  },
+  "limits": [
+    "Primitive omitted/default mode only; AI rejects before trace owner lookup or browser work.",
+    "Strict lazy same-process frame locators; public remote evaluation unsupported.",
+    "Request and output each 100000 UTF-16 units; atomic output rejection without truncation.",
+    "Output bound does not bound DOM/tree allocations or synchronous renderer CPU.",
+    "Unchanged pinned renderer retains default last-snapshot map replacement; dispatched synchronous work cannot be undone by cancellation.",
+    "Default Page snapshot excludes child documents.",
+    "Root integration and refreshed merged provenance/full-suite acceptance remain pending."
+  ]
+}

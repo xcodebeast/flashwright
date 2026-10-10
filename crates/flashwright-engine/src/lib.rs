@@ -1,6 +1,7 @@
 //! Browser object ownership and semantic operations, independent of the Node test runner.
 
 mod api_requests;
+mod aria_snapshots;
 mod assertions;
 mod console;
 mod context_settings;
@@ -142,6 +143,7 @@ pub const CAPABILITIES: &[&str] = &[
     "network.routing",
     "network.headers",
     "locator.run",
+    "aria.snapshot",
     "assertion.run",
     "diagnostics.pageSnapshot",
     "keyboard.press",
@@ -457,6 +459,7 @@ impl Engine {
                 self.navigate_history(method, parameters, operation).await
             }
             "page.waitForLoadState" => self.wait_for_load_state(parameters, operation).await,
+            "aria.snapshot" => self.run_aria_snapshot(parameters, operation).await,
             "locator.run" => self.run_locator(parameters, operation).await,
             "page.fileChooser.subscribe" => {
                 self.set_file_chooser_subscription(parameters, operation)

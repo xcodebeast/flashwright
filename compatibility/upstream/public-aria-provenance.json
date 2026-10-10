@@ -1,0 +1,42 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributions": {
+    "node_modules/playwright-core/lib/coreBundle.js": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+    "packages/resident-runtime/playwright-injected.js": "7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a"
+  },
+  "implementation": {
+    "crates/flashwright-engine/src/aria_snapshots.rs": "ddaa94509260bfc7cc14b416a81e303bd04ede51acdcfc10bc61f3b1375b1ebf",
+    "crates/flashwright-engine/src/lib.rs": "1af6b1cdef30a63c3e968c69afe7b0be83823f64384040de74af6d9a30d980f1",
+    "crates/flashwright-engine/src/locators.rs": "65eab01e4e18337153ed2d63a40af6817906cbbe73cfb070968b50c85987abf2",
+    "packages/flashwright-core/src/aria-snapshot.ts": "a303e7f5db8b1479bd2cfed4759c520603d44784ee9af7d8db97ed40d818ca06",
+    "packages/flashwright-core/src/index.ts": "4a9c84c52b55d2f952514546daea8e2a597725e038dd435c211f3c2bc82ff117",
+    "packages/flashwright-core/src/locator.ts": "7455e797ad480b3d3472a7cb38983ce42c312dfa59d82172d0c3f0f348cb6842",
+    "packages/flashwright-core/src/frame.ts": "b363e9d426c2c6a76a0a7be823cd27939b3f0727539471f08631e95db03b402b",
+    "packages/flashwright-core/src/trace-hooks.ts": "103fcc2da8942a42e67c769bcb528049efab6e34b2e8496f529f90d957fdf3ff",
+    "packages/flashwright-core/src/tracing.ts": "616e2801247cb8b1c92129f8b61592b3abbf7a25a2617c24d4a263ff3b8b13c1",
+    "packages/resident-runtime/aria-snapshot.js": "f8ef489bf099481f8baff3c08caa2addd5be306e2e9ae96f4c264d230295e03c",
+    "packages/resident-runtime/locator-runtime.js": "09cb5b21c0623f229596f7a4e9e9fc3064eb044d979a2e2b9ab43687a72e0bf8",
+    "packages/resident-runtime/sources.txt": "d2ab02f14d9aad90154785a5b6050096a03706662215f5ddbba6b9c2f692b678",
+    "tools/test-public-aria-snapshot.mjs": "5d9bac6b8d08511d9d4ef596fa92ff85c5fdf44f98afcaa58ce8116841396603",
+    "tools/test-public-aria-packaged-validation.mjs": "3bfa07712dfe02d7a0804db2afef2639f8995d1f1ab1cf33ddab3bb622aa1f73",
+    "tools/run-public-aria-snapshot-tests.mjs": "a221e83f55976c8bdd2115db17b78e38c71e1992f781f0aa47703f728ec598fb",
+    "compatibility/m2/public-aria-snapshots.mjs": "4ce7f0877aaa6a4690e3c069d513104eec714c11ced488c4e09c17d23a5c156a"
+  },
+  "upstream": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/frames.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/injected/src/injectedScript.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/public-aria.source.txt",
+  "extractSha256": "802a9f3072f172b22721d7b9ac2524b523b547ff9de551ffbde23ee838aa3535",
+  "relationship": "Independent native operation invokes the already attributed pinned default renderer. It preserves strict selection, pending-navigation prechecks, missing-target retries and original document ownership. No new upstream browser-command backend is used.",
+  "contracts": [
+    "Public Page and Locator default mode only; same-process frame locators retain original root and selected document checks. Public AI mode and remote frame execution reject explicitly.",
+    "Normalize options before trace owner lookup; application getters are read once. Getter traces retain action/result/source and filmstrip activity without DOM snapshot references.",
+    "Requests and output each permit100000 UTF-16 units; excessive output rejects atomically. The output limit does not bound browser DOM/tree allocations or synchronous renderer CPU.",
+    "One original operation owns inherited/explicit-zero deadlines, navigation prechecks, frame resolution and retry. Pinned default snapshot-map side effects are preserved.",
+    "The private failure-context fallback is a separate operation and does not expand public AI support. This record is provenance, not a merged verification claim."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

@@ -639,7 +639,7 @@ export class Tracing {
     if (this.calls.size >= 1024) { chunk.writer.fail(failure('ResourceLimitError', 'tracing', 'trace exceeds 1024 unfinished public calls')); return undefined; }
     const call: TraceCall = { identifier: `${processIdentity}@${++nextCall}`, chunk, completed: false, evaluates: method.includes('eval'), pageId: owner.pageId, capture };
     if (this.backend === 'api' ? this.includeSnapshots : capture === 'metadata-only' || this.includeScreenshots || chunk.native) call.nativeTrace = Object.freeze({ context: this.context, generation: chunk.identifier,
-      ...(this.backend === 'api' ? { call: call.identifier } : chunk.native && capture !== 'metadata-only' ? { recording: chunk.native.identity.recording, call: call.identifier } : {}) });
+      ...(this.backend === 'api' ? { call: call.identifier } : chunk.native && capture === 'default' ? { recording: chunk.native.identity.recording, call: call.identifier } : {}) });
     this.calls.add(call);
     if (capture !== 'metadata-only') chunk.filmstrip?.activity(owner.pageId);
     try {

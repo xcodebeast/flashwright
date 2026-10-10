@@ -12,6 +12,8 @@ pub(crate) const LOCATOR_WORLD_NAME: &str = "__flashwright_locator_world__";
 
 const INJECTED_RUNTIME: &str =
     include_str!("../../../packages/resident-runtime/playwright-injected.js");
+const ARIA_SNAPSHOT_RUNTIME: &str =
+    include_str!("../../../packages/resident-runtime/aria-snapshot.js");
 const LOCATOR_RUNTIME: &str = include_str!("../../../packages/resident-runtime/locator-runtime.js");
 const FAILURE_CONTEXT_SNAPSHOT: &str =
     include_str!("../../../packages/resident-runtime/failure-context-snapshot.js");
@@ -349,7 +351,7 @@ impl Engine {
             return Err(evaluation::context_destroyed());
         }
         let expression = format!(
-            "(() => {{ if (globalThis.__flashwrightLocatorRuntime) return true; const module = {{}}; {INJECTED_RUNTIME}; const exports = {{}}; {VALUE_CODEC}; {CONDITION_REGISTRY}; {FAILURE_CONTEXT_SNAPSHOT}; {LOCATOR_RUNTIME}; const injected = new (module.exports.InjectedScript())(globalThis, {{isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]}}); Object.defineProperty(globalThis, '__flashwrightLocatorRuntime', {{value:createLocatorRuntime(injected, exports.createValueCodec(), {{conditionInstrumentation:{}}})}}); return true; }})()",
+            "(() => {{ if (globalThis.__flashwrightLocatorRuntime) return true; const module = {{}}; {INJECTED_RUNTIME}; const exports = {{}}; {VALUE_CODEC}; {CONDITION_REGISTRY}; {FAILURE_CONTEXT_SNAPSHOT}; {ARIA_SNAPSHOT_RUNTIME}; {LOCATOR_RUNTIME}; const injected = new (module.exports.InjectedScript())(globalThis, {{isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]}}); Object.defineProperty(globalThis, '__flashwrightLocatorRuntime', {{value:createLocatorRuntime(injected, exports.createValueCodec(), {{conditionInstrumentation:{}}})}}); return true; }})()",
             self.condition_instrumentation,
         );
         let initialized = operation.wait(page.state.while_alive(method, browser.connection.call(
