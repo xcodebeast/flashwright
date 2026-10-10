@@ -287,6 +287,11 @@ mod tests {
     fn preparation_refreshes_initial_page_state_and_does_not_publish_a_rejected_reply() {
         let (engine, mut messages) = engine();
         let state = insert_page(&engine);
+        state
+            .state
+            .lock()
+            .unwrap()
+            .initialize_main_frame("current", "");
         state.state.lock().unwrap().observe(
             "Page.frameNavigated",
             &json!({ "frame": { "id": "current", "url": "about:blank", "loaderId": "loader" } }),

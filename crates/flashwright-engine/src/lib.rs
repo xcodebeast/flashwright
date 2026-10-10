@@ -723,6 +723,7 @@ impl Engine {
             let session = operation.wait(browser.connection.call("Target.attachToTarget", json!({ "targetId": target_identifier, "flatten": true }), None)).await?;
             let session_identifier = string_field(&session, "sessionId")?;
             let mut document = page_state::DocumentState::with_network_budget(self.network_budget.clone());
+            document.initialize_main_frame(&target_identifier, &session_identifier);
             document.interception = routing_state::RequestInterception::new(self.routing_budget.clone());
             let state = Arc::new(PageState { purpose, state: Mutex::new(document), ..PageState::default() });
             let page = Page { context_identifier: context_identifier.clone(), target_identifier: target_identifier.clone(), session_identifier: session_identifier.clone(), state: state.clone() };

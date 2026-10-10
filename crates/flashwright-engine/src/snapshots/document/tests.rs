@@ -157,6 +157,7 @@ impl Fixture {
             state.frames.insert(
                 "frame".into(),
                 FrameState {
+                    session_identifier: "session".into(),
                     identifier: "frame".into(),
                     loader: "loader".into(),
                     ..Default::default()
@@ -1137,6 +1138,7 @@ impl Fixture {
             state.frames.insert(
                 "child".into(),
                 FrameState {
+                    session_identifier: "session".into(),
                     identifier: "child".into(),
                     parent: Some("frame".into()),
                     loader: "child-loader".into(),

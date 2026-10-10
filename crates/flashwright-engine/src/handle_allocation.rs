@@ -138,6 +138,11 @@ mod tests {
                 unique_identifier: "original".into(),
                 frame_identifier: "frame".into(),
             };
+            page.state
+                .state
+                .lock()
+                .unwrap()
+                .initialize_main_frame("frame", "original-renderer");
             replace_context(&page, &context.unique_identifier);
             let (cancellation, receiver) = watch::channel(false);
             Self {

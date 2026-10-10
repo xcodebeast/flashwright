@@ -119,6 +119,11 @@ mod tests {
         let (fatal, _failure) = watch::channel(false);
         let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
         let state = Arc::new(PageState::default());
+        state
+            .state
+            .lock()
+            .unwrap()
+            .initialize_main_frame("main", "");
         state.state.lock().unwrap().observe(
             "Page.frameNavigated",
             &json!({"frame":{"id":"main","url":"about:blank","loaderId":"initial"}}),
