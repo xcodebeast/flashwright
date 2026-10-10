@@ -18,7 +18,7 @@ const driverPath = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/
 const report = {
   schemaVersion: 1, status: 'running', reference: '1.60.0', ...runtimeMetadata,
   platform: process.platform, architecture: process.arch, outcomes: {}, candidateBoundaries: [],
-  scope: 'Application worker liveness, sandboxed SVG previews, cross-site Frame and handle evaluation, lazy FrameLocator element resolution, nested renderer documents, interrupted callbacks without replay, renderer return, and context closure. Remote input, network, diagnostics, performance, and release acceptance are outside this fixture.',
+  scope: 'Application worker and audio worklet liveness, sandboxed SVG previews, cross-site Frame and handle evaluation, lazy FrameLocator element resolution, nested renderer documents, interrupted callbacks without replay, renderer return, and context closure. Remote input, network, diagnostics, performance, and release acceptance are outside this fixture.',
 };
 
 let port;
@@ -28,7 +28,13 @@ const server = createServer((request, response) => {
   const path = request.url.split('?')[0];
   if (path === '/worker.js') {
     response.setHeader('Content-Type', 'application/javascript');
-    response.end('fetch("/worker-start?kind=url");postMessage("url")');
+    response.end('fetch("/worker-start?kind=url");postMessage("url");const nested=new Worker("/nested-worker.js");nested.onmessage=event=>postMessage(event.data)');
+  } else if (path === '/nested-worker.js') {
+    response.setHeader('Content-Type', 'application/javascript');
+    response.end('fetch("/worker-start?kind=nested");postMessage("nested")');
+  } else if (path === '/audio-worklet.js') {
+    response.setHeader('Content-Type', 'application/javascript');
+    response.end('class FixtureProcessor extends AudioWorkletProcessor { constructor() { super(); this.port.postMessage("started"); } process(inputs, outputs) { for (const channel of outputs[0]) channel.fill(0.25); return false; } } registerProcessor("fixture", FixtureProcessor)');
   } else if (path === '/worker-start') {
     workerStarts.push(new URL(request.url, 'http://fixture').searchParams.get('kind'));
     response.end('ok');
@@ -69,14 +75,25 @@ async function run(engine, chromium) {
       }
     }, `http://127.0.0.1:${port}`);
     const workerDeadline = Date.now() + 5000;
-    while ((await page.evaluate(() => workerMessages.length)) < 2 || workerStarts.length < 2) {
-      assert.ok(Date.now() < workerDeadline, 'ordinary URL and blob workers must continue executing');
+    while ((await page.evaluate(() => workerMessages.length)) < 3 || workerStarts.length < 3) {
+      assert.ok(Date.now() < workerDeadline, 'ordinary URL, blob, and nested workers must continue executing');
       await new Promise(resolve => setTimeout(resolve, 20));
     }
-    assert.deepEqual(await page.evaluate(() => workerMessages.slice().sort()), ['blob', 'url']);
+    assert.deepEqual(await page.evaluate(() => workerMessages.slice().sort()), ['blob', 'nested', 'url']);
     assert.deepEqual(await page.evaluate(() => workerErrors), []);
-    assert.deepEqual(workerStarts.slice().sort(), ['blob', 'url']);
-    observations.push({ case: 'URL and blob application workers execute without public worker APIs' });
+    assert.deepEqual(workerStarts.slice().sort(), ['blob', 'nested', 'url']);
+    observations.push({ case: 'URL, blob, and nested application workers execute without public worker APIs' });
+    const audio = await page.evaluate(async () => {
+      const context = new OfflineAudioContext(1, 128, 44100);
+      await context.audioWorklet.addModule('/audio-worklet.js');
+      const node = new AudioWorkletNode(context, 'fixture');
+      const started = new Promise(resolve => { node.port.onmessage = event => resolve(event.data); });
+      node.connect(context.destination);
+      const buffer = await context.startRendering();
+      return { signal: await started, sample: buffer.getChannelData(0)[0] };
+    });
+    assert.deepEqual(audio, { signal: 'started', sample: 0.25 });
+    observations.push({ case: 'audio worklet module and processor execute normally' });
     await page.evaluate(() => {
       window.svgLoads = 0;
       const preview = document.createElement('iframe');
@@ -157,11 +174,13 @@ try {
   report.sources = await sourceManifest();
   report.driverSha256 = hash(await readFile(driverPath));
   report.browser = await identifyBrowser(browserPath);
-  assert.equal(report.browser.distribution, 'full-chromium', 'Use the same full Chromium for both engines');
+  const reference = JSON.parse(await readFile(new URL('../reference-manifest.json', import.meta.url), 'utf8')).reference;
+  assert.equal(report.browser.version, reference.chromiumVersion, 'Use the pinned Chromium version');
+  assert.ok(['full-chromium', 'chromium-headless-shell'].includes(report.browser.distribution), 'Use a pinned stock Chromium distribution for both engines');
   await run('reference', referenceChromium);
   await run('flashwright', candidateChromium);
   assert.deepEqual(report.outcomes.flashwright, report.outcomes.reference);
-  assert.equal(report.outcomes.flashwright.length, 7);
+  assert.equal(report.outcomes.flashwright.length, 8);
   assert.equal(report.candidateBoundaries.length, 1);
   report.sourceChangedDuringVerification = JSON.stringify(await sourceManifest()) !== JSON.stringify(report.sources);
   report.driverChangedDuringVerification = hash(await readFile(driverPath)) !== report.driverSha256;
