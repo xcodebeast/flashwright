@@ -126,17 +126,6 @@ impl Engine {
                     return Err(error);
                 }
             }
-            for (page_identifier, page) in &pages {
-                if self
-                    .registry
-                    .lock()
-                    .unwrap()
-                    .pages
-                    .contains_key(page_identifier)
-                {
-                    check_script_page(page, method)?;
-                }
-            }
             operation.check()?;
             let mut registry = self.registry.lock().unwrap();
             if !registry.contexts.contains_key(&context_identifier)
@@ -146,6 +135,13 @@ impl Engine {
                     .is_some_and(|page| !registry.pages.contains_key(page))
             {
                 return Err(closed(method));
+            }
+            // Attachment holds this registry lock too: no remote frame can enter
+            // between final admission and publication of this registration.
+            for (page_identifier, page) in &pages {
+                if registry.pages.contains_key(page_identifier) {
+                    check_script_page(page, method)?;
+                }
             }
             registry
                 .init_scripts

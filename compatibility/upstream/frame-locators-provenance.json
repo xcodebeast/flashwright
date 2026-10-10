@@ -16,7 +16,7 @@
     "packages/flashwright-core/src/index.ts": "4a9c84c52b55d2f952514546daea8e2a597725e038dd435c211f3c2bc82ff117",
     "packages/resident-runtime/locator-runtime.js": "09cb5b21c0623f229596f7a4e9e9fc3064eb044d979a2e2b9ab43687a72e0bf8",
     "crates/flashwright-engine/src/locators/frame_selector.rs": "b67bcc57da13f170ddf05d57215866135736b9ce78eb34bec81c153e103af0ac",
-    "crates/flashwright-engine/src/locators.rs": "65eab01e4e18337153ed2d63a40af6817906cbbe73cfb070968b50c85987abf2",
+    "crates/flashwright-engine/src/locators.rs": "d6fc158e84bfb8d4ea49f8156a51186b2421ddf24fe6227629077ca02aaf87fb",
     "crates/flashwright-engine/src/assertions.rs": "4eca904e2a2675727a2fdfe8f42028393a2251466637ade8966b6f55625975d0",
     "crates/flashwright-engine/src/element_resolution.rs": "4c63ca95d92289d9f7ebde2338ec5a74c2fd96c9777e777d064418a7000c2014",
     "crates/flashwright-engine/src/element_actions.rs": "62f731b97e13e76a1a86fdf2e6ff2ce1b96dd5fcb51a848323962b1789e29677",
@@ -24,7 +24,12 @@
     "crates/flashwright-engine/src/keyboard.rs": "3e7d868747b32718b11981cd7172e60e1009609168e37ee8f0f6d118400045b5",
     "crates/flashwright-engine/src/pointer.rs": "e78bd4cf346a2158cec30f25b647954f70ced1356fc37f4b0e3548e6e8ed49dc",
     "crates/flashwright-engine/src/recording/phases.rs": "80442d6e78a4554d98137c3ef4fe3f92695d4ded137bee2ee9a6ae0fdbd5d574",
-    "crates/flashwright-engine/src/recording.rs": "8d49df114ae5be3264b55b3f6c13e3bf6553043aec36de526e2ce3865d061c67"
+    "crates/flashwright-engine/src/recording.rs": "8d49df114ae5be3264b55b3f6c13e3bf6553043aec36de526e2ce3865d061c67",
+    "crates/flashwright-engine/src/evaluation.rs": "aba09b7fbacab167eb81fbd39ba41040dbca5fee330a988b3e41a7a89db1b7a6",
+    "crates/flashwright-engine/src/page_state.rs": "b81788fd9c91394aabbab8f88c80940c8ec310cbeb037a2694ea99bc294ab9bf",
+    "crates/flashwright-engine/src/renderer_sessions.rs": "b501cf94ae484f3183e55037f0102584ab00bad8d59042d0175dbf5a7751d869",
+    "crates/flashwright-engine/src/renderer_setup.rs": "fbf1c8ea026b57c87b796c79fea8c9e7702ffb0a0c01ee7276201e43e446e137",
+    "crates/flashwright-engine/src/events.rs": "3323ab7495b75469daa3b21227518b1d5b3a2a878fb7898ab948c2cb1ad9f140"
   },
   "adaptations": [
     "Lazy TypeScript frame paths preserve public descriptor composition and original root Frame ownership.",
@@ -32,10 +37,11 @@
     "Rust resolves temporary frame-owner nodes through bounded private allocation groups and DOM.describeNode; final operations share existing native targeting and deadlines.",
     "Frame-path assertions use ordinary host retries to re-resolve changing ancestor selectors; known-frame assertions retain existing document residency.",
     "Selector-to-handle resolution captures the before phase, and uploads capture their original selected node before assignment while retaining document and cancellation guards.",
-    "Completed input phases may be captured again on a later native attempt; pending capture ownership and single before/after boundaries remain deduplicated."
+    "Completed input phases may be captured again on a later native attempt; pending capture ownership and single before/after boundaries remain deduplicated.",
+    "Remote selector-to-handle and captured evaluation use ready original renderer sessions; retired sessions retain bounded initialization and cleanup ownership without borrowing successors."
   ],
   "limitations": [
-    "Same-process frame routing only; out-of-process frame actions remain explicitly unsupported.",
+    "Remote frame coverage is limited to selector-to-handle resolution and evaluation; remote locator input, reads, assertions, networking and artifacts remain outside this slice.",
     "This provenance record is not conformance, performance or release acceptance."
   ],
   "license": "Apache-2.0",

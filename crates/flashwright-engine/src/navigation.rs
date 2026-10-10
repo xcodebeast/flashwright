@@ -156,11 +156,13 @@ impl Engine {
                     if wait_until == "commit" {
                         return Ok(());
                     }
-                    if state.frames.values().any(|frame| frame.remote) {
+                    if wait_until == "networkidle"
+                        && state.frames.values().any(|frame| frame.remote)
+                    {
                         return Err(ErrorRecord::new(
                             ErrorCode::UnsupportedFeature,
                             method,
-                            "cross-process child-frame lifecycle is not implemented yet",
+                            "cross-process child-frame network idle is not implemented yet",
                         ));
                     }
                     if wait_until == "networkidle" {

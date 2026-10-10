@@ -228,7 +228,7 @@ impl Engine {
         operation: &Operation,
     ) -> Result<Arc<EvaluationRuntime>, ErrorRecord> {
         let context = self
-            .evaluation_context(page, browser, frame, operation)
+            .evaluation_context(page, browser, frame, operation, METHOD, true)
             .await?;
         self.context_evaluation_runtime(page, browser, &context)
     }
@@ -240,11 +240,13 @@ impl Engine {
         browser: &Chromium,
         frame: Option<&str>,
         operation: &Operation,
+        method: &str,
+        allow_remote_frame: bool,
     ) -> Result<ExecutionContext, ErrorRecord> {
         operation
             .wait(
                 page.state
-                    .while_alive(METHOD, browser.connection.synchronize_events()),
+                    .while_alive(method, browser.connection.synchronize_events()),
             )
             .await?;
         let mut changes = page.state.changed.subscribe();
@@ -253,30 +255,21 @@ impl Engine {
                 loop {
                     {
                         let state = page.state.state.lock().unwrap();
-                        state.check(METHOD)?;
+                        state.check(method)?;
                         let selected = frame.or(state.main_frame.as_deref());
-                        if let Some(selected) = selected {
-                            if let Some(frame) = state.frames.get(selected) {
-                                if frame.remote {
-                                    return Err(ErrorRecord::new(
-                                        ErrorCode::UnsupportedFeature,
-                                        METHOD,
-                                        "evaluation in out-of-process frames is not implemented",
-                                    ));
-                                }
-                            } else {
-                                return Err(ErrorRecord::new(
-                                    ErrorCode::Evaluation,
-                                    METHOD,
-                                    "frame has been detached",
-                                ));
-                            }
-                            if let Some(context) = state.main_worlds.get(selected) {
-                                break Ok(context.clone());
-                            }
+                        if let Some(selected) = selected
+                            && let Some(context) = ready_frame_context(
+                                &page.state,
+                                &state,
+                                selected,
+                                method,
+                                allow_remote_frame,
+                            )?
+                        {
+                            break Ok(context);
                         }
                     }
-                    changes.changed().await.map_err(|_| closed(METHOD))?;
+                    changes.changed().await.map_err(|_| closed(method))?;
                 }
             })
             .await
@@ -316,6 +309,47 @@ impl Engine {
         });
         Ok(runtime)
     }
+}
+
+/// A world event can arrive before paused renderer setup finishes. Admit only that session's
+/// current main world, and never use a predecessor's readiness across a frame handoff.
+fn ready_frame_context(
+    page: &PageState,
+    state: &page_state::DocumentState,
+    frame_identifier: &str,
+    method: &str,
+    allow_remote_frame: bool,
+) -> Result<Option<ExecutionContext>, ErrorRecord> {
+    let frame = state.frames.get(frame_identifier).ok_or_else(|| {
+        ErrorRecord::new(ErrorCode::Evaluation, method, "frame has been detached")
+    })?;
+    if frame.remote && !allow_remote_frame {
+        return Err(ErrorRecord::new(
+            ErrorCode::UnsupportedFeature,
+            method,
+            "this locator operation in out-of-process frames is not implemented",
+        ));
+    }
+    if frame.awaiting_renderer {
+        return Ok(None);
+    }
+    if frame.remote
+        && !page
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .get(&frame.session_identifier)
+            .is_some_and(|owner| owner.is_ready())
+    {
+        return Ok(None);
+    }
+    let Some(context) = state.main_worlds.get(frame_identifier) else {
+        return Ok(None);
+    };
+    Ok(
+        (context.session_identifier == frame.session_identifier && state.context_is_alive(context))
+            .then(|| context.clone()),
+    )
 }
 
 pub(crate) async fn ready_runtime(
@@ -473,6 +507,109 @@ async fn initialize_runtime(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn remote_world_admission_waits_for_exact_ready_owner_and_surviving_document() {
+        let page = PageState::default();
+        let mut state = page.state.lock().unwrap();
+        let mut sessions = page.renderer_sessions.lock().unwrap();
+        let root = sessions.register_root("root", "root-session").unwrap();
+        root.mark_ready();
+        let original = sessions
+            .register_child(&root, "child", "original-session")
+            .unwrap();
+        let original_context = ExecutionContext {
+            session_identifier: "original-session".into(),
+            identifier: 7,
+            unique_identifier: "original-world".into(),
+            frame_identifier: "child".into(),
+        };
+        state.frames.insert(
+            "child".into(),
+            page_state::FrameState {
+                identifier: "child".into(),
+                session_identifier: "original-session".into(),
+                remote: true,
+                ..Default::default()
+            },
+        );
+        state
+            .main_worlds
+            .insert("child".into(), original_context.clone());
+        state
+            .execution_contexts
+            .insert(original_context.key(), original_context.clone());
+        drop(sessions);
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+        let unsupported =
+            ready_frame_context(&page, &state, "child", "locator.fill", false).unwrap_err();
+        assert_eq!(unsupported.code, ErrorCode::UnsupportedFeature);
+        assert_eq!(unsupported.method.as_ref(), "locator.fill");
+        original.mark_ready();
+        assert_eq!(
+            ready_frame_context(&page, &state, "child", METHOD, true).unwrap(),
+            Some(original_context.clone())
+        );
+        state.frames.get_mut("child").unwrap().awaiting_renderer = true;
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+        assert_eq!(
+            ready_frame_context(&page, &state, "child", "locator.click", false)
+                .unwrap_err()
+                .code,
+            ErrorCode::UnsupportedFeature
+        );
+        state.frames.get_mut("child").unwrap().awaiting_renderer = false;
+        let replacement = {
+            let mut sessions = page.renderer_sessions.lock().unwrap();
+            sessions.retire(&original);
+            sessions
+                .register_child(&root, "child", "replacement-session")
+                .unwrap()
+        };
+        original.mark_ready();
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+        state.frames.get_mut("child").unwrap().session_identifier = "replacement-session".into();
+        replacement.mark_ready();
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+        let replacement_context = ExecutionContext {
+            session_identifier: "replacement-session".into(),
+            identifier: 7,
+            unique_identifier: "replacement-world".into(),
+            frame_identifier: "child".into(),
+        };
+        state
+            .main_worlds
+            .insert("child".into(), replacement_context.clone());
+        state
+            .execution_contexts
+            .insert(replacement_context.key(), replacement_context.clone());
+        assert_eq!(
+            ready_frame_context(&page, &state, "child", METHOD, true).unwrap(),
+            Some(replacement_context.clone())
+        );
+        state.execution_contexts.remove(&replacement_context.key());
+        assert!(
+            ready_frame_context(&page, &state, "child", METHOD, true)
+                .unwrap()
+                .is_none()
+        );
+    }
 
     #[tokio::test]
     async fn failed_helper_retires_only_its_original_cache_entry() {

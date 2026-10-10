@@ -149,6 +149,7 @@ impl Engine {
                 | "Network.loadingFinished"
                 | "Network.loadingFailed"
                 | "Target.targetDestroyed"
+                | "Target.attachedToTarget"
                 | "Target.detachedFromTarget"
                 | "Target.targetCrashed"
                 | "Inspector.targetCrashed"
@@ -197,25 +198,41 @@ impl Engine {
                         .get(&page.context_identifier)
                         .is_some_and(|context| context.browser_identifier == browser_identifier)
                         && match event.method.as_str() {
-                            "Target.targetDestroyed" => {
+                            "Target.targetDestroyed" | "Target.targetCrashed" => {
                                 parameters["targetId"].as_str() == Some(&page.target_identifier)
                             }
                             "Target.detachedFromTarget" => {
                                 parameters["sessionId"].as_str() == Some(&page.session_identifier)
+                                    || parameters["sessionId"].as_str().is_some_and(|session| {
+                                        page.state
+                                            .renderer_sessions
+                                            .lock()
+                                            .unwrap()
+                                            .original(session)
+                                            .is_some()
+                                    })
                             }
                             _ => {
                                 event.session_identifier.as_deref()
                                     == Some(&page.session_identifier)
+                                    || event.session_identifier.as_deref().is_some_and(|session| {
+                                        let sessions = page.state.renderer_sessions.lock().unwrap();
+                                        if event.method == "Target.attachedToTarget" {
+                                            sessions.original(session).is_some()
+                                        } else {
+                                            sessions.get(session).is_some()
+                                        }
+                                    })
                                     || parameters["targetId"].as_str()
                                         == Some(&page.target_identifier)
                             }
                         }
                 })
                 .map(|(identifier, page)| {
-                    if matches!(
-                        event.method.as_str(),
-                        "Target.targetDestroyed" | "Target.detachedFromTarget"
-                    ) {
+                    if event.method == "Target.targetDestroyed"
+                        || (event.method == "Target.detachedFromTarget"
+                            && parameters["sessionId"].as_str() == Some(&page.session_identifier))
+                    {
                         page.state
                             .diagnostic_session_destroyed
                             .store(true, Ordering::Release);
@@ -225,6 +242,27 @@ impl Engine {
                 .collect()
         };
         for (identifier, page) in pages {
+            let source_session = event
+                .session_identifier
+                .as_deref()
+                .unwrap_or(&page.session_identifier);
+            if event.method == "Target.attachedToTarget" {
+                self.attach_renderer(&identifier, &page, source_session, &parameters)?;
+                continue;
+            }
+            if event.method == "Target.detachedFromTarget" {
+                if let Some(session) = parameters["sessionId"].as_str() {
+                    self.detach_renderer(&page, session);
+                    if session == page.session_identifier {
+                        self.finish_detached_root(&identifier, &page);
+                    }
+                }
+                continue;
+            }
+            if event.method == "Inspector.detached" && source_session != page.session_identifier {
+                self.detach_renderer(&page, source_session);
+                continue;
+            }
             match event.method.as_str() {
                 "Page.javascriptDialogOpening" | "Page.javascriptDialogClosed" => {
                     self.dialog_event(
@@ -256,7 +294,7 @@ impl Engine {
                     if let Err(error) = self.console_event(
                         &identifier,
                         &page,
-                        &page.session_identifier,
+                        source_session,
                         &event.method,
                         parameters["consoleJson"].as_str().ok_or_else(|| {
                             ErrorRecord::new(
@@ -286,6 +324,14 @@ impl Engine {
                         .context(&page.context_identifier, "context.storageState")
                         .ok();
                     let mut state = page.state.state.lock().unwrap();
+                    let is_owned_renderer_swap = event.method == "Page.frameDetached"
+                        && parameters["reason"] == "swap"
+                        && parameters["frameId"]
+                            .as_str()
+                            .and_then(|identifier| state.frames.get(identifier))
+                            .is_some_and(|frame| {
+                                frame.session_identifier.as_ref() == source_session
+                            });
                     let mut recording_state = context
                         .as_ref()
                         .filter(|context| {
@@ -294,7 +340,7 @@ impl Engine {
                         })
                         .map(|context| context.state.recording.lock().unwrap());
                     let network_event = crate::network_observer::NetworkEvent {
-                        session_identifier: &page.session_identifier,
+                        session_identifier: source_session,
                         method: &event.method,
                         parameters: &parameters,
                         ingress: crate::network_observer::NetworkIngress {
@@ -341,22 +387,19 @@ impl Engine {
                     {
                         state.failure = Some(error);
                     }
-                    if event.method == "Page.frameDetached"
-                        && parameters["reason"] == "swap"
-                        && !page.state.init_scripts.lock().unwrap().is_empty()
-                    {
-                        state.failure = Some(ErrorRecord::new(
-                            ErrorCode::UnsupportedFeature,
-                            "addInitScript",
-                            "init scripts in out-of-process child frames are not implemented",
-                        ));
+                    if is_owned_renderer_swap && state.failure.is_none() {
+                        state.failure = crate::renderer_setup::unsupported_remote_configuration(
+                            !page.state.init_scripts.lock().unwrap().is_empty(),
+                            state.interception.enabled
+                                || page.state.routing_transition.load(Ordering::Acquire)
+                                || page.state.routing_registered.load(Ordering::Acquire)
+                                || context.as_ref().is_some_and(|context| {
+                                    context.state.routing_registered.load(Ordering::Acquire)
+                                }),
+                        );
                     }
-                    if state.published
-                        && event.method == "Page.frameDetached"
-                        && parameters["reason"] == "swap"
-                        && let Some(context) = &context
-                    {
-                        *context.state.storage_failure.lock().unwrap() = Some(ErrorRecord::new(
+                    if is_owned_renderer_swap && let Some(context) = &context {
+                        context.state.storage_failure.lock().unwrap().get_or_insert_with(|| ErrorRecord::new(
                             ErrorCode::UnsupportedFeature,
                             "context.storageState",
                             "storage collection from out-of-process child frames is not implemented",
@@ -392,6 +435,43 @@ impl Engine {
         Ok(())
     }
 
+    /// Root detachment is terminal for this page, while child detach only retires its subtree.
+    fn finish_detached_root(&self, identifier: &str, page: &Page) {
+        let browser = {
+            let mut registry = self.registry.lock().unwrap();
+            if !registry
+                .pages
+                .get(identifier)
+                .is_some_and(|current| Arc::ptr_eq(&current.state, &page.state))
+            {
+                return;
+            }
+            registry.pages.remove(identifier);
+            registry
+                .contexts
+                .get(&page.context_identifier)
+                .and_then(|context| registry.browsers.get(&context.browser_identifier))
+                .map(|owner| owner.browser.clone())
+        };
+        let error = page
+            .state
+            .state
+            .lock()
+            .unwrap()
+            .failure
+            .clone()
+            .unwrap_or_else(|| closed("page"));
+        self.finish_page(identifier, page, error, "close");
+        // A lost CDP session does not prove the target died. Retain its native identity
+        // through bounded disposal; browser teardown owns it if the browser was withdrawn.
+        if let Some(browser) = browser {
+            let target = page.target_identifier.clone();
+            tokio::spawn(async move {
+                dispose(browser.as_ref(), ResourceKind::Page, &target).await;
+            });
+        }
+    }
+
     pub(crate) fn finish_page(
         &self,
         identifier: &str,
@@ -399,6 +479,7 @@ impl Engine {
         error: ErrorRecord,
         event: &str,
     ) {
+        page.state.renderer_sessions.lock().unwrap().retire_all();
         self.registry
             .lock()
             .unwrap()
@@ -428,7 +509,7 @@ impl Engine {
         {
             recording.network_page_closed(identifier);
         }
-        state.failure = Some(error);
+        state.failure.get_or_insert(error);
         state.interception.clear();
         page.state.file_chooser.lock().unwrap().cancel();
         page.state.dialogs.lock().unwrap().retire();
@@ -446,8 +527,25 @@ impl Engine {
     }
 
     fn remove_context_with_error(&self, identifier: &str, error: ErrorRecord) -> Option<Context> {
+        self.remove_context_if_owned(identifier, error, None)
+    }
+
+    pub(crate) fn remove_context_if_owned(
+        &self,
+        identifier: &str,
+        error: ErrorRecord,
+        owner: Option<&Context>,
+    ) -> Option<Context> {
         let (context, pages) = {
             let mut registry = self.registry.lock().unwrap();
+            if owner.is_some_and(|owner| {
+                !registry
+                    .contexts
+                    .get(identifier)
+                    .is_some_and(|current| Arc::ptr_eq(&current.state, &owner.state))
+            }) {
+                return None;
+            }
             let identifiers: Vec<_> = registry
                 .pages
                 .iter()
@@ -485,22 +583,26 @@ impl Engine {
     }
 
     pub(crate) fn remove_browser(&self, identifier: &str) -> Option<Arc<Chromium>> {
-        let (browser, contexts) = {
+        let (browser, contexts, error) = {
             let mut registry = self.registry.lock().unwrap();
             let browser = registry.browsers.remove(identifier)?;
+            let error = browser
+                .browser
+                .connection
+                .failure()
+                .unwrap_or_else(|| closed("browser"));
             let contexts: Vec<_> = registry
                 .contexts
                 .iter()
                 .filter(|(_, context)| context.browser_identifier == identifier)
-                .map(|(identifier, _)| identifier.clone())
+                .map(|(identifier, context)| {
+                    // Close publication admission atomically with withdrawal of the browser.
+                    context.state.closed.send_replace(Some(error.clone()));
+                    identifier.clone()
+                })
                 .collect();
-            (browser, contexts)
+            (browser, contexts, error)
         };
-        let error = browser
-            .browser
-            .connection
-            .failure()
-            .unwrap_or_else(|| closed("browser"));
         for context in contexts {
             self.remove_context_with_error(&context, error.clone());
         }
@@ -514,6 +616,177 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn remote_configuration_guard_ignores_a_swap_from_the_previous_renderer() {
+        let (outgoing, _messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = Arc::new(Engine::new(
+            None,
+            outgoing,
+            fatal,
+            ResourceLimits::default(),
+        ));
+        let page = Page {
+            context_identifier: "context".into(),
+            target_identifier: "root".into(),
+            session_identifier: "root-session".into(),
+            state: Arc::new(PageState::default()),
+        };
+        let context = Context {
+            browser_identifier: "browser".into(),
+            protocol_identifier: "native-context".into(),
+            viewport: None,
+            devices: crate::devices::DeviceOptions::default(),
+            settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+            state: Arc::new(context_state::ContextState::default()),
+            published: false,
+        };
+        page.state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .register_root("root", "root-session")
+            .unwrap();
+        {
+            let mut state = page.state.state.lock().unwrap();
+            state.initialize_main_frame("root", "root-session");
+            state.observe_in_session(
+                "root-session",
+                "Page.frameAttached",
+                &json!({"frameId":"child", "parentFrameId":"root"}),
+            );
+            state.observe_in_session("root-session", "Target.attachedToTarget", &json!({"sessionId":"successor-session", "targetInfo":{"type":"iframe", "targetId":"child"}}));
+        }
+        page.state.routing_registered.store(true, Ordering::Release);
+        engine
+            .registry
+            .lock()
+            .unwrap()
+            .contexts
+            .insert("context".into(), context.clone());
+        engine
+            .registry
+            .lock()
+            .unwrap()
+            .pages
+            .insert("page".into(), page.clone());
+        engine
+            .handle_event(
+                "browser",
+                Event {
+                    sequence: 1,
+                    received_at: std::time::Instant::now(),
+                    method: "Page.frameDetached".into(),
+                    session_identifier: Some("root-session".into()),
+                    parameters: Some(
+                        serde_json::value::to_raw_value(
+                            &json!({"frameId":"child", "reason":"swap"}),
+                        )
+                        .unwrap(),
+                    ),
+                },
+            )
+            .unwrap();
+        assert!(page.state.state.lock().unwrap().failure.is_none());
+        assert!(context.state.storage_failure.lock().unwrap().is_none());
+        assert_eq!(
+            page.state.state.lock().unwrap().frames["child"]
+                .session_identifier
+                .as_ref(),
+            "successor-session"
+        );
+    }
+
+    #[test]
+    fn target_crashes_require_root_identity_but_owned_frame_inspector_crashes_fail_the_page() {
+        for root_crash in [false, true] {
+            let (outgoing, _messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            let page = Page {
+                context_identifier: "context".into(),
+                target_identifier: "page-target".into(),
+                session_identifier: "root-session".into(),
+                state: Arc::new(PageState::default()),
+            };
+            let (root, child) = {
+                let mut sessions = page.state.renderer_sessions.lock().unwrap();
+                let root = sessions
+                    .register_root("page-target", "root-session")
+                    .unwrap();
+                let child = sessions
+                    .register_child(&root, "child-target", "child-session")
+                    .unwrap();
+                (root, child)
+            };
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native-context".into(),
+                    viewport: None,
+                    devices: crate::devices::DeviceOptions::default(),
+                    settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: false,
+                },
+            );
+            engine
+                .registry
+                .lock()
+                .unwrap()
+                .pages
+                .insert("page".into(), page.clone());
+            for target in ["worker-target", "retired-target", "child-target"] {
+                engine
+                    .handle_event(
+                        "browser",
+                        Event {
+                            sequence: 1,
+                            received_at: std::time::Instant::now(),
+                            method: "Target.targetCrashed".into(),
+                            session_identifier: Some("root-session".into()),
+                            parameters: Some(
+                                serde_json::value::to_raw_value(
+                                    &json!({"targetId":target,"status":"crashed","errorCode":1}),
+                                )
+                                .unwrap(),
+                            ),
+                        },
+                    )
+                    .unwrap();
+                assert!(page.state.state.lock().unwrap().failure.is_none());
+                assert!(!root.is_retired());
+                assert!(!child.is_retired());
+            }
+            // Root crashes require target identity; an owned frame Inspector crash follows the reference.
+            engine.handle_event("browser", Event {
+            sequence: 2, received_at: std::time::Instant::now(),
+            method: if root_crash { "Target.targetCrashed" } else { "Inspector.targetCrashed" }.into(),
+            session_identifier: if root_crash { None } else { Some("child-session".into()) },
+            parameters: if root_crash { Some(serde_json::value::to_raw_value(&json!({"targetId":"page-target","status":"crashed","errorCode":1})).unwrap()) } else { None },
+        }).unwrap();
+            assert_eq!(
+                page.state
+                    .state
+                    .lock()
+                    .unwrap()
+                    .failure
+                    .as_ref()
+                    .unwrap()
+                    .code,
+                ErrorCode::PageCrashed
+            );
+            assert!(root.is_retired());
+            assert!(child.is_retired());
+        }
+    }
 
     #[test]
     fn snapshot_terminal_session_events_survive_public_registry_removal() {
@@ -611,9 +884,20 @@ mod tests {
                 Some(engine.diagnostic_session("page", &page).unwrap())
             };
             engine.handle_event("browser", terminal()).unwrap();
-            // Ordinary page removal may follow later; its registry presence cannot admit a late lease.
-            assert!(engine.registry.lock().unwrap().pages.contains_key("page"));
-            assert!(page.state.state.lock().unwrap().failure.is_none());
+            // Root detachment withdraws public ownership, while retained diagnostic
+            // leases still observe their original session's destruction.
+            assert!(!engine.registry.lock().unwrap().pages.contains_key("page"));
+            assert_eq!(
+                page.state
+                    .state
+                    .lock()
+                    .unwrap()
+                    .failure
+                    .as_ref()
+                    .unwrap()
+                    .code,
+                ErrorCode::TargetClosed
+            );
             assert!(
                 page.state
                     .diagnostic_session_destroyed
@@ -855,5 +1139,105 @@ mod tests {
         );
         assert!(engine.registry.lock().unwrap().contexts.is_empty());
         assert!(engine.registry.lock().unwrap().pages.is_empty());
+    }
+
+    #[tokio::test]
+    async fn root_detach_wakes_unbounded_page_waiters_once_and_preserves_original_failure() {
+        for existing_failure in [false, true] {
+            let (outgoing, mut messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            let state = Arc::new(PageState::default());
+            state
+                .renderer_sessions
+                .lock()
+                .unwrap()
+                .register_root("target", "session")
+                .unwrap()
+                .mark_ready();
+            state.state.lock().unwrap().published = true;
+            let page = Page {
+                context_identifier: "context".into(),
+                target_identifier: "target".into(),
+                session_identifier: "session".into(),
+                state: state.clone(),
+            };
+            engine
+                .registry
+                .lock()
+                .unwrap()
+                .pages
+                .insert("page".into(), page.clone());
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native".into(),
+                    viewport: None,
+                    devices: Default::default(),
+                    settings: context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: true,
+                },
+            );
+            if existing_failure {
+                state.state.lock().unwrap().failure = Some(ErrorRecord::new(
+                    ErrorCode::ResourceLimit,
+                    "original",
+                    "original failure",
+                ));
+            }
+            let waiter = state.while_alive::<()>("page.evaluate", std::future::pending());
+            let detach = async {
+                tokio::task::yield_now().await;
+                for sequence in 0..2 {
+                    engine
+                        .handle_event(
+                            "browser",
+                            Event {
+                                received_at: std::time::Instant::now(),
+                                sequence,
+                                method: "Target.detachedFromTarget".into(),
+                                session_identifier: None,
+                                parameters: Some(
+                                    serde_json::value::to_raw_value(
+                                        &json!({"sessionId":"session", "targetId":"target"}),
+                                    )
+                                    .unwrap(),
+                                ),
+                            },
+                        )
+                        .unwrap();
+                }
+            };
+            let (result, ()) = tokio::time::timeout(Duration::from_secs(1), async {
+                tokio::join!(waiter, detach)
+            })
+            .await
+            .unwrap();
+            let error = result.unwrap_err();
+            assert_eq!(
+                error.code,
+                if existing_failure {
+                    ErrorCode::ResourceLimit
+                } else {
+                    ErrorCode::TargetClosed
+                }
+            );
+            if existing_failure {
+                assert_eq!(error.message.as_ref(), "original failure");
+            }
+            assert!(engine.page("page", "test").is_err());
+            assert!(engine.context("context", "test").is_ok());
+            assert!(
+                matches!(messages.try_recv().unwrap(), DriverOutput::Message(flashwright_protocol::DriverMessage::Event { event, .. }) if event == "close")
+            );
+            assert!(messages.try_recv().is_err());
+        }
     }
 }
