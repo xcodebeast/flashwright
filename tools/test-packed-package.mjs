@@ -101,6 +101,13 @@ try {
   assert.equal(await evaluatedHeading.evaluate(element => element.textContent), 'real HTTP');
   await evaluatedHeading.dispose();
   assert.equal(await page.waitForSelector('#missing', { state: 'hidden' }), null);
+  await page.fill('input:not([type=checkbox])', 'selector input', { strict: true });
+  await page.mainFrame().press('input:not([type=checkbox])', 'ControlOrMeta+A', { strict: false });
+  await page.type('input:not([type=checkbox])', 'typed');
+  assert.equal(await page.getByLabel('Name').inputValue(), 'typed');
+  await page.setChecked('input[type=checkbox]', true, { strict: true });
+  await page.mainFrame().uncheck('input[type=checkbox]');
+  assert.equal(await page.getByLabel('Check', { exact: true }).isChecked(), false);
   await page.getByLabel('Name').fill('packed input');
   assert.equal(await page.getByLabel('Name').inputValue(), 'packed input');
   await page.getByLabel('Name').press('ControlOrMeta+A');
@@ -187,6 +194,13 @@ async function example(): Promise<number> {
     // @ts-expect-error File upload requires a Buffer.
     await page.setInputFiles('input', { name: 'file', mimeType: '', buffer: 'text' });
     await selectedInput.scrollIntoViewIfNeeded({ timeout: 100 });
+    await page.click('button', { strict: false, trial: true });
+    await page.mainFrame().fill('input', 'value', { strict: true });
+    const selectedOptions: string[] = await page.selectOption('select', ['a'], { strict: true });
+    await page.mainFrame().type('input', 'text', { delay: 1 });
+    // @ts-expect-error Strictness must be boolean in packed declarations.
+    await page.click('button', { strict: 'true' });
+    void selectedOptions;
     const locatorValue: number = await page.locator('button').evaluate((element, value) => value.answer, handle);
     const locatorHandle: import('flashwright').JSHandle<number> = await page.locator('button').evaluateHandle((element, value) => value.answer, handle);
     void selectedInput; void locatorValue; void locatorHandle;

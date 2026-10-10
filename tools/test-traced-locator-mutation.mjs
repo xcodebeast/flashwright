@@ -17,6 +17,7 @@ function fixture() {
     parseSelector: selector => selector,
     querySelector: () => { queries++; return selected; },
     checkElementStates: async () => { stateChecks++; return undefined; },
+    focusNode: (element, resetSelection) => { mutations.push({ element, resetSelection, action: 'focus' }); return 'done'; },
     fill: (element, value) => { mutations.push({ element, value, action: 'fill' }); return 'done'; },
     selectOptions: (element, values) => { mutations.push({ element, values, action: 'selectOption' }); return values; },
   };
@@ -31,10 +32,10 @@ try {
     for (const action of ['fill', 'selectOption']) {
       const state = fixture();
       const request = units({ action, selector: '#target', value: 'value', values: ['value'] });
-      const resolved = await state.runtime.resolveMutationElement(request, null);
+      const resolved = await state.runtime.resolveActionElement(request, null);
       assert.equal(resolved.value, state.original);
       state.select(state.replacement);
-      const result = await state.runtime.mutateCapturedElement(resolved.value, request, null);
+      const result = await state.runtime.runCapturedAction(resolved.value, request, null);
       assert.equal(result.status, 'success');
       assert.equal(state.queries, 1);
       assert.equal(state.stateChecks, 2);
@@ -46,11 +47,11 @@ try {
     for (const moved of [false, true]) {
       const state = fixture();
       const request = units({ action: 'fill', selector: '#target', value: 'value' });
-      const resolved = await state.runtime.resolveMutationElement(request, null);
+      const resolved = await state.runtime.resolveActionElement(request, null);
       state.select(state.replacement);
       if (moved) state.original.ownerDocument = {};
       else state.original.isConnected = false;
-      const result = await state.runtime.mutateCapturedElement(resolved.value, request, null);
+      const result = await state.runtime.runCapturedAction(resolved.value, request, null);
       assert.equal(result.status, 'retry');
       assert.equal(state.queries, 1);
       assert.equal(state.mutations.length, 0);
@@ -60,10 +61,10 @@ try {
     for (const moved of [false, true]) {
       const state = fixture();
       const request = units({ action: 'fill', selector: '#target', value: 'value' });
-      const resolved = await state.runtime.resolveMutationElement(request, null);
+      const resolved = await state.runtime.resolveActionElement(request, null);
       const entered = deferred(); const release = deferred();
       state.injected.checkElementStates = async () => { entered.resolve(); await release.promise; };
-      const work = state.runtime.mutateCapturedElement(resolved.value, request, null);
+      const work = state.runtime.runCapturedAction(resolved.value, request, null);
       await entered.promise;
       if (moved) state.original.ownerDocument = {};
       else state.original.isConnected = false;
@@ -75,9 +76,37 @@ try {
   await check('expired allowance prevents mutation even after successful target resolution', async () => {
     const state = fixture();
     const request = units({ action: 'fill', selector: '#target', value: 'value', force: true });
-    const resolved = await state.runtime.resolveMutationElement(request, null);
-    assert.equal((await state.runtime.mutateCapturedElement(resolved.value, request, 0)).status, 'expired');
+    const resolved = await state.runtime.resolveActionElement(request, null);
+    assert.equal((await state.runtime.runCapturedAction(resolved.value, request, 0)).status, 'expired');
     assert.equal(state.mutations.length, 0);
+  });
+  await check('keyboard capture preserves non-strict choice and cannot focus a replacement', async () => {
+    for (const action of ['press', 'pressSequentially']) {
+      const state = fixture();
+      const strictness = [];
+      const querySelector = state.injected.querySelector;
+      state.injected.querySelector = (selector, document, strict) => { strictness.push(strict); return querySelector(selector, document, strict); };
+      const request = units({ action, selector: 'input', strict: false });
+      const resolved = await state.runtime.resolveActionElement(request, null);
+      assert.equal(resolved.value, state.original);
+      assert.deepEqual(strictness, [false]);
+      assert.equal(state.stateChecks, 0, 'keyboard focus does not inherit pointer actionability');
+      state.select(state.replacement);
+      assert.equal((await state.runtime.runCapturedAction(resolved.value, request, null)).status, 'success');
+      assert.equal(state.mutations[0].element, state.original);
+      assert.equal(state.mutations[0].resetSelection, true);
+      assert.equal(state.queries, 1, 'captured focus must not resolve a replacement');
+      assert.deepEqual(strictness, [false]);
+      state.original.isConnected = false;
+      assert.equal((await state.runtime.runCapturedAction(resolved.value, request, null)).status, 'retry');
+      assert.equal(state.mutations.length, 1);
+      state.original.isConnected = true;
+      state.original.ownerDocument = {};
+      assert.equal((await state.runtime.runCapturedAction(resolved.value, request, null)).status, 'retry');
+      state.original.ownerDocument = state.replacement.ownerDocument;
+      assert.equal((await state.runtime.runCapturedAction(resolved.value, request, 0)).status, 'expired');
+      assert.equal(state.mutations.length, 1);
+    }
   });
   report.status = 'passed';
 } catch (error) { report.status = 'failed'; report.error = error.stack ?? String(error); process.exitCode = 1; }

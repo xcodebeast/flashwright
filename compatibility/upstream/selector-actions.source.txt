@@ -1,0 +1,169 @@
+// selector.strictness
+_parseSelector(selector, options2) {
+        const strict = typeof options2?.strict === "boolean" ? options2.strict : !!this.frame._page.browserContext._options.strictSelectors;
+        return this.frame._page.browserContext.selectors().parseSelector(selector, strict);
+      }
+
+// server.retry
+async _retryWithProgressIfNotConnected(progress2, selector, options2, action) {
+        progress2.log(`waiting for ${this._asLocator(selector)}`);
+        const noAutoWaiting = options2.__testHookNoAutoWaiting ?? options2.noAutoWaiting;
+        const performActionPreChecks = (options2.performActionPreChecks ?? !options2.force) && !noAutoWaiting;
+        return this.retryWithProgressAndBackoff(progress2, async (progress3, continuePolling) => {
+          if (performActionPreChecks)
+            await this._page.performActionPreChecks(progress3);
+          const resolved = await progress3.race(this.selectors.resolveInjectedForSelector(selector, { strict: options2.strict }));
+          if (!resolved) {
+            if (noAutoWaiting)
+              throw new NonRecoverableDOMError("Element(s) not found");
+            return continuePolling;
+          }
+          const result2 = await progress3.race(resolved.injected.evaluateHandle((injected, { info, callId }) => {
+            const elements = injected.querySelectorAll(info.parsed, document);
+            if (callId)
+              injected.markTargetElements(new Set(elements), callId);
+            const element3 = elements[0];
+            let log3 = "";
+            if (elements.length > 1) {
+              if (info.strict)
+                throw injected.strictModeViolationError(info.parsed, elements);
+              log3 = `  locator resolved to ${elements.length} elements. Proceeding with the first one: ${injected.previewNode(elements[0])}`;
+            } else if (element3) {
+              log3 = `  locator resolved to ${injected.previewNode(element3)}`;
+            }
+            injected.checkDeprecatedSelectorUsage(info.parsed, elements);
+            return { log: log3, success: !!element3, element: element3 };
+          }, { info: resolved.info, callId: progress3.metadata.id }));
+          const { log: log2, success } = await progress3.race(result2.evaluate((r) => ({ log: r.log, success: r.success })));
+          if (log2)
+            progress3.log(log2);
+          if (!success) {
+            if (noAutoWaiting)
+              throw new NonRecoverableDOMError("Element(s) not found");
+            result2.dispose();
+            return continuePolling;
+          }
+          const element2 = await progress3.race(result2.evaluateHandle((r) => r.element));
+          result2.dispose();
+          try {
+            const result3 = await action(progress3, element2);
+            if (result3 === "error:notconnected") {
+              if (noAutoWaiting)
+                throw new NonRecoverableDOMError("Element is not attached to the DOM");
+              progress3.log("element was detached from the DOM, retrying");
+              return continuePolling;
+            }
+            return result3;
+          } finally {
+            element2?.dispose();
+          }
+        });
+      }
+
+// client.click
+async click(selector, options2 = {}) {
+        return await this._channel.click({ selector, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.dblclick
+async dblclick(selector, options2 = {}) {
+        return await this._channel.dblclick({ selector, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.hover
+async hover(selector, options2 = {}) {
+        await this._channel.hover({ selector, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.check
+async check(selector, options2 = {}) {
+        await this._channel.check({ selector, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.uncheck
+async uncheck(selector, options2 = {}) {
+        await this._channel.uncheck({ selector, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.setChecked
+async setChecked(selector, checked, options2) {
+        if (checked)
+          await this.check(selector, options2);
+        else
+          await this.uncheck(selector, options2);
+      }
+
+// client.fill
+async fill(selector, value2, options2 = {}) {
+        return await this._channel.fill({ selector, value: value2, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.focus
+async focus(selector, options2 = {}) {
+        await this._channel.focus({ selector, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.selectOption
+async selectOption(selector, values, options2 = {}) {
+        return (await this._channel.selectOption({ selector, ...convertSelectOptionValues(values), ...options2, timeout: this._timeout(options2) })).values;
+      }
+
+// client.press
+async press(selector, key, options2 = {}) {
+        await this._channel.press({ selector, key, ...options2, timeout: this._timeout(options2) });
+      }
+
+// client.type
+async type(selector, text2, options2 = {}) {
+        await this._channel.type({ selector, text: text2, ...options2, timeout: this._timeout(options2) });
+      }
+
+// server.click
+async click(progress2, selector, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._click(progress3, { ...options2, waitAfter: !options2.noWaitAfter })));
+      }
+
+// server.dblclick
+async dblclick(progress2, selector, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._dblclick(progress3, options2)));
+      }
+
+// server.hover
+async hover(progress2, selector, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._hover(progress3, options2)));
+      }
+
+// server.check
+async check(progress2, selector, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._setChecked(progress3, true, options2)));
+      }
+
+// server.uncheck
+async uncheck(progress2, selector, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._setChecked(progress3, false, options2)));
+      }
+
+// server.fill
+async fill(progress2, selector, value2, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._fill(progress3, value2, options2)));
+      }
+
+// server.focus
+async focus(progress2, selector, options2) {
+        assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._focus(progress3)));
+      }
+
+// server.selectOption
+async selectOption(progress2, selector, elements, values, options2) {
+        return await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._selectOption(progress3, elements, values, options2));
+      }
+
+// server.press
+async press(progress2, selector, key, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._press(progress3, key, options2)));
+      }
+
+// server.type
+async type(progress2, selector, text2, options2) {
+        return assertDone(await this._retryWithProgressIfNotConnected(progress2, selector, options2, (progress3, handle) => handle._type(progress3, text2, options2)));
+      }

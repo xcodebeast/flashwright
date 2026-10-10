@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-development-slice",
+  "reference": "Playwright 1.60.0",
+  "baseCommit": "1ce6d2e1db5e8558c778950bd85df33d4611c672",
+  "scope": "Eleven Page/Frame selector actions and captured-target input snapshots for locator/selector keyboard actions. Experimental native macOS arm64/Bun1.4.2 development acceptance; no release or performance claim.",
+  "implementation": {
+    "crates/flashwright-engine/src/locators.rs": "f2974ae60d68e524e7f70d3a31b1135e5d677c0c6c77b4ed63e31899b872bcd4",
+    "crates/flashwright-engine/src/locators/traced_action.rs": "66ddb8f1ce32bc7d961fe2e95f18717ee511802579eab832e524d76af82f0657",
+    "crates/flashwright-engine/src/keyboard.rs": "91e91cc11a2803268b9a5f0e1be198c2e7bb92054d19eb11d540c513d1b2fe27",
+    "packages/flashwright-core/src/selector-actions.ts": "73d64ee2dd631824047f49e24a63d67113f86520e5f3ab0003d827e9d183f176",
+    "packages/flashwright-core/src/frame.ts": "e2b82b8e6b423defecc795a218cfe52d6cf069d59f0b029572910c77d7391b49",
+    "packages/flashwright-core/src/index.ts": "39e5588e485e499ea006e7ca47a7fc9d4cd805b4a6684dc2e2174b6c89a6652d",
+    "packages/flashwright-core/src/locator.ts": "e70dd1233261f1e57c0ad1b44fe7b36eee425e21712adc3048c5552470f9014e",
+    "packages/flashwright-core/src/trace-hooks.ts": "fa281d5013bdbb152201f727818339ca03a16ef95efcf46cf0c8c55d748620cc",
+    "packages/resident-runtime/locator-runtime.js": "9abee5bab384c4541491c77c237dd2f5fd00f0fa2debc12bcb445ae5b63bc90c"
+  },
+  "nativeCore": {
+    "path": "compatibility/evidence/selector-actions-2026-10-10/core/report.json",
+    "sha256": "ed806287d0f9e40877d5737e6ca09169ea4a17db982426081acd6333721a5a83",
+    "passedGroups": 147,
+    "driverSha256": "b9563095c91ebc6f81d2e5c09d24fb8f137e21e5734f4b96d29ff8082718886d",
+    "buildProfile": "debug",
+    "sourceChangedDuringVerification": false,
+    "browserChangedDuringVerification": false
+  },
+  "functional": {
+    "path": "compatibility/evidence/selector-actions-2026-10-10/report.json",
+    "sha256": "447b14583b32d421364352df2d346f99d4c1eace217e230db9da74f8f9611675",
+    "passedChecks": 137,
+    "matchedOutcomeRowsPerEngine": 92,
+    "traceVerificationPath": "compatibility/evidence/selector-actions-2026-10-10/trace-verification.json",
+    "traceVerificationSha256": "48b341e874e20d5d45b6615124fb51f4d4e222f31b50572dfcd3ec783362c4ec",
+    "archives": {
+      "reference": {
+        "sha256": "4370b343d29be99fc904f6366ac103ee4f3e10e1cbf2955b8000b70b01c21929",
+        "calls": 281,
+        "snapshots": 619,
+        "inputCalls": 59
+      },
+      "flashwright": {
+        "sha256": "ab8c2b3f9f3899342db97781f46a8ecf66c4368e9d16f2868a99e153762587d3",
+        "calls": 281,
+        "snapshots": 619,
+        "inputCalls": 59
+      }
+    }
+  },
+  "controlledCapture": {
+    "controlled-capture-002.json": {
+      "path": "compatibility/evidence/selector-actions-2026-10-10/controlled-capture-002.json",
+      "sha256": "d859b9181bbb84112a251121593c117075244e63f45ec0275c4ffc1996fd707e",
+      "passedChecks": 5
+    },
+    "controlled-node22.json": {
+      "path": "compatibility/evidence/selector-actions-2026-10-10/controlled-node22.json",
+      "sha256": "d859b9181bbb84112a251121593c117075244e63f45ec0275c4ffc1996fd707e",
+      "passedChecks": 5
+    },
+    "controlled-node24.json": {
+      "path": "compatibility/evidence/selector-actions-2026-10-10/controlled-node24.json",
+      "sha256": "d859b9181bbb84112a251121593c117075244e63f45ec0275c4ffc1996fd707e",
+      "passedChecks": 5
+    },
+    "controlled-node22-confirmation.json": {
+      "path": "compatibility/evidence/selector-actions-2026-10-10/controlled-node22-confirmation.json",
+      "sha256": "b7863d469e3ea097a176d3725681442c8855c90e26f620d7ad3a70891faed99a",
+      "passedChecks": 5,
+      "runtimeVersion": "v22.22.0",
+      "runtimeSha256": "913b144fdb40638b1acef7974ab3c33fbd527cc0974cb5da467ab1e6ac51b4d4"
+    },
+    "controlled-node24-confirmation.json": {
+      "path": "compatibility/evidence/selector-actions-2026-10-10/controlled-node24-confirmation.json",
+      "sha256": "e78b7301c0e930d9828cf4027a9790a632b59c3785dce5431c645e80df1b82c0",
+      "passedChecks": 5,
+      "runtimeVersion": "v24.15.0",
+      "runtimeSha256": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32"
+    }
+  },
+  "cleanup": {
+    "rawWatchdogSha256": "b6f148ce0a8d58c9bc6467a8eb94f99498d8206944fa2ac1513f7eb17212b4fd",
+    "exitCode": 0,
+    "timedOut": false,
+    "interrupted": false,
+    "remainingObservedProcesses": [],
+    "result": {
+      "policy": "owners-before-descendants",
+      "graceSeconds": 2,
+      "stagedTimeoutSeconds": 10,
+      "forcedTimeoutSeconds": 2,
+      "wholeTreeEscalation": false,
+      "elapsedSeconds": 0.044757000054232776
+    }
+  },
+  "changes": [
+    "Shared action validation and dispatch preserve native targeting and one operation deadline; Page/Frame default to first match and explicit strict=true rejects duplicates. Locator stays strict.",
+    "Pointer, keyboard focus and both ordinary/traced mutation resolution preserve selector strictness through retries.",
+    "Traced press/type retain the original target across input capture and recheck its document/connection before focus; application focus changes still direct subsequent characters.",
+    "setChecked trace records identify the underlying check/uncheck method while keeping the public action title."
+  ],
+  "retainedDevelopmentAttempts": [
+    "The first fixture attempt failed on the reference because hover was already active and need not emit another mouseover.",
+    "The second fixture attempt failed on the reference because selectOption intentionally emits an untrusted input event.",
+    "The third fixture passed113 browser checks but archive inspection exposed missing keyboard input-phase snapshots. That native gap was repaired before the137-check run and full core acceptance.",
+    "All earlier raw attempts and static review manifests remain private; no timing samples were selected or discarded.",
+    "Independent export review found that the original Node22/24 controlled result files omitted runtime attribution. Both five-check groups were rerun with executable version/hash, exact command and source hashes; confirmation files are retained alongside the original results."
+  ],
+  "limitations": [
+    "Context strictSelectors remains explicitly unsupported.",
+    "Pointer steps, hover noWaitAfter and selectOption ElementHandle values remain outside this action slice.",
+    "FrameLocator, downloads and cross-process frame actions remain unfinished.",
+    "Archive integrity, action identity and phase/source custody are verified; equal record counts alone are not a visual fidelity claim. Existing viewer fixtures also pass in the full core.",
+    "Node22/24 results here cover controlled capture logic; the full core and packed consumer run uses Bun1.4.2.",
+    "Native Linux, broader consumer/runtime matrices, performance leadership and release acceptance remain open."
+  ],
+  "evidenceNormalization": "Workstation paths were normalized and dependent hashes rebound. Numeric/boolean/null observations are unchanged; export-manifest.json retains original and exported hashes."
+}

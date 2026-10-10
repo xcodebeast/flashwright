@@ -28,6 +28,8 @@ import { waitForEvent, matchesURL, validateURLMatcher, validateTimeout, type URL
 import { performance } from 'node:perf_hooks';
 import { createValueCodec } from './serialization.cjs';
 import type { LocatorTimeoutOptions } from './locator.js';
+import { selectorActionTraceMethods } from './selector-actions.js';
+export type { SelectorStrictOptions, SelectorOptions } from './selector-actions.js';
 import { validateOptions as options } from './validation.js';
 import { prepareDeviceOptions, type DeviceOptions } from './devices.js';
 import { prepareContextSettings, type ContextSettings } from './context-settings.js';
@@ -350,6 +352,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
   static {
     installTracePageResolver(page => page instanceof Page ? { tracing: page.owner.tracing, pageId: page.identifier } : undefined);
     instrumentTraceMethods(this.prototype, 'Page', tracePageOwner, {
+      ...selectorActionTraceMethods,
       waitForSelector: { className: 'Frame', parameters: ['selector', 'options'] },
       setInputFiles: { className: 'Frame', parameters: ['selector', 'files', 'options'] },
       addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'], completion: 'independent' }, waitForNavigation: { parameters: ['options'], completion: 'independent' }, waitForURL: { parameters: ['url', 'options'], completion: 'independent' }, waitForResponse: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForEvent: eventWaitTrace, close: {},
@@ -488,6 +491,17 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     const match = typeof nameOrOptions === 'string' ? { name: nameOrOptions } : nameOrOptions;
     return this.frames().find(frame => (match.name === undefined || frame.name() === match.name) && (match.url === undefined || matchesURL(frame.url(), match.url, this.owner.baseURL))) ?? null;
   }
+  click(...arguments_: Parameters<Frame['click']>): ReturnType<Frame['click']> { return this.mainFrame().click(...arguments_); }
+  dblclick(...arguments_: Parameters<Frame['dblclick']>): ReturnType<Frame['dblclick']> { return this.mainFrame().dblclick(...arguments_); }
+  hover(...arguments_: Parameters<Frame['hover']>): ReturnType<Frame['hover']> { return this.mainFrame().hover(...arguments_); }
+  check(...arguments_: Parameters<Frame['check']>): ReturnType<Frame['check']> { return this.mainFrame().check(...arguments_); }
+  uncheck(...arguments_: Parameters<Frame['uncheck']>): ReturnType<Frame['uncheck']> { return this.mainFrame().uncheck(...arguments_); }
+  setChecked(...arguments_: Parameters<Frame['setChecked']>): ReturnType<Frame['setChecked']> { return this.mainFrame().setChecked(...arguments_); }
+  fill(...arguments_: Parameters<Frame['fill']>): ReturnType<Frame['fill']> { return this.mainFrame().fill(...arguments_); }
+  focus(...arguments_: Parameters<Frame['focus']>): ReturnType<Frame['focus']> { return this.mainFrame().focus(...arguments_); }
+  selectOption(...arguments_: Parameters<Frame['selectOption']>): ReturnType<Frame['selectOption']> { return this.mainFrame().selectOption(...arguments_); }
+  press(...arguments_: Parameters<Frame['press']>): ReturnType<Frame['press']> { return this.mainFrame().press(...arguments_); }
+  type(...arguments_: Parameters<Frame['type']>): ReturnType<Frame['type']> { return this.mainFrame().type(...arguments_); }
   locator: Frame['locator'] = (...arguments_) => this.mainFrame().locator(...arguments_);
   getByText: Frame['getByText'] = (...arguments_) => this.mainFrame().getByText(...arguments_);
   getByLabel: Frame['getByLabel'] = (...arguments_) => this.mainFrame().getByLabel(...arguments_);
@@ -539,13 +553,13 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     this.checkOpen('keyboard.type');
     await this.client.request('keyboard.type', { page: this.identifier, ...parameters });
   }
-  async runLocator<Result>(frame: string, selector: string, action: string, parameters: object, timeoutOptions: LocatorTimeoutOptions): Promise<Result> {
+  async runLocator<Result>(frame: string, selector: string, action: string, parameters: object, timeoutOptions: LocatorTimeoutOptions, strict = true): Promise<Result> {
     const method = `locator.${action}`;
     this.checkOpen(method);
     options(method, timeoutOptions, ['timeout']);
     const keyboard = ['press', 'pressSequentially'].includes(action);
     const element = ['selectText', 'scrollIntoViewIfNeeded'].includes(action);
-    const request = JSON.stringify({ selector, action, ...(keyboard || element ? {} : parameters) });
+    const request = JSON.stringify({ selector, action, strict, ...(keyboard || element ? {} : parameters) });
     if (request.length > 100000) throw failure('ResourceLimitError', method, 'locator request exceeds 100000 UTF-16 units');
     const input = ['click', 'dblclick', 'hover', 'check', 'uncheck', 'setChecked'].includes(action) ? { pointer: parameters } : keyboard ? { keyboard: parameters } : element ? { element: parameters } : {};
     const result = await this.client.request('locator.run', { page: this.identifier, frame, action, request: Array.from({ length: request.length }, (_, index) => request.charCodeAt(index)), ...input }, validateTimeout(timeoutOptions.timeout ?? this.timeout(), method));

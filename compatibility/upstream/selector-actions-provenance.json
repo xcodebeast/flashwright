@@ -1,0 +1,32 @@
+{
+  "referenceVersion": "1.60.0",
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/frame.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/frameSelectors.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/frames.ts"
+  ],
+  "retainedExtract": "compatibility/upstream/selector-actions.source.txt",
+  "extractSha256": "244150919ef71417c785e15aaf606c4daf707c3f8b48ce89c4710474a2622341",
+  "implementation": {
+    "crates/flashwright-engine/src/locators.rs": "f2974ae60d68e524e7f70d3a31b1135e5d677c0c6c77b4ed63e31899b872bcd4",
+    "crates/flashwright-engine/src/locators/traced_action.rs": "66ddb8f1ce32bc7d961fe2e95f18717ee511802579eab832e524d76af82f0657",
+    "crates/flashwright-engine/src/keyboard.rs": "91e91cc11a2803268b9a5f0e1be198c2e7bb92054d19eb11d540c513d1b2fe27",
+    "packages/flashwright-core/src/selector-actions.ts": "73d64ee2dd631824047f49e24a63d67113f86520e5f3ab0003d827e9d183f176",
+    "packages/flashwright-core/src/frame.ts": "e2b82b8e6b423defecc795a218cfe52d6cf069d59f0b029572910c77d7391b49",
+    "packages/flashwright-core/src/index.ts": "39e5588e485e499ea006e7ca47a7fc9d4cd805b4a6684dc2e2174b6c89a6652d",
+    "packages/flashwright-core/src/locator.ts": "e70dd1233261f1e57c0ad1b44fe7b36eee425e21712adc3048c5552470f9014e",
+    "packages/flashwright-core/src/trace-hooks.ts": "fa281d5013bdbb152201f727818339ca03a16ef95efcf46cf0c8c55d748620cc",
+    "packages/resident-runtime/locator-runtime.js": "9abee5bab384c4541491c77c237dd2f5fd00f0fa2debc12bcb445ae5b63bc90c"
+  },
+  "relationship": "Independent facade shares native action operations with Locator; per-call selector strictness is carried through every native resolution attempt. Pinned source defines first-match defaults, explicit strictness, retries and method delegation.",
+  "limitations": [
+    "Context strictSelectors remains explicitly unsupported.",
+    "Only existing native action options are admitted: pointer steps, hover noWaitAfter and selectOption ElementHandle values remain outside this slice.",
+    "Same-process frame coverage only; no FrameLocator or download implementation is implied."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}
