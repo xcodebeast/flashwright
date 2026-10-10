@@ -184,4 +184,24 @@ The complete-runner profile now uses `benchmarks/configurations/runner-suite.jso
 
 The raw JSON reporter retains per-test durations, statuses, errors, annotations and attachments. An afterEach annotation records the operation interval, isolation, native input, viewport, focus, browser version and worker identity. That interval includes the transition into afterEach; complete work also includes fixtures, diagnostic reporting, worker restarts and cleanup. The verifier checks all 105 test identities, all actual failures, original browser launch flags, worker process ownership and watchdog cleanup. The native backend guard remains enabled in Flashwright's configuration and workers. When runner stderr is both forwarded and retained in JSON, both copies must agree before launches are counted. Stderr chunks are reassembled without inserting bytes; terminal control sequences are removed only while parsing, with the raw streams retained. Collection explicitly disables terminal progress rendering.
 
-Run `bun test ./tools/test-runner-suite-contract.mjs ./tools/test-runner-suite-diagnostics.mjs` for corruption checks and `bun tools/verify-runner-suite.mjs RETAINED_DIRECTORY` for independent verification against the recorded source, installed packages, binary identities and actual diagnostic content. The supplemental `diagnosticAdmission` receipt preserves the original conservative outcome-only fields; `performanceAccepted` remains false. This is a controlled fixture suite, not the representative application corpus or a matched comparison with Cypress's synthetic input and per-test reset. Independent-launch collection, runner startup attribution, representative applications, retries/artifacts/concurrency comparisons and native Linux remain open.
+Run `bun test ./tools/test-runner-suite-contract.mjs ./tools/test-runner-suite-diagnostics.mjs` for corruption checks and `bun tools/verify-runner-suite.mjs RETAINED_DIRECTORY` for independent verification against the recorded source, installed packages, binary identities and actual diagnostic content. The supplemental `diagnosticAdmission` receipt preserves the original conservative outcome-only fields; `performanceAccepted` remains false. This is a controlled fixture suite, not the representative application corpus or a matched comparison with Cypress's synthetic input and per-test reset. Runner startup attribution, representative applications, retries/artifacts/concurrency comparisons and native Linux remain open.
+
+
+The [retained complete-runner matrix](../benchmarks/results/runner-matrix-2026-10-10/table.md) contains all eight alternating pairs, 840 tests and 120 original failure documents per engine. Every run passed outcome, diagnostic-content and process-cleanup admission. It uses the frozen `dbc58afe` harness, Bun 1.4.2 and full Chromium 148.0.7778.96, with the exact driver from the 179-group core checkpoint. The reviewed harness changes did not change the engine, library, runner or common workload source. This is a separate class from the five-engine library-flow table.
+
+| Complete native runner measurement | Playwright | Flashwright |
+| --- | ---: | ---: |
+| Median complete suite time | 47.223 s | 49.306 s |
+| Median observed process-tree CPU | 52.560 s | 53.535 s |
+| Median sampled concurrent peak RSS | 1077.742 MiB | 1105.758 MiB |
+| Actual tests across all launches | 840 | 840 |
+| Original failure documents admitted | 120 | 120 |
+
+The median paired complete-time ratio is 0.9573 (Playwright / Flashwright), with a 95% launch-paired interval of 0.8263–0.9692. The material-improvement and timing-regression gates fail. The largest observed concurrent RSS grows by 8.11%, within the 10% memory limit. Retain the slower late launches; no observation was removed or rerun. These are descriptive measurements: the agent created an export workspace during candidate launch 1, potentially competing for CPU and filesystem resources. That recorded overlap independently prevents performance acceptance. The report preserves this limitation alongside the complete observations, rather than treating matching test outcomes as a speed result.
+
+The [portable manifest](../benchmarks/results/runner-matrix-2026-10-10/manifest.json) retains original and normalized byte hashes. Export changes only declared environment paths, the private workspace-operation identifier and affected artifact hash links; source, dependency, executable identities and numeric observations remain unchanged. The independent portable verifier recomputes every outcome, original diagnostic and matrix decision from the retained reports and documents. It verifies historical custody, not the current bytes of installed dependencies or executables.
+
+```sh
+bun tools/verify-runner-matrix-snapshot.mjs benchmarks/results/runner-matrix-2026-10-10
+bun test ./tools/test-runner-matrix-contract.mjs ./tools/test-runner-matrix-snapshot.mjs
+```

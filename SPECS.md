@@ -175,7 +175,7 @@ try {
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto('http://localhost:3000');
-  await page.getByLabel('Email').fill('jhon@example.com');
+  await page.getByLabel('Email').fill('user@example.test');
   await page.getByRole('button', { name: 'Continue' }).click();
 } finally {
   await browser.close();
