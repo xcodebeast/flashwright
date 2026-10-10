@@ -19,7 +19,7 @@ try {
  for(const spec of all) {
    const test=spec.tests[0];
    if(spec.title.includes('unsupported context')) { assert.equal(test.expectedStatus,'failed'); assert.ok(test.results[0].errors.some(error=>error.message.includes('test.use.locale'))); }
-   else if(spec.title.includes('unsupported artifact')) { assert.equal(test.expectedStatus,'failed'); assert.ok(test.results[0].errors.some(error=>error.message.includes('test.use.trace'))); }
+   else if(spec.title.includes('unsupported artifact')) { assert.equal(test.expectedStatus,'failed'); assert.ok(test.results[0].errors.some(error=>error.message.includes('test.use.video'))); }
    else for(const result of test.results) assert.ok(result.attachments.some(attachment=>attachment.name==='flashwright-context-disposed'),`Missing teardown for ${spec.title}`);
  }
  const timeout=all.find(spec=>spec.title.includes('unbounded native')).tests[0]; assert.deepEqual(timeout.results.map(result=>result.status),['timedOut','timedOut']);
