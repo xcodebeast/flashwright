@@ -92,6 +92,21 @@ try {
     await ordinary;
     assert.deepEqual(await nextCollection, ['page.evaluate', 'context.trace.snapshot.take', 'dialog.dismiss', 'context.trace.snapshot.ingested']);
   }));
+  await check('cancelled queued trace collection never enters native dispatch', () => transport(2, async client => {
+    const ordinary = client.request('page.evaluate', { hold: true });
+    const collection = client.request('context.trace.snapshot.pull', { releaseAfter: 30 });
+    const cancellation = new AbortController();
+    const cancelled = client.request('apiRequest.traceBody.take', {}, 2000, false, undefined, undefined, undefined, cancellation.signal);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(client.traceAdmission.collectionWaiters.size, 1);
+    cancellation.abort(new Error('cancel queued original API trace transfer'));
+    await collection;
+    await assert.rejects(cancelled, error => error === cancellation.signal.reason);
+    const accepted = await client.request('dialog.dismiss', { flush: true });
+    await ordinary;
+    assert.deepEqual(accepted, ['page.evaluate', 'context.trace.snapshot.pull', 'dialog.dismiss']);
+    assert.equal(client.pending.size, 0);
+  }));
   await check('a queued listener control preserves its ordering and does not fail because collection occupies recovery', () => transport(2, async client => {
     const ordinary = client.request('page.evaluate', { hold: true });
     const collection = client.request('context.trace.network.pull', { releaseAfter: 30 });

@@ -219,6 +219,80 @@ try {
   assert.equal(execFileSync('unzip', ['-p', sharedDestination, `resources/${sharedSnapshot.response.content._sha1}`], { encoding: 'utf8' }), 'finished');
   await sharedArchive.dispose();
   await sharedRecording.stop();
+  const cancelledStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
+  const cancelledRecording = await cancelledStartup.ready;
+  const releaseCancelledBrowserOne = tryAcquireTraceTransfer(tracing.client, 'cancelled-browser-one');
+  const releaseCancelledBrowserTwo = tryAcquireTraceTransfer(tracing.client, 'cancelled-browser-two');
+  assert.ok(releaseCancelledBrowserOne && releaseCancelledBrowserTwo);
+  const originalTraceAttachment = tracing.client.requestTraceAttachment;
+  const originalCancelledRequest = tracing.client.request;
+  let cancelledTakeCalls = 0;
+  let cancelledIngestCalls = 0;
+  tracing.client.requestTraceAttachment = function(method, ...arguments_) {
+    if (method === 'apiRequest.traceBody.take') cancelledTakeCalls++;
+    return originalTraceAttachment.call(this, method, ...arguments_);
+  };
+  tracing.client.request = function(method, ...arguments_) {
+    if (method === 'apiRequest.traceBody.ingested') cancelledIngestCalls++;
+    return originalCancelledRequest.call(this, method, ...arguments_);
+  };
+  try {
+    const cancelledResponse = await context.get(`${origin}/final`);
+    await cancelledResponse.dispose();
+    const cancellation = new AbortController();
+    const cancelledArchive = cancelledRecording.chunk.takeArchive(cancellation.signal);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.ok(tracing.exportCancellation);
+    cancellation.abort(new Error('cancelled before queued API trace transfer'));
+    await assert.rejects(cancelledArchive, error => error === cancellation.signal.reason);
+  } finally {
+    releaseCancelledBrowserTwo();
+    releaseCancelledBrowserOne();
+    try { await cancelledRecording.stop(); }
+    finally {
+      tracing.client.requestTraceAttachment = originalTraceAttachment;
+      tracing.client.request = originalCancelledRequest;
+    }
+  }
+  assert.equal(cancelledTakeCalls, 0);
+  assert.equal(cancelledIngestCalls, 0);
+  const startedStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
+  const startedRecording = await startedStartup.ready;
+  const originalStartedAttachment = tracing.client.requestTraceAttachment;
+  const originalStartedRequest = tracing.client.request;
+  let announceTransferStarted;
+  let resumeTransfer;
+  const transferStarted = new Promise(resolve => { announceTransferStarted = resolve; });
+  const transferResume = new Promise(resolve => { resumeTransfer = resolve; });
+  let startedIngestCalls = 0;
+  tracing.client.requestTraceAttachment = async function(method, ...arguments_) {
+    const bytes = await originalStartedAttachment.call(this, method, ...arguments_);
+    if (method === 'apiRequest.traceBody.take') { announceTransferStarted(); await transferResume; }
+    return bytes;
+  };
+  tracing.client.request = function(method, ...arguments_) {
+    if (method === 'apiRequest.traceBody.ingested') startedIngestCalls++;
+    return originalStartedRequest.call(this, method, ...arguments_);
+  };
+  try {
+    const startedResponse = await context.get(`${origin}/final`);
+    await Promise.race([transferStarted, new Promise((_, reject) => setTimeout(() => reject(new Error('trace transfer did not start')), 2000))]);
+    await startedResponse.dispose();
+    const cancellation = new AbortController();
+    const cancelledArchive = startedRecording.chunk.takeArchive(cancellation.signal);
+    await new Promise(resolve => setImmediate(resolve));
+    cancellation.abort(new Error('cancelled after original trace transfer started'));
+    resumeTransfer();
+    await assert.rejects(cancelledArchive, error => error === cancellation.signal.reason);
+  } finally {
+    resumeTransfer();
+    try { await startedRecording.stop(); }
+    finally {
+      tracing.client.requestTraceAttachment = originalStartedAttachment;
+      tracing.client.request = originalStartedRequest;
+    }
+  }
+  assert.equal(startedIngestCalls, 1, 'already-started original transfer settles its native ACK after cancellation');
   const closingStartup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
   const closingRecording = await closingStartup.ready;
   const pending = context.get(`${origin}/slow`, { timeout: 5000 });

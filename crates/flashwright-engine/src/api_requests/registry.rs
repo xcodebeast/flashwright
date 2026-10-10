@@ -100,6 +100,7 @@ struct ContextState {
     responses: BTreeMap<String, ResponseEntry>,
     trace_bodies: BTreeMap<String, TraceBodyEntry>,
     retired_trace_generations: BTreeMap<String, PairedReservation>,
+    trace_retention_disabled: bool,
 }
 
 struct TraceBodyEntry {
@@ -178,6 +179,7 @@ impl RequestRegistry {
                 responses: BTreeMap::new(),
                 trace_bodies: BTreeMap::new(),
                 retired_trace_generations: BTreeMap::new(),
+                trace_retention_disabled: false,
             }),
             closed,
             local_dates: super::local_dates::PendingDates::default(),
@@ -493,8 +495,9 @@ impl RequestContext {
                 published: false,
             },
         );
-        if trace_generation
-            .is_none_or(|generation| !state.retired_trace_generations.contains_key(generation))
+        if !state.trace_retention_disabled
+            && trace_generation
+                .is_none_or(|generation| !state.retired_trace_generations.contains_key(generation))
             && state.trace_bodies.len() < 64
             && let Some(entry) = trace_entry
         {
@@ -544,25 +547,35 @@ impl RequestContext {
         if state.disposed {
             return Err(closed_error(method));
         }
-        state
-            .trace_bodies
-            .retain(|_, entry| entry.generation != generation);
         if !state.retired_trace_generations.contains_key(generation) {
             if state.retired_trace_generations.len() >= 1024 {
+                state.trace_retention_disabled = true;
+                state.trace_bodies.clear();
                 return Err(ErrorRecord::new(
                     ErrorCode::ResourceLimit,
                     method,
                     "API context exceeds 1024 retired trace generations",
                 ));
             }
-            let credit = self
+            let credit = match self
                 .budget
                 .metadata
-                .reserve(generation.len().saturating_add(128), method)?;
+                .reserve(generation.len().saturating_add(128), method)
+            {
+                Ok(credit) => credit,
+                Err(error) => {
+                    state.trace_retention_disabled = true;
+                    state.trace_bodies.clear();
+                    return Err(error);
+                }
+            };
             state
                 .retired_trace_generations
                 .insert(generation.to_owned(), credit);
         }
+        state
+            .trace_bodies
+            .retain(|_, entry| entry.generation != generation);
         Ok(())
     }
 
@@ -1021,6 +1034,66 @@ mod tests {
         assert!(
             late.upgrade().is_none(),
             "late responses cannot revive a retired trace body generation"
+        );
+        {
+            let mut state = context.state.lock().unwrap();
+            for index in 0..1023 {
+                let generation = format!("retired-{index}");
+                let credit = context
+                    .budget
+                    .metadata
+                    .reserve(generation.len() + 128, "test")
+                    .unwrap();
+                state.retired_trace_generations.insert(generation, credit);
+            }
+        }
+        let (metadata, body) = response_parts(&context).await;
+        let unfenced = Arc::downgrade(&body);
+        let value = context
+            .retain_response(
+                "unfenced".into(),
+                "http://example.test/".into(),
+                metadata,
+                body,
+                Some("generation-2"),
+            )
+            .unwrap();
+        engine
+            .api_requests
+            .prepare_publication("apiRequest.fetch", &value, |_, _| Ok(()))
+            .unwrap();
+        engine.api_requests.dispose_response("context", "unfenced");
+        assert!(unfenced.upgrade().is_some());
+        assert_eq!(
+            context
+                .retire_trace_bodies("generation-2", "test")
+                .unwrap_err()
+                .code,
+            ErrorCode::ResourceLimit
+        );
+        assert!(
+            unfenced.upgrade().is_none(),
+            "failed fence closes original trace retention before returning"
+        );
+        let (metadata, body) = response_parts(&context).await;
+        let later = Arc::downgrade(&body);
+        let value = context
+            .retain_response(
+                "later".into(),
+                "http://example.test/".into(),
+                metadata,
+                body,
+                Some("generation-2"),
+            )
+            .unwrap();
+        engine
+            .api_requests
+            .prepare_publication("apiRequest.fetch", &value, |_, _| Ok(()))
+            .unwrap();
+        engine.api_requests.dispose_response("context", "later");
+        assert!(
+            later.upgrade().is_none(),
+            "failed fencing cannot admit a late trace body"
         );
     }
 
