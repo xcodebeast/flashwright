@@ -1,5 +1,5 @@
 import { createHttpFixture } from './http-fixture.mjs';
-import { installPackedConsumer } from './install-packed-consumer.mjs';
+import { installPackedConsumer, cleanupPackedConsumer } from './install-packed-consumer.mjs';
 import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 import { tmpdir } from 'node:os';
 import { packConsumerPackages } from './packed-artifacts.mjs';
@@ -169,6 +169,7 @@ async function run(arguments_, expectedCode = 0) {
   const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
   assert.equal(code, expectedCode);
 }
+const destination = `compatibility/evidence/packed-runner-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
 try {
   await run(['identity.mjs']);
   await run(['node_modules/.bin/flashwright', 'test', '--config', 'flashwright.config.mjs']);
@@ -181,7 +182,8 @@ try {
     driverSha256: hash(await readFile(environment.FLASHWRIGHT_DRIVER_PATH)), report,
     checks: ['fresh packed library and adapter install', 'ESM and CommonJS share public class and runner identities', 'mixed-module native assertions', 'NodeNext import/require declarations and fixture generics', 'reporter type subpath', 'ESM, CommonJS and TypeScript runner files', 'default Download metadata, class/page identity and exact binary path/save/stream bytes', 'acceptDownloads false, nested policy inheritance and both explicit fixture precedence directions', 'nested context options and fixture overrides', 'installed CLI and interactive-mode rejection', 'upstream browser/request methods poisoned'],
     remaining: ['platform runtime distribution', 'pnpm/Yarn and aliases', 'artifact hooks and full runner configuration parity'] };
-  const destination = `compatibility/evidence/packed-runner-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`;
   await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
   console.log(`Packed runner consumers passed: ${destination}`);
 } finally { await closeServer(); }
+
+await cleanupPackedConsumer(directory, installation, destination, import.meta.url);

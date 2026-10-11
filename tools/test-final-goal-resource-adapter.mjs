@@ -17,7 +17,8 @@ function event(type, timestampMilliseconds, processId, startIdentity, extra = {}
 
 /** Synthetic watchdog-schema snapshots and prospective events; never real collector admission. */
 function fixture() {
-  const watchdog = { schemaVersion: 2, cpuAccounting: 'maximum-per-observed-process-identity',
+  const watchdog = { schemaVersion: 2, clock: { schemaVersion: 1, type: 'monotonic', implementation: 'synthetic-monotonic-clock',
+    identity: hash('synthetic-watchdog-capture').slice(0, 32), originNanoseconds: '1000000000', resolutionSeconds: 1e-9 }, cpuAccounting: 'maximum-per-observed-process-identity',
     command: ['synthetic-host-fixture'], exitCode: 0, timedOut: false, interrupted: false,
     elapsedSeconds: 0.1, samplingIntervalSeconds: 0.1, remainingObservedProcesses: [], cleanupSignals: [],
     coverage: 'Synthetic observations retain the real watchdog schema and sampling limits.',
@@ -29,7 +30,7 @@ function fixture() {
     ] };
   const lifecycle = { schemaVersion: 1, provenance: { sourceSha256: hash('synthetic-lifecycle-source') },
     host: { namespace: 'synthetic-host', identitySha256: hash('synthetic-host') },
-    clock: { type: 'monotonic', identity: 'synthetic-original-clock', watchdogOriginMilliseconds: 1000,
+    clock: { type: 'monotonic', identity: watchdog.clock.identity, watchdogOriginNanoseconds: watchdog.clock.originNanoseconds, watchdogOriginMilliseconds: 1000,
       ownerInterval: { startMilliseconds: 1010, endMilliseconds: 1090 } },
     events: [event('process-owned', 1000, 11, firstStart, { components: ['runner', 'workers'] }),
       event('process-owned', 1000, 12, firstStart, { components: ['browser'] }),
@@ -71,6 +72,8 @@ test('simultaneous RSS and cumulative CPU come from original samples, not sums o
   assert.equal(resources.sampledConcurrentBytes, 1100);
   assert.equal(resources.observedProcessTreeCpuSeconds, 1.2000000000000002);
   assert.equal(resources.ownedProcesses.length, 2);
+  assert.deepEqual(resources.watchdogClock, JSON.parse(adapterInput.watchdogReportBytes).clock);
+  assert.deepEqual(resources.ownerInterval, adapterInput.lifecycle.clock.ownerInterval);
   assert.deepEqual(resources.captureInterval, { startMilliseconds: 1000, endMilliseconds: 1100 });
   assert.deepEqual(resources.workerIntervals, [{ identity: 'original-worker-1',
     hostProcessIdentity: 'synthetic-host/11/Sun Oct 11 03:00:00 2026', startMilliseconds: 1011, endMilliseconds: 1088 }]);
@@ -281,4 +284,37 @@ test('aggregate ordering preserves the contract CPU sum despite floating-point o
   const contractCpuTotal = [...maxima.values()].reduce((total, value) => total + value, 0);
   assert.notEqual(watchdog.observedCpuSeconds, contractCpuTotal);
   assert.equal(resources.observedProcessTreeCpuSeconds, contractCpuTotal);
+});
+
+
+for (const [description, mutate, expected] of [
+  ['missing original watchdog clock', state => { delete state.watchdog.clock; }, /original watchdog clock/],
+  ['original capture identity mismatch', state => { state.watchdog.clock.identity = hash('other-capture').slice(0, 32); }, /Lifecycle clock differs/],
+  ['lifecycle capture identity mismatch', state => { state.lifecycle.clock.identity = hash('other-capture').slice(0, 32); }, /Lifecycle clock differs/],
+  ['changed correctly rehashed watchdog origin', state => { state.watchdog.clock.originNanoseconds = '1000000001'; }, /Lifecycle origin differs/],
+  ['missing lifecycle original nanoseconds', state => { delete state.lifecycle.clock.watchdogOriginNanoseconds; }, /Lifecycle origin differs/],
+  ['lifecycle millisecond rebase', state => { state.lifecycle.clock.watchdogOriginMilliseconds += 1; }, /millisecond origin differs/],
+  ['missing clock implementation', state => { delete state.watchdog.clock.implementation; }, /clock implementation/],
+  ['noncanonical original nanoseconds', state => { state.watchdog.clock.originNanoseconds = '01000000000'; }, /clock origin/],
+  ['nonpositive original resolution', state => { state.watchdog.clock.resolutionSeconds = 0; }, /clock resolution/],
+]) test(`rejects ${description} even with correctly hashed raw bytes`, () => {
+  const state = fixture(); mutate(state);
+  assert.throws(() => adaptFinalGoalResources(input(state)), expected);
+});
+
+
+test('exact nanosecond join rejects origins that round to the same millisecond number', () => {
+  const state = fixture(), originalOrigin = '10000000000000000000';
+  const originMilliseconds = Number(BigInt(originalOrigin)) / 1e6;
+  const offset = originMilliseconds - state.lifecycle.clock.watchdogOriginMilliseconds;
+  state.watchdog.clock.originNanoseconds = originalOrigin;
+  state.lifecycle.clock.watchdogOriginNanoseconds = originalOrigin;
+  state.lifecycle.clock.watchdogOriginMilliseconds = originMilliseconds;
+  for (const event of state.lifecycle.events) event.timestampMilliseconds += offset;
+  state.lifecycle.clock.ownerInterval.startMilliseconds += offset;
+  state.lifecycle.clock.ownerInterval.endMilliseconds += offset;
+  assert.equal(adaptFinalGoalResources(input(state)).watchdogClock.originNanoseconds, originalOrigin);
+  state.watchdog.clock.originNanoseconds = String(BigInt(originalOrigin) + 1n);
+  assert.equal(Number(BigInt(state.watchdog.clock.originNanoseconds)) / 1e6, originMilliseconds);
+  assert.throws(() => adaptFinalGoalResources(input(state)), /Lifecycle origin differs/);
 });

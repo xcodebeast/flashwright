@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { analyzeFinalGoal, finalGoalHash, renderFinalGoalReport } from '../benchmarks/final-goal-contract.mjs';
 import { finalGoalEvidenceLimits, verifyFinalGoalEvidence } from './verify-final-goal.mjs';
+import { attachSyntheticResourceOriginals, refreshSyntheticWatchdogHash, retainSyntheticCampaign } from './final-goal-synthetic-fixture.mjs';
 
 const draft = JSON.parse(await readFile(new URL('../benchmarks/configurations/final-goal.json', import.meta.url), 'utf8'));
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -27,8 +28,10 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
   }
   const declaration = { status: 'sealed', configurationSha256: finalGoalHash(configuration),
     sourceManifest: { 'fixture-source.mjs': hash('source'), 'fixture-collector.mjs': hash('collector'),
+      'fixture-lifecycle.mjs': hash('synthetic-lifecycle-producer'),
       ...Object.fromEntries(configuration.requiredGateIds.map(id => [`${id}.mjs`, hash(id)])) }, dependencyManifest: { 'fixture-package.json': hash('dependencies') },
     runtimeSha256: hash('bun'), browserSha256: hash('browser'), driverSha256: hash('driver'), resourceCollectorSha256: hash('collector'), resourceCollectorPath: 'fixture-collector.mjs',
+    lifecycleProducerPath: 'fixture-lifecycle.mjs', lifecycleProducerSha256: hash('synthetic-lifecycle-producer'),
     host: { logicalCpuCount: 11, physicalMemoryBytes: 36 * 1024 ** 3, identitySha256: hash('host') },
     approvalEvidence: [receipt('approval.json')], gates: configuration.requiredGateIds.map(id => ({ id, status: 'passed',
       verifierPath: `${id}.mjs`, verifierSha256: hash(id), evidence: [receipt(`${id}.json`)] })) };
@@ -71,8 +74,9 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
           observedProcessTreeCpuSeconds: observedCpu, captureInterval: { startMilliseconds: start - 1, endMilliseconds: start + duration + 1 },
           workerIntervals: ownedProcesses.filter(process => process.components.includes('workers')).map((process, index) => ({ identity: `${start}/logical-worker/${index}`, hostProcessIdentity: process.identity,
             startMilliseconds: start + 1, endMilliseconds: start + duration - 1 })) };
-        runs[engine] = { report, resources, evidence: ['report', 'resources'].map(kind => ({
+        runs[engine] = { report, resources, evidence: ['report', 'resources', 'watchdog', 'lifecycle'].map(kind => ({
           ...receipt(`${scenario.id}/${cell.id}/${launchIndex}/${engine}/${kind}.json`), kind })) };
+        attachSyntheticResourceOriginals(runs[engine], declaration, scenario);
       }
       return { id: `${scenario.id}/${cell.id}/${launchIndex}`, launchIndex, order, runs };
     }) })) }));
@@ -179,6 +183,7 @@ test('raw ratios and intervals decide wins, ignoring supplied acceptance and rat
     const run = pair.runs.flashwright, duration = index < 4 ? 150 : 600;
     run.report.completeMilliseconds = duration;
     run.report.ownerInterval.endMilliseconds = run.report.ownerInterval.startMilliseconds + duration;
+    run.resources.ownerInterval = structuredClone(run.report.ownerInterval);
     run.resources.captureInterval.endMilliseconds = run.report.ownerInterval.endMilliseconds + 1;
     run.resources.samples.at(-1).timestampMilliseconds = run.resources.captureInterval.endMilliseconds;
     for (const worker of run.resources.workerIntervals) worker.endMilliseconds = run.report.ownerInterval.endMilliseconds - 1;
@@ -195,6 +200,7 @@ test('exact ratio two is accepted only when its lower bound also reaches two', (
     const run = pair.runs.flashwright;
     run.report.completeMilliseconds = 300;
     run.report.ownerInterval.endMilliseconds = run.report.ownerInterval.startMilliseconds + 300;
+    run.resources.ownerInterval = structuredClone(run.report.ownerInterval);
     run.resources.captureInterval.endMilliseconds = run.report.ownerInterval.endMilliseconds + 1;
     run.resources.samples.at(-1).timestampMilliseconds = run.resources.captureInterval.endMilliseconds;
     for (const worker of run.resources.workerIntervals) worker.endMilliseconds = run.report.ownerInterval.endMilliseconds - 1;
@@ -495,5 +501,195 @@ test('loader rejects oversized files before reserving JSON bytes or reading file
     await writeFile(join(directory, 'campaign.json'), '');
     await truncate(join(directory, 'campaign.json'), finalGoalEvidenceLimits.maximumFileBytes + 1);
     await assert.rejects(verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes: 1 }), /Oversized evidence file/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+
+for (const [description, mutate, expected] of [
+  ['resource host join', run => { run.resources.provenance.hostIdentitySha256 = hash('another-host'); }, /Resource host/],
+  ['resource capture identity', run => { run.resources.watchdogClock.identity = hash('another-capture').slice(0, 32); }, /Resource clock/],
+  ['resource watchdog receipt hash', run => { run.resources.provenance.watchdogSha256 = hash('another-watchdog'); }, /watchdog hash/],
+  ['resource lifecycle producer hash', run => { run.resources.provenance.lifecycleSourceSha256 = hash('another-producer'); }, /lifecycle producer/],
+  ['resource owner interval', run => { run.resources.ownerInterval.endMilliseconds += 1; }, /Lifecycle owner interval/],
+  ['missing report clock', run => { delete run.report.watchdogClock; }, /original watchdog clock/],
+  ['extra report clock field', run => { run.report.watchdogClock.inferredOrigin = true; }, /exact original watchdog clock projection/],
+]) test(`pure comparable admission rejects ${description}`, () => {
+  const state = fixture(); mutate(candidate(state)); assert.throws(() => analyzeFinalGoal(state), expected);
+});
+
+test('sealed declaration binds the lifecycle producer in original admitted source', () => {
+  for (const mutate of [state => { delete state.declaration.lifecycleProducerSha256; },
+    state => { state.declaration.lifecycleProducerPath = 'unadmitted-producer.mjs'; },
+    state => { state.declaration.sourceManifest['fixture-lifecycle.mjs'] = hash('different-producer'); }]) {
+    const state = fixture(); mutate(state); assert.throws(() => analyzeFinalGoal(state), /lifecycle producer|Lifecycle producer/);
+  }
+});
+
+for (const kind of ['watchdog-path', 'lifecycle-path', 'watchdog-sha', 'capture-identity'])
+  test(`comparable campaign rejects reused original ${kind}`, () => {
+    const state = fixture(), pair = state.scenarioResults[0].cells[0].attempts[0];
+    const reference = pair.runs.playwright, run = pair.runs.flashwright;
+    if (kind.endsWith('-path')) {
+      const receiptKind = kind.split('-')[0];
+      run.evidence.find(receipt => receipt.kind === receiptKind).path = reference.evidence.find(receipt => receipt.kind === receiptKind).path;
+    } else if (kind === 'watchdog-sha') {
+      run.evidence.find(receipt => receipt.kind === 'watchdog').sha256 = reference.resources.provenance.watchdogSha256;
+      run.resources.provenance.watchdogSha256 = reference.resources.provenance.watchdogSha256;
+    } else {
+      run.report.watchdogClock.identity = reference.report.watchdogClock.identity;
+      run.resources.watchdogClock.identity = reference.report.watchdogClock.identity;
+      run.resources.provenance.clockIdentity = reference.report.watchdogClock.identity;
+    }
+    assert.throws(() => analyzeFinalGoal(state), /Reused original resource/);
+  });
+
+/** One measured synthetic cell keeps retained controls small; other declared cells remain unmeasured. */
+function retainedResourceFixture() {
+  const state = fixture();
+  for (const [scenarioIndex, scenario] of state.scenarioResults.entries())
+    scenario.cells = scenario.cells.map((cell, cellIndex) => scenarioIndex === 0 && cellIndex === 0 ? cell
+      : { id: cell.id, status: 'unmeasured', attempts: [], reason: 'Synthetic control leaves this declared cell unmeasured' });
+  return state;
+}
+
+test('retained original watchdog and lifecycle reconstruct resources without admitting a synthetic goal', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-originals-'));
+  try {
+    const state = retainedResourceFixture();
+    await retainSyntheticCampaign(directory, state);
+    const before = structuredClone(state);
+    const result = await verifyFinalGoalEvidence(directory);
+    assert.equal(result.analysis.goalAccepted, false);
+    assert.equal(result.analysis.evidenceComplete, false);
+    assert.equal(result.analysis.scenarios[0].cells[0].confirmedWin, true);
+    assert.deepEqual(state, before);
+    const run = candidate(state);
+    for (const kind of ['watchdog', 'lifecycle']) {
+      const receipt = run.evidence.find(item => item.kind === kind);
+      assert.equal(result.checkedFiles[receipt.path], receipt.sha256);
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+for (const [description, mutate, expected] of [
+  ['independent host hash', run => { run.resources.provenance.hostIdentitySha256 = hash('other-host'); }, /Resource host|Resources differ/],
+  ['independent clock identity', run => { run.resources.watchdogClock.identity = hash('other-clock').slice(0, 32); }, /Resource clock|Resources differ/],
+  ['independent watchdog hash', run => { run.resources.provenance.watchdogSha256 = hash('other-watchdog'); }, /watchdog hash|Resources differ/],
+  ['independent lifecycle producer', run => { run.resources.provenance.lifecycleSourceSha256 = hash('other-producer'); }, /lifecycle producer|Resources differ/],
+  ['correctly rehashed raw origin', run => {
+    run.syntheticOriginals.watchdog.clock.originNanoseconds = String(BigInt(run.syntheticOriginals.watchdog.clock.originNanoseconds) + 1n);
+    refreshSyntheticWatchdogHash(run);
+  }, /Lifecycle origin differs/],
+  ['correctly rehashed missing raw clock', run => { delete run.syntheticOriginals.watchdog.clock; refreshSyntheticWatchdogHash(run); }, /original watchdog clock/],
+  ['resource sample and summary changed together', run => { run.resources.samples[1].processes[0].residentBytes += 1; updateResources(run); }, /Resources differ/],
+  ['lifecycle owner differs from report', run => { run.syntheticOriginals.lifecycle.clock.ownerInterval.endMilliseconds -= 1; }, /Resources differ|owner interval differs/],
+]) test(`retained verifier rejects ${description}`, async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-corruption-'));
+  try {
+    const state = retainedResourceFixture(); mutate(candidate(state));
+    await retainSyntheticCampaign(directory, state);
+    await assert.rejects(verifyFinalGoalEvidence(directory), expected);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('comparable originals require one watchdog and lifecycle receipt each', async () => {
+  for (const kind of ['watchdog', 'lifecycle']) for (const duplicate of [false, true]) {
+    const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-receipts-'));
+    try {
+      const state = retainedResourceFixture(), run = candidate(state);
+      const receipt = run.evidence.find(item => item.kind === kind);
+      if (duplicate) run.evidence.push({ ...receipt, path: `${receipt.path}.duplicate` });
+      else run.evidence = run.evidence.filter(item => item.kind !== kind);
+      await retainSyntheticCampaign(directory, state);
+      await assert.rejects(verifyFinalGoalEvidence(directory), new RegExp(`Missing unique raw ${kind}`));
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
+});
+
+
+test('original failed and noncomparable attempts keep partial watchdog bytes without invented lifecycle success', async () => {
+  for (const status of ['failed', 'noncomparable']) {
+    const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-partial-originals-'));
+    try {
+      const state = retainedResourceFixture();
+      const cell = nonwinner(status), partialWatchdog = { schemaVersion: 2, exitCode: -9, timedOut: true,
+        syntheticOnly: true, originalFailure: 'Producer terminated before clock/lifecycle admission' };
+      const watchdogReceipt = { ...receipt('partial-watchdog.json'), kind: 'watchdog' };
+      cell.attempts[0].runs = { flashwright: { report: { tests: [] }, resources: { originalFailure: 'No comparable resources produced' },
+        syntheticOriginals: { watchdog: partialWatchdog }, evidence: [
+          { ...receipt('partial-report.json'), kind: 'report' },
+          { ...receipt('partial-resources.json'), kind: 'resources' }, watchdogReceipt] } };
+      state.scenarioResults[0].cells[0] = cell;
+      await retainSyntheticCampaign(directory, state);
+      const result = await verifyFinalGoalEvidence(directory);
+      assert.equal(result.analysis.goalAccepted, false);
+      assert.equal(result.analysis.scenarios[0].cells[0].status, status);
+      assert.equal(result.checkedFiles[watchdogReceipt.path], watchdogReceipt.sha256);
+      assert.equal(result.analysis.scenarios[0].cells[0].retainedAttempts[0].failure.code, 'UnsupportedFeatureError');
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
+});
+
+
+/** Preserve ordinary originals from attempted runs without inventing successful clock/lifecycle custody. */
+function omitSyntheticSuccessOnlyResources(cell) {
+  for (const attempt of cell.attempts) for (const run of Object.values(attempt.runs)) {
+    delete run.report.watchdogClock;
+    delete run.resources.watchdogClock;
+    delete run.resources.ownerInterval;
+    delete run.resources.provenance;
+    delete run.syntheticOriginals.watchdog.clock;
+    delete run.syntheticOriginals.lifecycle;
+    run.evidence = run.evidence.filter(receipt => receipt.kind !== 'lifecycle');
+  }
+}
+
+for (const failureKind of ['behavior', 'coverage'])
+  test(`declared comparable raw eight-pair ${failureKind} failure keeps original partial receipts`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-classified-originals-'));
+    try {
+      const state = retainedResourceFixture(), cell = state.scenarioResults[0].cells[0], run = candidate(state);
+      if (failureKind === 'behavior') {
+        run.report.tests[0].status = 'failed';
+        run.report.tests[0].errors = [{ code: 'OriginalAssertionError', message: 'Original attempted behavior failed' }];
+        run.report.runnerExitCode = 1;
+      } else run.resources.missingRequiredProcessIdentities.push('original-known-unsampled-process');
+      omitSyntheticSuccessOnlyResources(cell);
+      assert.equal(cell.status, 'comparable');
+      assert.equal(cell.attempts.length, 8);
+      await retainSyntheticCampaign(directory, state);
+      const result = await verifyFinalGoalEvidence(directory);
+      const analyzed = result.analysis.scenarios[0].cells[0];
+      assert.equal(analyzed.status, failureKind === 'behavior' ? 'failed' : 'noncomparable');
+      assert.equal(analyzed.confirmedWin, false);
+      assert.equal(analyzed.retainedAttempts.length, 8);
+      assert.equal(result.analysis.goalAccepted, false);
+      for (const attempt of cell.attempts) for (const originalRun of Object.values(attempt.runs))
+        for (const receipt of originalRun.evidence) assert.equal(result.checkedFiles[receipt.path], receipt.sha256);
+      if (failureKind === 'behavior') assert.equal(analyzed.behaviorFailures[0].originalErrors[0].code, 'OriginalAssertionError');
+      else assert.ok(analyzed.reasons.some(reason => reason.includes('missing required original process identity')));
+      const partialWatchdog = candidate(state).evidence.find(receipt => receipt.kind === 'watchdog');
+      await writeFile(join(directory, partialWatchdog.path), Buffer.from('changed original partial watchdog bytes'));
+      await assert.rejects(verifyFinalGoalEvidence(directory), /Retained evidence bytes changed/);
+
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  });
+
+test('unsealed declared comparable original pairs remain inspectable without successful clock or lifecycle', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-draft-originals-'));
+  try {
+    const state = retainedResourceFixture(), cell = state.scenarioResults[0].cells[0];
+    state.configuration.status = 'draft';
+    state.declaration.status = 'draft';
+    refreshConfiguration(state);
+    omitSyntheticSuccessOnlyResources(cell);
+    await retainSyntheticCampaign(directory, state);
+    const result = await verifyFinalGoalEvidence(directory);
+    assert.equal(result.analysis.sealed, false);
+    assert.equal(result.analysis.goalAccepted, false);
+    assert.equal(result.analysis.scenarios[0].cells[0].status, 'unsealed');
+    assert.equal(cell.status, 'comparable');
+    for (const attempt of cell.attempts) for (const run of Object.values(attempt.runs))
+      for (const receipt of run.evidence) assert.equal(result.checkedFiles[receipt.path], receipt.sha256);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });

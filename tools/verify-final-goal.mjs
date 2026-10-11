@@ -4,6 +4,7 @@ import { constants } from 'node:fs';
 import { lstat, open } from 'node:fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { adaptFinalGoalResources } from './final-goal-resource-adapter.mjs';
 import { analyzeFinalGoal, finalGoalHash, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
 
@@ -114,12 +115,12 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     assert.equal(file.sha256, entry.sha256, 'Retained evidence bytes changed');
     checked.set(entry.path, file.sha256);
   }
-  async function jsonFile(path, expectedSha256) {
+  async function jsonFile(path, expectedSha256, bytesOnly = false) {
     const file = await retainedFile(directory, path, reserveJsonBytes);
     if (expectedSha256 !== undefined) assert.equal(file.sha256, expectedSha256, 'Retained evidence bytes changed');
     if (checked.has(path)) assert.equal(checked.get(path), file.sha256, 'Retained evidence bytes changed');
     checked.set(path, file.sha256);
-    return JSON.parse(file.jsonBytes.toString('utf8'));
+    return bytesOnly ? file.jsonBytes : JSON.parse(file.jsonBytes.toString('utf8'));
   }
   async function jsonEvidence(entry) {
     verifyReceiptIdentity(entry);
@@ -131,6 +132,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
   verifyFinalGoalConfiguration(configuration);
   const declaration = await jsonEvidence(campaign.declaration);
   const scenarioResults = [];
+  const scenarios = new Map(configuration.scenarios.map(scenario => [scenario.id, scenario]));
   for (const entry of campaign.scenarios) {
     const result = await jsonEvidence(entry);
     assert.equal(result.id, entry.scenarioId, 'Retained scenario was relabelled');
@@ -166,6 +168,27 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     assert.equal(admission.sourceManifestSha256, finalGoalHash(declaration.sourceManifest), 'Gate does not bind admitted campaign source');
   }
   const analysis = analyzeFinalGoal({ configuration, declaration, scenarioResults });
+  const analyzedScenarios = new Map(analysis.scenarios.map(scenario => [scenario.id, scenario]));
+  for (const result of scenarioResults) {
+    const analyzedCells = new Map(analyzedScenarios.get(result.id).cells.map(cell => [cell.id, cell]));
+    for (const cell of result.cells) {
+      const actualStatus = analyzedCells.get(cell.id).status;
+      if (!['confirmed-win', 'uncertain', 'nonwinner'].includes(actualStatus)) continue;
+      for (const attempt of cell.attempts) for (const run of Object.values(attempt.runs)) {
+        const watchdogReceipt = run.evidence.find(receipt => receipt.kind === 'watchdog');
+        const lifecycleReceipt = run.evidence.find(receipt => receipt.kind === 'lifecycle');
+        const watchdogReportBytes = await jsonFile(watchdogReceipt.path, watchdogReceipt.sha256, true);
+        const lifecycle = await jsonEvidence(lifecycleReceipt);
+        const derivedResources = adaptFinalGoalResources({ watchdogReportBytes, lifecycle,
+          collectorSha256: declaration.resourceCollectorSha256,
+          requiredResourceComponents: scenarios.get(result.id).requiredResourceComponents });
+        assert.deepEqual(derivedResources, run.resources, 'Resources differ from original watchdog/lifecycle reconstruction');
+        assert.deepEqual(lifecycle.clock.ownerInterval, run.report.ownerInterval, 'Lifecycle owner interval differs from original report');
+        assert.deepEqual(derivedResources.watchdogClock, run.report.watchdogClock, 'Raw watchdog clock differs from original report');
+      }
+    }
+  }
+
   return { analysis, checkedFiles: Object.fromEntries(checked),
     inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
       scope: 'Cumulative JSON read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
