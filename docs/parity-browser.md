@@ -3584,10 +3584,10 @@
 | playwright-core/types/types.d.ts.ElectronApplication.[Symbol.asyncDispose]#2 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.export:export {};#1 | export | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#api-request-disabled) |
+| playwright-core/types/types.d.ts.APIRequest.newContext#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext.options.baseURL#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequest.newContext.options.baseURL#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
+| playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates#1 | PropertySignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#api-request-unavailable-context-options) |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates.origin#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates.certPath#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates.cert#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -3607,12 +3607,12 @@
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.httpCredentials.send#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.ignoreHTTPSErrors#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.maxRedirects#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy#1 | PropertySignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#api-request-unavailable-context-options) |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy.server#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy.bypass#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy.username#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy.password#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.cookies#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.cookies.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.cookies.value#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -3627,8 +3627,8 @@
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.origins.localStorage#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.origins.localStorage.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.origins.localStorage.value#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequest.newContext.options.userAgent#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequest.newContext.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
+| playwright-core/types/types.d.ts.APIRequest.newContext.options.userAgent#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.delete#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.delete.url#1 | parameter | planned / unverified | Unreviewed |
@@ -3654,7 +3654,7 @@
 | playwright-core/types/types.d.ts.APIRequestContext.delete.options.params.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.delete.options.params.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.delete.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.dispose#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.dispose#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.dispose.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.dispose.options.reason#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.fetch#1 | MethodSignature | planned / unverified | Unreviewed |
@@ -3682,7 +3682,7 @@
 | playwright-core/types/types.d.ts.APIRequestContext.fetch.options.params.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.fetch.options.params.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.fetch.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.get#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.get#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.get.url#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.get.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.get.options.data#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -3702,10 +3702,10 @@
 | playwright-core/types/types.d.ts.APIRequestContext.get.options.multipart.&lt;call&gt;.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.get.options.multipart.&lt;call&gt;.mimeType#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.get.options.multipart.&lt;call&gt;.buffer#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.get.options.params#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.get.options.params#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.get.options.params.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.get.options.params.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.get.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.get.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.head#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.head.url#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.head.options#1 | parameter | planned / unverified | Unreviewed |
@@ -3754,10 +3754,10 @@
 | playwright-core/types/types.d.ts.APIRequestContext.patch.options.params.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.patch.options.params.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.patch.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.post#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.post#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.post.url#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.post.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.post.options.data#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.post.options.data#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.post.options.failOnStatusCode#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.post.options.form#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.post.options.form.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
@@ -3820,22 +3820,22 @@
 | playwright-core/types/types.d.ts.APIRequestContext.storageState.origins.localStorage#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.storageState.origins.localStorage.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIRequestContext.storageState.origins.localStorage.value#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIRequestContext.tracing#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIRequestContext.tracing#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIRequestContext.[Symbol.asyncDispose]#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIResponse.body#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIResponse.dispose#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIResponse.body#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
+| playwright-core/types/types.d.ts.APIResponse.dispose#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIResponse.headers#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse.headers.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse.headers.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse.headersArray#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse.headersArray.name#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse.headersArray.value#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIResponse.json#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIResponse.ok#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIResponse.status#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIResponse.json#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
+| playwright-core/types/types.d.ts.APIResponse.ok#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
+| playwright-core/types/types.d.ts.APIResponse.status#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIResponse.statusText#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.APIResponse.text#1 | MethodSignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.APIResponse.text#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.APIResponse.url#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.APIResponse.[Symbol.asyncDispose]#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserServer#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
@@ -4093,7 +4093,7 @@
 | playwright-core/types/types.d.ts.Mouse.wheel.deltaY#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.chromium#1 | VariableDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.firefox#1 | VariableDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.request#1 | VariableDeclaration | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.request#1 | VariableDeclaration | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright-core/types/types.d.ts.selectors#1 | VariableDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.webkit#1 | VariableDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Request#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
@@ -4230,14 +4230,14 @@
 | playwright-core/types/types.d.ts.Touchscreen.tap.x#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Touchscreen.tap.y#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Tracing.group#1 | MethodSignature | unsupported / missing | [scope and evidence](compatibility.md#tracing-missing) |
+| playwright-core/types/types.d.ts.Tracing.group#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#tracing-explicit-rejection) |
 | playwright-core/types/types.d.ts.Tracing.group.name#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.group.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.group.options.location#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.group.options.location.file#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.group.options.location.line#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.group.options.location.column#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Tracing.groupEnd#1 | MethodSignature | unsupported / missing | [scope and evidence](compatibility.md#tracing-missing) |
+| playwright-core/types/types.d.ts.Tracing.groupEnd#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#tracing-explicit-rejection) |
 | playwright-core/types/types.d.ts.Tracing.start#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#tracing) |
 | playwright-core/types/types.d.ts.Tracing.start.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.start.options.live#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -4250,7 +4250,7 @@
 | playwright-core/types/types.d.ts.Tracing.startChunk.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.startChunk.options.name#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#tracing) |
 | playwright-core/types/types.d.ts.Tracing.startChunk.options.title#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#tracing) |
-| playwright-core/types/types.d.ts.Tracing.startHar#1 | MethodSignature | unsupported / missing | [scope and evidence](compatibility.md#tracing-missing) |
+| playwright-core/types/types.d.ts.Tracing.startHar#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#tracing-explicit-rejection) |
 | playwright-core/types/types.d.ts.Tracing.startHar.path#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.startHar.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.startHar.options.content#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -4263,7 +4263,7 @@
 | playwright-core/types/types.d.ts.Tracing.stopChunk#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#tracing) |
 | playwright-core/types/types.d.ts.Tracing.stopChunk.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Tracing.stopChunk.options.path#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#tracing) |
-| playwright-core/types/types.d.ts.Tracing.stopHar#1 | MethodSignature | unsupported / missing | [scope and evidence](compatibility.md#tracing-missing) |
+| playwright-core/types/types.d.ts.Tracing.stopHar#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#tracing-explicit-rejection) |
 | playwright-core/types/types.d.ts.Video#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Video.delete#1 | MethodSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Video.path#1 | MethodSignature | planned / unverified | Unreviewed |

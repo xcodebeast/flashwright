@@ -18,7 +18,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
@@ -329,7 +329,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
@@ -802,14 +802,16 @@
       "title": "Tracing",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies.",
-      "limitations": "Live traces, video, group/groupEnd and HAR methods are not implemented in the public Tracing class. live start option rejects through option validation. DOM snapshots cover supported states and same-process frames; unsupported custom-element/out-of-process states fail export explicitly. Public request.newContext remains explicitly unsupported; private native API checkpoints do not establish standalone API request tracing. Manual screenshots/snapshots/sources default false. Runner defaults are separately verified and must not overwrite these manual defaults. Latest public runner checkpoint reuses accepted pre-API trace driver and is focused; no fresh combined full-core/native API/Linux/release/performance acceptance.",
+      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies. Public standalone API manual chunks and canonical owner identity now have independent action/network/resource ZIP checks and runner coexistence checks.",
+      "limitations": "Live traces, video, group/groupEnd and HAR recording remain unsupported. DOM snapshots cover supported states and same-process frames; unsupported custom-element/out-of-process states fail export explicitly. API traces retain request actions and wire resources without DOM/filmstrip work; snapshots:false suppresses API network capture. Manual defaults remain independent of runner defaults. Focused macOS development evidence does not establish full current release-core, Linux or performance acceptance.",
       "defaults": "Manual screenshots, snapshots and sources default to false. Omitting a stop path discards the archive. Runner policy defaults are separate.",
-      "differences": [],
+      "differences": [
+        "The retained concurrent manual stop/dispose case produced a valid native archive; pinned Playwright stop rejected ENOENT and left an invalid partial ZIP while disposal fulfilled. This is a cleanup difference, not equal-outcome timing evidence."
+      ],
       "implementation": [
         {
           "path": "packages/flashwright-core/src/tracing.ts",
-          "sha256": "b4539af0914fa1fbf21daded955e05b42d5dc39e4a8f25ef98a5a51cec0b4b09"
+          "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565"
         }
       ],
       "evidence": [
@@ -826,6 +828,11 @@
         {
           "path": "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
           "sha256": "03293c9e58dcdcd25ca4f71c601ff431f3598db297f06a8738c93045a740465d",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+          "sha256": "f6873fc3f1bc502b7260de7c8255bf0c43f5b67a0b9315d3845c53e586d65cdb",
           "kind": "conformance"
         }
       ],
@@ -885,24 +892,24 @@
       ]
     },
     {
-      "id": "tracing-missing",
-      "title": "Tracing missing methods",
+      "id": "tracing-explicit-rejection",
+      "title": "Unsupported tracing methods",
       "status": "unsupported",
-      "assessment": "missing",
-      "scope": "These listed methods have no public implementation in the inspected class.",
+      "assessment": "explicit-rejection",
+      "scope": "Public group/groupEnd/startHar/stopHar entry points reject with UnsupportedFeatureError; declaration availability does not imply recording support.",
       "limitations": "Source review only for this rejection/absence classification; no new runtime conformance claim. Other methods and all unlisted options retain their separate classifications.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
         {
           "path": "packages/flashwright-core/src/tracing.ts",
-          "sha256": "b4539af0914fa1fbf21daded955e05b42d5dc39e4a8f25ef98a5a51cec0b4b09"
+          "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565"
         }
       ],
       "evidence": [
         {
           "path": "packages/flashwright-core/src/tracing.ts",
-          "sha256": "b4539af0914fa1fbf21daded955e05b42d5dc39e4a8f25ef98a5a51cec0b4b09",
+          "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565",
           "kind": "source-review"
         }
       ],
@@ -1274,7 +1281,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
@@ -1351,7 +1358,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -1405,7 +1412,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -1416,7 +1423,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc",
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
           "kind": "source-review"
         }
       ],
@@ -1436,14 +1443,14 @@
       "title": "Automatic runner tracing",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Browser-context traces for all eight pinned policy spellings, retention across retries, public stock/module/worker contexts, attachments, source locations and actual pinned viewer loading. 514 public attempts, 21 boundary cases and six viewer cases are retained.",
-      "limitations": "Live traces, video and public standalone API request tracing remain unavailable. Context creation begun without an attempt owner and published during an attempt reports a trace error. Capture limits and diagnostic failures preserve the original test outcome. Focused macOS acceptance on Bun and Node 22/24; no combined native API, Linux or release acceptance.",
+      "scope": "Browser-context traces for all eight pinned policy spellings, retention across retries, public stock/module/worker contexts, attachments, source locations and actual pinned viewer loading. 514 public attempts, 21 boundary cases and six viewer cases are retained. The selected native API fixture/manual enrollment adds retry archive verification, six API coordinator cases and eighteen public/fixture coordinator cases.",
+      "limitations": "Live traces and video remain unavailable. Creation without an original attempt owner retains its explicit incomplete-capture boundary. Capture limits and diagnostic failures preserve the original test outcome. Public API coverage is the selected request slice only; no full current release-core, packed backend-corpus, Linux or performance acceptance.",
       "defaults": "Trace defaults to off. Enabled runner policies use pinned screenshots/snapshots/sources/attachments defaults; boolean overrides are covered. Missing object mode follows the pinned off default.",
       "differences": [],
       "implementation": [
         {
           "path": "packages/flashwright-runner/src/index.ts",
-          "sha256": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619"
+          "sha256": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5"
         },
         {
           "path": "packages/flashwright-runner/src/trace-policy.ts",
@@ -1458,6 +1465,11 @@
         {
           "path": "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
           "sha256": "03293c9e58dcdcd25ca4f71c601ff431f3598db297f06a8738c93045a740465d",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+          "sha256": "f6873fc3f1bc502b7260de7c8255bf0c43f5b67a0b9315d3845c53e586d65cdb",
           "kind": "conformance"
         }
       ],
@@ -1489,31 +1501,135 @@
       ]
     },
     {
-      "id": "api-request-disabled",
-      "title": "Public API request contexts",
-      "status": "unsupported",
-      "assessment": "explicit-rejection",
-      "scope": "Public request.newContext explicitly rejects before creating an API context.",
-      "limitations": "Internal native API request implementation and its private tests do not enable the public API, request fixtures or API trace collection.",
-      "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
-      "differences": [],
+      "id": "api-request-native",
+      "title": "Native public requests and request fixture",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Canonical library/runner request identity; fresh native standalone contexts and lazy per-test request fixtures; original hook/retry/timeout ownership; supported runner defaults; numeric query parameters; binary POST data; status, JSON, text and byte responses; canonical manual/runner API tracing. The unchanged typed Mailpit helper passes fresh direct/alias packed consumers on Bun and Node 22/24 against a local HTTP fixture implementing its endpoints; this is separate from real Mailpit/application coverage.",
+      "limitations": "Only the listed methods/options and exercised value classes are reviewed. GET query objects use string/number values; this checkpoint verifies binary POST data, not every data/form/multipart overload. Storage defaults cover cookie state objects/files, not all descendant fields. Project-level header/credential configuration, proxy/client certificates, page.request, browserContext.request, route.fetch and toBeOK remain outside this admission. Historical full request matrix uses the recorded release driver; later trace gates and packed consumers use separately recorded development/debug drivers. No full current release-core, packed backend-corpus, native Linux or performance acceptance.",
+      "defaults": "Ordinary library contexts retain their own defaults. Runner fixture/manual factories inherit supported baseURL, storageState, userAgent and actionTimeout; runner actionTimeout 0 stays unlimited. Own undefined clears the first three inherited options, while undefined timeout inherits actionTimeout. Each test fixture owns a fresh jar and disposes it; manually created contexts remain caller-owned. Tracing is lazy and manual screenshots/snapshots/sources default false.",
+      "differences": [
+        "Native null/string context timeout values reject at construction outside the numeric declaration. Pinned Playwright accepts construction; null uses its default and a string fails on fetch.",
+        "The retained concurrent manual stop/dispose case produced a valid native archive; pinned Playwright stop rejected ENOENT and left an invalid partial ZIP while disposal fulfilled. This is a cleanup difference, not equal-outcome timing evidence."
+      ],
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+        },
+        {
+          "path": "packages/flashwright-core/src/api-request.ts",
+          "sha256": "dc6332b07a40c29843853b4a091407cf8683a5fade06cc6eaafb7b9314a926fd"
+        },
+        {
+          "path": "packages/flashwright-core/src/tracing.ts",
+          "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565"
+        },
+        {
+          "path": "packages/flashwright-core/src/runner-context-defaults.ts",
+          "sha256": "1baf0835c557bd390357832b844b23d55789eca519ce205f89c8bce86172ccd0"
+        },
+        {
+          "path": "packages/flashwright-runner/src/index.ts",
+          "sha256": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5"
+        },
+        {
+          "path": "packages/flashwright-runner/src/request-fixture-owner.ts",
+          "sha256": "d674ef78099ea1da38ca35357c9ee4be74d5b922aabafee955bd86308cd4490a"
         }
       ],
       "evidence": [
         {
-          "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc",
-          "kind": "source-review"
+          "path": "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+          "sha256": "f6873fc3f1bc502b7260de7c8255bf0c43f5b67a0b9315d3845c53e586d65cdb",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+          "sha256": "f6873fc3f1bc502b7260de7c8255bf0c43f5b67a0b9315d3845c53e586d65cdb",
+          "kind": "package"
         }
       ],
       "entries": [
         {
+          "id": "playwright-core/types/types.d.ts.request#1",
+          "declarationSha256": "89fe3326345f6599ef29edea56490cba145456d518158e447ae23f4b58441726"
+        },
+        {
           "id": "playwright-core/types/types.d.ts.APIRequest.newContext#1",
           "declarationSha256": "3a50f8e81912d97aed5abcedb075c7403c4fcca81a111ee04d53e41d9cd9399e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.baseURL#1",
+          "declarationSha256": "b5392db0df85e438535acba115f042ed0132610acf4d8c6428c55a3beb49093e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState#1",
+          "declarationSha256": "c5228c1caa5a5c226e719cb784dc36b9bc7a04e434719e55d94df871074f8c0c"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.userAgent#1",
+          "declarationSha256": "78a094979cab40b4384e36f3f797b77f010c6a4ae289736c64e3b7d23227deb6"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.timeout#1",
+          "declarationSha256": "3ac5b4acd3cffb53c26425d56b3ac970f07fd947225099768319eed033bf4aa3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.get#1",
+          "declarationSha256": "7463c01de4f4dda928cb02d50aa6b3ca006c455593985f8465adeb917c41d9d7"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.get.options.params#1",
+          "declarationSha256": "51e893a4b74452bf5aa035760317697dd7b341e2010d7c75b094f98e6458bfb1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.get.options.timeout#1",
+          "declarationSha256": "d022187c5cec3f6d9d2387e0a43424f4e1b50655f34db0917fe66a384bcf81fe"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.post#1",
+          "declarationSha256": "e5338148a8edb068cb2337c5eaffdc330abdcb15e61379c0a2a32b2dc25140dc"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.post.options.data#1",
+          "declarationSha256": "9d6cd159c4e7d26531e1aa8049bd8ae02eb5bb8ddc31cc58f7ea778ea6453f79"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.dispose#1",
+          "declarationSha256": "d299eadfa0b7fabf8959bff0c72f01577d17cf0f465285a7ef9fa20793526557"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequestContext.tracing#1",
+          "declarationSha256": "44353f774e9367999b45d511c030b6a1f7d1c907171f678336b899749e78cf0b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIResponse.body#1",
+          "declarationSha256": "5c1f051c1e327023654903d0c101729c0a4c6bdcebd1095cc6132066454582f3"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIResponse.json#1",
+          "declarationSha256": "63bf0511ea86ccf5b0e5a1c43059eff0256c81d60aebf3e150618523102af237"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIResponse.ok#1",
+          "declarationSha256": "a2d6a391d81637f29993175802713ecb75c524814763b5345de4e63545b32a2d"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIResponse.status#1",
+          "declarationSha256": "47c082fb3c53e63a96e5857a03ea7b5e1b579baf4ebc5cab3819edb60aa74cb4"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIResponse.text#1",
+          "declarationSha256": "2ab2a82773d7478220a92b1df64b35e1a10515d9131f3fc525bfd97c42cdaff8"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIResponse.dispose#1",
+          "declarationSha256": "c39d24feb85729af60fd824be7b7517cd53bf5da6af5452c358110302b413868"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightTestArgs.request#1",
+          "declarationSha256": "9dd0ac488b072f2a0b2a7acc597b85cedbaac648def7e5ff41094f1632c15b8d"
         }
       ]
     },
@@ -1529,13 +1645,13 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc",
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
           "kind": "source-review"
         }
       ],
@@ -1574,13 +1690,13 @@
       "implementation": [
         {
           "path": "packages/flashwright-runner/src/index.ts",
-          "sha256": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619"
+          "sha256": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5"
         }
       ],
       "evidence": [
         {
           "path": "packages/flashwright-runner/src/index.ts",
-          "sha256": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619",
+          "sha256": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5",
           "kind": "source-review"
         }
       ],
@@ -1710,7 +1826,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/frame.ts",
@@ -1741,7 +1857,7 @@
         },
         {
           "path": "compatibility/m1/library-smoke.mjs",
-          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "sha256": "0312955cda4060b28837d09ce26e084e9dc67d464f8e25d8c4a892cf739af960",
           "kind": "source-review"
         },
         {
@@ -1899,7 +2015,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -1979,7 +2095,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/locator.ts",
@@ -2185,7 +2301,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/frame.ts",
@@ -2336,7 +2452,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/locator.ts",
@@ -2565,7 +2681,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/resident-runtime/locator-runtime.js",
@@ -2747,7 +2863,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/context-settings.ts",
@@ -2759,7 +2875,7 @@
         },
         {
           "path": "packages/flashwright-runner/src/index.ts",
-          "sha256": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619"
+          "sha256": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5"
         },
         {
           "path": "crates/flashwright-engine/src/downloads.rs",
@@ -2799,7 +2915,7 @@
         },
         {
           "path": "crates/flashwright-browser/src/supervision.rs",
-          "sha256": "e38bc2716595ded60d4285b972da0703ac79beb8ecb0ba8e6ed47d2166ced138"
+          "sha256": "594ca3b82e94729e53cd98aa5ee1bd584380e02d54750dfcf5f0547efb24af2c"
         },
         {
           "path": "crates/flashwright-browser/src/connection.rs",
@@ -2900,7 +3016,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/frame.ts",
@@ -2919,7 +3035,7 @@
         },
         {
           "path": "compatibility/m1/library-smoke.mjs",
-          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "sha256": "0312955cda4060b28837d09ce26e084e9dc67d464f8e25d8c4a892cf739af960",
           "kind": "source-review"
         },
         {
@@ -2995,7 +3111,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -3041,7 +3157,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -3057,7 +3173,7 @@
         },
         {
           "path": "compatibility/m1/library-smoke.mjs",
-          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "sha256": "0312955cda4060b28837d09ce26e084e9dc67d464f8e25d8c4a892cf739af960",
           "kind": "source-review"
         },
         {
@@ -3121,7 +3237,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -3159,7 +3275,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -3230,7 +3346,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -3264,7 +3380,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
@@ -3275,7 +3391,7 @@
         },
         {
           "path": "compatibility/m1/library-smoke.mjs",
-          "sha256": "30f0ba2f1ed9db4e1fa03734290c08b15a69654f2af1cd94df10b5c75b80ffb0",
+          "sha256": "0312955cda4060b28837d09ce26e084e9dc67d464f8e25d8c4a892cf739af960",
           "kind": "source-review"
         },
         {
@@ -3308,13 +3424,13 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         }
       ],
       "evidence": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc",
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
           "kind": "source-review"
         }
       ],
@@ -3442,7 +3558,7 @@
         },
         {
           "path": "packages/flashwright-runner/src/index.ts",
-          "sha256": "2f9de2305a121eabfc57e4e41233eee10e54d99f0086ea76608a2b9193108619"
+          "sha256": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5"
         },
         {
           "path": "packages/flashwright-core/src/assertions.ts",
@@ -3450,7 +3566,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/resident-runtime/locator-runtime.js",
@@ -3531,7 +3647,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/locator.ts",
@@ -3543,7 +3659,7 @@
         },
         {
           "path": "packages/flashwright-core/src/tracing.ts",
-          "sha256": "b4539af0914fa1fbf21daded955e05b42d5dc39e4a8f25ef98a5a51cec0b4b09"
+          "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565"
         },
         {
           "path": "packages/resident-runtime/aria-snapshot.js",
@@ -3678,7 +3794,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/client.ts",
@@ -3799,7 +3915,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "b04a10aaa93488cb6d6399d2e3e947334d37e924194840d44693566811bda7bc"
+          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
         },
         {
           "path": "packages/flashwright-core/src/engine-contract.ts",
@@ -3807,7 +3923,7 @@
         },
         {
           "path": "packages/flashwright-core/src/tracing.ts",
-          "sha256": "b4539af0914fa1fbf21daded955e05b42d5dc39e4a8f25ef98a5a51cec0b4b09"
+          "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565"
         },
         {
           "path": "crates/flashwright-engine/src/keyboard.rs",
@@ -3847,6 +3963,39 @@
         {
           "id": "playwright-core/types/types.d.ts.Keyboard.insertText.text#1",
           "declarationSha256": "c50d51269610367c950497cc22272edcc61632bee26803b92f914ae8b1e8c365"
+        }
+      ]
+    },
+    {
+      "id": "api-request-unavailable-context-options",
+      "title": "Standalone request proxy and client certificates",
+      "status": "unsupported",
+      "assessment": "explicit-rejection",
+      "scope": "Non-undefined proxy and clientCertificates context options reject before native allocation.",
+      "limitations": "Source-reviewed explicit rejection only; descendant shapes and other unlisted options are not promoted.",
+      "defaults": "Omitted or undefined options do not enable either feature.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/api-request.ts",
+          "sha256": "dc6332b07a40c29843853b4a091407cf8683a5fade06cc6eaafb7b9314a926fd"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "packages/flashwright-core/src/api-request.ts",
+          "sha256": "dc6332b07a40c29843853b4a091407cf8683a5fade06cc6eaafb7b9314a926fd",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy#1",
+          "declarationSha256": "17305021fb8f4698f2baa88129aeb917783c4cb2bdd18887036b112d786d1d5e"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates#1",
+          "declarationSha256": "67ab57182186a84d6d073ddffc8b220d01069a8103c402db670e865ebf612cea"
         }
       ]
     }

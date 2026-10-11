@@ -69573,21 +69573,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "unsupported",
+      "status": "experimental",
       "milestone": "M4",
       "implementation": [
-        "packages/flashwright-core/src/index.ts"
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
       ],
       "evidence": [
-        "packages/flashwright-core/src/index.ts"
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17717,
       "signature": "newContext(options?: { baseURL?: string; clientCertificates?: Array<{ origin: string; certPath?: string; cert?: Buffer; keyPath?: string; key?: Buffer; pfxPath?: string; pfx?: Buffer; passphrase?: string; }>; extraHTTPHeaders?: { [key: string]: string; }; failOnStatusCode?: boolean; httpCredentials?: { username: string; password: string; origin?: string; send?: \"unauthorized\"|\"always\"; }; ignoreHTTPSErrors?: boolean; maxRedirects?: number; proxy?: { server: string; bypass?: string; username?: string; password?: string; }; storageState?: string|{ cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: \"Strict\"|\"Lax\"|\"None\"; }>; origins: Array<{ origin: string; localStorage: Array<{ name: string; value: string; }>; }>; }; timeout?: number; userAgent?: string; }): Promise<APIRequestContext>;",
       "defaults": [],
       "optional": false,
-      "assessment": "explicit-rejection",
-      "review": "api-request-disabled"
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options#1",
@@ -69613,17 +69619,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17730,
       "signature": "baseURL?: string;",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates#1",
@@ -69631,17 +69647,21 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "unsupported",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/api-request.ts"
+      ],
+      "evidence": [
+        "packages/flashwright-core/src/api-request.ts"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17750,
       "signature": "clientCertificates?: Array<{ origin: string; certPath?: string; cert?: Buffer; keyPath?: string; key?: Buffer; pfxPath?: string; pfx?: Buffer; passphrase?: string; }>;",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "explicit-rejection",
+      "review": "api-request-unavailable-context-options"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.clientCertificates.origin#1",
@@ -70001,17 +70021,21 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "unsupported",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/api-request.ts"
+      ],
+      "evidence": [
+        "packages/flashwright-core/src/api-request.ts"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17842,
       "signature": "proxy?: { server: string; bypass?: string; username?: string; password?: string; };",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "explicit-rejection",
+      "review": "api-request-unavailable-context-options"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.proxy.server#1",
@@ -70091,17 +70115,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17877,
       "signature": "storageState?: string|{ cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: \"Strict\"|\"Lax\"|\"None\"; }>; origins: Array<{ origin: string; localStorage: Array<{ name: string; value: string; }>; }>; };",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.storageState.cookies#1",
@@ -70361,10 +70395,20 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17914,
       "signature": "timeout?: number;",
@@ -70372,8 +70416,8 @@
         "Maximum time in milliseconds to wait for the response. Defaults to `30000` (30 seconds). Pass `0` to disable"
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequest.newContext.options.userAgent#1",
@@ -70381,17 +70425,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 17919,
       "signature": "userAgent?: string;",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext#1",
@@ -70859,17 +70913,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18044,
       "signature": "dispose(options?: { reason?: string; }): Promise<void>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.dispose.options#1",
@@ -71375,17 +71439,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18205,
       "signature": "get(url: string, options?: { data?: string|Buffer|Serializable; failOnStatusCode?: boolean; form?: { [key: string]: string|number|boolean; }|FormData; headers?: { [key: string]: string; }; ignoreHTTPSErrors?: boolean; maxRedirects?: number; maxRetries?: number; multipart?: FormData|{ [key: string]: string|number|boolean|ReadStream|{ name: string; mimeType: string; buffer: Buffer; }; }; params?: { [key: string]: string|number|boolean; }|URLSearchParams|string; timeout?: number; }): Promise<APIResponse>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.get.url#1",
@@ -71743,17 +71817,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18276,
       "signature": "params?: { [key: string]: string|number|boolean; }|URLSearchParams|string;",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.get.options.params.<call>#1",
@@ -71797,10 +71881,20 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18281,
       "signature": "timeout?: number;",
@@ -71808,8 +71902,8 @@
         "Request timeout in milliseconds. Defaults to `30000` (30 seconds). Pass `0` to disable timeout."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.head#1",
@@ -72701,17 +72795,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18505,
       "signature": "post(url: string, options?: { data?: string|Buffer|Serializable; failOnStatusCode?: boolean; form?: { [key: string]: string|number|boolean; }|FormData; headers?: { [key: string]: string; }; ignoreHTTPSErrors?: boolean; maxRedirects?: number; maxRetries?: number; multipart?: FormData|{ [key: string]: string|number|boolean|ReadStream|{ name: string; mimeType: string; buffer: Buffer; }; }; params?: { [key: string]: string|number|boolean; }|URLSearchParams|string; timeout?: number; }): Promise<APIResponse>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.post.url#1",
@@ -72755,17 +72859,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18511,
       "signature": "data?: string|Buffer|Serializable;",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.post.options.failOnStatusCode#1",
@@ -73909,17 +74023,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18721,
       "signature": "tracing: Tracing;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIRequestContext.[Symbol.asyncDispose]#1",
@@ -73963,17 +74087,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18735,
       "signature": "body(): Promise<Buffer>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIResponse.dispose#1",
@@ -73981,17 +74115,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18740,
       "signature": "dispose(): Promise<void>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIResponse.headers#1",
@@ -74107,17 +74251,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18768,
       "signature": "json(): Promise<Serializable>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIResponse.ok#1",
@@ -74125,17 +74279,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18773,
       "signature": "ok(): boolean;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIResponse.status#1",
@@ -74143,17 +74307,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18778,
       "signature": "status(): number;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIResponse.statusText#1",
@@ -74179,17 +74353,27 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 18788,
       "signature": "text(): Promise<string>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.APIResponse.url#1",
@@ -79634,17 +79818,27 @@
       "kind": "VariableDeclaration",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 20393,
       "signature": "request: APIRequest",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright-core/types/types.d.ts.selectors#1",
@@ -82317,8 +82511,8 @@
       "signature": "group(name: string, options?: { location?: { file: string; line?: number; column?: number; }; }): Promise<Disposable>;",
       "defaults": [],
       "optional": false,
-      "assessment": "missing",
-      "review": "tracing-missing"
+      "assessment": "explicit-rejection",
+      "review": "tracing-explicit-rejection"
     },
     {
       "id": "playwright-core/types/types.d.ts.Tracing.group.name#1",
@@ -82449,8 +82643,8 @@
       "signature": "groupEnd(): Promise<void>;",
       "defaults": [],
       "optional": false,
-      "assessment": "missing",
-      "review": "tracing-missing"
+      "assessment": "explicit-rejection",
+      "review": "tracing-explicit-rejection"
     },
     {
       "id": "playwright-core/types/types.d.ts.Tracing.start#1",
@@ -82466,7 +82660,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21400,
@@ -82526,7 +82721,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21416,
@@ -82550,7 +82746,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21421,
@@ -82574,7 +82771,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21428,
@@ -82598,7 +82796,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21433,
@@ -82622,7 +82821,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21438,
@@ -82646,7 +82846,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21469,
@@ -82688,7 +82889,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21478,
@@ -82712,7 +82914,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21483,
@@ -82741,8 +82944,8 @@
       "signature": "startHar(path: string, options?: { content?: \"omit\"|\"embed\"|\"attach\"; mode?: \"full\"|\"minimal\"; resourcesDir?: string; urlFilter?: string|RegExp; }): Promise<Disposable>;",
       "defaults": [],
       "optional": false,
-      "assessment": "missing",
-      "review": "tracing-missing"
+      "assessment": "explicit-rejection",
+      "review": "tracing-explicit-rejection"
     },
     {
       "id": "playwright-core/types/types.d.ts.Tracing.startHar.path#1",
@@ -82872,7 +83075,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21538,
@@ -82914,7 +83118,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21542,
@@ -82938,7 +83143,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21551,
@@ -82980,7 +83186,8 @@
       "evidence": [
         "compatibility/evidence/public-snapshot-checkpoint-2026-10-09.json",
         "compatibility/evidence/trace-storage-checkpoint-2026-10-10.json",
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 21557,
@@ -83009,8 +83216,8 @@
       "signature": "stopHar(): Promise<void>;",
       "defaults": [],
       "optional": false,
-      "assessment": "missing",
-      "review": "tracing-missing"
+      "assessment": "explicit-rejection",
+      "review": "tracing-explicit-rejection"
     },
     {
       "id": "playwright-core/types/types.d.ts.Video#1",
@@ -109446,7 +109653,8 @@
         "packages/flashwright-runner/src/runner-artifact-coordinator.ts"
       ],
       "evidence": [
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 6951,
@@ -109473,7 +109681,8 @@
         "packages/flashwright-runner/src/runner-artifact-coordinator.ts"
       ],
       "evidence": [
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 6951,
@@ -109497,7 +109706,8 @@
         "packages/flashwright-runner/src/runner-artifact-coordinator.ts"
       ],
       "evidence": [
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 6951,
@@ -109521,7 +109731,8 @@
         "packages/flashwright-runner/src/runner-artifact-coordinator.ts"
       ],
       "evidence": [
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 6951,
@@ -109545,7 +109756,8 @@
         "packages/flashwright-runner/src/runner-artifact-coordinator.ts"
       ],
       "evidence": [
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 6951,
@@ -109569,7 +109781,8 @@
         "packages/flashwright-runner/src/runner-artifact-coordinator.ts"
       ],
       "evidence": [
-        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json"
+        "compatibility/evidence/runner-public-artifacts-checkpoint-2026-10-10.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 6951,
@@ -110557,17 +110770,27 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/api-request.ts",
+        "packages/flashwright-core/src/tracing.ts",
+        "packages/flashwright-core/src/runner-context-defaults.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "packages/flashwright-runner/src/request-fixture-owner.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
+        "compatibility/evidence/public-request-checkpoint-2026-10-11.json"
+      ],
       "source": "playwright/types/test.d.ts",
       "line": 7736,
       "signature": "request: APIRequestContext;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "api-request-native"
     },
     {
       "id": "playwright/types/test.d.ts.ExcludeProps#1",
@@ -123223,5 +123446,5 @@
     }
   ],
   "reviewSource": "compatibility/parity-reviews.json",
-  "reviewedEntries": 502
+  "reviewedEntries": 523
 }
