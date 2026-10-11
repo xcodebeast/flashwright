@@ -50,7 +50,7 @@ await writeFile(join(directory, 'tsconfig.json'), JSON.stringify({
 }, null, 2));
 execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '--project', 'tsconfig.json'], { cwd: directory, stdio: 'inherit' });
 
-// The preload runs in the runner and every worker without editing corpus fixture/test logic.
+// Config loading installs the backend guard in the CLI and each worker after owned bootstrap.
 await writeFile(join(directory, 'poison.cjs'), `
 const { appendFileSync } = require('node:fs');
 const { dirname, join } = require('node:path');
@@ -65,6 +65,7 @@ appendFileSync(process.env.FLASHWRIGHT_MIGRATION_POISON_LOG, JSON.stringify({ pr
 for (const engine of ['reference', 'flashwright']) {
   const packageName = engine === 'reference' ? '@playwright/test' : '@flashwright/test';
   await writeFile(join(directory, `${engine}.config.mjs`), `
+${engine === 'flashwright' ? "import './poison.cjs';" : ''}
 import { defineConfig } from '${packageName}';
 export default defineConfig({ testDir: './${engine}/tests', workers: 1, timeout: 30000, expect: { timeout: 5000 },
  use: { launchOptions: { executablePath: ${JSON.stringify(browserPath)} }, trace: 'off', video: 'off', screenshot: 'off' },
@@ -124,7 +125,7 @@ try {
       environment.FLASHWRIGHT_MIGRATION_POISON_LOG = poisonLog;
     }
     const executable = engine === 'reference' ? 'playwright' : 'flashwright';
-    const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--', process.execPath, ...(engine === 'flashwright' ? ['--require', join(directory, 'poison.cjs')] : []), `node_modules/.bin/${executable}`, 'test', '--config', `${engine}.config.mjs`], { cwd: directory, env: environment, stdio: 'inherit' });
+    const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--', process.execPath, `node_modules/.bin/${executable}`, 'test', '--config', `${engine}.config.mjs`], { cwd: directory, env: environment, stdio: 'inherit' });
     const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve); });
     const report = JSON.parse(await readFile(join(directory, `${engine}-report.json`), 'utf8'));
     evidence.runs[engine] = { code, report, tests: testResults(report) };

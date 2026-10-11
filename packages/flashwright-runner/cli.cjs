@@ -11,4 +11,7 @@ else if (arguments_[0] !== 'test' || arguments_.some(argument => ['--ui', '--ui-
     message: 'Yarn Plug\'n\'Play runner execution is not supported by the pinned runner loader. Set nodeLinker: node-modules in .yarnrc.yml and reinstall. Plain Flashwright library use remains available with PnP.',
     referenceVersion: '1.60.0', browser: 'chromium' });
   console.error(error.toString()); process.exitCode = 1;
-} else require(join(__dirname, 'dist/upstream/cli.js'));
+} else {
+  require(join(__dirname, 'dist/upstream/flashwright-source-transform.cjs')).registerOwnedBootstrap(__filename);
+  require(join(__dirname, 'dist/upstream/cli.js'));
+}

@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-development-slice",
+  "date": "2026-10-11",
+  "referenceVersion": "1.60.0",
+  "scope": "Original browser-command error attribution and ordinary direct runner startup on native macOS arm64. No new performance, Linux, broad parity or release acceptance.",
+  "baseCommit": "1254a1d7fa46d3cbb35719a6047f13b254504014",
+  "implementation": {
+    "README.md": "7383d6f5b4a8a99870af75dd95e22e65b791b3aa9873c3a01f1bceb8d7517002",
+    "SPECS.md": "459b39f309c4e03da89334d2941ae8375046fe25d2ef27237c0c7dc6d0667bbf",
+    "THIRD_PARTY_NOTICES.md": "545ce39ebba2fe6542f66df679301a079531a123e9661e36bd82c9889df0c028",
+    "compatibility/m2/runner-trace-sources/sources.spec.cjs": "f7a025380d61f9b8562be022e251ff216357f30b6f8b5fec29e463d30f95374a",
+    "compatibility/parity-reviews.json": "4ef2cbb6c618bf8f549e30a91613c25e0956c7ee9c19aa570dc0b91239b4bdb5",
+    "compatibility/upstream/dialog-provenance.json": "c4f73b272c63aca038c74edf8ca5c1b6550a609b649c682e11501acd488921ee",
+    "compatibility/upstream/element-resolution-provenance.json": "feca8831713278ea55c6dfecf590f47d5940d416cfa2857f033404592821e75c",
+    "compatibility/upstream/file-chooser-provenance.json": "9eeafec7d258cc89349e6d31d22774141eee621e79754c3ca0a5d543e65e4db0",
+    "compatibility/upstream/filmstrip-provenance.json": "ffc0569fa31d7aadbcef6b634a441020ecee012fee8f46652b54c33351dddc94",
+    "compatibility/upstream/function-wait-provenance.json": "c188f8437f9757341522362a6f9e32ffadd02fc36f6445b3f8fb1e4f001636f5",
+    "compatibility/upstream/manual-tracing-provenance.json": "add91dd11677473bd4dfc99b6147273bc110ddde2ba340fa501c1244ede90946",
+    "compatibility/upstream/navigation-waits-provenance.json": "8e2cba39a62b5758d3f1c6f9e351d9897b2e4082a41331b6f6a1c3788bc98adf",
+    "compatibility/upstream/network-trace-provenance.json": "f07cbfeeb37aebc033da50b44a4ad6331a9fe71d69e631fd8d06f1534743703d",
+    "compatibility/upstream/owned-runner-provenance.json": "67012e6d719b3f80f7405d7f1b59249902751ab80b512761d62b855bdc1d2461",
+    "compatibility/upstream/runner-screenshots-provenance.json": "9f5fea72c59cb2562f91c9faab4f926c062dfd54d9af9364390000ed963329c1",
+    "compatibility/upstream/runner-trace-boundaries-provenance.json": "f0adeb85ced28e10b33b10ef2df8f9ca80dff4ee710d9ae8636c4dc1b7808680",
+    "compatibility/upstream/runner-trace-off-provenance.json": "d9bc03a42a93e984999964f63d53a4f24b6c90a24ec372a0578dd6e073d0d443",
+    "compatibility/upstream/snapshot-provenance.json": "17997791d454bb395954683ddb846fa6b6b3ab512c58732a7385eaa599e30aa4",
+    "packages/flashwright-core/src/call-sites.ts": "05be0b9280508650d72e2a9775a10cc7ab7a08bc45196f07bdf97e256229be53",
+    "packages/flashwright-core/src/client.ts": "01f3ddb198087db8e3f81f515b18b24a60559ba74c10260135d4e19a2f11df57",
+    "packages/flashwright-core/src/errors.ts": "5b82cfd8fa5cd6432c0a7d676e59b481df6556ab0993905a673d631454d417c4",
+    "packages/flashwright-runner/cli.cjs": "db363958d642699abee4e323ee85ab02d1fd8992ccf0a0e8459c2876e04e98d0",
+    "packages/flashwright-runner/runner-source-transform.cjs": "ee4a343de96c5e559c534fcd8c22624ac34da5f2144d7ab8281235242db5e30c",
+    "packages/flashwright-test/cli.cjs": "17a4062fb5c9bdfb4c50bb1aef853226e0c89257c3ea885f613826a44b338097",
+    "tools/build-runner-runtime.mjs": "1284a7886cdce502db0fdaa9fd529e5c06e98be8b998a8f1aae202759b235de1",
+    "tools/record-owned-runner-provenance.mjs": "0f3733729d1140d6d237ba891ff4a8968e3cff83471488ba5487fee63b36d97b",
+    "tools/run-runner-artifact-coordinator-tests.mjs": "b893cbac7fce791b4591c089026ce14c281fc6ee03c473ca81653e71cc5cdf72",
+    "tools/run-runner-trace-adoption-tests.mjs": "08a70a188c568b157a201c79f077b9818eb2d6eb78c3c0d989df675c7b218858",
+    "tools/run-runner-trace-finalizer-tests.mjs": "525fce1c6f42639f20e4a1277d7859924a14cc819248059725b69ade1e16e72b",
+    "tools/run-runner-trace-source-tests.mjs": "f8f8f8f35565c0a258ebc474f491b0e78b7c1149e464f4b6c48c63afbcc55f70",
+    "tools/run-runner-trace-start-tests.mjs": "ac2b4b8276a3f7ba96b6012c362965005598c1788d1799aeb4d1889ae772da02",
+    "tools/test-caller-locations.mjs": "dcd3268aaf3bf2e8614c449ea622125a87bf1571c045bae2fe58e2a1cd01aed9",
+    "tools/test-command-error-attribution.mjs": "6eb09bbfcd44c9d05f02f607dac8b39d8bdf72f367e3e9e23536482a92db5e91",
+    "tools/test-dialog-control-lane.mjs": "a755c828865753564f524cd11b3e83abcd83970cba1fdde1dbe26cd9c8b49c86",
+    "tools/test-native-error-attribution.mjs": "daa8df12bf9f0e1f45fdf153b2874b8cc285159b0b8402498c6400a2a30b3036",
+    "tools/test-owned-runner-runtime.mjs": "ed618379c75d5187d016f54556f9cd25f3c022989af61758fe300d3f104b2638",
+    "tools/test-packed-migration.mjs": "58a8fb5fac9eaf569f37481e816a9f6283a7b046910a536a54fa4a989d5a5dad",
+    "tools/test-runner-source-transform.mjs": "da7f7fc3696f8b181c4f72d9b6318c97170f782ba19d49b19075895e7cc7d6c0",
+    "tools/test-trace-admission.mjs": "f64d5ef9792e5238a8a4f63a7413757cf1aa09ab152f360daa9579aac12433ab",
+    "tools/verify-core.mjs": "fa38a1064e81d4809516f9f5191b26b12cfa459a3e4719f15cd86093f6e3b88f"
+  },
+  "behavior": [
+    "Exact typed helper lines8/6 and invoked method-token/opening-parenthesis columns, with failure-document caret matching serialized location.",
+    "Owned CJS original-source transform retains typed sourcesContent, configured Babel transforms, relative/tsconfig imports and mixed generated/VM module mapping.",
+    "Attributed Bun errors retain native Error brand, canonical public prototype/name/message/details and bounded own stack without invoking or changing application formatter.",
+    "Per-request canonical transport errors preserve independent callers and shared record/cause custody; unknown external errors and unknown subclasses retain identity.",
+    "Normal canonical development/installed-consumer entry preserves original pinned runtime and fixture environment."
+  ],
+  "bunBoundary": "Bun ordinary direct CLI/worker entry captures loader continuity before user config. Known preload/programmatic entry or later changed compiler/loader rejects explicitly. Already executed runtime preloads cannot be undone; no arbitrary hidden-hook or spoofed-state completeness is claimed. Native .cjs/unknown extension delegation follows pinned scope; configured Babel transforms remain supported.",
+  "core": {
+    "reportSha256": "17f6e133d05eae59152867813b2e3a104b51b28105c7e60787ec8f073a75e572",
+    "checks": 197,
+    "runtime": {
+      "name": "bun",
+      "version": "1.4.2"
+    },
+    "browser": {
+      "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+      "version": "148.0.7778.96",
+      "distribution": "full-chromium"
+    },
+    "driverSha256": "d02a83f8da3d099673b5ade32cd1a4065869b198e06ad87f01b92d17a9d1d245",
+    "sourceChangedDuringVerification": false,
+    "browserChangedDuringVerification": false,
+    "individualLogsVerified": 197
+  },
+  "host": {
+    "receiptSha256": "294045ece1c526a63355c3b727247f27db5f7d367aef1cacd6ae74fc63d5c631",
+    "runtimeResults": [
+      {
+        "runtime": "bun-1.4.2",
+        "exitCode": 0,
+        "checks": 11,
+        "toolSha256": "6eb09bbfcd44c9d05f02f607dac8b39d8bdf72f367e3e9e23536482a92db5e91",
+        "logSha256": "8a7851b6d2875c7430f7069d723506d3b635ec7a1e71191d5ec45b0e03bd4fd4",
+        "watchdogExpired": false
+      },
+      {
+        "runtime": "node-22.22.0",
+        "exitCode": 0,
+        "checks": 10,
+        "toolSha256": "6eb09bbfcd44c9d05f02f607dac8b39d8bdf72f367e3e9e23536482a92db5e91",
+        "logSha256": "0e12daf530a82b04793b3830d8231783ff2db404c72da4ac206328a30314a0a6",
+        "watchdogExpired": false
+      },
+      {
+        "runtime": "node-24.15.0",
+        "exitCode": 0,
+        "checks": 10,
+        "toolSha256": "6eb09bbfcd44c9d05f02f607dac8b39d8bdf72f367e3e9e23536482a92db5e91",
+        "logSha256": "244c0fba717d0987146e699cd9e0d40aa66e2ab58e457828d91bc7395f3c9e3f",
+        "watchdogExpired": false
+      }
+    ],
+    "hashQualification": "End-of-run source/build snapshot; root coordinated unchanged build during final matrix. Original failed attempts retained separately, no historical hashes rewritten."
+  },
+  "loader": {
+    "reportSha256": "63de618d801e29437dcfdb12ce1e3887529ea455392eb5d7133d25c83f71c0c6",
+    "cases": 32,
+    "identitiesUnchanged": true,
+    "scope": "JavaScript-only pinned Bun direct entry, startup options/configuration and original typed-source loading, plus built/pinned native .cjs and unknown-asset extension behavior. Known preload rejection occurs after runtime preload execution. No runner scheduling, browser, build, hidden-hook/spoofed-state completeness or performance admission."
+  },
+  "native": {
+    "accepted": [
+      {
+        "runtime": {
+          "name": "bun",
+          "version": "1.4.2"
+        },
+        "reportSha256": "4f09fae2a9230f3783c6509a68c2d830ef7eb9faf7376eebd917ba0e9fb31cec",
+        "supervisorSha256": "4bac6658193efab9cd135b5502884289af3a0a465ac16131d8cae0f06a7ab68d",
+        "cases": [
+          {
+            "title": "native reply keeps the transformed helper location",
+            "status": "failed",
+            "line": 6,
+            "column": 51
+          },
+          {
+            "title": "test deadline keeps the pending helper location",
+            "status": "timedOut",
+            "line": 6,
+            "column": 51
+          }
+        ],
+        "nestedRunnerExitCode": 1,
+        "explanation": "Two deliberately failing test scenarios; attribution controller passes."
+      },
+      {
+        "runtime": {
+          "name": "node",
+          "version": "22.22.0"
+        },
+        "reportSha256": "4394582e7c638b5a16843e507f62276ac0b58806b3dad7ab8e95a6b65d257b13",
+        "supervisorSha256": "c33f1f0b7e83fa63406ee117384ec66264cc057633061e30c4baa0b2b3f2b62f",
+        "cases": [
+          {
+            "title": "native reply keeps the transformed helper location",
+            "status": "failed",
+            "line": 6,
+            "column": 51
+          },
+          {
+            "title": "test deadline keeps the pending helper location",
+            "status": "timedOut",
+            "line": 6,
+            "column": 51
+          }
+        ],
+        "nestedRunnerExitCode": 1,
+        "explanation": "Two deliberately failing test scenarios; attribution controller passes."
+      },
+      {
+        "runtime": {
+          "name": "node",
+          "version": "24.15.0"
+        },
+        "reportSha256": "582bc36a8985f3be344b16fa7043df76e1f1ef2e2c0ab56979ea8d714400173b",
+        "supervisorSha256": "b86085f6699bc2f9838d221e4230f152980c1724314cc0fa0e9219473a39f34d",
+        "cases": [
+          {
+            "title": "native reply keeps the transformed helper location",
+            "status": "failed",
+            "line": 6,
+            "column": 51
+          },
+          {
+            "title": "test deadline keeps the pending helper location",
+            "status": "timedOut",
+            "line": 6,
+            "column": 51
+          }
+        ],
+        "nestedRunnerExitCode": 1,
+        "explanation": "Two deliberately failing test scenarios; attribution controller passes."
+      }
+    ],
+    "sourceDriftAttempt": "The first Node24 native attempt had correct error locations and cleanup but was invalid because a host test source changed during execution. Its failed receipt and separate frozen retry remain retained.",
+    "sourceDriftInvalidNode24": {
+      "reportSha256": "105d9f1a2fcea5653488edc9f457a85757c34617fa31f422f4a5c21e6c9488bb",
+      "supervisorSha256": "83a38b311ba4036aa9b1330a055d1943db5a5c4bb8dd6285aa19e168857099e5",
+      "status": "invalid-for-frozen-input-admission",
+      "drift": [
+        {
+          "path": "/sources/tools/test-command-error-attribution.mjs",
+          "before": "64f1842ebc70cae0b5a803d2ed25d7e0cd50dfc71385a7a1a30fe1e8b868b7d0",
+          "after": "6eb09bbfcd44c9d05f02f607dac8b39d8bdf72f367e3e9e23536482a92db5e91"
+        }
+      ],
+      "qualification": "Expected failure cases and cleanup succeeded, but broad source hash guard failed. Do not reinterpret as product failure or accepted frozen-input result; Node24 retry above is passing replacement."
+    },
+    "originalMatrixSha256": "23642fe21dce7b4efea6218c6f90a77933e1d50c8f1793a0817615ba94746e5c"
+  },
+  "canonicalHarnesses": {
+    "matrixSha256": "52155bf864365e4d1ead93bc92639c0bc5a31601725e963be7e1fa42aa367454",
+    "reports": [
+      {
+        "name": "trace-start",
+        "sha256": "927c0fe1434cebecc1147ea326ea6386ba284105f8ad58246536aa1832a9d633"
+      },
+      {
+        "name": "source-development",
+        "sha256": "c5a04d8111ce588beed6455343881f816e161ab5dee32251eee0c7ec6a863373"
+      },
+      {
+        "name": "adoption",
+        "sha256": "7937ce47985d3e4430a6f67167b8b87da1a7b69c81da63983ba5c4b30eb0e59e"
+      },
+      {
+        "name": "coordinator",
+        "sha256": "b2f6bbb2bf9d20f535c06df1717779a8eafdabcaace53968c7bab6e7a65620a3"
+      },
+      {
+        "name": "finalizer-packed",
+        "sha256": "6fb2710d6002ced25cc63bd0b4557d841e98a7d00eecbd0a43ca80b2abef92a3"
+      },
+      {
+        "name": "source-packed",
+        "sha256": "393f9d014cda61fed891a5bede89a8b1cda596c77ba752bfcde339887311efa2"
+      }
+    ]
+  },
+  "packedMigrations": {
+    "packed-migration-canonical-001.json": {
+      "sha256": "475c9b413300b570d920547ade425ecd40dae1a9154678d497a61b29a9da9762",
+      "project": "todomvc",
+      "testsPerEngine": 3,
+      "poisonedProcessCount": 2
+    },
+    "packed-migration-canonical-svgomg-001.json": {
+      "sha256": "8cc4b54b914b825507d5cd7a26add2d301d476af371db88c42e0f04cd41edecc",
+      "project": "svgomg",
+      "testsPerEngine": 6,
+      "poisonedProcessCount": 2
+    }
+  },
+  "retainedFailedCoreAttempts": [
+    {
+      "attempt": 1,
+      "reportSha256": "be3e73c84eaadf1622d24bed6fcebb454d786bdeb547a36f009ec2eef6885057",
+      "cause": "Parity inventory rejected stale client source reference."
+    },
+    {
+      "attempt": 2,
+      "reportSha256": "7574b6e013814b33f39c66c6907e1a30cee3408651abeebe9b4b6b2a820ec12b",
+      "cause": "Dialog control assertion expected shared canonical error object identity after pending-error attribution introduced independent clones."
+    },
+    {
+      "attempt": 3,
+      "reportSha256": "1ee5240031aed22969e56967ec8f2d8a061d6b9922c38f9a59cb672d0921e24a",
+      "cause": "Trace admission assertion expected original canonical transport error identity rather than an attributed pending clone."
+    },
+    {
+      "attempt": 4,
+      "reportSha256": "130b8faaa91ef770e0b24e2c1071ee79c5c850062af4b9a26997e556790b8a88",
+      "cause": "Internal trace-start harness bypassed canonical CLI bootstrap and was rejected before config transformation."
+    },
+    {
+      "attempt": 5,
+      "reportSha256": "abf42351f173e6ca5169b2276153b8d87fc4052f4d601c6e56e8940e62f5060b",
+      "cause": "Screenshot provenance check retained a stale finalizer harness hash after canonical-entry changes."
+    },
+    {
+      "attempt": 6,
+      "reportSha256": "019565c0431bb47795162e1f999ede96ac4e3a0efcbd5230a86678001a8d734c",
+      "cause": "Packed migration installed its backend guard via a runtime preload, rejected by the declared Bun bootstrap. Guard now loads from generated configuration in both CLI and worker; original test bodies and poison checks are retained."
+    }
+  ],
+  "retainedEarlierFailures": [
+    {
+      "sha256": "d47594327ebf9d3cb014736c735e701449da1f6510fc7d5bdf61c2ac8dce376a",
+      "cause": "Original native reporter selected core errors.js50:23 instead of the transformed helper6 in both deadline scenarios."
+    },
+    {
+      "sha256": "321e06ee0ea9023d1e35ba28bf919eb32c5033d22af434849c96e2adae214e54",
+      "cause": "Original host-tool cross-realm array failures and Bun stall retained; rebuild-overlap Node diagnostic invalid."
+    },
+    {
+      "sha256": "153130e3d2fc25dd8aa31c20efb846cadd2a3e0870154909c95f161730f836ad",
+      "cause": "Actual Bun stack assignment invoked hostile formatter."
+    },
+    {
+      "sha256": "61d48eae5dadc957ebddf7ce156815c5dfb3b72a792caae83fb814139f25c2f8",
+      "cause": "Actual Bun own stack definition also invoked hostile formatter."
+    },
+    {
+      "sha256": "d634ef38d3d2f74ca78d7e6ee8ee225b1b16d166e6f9024006244127b301170a",
+      "cause": "Actual Bun stack deletion invoked hostile formatter; not an accepted remedy."
+    },
+    {
+      "sha256": "87c27c1ccf472999b0db7f268d628b0f22f66fbc40a8fedf5a2b5a9b5496ce59",
+      "cause": "Host mapper assertion ran before the target helper invocation; ordering defect corrected, original outcome retained."
+    },
+    {
+      "sha256": "5593e9c7892c8710217ccb1261f807618ad9114784d9923be03aed792853d549",
+      "cause": "Initial source-helper probe assumed a runtime preload marker under BUN_OPTIONS; failed oracle retained."
+    },
+    {
+      "sha256": "e8e294fddf6b3d13f9bc65eb90298f87dd8fbafef88d8f16ab6999f73b3dffa0",
+      "cause": "Unknown asset top-level return was incorrectly expected to succeed in both built and pinned subjects; failed shared oracle retained."
+    },
+    {
+      "sha256": "4df36f12c31511d55ea9e6b009ce41c62d555a9ddf834d9f682c51bdba3398d9",
+      "cause": "First canonical source fixture could not resolve private core package subpath; failed fixture import retained, later source reports pass."
+    },
+    {
+      "sha256": "c8739007c133cf19c27f1a4f15f21806264f10caa433bff47247a0ae3e60596e",
+      "cause": "Initial canonical harness matrix failed; passing replacement matrix retained separately."
+    }
+  ],
+  "evidenceRetention": "Machine-specific original reports, logs, supervisor records and rejected attempts remain privately retained by these hashes. This development checkpoint does not export a public benchmark campaign.",
+  "limitations": [
+    "Known Bun runtime preloads and programmatic runner entry are explicitly unsupported; no arbitrary hidden-hook or spoofed-state origin guarantee.",
+    "The private native Error realm is initialized lazily for attributed Bun failures. Complete failure clocks must include that setup cost.",
+    "The earlier four-worker backend driver exit and separate admin timeout remain unresolved.",
+    "No new complete-run speed, fastest-framework, native Linux or release claim."
+  ],
+  "performanceAdmission": false,
+  "nativeLinuxVerified": false
+}

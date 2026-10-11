@@ -12,7 +12,7 @@ const output = resolve(process.argv[2]);
 await mkdir(output, { recursive: true });
 for (const file of ['start.spec.cjs', 'playwright.config.cjs']) await writeFile(join(output, file), await readFile(`compatibility/m2/runner-trace-start/${file}`));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const sources = ['tools/build-runner-runtime.mjs', 'compatibility/upstream/runner-runtime-manifest.json', 'packages/flashwright-runner/runner-hooks.cjs', 'packages/flashwright-runner/src/upstream-runtime.ts', 'packages/flashwright-runner/src/runner-trace-journal.ts', 'packages/flashwright-runner/src/runner-trace-finalizer.ts', 'tools/run-runner-trace-start-tests.mjs', 'compatibility/m2/runner-trace-start/start.spec.cjs', 'compatibility/m2/runner-trace-start/playwright.config.cjs'];
+const sources = ['tools/build-runner-runtime.mjs', 'compatibility/upstream/runner-runtime-manifest.json', 'packages/flashwright-runner/runner-hooks.cjs', 'packages/flashwright-runner/cli.cjs', 'packages/flashwright-runner/runner-source-transform.cjs', 'packages/flashwright-runner/src/upstream-runtime.ts', 'packages/flashwright-runner/src/runner-trace-journal.ts', 'packages/flashwright-runner/src/runner-trace-finalizer.ts', 'tools/run-runner-trace-start-tests.mjs', 'compatibility/m2/runner-trace-start/start.spec.cjs', 'compatibility/m2/runner-trace-start/playwright.config.cjs'];
 const inputs = async () => Object.fromEntries(await Promise.all(sources.map(async path => [path, hash(await readFile(path))])));
 const report = { status: 'running', ...runtimeMetadata, inputs: await inputs(), runs: [], scope: 'Owned original-attempt trace startup before fixtures/live writes. Private journal finalizer only; automatic library capture remains gated.' };
 const attempts = suites => suites.flatMap(suite => [
@@ -25,7 +25,8 @@ try {
     const name = `${engine}${live ? '-live' : ''}`;
     const directory = join(output, name); await mkdir(directory);
     const runtime = engine === 'playwright' ? dirname(require.resolve('playwright/package.json')) : resolve('packages/flashwright-runner/dist/upstream');
-    const child = spawn('python3', ['tools/watchdog.py', '--timeout', '90', '--report-directory', join(directory, 'watchdog'), '--', process.execPath, join(runtime, 'cli.js'), 'test', '--config', join(output, 'playwright.config.cjs')], {
+    const executable = engine === 'playwright' ? join(runtime, 'cli.js') : resolve('packages/flashwright-runner/cli.cjs');
+    const child = spawn('python3', ['tools/watchdog.py', '--timeout', '90', '--report-directory', join(directory, 'watchdog'), '--', process.execPath, executable, 'test', '--config', join(output, 'playwright.config.cjs')], {
       env: { ...process.env, FLASHWRIGHT_START_ENGINE: engine, FLASHWRIGHT_START_RUNTIME: runtime, FLASHWRIGHT_START_MODULES: resolve('packages/flashwright-runner/dist/commonjs'), FLASHWRIGHT_START_RESULTS: join(directory, 'results.json'), FLASHWRIGHT_START_EVENTS: join(directory, 'events.jsonl'), FLASHWRIGHT_START_OUTPUT: join(directory, 'output'), FLASHWRIGHT_START_LIVE: live ? '1' : '' }, stdio: ['ignore', 'pipe', 'pipe'],
     });
     let log = ''; for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { log += bytes; });

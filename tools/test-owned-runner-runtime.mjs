@@ -13,15 +13,21 @@ const ownedRequire = createRequire(join(owned, 'package.json'));
 const manifest = JSON.parse(await readFile('compatibility/upstream/runner-runtime-manifest.json', 'utf8'));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const checks = [];
+const adaptedFiles = new Set(['lib/worker/workerProcessEntry.js', 'lib/loader/loaderProcessEntry.js', 'lib/common/index.js']);
 assert.equal(ownedRequire.resolve('playwright'), join(owned, 'index.js'));
 assert.equal(ownedRequire.resolve('playwright/test'), join(owned, 'test.js'));
 assert.equal(ownedRequire.resolve('playwright-core/package.json'), require.resolve('playwright-core/package.json'));
 for (const [name, expected] of Object.entries(manifest.files)) {
   const actual = hash(await readFile(join(owned, name)));
-  if (name === 'lib/worker/workerProcessEntry.js') assert.notEqual(actual, expected);
+  if (adaptedFiles.has(name)) assert.notEqual(actual, expected);
   else assert.equal(actual, expected, name);
 }
-checks.push('all 61 unmodified files and ordinary owned package self-resolution retain their pinned identities');
+assert.equal(hash(await readFile(join(owned, 'flashwright-source-transform.cjs'))), hash(await readFile('packages/flashwright-runner/runner-source-transform.cjs')));
+for (const entry of ['lib/worker/workerProcessEntry.js', 'lib/loader/loaderProcessEntry.js']) {
+  const source = await readFile(join(owned, entry), 'utf8');
+  assert.ok(source.startsWith('"use strict";\nrequire("../../flashwright-source-transform.cjs").registerOwnedBootstrap(__filename);'));
+}
+checks.push('all 59 unmodified files, declared process bootstrap boundaries and ordinary package self-resolution retain their pinned identities');
 const worker = await readFile(join(owned, 'lib/worker/workerProcessEntry.js'), 'utf8');
 const start = worker.indexOf('var TestTracing = class {');
 const end = worker.indexOf('async function mergeTraceFiles(', start);

@@ -52,7 +52,8 @@ try {
   await mkdir(fixtureDirectory, { recursive: true });
   for (const name of ['sources.spec.cjs', 'source-helper.cjs', 'playwright.config.cjs']) await writeFile(join(fixtureDirectory, name), await readFile(`compatibility/m2/runner-trace-sources/${name}`));
   const modules = consumer ? join(dirname(createRequire(join(consumer, 'package.json')).resolve('@flashwright/runner/package.json')), 'dist/commonjs') : resolve('packages/flashwright-runner/dist/commonjs');
-  const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--report-directory', join(destination, 'watchdog'), '--', process.execPath, join(modules, '../upstream/cli.js'), 'test', '--config', join(fixtureDirectory, 'playwright.config.cjs')], {
+  const executable = consumer ? join(modules, '../../cli.cjs') : resolve('packages/flashwright-runner/cli.cjs');
+  const child = spawn('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--report-directory', join(destination, 'watchdog'), '--', process.execPath, executable, 'test', '--config', join(fixtureDirectory, 'playwright.config.cjs')], {
     cwd: workingDirectory, env: { ...process.env, FLASHWRIGHT_SOURCE_MODULES: modules, FLASHWRIGHT_SOURCE_OUTPUT: join(destination, 'output'), FLASHWRIGHT_SOURCE_RESULTS: join(destination, 'results.json'), FLASHWRIGHT_SOURCE_EVENTS: join(destination, 'events.jsonl'), FLASHWRIGHT_BROWSER_PATH: browser, FLASHWRIGHT_DRIVER_PATH: driver }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   let log = ''; for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { log += bytes; });
