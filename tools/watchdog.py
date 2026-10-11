@@ -7,11 +7,57 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import resource
 import signal
 import subprocess
 import sys
 import time
 import uuid
+
+
+class RootProcessCpuAccounting:
+    """Observe child-usage counters around the original root's terminal poll.
+
+    Only this single-threaded supervisor may reap children inside the poll bracket.
+    Snapshot helpers are waited outside it. The delta includes recursively rolled-up
+    child usage, but cannot identify included descendants or account for live orphans.
+    """
+
+    def __init__(self, child, started):
+        self.child = child
+        self.started = started
+        self.receipt = {"status": "not-observed", "process": child.pid}
+
+    def poll(self):
+        if self.child.returncode is not None:
+            return self.child.returncode
+        started = time.monotonic() - self.started
+        try:
+            before = resource.getrusage(resource.RUSAGE_CHILDREN)
+        except OSError:
+            before = None
+        returncode = self.child.poll()
+        try:
+            after = resource.getrusage(resource.RUSAGE_CHILDREN)
+        except OSError:
+            after = None
+        finished = time.monotonic() - self.started
+        if returncode is not None:
+            self.receipt = {
+                "status": "unavailable", "process": self.child.pid, "exitCode": returncode,
+                "startedElapsedSeconds": started, "finishedElapsedSeconds": finished,
+                "method": "RUSAGE_CHILDREN-delta-around-original-root-poll",
+                "coverage": "Child-usage counter delta when the original root poll reports terminal status. Cached or synthetic status does not prove that this poll reaped the root. Recursively accumulated terminated-child CPU may be included; live reparented descendants and missing kernel usage records may be excluded. This does not prove complete tree coverage. Do not add this aggregate to descendant sampled CPU.",
+            }
+            if before is not None and after is not None:
+                user = after.ru_utime - before.ru_utime
+                system = after.ru_stime - before.ru_stime
+                if user >= 0 and system >= 0:
+                    self.receipt.update({"status": "observed", "userSeconds": user, "systemSeconds": system,
+                        "cpuSeconds": user + system,
+                        "before": {"userSeconds": before.ru_utime, "systemSeconds": before.ru_stime},
+                        "after": {"userSeconds": after.ru_utime, "systemSeconds": after.ru_stime}})
+        return returncode
 
 
 def adopt_orphaned_descendants():
@@ -172,6 +218,7 @@ def main():
     launch_started = time.monotonic() - started
     child = subprocess.Popen(command, start_new_session=True, env=environment)
     launch_returned = time.monotonic() - started
+    root_cpu = RootProcessCpuAccounting(child, started)
     interrupted = False
     timed_out = False
 
@@ -207,7 +254,7 @@ def main():
         owned.update(adopted)
         if root_unreaped_before_snapshot:
             owned.add(child.pid)
-        child.poll()
+        root_cpu.poll()
         changed = True
         while changed:
             added = {process for process, details in snapshot.items() if details["parent"] in owned and process not in owned}
@@ -228,7 +275,7 @@ def main():
         return {process: snapshot[process] for process in owned if process in snapshot}
 
     try:
-        while child.poll() is None and not interrupted:
+        while root_cpu.poll() is None and not interrupted:
             observe()
             if time.monotonic() - started >= arguments.timeout:
                 timed_out = True
@@ -236,7 +283,7 @@ def main():
             time.sleep(0.1)
     finally:
         remaining, cleanup_signals, cleanup = cleanup_owned_processes(observe, child.pid)
-        child.poll()
+        root_cpu.poll()
         report = {
             "schemaVersion": 2, "cpuAccounting": "maximum-per-observed-process-identity",
             "clock": clock,
@@ -247,6 +294,7 @@ def main():
             "elapsedSeconds": time.monotonic() - started, "samplingIntervalSeconds": 0.1,
             "maximumSampledConcurrentRssBytes": max(sample["concurrentRssBytes"] for sample in samples),
             "observedCpuSeconds": sum(details["cpuSeconds"] for details in cpu_records.values()),
+            "rootPollCpu": root_cpu.receipt,
             "observedProcessCount": len(cpu_records), "remainingObservedProcesses": list(remaining),
             "processes": [{"process": process, **details} for (process, _started), details in cpu_records.items()],
             "cleanupSignals": cleanup_signals,

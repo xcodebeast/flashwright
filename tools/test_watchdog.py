@@ -11,7 +11,80 @@ import textwrap
 import time
 import unittest
 from unittest.mock import patch
-from tools.watchdog import cleanup_owned_processes, main, record_cpu_observation
+from types import SimpleNamespace
+from tools.watchdog import RootProcessCpuAccounting, cleanup_owned_processes, main, record_cpu_observation
+
+
+class RootCpuAccountingTests(unittest.TestCase):
+    def test_receipt_is_bound_to_first_consuming_poll_and_excludes_earlier_helpers(self):
+        class Child:
+            pid = 101
+            returncode = None
+            calls = 0
+
+            def poll(self):
+                self.calls += 1
+                if self.calls == 2:
+                    self.returncode = 17
+                return self.returncode
+
+        child = Child()
+        accounting = RootProcessCpuAccounting(child, time.monotonic())
+        observations = [SimpleNamespace(ru_utime=user, ru_stime=system) for user, system in [
+            (50, 20), (50, 20), (53, 21), (54.25, 21.5)]]
+        with patch('tools.watchdog.resource.getrusage', side_effect=observations) as read:
+            self.assertIsNone(accounting.poll())
+            self.assertEqual(accounting.receipt['status'], 'not-observed')
+            self.assertEqual(accounting.poll(), 17)
+            receipt = dict(accounting.receipt)
+            self.assertEqual(accounting.poll(), 17)
+            self.assertEqual(read.call_count, 4)
+        self.assertEqual(child.calls, 2)
+        self.assertEqual(accounting.receipt, receipt)
+        self.assertEqual(receipt['status'], 'observed')
+        self.assertEqual(receipt['cpuSeconds'], 1.75)
+        self.assertEqual(receipt['before'], {'userSeconds': 53, 'systemSeconds': 21})
+        self.assertGreaterEqual(receipt['finishedElapsedSeconds'], receipt['startedElapsedSeconds'])
+
+    def test_accounting_failure_preserves_original_poll_outcome(self):
+        class Child:
+            pid = 102
+            returncode = None
+
+            def poll(self):
+                self.returncode = -9
+                return self.returncode
+
+        accounting = RootProcessCpuAccounting(Child(), time.monotonic())
+        with patch('tools.watchdog.resource.getrusage', side_effect=OSError('usage unavailable')):
+            self.assertEqual(accounting.poll(), -9)
+        self.assertEqual(accounting.receipt['status'], 'unavailable')
+        self.assertEqual(accounting.receipt['exitCode'], -9)
+        self.assertNotIn('cpuSeconds', accounting.receipt)
+
+    def test_real_waited_descendant_cpu_survives_root_terminal_poll(self):
+        leaf = 'import time; start=time.process_time()\nwhile time.process_time()-start < 0.2: pass'
+        job = textwrap.dedent('''
+            import json, resource, subprocess, sys
+            subprocess.run([sys.executable, '-c', sys.argv[1]], check=True)
+            usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+            print(json.dumps({'childCpuSeconds': usage.ru_utime + usage.ru_stime}))
+        ''')
+        with tempfile.TemporaryDirectory(prefix='flashwright-root-cpu-test-') as directory:
+            path = Path(directory) / 'resources.json'
+            result = subprocess.run([sys.executable, 'tools/watchdog.py', '--timeout', '5', '--report', str(path),
+                '--', sys.executable, '-c', job, leaf], timeout=10, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(path.read_text())
+            original = json.loads(result.stdout)
+            self.assertGreaterEqual(original['childCpuSeconds'], 0.2)
+            receipt = report['rootPollCpu']
+            self.assertEqual(receipt['status'], 'observed')
+            self.assertEqual(receipt['process'], report['ownerLaunch']['process'])
+            self.assertEqual(receipt['exitCode'], 0)
+            self.assertGreaterEqual(receipt['cpuSeconds'], original['childCpuSeconds'])
+            self.assertEqual(receipt['cpuSeconds'], receipt['userSeconds'] + receipt['systemSeconds'])
+            self.assertEqual(report['remainingObservedProcesses'], [])
 
 
 class WatchdogLifecycleTests(unittest.TestCase):
