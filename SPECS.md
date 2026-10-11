@@ -462,7 +462,7 @@ Record patch surface, reproducible build instructions, Chromium revision, update
 
 ## S14 Navigation, networking and host callbacks
 
-a. Preserve goto URL resolution, navigation result/errors, waitUntil modes, same-document behavior, redirects and explicit wait methods for supported entries. Maintain lifecycle state across renderer/document changes
+a. Preserve goto URL resolution, navigation result/errors, waitUntil modes, same-document behavior, redirects and explicit wait methods for supported entries. Maintain lifecycle state across renderer/document changes. When goto expects a new document loader, outgoing hash/history changes do not supersede that navigation, whether observed before or after its command reply. Distinguish a new-document commit from the general navigation-event sequence; a genuinely different committed document retains interruption behavior
 b. Arm event/predicate waits before the trigger when user code does so. Promise.all with an event wait and action must work; don't impose a page-wide queue that prevents the wait or route handler from running
 c. Route callbacks, response predicates, exposed functions, fixtures and arbitrary user control flow stay in Node. Suspend the relevant operation and process unrelated protocol/lifecycle events while awaiting them
 d. Callback messages carry ownership and operation identity; a late callback can't continue a cancelled request or new document. Propagate callback errors with user stacks

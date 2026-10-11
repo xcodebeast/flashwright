@@ -118,6 +118,7 @@ pub(crate) struct FrameState {
     pub loader: String,
     pub lifecycle: HashSet<String>,
     pub navigation_sequence: u64,
+    pub document_navigation_sequence: u64,
     pub remote: bool,
     pub awaiting_renderer: bool,
     pub pending_navigation: Option<PendingNavigation>,
@@ -615,6 +616,7 @@ impl DocumentState {
                 frame.url =
                     text(description, "url") + description["urlFragment"].as_str().unwrap_or("");
                 frame.navigation_sequence = self.sequence;
+                frame.document_navigation_sequence = self.sequence;
                 frame.pending_navigation = None;
                 frame.remote = remote;
                 let public_navigation_index = events.len();

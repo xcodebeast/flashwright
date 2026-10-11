@@ -140,7 +140,7 @@ impl Engine {
                         .is_some_and(|states| states.contains("commit"));
                     if !previously_committed
                         && frame.loader != loader
-                        && frame.navigation_sequence > before
+                        && frame.document_navigation_sequence > before
                     {
                         return Err(ErrorRecord::new(
                             ErrorCode::Navigation,
@@ -237,5 +237,143 @@ pub(super) fn load_state<'value>(
         Ok(state)
     } else {
         Err(invalid(method, "invalid navigation lifecycle state"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn page_with_committed_document() -> Page {
+        let state = Arc::new(PageState::default());
+        {
+            let mut document = state.state.lock().unwrap();
+            document.initialize_main_frame("main", "session");
+            document.observe_in_session(
+                "session",
+                "Page.frameNavigated",
+                &json!({"frame": {
+                    "id": "main", "loaderId": "original", "url": "http://fixture/signup"
+                }}),
+            );
+        }
+        Page {
+            context_identifier: "context".into(),
+            target_identifier: "main".into(),
+            session_identifier: "session".into(),
+            state,
+        }
+    }
+
+    fn observe(page: &Page, method: &str, parameters: Value) {
+        let mut document = page.state.state.lock().unwrap();
+        document.observe_in_session("session", method, &parameters);
+        page.state.changed.send_replace(document.sequence);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn same_document_event_does_not_interrupt_pending_document_navigation() {
+        let page = page_with_committed_document();
+        let before = page.state.state.lock().unwrap().sequence;
+        let (_cancellation, receiver) = tokio::sync::watch::channel(false);
+        let operation = Operation::new(
+            "page.goto".into(),
+            Some(Instant::now() + Duration::from_secs(1)),
+            receiver,
+        );
+        observe(
+            &page,
+            "Page.navigatedWithinDocument",
+            json!({"frameId": "main", "url": "http://fixture/login"}),
+        );
+        let pending = Engine::wait_for_document(
+            &page,
+            "main",
+            Some("requested"),
+            before,
+            "load",
+            &operation,
+            "page.goto",
+        );
+        tokio::pin!(pending);
+        assert!(
+            tokio::time::timeout(Duration::from_millis(1), &mut pending)
+                .await
+                .is_err(),
+            "An outgoing same-document change must leave the requested document wait pending"
+        );
+        observe(
+            &page,
+            "Page.frameNavigated",
+            json!({"frame": {"id": "main", "loaderId": "requested", "url": "http://fixture/login"}}),
+        );
+        observe(
+            &page,
+            "Page.lifecycleEvent",
+            json!({"frameId": "main", "loaderId": "requested", "name": "load"}),
+        );
+        pending.await.unwrap();
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn different_document_still_interrupts_pending_document_navigation() {
+        let page = page_with_committed_document();
+        let before = page.state.state.lock().unwrap().sequence;
+        let (_cancellation, receiver) = tokio::sync::watch::channel(false);
+        let operation = Operation::new(
+            "page.goto".into(),
+            Some(Instant::now() + Duration::from_secs(1)),
+            receiver,
+        );
+        observe(
+            &page,
+            "Page.frameNavigated",
+            json!({"frame": {"id": "main", "loaderId": "different", "url": "http://fixture/other"}}),
+        );
+        let error = Engine::wait_for_document(
+            &page,
+            "main",
+            Some("requested"),
+            before,
+            "load",
+            &operation,
+            "page.goto",
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error.code, ErrorCode::Navigation);
+        assert!(
+            error
+                .message
+                .contains("navigation interrupted by http://fixture/other")
+        );
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn same_document_navigation_still_completes_without_new_loader() {
+        let page = page_with_committed_document();
+        let before = page.state.state.lock().unwrap().sequence;
+        let (_cancellation, receiver) = tokio::sync::watch::channel(false);
+        let operation = Operation::new(
+            "page.goto".into(),
+            Some(Instant::now() + Duration::from_secs(1)),
+            receiver,
+        );
+        observe(
+            &page,
+            "Page.navigatedWithinDocument",
+            json!({"frameId": "main", "url": "http://fixture/signup#section"}),
+        );
+        Engine::wait_for_document(
+            &page,
+            "main",
+            None,
+            before,
+            "commit",
+            &operation,
+            "page.goto",
+        )
+        .await
+        .unwrap();
     }
 }
