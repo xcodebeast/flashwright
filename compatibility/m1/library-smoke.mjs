@@ -4,7 +4,12 @@ import { verifyEvaluationContexts } from './evaluation-context.mjs';
 
 await assert.rejects(firefox.launch(), UnsupportedFeatureError);
 await assert.rejects(webkit.launch(), UnsupportedFeatureError);
-await assert.rejects(request.newContext(), UnsupportedFeatureError);
+const requestContext = await request.newContext();
+try {
+  assert.equal(typeof requestContext.tracing.start, 'function');
+  assert.equal(requestContext.tracing, requestContext.tracing);
+} finally { await requestContext.dispose(); }
+await assert.rejects(requestContext.get('http://127.0.0.1/'), TargetClosedError);
 await assert.rejects(chromium.launch({ unknownOption: true }), UnsupportedFeatureError);
 await assert.rejects(chromium.launch({ headless: 'yes' }), InvalidArgumentError);
 
