@@ -261,13 +261,13 @@ impl PointerAction<'_> {
             let cleanup = attempt.cleanup().await;
             let cleanup = match cleanup {
                 Ok(()) => "residentReleased".to_owned(),
-                Err(()) => dispose(
-                    self.browser.as_ref(),
-                    ResourceKind::Page,
-                    &self.page.target_identifier,
-                )
-                .await
-                .to_owned(),
+                Err(()) => self
+                    .page
+                    .state
+                    .disposal
+                    .dispose(self.browser.as_ref(), &self.page.target_identifier)
+                    .await
+                    .to_owned(),
             };
             drop(input_lock);
             if cleanup != "residentReleased" {
@@ -404,13 +404,16 @@ impl PointerAttempt<'_, '_> {
             Err(mut failure) => {
                 if failure.reply_pending {
                     failure.error.cleanup = Some(
-                        dispose(
-                            self.action.browser.as_ref(),
-                            ResourceKind::Page,
-                            &self.action.page.target_identifier,
-                        )
-                        .await
-                        .into(),
+                        self.action
+                            .page
+                            .state
+                            .disposal
+                            .dispose(
+                                self.action.browser.as_ref(),
+                                &self.action.page.target_identifier,
+                            )
+                            .await
+                            .into(),
                     );
                 }
                 Err(failure.error)
@@ -618,13 +621,16 @@ impl PointerAttempt<'_, '_> {
                 .await;
                 if failure.reply_pending {
                     failure.error.cleanup = Some(
-                        dispose(
-                            self.action.browser.as_ref(),
-                            ResourceKind::Page,
-                            &self.action.page.target_identifier,
-                        )
-                        .await
-                        .into(),
+                        self.action
+                            .page
+                            .state
+                            .disposal
+                            .dispose(
+                                self.action.browser.as_ref(),
+                                &self.action.page.target_identifier,
+                            )
+                            .await
+                            .into(),
                     );
                 }
                 Some(Err(failure.error))

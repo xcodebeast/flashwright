@@ -251,12 +251,11 @@ impl Engine {
                     page.state.state.lock().unwrap().published = false;
                     self.finish_page(identifier, &page, closed("page"), "close");
                     if let Some(browser) = browser {
-                        let cleanup = dispose(
-                            browser.as_ref(),
-                            ResourceKind::Page,
-                            &page.target_identifier,
-                        )
-                        .await;
+                        let cleanup = page
+                            .state
+                            .disposal
+                            .dispose(browser.as_ref(), &page.target_identifier)
+                            .await;
                         if let Ok(context) = self.context(&page.context_identifier, method)
                             && let Some(downloads) = context.state.downloads.get()
                             && downloads

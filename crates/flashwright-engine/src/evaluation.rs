@@ -517,7 +517,9 @@ async fn initialize_runtime(
     let Some(identifier) = result["result"]["objectId"].as_str() else {
         let mut error = invalid(METHOD, "Chromium omitted the evaluation helper identity");
         error.cleanup = Some(
-            dispose(browser, ResourceKind::Page, &page.target_identifier)
+            page.state
+                .disposal
+                .dispose(browser, &page.target_identifier)
                 .await
                 .into(),
         );

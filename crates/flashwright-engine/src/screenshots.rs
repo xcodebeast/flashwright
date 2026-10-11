@@ -241,12 +241,10 @@ impl Engine {
             if let Some(page) = removed {
                 self.finish_page(&options.page, &page, closed(METHOD), "close");
             }
-            dispose(
-                browser.as_ref(),
-                ResourceKind::Page,
-                &page.target_identifier,
-            )
-            .await
+            page.state
+                .disposal
+                .dispose(browser.as_ref(), &page.target_identifier)
+                .await
         };
         let payload = match result {
             Err(mut error) => {

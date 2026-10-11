@@ -353,7 +353,10 @@ async fn cancel_resident_condition(
         }
         Err(_) => (
             None,
-            dispose(browser, ResourceKind::Page, &page.target_identifier).await,
+            page.state
+                .disposal
+                .dispose(browser, &page.target_identifier)
+                .await,
         ),
     }
 }

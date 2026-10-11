@@ -275,7 +275,9 @@ async fn press_chord(
         error.cleanup = Some(if state.release(page, browser).await {
             "keyboardReleased".into()
         } else {
-            dispose(browser, ResourceKind::Page, &page.target_identifier)
+            page.state
+                .disposal
+                .dispose(browser, &page.target_identifier)
                 .await
                 .into()
         });

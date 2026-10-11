@@ -121,13 +121,11 @@ impl Engine {
                 self.finish_page(identifier, &page, closed(method), "close");
             }
             error.cleanup = Some(
-                dispose(
-                    browser.as_ref(),
-                    ResourceKind::Page,
-                    &page.target_identifier,
-                )
-                .await
-                .into(),
+                page.state
+                    .disposal
+                    .dispose(browser.as_ref(), &page.target_identifier)
+                    .await
+                    .into(),
             );
             return Err(error);
         }

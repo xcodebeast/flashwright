@@ -318,7 +318,9 @@ impl Engine {
             .clone()
             .unwrap_or_else(|| closed(METHOD));
         error.cleanup = Some(
-            dispose(browser, ResourceKind::Page, &page.target_identifier)
+            page.state
+                .disposal
+                .dispose(browser, &page.target_identifier)
                 .await
                 .into(),
         );

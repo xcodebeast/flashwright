@@ -465,9 +465,12 @@ impl Engine {
         // A lost CDP session does not prove the target died. Retain its native identity
         // through bounded disposal; browser teardown owns it if the browser was withdrawn.
         if let Some(browser) = browser {
-            let target = page.target_identifier.clone();
+            let page = page.clone();
             tokio::spawn(async move {
-                dispose(browser.as_ref(), ResourceKind::Page, &target).await;
+                page.state
+                    .disposal
+                    .dispose(browser.as_ref(), &page.target_identifier)
+                    .await;
             });
         }
     }
