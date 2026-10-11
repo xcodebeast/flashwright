@@ -10,6 +10,9 @@ const flags = process.env.CARGO_ENCODED_RUSTFLAGS?.split('\x1f').filter(Boolean)
 for (const [source, destination] of [[homedir(), '/build-home'], [process.cwd(), '/flashwright']]) {
   for (const path of new Set([source, realpathSync(source)])) flags.push(`--remap-path-prefix=${path}=${destination}`);
 }
+// Native dependency debug records and Darwin linker object paths bypass Rust remapping.
+// Keep ordinary symbols and remapped panic locations, but omit private debugger metadata.
+flags.push('-Cstrip=debuginfo');
 const child = spawn('cargo', ['build', '--workspace', '--locked', ...process.argv.slice(2)], {
   stdio: 'inherit', env: { ...process.env, CARGO_ENCODED_RUSTFLAGS: flags.join('\x1f') },
 });
