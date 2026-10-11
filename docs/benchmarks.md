@@ -144,6 +144,19 @@ bun tools/verify-competitor-snapshot.mjs benchmarks/results/cypress-admission-20
 
 `FLASHWRIGHT_COMPETITOR_RUNTIME` selects an absolute Node executable; Bun is the default. The snapshot verifier needs its recorded source checkout and checks normalized exported bytes independently. The expanded Cypress configuration stays private by hash because it contains environment-specific configuration; the public curated report preserves every test and observation. Headless shell and native Linux remain unmeasured for this Cypress class.
 
+## Backend application functional diagnosis
+
+The [backend functional checkpoint](../compatibility/evidence/backend-corpus-functional-checkpoint-2026-10-11.json) records the original 62 tests from pinned `fastapi/full-stack-fastapi-template` commit `7257e606cb94eada1dca40173e2b7f99dd549bc6`, including auth setup. Test and helper bodies are unchanged. Both engines used Bun 1.4.2 and full Chrome 148.0.7778.96 on native macOS arm64, with fresh PostgreSQL 18.4, Mailpit and four FastAPI server workers.
+
+| Engine / execution class | 1 test worker | 4 test workers |
+| --- | --- | --- |
+| Playwright 1.60.0 / installed reference functional check | 62 passed; no skips or retries | 62 passed; no skips or retries |
+| Flashwright / development alias functional diagnosis only | 62 passed; no skips or retries | 62 passed; no skips or retries |
+
+The first candidate run had 61 passes and one navigation failure in the reset-password link flow. Its original evidence remains retained. A navigation repair prevented an outgoing same-document event from interrupting `page.goto('/login')`; subsequent fresh runs passed. The failed run used a release driver; repaired passes used a development/debug driver. These functional cells cannot supply a speed comparison. Successful runs retained unchanged bound inputs, clean observed process shutdown and temporary-state removal. Reported overlap does not establish complete owned worker/resource coverage.
+
+These are single functional launches per engine/worker cell using then-unmerged request source through a development alias. They do not establish packed installation, shipped public request support, release acceptance or comparative performance. Raw evidence remains private; the checkpoint publishes identities, hashes, outcomes and limits. All functional runs used trace/video/screenshots off. The draft final-goal backend policy still selects `on-first-retry` tracing and requires fresh admission and measurements before sealing. Historical numeric tables above are unchanged. Native Linux remains unverified.
+
 ## Remaining comparison work
 
 Actual runner startup, retries, hooks, artifacts and parallel execution still need representative suite comparisons across the declared contenders.

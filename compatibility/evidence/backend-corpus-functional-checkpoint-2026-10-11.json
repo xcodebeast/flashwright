@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "status": "development-alias-backend-functional-diagnosis",
+  "date": "2026-10-11",
+  "scope": "Native macOS development functional outcomes for the original backend corpus; one passing launch per engine/worker cell. Candidate uses a development alias and then-unmerged request source. This is not packed, shipped public-request, release or performance acceptance.",
+  "platform": {
+    "operatingSystem": "darwin",
+    "architecture": "arm64",
+    "nativeLinux": "unverified"
+  },
+  "application": {
+    "repository": "https://github.com/fastapi/full-stack-fastapi-template",
+    "commit": "7257e606cb94eada1dca40173e2b7f99dd549bc6",
+    "license": "MIT",
+    "licenseSha256": "0bd4e76cdd06ab24cce2de5e74f490920897f90a22ad35e8403ed006d4560f48",
+    "originalTestBodiesUnchanged": true,
+    "candidateFrontendMatchesCommonSourceFiles": 119,
+    "generatedClient": "Committed PrivateService client retained; no test/helper body edits."
+  },
+  "inventory": {
+    "path": "benchmarks/configurations/backend-corpus-inventory.json",
+    "sha256": "9e1a622b23ec44122139d5bd91e7e392972f446abc5d96ac40126b64f15079f7",
+    "testCount": 62,
+    "setupCount": 1,
+    "chromiumCount": 61,
+    "files": [
+      {
+        "path": "frontend/tests/admin.spec.ts",
+        "sha256": "35c18e92e5ef812d8eff0e56bbd61a176fd8f7a9c5409d5fbdca813d29ad3f8e",
+        "projectName": "chromium",
+        "testCount": 12
+      },
+      {
+        "path": "frontend/tests/auth.setup.ts",
+        "sha256": "cb5df1cfc7ac7cb94442c230d79524cfe9cb9cd957ccc855e6d349b352598163",
+        "projectName": "setup",
+        "testCount": 1
+      },
+      {
+        "path": "frontend/tests/items.spec.ts",
+        "sha256": "147fff53441b6e3fe923ce694f87d9b080089ef7ae1523a3bcae94dde7193929",
+        "projectName": "chromium",
+        "testCount": 9
+      },
+      {
+        "path": "frontend/tests/login.spec.ts",
+        "sha256": "829cbe94ba6eb3e5a35aca84c0893ab7275fdbd614072daa3c0189b0f8b1f0c5",
+        "projectName": "chromium",
+        "testCount": 9
+      },
+      {
+        "path": "frontend/tests/reset-password.spec.ts",
+        "sha256": "4b5c6a88b16b94f3a5b7c4d30374ef429912850877f6753736e6120834532c02",
+        "projectName": "chromium",
+        "testCount": 6
+      },
+      {
+        "path": "frontend/tests/sign-up.spec.ts",
+        "sha256": "c7d3f6586bd2bb7b21a516679b1c102ffb4b0591145e6153554e463a7a254392",
+        "projectName": "chromium",
+        "testCount": 11
+      },
+      {
+        "path": "frontend/tests/user-settings.spec.ts",
+        "sha256": "7e7af9cd5d19b714cb395422418e6b199881aedc8cf556c86d97115536eb6644",
+        "projectName": "chromium",
+        "testCount": 14
+      }
+    ],
+    "originalIdentitySha256": "acedf349162ddd729150f79cdf56fdf1355de98ccd67495d3c196c8f9c17d3cc",
+    "identityEncoding": "SHA256 of UTF-8 compact JSON [projectName,path,title,line] tuples sorted lexicographically; titles retain original whitespace. Exact declarations remain in the referenced inventory.",
+    "dynamicDiscovery": "Every retained raw report matches all 62 original identities and has 62 unique runner IDs. This does not fill final callback/source manifests."
+  },
+  "functionalPolicy": {
+    "referenceVersion": "1.60.0",
+    "runtime": {
+      "name": "bun",
+      "version": "1.4.2",
+      "sha256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5"
+    },
+    "browser": {
+      "version": "148.0.7778.96",
+      "distribution": "chrome-for-testing-full",
+      "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d"
+    },
+    "workers": [
+      1,
+      4
+    ],
+    "backendWorkers": 4,
+    "retries": 0,
+    "repeatEach": 1,
+    "fullyParallel": true,
+    "headless": true,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    },
+    "setupDependency": "chromium depends on original setup project",
+    "storageState": "playwright/.auth/user.json",
+    "services": "Fresh real PostgreSQL 18.4, Mailpit and FastAPI; migration/seed/auth setup and shutdown included in private controller evidence."
+  },
+  "recordedProvenance": {
+    "referenceCheckpointSha256": "9afdb0fa9b845bb0b5285f043b2b3a1ebaaf2c2f76fcb4963d11e1552c72b0c5",
+    "candidateCheckpointSha256": "bda98edb50b00994d9f34211e7239602dc4e12ab5c314eb74ae38f389800033d",
+    "candidateInputManifestSha256": "459e9c8bb34af1b8de9c0b843c51e93b04747816dca8f7ddeb114165c613ab60",
+    "candidateBoundInputCount": 32488,
+    "selectedRequestReportSha256": "4f4b95b19e0965da021baec0d0374e4aa41c53bd6c8af34ada26e2fa8986990d",
+    "candidateDevelopmentSourceSha256ByPath": {
+      "packages/flashwright-core/src/index.ts": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
+      "packages/flashwright-core/src/api-request.ts": "dc6332b07a40c29843853b4a091407cf8683a5fade06cc6eaafb7b9314a926fd",
+      "packages/flashwright-core/src/runner-context-defaults.ts": "1baf0835c557bd390357832b844b23d55789eca519ce205f89c8bce86172ccd0",
+      "packages/flashwright-runner/src/index.ts": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5",
+      "packages/flashwright-runner/src/upstream-runtime.ts": "48505bd111b884b512daeb77babc2081c5086a7d5fb8c4bd24302b3b07b01d9c",
+      "packages/flashwright-core/src/tracing.ts": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565",
+      "packages/flashwright-runner/src/request-fixture-owner.ts": "d674ef78099ea1da38ca35357c9ee4be74d5b922aabafee955bd86308cd4490a"
+    },
+    "candidateDistributionFileCount": 454,
+    "candidateDistributionManifestSha256": "a79677b8685586041f10586fce643b92419cae4e8b4ee4534c5a787402a9381e",
+    "manifestEncoding": "SHA256 of compact UTF-8 JSON path-to-SHA256 objects with sorted keys. Source paths describe recorded development snapshots, not current shipped implementation.",
+    "driver": {
+      "sha256": "db2f8b39f4f82570f3dd35c483f2f7fb9a10b55a43cffa74318daa3f67a712a6",
+      "sourceHeadAtCapture": "5f86a5c5e83346a20b727f8fb8c31ef1a82db5b2",
+      "sourceHeadAloneDoesNotReproduceWorkingSnapshot": true,
+      "sourceFileCount": 285,
+      "relativeSourceManifestSha256": "9a1672c3bd3121ec5e45e362cd84a95e4341bc46014cc56c27b6c045196232e9",
+      "privateSourceManifestSha256": "3be2ec0541872a8f5e08fb67d95d193165fe5f8ba0c8b4961d6c41215778f41e",
+      "navigationRepairCommit": "620ff2bd09b58ff3a3be4423b6be8a8e5d4dfc82",
+      "binaryPublicationAccepted": false,
+      "buildProfile": "development-debug",
+      "buildLogSha256": "125887407d1e7a95a2e6444b11fc3b012b889ec1fc000009af120ef0bfceaf21",
+      "buildResourcesSha256": "56350b4027d0fbed2c2da21cbf37ebb96cf78ef23ddee2f3cf51a34e03c757f0"
+    },
+    "helpers": {
+      "referenceExecutedSourceSha256": "cfff6462e32ddd5c73194832530beb587748f8283901580c845d861812ec548e",
+      "referenceExecutedSourceCommit": "01e2bda3a2fa27a5a69540e58750e01f415bd278",
+      "candidateHelperCommit": "078593a68d990231efbbfda67a0ed3c59970031c",
+      "candidateHelperSha256": "467dd10ba6819c0e7f21e92bc6e2d12b9fd0bc5aac27d98a18c1adbf6db75466",
+      "candidateCommonHelperSha256": "01aa335fa2ba3c4f7e699e798316a2a67dc0ca142cd9dbd9aa1eaa30887b839f"
+    }
+  },
+  "runs": [
+    {
+      "engine": "playwright",
+      "workers": 1,
+      "status": "passed",
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "uniqueOriginalIdentities": 62,
+      "originalIdentitySha256": "acedf349162ddd729150f79cdf56fdf1355de98ccd67495d3c196c8f9c17d3cc",
+      "controllerInputsUnchanged": true,
+      "observedProcessCleanupPassed": true,
+      "controllerReportSha256": "67ecf477380f00c022aeaee5bc9d3088327bc8fc418c3a190ef9c028e9532da3",
+      "rawResultsSha256": "c3be33fca3728f49febf114ab8dcfe38662f559ab36a8b44057e3fd1ed4e0e88",
+      "analysisSha256": "81d741738678fe5c2a8d1ba49c68a55f272133d2ce6d3636b7ea929dc86cf57d",
+      "resourcesSha256": "f39aa0f7655206db33c2131fa355b4c17cdd73f44be4f9acac05d44adebbbbd7",
+      "generatedConfigurationSha256": "3e665d614611cf2021234b0def518008f42600e3d454cd9421e61d4b18bb4d33",
+      "temporaryStateRemoved": true
+    },
+    {
+      "engine": "playwright",
+      "workers": 4,
+      "status": "passed",
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "uniqueOriginalIdentities": 62,
+      "originalIdentitySha256": "acedf349162ddd729150f79cdf56fdf1355de98ccd67495d3c196c8f9c17d3cc",
+      "controllerInputsUnchanged": true,
+      "observedProcessCleanupPassed": true,
+      "controllerReportSha256": "25d7b0358cd91e406f861ab11794e744a5b1755a4061435ec9ef1516c0d39322",
+      "rawResultsSha256": "db27499d3fec485dd8dd34d03148549ff83068ac0aa7ab246116f76d1d75ab58",
+      "analysisSha256": "9be017da4ff517cd2ebf661232079676408cdc39a997d677fa1a17854dde70b7",
+      "resourcesSha256": "4898d40f02a5aa226c4bde94f2f35287613bedf44ebe270d1f282511246b66e4",
+      "generatedConfigurationSha256": "d7bf6fd6bda1809d53a467565b37d2b9766491d1ae9d30effa8478bc38263d02",
+      "temporaryStateRemoved": true
+    },
+    {
+      "engine": "flashwright",
+      "workers": 1,
+      "status": "passed",
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "uniqueOriginalIdentities": 62,
+      "originalIdentitySha256": "acedf349162ddd729150f79cdf56fdf1355de98ccd67495d3c196c8f9c17d3cc",
+      "controllerInputsUnchanged": true,
+      "observedProcessCleanupPassed": true,
+      "controllerReportSha256": "70491581ceae7e0753f576efb8571a28fb8b76894dba965d4b69300fd5ea87eb",
+      "rawResultsSha256": "9604993eb2763237d40ff4d1c1649d0bb453503d9545823852332536b944f338",
+      "analysisSha256": "f083ee776bb6cbb67ebd902084295c2fa576f0b71d12e9d61431873bda8ca64e",
+      "resourcesSha256": "5803833313565ddd43d8878f6e5a961a5f0d200c77ab7de133e90acf48478b54",
+      "generatedConfigurationSha256": "341e3e2b72aa49722a6ef5e287df4ab85f5a49f306136b161c3ed98adeacf819",
+      "temporaryStateRemoved": true
+    },
+    {
+      "engine": "flashwright",
+      "workers": 4,
+      "status": "passed",
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "uniqueOriginalIdentities": 62,
+      "originalIdentitySha256": "acedf349162ddd729150f79cdf56fdf1355de98ccd67495d3c196c8f9c17d3cc",
+      "controllerInputsUnchanged": true,
+      "observedProcessCleanupPassed": true,
+      "controllerReportSha256": "6a110b17e9d4198cd8ab86c8f09be51403e5acc6199ac94c8b455e64ad9347c3",
+      "rawResultsSha256": "ecdc05590dc21b3b0c080971a201d04e0e9c373a0cb309cba9e58f05b44be704",
+      "analysisSha256": "d5efae2cc6acac0795567f114b063ee2eeb19931ae6ebddd39176bd5e1421801",
+      "resourcesSha256": "f9f14500a5ab436cd753d9352356e085d157c522cbae6b0cbe2e15e5b826f162",
+      "generatedConfigurationSha256": "25498b79a27cc3c2934e83ee237f63b075c6f14c3d4d06cc98b892dc78f4b893",
+      "temporaryStateRemoved": true
+    }
+  ],
+  "originalCandidateFailure": {
+    "engine": "flashwright",
+    "workers": 1,
+    "status": "failed",
+    "passed": 61,
+    "failed": 1,
+    "skipped": 0,
+    "retries": 0,
+    "uniqueOriginalIdentities": 62,
+    "originalIdentitySha256": "acedf349162ddd729150f79cdf56fdf1355de98ccd67495d3c196c8f9c17d3cc",
+    "controllerInputsUnchanged": true,
+    "observedProcessCleanupPassed": true,
+    "controllerReportSha256": "070c73d48ffc1849c72f9d3295d4766ab3fbe81a146d00e474c7b2cea2a94fbd",
+    "rawResultsSha256": "19946247fb366542e5d6b93486612434fcdfd2d3a3b4b3b0a395105baa68e9a0",
+    "analysisSha256": "9a09eeb6ae6e332d15e8340767236837ac46c69c51176956fd721d8bd6dfbc20",
+    "resourcesSha256": "040f15390415dffb99e2d444822a14c536a85fa1e8bda5296f40d650a1eae176",
+    "generatedConfigurationSha256": "e3f179e13936ba0eab7f232f83d91decdab8acf8c23ff36cb1869a77070e47a0",
+    "test": {
+      "path": "frontend/tests/reset-password.spec.ts",
+      "line": 32,
+      "title": "User can reset password successfully using the link"
+    },
+    "errorClass": "NavigationError",
+    "failure": "A navigation to /login was interrupted by an outgoing same-document navigation.",
+    "retention": "Original failed controller, raw results, logs and private database/mail state retained separately; not relabelled as a passing sample.",
+    "driverSha256": "4d004bc2f4b7a6d9360116536bfd1be2ed41a9e9235bf8fc41c66cae74e0a2bf",
+    "driverBuildProfile": "release",
+    "driverBuildLogSha256": "d0523014c63f245933816a17d230bd5d183ce0fde9dea1e5d6a4beebae23e94a",
+    "driverBuildResourcesSha256": "ccae3c80fa1c243ed45907b8e9d8b2b12315cbd521a61130bf89848466433e7e"
+  },
+  "earlierInfrastructureAttemptsRetained": [
+    "services-001",
+    "services-002",
+    "postgresql-uuid-build.json",
+    "postgresql-uuid-build-002.json"
+  ],
+  "plannedFinalPolicy": {
+    "path": "benchmarks/configurations/final-goal.json",
+    "status": "draft",
+    "trace": "on-first-retry",
+    "admittedByTheseTraceOffRuns": false,
+    "required": "Fresh admission of the selected final common policy, complete-clock/resource collectors and paired measurements before sealing; retain original policy/raw hashes."
+  },
+  "acceptance": {
+    "packedAccepted": false,
+    "shippedPublicRequestAccepted": false,
+    "releaseAccepted": false,
+    "performanceAccepted": false,
+    "comparativeTiming": null
+  },
+  "limitations": [
+    "Raw reports, original checkpoint manifests, credentials/auth state, service databases and development executables remain private. Published hashes identify that retained evidence; this summary is not a complete portable raw-evidence export.",
+    "Reported overlap and worker indexes do not prove complete owned logical-worker process/resource coverage. Watchdog sampling can miss short-lived or reparented descendants.",
+    "Installed Python sdist build-tool provenance remains incomplete.",
+    "Passing development alias tests do not admit packed packages, the then-unmerged public request slice, native Linux, release support, final performance cells or the 2x objective.",
+    "The failed candidate used a release-profile driver; the repaired passing candidate used a development/debug driver. Driver identities and profiles are retained as actually executed; elapsed observations are not comparable speed results."
+  ]
+}
