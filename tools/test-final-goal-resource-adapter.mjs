@@ -145,14 +145,40 @@ test('a short logical worker between samples remains a gap even when its shared 
   assert.equal(resources.coverage.missingProcessObservations[0].observations[0].workerIdentity, 'short-worker');
 });
 
-test('zombie CPU resets retain the prior original maximum and the reset observation', () => {
-  const state = fixture();
-  state.watchdog.samples[3].processes[0].cpuSeconds = 0;
-  const resources = adaptFinalGoalResources(input(state));
-  assert.equal(resources.samples[3].processes[0].cpuSeconds, 0.3);
-  assert.equal(resources.observedProcessTreeCpuSeconds, 1.1);
-  assert.deepEqual(resources.coverage.cpuObservationResets, [{ identity: 'synthetic-host/11/Sun Oct 11 03:00:00 2026',
-    timestampMilliseconds: 1100, previousCpuSeconds: 0.3, observedCpuSeconds: 0 }]);
+test('terminal Z/X CPU resets retain the prior original maximum and the reset observation', () => {
+  for (const observedState of ['Z', 'X']) {
+    const state = fixture();
+    state.watchdog.samples[3].processes[0].cpuSeconds = 0;
+    state.watchdog.samples[3].processes[0].state = observedState;
+    const resources = adaptFinalGoalResources(input(state));
+    assert.equal(resources.samples[3].processes[0].cpuSeconds, 0.3);
+    assert.equal(resources.observedProcessTreeCpuSeconds, 1.1);
+    assert.deepEqual(resources.missingRequiredProcessIdentities, []);
+    assert.deepEqual(resources.coverage.cpuObservationResets, [{ identity: 'synthetic-host/11/Sun Oct 11 03:00:00 2026',
+      timestampMilliseconds: 1100, previousCpuSeconds: 0.3, observedCpuSeconds: 0, observedState }]);
+  }
+});
+
+test('live and unknown CPU counter regressions retain the raw reset and force a resource coverage gap', () => {
+  for (const observedState of ['S', undefined, '?']) {
+    const state = fixture();
+    const originalObservation = state.watchdog.samples[3].processes[0];
+    originalObservation.cpuSeconds = 0;
+    if (observedState === undefined) delete originalObservation.state;
+    else originalObservation.state = observedState;
+    const resources = adaptFinalGoalResources(input(state));
+    const identity = 'synthetic-host/11/Sun Oct 11 03:00:00 2026';
+    assert.deepEqual(resources.missingRequiredProcessIdentities, [identity]);
+    assert.equal(resources.samples[3].processes[0].cpuSeconds, 0.3);
+    assert.equal(resources.observedProcessTreeCpuSeconds, 1.1);
+    assert.deepEqual(resources.coverage.cpuObservationResets, [{ identity, timestampMilliseconds: 1100,
+      previousCpuSeconds: 0.3, observedCpuSeconds: 0, observedState: observedState ?? null }]);
+    const gap = resources.coverage.missingProcessObservations[0].observations[0];
+    assert.equal(gap.previousCpuSeconds, 0.3);
+    assert.equal(gap.observedCpuSeconds, 0);
+    assert.equal(gap.observedState, observedState ?? null);
+    assert.match(gap.reason, /counter is unusable/);
+  }
 });
 
 test('missing component policy remains visible instead of a fabricated process observation', () => {
