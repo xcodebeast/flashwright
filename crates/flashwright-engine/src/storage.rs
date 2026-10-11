@@ -286,7 +286,9 @@ impl Engine {
                 self.finish_page(page_identifier, &page, closed(method), "close");
                 error.method = method.into();
                 error.cleanup = Some(
-                    dispose(browser, ResourceKind::Page, &page.target_identifier)
+                    page.state
+                        .disposal
+                        .dispose(browser, &page.target_identifier)
                         .await
                         .into(),
                 );

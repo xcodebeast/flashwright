@@ -28,6 +28,7 @@ pub(crate) enum PagePurpose {
 }
 
 pub(crate) struct PageState {
+    pub disposal: super::operation::PageDisposal,
     pub renderer_sessions: Mutex<super::renderer_sessions::RendererSessions>,
     pub purpose: PagePurpose,
     pub routing_registered: std::sync::atomic::AtomicBool,
@@ -132,6 +133,7 @@ pub(crate) struct PendingNavigation {
 impl Default for PageState {
     fn default() -> Self {
         Self {
+            disposal: super::operation::PageDisposal::default(),
             renderer_sessions: Mutex::new(super::renderer_sessions::RendererSessions::default()),
             purpose: PagePurpose::Public,
             routing_registered: std::sync::atomic::AtomicBool::new(false),

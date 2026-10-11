@@ -52,6 +52,107 @@ pub(crate) enum ResourceKind {
     Page,
 }
 
+/// Cleanup callers and the detachment caused by their close share the original page's result.
+pub(crate) struct PageDisposal {
+    progress: tokio::sync::Mutex<PageDisposalProgress>,
+    recovery_requested: watch::Sender<bool>,
+}
+
+#[derive(Default)]
+enum PageDisposalProgress {
+    #[default]
+    Ready,
+    Closing(flashwright_browser::connection::Command),
+    Confirming,
+    Complete(&'static str),
+}
+
+impl PageDisposalProgress {
+    /// The command lives in page state, so dropping a caller cannot discard its pending reply.
+    async fn acknowledge(&mut self, owner: &impl ResourceOwner, identifier: &str) -> bool {
+        if matches!(self, Self::Ready) {
+            *self = match owner.connection().start_command(
+                "Target.closeTarget",
+                json!({"targetId":identifier}),
+                None,
+            ) {
+                Ok(command) => Self::Closing(command),
+                Err(_) => Self::Confirming,
+            };
+        }
+        let Self::Closing(command) = self else {
+            return false;
+        };
+        let acknowledged = command.response().await.is_ok();
+        *self = if acknowledged {
+            Self::Complete("resourceDisposed")
+        } else {
+            Self::Confirming
+        };
+        acknowledged
+    }
+}
+
+impl Default for PageDisposal {
+    fn default() -> Self {
+        Self {
+            progress: tokio::sync::Mutex::new(PageDisposalProgress::Ready),
+            recovery_requested: watch::channel(false).0,
+        }
+    }
+}
+
+impl PageDisposal {
+    pub(crate) async fn dispose(
+        &self,
+        owner: &impl ResourceOwner,
+        identifier: &str,
+    ) -> &'static str {
+        self.recovery_requested.send_replace(true);
+        let mut progress = self.progress.lock().await;
+        if let PageDisposalProgress::Complete(result) = *progress {
+            return result;
+        }
+        let cleanup = if matches!(
+            timeout(CLEANUP_STEP_BUDGET, progress.acknowledge(owner, identifier)).await,
+            Ok(true)
+        ) {
+            "resourceDisposed"
+        } else {
+            confirm_disposal(owner, ResourceKind::Page, identifier).await
+        };
+        *progress = PageDisposalProgress::Complete(cleanup);
+        cleanup
+    }
+
+    pub(crate) async fn close(&self, owner: &impl ResourceOwner, identifier: &str) {
+        let mut progress = self.progress.lock().await;
+        if matches!(*progress, PageDisposalProgress::Complete(_)) {
+            return;
+        }
+        let mut recovery = self.recovery_requested.subscribe();
+        if *recovery.borrow_and_update() {
+            drop(progress);
+            self.dispose(owner, identifier).await;
+            return;
+        }
+        // Ordinary close remains unbounded. A concurrent failed operation can request bounded
+        // recovery, retaining this same reply instead of dispatching another close command.
+        let acknowledged = tokio::select! {
+            acknowledged = progress.acknowledge(owner, identifier) => acknowledged,
+            _ = recovery.changed() => {
+                matches!(timeout(CLEANUP_STEP_BUDGET, progress.acknowledge(owner, identifier)).await, Ok(true))
+            }
+        };
+        let cleanup = if acknowledged {
+            "resourceDisposed"
+        } else {
+            confirm_disposal(owner, ResourceKind::Page, identifier).await
+        };
+        *progress = PageDisposalProgress::Complete(cleanup);
+    }
+}
+
 impl ResourceKind {
     fn identifier_field(self) -> &'static str {
         match self {
@@ -348,28 +449,35 @@ pub(crate) async fn dispose(
     .await;
     match result {
         Ok(Ok(_)) => "resourceDisposed",
-        _ => {
-            let (method, collection) = match kind {
-                ResourceKind::Context => ("Target.getBrowserContexts", "browserContextIds"),
-                ResourceKind::Page => ("Target.getTargets", "targetInfos"),
-            };
-            let confirmation = timeout(
-                CLEANUP_STEP_BUDGET,
-                owner.connection().call(method, json!({}), None),
-            )
-            .await;
-            if let Ok(Ok(confirmation)) = confirmation
-                && let Some(resources) = confirmation[collection].as_array()
-                && !resources.iter().any(|resource| match kind {
-                    ResourceKind::Context => resource.as_str() == Some(identifier),
-                    ResourceKind::Page => resource["targetId"].as_str() == Some(identifier),
-                })
-            {
-                return "resourceAlreadyDisposed";
-            }
-            close_for_cleanup(owner, "browserClosedAfterDisposalFailure").await
-        }
+        _ => confirm_disposal(owner, kind, identifier).await,
     }
+}
+
+/// A lost reply does not authorize replay; confirm absence or close the owned browser.
+async fn confirm_disposal(
+    owner: &impl ResourceOwner,
+    kind: ResourceKind,
+    identifier: &str,
+) -> &'static str {
+    let (method, collection) = match kind {
+        ResourceKind::Context => ("Target.getBrowserContexts", "browserContextIds"),
+        ResourceKind::Page => ("Target.getTargets", "targetInfos"),
+    };
+    let confirmation = timeout(
+        CLEANUP_STEP_BUDGET,
+        owner.connection().call(method, json!({}), None),
+    )
+    .await;
+    if let Ok(Ok(confirmation)) = confirmation
+        && let Some(resources) = confirmation[collection].as_array()
+        && !resources.iter().any(|resource| match kind {
+            ResourceKind::Context => resource.as_str() == Some(identifier),
+            ResourceKind::Page => resource["targetId"].as_str() == Some(identifier),
+        })
+    {
+        return "resourceAlreadyDisposed";
+    }
+    close_for_cleanup(owner, "browserClosedAfterDisposalFailure").await
 }
 
 /// An ordinary close waits for Chromium's acknowledgement without an implicit
@@ -378,7 +486,7 @@ pub(crate) async fn close_resource(
     owner: &impl ResourceOwner,
     kind: ResourceKind,
     identifier: &str,
-) {
+) -> &'static str {
     if owner
         .connection()
         .call(
@@ -389,7 +497,9 @@ pub(crate) async fn close_resource(
         .await
         .is_err()
     {
-        dispose(owner, kind, identifier).await;
+        dispose(owner, kind, identifier).await
+    } else {
+        "resourceDisposed"
     }
 }
 
@@ -530,6 +640,217 @@ mod tests {
         let (sender, receiver) = watch::channel(false);
         let operation = Operation::new("context.newPage".to_owned(), None, receiver);
         (owner, peer, sender, operation)
+    }
+
+    #[tokio::test]
+    async fn page_detachment_cleanup_shares_pending_and_completed_close() {
+        for ordinary_close in [false, true] {
+            let (owner, mut peer, _cancellation, _operation) = setup();
+            let disposal = Arc::new(PageDisposal::default());
+            let original_owner = owner.clone();
+            let original_disposal = disposal.clone();
+            let original = tokio::spawn(async move {
+                if ordinary_close {
+                    original_disposal
+                        .close(original_owner.as_ref(), "original-page")
+                        .await;
+                } else {
+                    assert_eq!(
+                        original_disposal
+                            .dispose(original_owner.as_ref(), "original-page")
+                            .await,
+                        "resourceDisposed"
+                    );
+                }
+            });
+            let command = peer.command().await;
+            assert_eq!(command["method"], "Target.closeTarget");
+            assert_eq!(command["params"]["targetId"], "original-page");
+            let detached_owner = owner.clone();
+            let detached_disposal = disposal.clone();
+            let detached = tokio::spawn(async move {
+                detached_disposal
+                    .dispose(detached_owner.as_ref(), "original-page")
+                    .await
+            });
+            assert!(
+                timeout(Duration::from_millis(25), peer.command())
+                    .await
+                    .is_err()
+            );
+            assert!(
+                !detached.is_finished(),
+                "detachment cleanup must await the original close"
+            );
+            peer.reply(&command, json!({ "success": true })).await;
+            original.await.unwrap();
+            assert_eq!(detached.await.unwrap(), "resourceDisposed");
+            assert_eq!(
+                disposal.dispose(owner.as_ref(), "original-page").await,
+                "resourceDisposed"
+            );
+            disposal.close(owner.as_ref(), "original-page").await;
+            assert!(
+                timeout(Duration::from_millis(25), peer.command())
+                    .await
+                    .is_err()
+            );
+            assert!(!owner.closed.load(Ordering::SeqCst));
+        }
+    }
+
+    #[tokio::test]
+    async fn cancelled_private_page_close_retains_original_reply_for_cleanup() {
+        for acknowledge_late in [true, false] {
+            let (owner, mut peer, cancellation, operation) = setup();
+            let disposal = Arc::new(PageDisposal::default());
+            let closing_owner = owner.clone();
+            let closing_disposal = disposal.clone();
+            let closing = tokio::spawn(async move {
+                operation
+                    .wait(async {
+                        closing_disposal
+                            .close(closing_owner.as_ref(), "storage-page")
+                            .await;
+                        Ok(())
+                    })
+                    .await
+            });
+            let command = peer.command().await;
+            assert_eq!(command["method"], "Target.closeTarget");
+            cancellation.send(true).unwrap();
+            assert_eq!(
+                closing.await.unwrap().unwrap_err().code,
+                ErrorCode::Cancelled
+            );
+            let recovery_owner = owner.clone();
+            let recovery_disposal = disposal.clone();
+            let recovery = tokio::spawn(async move {
+                recovery_disposal
+                    .dispose(recovery_owner.as_ref(), "storage-page")
+                    .await
+            });
+            if acknowledge_late {
+                peer.reply(&command, json!({"success":true})).await;
+            } else {
+                let confirmation = peer.command().await;
+                assert_eq!(
+                    confirmation["method"], "Target.getTargets",
+                    "cancelled close must not be replayed"
+                );
+                peer.reply(
+                    &confirmation,
+                    json!({"targetInfos":[{"targetId":"storage-page"}]}),
+                )
+                .await;
+            }
+            assert_eq!(
+                timeout(Duration::from_secs(1), recovery)
+                    .await
+                    .unwrap()
+                    .unwrap(),
+                if acknowledge_late {
+                    "resourceDisposed"
+                } else {
+                    "browserClosedAfterDisposalFailure"
+                }
+            );
+            assert_eq!(owner.closed.load(Ordering::SeqCst), !acknowledge_late);
+            if acknowledge_late {
+                assert!(
+                    timeout(Duration::from_millis(25), peer.command())
+                        .await
+                        .is_err()
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn recovery_bounds_a_stalled_ordinary_page_close_without_replaying_it() {
+        let (owner, mut peer, _cancellation, _operation) = setup();
+        let disposal = Arc::new(PageDisposal::default());
+        let closing_owner = owner.clone();
+        let closing_disposal = disposal.clone();
+        let closing = tokio::spawn(async move {
+            closing_disposal
+                .close(closing_owner.as_ref(), "original-page")
+                .await;
+        });
+        let command = peer.command().await;
+        assert_eq!(command["method"], "Target.closeTarget");
+        tokio::time::sleep(Duration::from_millis(750)).await;
+        assert!(
+            !closing.is_finished(),
+            "ordinary close must retain its unbounded acknowledgement wait"
+        );
+        assert!(!owner.closed.load(Ordering::SeqCst));
+        let recovery_owner = owner.clone();
+        let recovery_disposal = disposal.clone();
+        let recovery = tokio::spawn(async move {
+            recovery_disposal
+                .dispose(recovery_owner.as_ref(), "original-page")
+                .await
+        });
+        let confirmation = peer.command().await;
+        assert_eq!(
+            confirmation["method"], "Target.getTargets",
+            "recovery must not replay the pending close"
+        );
+        peer.reply(
+            &confirmation,
+            json!({"targetInfos":[{"targetId":"original-page"}]}),
+        )
+        .await;
+        assert_eq!(
+            timeout(Duration::from_secs(1), recovery)
+                .await
+                .unwrap()
+                .unwrap(),
+            "browserClosedAfterDisposalFailure"
+        );
+        timeout(Duration::from_secs(1), closing)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(owner.closed.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn page_cleanup_preserves_disposal_failure_and_guardian_fallback_for_all_waiters() {
+        let (owner, mut peer, _cancellation, _operation) = setup();
+        let disposal = Arc::new(PageDisposal::default());
+        let original_owner = owner.clone();
+        let original_disposal = disposal.clone();
+        let original = tokio::spawn(async move {
+            original_disposal
+                .dispose(original_owner.as_ref(), "original-page")
+                .await
+        });
+        let command = peer.command().await;
+        peer.writer
+            .write_all(
+                format!(
+                    "{}\0",
+                    json!({"id":command["id"],"error":{"code":-32000,"message":"close rejected"}})
+                )
+                .as_bytes(),
+            )
+            .await
+            .unwrap();
+        let confirmation = peer.command().await;
+        assert_eq!(confirmation["method"], "Target.getTargets");
+        peer.reply(
+            &confirmation,
+            json!({"targetInfos":[{"targetId":"original-page"}]}),
+        )
+        .await;
+        assert_eq!(original.await.unwrap(), "browserClosedAfterDisposalFailure");
+        assert!(owner.closed.load(Ordering::SeqCst));
+        assert_eq!(
+            disposal.dispose(owner.as_ref(), "original-page").await,
+            "browserClosedAfterDisposalFailure"
+        );
     }
 
     #[tokio::test]

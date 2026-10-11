@@ -478,7 +478,10 @@ impl Engine {
         if removed {
             self.finish_page(identifier, page, closed("route"), "close");
         }
-        dispose(browser, ResourceKind::Page, &page.target_identifier).await
+        page.state
+            .disposal
+            .dispose(browser, &page.target_identifier)
+            .await
     }
 }
 

@@ -460,7 +460,10 @@ impl Engine {
     ) -> &'static str {
         self.registry.lock().unwrap().pages.remove(identifier);
         self.finish_page(identifier, page, closed("addInitScript"), "close");
-        dispose(browser, ResourceKind::Page, &page.target_identifier).await
+        page.state
+            .disposal
+            .dispose(browser, &page.target_identifier)
+            .await
     }
 }
 

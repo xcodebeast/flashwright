@@ -78,13 +78,12 @@ impl PreparedDialogHandling {
                     );
                 }
                 error.cleanup = Some(
-                    dispose(
-                        self.browser.as_ref(),
-                        ResourceKind::Page,
-                        &self.page.target_identifier,
-                    )
-                    .await
-                    .into(),
+                    self.page
+                        .state
+                        .disposal
+                        .dispose(self.browser.as_ref(), &self.page.target_identifier)
+                        .await
+                        .into(),
                 );
                 Err(error)
             }

@@ -780,12 +780,12 @@ impl HandleAllocation<'_> {
                 "close",
             );
         }
-        match dispose(
-            self.browser,
-            ResourceKind::Page,
-            &self.page.target_identifier,
-        )
-        .await
+        match self
+            .page
+            .state
+            .disposal
+            .dispose(self.browser, &self.page.target_identifier)
+            .await
         {
             "resourceDisposed" | "resourceAlreadyDisposed" => {
                 "pageClosedAfterUncertainHandleCleanup"

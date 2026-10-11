@@ -744,6 +744,7 @@ impl Engine {
             )
             .await?;
         let page_identifier = self.identifier("page");
+        let mut retained_page = None;
         let result = async {
             let session = operation.wait(browser.connection.call("Target.attachToTarget", json!({ "targetId": target_identifier, "flatten": true }), None)).await?;
             let session_identifier = string_field(&session, "sessionId")?;
@@ -752,6 +753,7 @@ impl Engine {
             document.interception = routing_state::RequestInterception::new(self.routing_budget.clone());
             let state = Arc::new(PageState { purpose, state: Mutex::new(document), ..PageState::default() });
             let page = Page { context_identifier: context_identifier.clone(), target_identifier: target_identifier.clone(), session_identifier: session_identifier.clone(), state: state.clone() };
+            retained_page = Some(page.clone());
             let renderer = state.renderer_sessions.lock().unwrap().register_root(&target_identifier, &session_identifier)?;
             {
                 let mut registry = self.registry.lock().unwrap();
@@ -814,9 +816,16 @@ impl Engine {
                 self.finish_page(&page_identifier, &page, error.clone(), "close");
             }
             error.cleanup = Some(
-                dispose(browser.as_ref(), ResourceKind::Page, &target_identifier)
-                    .await
-                    .into(),
+                match retained_page {
+                    Some(page) => {
+                        page.state
+                            .disposal
+                            .dispose(browser.as_ref(), &target_identifier)
+                            .await
+                    }
+                    None => dispose(browser.as_ref(), ResourceKind::Page, &target_identifier).await,
+                }
+                .into(),
             );
             if let Some(downloads) = context.state.downloads.get()
                 && let Err(cleanup) = downloads
@@ -836,12 +845,10 @@ impl Engine {
             self.finish_page(identifier, &page, closed("page"), "close");
             let context = self.context(&page.context_identifier, "page.close")?;
             let browser = self.browser(&context.browser_identifier, "page.close")?;
-            close_resource(
-                browser.as_ref(),
-                ResourceKind::Page,
-                &page.target_identifier,
-            )
-            .await;
+            page.state
+                .disposal
+                .close(browser.as_ref(), &page.target_identifier)
+                .await;
         }
         Ok(())
     }
