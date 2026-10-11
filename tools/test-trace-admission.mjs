@@ -72,9 +72,20 @@ try {
     await ordinary; await Promise.all(pulls);
     assert.equal(client.pending.size, 0);
   }));
-  await check('transport failure preserves its original error for both active and queued owners', () => transport(2, async client => {
+  await check('transport failure preserves details and active caller while queued owners keep the original error', () => transport(2, async client => {
     const original = failure('ProtocolError', 'test', 'original transport failure');
-    const active = assert.rejects(client.request('page.evaluate', { hold: true }), error => error === original);
+    async function activeEvaluation() { return await client.request('page.evaluate', { hold: true }); }
+    const originalStack = original.stack;
+    const active = assert.rejects(activeEvaluation(), error => {
+      assert.notEqual(error, original);
+      assert.equal(Object.getPrototypeOf(error), Object.getPrototypeOf(original));
+      assert.equal(error.name, original.name);
+      assert.equal(error.message, original.message);
+      assert.equal(error.details, original.details);
+      assert.ok(error.stack.includes('at activeEvaluation ('), error.stack);
+      assert.equal(original.stack, originalStack);
+      return true;
+    });
     const queued = assert.rejects(client.request('context.trace.pull', {}), error => error === original);
     await assert.rejects(client.request('page.evaluate', {}), { name: 'ResourceLimitError' });
     client.rejectProtocol(original);

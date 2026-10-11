@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import { performance } from 'node:perf_hooks';
 import { Duplex } from 'node:stream';
 import { setTimeout as waitForRetry } from 'node:timers/promises';
-import { failure, fromRecord, errorMessage, type ErrorRecord } from './errors.js';
+import { failure, fromRecord, errorMessage, attributeRequestFailure, type ErrorRecord } from './errors.js';
 import { residentRuntimeSha256 } from './runtime-version.cjs';
 import { AttachmentReceiver } from './attachments.js';
 import { traceCommandMetadata } from './trace-hooks.js';
@@ -295,7 +295,7 @@ export class EngineClient {
         await Promise.race([
           readiness,
           ...(timeoutMilliseconds === 0 ? [] : [new Promise<never>((_, reject) => {
-            readinessTimeout = setTimeout(() => reject(failure('TimeoutError', method, 'deadline exceeded before driver acceptance')), timeoutMilliseconds);
+            readinessTimeout = setTimeout(() => reject(failure('TimeoutError', method, 'deadline exceeded before driver acceptance', callSite)), timeoutMilliseconds);
           })]),
         ]);
       } finally { clearTimeout(readinessTimeout); }
@@ -323,7 +323,7 @@ export class EngineClient {
             this.attachments?.expire(identifier);
             if (!pending.dispatched) {
               this.removePending(identifier);
-              reject(failure('TimeoutError', method, 'deadline exceeded before dispatch'));
+              reject(failure('TimeoutError', method, 'deadline exceeded before dispatch', callSite));
               return;
             }
             void this.send({ kind: 'cancel', requestId: identifier }).catch(error => this.fail(error));
@@ -349,7 +349,7 @@ export class EngineClient {
             if (remaining === 0) {
               this.removePending(identifier);
               clearTimeout(pending.timeout);
-              reject(failure('TimeoutError', method, 'deadline exceeded before dispatch'));
+              reject(failure('TimeoutError', method, 'deadline exceeded before dispatch', callSite));
               return null;
             }
             pending.dispatched = true;
@@ -560,9 +560,7 @@ export class EngineClient {
         if (pending.deadlineExpired) void this.rejectExpired(pending, message);
         else if (message.kind === 'result' || message.kind === 'binaryResult') pending.resolve(message.value);
         else if (message.kind === 'error' && message.error) {
-          const error = fromRecord(message.error);
-          if (pending.callSite) error.stack += `\nCalled from:\n${pending.callSite}`;
-          pending.reject(error);
+          pending.reject(fromRecord(message.error, pending.callSite));
         } else throw failure('ProtocolError', 'protocol', 'unknown terminal message');
       }
     } catch (error) { this.fail(error instanceof SyntaxError ? failure('ProtocolError', 'protocol', 'invalid incoming control JSON') : error instanceof Error ? error : new Error(String(error))); }
@@ -624,9 +622,7 @@ export class EngineClient {
         }
       }
     }
-    const error = fromRecord(details);
-    if (pending.callSite) error.stack += `\nCalled from:\n${pending.callSite}`;
-    pending.reject(error);
+    pending.reject(fromRecord(details, pending.callSite));
   }
 
   private fail(error: Error): void {
@@ -634,7 +630,7 @@ export class EngineClient {
     this.failure = error;
     this.traceAdmission?.close(error);
     this.readyReject(error);
-    for (const pending of this.pending.values()) { clearTimeout(pending.timeout); clearTimeout(pending.cleanupTimeout); if (pending.input) pending.input.bytes = undefined; pending.reject(error); }
+    for (const pending of this.pending.values()) { clearTimeout(pending.timeout); clearTimeout(pending.cleanupTimeout); if (pending.input) pending.input.bytes = undefined; pending.reject(attributeRequestFailure(error, pending.callSite)); }
     this.pending.clear();
     this.notifyControlCapacity();
     this.attachments?.clear();

@@ -1,10 +1,12 @@
 const assert = require('node:assert/strict');
 const { appendFileSync } = require('node:fs');
 const { join } = require('node:path');
+const { createRequire } = require('node:module');
 const modules = process.env.FLASHWRIGHT_SOURCE_MODULES;
 const runtime = join(modules, '../upstream');
 const { _baseTest: base, expect } = require(join(runtime, 'test.js'));
-const { runnerIntegration } = require('@flashwright/core/runner-integration');
+const runnerRequire = createRequire(join(modules, 'index.js'));
+const { runnerIntegration } = runnerRequire('@flashwright/core/runner-integration');
 const { chromium } = require('flashwright');
 const { adoptRunnerTraceAtStart } = require(join(modules, 'runner-trace-journal.js'));
 const { installRunnerTraceFinalizer } = require(join(modules, 'runner-trace-finalizer.js'));

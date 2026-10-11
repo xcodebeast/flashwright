@@ -81,15 +81,27 @@ await scenario(2, async client => {
 
 // Capacity-wait cancellation retires the waiter and explicitly settles every queued follower.
 await scenario(2, async client => {
-  const evaluation = observe(client.request('page.evaluate', { hold: true }));
-  const handling = observe(client.request('dialog.accept', { hold: true }));
+  async function heldEvaluation() { return await client.request('page.evaluate', { hold: true }); }
+  async function heldHandling() { return await client.request('dialog.accept', { hold: true }); }
+  const evaluation = observe(heldEvaluation());
+  const handling = observe(heldHandling());
   const control = observe(client.request('page.dialog.subscribe', { page: 'page', enabled: false }, 30));
   const following = observe(client.request('dialog.dismiss', {}, 1000));
   const outcome = await control;
   assert.equal(outcome.status, 'rejected'); assert.equal(outcome.error.name, 'TimeoutError');
-  for (const pending of [evaluation, handling, following]) {
+  for (const [pending, caller] of [[evaluation, 'heldEvaluation'], [handling, 'heldHandling'], [following, undefined]]) {
     const result = await pending;
-    assert.equal(result.status, 'rejected'); assert.equal(result.error, outcome.error);
+    assert.equal(result.status, 'rejected');
+    assert.equal(Object.getPrototypeOf(result.error), Object.getPrototypeOf(outcome.error));
+    assert.equal(result.error.name, outcome.error.name);
+    assert.equal(result.error.message, outcome.error.message);
+    assert.equal(result.error.details, outcome.error.details);
+    if (caller) {
+      assert.notEqual(result.error, outcome.error, 'A dispatched request owns its captured caller');
+      assert.ok(result.error.stack.includes(`at ${caller} (`), result.error.stack);
+    } else {
+      assert.equal(result.error, outcome.error, 'A queued control predecessor retains the original rejection');
+    }
   }
   assert.equal(client.isClosed(), true);
   assert.equal(client.controlCapacityWaiters.size, 0);
