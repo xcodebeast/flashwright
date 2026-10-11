@@ -594,7 +594,7 @@
 | playwright/types/test.d.ts.PlaywrightTestArgs#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PlaywrightTestArgs.context#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PlaywrightTestArgs.page#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.PlaywrightTestArgs.request#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright/types/test.d.ts.PlaywrightTestArgs.request#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#api-request-native) |
 | playwright/types/test.d.ts.ExcludeProps#1 | TypeAliasDeclaration | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.CustomProperties#1 | TypeAliasDeclaration | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PlaywrightTestProject#1 | TypeAliasDeclaration | planned / unverified | Unreviewed |
