@@ -891,6 +891,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
 export const chromium = new BrowserType('chromium');
 export const firefox = new BrowserType('firefox');
 export const webkit = new BrowserType('webkit');
-export const request = { async newContext(): Promise<never> { throw failure('UnsupportedFeatureError', 'request.newContext', 'API requests are not implemented'); } };
+export { request } from './api-request.js';
+export type { APIRequest, APIRequestContext, APIResponse, APIRequestContextOptions, APIRequestOptions, APIRequestFilePayload, APIRequestHeader } from './api-request.js';
 
 instrumentTraceCallbacks(Browser.prototype, 'emit');

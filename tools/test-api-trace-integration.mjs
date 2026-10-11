@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { once } from 'node:events';
@@ -17,7 +17,9 @@ const { TraceNetworkChannel } = require('../packages/flashwright-core/dist/commo
 const { TraceResources } = require('../packages/flashwright-core/dist/commonjs/trace-resources.js');
 const { server: upstreamServer } = require(resolve(dirname(require.resolve('playwright-core/package.json')), 'lib/coreBundle.js'));
 
-const directory = await mkdtemp(join(tmpdir(), 'flashwright-api-trace-integration-'));
+const retainedOutput = process.env.FLASHWRIGHT_API_TRACE_OUTPUT;
+const directory = retainedOutput ? resolve(retainedOutput) : await mkdtemp(join(tmpdir(), 'flashwright-api-trace-integration-'));
+if (retainedOutput) await mkdir(directory, { recursive: false });
 let announceSlowRequest;
 let finishSlowRequest;
 const slowRequestStarted = new Promise(resolve => { announceSlowRequest = resolve; });
@@ -70,10 +72,11 @@ let referenceContext;
 let viewer;
 let browser;
 try {
-  await assert.rejects(publicRequest.newContext(), error => error.name === 'UnsupportedFeatureError');
-  context = await request.newContext({ httpCredentials: { username: 'trace-user', password: 'trace-password', send: 'unauthorized' } });
-  assert.equal('tracing' in context, false);
-  const tracing = runnerIntegration.requestTraceOwner(12, context);
+  assert.equal(publicRequest, request, 'The public factory must retain the original native request identity');
+  context = await publicRequest.newContext({ httpCredentials: { username: 'trace-user', password: 'trace-password', send: 'unauthorized' } });
+  const tracing = context.tracing;
+  assert.equal(context.tracing, tracing);
+  assert.equal(runnerIntegration.requestTraceOwner(12, context), tracing, 'Public and runner tracing must retain the same native owner');
   const startup = runnerIntegration.beginTraceRecordingWithActions(11, tracing, { snapshots: true }, { begin() { return undefined; } });
   const recording = await startup.ready;
   const response = await context.get(`${origin}/redirect`);
@@ -360,5 +363,5 @@ try {
   await viewer?.stop();
   server.close();
   await once(server, 'close');
-  await rm(directory, { recursive: true, force: true });
+  if (!retainedOutput) await rm(directory, { recursive: true, force: true });
 }

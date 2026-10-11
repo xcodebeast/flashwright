@@ -11,9 +11,10 @@ import { fileMimeType } from './file-mime-types.js';
 import { writeAtomicFile } from './files.js';
 import { decodeStorageState, prepareCookies, type StorageState, type StorageStateOptions, type WireStorageState } from './storage.js';
 import { validateBoolean, validateOptions } from './validation.js';
-import { Tracing, recordAPITraceAttempt, recordAPITraceFailure, recordAPITraceRequestBody, recordAPITraceResponse } from './tracing.js';
+import { Tracing, closeAPITraceAdmission, prepareAPITraceOwnerClose, recordAPITraceAttempt, recordAPITraceFailure, recordAPITraceRequestBody, recordAPITraceResponse } from './tracing.js';
 import { instrumentTraceMethods, traceAPICommandMetadata } from './trace-hooks.js';
 import { beginRunnerRequestCreation, publishRunnerRequestContext, beforeRunnerRequestDispose, notifyRunnerRequestClosed, assertRunnerRequestDisposeAllowed, type RequestCreationClaim } from './runner-request-lifecycle.js';
+import { currentRunnerContextDefaults, prepareRunnerRequestContextOptions, type RunnerContextDefaults } from './runner-context-defaults.js';
 
 const maximumBodyBytes = 32 * 1024 * 1024;
 const maximumMetadataBytes = 1024 * 1024;
@@ -605,21 +606,23 @@ function responseMetadata(value: unknown, owner: string, client: EngineClient): 
 const requestTraceOwners = new WeakMap<APIRequestContext, Tracing>();
 const requestTraceClients = new WeakMap<APIRequestContext, EngineClient>();
 
-/** Private runner boundary; APIRequestContext has no public tracing property. */
+/** The runner and public API share one canonical lazy native tracing owner. */
 export function runnerRequestTraceOwner(context: APIRequestContext): object {
-  let tracing = requestTraceOwners.get(context);
-  if (!tracing) {
-    const client = requestTraceClients.get(context);
-    if (!client) throw failure('ProtocolError', 'runner.request', 'unknown API request trace owner');
-    context.assertLive('runner.request');
-    tracing = new Tracing(client, context.identifier, null, 'api');
-    requestTraceOwners.set(context, tracing);
-  }
-  return tracing;
+  if (!requestTraceClients.has(context)) throw failure('ProtocolError', 'runner.request', 'unknown API request trace owner');
+  return context.tracing;
 }
 
 /** One native standalone cookie jar and response owner, retaining its implicit engine exactly once. */
 export class APIRequestContext {
+  get tracing(): Tracing {
+    let tracing = requestTraceOwners.get(this);
+    if (!tracing) {
+      tracing = new Tracing(this.client, this.identifier, null, 'api');
+      requestTraceOwners.set(this, tracing);
+      if (this.closed || this.client.isClosed()) tracing.ownerClosed();
+    }
+    return tracing;
+  }
   private closed = false;
   private locallyClosed = false;
   private closeReason: string | undefined;
@@ -734,10 +737,14 @@ export class APIRequestContext {
     if (this.disposal) return this.disposal;
     if (this.closed) return this.release();
     this.closeReason = options.reason;
+    const tracing = requestTraceOwners.get(this);
+    if (tracing) closeAPITraceAdmission(tracing);
     this.closed = true;
     this.preparationAborted.abort(failure('TargetClosedError', 'APIRequestContext.fetch', this.closeReason ?? 'API request context has been disposed'));
     this.disposal = (async () => {
       await beforeRunnerRequestDispose(this);
+      // Trace failures stay with their canonical owner; native and host cleanup still run.
+      if (tracing) await prepareAPITraceOwnerClose(tracing).catch(() => {});
       try { await this.client.request('apiRequest.dispose', { context: this.identifier, ...(options.reason === undefined ? {} : { reason: options.reason }) }); }
       catch (error) {
         if (!(error instanceof Error && ['TargetClosedError', 'BrowserDisconnectedError'].includes(error.name))) {
@@ -805,16 +812,17 @@ export class APIResponse {
 
 export class APIRequest {
   async newContext(options: APIRequestContextOptions = {}): Promise<APIRequestContext> {
+    const runnerDefaults = currentRunnerContextDefaults();
     const claim = beginRunnerRequestCreation();
-    try { return await this.createContext(options, claim); }
+    try { return await this.createContext(options, claim, runnerDefaults); }
     finally { claim.complete(); }
   }
 
-  private async createContext(options: APIRequestContextOptions, claim: RequestCreationClaim): Promise<APIRequestContext> {
+  private async createContext(options: APIRequestContextOptions, claim: RequestCreationClaim, runnerDefaults: Readonly<RunnerContextDefaults> | undefined): Promise<APIRequestContext> {
     const started = performance.now();
     const method = 'request.newContext';
     validateOptions(method, options, ['baseURL', 'extraHTTPHeaders', 'userAgent', 'timeout', 'ignoreHTTPSErrors', 'httpCredentials', 'storageState', 'maxRedirects', 'failOnStatusCode', 'proxy', 'clientCertificates']);
-    options = { ...options };
+    options = prepareRunnerRequestContextOptions(options, runnerDefaults);
     for (const field of ['proxy', 'clientCertificates'] as const) if (options[field] !== undefined) throw failure('UnsupportedFeatureError', `${method}.${field}`, 'option is not implemented for standalone API requests');
     if (options.baseURL !== undefined) requireString(options.baseURL, `${method}.baseURL`);
     if (options.userAgent !== undefined) requireString(options.userAgent, `${method}.userAgent`);
