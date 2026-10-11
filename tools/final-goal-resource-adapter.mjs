@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { finalGoalClockProjection } from './final-goal-clock-projection.mjs';
 
 function requireText(value, description) {
   assert.ok(typeof value === 'string' && value.trim(), description);
@@ -206,6 +207,11 @@ export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collec
   for (const component of requiredResourceComponents) requireText(component, 'Invalid required resource component');
   const watchdog = JSON.parse(watchdogReportBytes.toString());
   assert.equal(watchdog.schemaVersion, 2, 'Unknown watchdog schema');
+  const watchdogClock = finalGoalClockProjection(watchdog.clock);
+  assert.equal(lifecycle.clock.identity, watchdogClock.identity, 'Lifecycle clock differs from original watchdog capture');
+  assert.equal(lifecycle.clock.watchdogOriginNanoseconds, watchdogClock.originNanoseconds, 'Lifecycle origin differs from original watchdog nanoseconds');
+  assert.equal(lifecycle.clock.watchdogOriginMilliseconds, Number(BigInt(watchdogClock.originNanoseconds)) / 1e6,
+    'Lifecycle millisecond origin differs from original watchdog nanoseconds');
   assert.equal(watchdog.cpuAccounting, 'maximum-per-observed-process-identity', 'Unknown watchdog CPU accounting');
   requireNonnegative(watchdog.elapsedSeconds, 'Invalid watchdog capture duration');
   assert.ok(watchdog.elapsedSeconds > 0 && Number.isSafeInteger(watchdog.exitCode), 'Missing terminal watchdog owner result');
@@ -265,6 +271,7 @@ export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collec
     process.components.includes(component) && observations.cumulativeCpu.has(process.identity)));
   return {
     collectorSha256, ownerExitCode: watchdog.exitCode, timedOut: watchdog.timedOut, interrupted: watchdog.interrupted,
+    watchdogClock, ownerInterval: structuredClone(lifecycle.clock.ownerInterval),
     captureInterval, ownedProcesses: [...owned.values()].map(({ identity, namespace, processId, startIdentity, components }) =>
       ({ identity, namespace, processId, startIdentity, components })),
     workerIntervals: [...workers.values()], samples: observations.samples,

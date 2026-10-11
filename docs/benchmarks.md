@@ -164,7 +164,9 @@ The later [packed backend checkpoint](../compatibility/evidence/backend-corpus-p
 
 Actual runner startup, retries, hooks, artifacts and parallel execution still need representative suite comparisons across the declared contenders.
 
-Before publishing comparisons, verify the current Flashwright binary and sources, run matched independent launches with rotated execution order, and apply the [predeclared statistical and regression policy](../benchmarks/configurations/baseline.json). Include complete preparation and cleanup, uncertainty, CPU/concurrent memory, unexpected failures and contention. A functional pass, one favorable run or a different input contract does not satisfy that gate.
+To reproduce the historical comparisons, verify the recorded Flashwright binary and sources, run matched independent launches with rotated execution order, and apply the [predeclared statistical and regression policy](../benchmarks/configurations/baseline.json). Include complete preparation and cleanup, uncertainty, CPU/concurrent memory, unexpected failures and contention. A functional pass, one favorable run or a different input contract does not satisfy that gate.
+
+Current goal acceptance follows the [draft final-goal contract](../benchmarks/configurations/final-goal.json). Its nine scenarios each have two worker cells; all 18 cells remain unmeasured for final admission, and the contract remains unsealed. Native Linux remains unverified.
 
 The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for every declared contender. Inspect its requirements without starting a browser:
 

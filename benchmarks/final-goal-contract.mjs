@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { comparePaired, quantile } from './statistics.mjs';
+import { finalGoalClockProjection } from '../tools/final-goal-clock-projection.mjs';
 
 export const finalGoalScenarioIds = ['runner-interaction', 'runner-assertion', 'runner-navigation', 'runner-setup',
   'runner-backend', 'runner-failure', 'application-todomvc', 'application-svgomg', 'application-backend-corpus'];
@@ -106,6 +107,9 @@ function verifyDeclaration(configuration, declaration) {
   requireHash(declaration.driverSha256, 'Missing driver executable identity');
   requireHash(declaration.resourceCollectorSha256, 'Missing resource collector identity');
   assert.equal(declaration.sourceManifest[declaration.resourceCollectorPath], declaration.resourceCollectorSha256, 'Collector algorithm is absent from admitted campaign source');
+  requireHash(declaration.lifecycleProducerSha256, 'Missing lifecycle producer identity');
+  assert.equal(declaration.sourceManifest[declaration.lifecycleProducerPath], declaration.lifecycleProducerSha256,
+    'Lifecycle producer is absent from admitted campaign source');
   requireEvidence(declaration.approvalEvidence, 'Missing premeasurement approval/ordering evidence');
   assert.ok(declaration.gates?.length, 'Missing behavior, lifecycle and source admission gates');
   assert.equal(new Set(declaration.gates.map(gate => gate.id)).size, declaration.gates.length);
@@ -305,10 +309,33 @@ function verifyRun(run, engine, scenario, cell, configuration, declaration) {
   if (resources.sampledConcurrentBytes > configuration.resourcePolicy.maximumSampledConcurrentBytes) reasons.push('Sampled complete tree exceeds the 8 GiB ceiling');
   assert.ok(Array.isArray(report.backgroundConfounds));
   reasons.push(...report.backgroundConfounds.map(() => 'Observed background resource confound'));
-  return { reasons, behaviorFailures, interval, report, resources };
+  return { reasons, behaviorFailures, interval, report, resources, evidence: run.evidence };
 }
 
-function analyzeCell(result, scenario, cell, configuration, declaration, campaignIntervals) {
+/** Admit original receipts only after failed attempts and known coverage gaps remain nonwinners. */
+function verifyResourceProvenance(run, declaration, originalResourceIdentities) {
+  const { report, resources } = run;
+  for (const kind of ['report', 'resources', 'watchdog', 'lifecycle'])
+    assert.equal(run.evidence.filter(receipt => receipt.kind === kind).length, 1, `Missing unique raw ${kind} file`);
+  const watchdogReceipt = run.evidence.find(receipt => receipt.kind === 'watchdog');
+  const watchdogClock = finalGoalClockProjection(report.watchdogClock);
+  assert.deepEqual(report.watchdogClock, watchdogClock, 'Report must retain the exact original watchdog clock projection');
+  assert.deepEqual(resources.watchdogClock, watchdogClock, 'Resource clock differs from original report clock');
+  assert.equal(resources.provenance?.clockIdentity, watchdogClock.identity, 'Resource capture identity differs from original clock');
+  assert.equal(resources.provenance?.watchdogSha256, watchdogReceipt.sha256, 'Resource watchdog hash differs from original receipt');
+  assert.equal(resources.provenance?.hostIdentitySha256, declaration.host.identitySha256, 'Resource host differs from declared host');
+  assert.equal(resources.provenance?.lifecycleSourceSha256, declaration.lifecycleProducerSha256,
+    'Resource lifecycle producer differs from admitted source');
+  assert.deepEqual(resources.ownerInterval, report.ownerInterval, 'Lifecycle owner interval differs from original report');
+  const lifecycleReceipt = run.evidence.find(receipt => receipt.kind === 'lifecycle');
+  for (const [kind, value] of [['path', watchdogReceipt.path], ['path', lifecycleReceipt.path],
+    ['watchdogSha256', watchdogReceipt.sha256], ['captureIdentity', watchdogClock.identity]]) {
+    assert.ok(!originalResourceIdentities[kind].has(value), `Reused original resource ${kind}`);
+    originalResourceIdentities[kind].add(value);
+  }
+}
+
+function analyzeCell(result, scenario, cell, configuration, declaration, campaignIntervals, originalResourceIdentities) {
   if (!result) return { id: cell.id, status: 'unmeasured', evidenceComplete: false, confirmedWin: false, pointEstimateWin: false, reasons: ['Missing declared cell'] };
   assert.equal(result.id, cell.id);
   assert.ok(['comparable', ...nonwinningStatuses].includes(result.status));
@@ -357,6 +384,8 @@ function analyzeCell(result, scenario, cell, configuration, declaration, campaig
   if (reasons.length) return { id: cell.id, status: 'noncomparable', evidenceComplete: true, confirmedWin: false,
     pointEstimateWin: false, reasons: [...new Set(reasons)], retainedAttempts: result.attempts };
   assert.equal(result.status, 'comparable', 'Successful comparable raw pairs cannot be relabelled to hide a regression');
+  for (const engine of engines) for (const run of runs[engine])
+    verifyResourceProvenance(run, declaration, originalResourceIdentities);
   const values = (engine, select) => runs[engine].map(select);
   const complete = comparePaired(values('playwright', run => [run.report.completeMilliseconds]),
     values('flashwright', run => [run.report.completeMilliseconds]), configuration.statistics);
@@ -387,6 +416,7 @@ export function analyzeFinalGoal({ configuration, declaration, scenarioResults }
     results.set(result.id, result);
   }
   const campaignIntervals = [];
+  const originalResourceIdentities = { path: new Set(), watchdogSha256: new Set(), captureIdentity: new Set() };
   const scenarios = configuration.scenarios.map(scenario => {
     const result = results.get(scenario.id);
     assert.ok(!result || Array.isArray(result.cells));
@@ -395,7 +425,7 @@ export function analyzeFinalGoal({ configuration, declaration, scenarioResults }
       assert.ok(cellIds.includes(item.id) && !cells.has(item.id), 'Unknown or duplicate resource cell');
       cells.set(item.id, item);
     }
-    const analysis = configuration.cells.map(cell => sealed ? analyzeCell(cells.get(cell.id), scenario, cell, configuration, declaration, campaignIntervals)
+    const analysis = configuration.cells.map(cell => sealed ? analyzeCell(cells.get(cell.id), scenario, cell, configuration, declaration, campaignIntervals, originalResourceIdentities)
       : { id: cell.id, status: 'unsealed', evidenceComplete: false, confirmedWin: false, pointEstimateWin: false, reasons: ['Declaration/configuration remains unsealed'] });
     return { id: scenario.id, kind: scenario.kind, cells: analysis, confirmedWin: analysis.every(cell => cell.confirmedWin),
       pointEstimateWin: analysis.every(cell => cell.pointEstimateWin), evidenceComplete: analysis.every(cell => cell.evidenceComplete) };

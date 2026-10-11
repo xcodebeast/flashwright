@@ -1,4 +1,4 @@
-import { installPackedConsumer } from './install-packed-consumer.mjs';
+import { installPackedConsumer, cleanupPackedConsumer } from './install-packed-consumer.mjs';
 import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 import { tmpdir } from 'node:os';
 import { packConsumerPackages } from './packed-artifacts.mjs';
@@ -377,3 +377,5 @@ const evidence = {
 const destination = join(reportDirectory, `packed-library-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`);
 await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
 console.log(`Packed library consumers passed: ${destination}`);
+
+await cleanupPackedConsumer(directory, installation, destination, import.meta.url);
