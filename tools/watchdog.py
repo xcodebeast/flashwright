@@ -149,11 +149,29 @@ def main():
             parser.error("Resource reports are immutable; choose a new path or --report-directory.")
         environment["FLASHWRIGHT_RESOURCE_REPORT"] = str(arguments.report.resolve())
     subreaper = adopt_orphaned_descendants()
-    child = subprocess.Popen(command, start_new_session=True, env=environment)
+    # Capture the origin before Popen: a fast child can execute before Popen returns.
+    # This is the supervisor clock only; other runtimes still need a measured mapping.
+    started_nanoseconds = time.monotonic_ns()
+    started = started_nanoseconds / 1_000_000_000
+    clock = {
+        "schemaVersion": 1,
+        "identity": uuid.uuid4().hex,
+        "type": "monotonic",
+        "implementation": time.get_clock_info("monotonic").implementation,
+        "originNanoseconds": str(started_nanoseconds),
+        "resolutionSeconds": time.get_clock_info("monotonic").resolution,
+        "scope": "Supervisor process clock; cross-process/runtime mapping is not established by this record.",
+    }
+    environment["FLASHWRIGHT_WATCHDOG_CLOCK"] = json.dumps(clock)
     known = {}
     cpu_records = {}
-    samples = []
-    started = time.monotonic()
+    # No command-owned process exists before launch. Retain this actual empty boundary.
+    samples = [{"elapsedSeconds": time.monotonic() - started,
+                "concurrentRssBytes": 0, "liveOwnedProcesses": 0, "processes": [],
+                "phase": "before-owner-launch"}]
+    launch_started = time.monotonic() - started
+    child = subprocess.Popen(command, start_new_session=True, env=environment)
+    launch_returned = time.monotonic() - started
     interrupted = False
     timed_out = False
 
@@ -165,7 +183,12 @@ def main():
     signal.signal(signal.SIGINT, interrupt)
 
     def observe():
+        # An unreaped child's PID cannot be reused during this query. A later poll
+        # must not erase ownership of a root and descendants already in the snapshot.
+        root_unreaped_before_snapshot = child.returncode is None
+        acquisition_started = time.monotonic() - started
         snapshot = process_snapshot()
+        acquisition_finished = time.monotonic() - started
         adopted = set()
         for process, details in list(snapshot.items()):
             if details["parent"] != os.getpid() or process == child.pid:
@@ -182,8 +205,9 @@ def main():
                 snapshot.pop(process)
         owned = {process for process, details in known.items() if process in snapshot and snapshot[process]["started"] == details["started"]}
         owned.update(adopted)
-        if child.poll() is None:
+        if root_unreaped_before_snapshot:
             owned.add(child.pid)
+        child.poll()
         changed = True
         while changed:
             added = {process for process, details in snapshot.items() if details["parent"] in owned and process not in owned}
@@ -196,6 +220,8 @@ def main():
         observed = [{"process": process, **snapshot[process]} for process in sorted(owned) if process in snapshot]
         samples.append({
             "elapsedSeconds": time.monotonic() - started,
+            "acquisitionStartedElapsedSeconds": acquisition_started,
+            "acquisitionFinishedElapsedSeconds": acquisition_finished,
             "concurrentRssBytes": sum(process["rssBytes"] for process in observed),
             "liveOwnedProcesses": len(observed), "processes": observed,
         })
@@ -213,6 +239,9 @@ def main():
         child.poll()
         report = {
             "schemaVersion": 2, "cpuAccounting": "maximum-per-observed-process-identity",
+            "clock": clock,
+            "ownerLaunch": {"process": child.pid, "startedElapsedSeconds": launch_started,
+                            "returnedElapsedSeconds": launch_returned},
             "command": command, "timeoutSeconds": arguments.timeout, "timedOut": timed_out,
             "interrupted": interrupted, "exitCode": child.returncode,
             "elapsedSeconds": time.monotonic() - started, "samplingIntervalSeconds": 0.1,

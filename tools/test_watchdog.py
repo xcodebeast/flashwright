@@ -11,10 +11,44 @@ import textwrap
 import time
 import unittest
 from unittest.mock import patch
-from tools.watchdog import cleanup_owned_processes, record_cpu_observation
+from tools.watchdog import cleanup_owned_processes, main, record_cpu_observation
 
 
 class WatchdogLifecycleTests(unittest.TestCase):
+    def test_root_exit_after_snapshot_preserves_its_observed_descendants(self):
+        class Child:
+            pid = 101
+            returncode = None
+            snapshot_taken = False
+
+            def poll(self):
+                if self.snapshot_taken:
+                    self.returncode = 0
+                return self.returncode
+
+        child = Child()
+
+        def snapshot():
+            child.snapshot_taken = True
+            return {
+                101: {"parent": os.getpid(), "group": 101, "rssBytes": 20, "cpuSeconds": 0.5, "state": "S", "started": "original-root"},
+                102: {"parent": 101, "group": 102, "rssBytes": 30, "cpuSeconds": 0.25, "state": "S", "started": "original-child"},
+            }
+
+        with tempfile.TemporaryDirectory(prefix="flashwright-watchdog-snapshot-test-") as directory:
+            path = Path(directory) / "report.json"
+            with patch("sys.argv", ["watchdog", "--timeout", "5", "--report", str(path), "--", "unused"]), \
+                    patch("tools.watchdog.subprocess.Popen", return_value=child), \
+                    patch("tools.watchdog.process_snapshot", side_effect=snapshot), \
+                    patch("tools.watchdog.adopt_orphaned_descendants", return_value=False), \
+                    patch("tools.watchdog.signal.signal"), patch("tools.watchdog.time.sleep"), \
+                    patch("tools.watchdog.cleanup_owned_processes", return_value=({}, [], {})):
+                self.assertEqual(main(), 0)
+            report = json.loads(path.read_text())
+            self.assertEqual({entry["process"] for entry in report["processes"]}, {101, 102})
+            self.assertEqual(report["maximumSampledConcurrentRssBytes"], 50)
+            self.assertEqual(report["observedCpuSeconds"], 0.75)
+
     def test_parent_exit_near_deadline_gives_promoted_child_a_fresh_grace_period(self):
         elapsed = [0.0]
 
@@ -102,6 +136,47 @@ class WatchdogLifecycleTests(unittest.TestCase):
             ], timeout=10, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             report = json.loads(report_path.read_text())
+            self.assertEqual(report["cleanupSignals"], [])
+            self.assertEqual(report["remainingObservedProcesses"], [])
+
+    def test_clock_and_empty_sample_precede_original_child_execution(self):
+        job = textwrap.dedent("""
+            import json, os, pathlib, sys, time
+            entered = time.monotonic_ns()
+            clock = json.loads(os.environ['FLASHWRIGHT_WATCHDOG_CLOCK'])
+            pathlib.Path(sys.argv[1]).write_text(json.dumps({
+                'enteredNanoseconds': str(entered), 'clock': clock, 'process': os.getpid()
+            }))
+        """)
+        with tempfile.TemporaryDirectory(prefix="flashwright-watchdog-clock-test-") as directory:
+            report_path = Path(directory) / "resources.json"
+            observation_path = Path(directory) / "child.json"
+            result = subprocess.run([
+                sys.executable, "tools/watchdog.py", "--timeout", "5", "--report", str(report_path),
+                "--", sys.executable, "-c", job, str(observation_path),
+            ], timeout=10, capture_output=True, text=True,
+                env={**os.environ, "FLASHWRIGHT_WATCHDOG_CLOCK": "stale outer supervisor"})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(report_path.read_text())
+            observation = json.loads(observation_path.read_text())
+            self.assertEqual(report["clock"], observation["clock"])
+            self.assertEqual(report["clock"]["type"], "monotonic")
+            self.assertEqual(report["ownerLaunch"]["process"], observation["process"])
+            entered = (int(observation["enteredNanoseconds"]) - int(report["clock"]["originNanoseconds"])) / 1_000_000_000
+            initial = report["samples"][0]
+            self.assertEqual(initial["phase"], "before-owner-launch")
+            self.assertEqual(initial["processes"], [])
+            self.assertEqual(initial["concurrentRssBytes"], 0)
+            self.assertEqual(initial["liveOwnedProcesses"], 0)
+            self.assertGreaterEqual(report["ownerLaunch"]["startedElapsedSeconds"], initial["elapsedSeconds"])
+            self.assertGreaterEqual(report["ownerLaunch"]["returnedElapsedSeconds"], report["ownerLaunch"]["startedElapsedSeconds"])
+            self.assertGreaterEqual(entered, report["ownerLaunch"]["startedElapsedSeconds"])
+            self.assertGreaterEqual(report["samples"][-1]["elapsedSeconds"], entered)
+            self.assertGreaterEqual(report["elapsedSeconds"], report["samples"][-1]["elapsedSeconds"])
+            for sample in report["samples"][1:]:
+                self.assertGreaterEqual(sample["acquisitionStartedElapsedSeconds"], 0)
+                self.assertGreaterEqual(sample["acquisitionFinishedElapsedSeconds"], sample["acquisitionStartedElapsedSeconds"])
+                self.assertGreaterEqual(sample["elapsedSeconds"], sample["acquisitionFinishedElapsedSeconds"])
             self.assertEqual(report["cleanupSignals"], [])
             self.assertEqual(report["remainingObservedProcesses"], [])
 
