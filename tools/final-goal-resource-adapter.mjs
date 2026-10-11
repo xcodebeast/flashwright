@@ -161,7 +161,7 @@ function readSamples(watchdog, lifecycle, owned) {
         assert.ok(typeof rawProcess.state === 'string' && /^[ZX]/.test(rawProcess.state), 'Live process observed after original ending');
       const previousCpu = cumulativeCpu.get(process.identity) ?? 0;
       if (rawProcess.cpuSeconds < previousCpu) cpuResets.push({ identity: process.identity, timestampMilliseconds,
-        previousCpuSeconds: previousCpu, observedCpuSeconds: rawProcess.cpuSeconds });
+        previousCpuSeconds: previousCpu, observedCpuSeconds: rawProcess.cpuSeconds, observedState: rawProcess.state ?? null });
       const cpuSeconds = Math.max(previousCpu, rawProcess.cpuSeconds);
       cumulativeCpu.set(process.identity, cpuSeconds);
       concurrentBytes += rawProcess.rssBytes;
@@ -241,6 +241,13 @@ export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collec
     const reasons = missing.get(identity) ?? [];
     reasons.push({ reason: 'Original owned process was never observed in a watchdog snapshot' });
     missing.set(identity, reasons);
+  }
+  for (const reset of observations.cpuResets) if (typeof reset.observedState !== 'string' || !/^[ZX]/.test(reset.observedState)) {
+    const reasons = missing.get(reset.identity) ?? [];
+    reasons.push({ timestampMilliseconds: reset.timestampMilliseconds, previousCpuSeconds: reset.previousCpuSeconds,
+      observedCpuSeconds: reset.observedCpuSeconds, observedState: reset.observedState,
+      reason: 'Original cumulative CPU counter regressed in a live or unknown process state; counter is unusable for comparable resource coverage' });
+    missing.set(reset.identity, reasons);
   }
   // A later sample for a reused PID cannot supply an old logical worker's resource evidence.
   for (const worker of workers.values()) if (!observations.samples.some(sample => sample.timestampMilliseconds >= worker.startMilliseconds
