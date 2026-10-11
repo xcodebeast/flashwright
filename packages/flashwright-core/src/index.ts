@@ -82,7 +82,29 @@ interface ContextEvents { page: Page; close: BrowserContext; console: ConsoleMes
 interface PageEvents { dialog: Dialog; download: Download; filechooser: FileChooser; console: ConsoleMessage; response: Response; request: Request; requestfinished: Request; requestfailed: Request; framenavigated: Frame; frameattached: Frame; framedetached: Frame; close: Page; crash: Page; load: Page; domcontentloaded: Page; pageerror: Error }
 // Validate original ownership without exposing engine context identities in the public API.
 const contextOwners = new WeakMap<BrowserContext, { identifier: string; isClosed: () => boolean }>();
+const ownerRegistrations = new WeakMap<BrowserContext | Page, () => void>();
 
+/** Public listener removal or interruption cannot prevent removal from an owner's registry. */
+function retireOwnerRegistration(object: BrowserContext | Page): void {
+  const retire = ownerRegistrations.get(object);
+  ownerRegistrations.delete(object);
+  retire?.();
+}
+
+
+/** Finish independent owner cleanup steps, then rethrow the first value, even undefined. */
+class OwnerCloseFailures {
+  private firstFailure: { value: unknown } | undefined;
+  run(operation: () => unknown): void {
+    try { operation(); }
+    catch (value) { this.firstFailure ??= { value }; }
+  }
+  async wait(operation: () => unknown): Promise<void> {
+    try { await operation(); }
+    catch (value) { this.firstFailure ??= { value }; }
+  }
+  rethrow(): void { if (this.firstFailure) throw this.firstFailure.value; }
+}
 
 function identifier(value: unknown): string {
   if (!value || typeof value !== 'object' || !('identifier' in value) || typeof value.identifier !== 'string') throw failure('ProtocolError', 'protocol', 'driver omitted object identity');
@@ -136,8 +158,10 @@ export class Browser extends EventEmitter {
     super();
     this.unsubscribe = client.subscribeObject(identifier, event => {
       if (event.event === 'disconnected' || event.event === 'transportclosed') {
-        this.didDisconnect();
-        if (!this.closing) void this.releaseDriver();
+        const failures = new OwnerCloseFailures();
+        failures.run(() => this.didDisconnect());
+        if (!this.closing) failures.run(() => { void this.releaseDriver(); });
+        failures.rethrow();
       }
     });
     if (!this.disconnected) this.unregisterPublicBrowser = registerPublicBrowser(this);
@@ -146,12 +170,14 @@ export class Browser extends EventEmitter {
   private didDisconnect(): void {
     if (this.disconnected) return;
     this.disconnected = true;
-    this.unregisterPublicBrowser?.();
+    const failures = new OwnerCloseFailures();
+    failures.run(() => this.unregisterPublicBrowser?.());
     this.unregisterPublicBrowser = undefined;
-    for (const context of this.ownedContexts) context.didClose();
+    for (const context of this.ownedContexts) failures.run(() => context.didClose());
     this.ownedContexts.clear();
-    this.unsubscribe();
-    this.emit('disconnected', this);
+    failures.run(() => this.unsubscribe());
+    failures.run(() => this.emit('disconnected', this));
+    failures.rethrow();
   }
   version(): string { return this.browserVersion; }
   contexts(): BrowserContext[] { return [...this.ownedContexts]; }
@@ -188,7 +214,8 @@ export class Browser extends EventEmitter {
         context.setDefaultNavigationTimeout(runnerDefaults.navigationTimeout);
       }
       this.ownedContexts.add(context);
-      context.once('close', () => this.ownedContexts.delete(context));
+      ownerRegistrations.set(context, () => { this.ownedContexts.delete(context); });
+      context.once('close', () => retireOwnerRegistration(context));
       try {
         const enrollment = didCreateRunnerContext(context, runnerCreation);
         if (enrollment) await enrollment;
@@ -204,18 +231,20 @@ export class Browser extends EventEmitter {
   close(): Promise<void> {
     assertRunnerContextCloseAllowed();
     this.closing ??= (async () => {
-      try {
-        if (!this.disconnected) {
-          try {
-            if (traceRecordingActive() || runnerContextLifecycleActive()) {
-              const results = await Promise.allSettled([...this.ownedContexts].map(context => context.prepareOwnerClose('browser')));
-              const rejected = results.find(result => result.status === 'rejected');
-              if (rejected?.status === 'rejected') throw rejected.reason;
-            }
-          } finally { await this.client.request('browser.close', { browser: this.identifier }); }
+      const failures = new OwnerCloseFailures();
+      if (!this.disconnected) {
+        if (traceRecordingActive() || runnerContextLifecycleActive()) {
+          await failures.wait(async () => {
+            const results = await Promise.allSettled([...this.ownedContexts].map(context => context.prepareOwnerClose('browser')));
+            const rejected = results.find(result => result.status === 'rejected');
+            if (rejected?.status === 'rejected') throw rejected.reason;
+          });
         }
+        await failures.wait(() => this.client.request('browser.close', { browser: this.identifier }));
       }
-      finally { this.didDisconnect(); await this.releaseDriver(); }
+      failures.run(() => this.didDisconnect());
+      await failures.wait(() => this.releaseDriver());
+      failures.rethrow();
     })();
     return this.closing;
   }
@@ -329,7 +358,8 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
     const page = new Page(this.client, identifier(result), this, ownsContext, result as PageInitialization);
     this.ownedPages.add(page);
     this.tracingValue?.pageEvent(identifier(result), true);
-    page.once('close', () => this.ownedPages.delete(page));
+    ownerRegistrations.set(page, () => { this.ownedPages.delete(page); });
+    page.once('close', () => retireOwnerRegistration(page));
     this.emit('page', page);
     return page;
   }
@@ -337,24 +367,28 @@ export class BrowserContext extends SubscribedEventEmitter<{ [Event in keyof Con
     assertRunnerContextCloseAllowed();
     if (this.closed) return this.closing ?? Promise.resolve();
     this.closing ??= (async () => {
-      try {
-        try {
-          const beforeClose = this.prepareOwnerClose();
-          if (beforeClose) await beforeClose;
-        } finally { await this.client.request('context.close', { context: this.identifier }); }
-      } finally { this.didClose(); }
+      const failures = new OwnerCloseFailures();
+      let beforeClose: Promise<void> | undefined;
+      failures.run(() => { beforeClose = this.prepareOwnerClose(); });
+      if (beforeClose) await failures.wait(() => beforeClose);
+      await failures.wait(() => this.client.request('context.close', { context: this.identifier }));
+      failures.run(() => this.didClose());
+      failures.rethrow();
     })();
     return this.closing;
   }
   didClose(): void {
     if (this.closed) return;
     this.closed = true;
-    this.routeRegistry.close();
-    this.tracingValue?.ownerClosed();
-    this.unsubscribe();
-    for (const page of this.ownedPages) page.didClose();
+    const failures = new OwnerCloseFailures();
+    failures.run(() => this.routeRegistry.close());
+    failures.run(() => this.tracingValue?.ownerClosed());
+    failures.run(() => this.unsubscribe());
+    for (const page of this.ownedPages) failures.run(() => page.didClose());
     this.ownedPages.clear();
-    this.emit('close', this);
+    failures.run(() => this.emit('close', this));
+    failures.run(() => retireOwnerRegistration(this));
+    failures.rethrow();
   }
 }
 
@@ -867,24 +901,27 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     if (closeOptions.runBeforeUnload) throw failure('UnsupportedFeatureError', 'page.close.runBeforeUnload', 'dismissible page closure is not implemented; beforeunload navigation dialogs are supported');
     if (this.closed) return this.closing ?? Promise.resolve();
     this.closing ??= (async () => {
-      try {
-        if (this.ownsContext) await this.owner.close();
-        else await this.client.request('page.close', { page: this.identifier });
-      } finally { this.didClose(); }
+      const failures = new OwnerCloseFailures();
+      await failures.wait(() => this.ownsContext ? this.owner.close() : this.client.request('page.close', { page: this.identifier }));
+      failures.run(() => this.didClose());
+      failures.rethrow();
     })();
     return this.closing;
   }
   didClose(): void {
     if (this.closed) return;
     this.closed = true;
-    this.routeRegistry.close();
-    this.unsubscribe();
-    for (const frame of this.ownedFrames.values()) frame.didDetach();
-    for (const request of this.requests.values()) request.didFail('Target closed');
+    const failures = new OwnerCloseFailures();
+    failures.run(() => this.routeRegistry.close());
+    failures.run(() => this.unsubscribe());
+    for (const frame of this.ownedFrames.values()) failures.run(() => frame.didDetach());
+    for (const request of this.requests.values()) failures.run(() => request.didFail('Target closed'));
     this.completedRequestSizes.clear(); this.completedRequestBytes = 0; this.pendingRedirects.clear();
     this.requests.clear(); this.responses.clear(); this.completedRequests.clear(); this.navigationOccurrences.clear(); this.frameLoaders.clear(); this.liveLoaders.clear();
-    this.owner.recordTracePageClosed(this.identifier);
-    this.emit('close', this);
+    failures.run(() => this.owner.recordTracePageClosed(this.identifier));
+    failures.run(() => this.emit('close', this));
+    failures.run(() => retireOwnerRegistration(this));
+    failures.rethrow();
   }
 }
 

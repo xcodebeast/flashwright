@@ -18,7 +18,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
@@ -329,7 +329,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
@@ -1281,7 +1281,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
@@ -1358,7 +1358,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -1412,7 +1412,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -1423,7 +1423,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f",
           "kind": "source-review"
         }
       ],
@@ -1515,7 +1515,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/api-request.ts",
@@ -1650,13 +1650,13 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f",
           "kind": "source-review"
         }
       ],
@@ -1824,14 +1824,14 @@
       "title": "Browser, context, page and frame ownership",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls.",
+      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls. The owner-close checkpoint verifies sibling, subscription and registry retirement after throwing or removed close listeners, preserving the first thrown value and healthy event order.",
       "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation slice is verified; remote input/network/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/frame.ts",
@@ -1918,6 +1918,11 @@
         {
           "path": "compatibility/evidence/renderer-ownership-checkpoint-2026-10-10.json",
           "sha256": "d423e2529e5ec713d7eb4a7d026988f6ecc65d6e25cc729ce4d5cec0af934179",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/owner-close-checkpoint-2026-10-11.json",
+          "sha256": "b1170410cf41485e3c3d88438bbfa53ec9a36050e622c11bbe1b3cb1d004049b",
           "kind": "conformance"
         }
       ],
@@ -2020,7 +2025,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -2100,7 +2105,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/locator.ts",
@@ -2306,7 +2311,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/frame.ts",
@@ -2457,7 +2462,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/locator.ts",
@@ -2686,7 +2691,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/resident-runtime/locator-runtime.js",
@@ -2868,7 +2873,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/context-settings.ts",
@@ -3021,7 +3026,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/frame.ts",
@@ -3116,7 +3121,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -3162,7 +3167,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -3242,7 +3247,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -3280,7 +3285,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -3351,7 +3356,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -3385,7 +3390,7 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
@@ -3429,13 +3434,13 @@
       "implementation": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         }
       ],
       "evidence": [
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf",
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f",
           "kind": "source-review"
         }
       ],
@@ -3571,7 +3576,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/resident-runtime/locator-runtime.js",
@@ -3652,7 +3657,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/locator.ts",
@@ -3799,7 +3804,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/client.ts",
@@ -3920,7 +3925,7 @@
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
-          "sha256": "dd53751caec2c8d4ffddd755acd1bf3d21a65156685834438c9de15b1bafeabf"
+          "sha256": "767db768c3c8030c21fa36062edcab3bf253283c80a9163417a65c697803da2f"
         },
         {
           "path": "packages/flashwright-core/src/engine-contract.ts",
