@@ -1,7 +1,7 @@
-import { upstreamRequire, runnerHooks } from './upstream-runtime.js';
+import { upstreamRequire, runnerHooks, currentRunnerHookType } from './upstream-runtime.js';
 import type * as PinnedRunner from 'flashwright-upstream-runner/test';
 import { runnerIntegration } from '@flashwright/core/runner-integration';
-import { chromium, failure, type Browser, type BrowserContext, type Page, type LaunchOptions, type BrowserContextOptions, type ViewportSize } from '@flashwright/core';
+import { chromium, request as requestFactory, failure, type APIRequestContext, type Browser, type BrowserContext, type Page, type LaunchOptions, type BrowserContextOptions, type ViewportSize } from '@flashwright/core';
 import type { PlaywrightTestOptions, PlaywrightWorkerOptions, ExpectMatcherState } from 'flashwright-upstream-runner/test';
 import { matchers } from './matchers.js';
 import { toMatchAriaSnapshot } from './aria-matcher.js';
@@ -10,6 +10,7 @@ import { validateTracePolicy } from './trace-policy.js';
 import type { ScreenshotScopes } from './screenshot-recorder.js';
 import { RunnerArtifactCoordinator } from './runner-artifact-coordinator.js';
 import { discardDisabledRunnerTrace } from './runner-trace-off.js';
+import { RequestFixtureOwner } from './request-fixture-owner.js';
 
 const upstream: typeof PinnedRunner = upstreamRequire('./test.js');
 const artifacts = new RunnerArtifactCoordinator();
@@ -25,13 +26,13 @@ runnerHooks.installTraceStart((testInfo, policy) => {
 });
 
 export type { TestInfo, WorkerInfo, TestType, Fixtures, FullConfig, FullProject, PlaywrightTestConfig, ExpectMatcherState, MatcherReturnType } from 'flashwright-upstream-runner/test';
-export type { Browser, BrowserContext, Page, Locator, Dialog, Download } from '@flashwright/core';
-export { errors } from '@flashwright/core';
+export type { Browser, BrowserContext, Page, Locator, Dialog, Download, APIRequest, APIRequestContext, APIResponse, APIRequestContextOptions, APIRequestOptions, APIRequestFilePayload, APIRequestHeader } from '@flashwright/core';
+export { chromium, errors, request } from '@flashwright/core';
 export const defineConfig = upstream.defineConfig;
 export { devices } from '@flashwright/core';
 
-function unsupportedOptions(options: object): void {
-  for (const [name, value] of Object.entries(options)) if (value !== undefined) throw failure('UnsupportedFeatureError', `test.use.${name}`, 'option is not implemented by the Flashwright development runner');
+function unsupportedOptions(options: object, location = 'test.use'): void {
+  for (const [name, value] of Object.entries(options)) if (value !== undefined) throw failure('UnsupportedFeatureError', `${location}.${name}`, 'option is not implemented by the Flashwright development runner');
 }
 function unsupportedMatcher(name: string) {
   return async function(this: ExpectMatcherState, _actual: unknown, ..._arguments: unknown[]): Promise<never> { throw failure('UnsupportedFeatureError', `expect.${name}`, 'browser matcher is not implemented by Flashwright'); };
@@ -46,9 +47,10 @@ export const expect = upstream.expect.extend({}).extend({
 
 type WorkerFixtures = Omit<PlaywrightWorkerOptions, 'launchOptions'> & { browser: Browser; launchOptions: LaunchOptions; _workerArtifacts: void; _validateWorkerOptions: void; _screenshotScopes: ScreenshotScopes | undefined };
 type TestFixtures = Partial<Omit<PlaywrightTestOptions, 'contextOptions' | 'viewport' | 'actionTimeout' | 'navigationTimeout'>> & {
-  page: Page; context: BrowserContext; contextOptions: BrowserContextOptions; viewport: ViewportSize | null;
+  page: Page; context: BrowserContext; request: APIRequestContext; contextOptions: BrowserContextOptions; viewport: ViewportSize | null;
   actionTimeout: number; navigationTimeout: number; _validateContextOptions: void;
   _combinedContextOptions: BrowserContextOptions; _setupRunnerContextDefaults: void; _setupRunnerScreenshots: void; _testArtifacts: void;
+  _requestFixtureOwner: RequestFixtureOwner;
 };
 
 /** The version-pinned root runner provides scheduling; every browser fixture below is ours. */
@@ -113,6 +115,7 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
   }, { auto: true }],
   _combinedContextOptions: async ({ _validateContextOptions, contextOptions, viewport, baseURL, storageState, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled, acceptDownloads }, use) => {
     void _validateContextOptions;
+    unsupportedOptions(Object.fromEntries(Object.entries(contextOptions).filter(([name]) => ['extraHTTPHeaders', 'httpCredentials', 'proxy', 'clientCertificates'].includes(name))), 'test.use.contextOptions');
     await use({
       ...contextOptions, viewport,
       ...(userAgent === undefined ? {} : { userAgent }),
@@ -138,5 +141,23 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
     try { await use(context); } finally { await context.close(); }
   },
   page: async ({ context }, use) => { const page = await context.newPage(); await use(page); },
+  _requestFixtureOwner: async ({ _setupRunnerContextDefaults }, use) => {
+    void _setupRunnerContextDefaults;
+    const owner = new RequestFixtureOwner();
+    try { await use(owner); } finally { await owner.retire(); }
+  },
+  request: async ({ _requestFixtureOwner }, use, testInfo) => {
+    const hookType = currentRunnerHookType(testInfo);
+    const disposeOptions = hookType === 'beforeAll'
+      ? { reason: [
+          'Fixture { request } from beforeAll cannot be reused in a test.',
+          '  - Recommended fix: use a separate { request } in the test.',
+          '  - Alternatively, manually create APIRequestContext in beforeAll and dispose it in afterAll.',
+          'See https://playwright.dev/docs/api-testing#sending-api-requests-from-ui-tests for more details.',
+        ].join('\n') } : {};
+    const requestContext = await _requestFixtureOwner.createContext(() => requestFactory.newContext(), disposeOptions);
+    try { _requestFixtureOwner.assertOpen(); await use(requestContext); }
+    finally { await _requestFixtureOwner.disposeContext(requestContext); }
+  },
 });
 export default test;

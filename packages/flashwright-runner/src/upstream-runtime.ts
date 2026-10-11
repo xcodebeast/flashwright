@@ -9,3 +9,10 @@ export const runnerGlobals = upstreamRequire('./lib/globals.js') as { currentTes
 export const runnerHooks = upstreamRequire('./flashwright-hooks.cjs') as {
   installTraceStart(callback: (testInfo: TestInfo, policy: unknown) => boolean): void;
 };
+
+type RunnerHookType = 'beforeAll' | 'afterAll' | 'beforeEach' | 'afterEach' | undefined;
+
+/** This private hook discriminator belongs to the pinned runner adapter. */
+export function currentRunnerHookType(testInfo: TestInfo): RunnerHookType {
+  return (testInfo as TestInfo & { _currentHookType(): RunnerHookType })._currentHookType();
+}

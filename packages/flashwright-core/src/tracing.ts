@@ -23,6 +23,8 @@ import { apiTraceAttempt, apiTraceBodyExtension, apiTraceBodySnapshot, apiTraceR
 export interface TracingStartOptions { name?: string; title?: string; screenshots?: boolean; snapshots?: boolean; sources?: boolean }
 export interface TracingChunkOptions { name?: string; title?: string }
 export interface TracingStopOptions { path?: string }
+export interface TracingGroupOptions { location?: { file: string; line?: number; column?: number } }
+export interface TracingHarOptions { content?: 'omit' | 'embed' | 'attach'; mode?: 'full' | 'minimal'; resourcesDir?: string; urlFilter?: string | RegExp }
 export type TraceBackend = 'browser' | 'api';
 interface APIEntrySlot { attempt: APITraceAttempt; resolve(snapshot: Record<string, unknown>): void }
 interface APIRequestBody { hash: string; size: number; resource: Promise<TraceResource>; formParams?: { name: string; value: string }[] }
@@ -37,12 +39,17 @@ const captureAPIRequestAttempt = Symbol('capture API request attempt');
 const captureAPIRequestFailure = Symbol('capture API request failure');
 const captureAPIResponse = Symbol('capture API response body');
 const captureAPIRequestBody = Symbol('capture API request body');
+const closeAPIAdmission = Symbol('close API trace admission');
+const prepareAPIOwnerClose = Symbol('prepare original API trace owner closure');
 const requestNetworkSignal = new AbortController().signal;
 
 export function recordAPITraceAttempt(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestAttempt](value); }
 export function recordAPITraceFailure(tracing: Tracing, value: unknown): void { tracing[captureAPIRequestFailure](value); }
 export function recordAPITraceResponse(tracing: Tracing, generation: string, call: string, responseIdentifier: string, bodyLength: number): void { tracing[captureAPIResponse](generation, call, responseIdentifier, bodyLength); }
 export function recordAPITraceRequestBody(tracing: Tracing, generation: string, call: string, body: Buffer, parseForm: boolean): void { tracing[captureAPIRequestBody](generation, call, body, parseForm); }
+
+export function closeAPITraceAdmission(tracing: Tracing): void { tracing[closeAPIAdmission](); }
+export function prepareAPITraceOwnerClose(tracing: Tracing): Promise<void> { return tracing[prepareAPIOwnerClose](); }
 
 /** Manual action tracing owns context diagnostics and independent, bounded archive chunks. */
 export class Tracing {
@@ -55,6 +62,9 @@ export class Tracing {
   private nativeRecording: NativeTraceRecording | undefined;
   private network: TraceNetworkChannel | undefined;
   private ownerIsClosed = false;
+  private apiAdmissionClosed = false;
+  private apiCloseHandoffStarted = false;
+  private apiCloseHandoff: Promise<void> | undefined;
   private controlling = false;
   private controlSettlement: Promise<void> | undefined;
   private readonly chunkRetirements = new WeakMap<RunnerTraceChunk, Promise<void>>();
@@ -227,8 +237,42 @@ export class Tracing {
     return this.beginRecording(options).then(() => {});
   }
 
+  async group(name: string, options: TracingGroupOptions = {}): Promise<never> {
+    validateOptions('tracing.group', options, ['location']);
+    if (typeof name !== 'string') throw failure('InvalidArgumentError', 'tracing.group', 'name must be a string');
+    if (options.location !== undefined) {
+      validateOptions('tracing.group.location', options.location, ['file', 'line', 'column']);
+      if (typeof options.location.file !== 'string') throw failure('InvalidArgumentError', 'tracing.group.location.file', 'expected a string');
+      for (const field of ['line', 'column'] as const) {
+        if (options.location[field] !== undefined && (typeof options.location[field] !== 'number' || !Number.isFinite(options.location[field]))) {
+          throw failure('InvalidArgumentError', `tracing.group.location.${field}`, 'expected a finite number');
+        }
+      }
+    }
+    throw failure('UnsupportedFeatureError', 'tracing.group', 'trace grouping is not implemented');
+  }
+
+  async groupEnd(): Promise<never> {
+    throw failure('UnsupportedFeatureError', 'tracing.groupEnd', 'trace grouping is not implemented');
+  }
+
+  async startHar(path: string, options: TracingHarOptions = {}): Promise<never> {
+    validateOptions('tracing.startHar', options, ['content', 'mode', 'resourcesDir', 'urlFilter']);
+    if (typeof path !== 'string') throw failure('InvalidArgumentError', 'tracing.startHar', 'path must be a string');
+    if (options.content !== undefined && !['omit', 'embed', 'attach'].includes(options.content)) throw failure('InvalidArgumentError', 'tracing.startHar.content', 'expected omit, embed, or attach');
+    if (options.mode !== undefined && !['full', 'minimal'].includes(options.mode)) throw failure('InvalidArgumentError', 'tracing.startHar.mode', 'expected full or minimal');
+    if (options.resourcesDir !== undefined && typeof options.resourcesDir !== 'string') throw failure('InvalidArgumentError', 'tracing.startHar.resourcesDir', 'expected a string');
+    if (options.urlFilter !== undefined && typeof options.urlFilter !== 'string' && !(options.urlFilter instanceof RegExp)) throw failure('InvalidArgumentError', 'tracing.startHar.urlFilter', 'expected a string or regular expression');
+    throw failure('UnsupportedFeatureError', 'tracing.startHar', 'HAR recording is not implemented');
+  }
+
+  async stopHar(): Promise<never> {
+    throw failure('UnsupportedFeatureError', 'tracing.stopHar', 'HAR recording is not implemented');
+  }
+
   private beginRecording(options: TracingStartOptions, observer?: RunnerActionObserver, captureCleanup?: (cleanup: Promise<void>) => void): Promise<StartedRecording> {
     return this.control(async () => {
+      this.assertAPITraceAdmission();
       validateOptions('tracing.start', options, ['name', 'title', 'screenshots', 'snapshots', 'sources']);
       for (const key of ['screenshots', 'snapshots', 'sources'] as const) {
         if (options[key] !== undefined && typeof options[key] !== 'boolean') throw failure('InvalidArgumentError', `tracing.start.${key}`, 'expected a boolean');
@@ -313,6 +357,7 @@ export class Tracing {
   }
   startChunk(options: TracingChunkOptions = {}): Promise<void> {
     return this.control(async () => {
+      this.assertAPITraceAdmission();
       validateOptions('tracing.startChunk', options, ['name', 'title']);
       validateChunkOptions(options);
       if (!this.recording) throw failure('InvalidArgumentError', 'tracing.startChunk', 'must start tracing first');
@@ -352,6 +397,7 @@ export class Tracing {
   private startRunnerChunk(recording: RunnerTraceRecording, options: TracingChunkOptions, observer?: RunnerActionObserver, captureCleanup?: (cleanup: Promise<void>) => void): Promise<RunnerTraceChunk> {
     return this.control(async () => {
       this.assertRunnerRecordingCurrent(recording);
+      this.assertAPITraceAdmission();
       validateOptions('tracing.startChunk', options, ['name', 'title']);
       validateChunkOptions(options);
       await this.openChunk(options, observer);
@@ -375,7 +421,7 @@ export class Tracing {
     return this.cleanupOutcome ?? (this.cleanupFailure ? Promise.reject(this.cleanupFailure.error) : Promise.resolve());
   }
   private async control<Value>(callback: () => Promise<Value>, captureCleanup?: (cleanup: Promise<void>) => void): Promise<Value> {
-    if (this.ownerIsClosed) throw failure('TargetClosedError', 'tracing', 'context has been closed');
+    if (this.ownerIsClosed || this.apiCloseHandoffStarted) throw failure('TargetClosedError', 'tracing', 'context has been closed');
     if (this.controlling) throw failure('InvalidArgumentError', 'tracing', 'another tracing control operation is in progress');
     if (this.cleanup) throw failure('ResourceLimitError', 'tracing', 'previous trace cleanup has not settled');
     if (this.cleanupFailure) throw this.cleanupFailure.error;
@@ -768,6 +814,35 @@ export class Tracing {
     const location = isLog ? { url: event.entry?.url ?? '', lineNumber: event.entry?.lineNumber ?? 0, columnNumber: 0 }
       : { url: frame?.url ?? '', lineNumber: frame?.lineNumber ?? 0, columnNumber: frame?.columnNumber ?? 0 };
     chunk.writer.append({ type: 'console', time, pageId: this.pageIdentity(diagnostic.page), messageType: isLog ? event.entry?.level : event.type, text: isLog ? event.entry?.text : arguments_.map(argument => argument.preview).join(' '), args: arguments_, location });
+  }
+  private assertAPITraceAdmission(): void {
+    if (this.apiAdmissionClosed) throw failure('TargetClosedError', 'tracing', 'API request context disposal has begun');
+  }
+  [closeAPIAdmission](): void {
+    if (this.backend !== 'api') throw failure('ProtocolError', 'tracing.api', 'API trace closure requires the original API owner');
+    this.apiAdmissionClosed = true;
+  }
+  /** Original capture custody survives the foreground cleanup grace and keeps its native owner alive. */
+  [prepareAPIOwnerClose](): Promise<void> {
+    this[closeAPIAdmission]();
+    if (this.apiCloseHandoff) return this.apiCloseHandoff;
+    this.apiCloseHandoffStarted = true;
+    this.apiCloseHandoff = (async () => {
+      // Existing manual export or runner retirement owns its original control and cleanup.
+      // This handoff is deliberately not another control operation or an export dependency.
+      await this.controlSettlement;
+      while (this.cleanup) await this.cleanup;
+      const chunk = this.chunk;
+      if (chunk && !this.ownerIsClosed) {
+        await this.ownCleanup((async () => {
+          try { await this.retireCollectors(chunk); }
+          finally { if (chunk.writer.failure !== undefined) this.cleanupFailure ??= { error: chunk.writer.failure }; }
+        })());
+      }
+      await this.settleRunnerCleanup();
+    })();
+    void this.apiCloseHandoff.catch(() => {});
+    return this.apiCloseHandoff;
   }
   /** Explicit closure drains first, without changing screenshot hooks or the user's close result. */
   async beforeOwnerClose(): Promise<void> {
