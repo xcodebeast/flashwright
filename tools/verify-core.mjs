@@ -37,6 +37,7 @@ const commands = [
   ['python3', 'tools/watchdog.py', '--timeout', '120', '--report-directory', 'compatibility/evidence/resources', '--', 'cargo', 'test', '--workspace', '--locked'],
   ['python3', 'tools/test-runtime-build-portability.py'],
   [process.execPath, 'tools/build-driver.mjs', ...(driverBuildProfile === 'release' ? ['--release'] : [])],
+  [process.execPath, 'tools/verify-driver-binary-paths.mjs', driverPath],
   [process.execPath, 'tools/build-packages.mjs'],
   [process.execPath, 'tools/extract-selector-runtime.mjs', '--check'],
   [process.execPath, 'tools/extract-keyboard-layout.mjs', '--check'],

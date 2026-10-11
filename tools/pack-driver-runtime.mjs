@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { sourceManifest } from './source-manifest.mjs';
 import { collectRustDependencyNotices } from './rust-dependency-notices.mjs';
+import { verifyDriverBinaryPaths } from './verify-driver-binary-paths.mjs';
 
 const require = createRequire(import.meta.url);
 const { EngineClient } = require('../packages/flashwright-core/dist/commonjs/client.js');
@@ -37,6 +38,7 @@ const executable = join(directory, 'bin/flashwright-driver');
 await copyFile(resolve(options['--driver']), executable);
 await chmod(executable, 0o755);
 const executableBytes = await readFile(executable);
+await verifyDriverBinaryPaths(executableBytes);
 verifyDriverHeader(executableBytes, { platform: process.platform, architecture: process.arch });
 const client = new EngineClient(executable);
 client.retain();
