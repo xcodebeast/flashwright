@@ -592,8 +592,8 @@ for (const [description, mutate, expected] of [
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
-test('comparable originals require one watchdog and lifecycle receipt each', async () => {
-  for (const kind of ['watchdog', 'lifecycle']) for (const duplicate of [false, true]) {
+for (const kind of ['watchdog', 'lifecycle']) for (const duplicate of [false, true]) {
+  test(`comparable originals reject ${duplicate ? 'duplicate' : 'missing'} ${kind} receipts`, async () => {
     const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-receipts-'));
     try {
       const state = retainedResourceFixture(), run = candidate(state);
@@ -603,8 +603,8 @@ test('comparable originals require one watchdog and lifecycle receipt each', asy
       await retainSyntheticCampaign(directory, state);
       await assert.rejects(verifyFinalGoalEvidence(directory), new RegExp(`Missing unique raw ${kind}`));
     } finally { await rm(directory, { recursive: true, force: true }); }
-  }
-});
+  });
+}
 
 
 test('original failed and noncomparable attempts keep partial watchdog bytes without invented lifecycle success', async () => {
