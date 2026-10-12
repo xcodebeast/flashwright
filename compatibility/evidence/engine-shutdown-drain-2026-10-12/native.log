@@ -1,0 +1,179 @@
+test_blocked_input_handler_closes_page_without_replaying_input (test_public_lifecycle.PublicLifecycleTests.test_blocked_input_handler_closes_page_without_replaying_input) ... ok
+test_blocked_keyboard_handler_closes_only_its_owned_page (test_public_lifecycle.PublicLifecycleTests.test_blocked_keyboard_handler_closes_only_its_owned_page) ... ok
+test_blocked_renderer_cannot_delay_assertion_deadline (test_public_lifecycle.PublicLifecycleTests.test_blocked_renderer_cannot_delay_assertion_deadline) ... ok
+test_browser_close_settles_pending_operation_before_driver_shutdown (test_public_lifecycle.PublicLifecycleTests.test_browser_close_settles_pending_operation_before_driver_shutdown) ... FAIL
+
+Immediate failure details:
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/case.py", line 58, in testPartExecutor
+    yield
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/case.py", line 669, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/case.py", line 615, in _callTestMethod
+    result = method()
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 26, in test_browser_close_settles_pending_operation_before_driver_shutdown
+    self.assert_pending_browser_shutdown("drain-browser-close")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 14, in assert_pending_browser_shutdown
+    self.assertTrue(read_message(self.worker, 5)["shutdownPending"])
+                    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_lifecycle.py", line 28, in read_message
+    raise AssertionError(f"worker exited early with status {worker.poll()}\n{diagnostic_tail(worker)}")
+AssertionError: worker exited early with status 1
+22 |   if (command === 'drain-browser-close' || command === 'drain-browser-loss') {
+23 |     const pending = page.evaluate(() => {
+24 |       globalThis.shutdownEvaluationStarted = true;
+25 |       return new Promise(() => {});
+26 |     }).catch(error => error);
+27 |     assert.equal(await page.evaluate(() => globalThis.shutdownEvaluationStarted), true);
+                ^
+AssertionError: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+ generatedMessage: true,
+     actual: undefined,
+   expected: true,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <integration-workspace>/compatibility/m1/public-lifecycle-worker.mjs:27:12
+
+Bun v1.4.2 (macOS arm64)
+
+test_browser_crash_updates_public_objects (test_public_lifecycle.PublicLifecycleTests.test_browser_crash_updates_public_objects) ... ok
+test_browser_loss_preserves_pending_operation_failure (test_public_lifecycle.PublicLifecycleTests.test_browser_loss_preserves_pending_operation_failure) ... FAIL
+
+Immediate failure details:
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/case.py", line 58, in testPartExecutor
+    yield
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/case.py", line 669, in run
+    self._callTestMethod(testMethod)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/case.py", line 615, in _callTestMethod
+    result = method()
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 23, in test_browser_loss_preserves_pending_operation_failure
+    self.assert_pending_browser_shutdown("drain-browser-loss", crash=True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 14, in assert_pending_browser_shutdown
+    self.assertTrue(read_message(self.worker, 5)["shutdownPending"])
+                    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_lifecycle.py", line 28, in read_message
+    raise AssertionError(f"worker exited early with status {worker.poll()}\n{diagnostic_tail(worker)}")
+AssertionError: worker exited early with status 1
+22 |   if (command === 'drain-browser-close' || command === 'drain-browser-loss') {
+23 |     const pending = page.evaluate(() => {
+24 |       globalThis.shutdownEvaluationStarted = true;
+25 |       return new Promise(() => {});
+26 |     }).catch(error => error);
+27 |     assert.equal(await page.evaluate(() => globalThis.shutdownEvaluationStarted), true);
+                ^
+AssertionError: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+ generatedMessage: true,
+     actual: undefined,
+   expected: true,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <integration-workspace>/compatibility/m1/public-lifecycle-worker.mjs:27:12
+
+Bun v1.4.2 (macOS arm64)
+
+test_context_close_cancels_page_keyboard_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_page_keyboard_and_preserves_browser) ... ok
+test_context_close_cancels_unbounded_assertion (test_public_lifecycle.PublicLifecycleTests.test_context_close_cancels_unbounded_assertion) ... ok
+test_keyboard_deadline_releases_keys_and_serializes_pointer_input (test_public_lifecycle.PublicLifecycleTests.test_keyboard_deadline_releases_keys_and_serializes_pointer_input) ... ok
+test_locator_deadline_suppresses_late_renderer_mutation (test_public_lifecycle.PublicLifecycleTests.test_locator_deadline_suppresses_late_renderer_mutation) ... ok
+test_pointer_deadline_releases_button_and_modifiers (test_public_lifecycle.PublicLifecycleTests.test_pointer_deadline_releases_button_and_modifiers) ... ok
+test_renderer_crash_updates_page_and_preserves_browser (test_public_lifecycle.PublicLifecycleTests.test_renderer_crash_updates_page_and_preserves_browser) ... ok
+
+======================================================================
+FAIL: test_browser_close_settles_pending_operation_before_driver_shutdown (test_public_lifecycle.PublicLifecycleTests.test_browser_close_settles_pending_operation_before_driver_shutdown)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 26, in test_browser_close_settles_pending_operation_before_driver_shutdown
+    self.assert_pending_browser_shutdown("drain-browser-close")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 14, in assert_pending_browser_shutdown
+    self.assertTrue(read_message(self.worker, 5)["shutdownPending"])
+                    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_lifecycle.py", line 28, in read_message
+    raise AssertionError(f"worker exited early with status {worker.poll()}\n{diagnostic_tail(worker)}")
+AssertionError: worker exited early with status 1
+22 |   if (command === 'drain-browser-close' || command === 'drain-browser-loss') {
+23 |     const pending = page.evaluate(() => {
+24 |       globalThis.shutdownEvaluationStarted = true;
+25 |       return new Promise(() => {});
+26 |     }).catch(error => error);
+27 |     assert.equal(await page.evaluate(() => globalThis.shutdownEvaluationStarted), true);
+                ^
+AssertionError: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+ generatedMessage: true,
+     actual: undefined,
+   expected: true,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <integration-workspace>/compatibility/m1/public-lifecycle-worker.mjs:27:12
+
+Bun v1.4.2 (macOS arm64)
+
+
+======================================================================
+FAIL: test_browser_loss_preserves_pending_operation_failure (test_public_lifecycle.PublicLifecycleTests.test_browser_loss_preserves_pending_operation_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 23, in test_browser_loss_preserves_pending_operation_failure
+    self.assert_pending_browser_shutdown("drain-browser-loss", crash=True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_public_lifecycle.py", line 14, in assert_pending_browser_shutdown
+    self.assertTrue(read_message(self.worker, 5)["shutdownPending"])
+                    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "<integration-workspace>/compatibility/m1/test_lifecycle.py", line 28, in read_message
+    raise AssertionError(f"worker exited early with status {worker.poll()}\n{diagnostic_tail(worker)}")
+AssertionError: worker exited early with status 1
+22 |   if (command === 'drain-browser-close' || command === 'drain-browser-loss') {
+23 |     const pending = page.evaluate(() => {
+24 |       globalThis.shutdownEvaluationStarted = true;
+25 |       return new Promise(() => {});
+26 |     }).catch(error => error);
+27 |     assert.equal(await page.evaluate(() => globalThis.shutdownEvaluationStarted), true);
+                ^
+AssertionError: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+ generatedMessage: true,
+     actual: undefined,
+   expected: true,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at <integration-workspace>/compatibility/m1/public-lifecycle-worker.mjs:27:12
+
+Bun v1.4.2 (macOS arm64)
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 17.368s
+
+FAILED (failures=2)

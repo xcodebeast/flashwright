@@ -1,0 +1,56 @@
+bun test v1.4.2 (744846f84)
+
+tools/test-engine-shutdown.mjs:
+(pass) last browser disconnect preserves a terminal reply arriving after its event [7.28ms]
+(pass) explicit final browser close drains earlier operation replies [1.44ms]
+(pass) another retained browser remains usable after a sibling disconnect [1.28ms]
+(pass) final release waits for every reply and refuses new commands [1.34ms]
+(pass) final release retains an unfinished input stream after its error reply [4.05ms]
+(pass) an unresponsive final operation remains bounded by the shutdown budget [3003.82ms]
+
+tools/test-owner-close-failures.mjs:
+(pass) browser closure retires all siblings and releases once while preserving the first listener failure [2.02ms]
+(pass) explicit context closure completes page retirement and parent registry cleanup after a page listener throws [0.38ms]
+(pass) an undefined first thrown listener value survives later close and release failures [0.35ms]
+(pass) native browser-close failure remains primary while host listeners and release also fail [0.33ms]
+(pass) native context-close failure remains primary while host cleanup still retires siblings [0.26ms]
+(pass) original transport-disconnect callback retires every sibling and starts the single driver release [0.32ms]
+(pass) unsubscribe failure does not prevent page detach, sibling retirement or later driver release [0.20ms]
+(pass) healthy close event order stays children then context then browser then release [0.20ms]
+(pass) prepended throwing context listener cannot retain its closed object in the browser registry [0.59ms]
+(pass) prepended throwing page listener cannot retain its closed object in the context registry [0.64ms]
+(pass) removing all public close listeners cannot remove internal owner retirement [0.28ms]
+(pass) context preparation failure stays primary through native close and listener failure [0.83ms]
+(pass) browser preparation retires all contexts and preserves its first rejected context value [0.37ms]
+(pass) page native close failure stays primary and page ownership retires despite a close listener failure [0.21ms]
+(pass) context-owning page close retires its siblings and preserves the original child failure [0.18ms]
+(pass) explicit close after transport loss awaits the same pending driver release [0.18ms]
+(pass) driver release failure is reported when all earlier cleanup succeeds [0.16ms]
+
+tools/test-input-attachments.mjs:
+(pass) raw input above control-frame size preserves bytes and interleaves ordinary controls [324.47ms]
+(pass) input snapshot and empty payloads preserve ownership under tiny negotiated frames [36.35ms]
+(pass) header rejection closes the input stream and preserves the original error and successor [38.38ms]
+(pass) a stalled partial input times out, closes its stream and leaves the client usable [200.38ms]
+(pass) input reservation survives completed transfer until the terminal operation outcome [36.37ms]
+(pass) oversized host input rejects before protocol publication [38.42ms]
+(pass) an unresponsive input pipe retains an independent caller deadline and bounded cleanup [2137.56ms]
+
+tools/test-attachments.mjs:
+(pass) native collection busy retries preserve identity, expected length and the original deadline [300.14ms]
+(pass) native collection pressure expires one deadline and never retries a terminal resource error [128.49ms]
+(pass) collection cancellation during busy backoff preserves its original reason and prevents another take [36.43ms]
+(pass) collection null is forbidden after any binary start, including an empty transfer [103.30ms]
+(pass) raw and base64 attachments interleave without exposing partial buffers [0.21ms]
+(pass) attachment offsets, identities, caps and terminal sizes reject corruption [0.24ms]
+(pass) base64 chunks require complete groups and canonical terminal padding [0.12ms]
+(pass) expired attachments release bytes but still validate late chunks [0.06ms]
+(pass) client assembles fragmented attachment frames and concurrent replies [33.49ms]
+(pass) an attachment larger than a control frame returns every byte [41.20ms]
+(pass) client rejects malformed starts, chunks, terminal replies and EOF [330.00ms]
+(pass) client deadline discards a partial attachment and leaves its successor usable [292.65ms]
+(pass) an expected binary length rejects a conflicting start before buffer allocation [79.87ms]
+
+ 43 pass
+ 0 fail
+Ran 43 tests across 4 files. [7.29s]

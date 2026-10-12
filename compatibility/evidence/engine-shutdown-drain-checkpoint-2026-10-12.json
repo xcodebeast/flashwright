@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-focused-development-checkpoint",
+  "scope": "Final engine release drains pending terminal replies, unfinished input streams and queued writes before closing input. The existing three-second termination budget remains. No performance or release claim.",
+  "platform": "macOS arm64",
+  "runtimes": [
+    "Bun 1.4.2",
+    "Node 24.15.0"
+  ],
+  "sourceHashes": {
+    "packages/flashwright-core/src/client.ts": "fff0d9d4ad1c7c9c2ac6b67346ae11eba181f056df801773788ba9fd58ba979c",
+    "compatibility/m1/public-lifecycle-worker.mjs": "3c4aed1c408e9fad2a868466a95e2e195b6f73f4bcc90dc59ab2d8e0c9b129e2",
+    "compatibility/m1/test_public_lifecycle.py": "5d860843c2654eb76dcc0b0a9d79b3200c3f10b8f832f40a5a26310b2f917061",
+    "tools/verify-core.mjs": "ecb1c23dc40ddbd2eab3117f65503bd9fb1149f23aae26061d7efa73845c3827",
+    "tools/test-engine-shutdown.mjs": "e36a719339bb09d09214a9e9580b695b6d0de42ec1a19fe6e8188b017ed53691"
+  },
+  "negativeControl": {
+    "log": "compatibility/evidence/engine-shutdown-drain-2026-10-12/before.log",
+    "result": "0 pass / 1 fail: the original implementation replaced the pending ProtocolError with BrowserDisconnectedError."
+  },
+  "checks": {
+    "bunHostAndRelated": 43,
+    "bunFinalShutdown": 6,
+    "node24FinalShutdown": 6,
+    "nativePublicLifecycle": 12,
+    "commandAttribution": 11,
+    "packedLibrary": "passed"
+  },
+  "coverage": [
+    "A disconnect event preceding the terminal reply preserves the original reply and error.",
+    "Explicit final close and implicit final release drain all admitted operations and queued writes.",
+    "Unfinished input streams remain owned after an error reply until shutdown drain completes.",
+    "New commands reject after final release begins; live sibling browsers retain their client.",
+    "An unresponsive final operation remains bounded by the existing shutdown budget.",
+    "Native browser close and browser loss settle pending operations without replacing their terminal failures."
+  ],
+  "retainedFailedAttempts": {
+    "native-resources": "The new test assumed two concurrent evaluation commands execute in submission order. Repaired fixture waits for its actual native marker; original ten existing lifecycle cases passed.",
+    "host-final-resources": "Strengthened diagnostics assertion compared VM and host object prototypes. Final test verifies exact own keys and original value without asserting cross-realm prototype identity."
+  },
+  "resources": {
+    "host-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-resources.json",
+      "sha256": "f4d1d3bb1483b6880421f6cb19a7cba9c834f38f869cc684814a91ae73d0cdb6",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "node-host-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/node-host-resources.json",
+      "sha256": "c4a4890bb60ebc5ea8744513d90fb1b909c7354fdfcbb51c92fcafd3ecc77881",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "native-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-resources.json",
+      "sha256": "42b472c34a7c6453232c4805a35438c6e22e10dadd3ccd1801c9a1fd7f4254f8",
+      "exitCode": 1,
+      "remainingObservedProcesses": []
+    },
+    "native-corrected-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-corrected-resources.json",
+      "sha256": "3742df94ec4317a9e23a09d0993f13161cce67b7a7e77103ef44a0995525836d",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "native-final-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-final-resources.json",
+      "sha256": "cb2048aef2cbed9bb2619a4c3ce36695b59c449b7632206b04d0c3de636a0f7e",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "packed-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/packed-resources.json",
+      "sha256": "00cf4a9889bcf15df750e94de5797159020e2fac3b03a994d865a17aaa7b21bb",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "attribution-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/attribution-resources.json",
+      "sha256": "01f77ae135a22a58b56942be3ba12594520bc9cf5e12dfb74b65b2465501f147",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "host-final-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-final-resources.json",
+      "sha256": "bbdf182f05d3cd9627cd7fdad7b2b1a2e39da792033bb8907518ba35d013ad75",
+      "exitCode": 1,
+      "remainingObservedProcesses": []
+    },
+    "host-final-002-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-final-002-resources.json",
+      "sha256": "ec6d2228d88a82113247970b82eb0374a11c6f04aee54070408dc7be6a2bcdec",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    },
+    "node-final-resources": {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/node-final-resources.json",
+      "sha256": "c1b895bb568ed7a9341412b8a42ce5f3f9122c53f7e55b4db120593807440e71",
+      "exitCode": 0,
+      "remainingObservedProcesses": []
+    }
+  },
+  "artifacts": [
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/before.log",
+      "originalSha256": "0c886ede4a6c9ffba0dc4182ed93273c83f77f18e9c9f6d034574f83a7c98230",
+      "sha256": "d8ce19a65d290fdcff187f0036dfb7cb49e5e8345e6bc2f26a597b2e834a1164",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host.log",
+      "originalSha256": "71b09cb78661da99c6ee11384d5f527ab2e863c07ba1b3b456d6b12c0acb462e",
+      "sha256": "71b09cb78661da99c6ee11384d5f527ab2e863c07ba1b3b456d6b12c0acb462e",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/node-host.log",
+      "originalSha256": "61ec349659638596cfd6493aa79401213c216da26578687bfae4fbc501e7d341",
+      "sha256": "61ec349659638596cfd6493aa79401213c216da26578687bfae4fbc501e7d341",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native.log",
+      "originalSha256": "83086df243e6e304af3a0d17753e63617589b476fb2a901f4574cddb6540d456",
+      "sha256": "2ffc2c01d9763a12bb3a7d479865e79f6cbacf7e0983c345618cf8339ac4a947",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-corrected.log",
+      "originalSha256": "87884f1aba81a1ef983cff10f8753714e0322b4569e9c96bc29225f221dc5e5f",
+      "sha256": "87884f1aba81a1ef983cff10f8753714e0322b4569e9c96bc29225f221dc5e5f",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-final.log",
+      "originalSha256": "cf48d0eea27b7c57bb1cde2133caafa9862406d58f76a197788e3ac0a084e8b8",
+      "sha256": "cf48d0eea27b7c57bb1cde2133caafa9862406d58f76a197788e3ac0a084e8b8",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/packed.log",
+      "originalSha256": "0f5c6755ec45d6f0403ad828f40111dca6043c821c0ca9f0bbb6b3995d4c0c16",
+      "sha256": "41001fba7916abe0ad1e85435c70ffd74aa8c9ee8ac18cd316989b8a59dd5fee",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/attribution.log",
+      "originalSha256": "8a7851b6d2875c7430f7069d723506d3b635ec7a1e71191d5ec45b0e03bd4fd4",
+      "sha256": "8a7851b6d2875c7430f7069d723506d3b635ec7a1e71191d5ec45b0e03bd4fd4",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-final.log",
+      "originalSha256": "15cb884b3015b26eb71639d1b2861f40398dc4a17867c93110210d1c82509639",
+      "sha256": "d93219bc143bf371a88d81104230af318e3878621c0c3f3ec08dbc9f3f326423",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-final-002.log",
+      "originalSha256": "8fd115c9056609947e02106e148b864aae52abc7b7f4fe66d9e81f5802341ef0",
+      "sha256": "8fd115c9056609947e02106e148b864aae52abc7b7f4fe66d9e81f5802341ef0",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/node-final.log",
+      "originalSha256": "d0a8ec151e55a02bc73ff84e94d9a8b6294f31671e893ffaa7a22019cb847f99",
+      "sha256": "d0a8ec151e55a02bc73ff84e94d9a8b6294f31671e893ffaa7a22019cb847f99",
+      "kind": "log"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-resources.json",
+      "originalSha256": "725e390d0f0287252eebc67b9ae6a155f3d1176ab7c41042bf00a80eaea71dcf",
+      "sha256": "f4d1d3bb1483b6880421f6cb19a7cba9c834f38f869cc684814a91ae73d0cdb6",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/node-host-resources.json",
+      "originalSha256": "90d9059d9b2d1f9d15ac54cdc82e8f1a57dc8528ec6ac879f4a9a9543d2e2f39",
+      "sha256": "c4a4890bb60ebc5ea8744513d90fb1b909c7354fdfcbb51c92fcafd3ecc77881",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-resources.json",
+      "originalSha256": "42b472c34a7c6453232c4805a35438c6e22e10dadd3ccd1801c9a1fd7f4254f8",
+      "sha256": "42b472c34a7c6453232c4805a35438c6e22e10dadd3ccd1801c9a1fd7f4254f8",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-corrected-resources.json",
+      "originalSha256": "3742df94ec4317a9e23a09d0993f13161cce67b7a7e77103ef44a0995525836d",
+      "sha256": "3742df94ec4317a9e23a09d0993f13161cce67b7a7e77103ef44a0995525836d",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/native-final-resources.json",
+      "originalSha256": "cb2048aef2cbed9bb2619a4c3ce36695b59c449b7632206b04d0c3de636a0f7e",
+      "sha256": "cb2048aef2cbed9bb2619a4c3ce36695b59c449b7632206b04d0c3de636a0f7e",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/packed-resources.json",
+      "originalSha256": "0f4408a166436703de38f5843d6606f260fc01a6a661f7e155d33166e6de6042",
+      "sha256": "00cf4a9889bcf15df750e94de5797159020e2fac3b03a994d865a17aaa7b21bb",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/attribution-resources.json",
+      "originalSha256": "d7cbcc3f1d3f0aae654f52dec36e30da5e591927fe6086387c6e0067c34d4fd4",
+      "sha256": "01f77ae135a22a58b56942be3ba12594520bc9cf5e12dfb74b65b2465501f147",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-final-resources.json",
+      "originalSha256": "edb024b5f1b3df11f6b56ff57589bab7fa2ff5d8f063212840edbe5e6b430944",
+      "sha256": "bbdf182f05d3cd9627cd7fdad7b2b1a2e39da792033bb8907518ba35d013ad75",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/host-final-002-resources.json",
+      "originalSha256": "62ebe25fde5c5b291621f924c6783deef85bb2a2d9423718211dabeadff104c1",
+      "sha256": "ec6d2228d88a82113247970b82eb0374a11c6f04aee54070408dc7be6a2bcdec",
+      "kind": "resource-report"
+    },
+    {
+      "path": "compatibility/evidence/engine-shutdown-drain-2026-10-12/node-final-resources.json",
+      "originalSha256": "8cc0e2e516fbeff77b4298ac53f12985b55ec38a46810e69a9222b27d36b8750",
+      "sha256": "c1b895bb568ed7a9341412b8a42ce5f3f9122c53f7e55b4db120593807440e71",
+      "kind": "resource-report"
+    }
+  ],
+  "export": {
+    "policy": "Replace workstation, home/cache and temporary-directory prefixes only; preserve test results, numeric observations, failures, timings, process IDs and report structure. Both original and exported SHA-256 identities are listed.",
+    "originalAnalysisSha256": "b29146c5e7ea57164cc4f4d5e7c24045cdca750ab978741488f5d5ef7ca65071"
+  },
+  "limitations": [
+    "This is focused correctness evidence, not a fresh full-core gate.",
+    "The original backend browser-loss and separate admin-login failures are not explained by this checkpoint.",
+    "Native Linux remains unverified.",
+    "Sampled process observations are not proof that every possible descendant was observed.",
+    "No result establishes the final complete-work 2x performance objective."
+  ]
+}

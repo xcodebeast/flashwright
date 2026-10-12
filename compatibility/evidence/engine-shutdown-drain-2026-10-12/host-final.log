@@ -1,0 +1,130 @@
+bun test v1.4.2 (744846f84)
+
+tools/test-engine-shutdown.mjs:
+108 | function assertOriginalError(error) {
+109 |   assert.equal(error.name, 'ProtocolError');
+110 |   assert.match(error.message, /original native transport failure/);
+111 |   assert.doesNotMatch(error.message, /driver exited/);
+112 |   assert.equal(error.details.inputDelivery, 'uncertain');
+113 |   assert.deepEqual(error.details.diagnostics, { nativeCause: 'retained' });
+               ^
+AssertionError: Values have same structure but are not reference-equal:
+
+{
+  nativeCause: 'retained'
+}
+
+ generatedMessage: true,
+     actual: {
+  nativeCause: "retained",
+  toString: [Function: toString],
+  toLocaleString: [Function: toLocaleString],
+  valueOf: [Function: valueOf],
+  hasOwnProperty: [Function: hasOwnProperty],
+  propertyIsEnumerable: [Function: propertyIsEnumerable],
+  isPrototypeOf: [Function: isPrototypeOf],
+  __defineGetter__: [Function: __defineGetter__],
+  __defineSetter__: [Function: __defineSetter__],
+  __lookupGetter__: [Function: __lookupGetter__],
+  __lookupSetter__: [Function: __lookupSetter__],
+},
+   expected: {
+  nativeCause: "retained",
+},
+   operator: "deepStrictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at assertOriginalError (<integration-workspace>/tools/test-engine-shutdown.mjs:113:10)
+      at <integration-workspace>/tools/test-engine-shutdown.mjs:126:5
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:63)
+      at processTicksAndRejections (native:7:39)
+(fail) last browser disconnect preserves a terminal reply arriving after its event [8.43ms]
+108 | function assertOriginalError(error) {
+109 |   assert.equal(error.name, 'ProtocolError');
+110 |   assert.match(error.message, /original native transport failure/);
+111 |   assert.doesNotMatch(error.message, /driver exited/);
+112 |   assert.equal(error.details.inputDelivery, 'uncertain');
+113 |   assert.deepEqual(error.details.diagnostics, { nativeCause: 'retained' });
+               ^
+AssertionError: Values have same structure but are not reference-equal:
+
+{
+  nativeCause: 'retained'
+}
+
+ generatedMessage: true,
+     actual: {
+  nativeCause: "retained",
+  toString: [Function: toString],
+  toLocaleString: [Function: toLocaleString],
+  valueOf: [Function: valueOf],
+  hasOwnProperty: [Function: hasOwnProperty],
+  propertyIsEnumerable: [Function: propertyIsEnumerable],
+  isPrototypeOf: [Function: isPrototypeOf],
+  __defineGetter__: [Function: __defineGetter__],
+  __defineSetter__: [Function: __defineSetter__],
+  __lookupGetter__: [Function: __lookupGetter__],
+  __lookupSetter__: [Function: __lookupSetter__],
+},
+   expected: {
+  nativeCause: "retained",
+},
+   operator: "deepStrictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at assertOriginalError (<integration-workspace>/tools/test-engine-shutdown.mjs:113:10)
+      at <integration-workspace>/tools/test-engine-shutdown.mjs:145:5
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:63)
+      at processTicksAndRejections (native:7:39)
+(fail) explicit final browser close drains earlier operation replies [1.23ms]
+(pass) another retained browser remains usable after a sibling disconnect [0.96ms]
+(pass) final release waits for every reply and refuses new commands [1.13ms]
+108 | function assertOriginalError(error) {
+109 |   assert.equal(error.name, 'ProtocolError');
+110 |   assert.match(error.message, /original native transport failure/);
+111 |   assert.doesNotMatch(error.message, /driver exited/);
+112 |   assert.equal(error.details.inputDelivery, 'uncertain');
+113 |   assert.deepEqual(error.details.diagnostics, { nativeCause: 'retained' });
+               ^
+AssertionError: Values have same structure but are not reference-equal:
+
+{
+  nativeCause: 'retained'
+}
+
+ generatedMessage: true,
+     actual: {
+  nativeCause: "retained",
+  toString: [Function: toString],
+  toLocaleString: [Function: toLocaleString],
+  valueOf: [Function: valueOf],
+  hasOwnProperty: [Function: hasOwnProperty],
+  propertyIsEnumerable: [Function: propertyIsEnumerable],
+  isPrototypeOf: [Function: isPrototypeOf],
+  __defineGetter__: [Function: __defineGetter__],
+  __defineSetter__: [Function: __defineSetter__],
+  __lookupGetter__: [Function: __lookupGetter__],
+  __lookupSetter__: [Function: __lookupSetter__],
+},
+   expected: {
+  nativeCause: "retained",
+},
+   operator: "deepStrictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at assertOriginalError (<integration-workspace>/tools/test-engine-shutdown.mjs:113:10)
+      at <integration-workspace>/tools/test-engine-shutdown.mjs:209:5
+      at node:test:1445:26
+      at executeTestNode (node:test:1448:63)
+      at processTicksAndRejections (native:7:39)
+(fail) final release retains an unfinished input stream after its error reply [1.52ms]
+(pass) an unresponsive final operation remains bounded by the shutdown budget [3004.12ms]
+
+ 3 pass
+ 3 fail
+Ran 6 tests across 1 file. [3.06s]
