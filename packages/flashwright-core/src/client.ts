@@ -76,6 +76,7 @@ export class EngineClient {
   private readonly exited: Promise<void>;
   private exitResolve!: () => void;
   private closed = false;
+  private shutdownStarted = false;
   private diagnostics = '';
   private handshakeComplete = false;
   private readonly objectListeners = new Map<string, (event: ObjectEvent) => void>();
@@ -217,6 +218,7 @@ export class EngineClient {
     if (this.pending.delete(identifier)) {
       this.traceAdmission?.capacityChanged();
       this.notifyControlCapacity();
+      this.finishReleaseTransport();
     }
   }
 
@@ -265,9 +267,16 @@ export class EngineClient {
     if (--this.references > 0) return;
     this.closed = true;
     this.traceAdmission?.close(failure('BrowserDisconnectedError', 'engine', 'engine client is closed'));
-    this.process.stdin.end();
+    this.finishReleaseTransport();
     const termination = setTimeout(() => this.process.kill('SIGKILL'), 3000);
     try { await this.exited; } finally { clearTimeout(termination); }
+  }
+
+  /** EOF aborts native operations, so retain transport until their replies and input streams finish. */
+  private finishReleaseTransport(): void {
+    if (!this.closed || this.failure || this.shutdownStarted || this.pending.size || this.outgoingInputCount) return;
+    this.shutdownStarted = true;
+    void this.writeChain.then(() => this.process.stdin.end(), error => this.fail(error));
   }
 
   /** timeout 0 means unbounded publicly; an exhausted finite budget is sent as zero remaining. */
@@ -380,7 +389,11 @@ export class EngineClient {
                 resolve();
               }, 2000);
             })]);
-          } finally { clearTimeout(cleanupTimer); this.outgoingInputCount--; }
+          } finally {
+            clearTimeout(cleanupTimer);
+            this.outgoingInputCount--;
+            this.finishReleaseTransport();
+          }
         });
       };
       const result = admission ? admission.run(admissionKind, method, timeoutMilliseconds === 0 ? undefined : started + timeoutMilliseconds, dispatch) : dispatch();

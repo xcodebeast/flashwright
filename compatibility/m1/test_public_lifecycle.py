@@ -9,6 +9,22 @@ from test_lifecycle import OwnedBrowserCase, read_message
 class PublicLifecycleTests(OwnedBrowserCase):
     worker_script = "compatibility/m1/public-lifecycle-worker.mjs"
 
+    def assert_pending_browser_shutdown(self, command, crash=False):
+        self.send(command)
+        self.assertTrue(read_message(self.worker, 5)["shutdownPending"])
+        if crash:
+            os.kill(self.browser_process, signal.SIGKILL)
+        self.assertTrue(read_message(self.worker, 5)["disconnected"])
+        self.assertTrue(read_message(self.worker, 5)["shutdownDrained"])
+        self.assertEqual(self.worker.wait(timeout=5), 0)
+        self.assert_owned_processes_exit()
+
+    def test_browser_loss_preserves_pending_operation_failure(self):
+        self.assert_pending_browser_shutdown("drain-browser-loss", crash=True)
+
+    def test_browser_close_settles_pending_operation_before_driver_shutdown(self):
+        self.assert_pending_browser_shutdown("drain-browser-close")
+
     def test_browser_crash_updates_public_objects(self):
         os.kill(self.browser_process, signal.SIGKILL)
         self.assertTrue(read_message(self.worker, 5)["disconnected"])
