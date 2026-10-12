@@ -1829,7 +1829,7 @@
       "title": "Browser, context, page and frame ownership",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls. The owner-close checkpoint verifies sibling, subscription and registry retirement after throwing or removed close listeners, preserving the first thrown value and healthy event order.",
+      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls. The owner-close checkpoint verifies sibling, subscription and registry retirement after throwing or removed close listeners, preserving the first thrown value and healthy event order. The engine-shutdown checkpoint verifies that final engine release drains terminal replies, unfinished input streams and queued writes without replacing original operation failures.",
       "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation slice is verified; remote input/network/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
@@ -1857,6 +1857,10 @@
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
           "sha256": "bde7a1f11099226b056a65f3ee1c4bc4d5ce84da998287cc4bb30b572aaf46a5"
+        },
+        {
+          "path": "packages/flashwright-core/src/client.ts",
+          "sha256": "fff0d9d4ad1c7c9c2ac6b67346ae11eba181f056df801773788ba9fd58ba979c"
         }
       ],
       "evidence": [
@@ -1872,7 +1876,7 @@
         },
         {
           "path": "compatibility/m1/public-lifecycle-worker.mjs",
-          "sha256": "6fd6e13b7e2b73feffbcb67617a8867f2ce9a777acacde22fb09d2312370e370",
+          "sha256": "3c4aed1c408e9fad2a868466a95e2e195b6f73f4bcc90dc59ab2d8e0c9b129e2",
           "kind": "source-review"
         },
         {
@@ -1933,6 +1937,11 @@
         {
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
+          "sha256": "a4d347e475432d23e389e296ebc49d9f5f8315ba5a6c57ac3a00067e5e0bb32f",
           "kind": "conformance"
         }
       ],
@@ -3793,7 +3802,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Twelve shared behavior groups pass against Playwright 1.60.0 on pinned Chromium revision 1223 full Chrome and headless shell in main and same-process child worlds. Eight native fault cases pass per distribution. Three-call trace archives and four pinned viewer archives retain successful/timeout outcomes, snapshots and embedded caller source. Fresh typed ESM/CommonJS packed consumers pass five outcomes per format on Bun 1.4.2 and Node 22.22.0/24.15.0 using Bun installs and a private driver override.",
-      "limitations": "Remote renderer Frame polling and cleanup, native Linux, canonical integrated core/release packaging and performance remain unverified. This functional checkpoint does not establish a 2x speedup or default adoption readiness. Application code queued behind a blocked renderer can execute before cancellation reaches that renderer; no stronger suppression guarantee is made. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "limitations": "Remote renderer Frame polling and cleanup, native Linux, canonical integrated core/release packaging and performance remain unverified. This functional checkpoint does not establish a 2x speedup or default adoption readiness. Application code queued behind a blocked renderer can execute before cancellation reaches that renderer; no stronger suppression guarantee is made. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The later shared client shutdown correction has separate focused evidence; the earlier polling checkpoint is not a new run of the complete polling matrix.",
       "defaults": "Immediate first predicate attempt, then cached animation-frame polling; finite positive numeric polling uses its exact interval. Timeout inherits Page/Context action defaults, and explicit 0 is unbounded. One original host deadline covers document retries. Promise truthiness is tested before one-shot assimilation, including a resolved falsy JSHandle. String expressions returning functions retain them without invoking them.",
       "differences": [
         "Predicate source and normalized source are bounded to 100,000 UTF-16 units; oversized input fails with ResourceLimitError before predicate dispatch.",
@@ -3843,7 +3852,7 @@
         },
         {
           "path": "packages/flashwright-core/src/client.ts",
-          "sha256": "01f3ddb198087db8e3f81f515b18b24a60559ba74c10260135d4e19a2f11df57"
+          "sha256": "fff0d9d4ad1c7c9c2ac6b67346ae11eba181f056df801773788ba9fd58ba979c"
         }
       ],
       "evidence": [
@@ -3865,6 +3874,11 @@
         {
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
+          "sha256": "a4d347e475432d23e389e296ebc49d9f5f8315ba5a6c57ac3a00067e5e0bb32f",
           "kind": "conformance"
         }
       ],
