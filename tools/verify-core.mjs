@@ -140,6 +140,7 @@ const commands = [
   [process.execPath, 'tools/run-runner-trace-off-tests.mjs'],
   [process.execPath, 'tools/test-runner-artifact-lifecycle.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-owner-close-failures.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-engine-shutdown.mjs'],
   ['python3', 'tools/watchdog.py', '--timeout', '45', '--report-directory', join(destination, 'owner-close-resources'), '--', process.execPath, 'tools/run-owner-close-failures.mjs'],
   [process.execPath, 'tools/test-runner-trace-steps.mjs'],
   [process.execPath, 'tools/test-aria-template-limits.mjs'],

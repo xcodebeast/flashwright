@@ -19,7 +19,22 @@ browser.on('disconnected', () => {
 console.log(JSON.stringify({ ready: true, driver: browser.client.process.pid }));
 const commands = createInterface({ input: process.stdin });
 for await (const command of commands) {
-  if (command === 'crash') {
+  if (command === 'drain-browser-close' || command === 'drain-browser-loss') {
+    const pending = page.evaluate(() => {
+      globalThis.shutdownEvaluationStarted = true;
+      return new Promise(() => {});
+    }).catch(error => error);
+    const started = await page.waitForFunction(() => globalThis.shutdownEvaluationStarted, undefined, { timeout: 2000 });
+    await started.dispose();
+    console.log(JSON.stringify({ shutdownPending: true }));
+    if (command === 'drain-browser-close') await browser.close();
+    const error = await pending;
+    assert.ok(['TargetClosedError', 'BrowserDisconnectedError'].includes(error.name));
+    assert.doesNotMatch(error.message, /driver exited/);
+    await browser.close();
+    console.log(JSON.stringify({ shutdownDrained: true, errorName: error.name, message: error.message }));
+    break;
+  } else if (command === 'crash') {
     const crash = page.waitForEvent('crash');
     const navigation = page.goto('chrome://crash', { timeout: 2000 }).then(() => null, error => error);
     await crash;
