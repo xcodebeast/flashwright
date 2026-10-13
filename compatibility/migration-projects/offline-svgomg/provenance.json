@@ -554,7 +554,7 @@
       "/svgomg/test-svgs/car-lite.svg": 4
     },
     "whenAllPassedMinimum": {
-      "/svgomg/js/svgo-worker.js": 5
+      "/svgomg/js/svgo-worker.js": 3
     }
   },
   "httpExpectationAdmission": {
@@ -741,5 +741,8 @@
     "sourceMaps": "Four original JavaScript maps and two CSS maps are retained; no mandatory request count for maps",
     "selectedCorpusRuntimeVerified": true,
     "runtimeVerificationScope": "All six original tests passed on each engine with declared successful HTTP requests. Optional source maps were not requested by this corpus; the static map closure is retained without a runtime fetch claim."
-  }
+  },
+  "httpExpectationNotes": [
+    "The three mandatory optimizer-worker loads belong to reset settings, download result, and open svg, each in a fresh context. The menu test and two read-only settings tests can finish before asynchronous SVG loading creates a worker; additional worker requests depend on scheduling. Retain their observed counts rather than requiring unfinished background work."
+  ]
 }
