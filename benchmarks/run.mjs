@@ -24,7 +24,7 @@ async function sourceHashes(directory = '.') {
   const hashes = {};
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = path.join(directory, entry.name);
-    if (['node_modules', '.git', '.tools', '.cache', 'target', 'test-results', 'playwright-report'].includes(entry.name) || file === 'benchmarks/results') continue;
+    if (['node_modules', '.git', '.tools', '.cache', 'workbench', 'target', 'test-results', 'playwright-report'].includes(entry.name) || file === 'benchmarks/results') continue;
     if (entry.isDirectory()) Object.assign(hashes, await sourceHashes(file));
     else if (entry.isFile()) hashes[file] = await hashFile(file);
   }
