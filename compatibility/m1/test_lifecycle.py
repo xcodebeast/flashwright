@@ -109,6 +109,12 @@ class OwnedBrowserCase(unittest.TestCase):
         self.worker.stdin.flush()
 
 class EngineLifecycleTests(OwnedBrowserCase):
+    def test_explicit_close_reaps_a_stopped_browser(self):
+        os.kill(self.browser_process, signal.SIGSTOP)
+        self.send("close")
+        self.assertEqual(self.worker.wait(timeout=8), 0)
+        self.assert_owned_processes_exit()
+
     def test_renderer_deadline_can_interrupt_infinite_javascript(self):
         self.send("blocked-renderer")
         self.assertTrue(read_message(self.worker, 5)["recovered"])

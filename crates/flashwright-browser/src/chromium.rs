@@ -10,6 +10,7 @@ use flashwright_protocol::{ErrorCode, ErrorRecord};
 use nix::unistd::Pid;
 use serde::Deserialize;
 use serde_json::json;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UnixStream;
 use tokio::process::{Child, Command};
 use tokio::sync::watch;
@@ -202,13 +203,52 @@ impl Chromium {
                 let artifact_jobs = self.artifact_jobs.clone();
                 tokio::spawn(async move {
                     let _artifacts = artifact_jobs.write().await;
+                    let mut guardian = liveness.and_then(|stream| {
+                        stream.set_nonblocking(true).ok()?;
+                        UnixStream::from_std(stream).ok()
+                    });
+                    let graceful_shutdown = if let Some(guardian) = guardian.as_mut() {
+                        matches!(
+                            timeout(
+                                Duration::from_secs(1),
+                                guardian
+                                    .write_all(&[crate::supervision::GRACEFUL_SHUTDOWN_REQUEST]),
+                            )
+                            .await,
+                            Ok(Ok(()))
+                        )
+                    } else {
+                        false
+                    };
                     let _ = timeout(
                         Duration::from_secs(1),
                         connection.call("Browser.close", json!({}), None),
                     )
                     .await;
+                    if graceful_shutdown {
+                        // CDP acknowledges the request before native teardown finishes. Retain both
+                        // channels until the independent guardian observes and reaps browser exit.
+                        let guardian = guardian.as_mut().expect("shutdown has a guardian");
+                        let _ = timeout(
+                            crate::supervision::GRACEFUL_SHUTDOWN_TIMEOUT + Duration::from_secs(1),
+                            async {
+                                let completion = guardian.read_u8().await?;
+                                if !matches!(
+                                    completion,
+                                    crate::supervision::BROWSER_REAPED
+                                        | crate::supervision::BROWSER_TERMINATED
+                                ) {
+                                    return Err(std::io::Error::other(
+                                        "invalid guardian completion",
+                                    ));
+                                }
+                                Ok(())
+                            },
+                        )
+                        .await;
+                    }
                     connection.close();
-                    drop(liveness);
+                    drop(guardian);
                     let result = match child {
                         Some(mut child) => match child.wait().await {
                             Ok(status) if status.success() => Ok(()),
@@ -250,7 +290,9 @@ impl Chromium {
 
 impl Drop for Chromium {
     fn drop(&mut self) {
-        self.connection.close();
+        if self.shutdown.get_mut().unwrap().is_none() {
+            self.connection.close();
+        }
         let liveness = self.liveness.get_mut().unwrap().take();
         let artifacts = self.artifact_jobs.clone();
         // The guardian must outlive this value long enough to kill Chromium and remove its profile.
@@ -271,6 +313,73 @@ fn launch_error(error: impl std::fmt::Display) -> ErrorRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn cancelled_close_keeps_protocol_open_until_guardian_reaps_browser() {
+        use tokio::io::AsyncBufReadExt;
+
+        let (liveness, peer) = StandardUnixStream::pair().unwrap();
+        peer.set_nonblocking(true).unwrap();
+        let mut guardian = UnixStream::from_std(peer).unwrap();
+        let (protocol, browser_protocol) = tokio::io::duplex(4096);
+        let (reader, writer) = tokio::io::split(protocol);
+        let mut browser_protocol = tokio::io::BufReader::new(browser_protocol);
+        let browser = Arc::new(Chromium {
+            connection: Connection::new(reader, writer),
+            version: String::new(),
+            headless: true,
+            artifacts_directory: PathBuf::new(),
+            artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
+            child: Mutex::new(None),
+            process_group: Pid::from_raw(0),
+            liveness: Mutex::new(Some(liveness)),
+            shutdown: Mutex::new(None),
+        });
+        let closing_browser = browser.clone();
+        let closing = tokio::spawn(async move { closing_browser.close().await });
+        assert_eq!(
+            guardian.read_u8().await.unwrap(),
+            crate::supervision::GRACEFUL_SHUTDOWN_REQUEST
+        );
+        let mut command = Vec::new();
+        browser_protocol.read_until(0, &mut command).await.unwrap();
+        command.pop();
+        let command: serde_json::Value = serde_json::from_slice(&command).unwrap();
+        assert_eq!(command["method"], "Browser.close");
+        let reply = format!("{}\0", json!({"id": command["id"], "result": {}}));
+        browser_protocol
+            .get_mut()
+            .write_all(reply.as_bytes())
+            .await
+            .unwrap();
+        closing.abort();
+        assert!(closing.await.unwrap_err().is_cancelled());
+        drop(browser);
+        let mut byte = [0];
+        assert!(
+            timeout(Duration::from_millis(30), browser_protocol.read(&mut byte))
+                .await
+                .is_err()
+        );
+        guardian
+            .write_all(&[crate::supervision::BROWSER_REAPED])
+            .await
+            .unwrap();
+        assert_eq!(
+            timeout(Duration::from_secs(1), browser_protocol.read(&mut byte))
+                .await
+                .unwrap()
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            timeout(Duration::from_secs(1), guardian.read(&mut byte))
+                .await
+                .unwrap()
+                .unwrap(),
+            0
+        );
+    }
 
     #[tokio::test]
     async fn physical_artifact_lease_survives_async_waiter_abort() {
