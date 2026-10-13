@@ -5,12 +5,22 @@ use std::os::fd::{FromRawFd, OwnedFd, RawFd};
 use std::os::unix::process::CommandExt;
 use std::process::{Command, Stdio};
 use std::sync::mpsc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use command_fds::{CommandFdExt, FdMapping};
 use nix::fcntl::{FcntlArg, FdFlag, fcntl};
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::{Pid, getppid};
+
+pub(crate) const GRACEFUL_SHUTDOWN_REQUEST: u8 = b'C';
+pub(crate) const BROWSER_REAPED: u8 = b'R';
+pub(crate) const BROWSER_TERMINATED: u8 = b'K';
+pub(crate) const GRACEFUL_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
+
+enum GuardianEvent {
+    GracefulShutdown,
+    ParentLost { node: bool },
+}
 
 /// Take ownership only of an inherited descriptor explicitly assigned by the parent launch contract.
 /// This is the sole raw-descriptor boundary; all later ownership and spawning uses safe APIs.
@@ -46,10 +56,8 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         .tempdir()?;
     let artifacts = profile.path().join("flashwright-artifacts");
     std::fs::create_dir(&artifacts)?;
-    crate::guardian_metadata::write_directory(
-        &mut File::from(driver_liveness.try_clone()?),
-        &artifacts,
-    )?;
+    let mut driver_notifications = File::from(driver_liveness.try_clone()?);
+    crate::guardian_metadata::write_directory(&mut driver_notifications, &artifacts)?;
     let mut command = Command::new(executable);
     let mut profile_arguments = 0;
     for argument in &arguments[1..] {
@@ -126,21 +134,37 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
             }
             let mut pipe = File::from(descriptor);
             let mut buffer = [0_u8; 64];
+            let mut shutdown_requested = false;
             loop {
                 match pipe.read(&mut buffer) {
+                    Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
                     Ok(0) | Err(_) => break,
-                    Ok(_) => continue,
+                    Ok(count) if !node_pipe => {
+                        if !shutdown_requested
+                            && buffer[..count].contains(&GRACEFUL_SHUTDOWN_REQUEST)
+                        {
+                            shutdown_requested = true;
+                            let _ = sender.send(GuardianEvent::GracefulShutdown);
+                        }
+                    }
+                    Ok(_) => {}
                 }
             }
-            let _ = sender.send(node_pipe);
+            let _ = sender.send(GuardianEvent::ParentLost { node: node_pipe });
         });
     }
     drop(lost_parent);
     let mut browser_exited = false;
+    let mut shutdown_deadline = None;
+    let mut browser_reap_announced = false;
+    let mut browser_terminated = false;
     loop {
         // Do not reap the browser before signalling its group: its unreaped PID protects ownership.
         match events.recv_timeout(Duration::from_millis(50)) {
-            Ok(node_pipe) => {
+            Ok(GuardianEvent::GracefulShutdown) => {
+                shutdown_deadline.get_or_insert_with(|| Instant::now() + GRACEFUL_SHUTDOWN_TIMEOUT);
+            }
+            Ok(GuardianEvent::ParentLost { node: node_pipe }) => {
                 if trace_ownership {
                     let _ = writeln!(
                         std::io::stderr(),
@@ -158,16 +182,29 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
                 }
                 break;
             }
-            Err(mpsc::RecvTimeoutError::Timeout) => {
-                if !browser_exited && child_exited_without_reaping(browser_group)? {
-                    crate::process_group::terminate(browser_group)?;
-                    let _ = browser.wait();
-                    // A live driver may still own file I/O after the browser exits.
-                    // Its liveness lease ends only after those jobs drain, or it dies.
-                    browser_exited = true;
-                }
-            }
+            Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => break,
+        }
+        if !browser_exited {
+            let exited = child_exited_without_reaping(browser_group)?;
+            let expired = shutdown_deadline.is_some_and(|deadline| Instant::now() >= deadline);
+            if exited || expired {
+                browser_terminated = !exited;
+                crate::process_group::terminate(browser_group)?;
+                browser.wait()?;
+                // A live driver may still own file I/O after the browser exits.
+                // Its liveness lease ends only after those jobs drain, or it dies.
+                browser_exited = true;
+            }
+        }
+        if browser_exited && shutdown_deadline.is_some() && !browser_reap_announced {
+            browser_reap_announced = true;
+            let completion = if browser_terminated {
+                BROWSER_TERMINATED
+            } else {
+                BROWSER_REAPED
+            };
+            let _ = driver_notifications.write_all(&[completion]);
         }
     }
     if trace_ownership {
