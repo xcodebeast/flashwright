@@ -364,5 +364,79 @@
       "Excludes input hashing, graph planning, compilation and one-time archive preparation.",
       "No clean-build or complete-suite performance claim; do not multiply this ratio by the graph-planning ratio."
     ]
+  },
+  "metadataCompaction": {
+    "status": "verified-native-build-metadata-compaction",
+    "completedAt": "2026-10-14T18:44:06.609468+00:00",
+    "platform": "darwin-arm64",
+    "command": "third_party/ninja/ninja -C out/flashwright-baseline -t recompact",
+    "before": {
+      ".ninja_deps": {
+        "bytes": 243065860,
+        "sha256": "698bfc0d5cc3c71e868bb83acc0c8725c091bceaa7f57974d5f57d3f4cc70e54"
+      },
+      ".ninja_log": {
+        "bytes": 19418330,
+        "sha256": "18a05f783a7a5dbd9b4ff8e9e0ecbc873a17acfd4f0a568e6cb14e9990c32bd3"
+      }
+    },
+    "after": {
+      ".ninja_deps": {
+        "bytes": 76011820,
+        "sha256": "77beccfe335306e1abbd45396dbbbb1e27961032ed448355b04f82fa34e165a3"
+      },
+      ".ninja_log": {
+        "bytes": 10701330,
+        "sha256": "16714ab66c6b7cadbe70300f6452a62595349812460afe786efcc66a12091701"
+      }
+    },
+    "metadataBytesRemoved": 175771040,
+    "nativeSourcesUnchanged": 74,
+    "binariesUnchanged": 2,
+    "runtimeAssetsUnchanged": 11,
+    "selectedTargets": [
+      "headless_shell",
+      "flashwright_storage_owner_tests"
+    ],
+    "ordinarySelectedTargetBuildsRemainNoOp": true,
+    "startupObservations": [
+      {
+        "mode": "original",
+        "seconds": 8.154274208005518,
+        "exitCode": 0,
+        "noWork": true
+      },
+      {
+        "mode": "compacted",
+        "seconds": 5.7111386669566855,
+        "exitCode": 0,
+        "noWork": true
+      },
+      {
+        "mode": "compacted",
+        "seconds": 6.207005957956426,
+        "exitCode": 0,
+        "noWork": true
+      },
+      {
+        "mode": "original",
+        "seconds": 6.163955791969784,
+        "exitCode": 0,
+        "noWork": true
+      }
+    ],
+    "timingClaim": false,
+    "limitations": [
+      "Four exploratory no-op startup observations under substantial host memory pressure; timing variation does not establish a speedup.",
+      "A read-only GN query was launched during this exploratory sequence; this is not an isolated performance comparison.",
+      "No compilation, clean-build, Linux or E2E timing claim. Metadata bytes are logical file sizes, not measured host disk space reclaimed."
+    ],
+    "nativeDecisionSha256": "bf944c279bd47aaf411f29ca121488eb187390408faee49378df15fb117aac27",
+    "comparisonContractSha256": "249f8ee691c702d0160e92d8b77f9203b4b61f961b856a66689268a2ddca691d",
+    "comparisonResultsSha256": "9d97806004f9ecaa73de9a1175535661eba62f167bbbfa9da81c5328ea45be2e",
+    "helperChecks": {
+      "status": "passed",
+      "resultSha256": "35f664f2826211526662071a529e5cb7ba58e06a5f981d77265309d6d0010899"
+    }
   }
 }
