@@ -141,7 +141,9 @@ executable("tests") { deps = [ ":runtime", ":shared" ] }
   const options = process.platform === 'darwin' ? ['--regular-archives'] : [];
   const configure = (label, targets, succeeds) => invoke(label, 'configure-chromium-build.mjs',
     [...options, graphFixture, 'out/development', ...targets], succeeds);
-  configure('configure-first', ['//:application', '//:tests']);
+  const generationCount = output => (output.match(/Done\. Made /g) ?? []).length;
+  const first = configure('configure-first', ['//:application', '//:tests']);
+  assert.equal(generationCount(first), process.platform === 'darwin' ? 2 : 1);
   const entryPoint = resolve(graphFixture, 'flashwright_development/BUILD.gn');
   const policyPath = resolve(graphFixture, 'flashwright_development/archives.gni');
   const observed = process.platform === 'darwin' ? policyPath : entryPoint;
@@ -151,11 +153,26 @@ executable("tests") { deps = [ ":runtime", ":shared" ] }
     assert.match(contents, /"\/\/:runtime"/);
     assert.doesNotMatch(contents, /"\/\/:(shared|generator_support)"/);
   }
-  configure('configure-unchanged', ['//:application', '//:tests']);
+  const unchanged = configure('configure-unchanged', ['//:application', '//:tests']);
+  assert.equal(generationCount(unchanged), 1);
   assert.deepEqual(readFileSync(argumentsPath), argumentsBefore);
   assert.equal(statSync(observed, { bigint: true }).mtimeNs, modified);
   assert.match(configure('configure-reject', ['//:application', '//:missing'], false), /different targets/);
   assert.equal(readFileSync(observed, 'utf8'), contents);
+  if (process.platform === 'darwin') {
+    const definition = resolve(graphFixture, 'BUILD.gn');
+    write(definition, readFileSync(definition, 'utf8')
+      .replace('deps = [ ":runtime", ":shared" ]', 'deps = [ ":runtime", ":shared", ":additional_runtime" ]') +
+      '\nstatic_library("additional_runtime") { sources = [ "empty.cc" ] }\n');
+    const changed = configure('configure-dependencies-changed', ['//:application', '//:tests']);
+    assert.equal(generationCount(changed), 2);
+    const updatedPolicy = readFileSync(policyPath, 'utf8');
+    assert.match(updatedPolicy, /"\/\/:additional_runtime"/);
+    assert.doesNotMatch(updatedPolicy, /"\/\/:(shared|generator_support)"/);
+    const repeated = configure('configure-updated-unchanged', ['//:application', '//:tests']);
+    assert.equal(generationCount(repeated), 1);
+    assert.deepEqual(readFileSync(argumentsPath), argumentsBefore);
+  }
 }
 
 verifyCompilation();
@@ -166,7 +183,9 @@ write(resolve(run, 'result.json'), JSON.stringify({
   status: 'passed', platform: process.platform, helperHashes,
   checks: ['regeneration-before-query', 'multiple-source-variants', 'paths-with-spaces', 'no-link',
     'unchanged-object-reuse', 'independent-errors', 'unselected-and-outside-source-rejection',
-    'preserved-args', 'stable-configuration', 'different-root-rejection'],
+    'preserved-args', 'stable-configuration', 'different-root-rejection',
+    'single-generation-for-unchanged-policy',
+    ...(process.platform === 'darwin' ? ['regeneration-for-changed-archive-dependencies'] : [])],
   archiveDependencyExclusions: process.platform === 'darwin' ? 'passed' : 'not-applicable',
 }, null, 2) + '\n');
 rmSync(fixture, { recursive: true });
