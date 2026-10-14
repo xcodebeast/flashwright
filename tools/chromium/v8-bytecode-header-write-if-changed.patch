@@ -1,0 +1,82 @@
+--- a/v8/src/builtins/generate-bytecodes-builtins-list.cc
++++ b/v8/src/builtins/generate-bytecodes-builtins-list.cc
+@@ -4,6 +4,9 @@
+ 
+ #include <fstream>
+ #include <iostream>
++#include <iterator>
++#include <sstream>
++#include <string>
+ 
+ #include "src/interpreter/bytecodes.h"
+ 
+@@ -14,9 +17,13 @@
+ const int kIllegalBytecodeHandler = -1;
+ const int kIllegalBytecodeHandlerEncoding = 255;
+ 
+-void WriteBytecode(std::ofstream& out, Bytecode bytecode,
+-                   OperandScale operand_scale, int* count, int offset_table[],
+-                   int table_index, bool has_tsa_version) {
++void WriteBytecode(std::ostream& out,
++                   Bytecode bytecode,
++                   OperandScale operand_scale,
++                   int* count,
++                   int offset_table[],
++                   int table_index,
++                   bool has_tsa_version) {
+   DCHECK_NOT_NULL(count);
+   if (Bytecodes::BytecodeHasHandler(bytecode, operand_scale)) {
+     std::string name = Bytecodes::ToString(bytecode, operand_scale, "");
+@@ -42,9 +49,7 @@
+   }
+ }
+ 
+-void WriteHeader(const char* header_filename) {
+-  std::ofstream out(header_filename);
+-
++void GenerateHeader(std::ostream& out) {
+   out << "// Automatically generated from interpreter/bytecodes.h\n"
+       << "// The following list macro is used to populate the builtins list\n"
+       << "// with the bytecode handlers\n\n"
+@@ -110,6 +115,29 @@
+       << "#endif  // V8_BUILTINS_GENERATED_BYTECODES_BUILTINS_LIST\n";
+ }
+ 
++// Preserve the timestamp when relinking the generator leaves its output
++// unchanged, so Ninja can avoid rebuilding every consumer of this header.
++bool WriteHeaderIfChanged(const char* header_filename) {
++  std::ostringstream generated_header;
++  GenerateHeader(generated_header);
++  const std::string contents = generated_header.str();
++  {
++    std::ifstream existing_header(header_filename);
++    if (existing_header) {
++      const std::string existing_contents(
++          (std::istreambuf_iterator<char>(existing_header)),
++          std::istreambuf_iterator<char>());
++      if (!existing_header.bad() && existing_contents == contents) {
++        return true;
++      }
++    }
++  }
++  std::ofstream output(header_filename);
++  output << contents;
++  output.close();
++  return output.good();
++}
++
+ }  // namespace interpreter
+ }  // namespace internal
+ }  // namespace v8
+@@ -120,7 +148,10 @@
+     std::exit(1);
+   }
+ 
+-  v8::internal::interpreter::WriteHeader(argv[1]);
++  if (!v8::internal::interpreter::WriteHeaderIfChanged(argv[1])) {
++    std::cerr << "Unable to write generated header: " << argv[1] << "\n";
++    return 1;
++  }
+ 
+   return 0;
+ }

@@ -36,6 +36,14 @@ The [latest broad performance checkpoint](compatibility/evidence/broad-performan
 
 Bootstrap installs Bun 1.4.2 inside this checkout and verifies its archive against the official SHA-256 manifest. It requires Python 3.12 or later and curl. Rust is pinned by rust-toolchain.toml
 
+For custom Chromium work, [SPECS.md](SPECS.md#s18-distribution-installation-and-version-policy) S18 describes the focused build graph and optional macOS archive policy. Run `bun tools/configure-chromium-build.mjs --help` for the configuration command
+
+Use `bun tools/compile-chromium-sources.mjs --help` for the compile-first command, which checks edited translation units before the full Chromium build and reuses successful objects
+
+Run `bun tools/test-chromium-build-tools.mjs <chromium-source>` to verify both helpers with a small GN/Ninja/Clang fixture. This reads the checkout's pinned tools, writes only under `workbench/` and removes successful fixture outputs
+
+The [Chromium build-iteration checkpoint](compatibility/evidence/chromium-build-iteration-checkpoint-2026-10-14.json) records a three-source incremental build median of 61.06 seconds with the full graph and 22.62 seconds with the focused graph, using unchanged compiler settings. Most of the saving comes before compilation starts. These four macOS arm64 runs exclude linking and clean builds. The S18 V8 generator patch also passes the real native generator rebuild: generated header bytes and timestamp stay unchanged, all 30 selected cohort objects are preserved, and the header target subsequently reports no work. The full resumed build and functional gates remain pending
+
 ```sh
 export PATH="$(python3 tools/bootstrap.py):$PATH"
 bun install --frozen-lockfile --ignore-scripts
