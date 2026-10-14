@@ -44,7 +44,7 @@ const cookieList = defineTool({
       });
     }
     if (params.path)
-      cookies = cookies.filter(c => c.path.startsWith(params.path!));
+      cookies = cookies.filter(c => pathMatches(c.path, params.path!));
 
     if (cookies.length === 0)
       response.addTextResult('No cookies found');
@@ -169,6 +169,13 @@ const cookieClear = defineTool({
 
 function normalizeDomain(domain: string): string {
   return domain.replace(/^\./, '').toLowerCase();
+}
+
+function pathMatches(cookiePath: string, filterPath: string): boolean {
+  if (cookiePath === filterPath)
+    return true;
+  const prefix = filterPath.endsWith('/') ? filterPath : filterPath + '/';
+  return cookiePath.startsWith(prefix);
 }
 
 export default [
