@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-development-private-header-isolation",
+  "date": "2026-10-14",
+  "environment": {
+    "platform": "macOS",
+    "architecture": "arm64",
+    "chromiumRevision": "8625e066febc721e015ea99842da12901eb7ed73",
+    "chromiumVersion": "148.0.7778.96",
+    "compilerJobs": 4
+  },
+  "change": {
+    "privateHeader": "content/browser/renderer_host/renderer_process_owner.h",
+    "hostHeader": "content/browser/renderer_host/render_process_host_impl.h",
+    "callbackInterfaceHeader": "content/browser/renderer_host/renderer_process_owner_client.h",
+    "description": "Forward-declare the physical owner in the broadly included host header and place its client interface in a separate small header."
+  },
+  "dependencyVerification": {
+    "method": "After a complete build, require an ordinary no-op plan, change only the private header timestamp, inspect the ordinary selected-target dry-run, restore the exact timestamp, and require another no-op plan.",
+    "targets": [
+      "headless_shell",
+      "flashwright_storage_owner_tests"
+    ],
+    "plannedCompilerObjects": [
+      "obj/content/browser/browser/render_process_host_impl.o",
+      "obj/content/browser/browser/renderer_process_owner.o",
+      "obj/content/test/flashwright_renderer_process_owner_tests/renderer_process_owner_unittest.o"
+    ],
+    "sourceContentsUnchanged": true,
+    "headerTimestampRestored": true,
+    "binariesUnchangedDuringCheck": true,
+    "compiledDuringCheck": false,
+    "beforeAfterCompilerCountComparison": false,
+    "elapsedTimeSpeedClaim": false
+  },
+  "independentTestSuite": {
+    "addedTarget": "//content/test:flashwright_renderer_process_owner_tests",
+    "existingCompilerCommandsCompared": 66,
+    "existingCompilerCommandsChanged": 0
+  },
+  "validation": {
+    "completeBuildPassed": true,
+    "productionAndTestGnChecksPassed": true,
+    "registeredCases": 833,
+    "enabledCasesPassed": 830,
+    "upstreamDisabledCases": 3,
+    "predecessorEnabledCasesPreserved": 822,
+    "newProcessLifecycleCases": {
+      "RendererProcessOwnerTest": [
+        "FatalErrorKillsProcessAfterClientInvalidation",
+        "OldErrorCannotKillLiveSuccessor",
+        "LaunchClientCanSynchronouslyDestroyOwner",
+        "LaunchFailureClientCanSynchronouslyDestroyOwner",
+        "FatalClientCanSynchronouslyDestroyOwner",
+        "DiagnosticCallbackCanSynchronouslyDestroyOwner",
+        "DisableKillPreservesLiveOriginalChild",
+        "TransportBadMessageKillsProcessAfterClientInvalidation"
+      ]
+    },
+    "sandboxedBrowserCaseExecutions": 64,
+    "browserExtraArguments": [
+      "--site-per-process"
+    ],
+    "browserResourceDiagnosticsEnabled": true,
+    "watchdogCleanupInterventions": 0,
+    "fixtureOnlyFollowupCompiledObjects": 1,
+    "fixtureOnlyFollowupLinkedExecutables": 1,
+    "headlessBinaryUnchangedByFixtureFollowup": true,
+    "binaries": {
+      "headless_shell": "3186cc18de3ea8067bba362df9b2afffaac2419584d1206e3ca91944c9874a5e",
+      "flashwright_storage_owner_tests": "b5d0ab0eeda036f3d75a777f108431dd9995c29deb9fd48e61b4993afb38970f"
+    }
+  },
+  "retainedFailureHistory": [
+    {
+      "attempt": "build-001",
+      "cause": "Incorrect namespace for the test-child command switch.",
+      "resolution": "Corrected the fixture namespace before the successful build."
+    },
+    {
+      "attempt": "build-002",
+      "cause": "Intentionally interrupted the owned broad rebuild to separate the private header.",
+      "resolution": "Retained completed objects and rebuilt the corrected dependency boundary."
+    },
+    {
+      "attempt": "unit-001",
+      "cause": "Standalone Blink fixture omitted browser process salt initialization; the first process launch failed its initialization CHECK.",
+      "resolution": "Initialize the process salt and import the ordinary shared-memory salt in each child before Mojo startup; all eight process cases then passed."
+    }
+  ],
+  "evidenceHashes": {
+    "decision.json": "a9d63f46a604549b7907051d03a2fa5fb1884ef6ca2f64a98514e1186ec2245d",
+    "header-isolation-verification.json": "1e1e2d1651db05f6542eb535b34d87ad34914a48b9f1f8052ab99e166d23f027",
+    "test-compilation-verification.json": "6be016101b3c7f8e06242c6774dcce3988f2d6694770da754d1e19bd06877c5a",
+    "build-003/completion.json": "e85f3f646aef53056f6fbe9932547bb2ed92ed16a8919561785eb8f118a77c21",
+    "build-004/completion.json": "809b8f38a9c3734a43a519ab270b563ba31989b1401e6c771ae9dbba407026b5",
+    "unit-002/completion.json": "129920ef23eda18b149816f1d78e738154087d679c644a27b7e3ed60bfa1afc2",
+    "fixture-correction-007.json": "35f049f3e56822af8a2a7f4e15ba5a11666119cdc0f7b8ebfa623994e662db64",
+    "candidate-007.patch": "c8b76f259a3b1297584417406ba8758add18dc370955d6cd61959757e671150c"
+  },
+  "nativeSourceHashes": {
+    "content/child/BUILD.gn": "2e4dc83585f94f3c3496e6d39177093387acb42ad402f08e916a1baf302a868d",
+    "content/child/blink_platform_impl.cc": "ab12215e4e2ca31f306de6957a786464cb33931313857235bd82de0b63996c46",
+    "content/child/browser_interface_broker_proxy.cc": "7a0747dd0f77eed6138e2997c6089c8aa0dfba783f9d68a903514bb59e74eb74",
+    "content/child/browser_interface_broker_proxy.h": "34fedd252f5eb52bc0bee27927e9fa922c2e8a368734b34a869fd8bedd10b0b5",
+    "content/child/browser_interface_broker_proxy_unittest.cc": "05a8a4ceeba3bcd0fbfaba7623a6d99410325ae6b11bd7175b1f7c0179bdef1a",
+    "content/renderer/BUILD.gn": "d806ccee887104c3b4aedb151a6a9852faabd4859405b496c92e0be053fe8c51",
+    "content/renderer/agent_scheduling_group.cc": "c60bc37f00fec3afdf748ef6dfd1a7a5b9e87c91e672bf88b90eeadb5ede11b3",
+    "content/renderer/agent_scheduling_group.h": "0aafcdf57b1baa0fc4a558265fa5db03c973b15de56018188f3dfdf02f5bcfcd",
+    "content/renderer/frame_routing_info_provider.cc": "2e6496c02bfd8839c7041f634078b4f0138a62aa66199fdfd7457e232fd7f4dd",
+    "content/renderer/frame_routing_info_provider.h": "71d5e16bb9bf70f5bcaa553f8fdd3760b115e3467a47586c8f6e5ad886f0fc06",
+    "content/renderer/frame_routing_info_provider_unittest.cc": "f8d216dc7d2c26bf88d3a06fe8d1bdf7d048fd20c287c16e620604c19d09ce72",
+    "content/renderer/media/media_factory.cc": "9354cfa0803274218aabde257facecd74b2a4377c6f1af8c67876e023313410d",
+    "content/renderer/mock_agent_scheduling_group.cc": "4282cd6c0ff3a51365284bacd8df80de18a5819aae2928acca7e3b098f924b30",
+    "content/renderer/render_frame_impl.cc": "b99a5d649f4dadfb0c01560d703461c7eb81325abd056961dd7ed4669e8b4ba4",
+    "content/renderer/render_thread_impl.cc": "34045529b8ba6daadf24f38a5b75e064047e7b558ae626dd8b2d35e85c5328df",
+    "content/renderer/render_thread_impl.h": "0563691686f5ce1d2b8448c3e547ae0dfcd4b3e56142a151d011a04e21d46dd7",
+    "content/renderer/renderer_blink_platform_impl.cc": "5ea0e4d93f55010ad1a21330822ba72455b2c3a994789e0d4e5d0b94c4b7e80f",
+    "content/renderer/renderer_blink_platform_impl.h": "7cbd805eb46742032216bce75dadec1beb1d7fabb28628a0de0f780b50c2e065",
+    "content/renderer/renderer_browser_connection.cc": "7f939d18fe391f7ae5e708403417e5c1cb03947b9eb20885c3d27b3bcd1e010c",
+    "content/renderer/renderer_browser_connection.h": "5338dac62c272afde2cd7af980515983678b32e812e5216e4009c73757994d3b",
+    "content/test/BUILD.gn": "55557e12b274c8cb7e40a10e88e802f895ccf5d9971a8abff65f1582a81386c8",
+    "third_party/blink/common/BUILD.gn": "8bc1501f657acd3adda8c62e12eeed7e2b677585c0901dfe4c39e5726de7b914",
+    "third_party/blink/common/frame/renderer_frame_sink_id_allocator.cc": "79f70c67db1203b87086175f15d1a7dcb52a9aac441beaeede70aebb311cfd1a",
+    "third_party/blink/public/BUILD.gn": "4476d3d309ff4a33300a8f046b459b5f3eb3c2f2d6971bc6827325643815c799",
+    "third_party/blink/public/common/BUILD.gn": "562fb7b4ab9c5293379d176e601deaeee4e0589ccf673bf3b507135ca3a0dc39",
+    "third_party/blink/public/common/frame/renderer_frame_sink_id_allocator.h": "ba7fff3af5d921d97ba460587e0abfb077bdf088ed7b21ec3a244a1ae049566a",
+    "third_party/blink/public/platform/web_surface_layer_bridge.h": "6bc7021411f5db673a437a7fe8e7b9bec7dfeeea155b1541c253ea3b1959a368",
+    "third_party/blink/public/web/web_document_process_service_owner.h": "ea2872a822d80f3274984ec4c028c31e1a1aef6970e4ad422214ba36c3d32cd7",
+    "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.cc": "37dd2728449d1553c9cce8fe30a46df65b7864ddb7d0df927ae6ab44eb61ada9",
+    "third_party/blink/renderer/core/exported/build.gni": "65a82dcada45ffa5817c2741cd6bea20304c34bf800bf81b4dc22a3247c99ccd",
+    "third_party/blink/renderer/core/exported/web_document_process_service_owner.cc": "a0dc7a68d246c6132409d50693c007f989ce37e896cb704b70876cb599ef09fe",
+    "third_party/blink/renderer/core/html/canvas/html_canvas_element.cc": "02b5c93b8213a63cb8555b9ad36f9586f01404bc5d86086d05123b9bee1ff643",
+    "third_party/blink/renderer/core/workers/dedicated_worker.cc": "303852b2f194cfa720efe8a9c5f3ea39822fd2be8d16eacc8cd51e3c960b2b27",
+    "third_party/blink/renderer/modules/storage/BUILD.gn": "40ea92c9b5fad083913a7806d845bc6c4b3aadce7498f867cfc6939942ca2eba",
+    "third_party/blink/renderer/modules/storage/testing/flashwright_begin_frame_original_broker_test.cc": "9923e58f6476ba789322b711d0ccd6c90667ca3e511356eb096f9e0c56c85261",
+    "third_party/blink/renderer/modules/storage/testing/flashwright_frame_sink_allocation_test.cc": "dad79fd2a7a5911efdf8ff596098456f105224659a75b87c32b471190668e3db",
+    "third_party/blink/renderer/modules/storage/testing/flashwright_surface_bridge_original_broker_test.cc": "f645e27c88a622ac4303df95d662c14747a25a7f24f6ee6c99b33ab25fb04787",
+    "third_party/blink/renderer/platform/exported/web_surface_layer_bridge.cc": "18dcf19e683f0b86d28859f3f12a070cf57a3febb623dcc36b814e3067b9da73",
+    "third_party/blink/renderer/platform/graphics/begin_frame_provider.cc": "df5034c1fad3e16fc252d50651f4c85dc06cc2ccee5abb792a638dac1cba8429",
+    "third_party/blink/renderer/platform/graphics/begin_frame_provider.h": "d26e22f270bf102df64384a58e6e03f5e402110bda74b4068745ec72ad71f53e",
+    "third_party/blink/renderer/platform/graphics/surface_layer_bridge.cc": "a7a5758bf9236f3da565f4b5540b724e445921f9ccdf43f0f2a11e7081c7845e",
+    "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h": "25ec35c21b916714414aa812be7171b3a26cd8f4431ecb90ed98c4436535a004",
+    "content/browser/renderer_host/render_process_host_impl.h": "0aeaa8bac12fc0b0c7b000e8b7e361a7e1a6ca50d3339503f0e8af140489e349",
+    "content/browser/renderer_host/render_process_host_impl.cc": "3b4ac575d8cfbc0daead7bea9d4b219b4e9b98a09c41c44478e48decd27cee25",
+    "content/browser/child_process_launcher_browsertest.cc": "c28c4f6d44320622a6f15166c6a5aaeb5c78f1573a4e808189be862cae1522ff",
+    "content/browser/BUILD.gn": "7fcee7ccccdef12cf982fb4c0b477e9bea042477c5208dc6b1fee25fb03db21a",
+    "content/browser/renderer_host/renderer_process_owner.h": "07fdd5363d41890848da5409b4e5c7edd7f9ba24440ec2aa433372bb48c2652f",
+    "content/browser/renderer_host/renderer_process_owner.cc": "254121df852950ee15bf29453f056ff5161d65ebe199e9240f5bb18ee3c26431",
+    "content/browser/bad_message.h": "8259500048a2d8c33ae688e13df8aa4300ba623167ee31b83bae7cab545ea6c2",
+    "content/browser/bad_message.cc": "a0c5a03450dec1e49fcff56282c19d756ea6636cc8dee395bd846099a9b009ff",
+    "content/browser/renderer_host/renderer_process_owner_unittest.cc": "5f5336d4b5326ff0a01a467ff27289d38591c18657d5e495bda2d37b6f8e4def",
+    "content/browser/renderer_host/renderer_process_owner_client.h": "fb200c92b7719fcf41c9cb30ffadcf1a7934cdc8dcf1c0ac355889772c236d54"
+  },
+  "limitations": [
+    "This proves the final dependency boundary, not a measured before/after reduction from the earlier broad rebuild.",
+    "Shared host/client header changes still require their ordinary dependency rebuilds.",
+    "The process fixture uses utility subprocesses; the browser regressions use sandboxed headless Chromium with explicit site-per-process and resource diagnostics.",
+    "The adapted upstream child-process-launcher browser test was not built or run.",
+    "Native changes remain a development prototype; no browser distribution or default launch-policy admission.",
+    "No clean-build, native Linux, renderer-reuse or E2E performance claim."
+  ]
+}
