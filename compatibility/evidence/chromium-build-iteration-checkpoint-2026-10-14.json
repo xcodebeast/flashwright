@@ -11,7 +11,10 @@
     "jobs": 4,
     "configurationSha256": "9cc409a58b6a69fdc27da30f75548f6369fdad901b2f6dbde94d7cfc906dd55f",
     "compilerSettingsChanged": false,
-    "sourceBytesChanged": false
+    "sourceBytesChanged": false,
+    "cpu": "Apple M3 Pro",
+    "logicalProcessors": 11,
+    "memoryBytes": 38654705664
   },
   "graphTargets": {
     "full": 29858,
@@ -151,7 +154,7 @@
   "evidenceDigest": "5c5bf149ffbb335bee15e74e1e1a67bee4db637d09108f63edcd6de531652ef1",
   "limitations": [
     "Two runs per graph on one native macOS arm64 host, counterbalanced full/filtered/filtered/full.",
-    "No clean-build, final-link, native Linux or E2E performance claim.",
+    "The graph comparison excludes linking; no clean-build, native Linux or E2E performance claim. The separate scoped-archive comparison below measures warmed linking.",
     "Current full native ownership build and functional gates are separate from this incremental compilation comparison.",
     "Experimental archive policy is excluded from this measured improvement."
   ],
@@ -184,7 +187,7 @@
     "nativeInputsUnchanged": true,
     "evidenceDigest": "5224046ff3bdad7c349cd7b30c1bd0527beca80f76138bd02454a52b845e2659",
     "fixtureCorrection": "An earlier fixture resolved compiler dependency paths from the wrong working directory and failed its no-recompile assertion. The corrected fixture runs Ninja and the compiler from the same directory, uses absolute output nodes and retains all compiler flags.",
-    "scope": "Isolated generator/consumer regression and native generator/header-target adoption verified. The full resumed native build and functional gates remain pending.",
+    "scope": "Isolated generator/consumer regression, actual native generator adoption, completed full target build, 611 focused native tests and 64 browser case executions verified on macOS arm64.",
     "nativeGraphAdoption": {
       "status": "verified-native-bytecode-generator-restat",
       "completedAt": "2026-10-14T11:42:29.458961+00:00",
@@ -194,7 +197,7 @@
       "selectedObjectCount": 30,
       "nativeGeneratorCompiledLinkedAndExecuted": true,
       "ordinaryHeaderTargetNoOpPassed": true,
-      "fullBuildAndFunctionalValidationPending": true,
+      "fullBuildAndFunctionalValidationPending": false,
       "runtimePerformanceAdmission": false,
       "receiptSha256": "16b9d8aa346ccacc0c53e62903f5ab4d290429fbd915db73bd9731f021f72c9a",
       "resumedBuildObservation": {
@@ -203,7 +206,8 @@
         "remainingTasks": 1427,
         "selectedObjectCompilePhaseWasNoOp": true,
         "additionalDependentRebuildTasksObserved": 0,
-        "fullBuildCompleted": false
+        "fullBuildCompleted": true,
+        "completedTasks": 1426
       }
     }
   },
@@ -230,5 +234,135 @@
     "command": "bun tools/test-chromium-build-tools.mjs <chromium-source>",
     "testSourceSha256": "b7bb2a24d7ea28fb2185474f6b86a1672125b6deab720dd160e3bd3eaeb37263",
     "fixtureOutputsRemoved": true
+  },
+  "nativeFunctionalValidation": {
+    "unitCases": 611,
+    "browserCaseExecutions": 64,
+    "unitReceiptSha256": "075da5ec976ff79637fa84c5072bd837a828357d192fc280fcfe3ffd7017aa5a",
+    "browserReceiptSha256": "884e351c2ebddf63aeb89a5043e4cd920353475c6f31868363415887350dd2c7",
+    "buildReceiptSha256": "fdd725bc72bb946a643b6015641bf8e54eb128329f3c8ac7c0f810de246a0e0d",
+    "binaries": {
+      "headless_shell": "1405d89298cbffe014a442257a78138dd2ba7fb91b8771f166ffcc2290a0fc98",
+      "flashwright_storage_owner_tests": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+    },
+    "ordinaryFullTargetNoOpPassed": true,
+    "noOpReceiptSha256": "dca304ebf5bda761283389b9e9ccebcbe037a31a625b89cdf1f47cb8570982d8",
+    "fixtureRepairHistory": [
+      {
+        "attempt": 1,
+        "passed": 600,
+        "failed": 11,
+        "resultsSha256": "89cc25fdb78518b7e26e3c46ce90f739ea2edb453324b5a6bcad8ae49089614a",
+        "cause": "Incorrect fixture assumptions about local versus remote Blob UUIDs, associated endpoint transport, initial document lifecycle and Cache pipe teardown."
+      },
+      {
+        "attempt": 2,
+        "passedBeforeTimeout": 557,
+        "timedOut": true,
+        "watchdogSha256": "687979fa470d17e953e6fb17e2dcec115708c1b581d698513ba56566d2590a8b",
+        "cause": "Nested default run loop inside cursor success callback blocked the fixture remote inspection. Move asynchronous checks after dispatch while advancing synchronously."
+      },
+      {
+        "attempt": 3,
+        "passed": 611,
+        "failed": 0,
+        "strengthenedOracle": "Late Cache reply drains microtasks and checks the actual pending promise state."
+      }
+    ],
+    "rendererReuseImplemented": false,
+    "nativeLinuxVerified": false,
+    "e2ePerformanceAdmission": false
+  },
+  "scopedArchiveComparison": {
+    "status": "verified-macos-development-link-improvement",
+    "metric": "Warmed direct native test executable link wall time",
+    "sequence": [
+      "thin",
+      "scoped",
+      "scoped",
+      "thin",
+      "thin",
+      "scoped",
+      "scoped",
+      "thin"
+    ],
+    "measurements": [
+      {
+        "mode": "thin",
+        "attempt": "001",
+        "seconds": 27.884645625017583,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "scoped",
+        "attempt": "002",
+        "seconds": 7.112771207932383,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "scoped",
+        "attempt": "003",
+        "seconds": 8.393510167021304,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "thin",
+        "attempt": "004",
+        "seconds": 12.817959125037305,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "thin",
+        "attempt": "005",
+        "seconds": 11.0098224170506,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "scoped",
+        "attempt": "006",
+        "seconds": 6.554024332901463,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "scoped",
+        "attempt": "007",
+        "seconds": 6.9235556670464575,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      },
+      {
+        "mode": "thin",
+        "attempt": "008",
+        "seconds": 14.315584332915023,
+        "exitCode": 0,
+        "binarySha256": "8ceb16a86f166194ff080a34397875585bcefe4550e282037757ebd44f7b6b24"
+      }
+    ],
+    "medianSeconds": {
+      "thin": 13.566771728976164,
+      "scoped": 7.01816343748942
+    },
+    "observedSpeedRatio": 1.9330942987884236,
+    "selectedRegularArchives": 1415,
+    "identicalObjectContentsAndMemberOrder": true,
+    "allEightBinariesIdentical": true,
+    "thinComparisonPreparationSeconds": 61.98111395898741,
+    "thinComparisonArchiveBytes": 101913060,
+    "comparisonContractSha256": "c85682fd7646f231c69c26b81ce5ac0452e523b61a870dc741c6d21220460543",
+    "preparationReceiptSha256": "a585b8fd7be66e509beceb997c00649471868b32898f7d1e1a7f90e5d318ce0c",
+    "validationReceiptSha256": "8991a33ab5b38cd3c51803bbcde78eb44405904d8e1cf9915b470322991fb72c",
+    "limitations": [
+      "Four links per condition on one macOS arm64 host; no native Linux measurement.",
+      "Same compiler outputs, flags and final executable. Only selected archive representation changes.",
+      "Both conditions deliberately warmed by the same input and member hash-validation pass before every link.",
+      "Excludes input hashing, graph planning, compilation and one-time archive preparation.",
+      "No clean-build or complete-suite performance claim; do not multiply this ratio by the graph-planning ratio."
+    ]
   }
 }
