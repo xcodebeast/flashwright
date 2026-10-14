@@ -109,7 +109,9 @@ if (regularArchives) {
     ...archives.map(target => `  "${target}",`),
     ']', '',
   ].join('\n');
-  if (!existsSync(policyPath) || readFileSync(policyPath, 'utf8') !== policy) writeFileSync(policyPath, policy);
-  runGn(['gen', outputDirectory]);
+  if (!existsSync(policyPath) || readFileSync(policyPath, 'utf8') !== policy) {
+    writeFileSync(policyPath, policy);
+    runGn(['gen', outputDirectory]);
+  }
   console.log(`Selected ${archives.length} regular archives; preserved dependencies of ${executables.length - targets.length} build executables.`);
 }
