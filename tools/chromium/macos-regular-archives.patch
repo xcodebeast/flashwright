@@ -1,0 +1,51 @@
+--- a/build/config/BUILDCONFIG.gn
++++ b/build/config/BUILDCONFIG.gn
+@@ -540,6 +540,12 @@
+   "visibility",
+ ]
+ 
++if (path_exists("//flashwright_development/archives.gni")) {
++  import("//flashwright_development/archives.gni")
++} else {
++  flashwright_regular_archive_targets = []
++}
++
+ # Sets default dependencies for static_library and source_set targets.
+ #
+ # Variables
+@@ -554,6 +560,16 @@
+     target(_target_type, target_name) {
+       forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)
+       forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
++      if (_target_type == "static_library" && is_mac &&
++          current_toolchain == default_toolchain &&
++          filter_include(
++              [ get_label_info(":$target_name", "label_no_toolchain") ],
++              flashwright_regular_archive_targets) != [] &&
++          filter_include(configs, [ "//build/config/compiler:thin_archive" ]) !=
++          []) {
++        configs -= [ "//build/config/compiler:thin_archive" ]
++        configs += [ "//build/config/compiler:flashwright_regular_archive" ]
++      }
+       if (!defined(inputs)) {
+         inputs = []
+       }
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -2641,6 +2641,16 @@
+ #    into the library. See `gn help complete_static_lib` for details.
+ # 2. Remove the thin_archive config, so that the .a file actually contains all
+ #    .o files, instead of just references to .o files in the build directoy
++# Selected development libraries use regular archives without changing codegen tools.
++config("flashwright_regular_archive") {
++  assert(is_mac && use_lld,
++         "Regular archive development policy requires macOS/lld")
++  arflags = [
++    "--format=gnu",
++    "-s",
++  ]
++}
++
+ config("thin_archive") {
+   if ((is_apple && use_lld) || (is_linux && !is_clang) || current_os == "aix") {
+     # The macOS and iOS linker ld64.ldd doesn't support thin archive without
