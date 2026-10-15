@@ -291,6 +291,15 @@ impl Engine {
                     );
                 }
                 "Runtime.consoleAPICalled" | "Log.entryAdded" => {
+                    if event.method == "Runtime.consoleAPICalled"
+                        && self.content_marker(
+                            &page,
+                            source_session,
+                            parameters["consoleJson"].as_str().unwrap_or(""),
+                        )
+                    {
+                        continue;
+                    }
                     if let Err(error) = self.console_event(
                         &identifier,
                         &page,

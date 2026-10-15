@@ -388,6 +388,16 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     for (const token of conditions.keys()) cancel(token);
   }
 
+  /** document.open removes event listeners without destroying this world or its pending waits. */
+  function documentReplaced() {
+    if (!conditions.size) return;
+    stop();
+    begin();
+    scheduleDeadline();
+    invalidate();
+    queueFallbackScheduling();
+  }
+
   function inspect() {
     if (!instrumentation) throw new Error('Condition instrumentation is disabled');
     return {
@@ -401,5 +411,5 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     };
   }
 
-  return { wait, cancel, dispose, inspect };
+  return { wait, cancel, dispose, inspect, documentReplaced };
 }

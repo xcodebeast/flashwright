@@ -311,6 +311,7 @@ impl Engine {
         if !matches!(
             method,
             "page.goto"
+                | "page.setContent"
                 | "page.reload"
                 | "page.goBack"
                 | "page.goForward"

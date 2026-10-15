@@ -1,0 +1,29 @@
+{
+  "referenceVersion": "1.60.0",
+  "sources": [
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/frames.ts"
+  ],
+  "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
+  "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
+  "retainedExtract": "compatibility/upstream/page-content.source.txt",
+  "extractSha256": "51c43317a56ea52fa21eaefe4e50778f06633e6c73293be483ff8e6eab0d86b6",
+  "implementation": {
+    "crates/flashwright-engine/src/content.rs": "c1a280d424e9f4732665a03e0fcbc036536db487caf11a6e303dda730ad23ce1",
+    "crates/flashwright-engine/src/events.rs": "c7d5565b5e5871a0c27d8618676afd80951169d7304adf2e935bad774b0af56a",
+    "crates/flashwright-engine/src/page_state.rs": "e059b134f68378d7de1a4fffa6f38cf003e01a5d4dcabcf30c52b2d3ada27c51",
+    "crates/flashwright-engine/src/recording/phases.rs": "2c4d59b227dd4794c75d633f1c1b6800cac01b39a19e16e7d7160b8472106596",
+    "packages/flashwright-core/src/index.ts": "322b28bd99458bfc241263477a1c8d7330a577d870331629896ab3664e5d04b7",
+    "packages/resident-runtime/condition-registry.js": "c0f43697f582489868ff19bd8654f36c6c96f1578f63d6274201dc9174dbe266",
+    "packages/resident-runtime/locator-runtime.js": "60098d839880c072b660ab136512d6f520c6be82d11f9135727afecc19f7f106"
+  },
+  "relationship": "Independent Rust implementation follows the original-world console boundary and document.open/write/close lifecycle contract; the retained source is a compatibility reference.",
+  "changes": [
+    "Bound exact UTF-16LE HTML to 1000000 code units and transport it as compact base64.",
+    "Bind private markers to their original isolated session and unique execution context, capped at 128 pending replacements per page.",
+    "Reattach resident condition observation while preserving pending checks and original deadlines.",
+    "Withdraw cancelled writes before dispatch or retire their original page when browser completion remains uncertain."
+  ],
+  "license": "Apache-2.0",
+  "licensePath": "compatibility/upstream/LICENSE.playwright",
+  "noticePath": "compatibility/upstream/NOTICE.playwright"
+}

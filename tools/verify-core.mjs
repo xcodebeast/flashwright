@@ -17,7 +17,7 @@ if (!driverBuildProfile) throw new Error('Core verification must build its selec
 process.env.FLASHWRIGHT_DRIVER_PATH = driverPath;
 
 const started = new Date().toISOString();
-const destination = `compatibility/evidence/core-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${started.replaceAll(':', '-')}`;
+const destination = join(process.env.FLASHWRIGHT_CORE_ARTIFACT_DIRECTORY ?? 'compatibility/evidence', `core-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${started.replaceAll(':', '-')}`);
 await mkdir(destination, { recursive: true });
 const sources = await sourceManifest();
 const browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath());
@@ -43,6 +43,7 @@ const commands = [
   [process.execPath, 'tools/record-console-provenance.mjs', '--check'],
   [process.execPath, 'tools/record-init-script-provenance.mjs', '--check'],
   [process.execPath, 'tools/record-history-navigation-provenance.mjs', '--check'],
+  [process.execPath, 'tools/record-page-content-provenance.mjs', '--check'],
   [process.execPath, 'tools/record-network-headers-provenance.mjs', '--check'],
   [process.execPath, 'tools/record-routing-provenance.mjs', '--check'],
   [process.execPath, 'tools/record-navigation-waits-provenance.mjs', '--check'],
@@ -186,6 +187,7 @@ const commands = [
   [process.execPath, 'tools/run-concurrent-launch-tests.mjs', join(destination, 'concurrent-launch')],
   [process.execPath, 'tools/run-lifecycle-tests.mjs'],
   [process.execPath, 'tools/run-navigation-tests.mjs'],
+  [process.execPath, 'tools/run-page-content-tests.mjs'],
   [process.execPath, 'tools/run-network-header-tests.mjs'],
   [process.execPath, 'tools/run-request-payload-tests.mjs'],
   [process.execPath, 'tools/run-routing-tests.mjs'],

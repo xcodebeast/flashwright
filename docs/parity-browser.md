@@ -907,11 +907,11 @@
 | playwright-core/types/types.d.ts.Page.setChecked.options.strict#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#selector-actions) |
 | playwright-core/types/types.d.ts.Page.setChecked.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.setChecked.options.trial#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.setContent#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.setContent.html#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.setContent.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.setContent.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.setContent.options.waitUntil#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.setContent#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#page-content) |
+| playwright-core/types/types.d.ts.Page.setContent.html#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#page-content) |
+| playwright-core/types/types.d.ts.Page.setContent.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#page-content) |
+| playwright-core/types/types.d.ts.Page.setContent.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#page-content) |
+| playwright-core/types/types.d.ts.Page.setContent.options.waitUntil#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#page-content) |
 | playwright-core/types/types.d.ts.Page.setDefaultNavigationTimeout#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-device-options) |
 | playwright-core/types/types.d.ts.Page.setDefaultNavigationTimeout.timeout#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.setDefaultTimeout#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-device-options) |

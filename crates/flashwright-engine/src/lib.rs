@@ -4,6 +4,7 @@ mod api_requests;
 mod aria_snapshots;
 mod assertions;
 mod console;
+mod content;
 mod context_settings;
 mod context_state;
 mod cookies;
@@ -135,6 +136,7 @@ pub const CAPABILITIES: &[&str] = &[
     "context.trace.filmstrip.take",
     "page.screenshot",
     "page.goto",
+    "page.setContent",
     "page.reload",
     "page.goBack",
     "page.goForward",
@@ -458,6 +460,7 @@ impl Engine {
             }
             "context.storageState" => self.storage_state(parameters, operation).await,
             "page.goto" => self.navigate(parameters, operation).await,
+            "page.setContent" => self.set_content(parameters, operation).await,
             "page.navigation.next" => self.next_navigation(parameters, operation).await,
             "page.navigation.complete" => self.finish_navigation_wait(parameters, operation).await,
             "page.reload" | "page.goBack" | "page.goForward" => {
