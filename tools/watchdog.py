@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
-import resource
 import signal
 import subprocess
 import sys
@@ -16,11 +15,10 @@ import uuid
 
 
 class RootProcessCpuAccounting:
-    """Observe child-usage counters around the original root's terminal poll.
+    """Reap the original owner atomically and retain its inclusive kernel usage.
 
-    Only this single-threaded supervisor may reap children inside the poll bracket.
-    Snapshot helpers are waited outside it. The delta includes recursively rolled-up
-    child usage, but cannot identify included descendants or account for live orphans.
+    Popen's own wait lock prevents a competing poll. Only an actual positive
+    wait4 result admits usage; cached status and ECHILD never fabricate zeros.
     """
 
     def __init__(self, child, started):
@@ -31,33 +29,45 @@ class RootProcessCpuAccounting:
     def poll(self):
         if self.child.returncode is not None:
             return self.child.returncode
-        started = time.monotonic() - self.started
+        if not self.child._waitpid_lock.acquire(False):
+            return None
         try:
-            before = resource.getrusage(resource.RUSAGE_CHILDREN)
-        except OSError:
-            before = None
-        returncode = self.child.poll()
-        try:
-            after = resource.getrusage(resource.RUSAGE_CHILDREN)
-        except OSError:
-            after = None
-        finished = time.monotonic() - self.started
-        if returncode is not None:
+            if self.child.returncode is not None:
+                return self.child.returncode
+            started = time.monotonic() - self.started
+            try:
+                process, wait_status, usage = os.wait4(self.child.pid, os.WNOHANG)
+            except ChildProcessError as error:
+                # Match Popen's externally-reaped status convention, while
+                # explicitly refusing resource admission for that status.
+                self.child.returncode = 0
+                self.receipt = {"status": "unavailable", "process": self.child.pid,
+                                "reason": "original-owner-not-waitable", "error": str(error)}
+                return self.child.returncode
+            except InterruptedError:
+                return None
+            if process == 0:
+                return None
+            assert process == self.child.pid
+            if not (os.WIFEXITED(wait_status) or os.WIFSIGNALED(wait_status)):
+                return None
+            reaped_nanoseconds = time.monotonic_ns()
+            self.child._handle_exitstatus(wait_status)
             self.receipt = {
-                "status": "unavailable", "process": self.child.pid, "exitCode": returncode,
-                "startedElapsedSeconds": started, "finishedElapsedSeconds": finished,
-                "method": "RUSAGE_CHILDREN-delta-around-original-root-poll",
-                "coverage": "Child-usage counter delta when the original root poll reports terminal status. Cached or synthetic status does not prove that this poll reaped the root. Recursively accumulated terminated-child CPU may be included; live reparented descendants and missing kernel usage records may be excluded. This does not prove complete tree coverage. Do not add this aggregate to descendant sampled CPU.",
+                "status": "observed", "process": process,
+                "exitCode": self.child.returncode, "waitStatus": wait_status,
+                "startedElapsedSeconds": started,
+                "finishedElapsedSeconds": time.monotonic() - self.started,
+                "reapedNanoseconds": str(reaped_nanoseconds),
+                "method": "atomic-wait4-original-owner",
+                "userSeconds": usage.ru_utime, "systemSeconds": usage.ru_stime,
+                "cpuSeconds": usage.ru_utime + usage.ru_stime,
+                "inclusiveMaximumResidentBytes": int(usage.ru_maxrss) * (1 if sys.platform == "darwin" else 1024),
+                "coverage": "Exact wait4 resource record for the original owner, including descendants whose usage was rolled up through actual reaping. Live or orphaned descendants are excluded. Complete ownership coverage requires independent lifecycle records. Never add this inclusive CPU to descendant CPU; inclusive maximumRSS is not concurrent RSS.",
             }
-            if before is not None and after is not None:
-                user = after.ru_utime - before.ru_utime
-                system = after.ru_stime - before.ru_stime
-                if user >= 0 and system >= 0:
-                    self.receipt.update({"status": "observed", "userSeconds": user, "systemSeconds": system,
-                        "cpuSeconds": user + system,
-                        "before": {"userSeconds": before.ru_utime, "systemSeconds": before.ru_stime},
-                        "after": {"userSeconds": after.ru_utime, "systemSeconds": after.ru_stime}})
-        return returncode
+            return self.child.returncode
+        finally:
+            self.child._waitpid_lock.release()
 
 
 def adopt_orphaned_descendants():
