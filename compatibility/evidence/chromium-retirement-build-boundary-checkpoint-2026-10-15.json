@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-native-retirement-build-boundary",
+  "date": "2026-10-15",
+  "platform": "darwin-arm64",
+  "scope": "Incremental compile-and-link cycles for the private context-retirement implementation in a non-component Chromium build.",
+  "patch": {
+    "path": "tools/chromium/v8-retirement-build-boundary.patch",
+    "sha256": "25f218a8e06c4f578444e8ed065c618854ac7b8a099c86590d1271256bea306b",
+    "originalSourceHashes": {
+      "v8/BUILD.gn": "284a01aa96f0a0acaf030a3a831629b84987f6039d0fa32568fd6b57a4b5ac9f",
+      "v8/src/api/api.cc": "653c12b37deddcb558957e8e45e8a2896f2a0c6b279aff3804b2c27e2ab319ad",
+      "content/renderer/BUILD.gn": "153c41d5568e36b88466073c99dde08595b2ab6fdd43dc60015e1f18bc488db8"
+    },
+    "candidateSourceHashes": {
+      "content/renderer/BUILD.gn": "64e7e2b4eae19e431fa12caecca174e470c5d99b8b0a8b020c0bb4a9fe36bcb2",
+      "v8/BUILD.gn": "0d86d83395951b79e35676273014f26f5de9ea66dcfa2038a458e3d151da966a",
+      "v8/src/api/api.cc": "e7e7e428db84e99f58c46930c4cac893e3f368dc500651ed8b1ebf8e9476dbd9",
+      "v8/src/api/context-retirement.cc": "91ec4eae31a2c8ac5d33617e9abf27ba310eea35f9beec5242d835e09f0e3566"
+    },
+    "functionBodyUnchanged": true,
+    "functionBodySha256": "481f17101ba0e2f6c7542f16b97eee25b4d0648538f939be89c240e77605988f",
+    "applyAndReverseVerified": true
+  },
+  "command": "third_party/ninja/ninja -C out/flashwright-baseline -j4 headless_shell flashwright_storage_owner_tests",
+  "measurement": "Supervisor process launch through ordinary Ninja completion, after touching the implementation source. No compiler/linker work skipped by the measurement harness.",
+  "sequence": [
+    "original",
+    "isolated",
+    "isolated",
+    "original"
+  ],
+  "measurements": [
+    {
+      "condition": "original",
+      "attempt": "baseline-001",
+      "seconds": 165.23291008314118,
+      "compileSeconds": 20.887,
+      "tasks": [
+        {
+          "output": "obj/v8/v8_base_without_compiler/api.o",
+          "startMilliseconds": 29398,
+          "endMilliseconds": 50285
+        },
+        {
+          "output": "mksnapshot",
+          "startMilliseconds": 50287,
+          "endMilliseconds": 59498
+        },
+        {
+          "output": "gen/v8/embedded.S",
+          "startMilliseconds": 59500,
+          "endMilliseconds": 61193
+        },
+        {
+          "output": "snapshot_blob.bin",
+          "startMilliseconds": 59500,
+          "endMilliseconds": 61193
+        },
+        {
+          "output": "obj/v8/v8_snapshot/embedded.o",
+          "startMilliseconds": 61193,
+          "endMilliseconds": 61464
+        },
+        {
+          "output": "v8_context_snapshot_generator",
+          "startMilliseconds": 61481,
+          "endMilliseconds": 137512
+        },
+        {
+          "output": "v8_context_snapshot.arm64.bin",
+          "startMilliseconds": 137517,
+          "endMilliseconds": 140153
+        },
+        {
+          "output": "flashwright_storage_owner_tests",
+          "startMilliseconds": 140157,
+          "endMilliseconds": 164795
+        },
+        {
+          "output": "headless_shell",
+          "startMilliseconds": 140154,
+          "endMilliseconds": 164976
+        }
+      ],
+      "resourceReceiptSha256": "f1ab0b24730c6d5daf1e99caae0e61c35bedc95d1836385fa6074a46c6ae3dcf",
+      "resultSha256": "2609c0d177eec5531de4bd33a5f5917c3e0d7190b4dabc09d0e846e705907cfb"
+    },
+    {
+      "condition": "isolated",
+      "attempt": "candidate-003",
+      "seconds": 28.72091874992475,
+      "compileSeconds": 4.099,
+      "tasks": [
+        {
+          "output": "obj/v8/v8_context_retirement/context-retirement.o",
+          "startMilliseconds": 7982,
+          "endMilliseconds": 12081
+        },
+        {
+          "output": "flashwright_storage_owner_tests",
+          "startMilliseconds": 12087,
+          "endMilliseconds": 28390
+        },
+        {
+          "output": "headless_shell",
+          "startMilliseconds": 12083,
+          "endMilliseconds": 28587
+        }
+      ],
+      "resourceReceiptSha256": "311e91e54267913046468136d603c1bf894191924af5f324addcc36fd74c99bb",
+      "resultSha256": "fddc015c5fb1e0210be568a557d0f8528af092284f85ce32d229c62547f50af2"
+    },
+    {
+      "condition": "isolated",
+      "attempt": "candidate-004",
+      "seconds": 27.284297124948353,
+      "compileSeconds": 4.127,
+      "tasks": [
+        {
+          "output": "obj/v8/v8_context_retirement/context-retirement.o",
+          "startMilliseconds": 7577,
+          "endMilliseconds": 11704
+        },
+        {
+          "output": "flashwright_storage_owner_tests",
+          "startMilliseconds": 11711,
+          "endMilliseconds": 26903
+        },
+        {
+          "output": "headless_shell",
+          "startMilliseconds": 11706,
+          "endMilliseconds": 27160
+        }
+      ],
+      "resourceReceiptSha256": "4f2387d7fb06bcbfa54d9180690632a3362ccaf66913574d0ea135754c5f8e14",
+      "resultSha256": "51da9a034f5f122c4dcad880c6da086ecbee6cb3741e84c97fdb30c3da73a848"
+    },
+    {
+      "condition": "original",
+      "attempt": "baseline-002",
+      "seconds": 56.61580233415589,
+      "compileSeconds": 14.077,
+      "tasks": [
+        {
+          "output": "obj/v8/v8_base_without_compiler/api.o",
+          "startMilliseconds": 7985,
+          "endMilliseconds": 22062
+        },
+        {
+          "output": "mksnapshot",
+          "startMilliseconds": 22062,
+          "endMilliseconds": 23772
+        },
+        {
+          "output": "gen/v8/embedded.S",
+          "startMilliseconds": 23773,
+          "endMilliseconds": 25041
+        },
+        {
+          "output": "snapshot_blob.bin",
+          "startMilliseconds": 23773,
+          "endMilliseconds": 25041
+        },
+        {
+          "output": "obj/v8/v8_snapshot/embedded.o",
+          "startMilliseconds": 25041,
+          "endMilliseconds": 25520
+        },
+        {
+          "output": "v8_context_snapshot_generator",
+          "startMilliseconds": 25537,
+          "endMilliseconds": 40399
+        },
+        {
+          "output": "v8_context_snapshot.arm64.bin",
+          "startMilliseconds": 40402,
+          "endMilliseconds": 42818
+        },
+        {
+          "output": "flashwright_storage_owner_tests",
+          "startMilliseconds": 42822,
+          "endMilliseconds": 56126
+        },
+        {
+          "output": "headless_shell",
+          "startMilliseconds": 42818,
+          "endMilliseconds": 56461
+        }
+      ],
+      "resourceReceiptSha256": "48ec2540f2c85e29f62a0abfd351c5a8f42d4e2ae5623d199b4718a129a3f629",
+      "resultSha256": "576acc7f043401937d3f86b5196fee2c07886851eebee14ab90bde83b1df2548"
+    }
+  ],
+  "medianSeconds": {
+    "original": 110.92435620864853,
+    "isolated": 28.00260793743655
+  },
+  "observedMedianSpeedRatio": 3.9612152002583407,
+  "conservativeWarmComparison": {
+    "originalSeconds": 56.61580233415589,
+    "isolatedMedianSeconds": 28.00260793743655,
+    "observedSpeedRatio": 2.0218046283634354
+  },
+  "candidateGeneratorBinariesAndSnapshotBytesAndMtimesUnchanged": true,
+  "sameConditionRebuiltExecutablesByteIdentical": true,
+  "compilerConfigurationDifferences": {
+    "defines": {
+      "added": [],
+      "removed": [
+        "-DHWY_BROKEN_TARGETS=HWY_ALL_SVE",
+        "-DTEMPORAL_CAPI_VERSION_0_2"
+      ]
+    },
+    "include_dirs": {
+      "added": [],
+      "removed": [
+        "-I../../third_party/dragonbox/src/include",
+        "-I../../third_party/fast_float/src/include",
+        "-I../../third_party/highway/src",
+        "-I../../third_party/rust/chromium_crates_io/vendor/temporal_capi-v0_2/bindings/cpp",
+        "-I../../third_party/zlib"
+      ]
+    },
+    "cflags": {
+      "added": [],
+      "removed": []
+    },
+    "cflags_cc": {
+      "added": [],
+      "removed": []
+    }
+  },
+  "functionalVerification": {
+    "enabledNativeCasesPassed": 984,
+    "upstreamDisabledCases": 3,
+    "nativeInventoryRegistered": 987,
+    "nativeSourceFilesVerified": 121,
+    "realSvgomgReuseCycles": 48,
+    "memorySamples": [
+      {
+        "cycle": 1,
+        "documents": 12
+      },
+      {
+        "cycle": 12,
+        "documents": 14
+      },
+      {
+        "cycle": 48,
+        "documents": 14
+      }
+    ],
+    "sameRendererFreshContextAndStorageVerified": true,
+    "nativeChildrenReaped": 3,
+    "ordinaryNoOpVerified": true,
+    "nativeReceiptSha256": "3659868f38c316f625192f855611f59eef3b8eb8a8afce2cf2302738b551f6a2",
+    "browserReceiptSha256": "b33547956dc83c7296859717b803f066783a6e843773df7fe18a45bd199fe8a8"
+  },
+  "finalBinaries": {
+    "headless_shell": "1bbe00ea48ba76e4c166a90c73d2d70639154075eb8994669683ca8da4b6f266",
+    "flashwright_storage_owner_tests": "6ec25bccc53a6cbc30b5868ad33c53fd9406b4bf6e9439271593e8e852449218"
+  },
+  "argsSha256": "91b15b395948726d85ff0c209f67a8b02851b43142216c659c50a7ed3533718e",
+  "archivePolicySha256": "280a3031af9c85f1a41d53385db023bf412947a9d033ba44f6518f0c7d5ade81",
+  "tools": {
+    "third_party/ninja/ninja": "6c03e94e3ee141301a7e5151227508ac8cec05c12d79ed9240062a86a0e2d14f",
+    "buildtools/mac/gn": "55221a54947f22e819a1a49574d50876bd91d35534468d432cf2fa83f88c7897",
+    "third_party/llvm-build/Release+Asserts/bin/clang++": "57905bf19a389e651632ab90abd9d89bbfbee714f906d32875f044315fcd2207"
+  },
+  "excludedAttempts": {
+    "runs": [
+      "candidate-001",
+      "candidate-002"
+    ],
+    "reason": "Second command was started before the first tool session confirmed completion. Supervisor monotonic intervals overlap by approximately 0.784 seconds. Both are excluded from timing acceptance; all originals retained. Added an exclusive nonblocking lock before input hashing/touch/build and will repeat sequentially as candidate-003 and candidate-004."
+  },
+  "storage": {
+    "copiedBuildTargets": 0,
+    "temporaryPatchFixtureRemoved": true
+  },
+  "limitations": [
+    "Two admitted observations per layout on one native macOS arm64 host. The first original-layout run was much slower; report the warm comparison separately rather than treating the median ratio as a stable expectation.",
+    "Two initially overlapping candidate attempts were excluded and replaced by two strictly sequential runs. Original observations and failure history are retained privately.",
+    "One-time layout migrations, input hashing and final validation are excluded from edit-cycle timings. Migrations require ordinary dependency rebuilds.",
+    "Compiler optimization settings are unchanged. The new source set drops unrelated Highway/Temporal defines and include paths, as listed.",
+    "Snapshot data is byte-identical across the refactor, but relinked executable layouts and hashes change. Each layout reproduces its own executable bytes.",
+    "Component builds and native Linux are unverified. No clean-build, general Chromium source edit, Rust build or E2E speed claim."
+  ],
+  "experimentalRetirementDefaultChanged": false,
+  "e2ePerformanceAdmission": false,
+  "nativeLinuxVerified": false
+}
