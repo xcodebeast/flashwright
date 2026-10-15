@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-focused-context-creation-lifetime-correction",
+  "date": "2026-10-15",
+  "baseRevision": "521e09d6038ca44f187fdb8063447deb7eecdfe5",
+  "scope": "Original context closure during native page allocation and pre-registration attachment. Late allocations retain cleanup ownership before reporting TargetClosedError.",
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "driverProfile": "development",
+    "browserDistribution": "private modified Chromium headless shell",
+    "browserVersion": "148.0.7778.96",
+    "browserSha256": "05b6c0bce54b0ec86bd040723fcb147918093545eca5d4d999e3d915d4e18968",
+    "driverSha256": "7d242e8d94bfe6f88d06ca4cd331315d5d736ee64fc4fb1b06ff96a7d3ef7a25",
+    "rendererReservationEnabled": false
+  },
+  "sources": {
+    "crates/flashwright-engine/src/context_state.rs": "5583e757e32d4434195935fdcb6bf0a46d29a7a9a52048c3c5bb0f5a8814906b",
+    "crates/flashwright-engine/src/operation.rs": "f599f4b9f1460957a1f129aac5af7c631440cf9f64321ed044225537dae287ec",
+    "crates/flashwright-engine/src/lib.rs": "0aad29f9295ef27d275addfb037f02d3a0c424f7220d776b938f5fdd52ea5abc",
+    "compatibility/m1/test_init_scripts.py": "d806c3faee46abe8ee82fc9a83daf1ef021d2368ea39da193a9f9b876e7984af",
+    "compatibility/m1/page_initialization_driver.py": "e2d88b3e1f716abc5a5d770c6c70bd620c984c9118215983e4ea985a0c8f778e",
+    "tools/page-initialization-detach-proxy.py": "ecfbb2ed520284b5837de07779ba328013aa41283d771f147e73b9582b1f7532"
+  },
+  "negativeControl": {
+    "scope": "Private pre-correction driver with renderer reservation disabled",
+    "iterations": 6,
+    "unexpectedProtocolErrors": 6,
+    "reportSha256": "2b5100d347cb65cc66f5f352fdd5ed70a40a55acf55bfef8e601d3600c53e2ba",
+    "driverSha256": "c9a9b5510d5efff7697085c440343fc5ec01f4ff184ec21ee680279aac9cb637"
+  },
+  "verification": {
+    "engineUnitTests": 351,
+    "browserLifecycleTests": 9,
+    "originalContextCloseRaceIterations": 6,
+    "pageInitializationDetachmentStages": 16,
+    "allocationClosureOutcomes": [
+      "late allocation disposed",
+      "definitive allocation rejection",
+      "unknown allocation closes its browser owner"
+    ],
+    "siblingPageRemainsUsable": true,
+    "formatCheck": "passed",
+    "diffWhitespaceCheck": "passed",
+    "checks": [
+      {
+        "name": "engine-unit",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "23c878d1d9fff211cf6210730d95eef65f45adf3ec5435905de1d2a6f7079c2d",
+        "resourceReceiptSha256": "645f136e09162c31b34bc024dda932b5d9719595f7a3ee60f0c9567c9228723e"
+      },
+      {
+        "name": "init-script-lifecycle",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "34d6719084ff0282f6757ad53f45b42cd133c708b58809e1ffaeaca170ee2cfc",
+        "resourceReceiptSha256": "82a3098089248d5bb3940b24a949359f566953f58350269f743d17f921411118"
+      },
+      {
+        "name": "Page.enable",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "3853735bfc479931c0a9a22e3575b54911d3b4e5e293484fe58c08a22d155b8f",
+        "resourceReceiptSha256": "d8ab037543341807864dc249b6b538c3fd5dc2a81982ce3cc93f8ce3d6c24108"
+      },
+      {
+        "name": "Page.setLifecycleEventsEnabled",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "b0602080a5f01189d7420a095f8bdd9d29dd4c6c4311c7029cddcbaf35889615",
+        "resourceReceiptSha256": "fd98b6cd52be8bc1bfc55e6817de9b72047bce1e132d1ff2a93e7a9ebcea8ef4"
+      },
+      {
+        "name": "Network.enable",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "5706e65e2a35f6fb4c49b4f0d3a90bc2cbba7cb6eb11d253dc7ba06b3ac0ad3f",
+        "resourceReceiptSha256": "49eabf105d322e03ce98a394d87211749c15d46200a199b8a88aecc00220ab52"
+      },
+      {
+        "name": "Runtime.enable",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "5067614629cf3772e1517b1e2c98c4a506a094a196842006cd763d62eb0a27a0",
+        "resourceReceiptSha256": "b3d83590a11adedc9c4ed78b5980608a8edef45c1862b31fb045965b2cc2c28a"
+      },
+      {
+        "name": "Log.enable",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "c62eb964d68a19af7cc360db6c01a5867526ffe167e72944497c0c7dc51947b7",
+        "resourceReceiptSha256": "99258774395b43764f72c34255d2e58e42b9cc3c972b39c99d36d70b21842790"
+      },
+      {
+        "name": "Emulation.setEmulatedMedia",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "04d11840fe13aa0ea4e998310224765e4eb7ef43e7c7408fddab3b93dfbdd02b",
+        "resourceReceiptSha256": "d0af1707936449d008de04c1fa9c31ec25a4e1c63462881c3a91eff97c71bd54"
+      },
+      {
+        "name": "Emulation.setFocusEmulationEnabled",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "6d7243954f2c2758122a0046157bb1fa468287cffcb87e9f9d7c0c329e5a3118",
+        "resourceReceiptSha256": "61b4e901b9be701128c73f952a157204e7cd2268ba5d300e59b2852bcb0898f8"
+      },
+      {
+        "name": "Browser.getWindowForTarget",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "6eb99ab731c6351a27d8a1d11f5744ed6a4f49078004af7ab2ba73e436b3497c",
+        "resourceReceiptSha256": "dc9c933a96359546b9c0ae3087771091b6dc8906a5d27db44b6b508928fe67fa"
+      },
+      {
+        "name": "Browser.setWindowBounds",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "69b7d56da36b44463f8e4045183d303ccc2e09ed37d6a3603d2c7c3f36daa7d5",
+        "resourceReceiptSha256": "b1a24c76ae99040945d653fc2c71a387c1318eba2edb9d6e58ecad158d82fb3b"
+      },
+      {
+        "name": "Emulation.setDeviceMetricsOverride",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "6d7243954f2c2758122a0046157bb1fa468287cffcb87e9f9d7c0c329e5a3118",
+        "resourceReceiptSha256": "c93430387fc53fb42770eccbd5dbb3f9cb82d0cbe0f7e3bf1f6f9acf262b652f"
+      },
+      {
+        "name": "Target.setAutoAttach",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "1a127fb63d9de918e87f03ae903179bf69fad846c0b93f4db808bf9070c244d5",
+        "resourceReceiptSha256": "7e691776293a5b3187a03c8f8ab8ffb0d2697a2721a8f64c1b784cfd0e81dfb1"
+      },
+      {
+        "name": "Page.getFrameTree",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "a4e372f532dca19b4d9ba45abd63e22506c23c90002a2a04554d636698a5e270",
+        "resourceReceiptSha256": "db42dc588d1a70e80e1151b14ded8cb50498992ee1a1f4fa98eb7be35c3ca6b9"
+      },
+      {
+        "name": "Security.setIgnoreCertificateErrors",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "554a222b2d5f41d0d9c0003d2f9e253f443609bc28117ce904a725f2e47361b2",
+        "resourceReceiptSha256": "130593f1a88195a503a5b2477f3d8f5dda7c1c2fe385254027d68416dd5f466d"
+      },
+      {
+        "name": "Emulation.setScriptExecutionDisabled",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "640414c901278314f98071888654a0c56f1bc27d91866bbf5b2f0752fad026a8",
+        "resourceReceiptSha256": "422210fa71cda9a810209a761178f879c8af06b709bed0f7c80cb2b449d428d0"
+      },
+      {
+        "name": "Emulation.setTouchEmulationEnabled",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "3b06257bdfe3c927fb7203dee59780a23e4fa90f7e7840b093981e144bc603e6",
+        "resourceReceiptSha256": "235aa40cf4682e8eda7358fa8198a73d61e649b8121b90bd7cd11e06081298cd"
+      },
+      {
+        "name": "Emulation.setUserAgentOverride",
+        "status": "passed",
+        "exitCode": 0,
+        "watchdogIntervention": false,
+        "remainingObservedProcesses": 0,
+        "logSha256": "70698cca2afc8e9e2fcd9205e39a2efcea951d0b806f200dfadb73c3f69e864b",
+        "resourceReceiptSha256": "0f25be91874a1ca9a47f749fe0fdb2661ba38553a8f272c9648f0b0cf376a2b8"
+      }
+    ]
+  },
+  "limitations": [
+    "Focused macOS development verification on the recorded modified browser; no new stock-browser or full-core admission.",
+    "Private renderer reservation is not included in the main implementation correction.",
+    "No timing comparison, release package, native Linux or representative 2x complete-suite performance admission."
+  ]
+}

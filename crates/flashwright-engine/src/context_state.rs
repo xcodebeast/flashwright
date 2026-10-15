@@ -88,26 +88,27 @@ impl ContextState {
         Ok(())
     }
 
+    pub(crate) async fn closure(&self, method: &str) -> ErrorRecord {
+        let mut changes = self.closed.subscribe();
+        loop {
+            if let Some(mut error) = changes.borrow().clone() {
+                error.method = method.into();
+                return error;
+            }
+            if changes.changed().await.is_err() {
+                return closed(method);
+            }
+        }
+    }
+
     pub async fn while_alive<T>(
         &self,
         method: &str,
         work: impl Future<Output = Result<T, ErrorRecord>>,
     ) -> Result<T, ErrorRecord> {
-        let mut changes = self.closed.subscribe();
-        let lost = async {
-            loop {
-                if let Some(mut error) = changes.borrow().clone() {
-                    error.method = method.into();
-                    return error;
-                }
-                if changes.changed().await.is_err() {
-                    return closed(method);
-                }
-            }
-        };
         tokio::select! {
             biased;
-            error = lost => Err(error),
+            error = self.closure(method) => Err(error),
             result = work => result,
         }
     }

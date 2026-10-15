@@ -14,6 +14,26 @@ def script_source(source):
 
 
 class InitScriptLifecycleTests(OwnedDriverCase):
+    def test_context_close_preserves_page_creation_error_and_sibling(self):
+        for iteration in range(6):
+            with self.subTest(iteration=iteration):
+                context = self.request("browser.newContext", {"browser": self.browser})["identifier"]
+                creation = self.command("context.newPage", {"context": context}, timeout=None)
+                closure = self.command("context.close", {"context": context}, timeout=None)
+                self.send(creation)
+                self.send(closure)
+                replies = {reply["requestId"]: reply for reply in [self.receive(), self.receive()]}
+                self.assertEqual(replies[closure["requestId"]]["kind"], "result")
+                created = replies[creation["requestId"]]
+                if created["kind"] == "error":
+                    self.assertEqual(created["error"]["code"], "TargetClosedError", created)
+                else:
+                    # Publication can win the race, but closure must retire that exact page.
+                    self.send(self.command("page.evaluate", {**self.evaluation("42"), "page": created["value"]["identifier"]}))
+                    rejected = self.receive()
+                    self.assertEqual(rejected["error"]["code"], "TargetClosedError", rejected)
+                self.assertEqual(self.request("page.evaluate", self.evaluation("42")), {"kind": "number", "value": 42})
+
     def test_late_native_registration_is_removed_before_the_timeout_reply(self):
         for method, owner in [("page.addInitScript", {"page": self.page}), ("context.addInitScript", {"context": self.context})]:
             with self.subTest(method=method):

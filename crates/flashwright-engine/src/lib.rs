@@ -736,17 +736,18 @@ impl Engine {
             .await?;
         let browser = self.browser(&context.browser_identifier, method)?;
         let target_identifier = operation
-            .allocate(
+            .allocate_while_owner_alive(
                 browser.as_ref(),
                 "Target.createTarget",
                 json!({ "url": "about:blank", "browserContextId": context.protocol_identifier }),
                 ResourceKind::Page,
+                context.state.closure(method),
             )
             .await?;
         let page_identifier = self.identifier("page");
         let mut retained_page = None;
         let result = async {
-            let session = operation.wait(browser.connection.call("Target.attachToTarget", json!({ "targetId": target_identifier, "flatten": true }), None)).await?;
+            let session = operation.wait(context.state.while_alive(method, browser.connection.call("Target.attachToTarget", json!({ "targetId": target_identifier, "flatten": true }), None))).await?;
             let session_identifier = string_field(&session, "sessionId")?;
             let mut document = page_state::DocumentState::with_network_budget(self.network_budget.clone());
             document.initialize_main_frame(&target_identifier, &session_identifier);
