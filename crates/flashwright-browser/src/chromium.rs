@@ -64,6 +64,7 @@ pub struct Chromium {
     pub artifact_jobs: Arc<tokio::sync::RwLock<()>>,
     child: Mutex<Option<Child>>,
     process_group: Pid,
+    guardian_reap_audit: Option<crate::guardian_reap_audit::GuardianReapAudit>,
     liveness: Mutex<Option<StandardUnixStream>>,
     shutdown: Mutex<Option<ShutdownCompletion>>,
 }
@@ -130,6 +131,7 @@ impl Chromium {
         command.fd_mappings(mappings).map_err(launch_error)?;
         let mut command = Command::from(command);
         command.kill_on_drop(false);
+        let guardian_reap_audit = crate::guardian_reap_audit::GuardianReapAudit::from_environment();
         let child = command.spawn().map_err(launch_error)?;
         drop(command);
         #[cfg(target_os = "macos")]
@@ -144,6 +146,7 @@ impl Chromium {
             artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
             child: Mutex::new(Some(child)),
             process_group,
+            guardian_reap_audit,
             liveness: Mutex::new(Some(liveness)),
             shutdown: Mutex::new(None),
         };
@@ -201,6 +204,7 @@ impl Chromium {
                 let liveness = self.liveness.lock().unwrap().take();
                 let connection = self.connection.clone();
                 let artifact_jobs = self.artifact_jobs.clone();
+                let guardian_reap_audit = self.guardian_reap_audit.clone();
                 tokio::spawn(async move {
                     let _artifacts = artifact_jobs.write().await;
                     let mut guardian = liveness.and_then(|stream| {
@@ -250,7 +254,12 @@ impl Chromium {
                     connection.close();
                     drop(guardian);
                     let result = match child {
-                        Some(mut child) => match child.wait().await {
+                        Some(mut child) => match crate::guardian_reap_audit::wait_for_guardian(
+                            &mut child,
+                            guardian_reap_audit.as_ref(),
+                        )
+                        .await
+                        {
                             Ok(status) if status.success() => Ok(()),
                             result => {
                                 let mut error = ErrorRecord::new(
@@ -295,12 +304,17 @@ impl Drop for Chromium {
         }
         let liveness = self.liveness.get_mut().unwrap().take();
         let artifacts = self.artifact_jobs.clone();
+        let guardian_reap_audit = self.guardian_reap_audit.take();
         // The guardian must outlive this value long enough to kill Chromium and remove its profile.
         if let Some(mut child) = self.child.get_mut().unwrap().take() {
             tokio::spawn(async move {
                 let _artifacts = artifacts.write().await;
                 drop(liveness);
-                let _ = child.wait().await;
+                let _ = crate::guardian_reap_audit::wait_for_guardian(
+                    &mut child,
+                    guardian_reap_audit.as_ref(),
+                )
+                .await;
             });
         }
     }
@@ -332,6 +346,7 @@ mod tests {
             artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
             child: Mutex::new(None),
             process_group: Pid::from_raw(0),
+            guardian_reap_audit: None,
             liveness: Mutex::new(Some(liveness)),
             shutdown: Mutex::new(None),
         });
@@ -395,6 +410,7 @@ mod tests {
             artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
             child: Mutex::new(None),
             process_group: Pid::from_raw(0),
+            guardian_reap_audit: None,
             liveness: Mutex::new(Some(liveness)),
             shutdown: Mutex::new(None),
         };
@@ -434,6 +450,16 @@ mod tests {
             .unwrap();
         let process_group = Pid::from_raw(child.id().unwrap() as i32);
         let (liveness, _peer) = StandardUnixStream::pair().unwrap();
+        let directory = tempfile::tempdir().unwrap();
+        let guardian_reap_audit =
+            crate::guardian_reap_audit::GuardianReapAudit::read_environment(|name| {
+                Some(if name.ends_with("REAPS") {
+                    directory.path().as_os_str().to_owned()
+                } else {
+                    "0123456789abcdef0123456789abcdef".into()
+                })
+            })
+            .unwrap();
         let browser = Chromium {
             connection: Connection::new(tokio::io::empty(), tokio::io::sink()),
             version: String::new(),
@@ -442,6 +468,7 @@ mod tests {
             artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
             child: Mutex::new(Some(child)),
             process_group,
+            guardian_reap_audit,
             liveness: Mutex::new(Some(liveness)),
             shutdown: Mutex::new(None),
         };
@@ -451,6 +478,57 @@ mod tests {
                 .is_err()
         );
         browser.close().await.unwrap();
+        let receipt = directory
+            .path()
+            .join(format!("guardian-{}.json", process_group.as_raw()));
+        let bytes = std::fs::read(&receipt).unwrap();
         browser.close().await.unwrap();
+        drop(browser);
+        assert_eq!(std::fs::read(&receipt).unwrap(), bytes);
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 1);
+    }
+
+    #[tokio::test]
+    async fn drop_records_original_guardian_after_artifacts_finish() {
+        let directory = tempfile::tempdir().unwrap();
+        let child = Command::new("true").spawn().unwrap();
+        let process = child.id().unwrap();
+        let audit = crate::guardian_reap_audit::GuardianReapAudit::read_environment(|name| {
+            Some(if name.ends_with("REAPS") {
+                directory.path().as_os_str().to_owned()
+            } else {
+                "0123456789abcdef0123456789abcdef".into()
+            })
+        })
+        .unwrap();
+        let browser = Chromium {
+            connection: Connection::new(tokio::io::empty(), tokio::io::sink()),
+            version: String::new(),
+            headless: true,
+            artifacts_directory: PathBuf::new(),
+            artifact_jobs: Arc::new(tokio::sync::RwLock::new(())),
+            child: Mutex::new(Some(child)),
+            process_group: Pid::from_raw(process as i32),
+            guardian_reap_audit: audit,
+            liveness: Mutex::new(None),
+            shutdown: Mutex::new(None),
+        };
+        let artifacts = browser.artifact_jobs.clone().read_owned().await;
+        drop(browser);
+        tokio::task::yield_now().await;
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+        drop(artifacts);
+        let receipt = directory.path().join(format!("guardian-{process}.json"));
+        timeout(Duration::from_secs(2), async {
+            while !receipt.is_file() {
+                tokio::time::sleep(Duration::from_millis(5)).await;
+            }
+        })
+        .await
+        .unwrap();
+        let record: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(receipt).unwrap()).unwrap();
+        assert_eq!(record["guardianProcess"], process);
+        assert_eq!(record["code"], 0);
     }
 }

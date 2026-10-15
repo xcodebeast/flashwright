@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-original-guardian-wait-and-prospective-native-birth-link",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "baseCommit": "b6dac1877fe13c4b262cf6333626988576739c48",
+  "sourceFiles": {
+    "crates/flashwright-browser/src/guardian_reap_audit.rs": "954a63e337d04c7096cfea48d3fb184232281a35704c7ee63b650951ed43dac3",
+    "crates/flashwright-browser/src/chromium.rs": "15bf3bcf0afca3af425fdd446202bb3bfa141250103b463bfb7bf30b03e4b78e",
+    "crates/flashwright-browser/src/lib.rs": "4f0eecc2a051c2032fad494e5a10dd3505ba22b9ff5447a480d78f3af12efbd7",
+    "SPECS.md": "66f596452f6138d6b51306f675d47d5e2461f1ee0cfb87897956ff6bfea7d70f"
+  },
+  "change": "Add opt-in driver receipt after the existing original guardian Child wait, for close and Drop cleanup. Preserve shutdown outcomes on diagnostic failure. A private prospective identity reader also retains kernel process birth ticks inside matching identity snapshots.",
+  "verification": {
+    "browserTests": {
+      "passed": 85,
+      "failed": 0,
+      "ignored": 1,
+      "ignoredReason": "Existing direct CDP fixture test requires an explicit probe report directory.",
+      "command": "CARGO_INCREMENTAL=0 cargo test --locked -p flashwright-browser",
+      "logSha256": "64dcab9ee0a25b2a45de216088273ea088b9c45631ee03e26f0666d0d8fae344",
+      "focusedCases": [
+        "original identity and terminal status with monotonic interval and private exclusive file",
+        "cached status cannot produce a new receipt",
+        "external reaper cannot produce a terminal receipt",
+        "publication failure preserves actual signal exit",
+        "cancelled and repeated close retains exactly one receipt",
+        "Drop waits for physical artifact leases before publishing"
+      ]
+    },
+    "lint": {
+      "command": "cargo clippy --locked -p flashwright-browser --all-targets -- -D warnings",
+      "status": "passed",
+      "logSha256": "840ad578e0ff7b908bfa93e5078299a1d3e35a34bf66b8081915c33003e378b3",
+      "initialFailure": "Pinned libc marks stable Mach bindings deprecated in favor of a different binding crate. A function-scoped deprecation allowance documents the exact-clock choice; no general warning suppression."
+    },
+    "format": {
+      "command": "cargo fmt --all -- --check",
+      "status": "passed"
+    },
+    "build": {
+      "command": "bun tools/build-driver.mjs",
+      "status": "passed",
+      "logSha256": "7f34177c161d92876a43f765fc3f216d50b71f79dcdecc5bb0175b835726ee5b",
+      "warning": "Existing vendored hyper-util unused timer warning.",
+      "driverSha256": "62ffb0b6becb022b9579367846e5f47f1c4e8c0f023599b78b5b27820da7c1ba"
+    },
+    "kernelIdentity": {
+      "status": "passed",
+      "layout": {
+        "size": 296,
+        "startTicksOffset": 80,
+        "version": 4
+      },
+      "independentCProbeMatches": 2,
+      "deadProcessRejected": true,
+      "closedReaderRejected": true,
+      "reportSha256": "a02be2e19d548aa437c324601455ca4516cf08563724c35ef3bd7058b13eced8"
+    },
+    "browserSmoke": {
+      "status": "passed",
+      "preparation": "Navigate to a data URL, create a fresh context/page, click a real button and check its changed text, close context and browser.",
+      "nativeRecordCount": 7,
+      "nativeRootChildLaunches": 3,
+      "guardianExitCode": 0,
+      "nativeCaptureStatus": "captured",
+      "shutdownDrainComplete": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "watchdogCpuMethod": "atomic-wait4-original-owner",
+      "reportSha256": "bb73229b165756e18afd2b2a9ec9649a9c96f6c65c3313114f0dec348745fa60",
+      "resourcesSha256": "725052e49425004c76fe726ef8656ea142f817ff7f187cdae0aa51594612c01f",
+      "guardianReceiptSha256": "d435cc2ce66d1a88f277ab6fe4990f709e968cd6bd606aca90992e60f722c917",
+      "inputsUnchangedBeforeAndAfter": true,
+      "earlierAttempts": [
+        "Direct source import failed before browser launch because runtime-version.cjs is generated during package build; switched to the existing built package.",
+        "An initial browser smoke used unavailable page.setContent; failed with normal cleanup. A separate fresh smoke used navigation. Both original failures are retained.",
+        "A navigation smoke passed before adding the external-reaper unit test. Final source and driver hashes were frozen and checked again with a fresh smoke."
+      ]
+    },
+    "bridgeCorruptionControls": {
+      "rejected": 22,
+      "cases": [
+        "missing birth ticks",
+        "different native root birth",
+        "future live process birth",
+        "wrong live parent",
+        "wrong parent image version",
+        "late identity query",
+        "missing guardian receipt",
+        "wrong guardian",
+        "wrong driver",
+        "wrong session",
+        "wrong wait method",
+        "wrong clock",
+        "failed guardian",
+        "wrong raw status",
+        "signaled guardian",
+        "reversed wait interval",
+        "wait outside close",
+        "failed browser capture",
+        "different original browser",
+        "incomplete capture drain",
+        "native reap after guardian completion",
+        "different native timebase"
+      ],
+      "reportSha256": "f1869f804b2b91935de24f1a952674036f4e40a11d0a32af3d4f97c762a8ab46"
+    },
+    "review": "Independent read-only review found no actionable defect in original Child custody, cached-status exclusion, close/Drop ordering or clock conversion."
+  },
+  "limitations": [
+    "Guardian receipt records the existing Child wait observation, not an atomic CPU syscall.",
+    "Native birth-link reader and corruption checks remain private prospective instrumentation; the production final resource adapter still needs strict raw ownership reconstruction.",
+    "A successful smoke does not prove complete owner/runner/worker/backend/native coverage or comparative performance.",
+    "Page.setContent remains a planned, unverified parity item.",
+    "Native Linux verification remains unperformed."
+  ],
+  "comparativePerformanceAdmission": false,
+  "completeTreeCoverageAdmission": false,
+  "nativeLinuxVerified": false
+}
