@@ -1,0 +1,641 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-guardian-exit-notification-macos",
+  "platform": "darwin-arm64",
+  "scope": "Guardian exit detection and unchanged original browser/group/profile custody. No complete-suite speed admission.",
+  "implementation": {
+    "source": "crates/flashwright-browser/src/supervision.rs",
+    "sourceSha256": "5bcecf66035cc331482d75c4f178e2e08b13a941caaf9bebf57d62cacd2e9380",
+    "normalExit": "Blocking WEXITED|WNOWAIT observer wakes the guardian channel; custodian terminates the owned process group before its sole original reap.",
+    "deadline": "Original five-second absolute graceful deadline, parent-loss handling and artifact liveness leases retained.",
+    "darwinStoppedStatus": "A nonterminal status from blocking waitid retries in the observer after 50 ms; the independent guardian deadline remains active.",
+    "additionalGuardianThreads": 1
+  },
+  "drivers": {
+    "baseline": {
+      "sha256": "3eb028205105700c432b6225e70e4db1ce6db3cc1ba6a70fe5529aac4c03810f"
+    },
+    "candidate": {
+      "sha256": "452b5fac37f1fd1370550fb436ff020aed8ab8d488424852d9f27bcbf9686c15"
+    }
+  },
+  "verification": {
+    "rustWorkspacePassed": 487,
+    "rustWorkspaceIgnored": 1,
+    "browserClippyWarningsDenied": true,
+    "nativeGuardianScenariosPassed": 4,
+    "bunBrowserLifecycleScenariosPassed": 47,
+    "nodeLifecycle": {
+      "22.22.0": 20,
+      "24.15.0": 20
+    },
+    "realChromiumSamples": 32,
+    "commands": [
+      "cargo test --locked --workspace",
+      "cargo clippy --locked -p flashwright-browser --all-targets -- -D warnings",
+      "python3 tools/run-python-tests.py --start-directory compatibility/m1 --pattern test_guardian_shutdown.py",
+      "python3 tools/run-python-tests.py --start-directory compatibility/m1 --pattern test_lifecycle.py",
+      "python3 tools/run-python-tests.py --start-directory compatibility/m1 --pattern test_public_lifecycle.py",
+      "python3 tools/run-python-tests.py --start-directory compatibility/m1 --pattern test_driver_protocol.py",
+      "python3 tools/run-python-tests.py --start-directory compatibility/m1 --pattern test_downloads.py"
+    ],
+    "runtimeNotes": "Process/driver/download gates used Bun1.4.2; process/public lifecycle also used Node22.22.0 and24.15.0. Every Python group ran under an external watchdog."
+  },
+  "controlledGuardianProbe": {
+    "trials": 32,
+    "metric": "Child marker immediately before exit to acknowledgment after native group cleanup and reap.",
+    "blocks": [
+      {
+        "block": 0,
+        "variant": "baseline",
+        "medianMarkerToAcknowledgmentMilliseconds": 34.130333,
+        "medianCompleteMilliseconds": 101.328521
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "medianMarkerToAcknowledgmentMilliseconds": 1.155375,
+        "medianCompleteMilliseconds": 77.49306200000001
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "medianMarkerToAcknowledgmentMilliseconds": 1.0967085,
+        "medianCompleteMilliseconds": 77.56299999999999
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "medianMarkerToAcknowledgmentMilliseconds": 25.260021000000002,
+        "medianCompleteMilliseconds": 101.54264599999999
+      }
+    ],
+    "samples": [
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0,
+        "markerToAcknowledgmentMilliseconds": 53.108209,
+        "completeMilliseconds": 101.218833,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.007,
+        "markerToAcknowledgmentMilliseconds": 45.310833,
+        "completeMilliseconds": 107.383416,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.013,
+        "markerToAcknowledgmentMilliseconds": 38.958,
+        "completeMilliseconds": 101.438209,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.021,
+        "markerToAcknowledgmentMilliseconds": 29.302666,
+        "completeMilliseconds": 99.727166,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.029,
+        "markerToAcknowledgmentMilliseconds": 20.307042,
+        "completeMilliseconds": 108.791333,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.037,
+        "markerToAcknowledgmentMilliseconds": 13.129167,
+        "completeMilliseconds": 95.870334,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.043,
+        "markerToAcknowledgmentMilliseconds": 7.274417,
+        "completeMilliseconds": 100.830667,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "delaySeconds": 0.049,
+        "markerToAcknowledgmentMilliseconds": 56.11575,
+        "completeMilliseconds": 150.899542,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0,
+        "markerToAcknowledgmentMilliseconds": 0.931083,
+        "completeMilliseconds": 46.150792,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.007,
+        "markerToAcknowledgmentMilliseconds": 1.211041,
+        "completeMilliseconds": 56.910209,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.013,
+        "markerToAcknowledgmentMilliseconds": 1.154875,
+        "completeMilliseconds": 63.502458,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.021,
+        "markerToAcknowledgmentMilliseconds": 1.073042,
+        "completeMilliseconds": 72.861208,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.029,
+        "markerToAcknowledgmentMilliseconds": 1.305833,
+        "completeMilliseconds": 82.124916,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.037,
+        "markerToAcknowledgmentMilliseconds": 1.155875,
+        "completeMilliseconds": 104.2885,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.043,
+        "markerToAcknowledgmentMilliseconds": 1.265083,
+        "completeMilliseconds": 92.813334,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "delaySeconds": 0.049,
+        "markerToAcknowledgmentMilliseconds": 1.125125,
+        "completeMilliseconds": 100.456916,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.049,
+        "markerToAcknowledgmentMilliseconds": 1.237041,
+        "completeMilliseconds": 101.033666,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.043,
+        "markerToAcknowledgmentMilliseconds": 1.041209,
+        "completeMilliseconds": 94.751167,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.037,
+        "markerToAcknowledgmentMilliseconds": 1.201792,
+        "completeMilliseconds": 89.428375,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.029,
+        "markerToAcknowledgmentMilliseconds": 1.073584,
+        "completeMilliseconds": 78.462792,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.021,
+        "markerToAcknowledgmentMilliseconds": 1.119833,
+        "completeMilliseconds": 76.663208,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.013,
+        "markerToAcknowledgmentMilliseconds": 1.665416,
+        "completeMilliseconds": 75.632167,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0.007,
+        "markerToAcknowledgmentMilliseconds": 1.058875,
+        "completeMilliseconds": 56.27525,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "delaySeconds": 0,
+        "markerToAcknowledgmentMilliseconds": 0.846875,
+        "completeMilliseconds": 46.807,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.049,
+        "markerToAcknowledgmentMilliseconds": 1.283833,
+        "completeMilliseconds": 99.849125,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.043,
+        "markerToAcknowledgmentMilliseconds": 7.292834,
+        "completeMilliseconds": 99.38775,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.037,
+        "markerToAcknowledgmentMilliseconds": 13.186833,
+        "completeMilliseconds": 101.350625,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.029,
+        "markerToAcknowledgmentMilliseconds": 21.272625,
+        "completeMilliseconds": 102.25775,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.021,
+        "markerToAcknowledgmentMilliseconds": 29.247417,
+        "completeMilliseconds": 101.734667,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.013,
+        "markerToAcknowledgmentMilliseconds": 38.415209,
+        "completeMilliseconds": 116.541834,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0.007,
+        "markerToAcknowledgmentMilliseconds": 44.234292,
+        "completeMilliseconds": 97.517792,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "delaySeconds": 0,
+        "markerToAcknowledgmentMilliseconds": 55.205625,
+        "completeMilliseconds": 102.280541,
+        "originalReapVerified": true,
+        "profileLeaseAndCleanupVerified": true
+      }
+    ],
+    "rawReportSha256": "226b59c7f6098956467b78416f38cb3c8e29ba9177ef0a238051dcf4de0517c7"
+  },
+  "realBrowserClose": {
+    "trials": 32,
+    "browserSha256": "aa25f2e795c02d5cb5ef5d6987745cc5bbe7d8bea58827390c7a4c81c8d2dd7b",
+    "metric": "browser.close RPC elapsed time on a newly launched stock Chromium headless shell with a fresh context/page and evaluation; ownership/profile cleanup independently checked afterward.",
+    "blocks": [
+      {
+        "block": 0,
+        "variant": "baseline",
+        "medianBrowserCloseMilliseconds": 71.883041
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "medianBrowserCloseMilliseconds": 30.2446665
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "medianBrowserCloseMilliseconds": 29.240354500000002
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "medianBrowserCloseMilliseconds": 71.426729
+      }
+    ],
+    "samples": [
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 0,
+        "browserCloseMilliseconds": 71.600041,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 1,
+        "browserCloseMilliseconds": 73.249,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 2,
+        "browserCloseMilliseconds": 72.166041,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 3,
+        "browserCloseMilliseconds": 70.516708,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 4,
+        "browserCloseMilliseconds": 72.559792,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 5,
+        "browserCloseMilliseconds": 67.12025,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 6,
+        "browserCloseMilliseconds": 70.717667,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 0,
+        "variant": "baseline",
+        "sample": 7,
+        "browserCloseMilliseconds": 90.079375,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 0,
+        "browserCloseMilliseconds": 29.602167,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 1,
+        "browserCloseMilliseconds": 30.933333,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 2,
+        "browserCloseMilliseconds": 35.95725,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 3,
+        "browserCloseMilliseconds": 29.702083,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 4,
+        "browserCloseMilliseconds": 28.306583,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 5,
+        "browserCloseMilliseconds": 30.78725,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 6,
+        "browserCloseMilliseconds": 31.818583,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 1,
+        "variant": "candidate",
+        "sample": 7,
+        "browserCloseMilliseconds": 29.231292,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 0,
+        "browserCloseMilliseconds": 32.907708,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 1,
+        "browserCloseMilliseconds": 28.4045,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 2,
+        "browserCloseMilliseconds": 29.190459,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 3,
+        "browserCloseMilliseconds": 29.8185,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 4,
+        "browserCloseMilliseconds": 29.131083,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 5,
+        "browserCloseMilliseconds": 35.941875,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 6,
+        "browserCloseMilliseconds": 28.742167,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 2,
+        "variant": "candidate",
+        "sample": 7,
+        "browserCloseMilliseconds": 29.29025,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 0,
+        "browserCloseMilliseconds": 72.100542,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 1,
+        "browserCloseMilliseconds": 72.531375,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 2,
+        "browserCloseMilliseconds": 69.729875,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 3,
+        "browserCloseMilliseconds": 71.361875,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 4,
+        "browserCloseMilliseconds": 71.491583,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 5,
+        "browserCloseMilliseconds": 70.156125,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 6,
+        "browserCloseMilliseconds": 67.4035,
+        "originalCleanupVerified": true
+      },
+      {
+        "block": 3,
+        "variant": "baseline",
+        "sample": 7,
+        "browserCloseMilliseconds": 71.578208,
+        "originalCleanupVerified": true
+      }
+    ],
+    "rawReportSha256": "cb27a3e9237586fb47639e18c83fae4afca26a948cb366f5ba7055e031bc48f9"
+  },
+  "retainedExcludedAttempt": {
+    "trials": 32,
+    "reason": "First controlled probe overlapped a Clippy job; retained separately and replaced with a complete balanced repeat after all build/check jobs finished.",
+    "rawReportSha256": "d962e5478d1574d133566c93ffa8e970160030ea5b0b24a977effb139edb5ab2"
+  },
+  "limitations": [
+    "One native macOS arm64 host; Linux remains unverified.",
+    "Two balanced block pairs with eight samples per block, not a broad statistical performance claim.",
+    "Controlled marker timing includes the small interval before actual child exit.",
+    "Real-browser timing covers close RPC only, not complete-suite execution.",
+    "No test-body, browser-readiness, artifact or failure-isolation shortcut."
+  ],
+  "e2ePerformanceAdmission": false,
+  "nativeLinuxVerified": false,
+  "receipts": {
+    "workspace-tests.log": "5beeed5c8c4aa6813ffc825b34004649b9df5be8078acfc13e6935d36b6e71c8",
+    "clippy.log": "a88edbc60b24fa2aa1a356a7c417d58485371dad73850f34d265300fe95665f9",
+    "guardian-functional.log": "f3d40d425c056e7d47e865748da66497d35e274ff1907c20a6c9d2706204ad96",
+    "lifecycle-report.json": "94912b0d5920f2c3984fe61dc435e014948f95ff134ae07fc67cd040db7697e7",
+    "node-lifecycle-report.json": "46b186515071597608eeaa2c1acda674ffc318163c85cb406dfa9420a13d423a",
+    "final-build.log": "27a23df921029805cd2a0dbe065287b886c9eee99208541c7adea36ca704a65c"
+  }
+}

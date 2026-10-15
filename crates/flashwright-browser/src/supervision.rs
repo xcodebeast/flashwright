@@ -20,6 +20,7 @@ pub(crate) const GRACEFUL_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
 enum GuardianEvent {
     GracefulShutdown,
     ParentLost { node: bool },
+    BrowserExitObserved(std::io::Result<()>),
 }
 
 /// Keep the browser leader unreaped until its process group has stopped, even
@@ -187,6 +188,13 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         );
     }
     let (lost_parent, events) = mpsc::channel();
+    let exit_sender = lost_parent.clone();
+    let exit_observer = std::thread::Builder::new()
+        .name("browser-exit-observer".into())
+        .spawn(move || {
+            let result = wait_for_child_exit_without_reaping(browser_group);
+            let _ = exit_sender.send(GuardianEvent::BrowserExitObserved(result));
+        })?;
     for (descriptor, node_pipe) in std::iter::once((driver_liveness, false))
         .chain(node_liveness.map(|descriptor| (descriptor, true)))
     {
@@ -223,12 +231,21 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
     }
     drop(lost_parent);
     let mut browser_exited = false;
-    let mut shutdown_deadline = None;
+    let mut browser_exit_observed = false;
+    let mut shutdown_deadline: Option<Instant> = None;
     let mut browser_reap_announced = false;
     let mut browser_terminated = false;
     loop {
         // Do not reap the browser before signalling its group: its unreaped PID protects ownership.
-        match events.recv_timeout(Duration::from_millis(50)) {
+        let event = match shutdown_deadline.filter(|_| !browser_exited) {
+            Some(deadline) => {
+                events.recv_timeout(deadline.saturating_duration_since(Instant::now()))
+            }
+            None => events
+                .recv()
+                .map_err(|_| mpsc::RecvTimeoutError::Disconnected),
+        };
+        match event {
             Ok(GuardianEvent::GracefulShutdown) => {
                 shutdown_deadline.get_or_insert_with(|| Instant::now() + GRACEFUL_SHUTDOWN_TIMEOUT);
             }
@@ -250,13 +267,22 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
                 }
                 break;
             }
+            Ok(GuardianEvent::BrowserExitObserved(result)) => {
+                // A deadline or lost parent can reap the child while the observer
+                // is waking. Only observation errors before our reap are failures.
+                if !browser_exited {
+                    result?;
+                    browser_exit_observed = true;
+                }
+            }
             Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => break,
         }
         if !browser_exited {
-            let exited = child_exited_without_reaping(browser_group)?;
             let expired = shutdown_deadline.is_some_and(|deadline| Instant::now() >= deadline);
-            if exited || expired {
+            if browser_exit_observed || expired {
+                // Preserve the natural-exit result if exit and the deadline race.
+                let exited = browser_exit_observed || child_exited_without_reaping(browser_group)?;
                 browser_terminated = !exited;
                 crate::process_group::terminate(browser_group)?;
                 browser.wait()?;
@@ -289,6 +315,9 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         crate::process_group::terminate(browser_group)?;
         browser.wait()?;
     }
+    exit_observer
+        .join()
+        .map_err(|_| std::io::Error::other("browser exit observer panicked"))?;
     browser.finish_capture()?;
     drop(browser);
     profile.close()?;
@@ -304,8 +333,28 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
 
 /// Keep the owned child's PID reserved until its whole process group has been terminated.
 /// nix does not expose waitid on macOS, so this small wrapper covers both supported platforms.
-#[allow(unsafe_code)]
 pub(crate) fn child_exited_without_reaping(process: Pid) -> std::io::Result<bool> {
+    observe_child_exit(process, nix::libc::WNOHANG)
+}
+
+/// Blocking observation leaves the main guardian free to handle parent loss and
+/// deadlines. Only BrowserCustody reaps, after terminating the owned group.
+fn wait_for_child_exit_without_reaping(process: Pid) -> std::io::Result<()> {
+    loop {
+        match observe_child_exit(process, 0) {
+            Ok(true) => return Ok(()),
+            // Darwin can return a stopped status even for a blocking WEXITED
+            // wait. Avoid spinning on that unconsumed status; ordinary exits
+            // wake directly from the kernel and never use this retry delay.
+            Ok(false) => std::thread::sleep(Duration::from_millis(50)),
+            Err(error) if error.kind() == std::io::ErrorKind::Interrupted => {}
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+#[allow(unsafe_code)]
+fn observe_child_exit(process: Pid, wait_options: nix::libc::c_int) -> std::io::Result<bool> {
     let mut information = std::mem::MaybeUninit::<nix::libc::siginfo_t>::zeroed();
     // SAFETY: waitid writes to a correctly sized C structure. Zero initialization also covers
     // WNOHANG's no-event result; WNOWAIT deliberately leaves this exclusively owned child unreaped.
@@ -314,7 +363,7 @@ pub(crate) fn child_exited_without_reaping(process: Pid) -> std::io::Result<bool
             nix::libc::P_PID,
             process.as_raw() as nix::libc::id_t,
             information.as_mut_ptr(),
-            nix::libc::WEXITED | nix::libc::WNOHANG | nix::libc::WNOWAIT,
+            nix::libc::WEXITED | nix::libc::WNOWAIT | wait_options,
         )
     };
     if result < 0 {
@@ -334,6 +383,123 @@ pub(crate) fn child_exited_without_reaping(process: Pid) -> std::io::Result<bool
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn exit_observation_preserves_the_original_exit_for_the_custodian() {
+        let child = Command::new("sh")
+            .args(["-c", "read value; exit 7"])
+            .stdin(Stdio::piped())
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let mut custody = BrowserCustody {
+            child,
+            capture: None,
+            reaped: false,
+        };
+        let process = Pid::from_raw(custody.id() as i32);
+        let (sender, receiver) = mpsc::channel();
+        let observer = std::thread::spawn(move || {
+            sender
+                .send(wait_for_child_exit_without_reaping(process))
+                .unwrap();
+        });
+        assert!(matches!(
+            receiver.recv_timeout(Duration::from_millis(20)),
+            Err(mpsc::RecvTimeoutError::Timeout)
+        ));
+        custody
+            .child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(b"done\n")
+            .unwrap();
+        receiver
+            .recv_timeout(Duration::from_secs(3))
+            .unwrap()
+            .unwrap();
+        observer.join().unwrap();
+        assert!(child_exited_without_reaping(process).unwrap());
+        assert!(child_exited_without_reaping(process).unwrap());
+        assert_eq!(custody.wait().unwrap().code(), Some(7));
+    }
+
+    #[test]
+    fn stopped_child_does_not_complete_exit_observation() {
+        let child = Command::new("sleep")
+            .arg("30")
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let mut custody = BrowserCustody {
+            child,
+            capture: None,
+            reaped: false,
+        };
+        let process = Pid::from_raw(custody.id() as i32);
+        kill(process, Signal::SIGSTOP).unwrap();
+        let (sender, receiver) = mpsc::channel();
+        let observer = std::thread::spawn(move || {
+            sender
+                .send(wait_for_child_exit_without_reaping(process))
+                .unwrap();
+        });
+        assert!(matches!(
+            receiver.recv_timeout(Duration::from_millis(100)),
+            Err(mpsc::RecvTimeoutError::Timeout)
+        ));
+        assert!(!child_exited_without_reaping(process).unwrap());
+        kill(process, Signal::SIGCONT).unwrap();
+        assert!(matches!(
+            receiver.recv_timeout(Duration::from_millis(20)),
+            Err(mpsc::RecvTimeoutError::Timeout)
+        ));
+        kill(process, Signal::SIGKILL).unwrap();
+        receiver
+            .recv_timeout(Duration::from_secs(3))
+            .unwrap()
+            .unwrap();
+        observer.join().unwrap();
+        assert!(child_exited_without_reaping(process).unwrap());
+        assert!(!custody.wait().unwrap().success());
+    }
+
+    #[test]
+    fn custodian_can_reap_while_exit_observer_is_waiting() {
+        let child = Command::new("sleep")
+            .arg("30")
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let mut custody = BrowserCustody {
+            child,
+            capture: None,
+            reaped: false,
+        };
+        let process = Pid::from_raw(custody.id() as i32);
+        let (sender, receiver) = mpsc::channel();
+        let (started, waiting) = mpsc::channel();
+        let observer = std::thread::spawn(move || {
+            started.send(()).unwrap();
+            sender
+                .send(wait_for_child_exit_without_reaping(process))
+                .unwrap();
+        });
+        waiting.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(matches!(
+            receiver.recv_timeout(Duration::from_millis(20)),
+            Err(mpsc::RecvTimeoutError::Timeout)
+        ));
+        kill(process, Signal::SIGKILL).unwrap();
+        custody.wait().unwrap();
+        let observation = receiver.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(
+            observation.is_ok()
+                || observation.unwrap_err().raw_os_error() == Some(nix::libc::ECHILD)
+        );
+        observer.join().unwrap();
+    }
 
     #[test]
     fn guardian_error_retains_custody_until_browser_termination_and_reap() {
