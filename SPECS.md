@@ -799,6 +799,8 @@ Core verification runs against the explicitly selected pinned stock Chromium dis
 
 Intentional process-fault lifecycle fixtures disable core dumps only in their spawned worker tree before executing the selected runtime. Host dump handlers can otherwise delay renderer termination and crash notification beyond the fixture deadline. Preserve the original worker PID/session, crash assertions and cleanup deadlines; do not change system dump settings or ordinary product launch behavior.
 
+Rendering-opportunity fixtures observe self-chained animation callbacks with explicit sequence numbers and finite, nondecreasing exposed timestamps. Browser privacy rounding can assign equal timestamps to distinct callback batches; strict timestamp increase is not a frame-identity check. Bound these fixture animations by real elapsed time so faster callback scheduling cannot exhaust them before trace setup. Callback observations do not prove presentation or filmstrip capture: retain independent verification of the actual trace archive and its required frames.
+
 a. Rust formatting/lint/unit/integration, TypeScript declaration/runtime checks and reproducible locked builds
 b. Differential API fixtures for supported defaults/options, return/error values, locators, events, callbacks, input, navigation and artifacts; compare semantic outcomes with S4's permitted sampling differences
 c. Cancellation/deadline races, blocked outgoing pipe, blocked renderer/Rust/Node worker, stale generations, crashes/disconnects, callback rejection and resource cleanup

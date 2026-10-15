@@ -190,21 +190,22 @@ export async function publicAriaSnapshotTraceCase(browser, engine, path) {
     await markup(page, '<button>Trace snapshot</button>');
     // Observe frame callbacks before tracing so rendering opportunities add no DOM snapshot actions.
     let tracingStarted = false;
-    const paintTimestamps = [];
+    const paintCallbacks = [];
     let painted;
     const paintCompleted = new Promise(resolve => { painted = resolve; });
     page.on('console', message => {
-      if (!tracingStarted || paintTimestamps.length === 4 || !message.text().startsWith('public-aria-paint:')) return;
-      paintTimestamps.push(Number(message.text().slice('public-aria-paint:'.length)));
-      if (paintTimestamps.length === 4) painted();
+      if (!tracingStarted || paintCallbacks.length === 4 || !message.text().startsWith('public-aria-paint:')) return;
+      paintCallbacks.push(JSON.parse(message.text().slice('public-aria-paint:'.length)));
+      if (paintCallbacks.length === 4) painted();
     });
     await page.evaluate(() => {
       const button = document.querySelector('button');
+      const started = performance.now();
       let count = 0;
       const paint = timestamp => {
         button.style.backgroundColor = ++count % 2 ? 'rgb(255,0,0)' : 'rgb(0,0,255)';
-        console.log('public-aria-paint:' + timestamp);
-        if (count < 300) requestAnimationFrame(paint);
+        console.log('public-aria-paint:' + JSON.stringify({ sequence: count, timestamp }));
+        if (performance.now() - started < 5000) requestAnimationFrame(paint);
       };
       requestAnimationFrame(paint);
     });
@@ -213,12 +214,16 @@ export async function publicAriaSnapshotTraceCase(browser, engine, path) {
     let paintDeadline;
     try {
       await Promise.race([paintCompleted, new Promise((_, reject) => {
-        paintDeadline = setTimeout(() => reject(new Error('ARIA filmstrip fixture did not observe four increasing frame callbacks')), 2000);
+        paintDeadline = setTimeout(() => reject(new Error('ARIA filmstrip fixture did not observe four consecutive animation callbacks')), 2000);
       })]);
     } finally { clearTimeout(paintDeadline); tracingStarted = false; }
-    assert.equal(paintTimestamps.length, 4);
-    assert.ok(paintTimestamps.every((timestamp, index) => Number.isFinite(timestamp)
-      && (index === 0 || timestamp > paintTimestamps[index - 1])));
+    assert.equal(paintCallbacks.length, 4);
+    // Exposed timestamps are privacy-rounded; callback sequence is independent of that precision.
+    // Actual filmstrip capture is checked separately in the retained trace archive.
+    assert.ok(paintCallbacks.every(({ sequence, timestamp }, index) => Number.isSafeInteger(sequence)
+      && sequence > 0 && Number.isFinite(timestamp)
+      && (index === 0 || (sequence === paintCallbacks[index - 1].sequence + 1
+        && timestamp >= paintCallbacks[index - 1].timestamp))));
     const pageSnapshot = await page.ariaSnapshot();
     const locatorSnapshot = await page.locator('button').ariaSnapshot({ boxes: true });
     assert.match(pageSnapshot, /Trace snapshot/); assert.match(locatorSnapshot, /Trace snapshot/);
