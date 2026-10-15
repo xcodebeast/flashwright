@@ -4,19 +4,32 @@ import { existsSync, realpathSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { extname, isAbsolute, relative, resolve, sep } from 'node:path';
 
-const usage = 'bun tools/compile-chromium-sources.mjs [--jobs=N] <chromium-source> <output-directory> <source-file> [source-file...]';
+const usage = 'bun tools/compile-chromium-sources.mjs [--jobs=N] [--single-pass-ninja=PATH] <chromium-source> <output-directory> <source-file> [source-file...]';
 const argumentsList = process.argv.slice(2);
 if (argumentsList.length === 1 && argumentsList[0] === '--help') {
-  console.log(`${usage}\n\nCompile every object for the named C/C++/Objective-C sources before a full build.\nPaths are relative to the Chromium source checkout. No executables are linked.\nSuccessful objects are reused by the next ordinary Ninja build.\nDefaults to at most eight compiler jobs; all independent errors are collected.`);
+  console.log(`${usage}\n\nCompile every object for the named C/C++/Objective-C sources before a full build.\nPaths are relative to the Chromium source checkout. No executables are linked.\nSuccessful objects are reused by the next ordinary Ninja build.\nDefaults to at most eight compiler jobs; all independent errors are collected.\n--single-pass-ninja selects Ninja 1.12.1 with tools/chromium/ninja-compile-sources.patch.\nIt resolves all source variants after regeneration in one graph load.`);
   process.exit(0);
 }
 let jobs = Math.min(8, availableParallelism());
-if (argumentsList[0]?.startsWith('--jobs=')) {
-  const value = argumentsList.shift().slice('--jobs='.length);
-  if (!/^[1-9][0-9]*$/.test(value) || !Number.isSafeInteger(Number(value))) {
-    throw new Error('--jobs must be a positive integer.');
+let singlePassNinja;
+const seenOptions = new Set();
+while (argumentsList[0]?.startsWith('--')) {
+  const argument = argumentsList.shift();
+  const separator = argument.indexOf('=');
+  const option = argument.slice(0, separator);
+  const value = argument.slice(separator + 1);
+  if (separator < 0 || !value || seenOptions.has(option)) throw new Error(usage);
+  seenOptions.add(option);
+  if (option === '--jobs') {
+    if (!/^[1-9][0-9]*$/.test(value) || !Number.isSafeInteger(Number(value))) {
+      throw new Error('--jobs must be a positive integer.');
+    }
+    jobs = Number(value);
+  } else if (option === '--single-pass-ninja') {
+    singlePassNinja = realpathSync(value);
+  } else {
+    throw new Error(usage);
   }
-  jobs = Number(value);
 }
 if (argumentsList.length < 3) throw new Error(usage);
 const sourceDirectory = realpathSync(argumentsList[0]);
@@ -30,7 +43,7 @@ function isInside(directory, path) {
 if (!isInside(sourceDirectory, outputDirectory) || !existsSync(resolve(outputDirectory, 'build.ninja'))) {
   throw new Error('Configure an output directory inside the Chromium checkout first.');
 }
-const ninja = resolve(sourceDirectory, 'third_party/ninja', process.platform === 'win32' ? 'ninja.exe' : 'ninja');
+const ninja = singlePassNinja ?? resolve(sourceDirectory, 'third_party/ninja', process.platform === 'win32' ? 'ninja.exe' : 'ninja');
 if (!existsSync(ninja)) throw new Error('The checkout must provide its pinned Ninja executable.');
 const sources = [...new Set(argumentsList.slice(2).map(name => {
   const path = realpathSync(resolve(sourceDirectory, name));
@@ -53,6 +66,10 @@ function runNinja(argumentsList, capture = false) {
 
 // Refresh GN's manifest before querying: an edited BUILD.gn may add another
 // compilation of the same source with different flags or a different toolchain.
+if (singlePassNinja) {
+  runNinja([`-j${jobs}`, '-k0', '--compile-sources', ...sources]);
+  process.exit(0);
+}
 runNinja([`-j${jobs}`, 'build.ninja']);
 const query = runNinja(['-t', 'query', ...sources], true);
 const objectsBySource = new Map(sources.map(source => [source, new Set()]));
