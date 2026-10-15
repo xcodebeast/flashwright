@@ -43,7 +43,9 @@ try {
       const before = performance.now();
       await command('start');
       await page.evaluate(() => { document.body.style.background = 'red'; });
-      await idle(200);
+      // Stock Linux Chromium can take more than 200 ms to deliver its initial
+      // screencast surface. This is capture setup, before the delayed-pull marker.
+      await idle(600);
       const marker = await client.request('context.trace.filmstrip.clock', { context: context.identifier }, 2000);
       await idle(300);
       const collectedAt = performance.now();
