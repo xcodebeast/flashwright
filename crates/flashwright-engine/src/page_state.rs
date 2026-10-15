@@ -36,6 +36,7 @@ pub(crate) struct PageState {
     pub diagnostic_session_destroyed: std::sync::atomic::AtomicBool,
     pub state: Mutex<DocumentState>,
     pub changed: watch::Sender<u64>,
+    pub context_closed: Option<watch::Receiver<Option<ErrorRecord>>>,
     pub locator_realms: tokio::sync::Mutex<HashMap<String, super::locators::LocatorRealm>>,
     pub evaluation_runtimes: Mutex<HashMap<String, Arc<super::evaluation::EvaluationRuntime>>>,
     pub handles: Mutex<HashMap<String, super::handles::Handle>>,
@@ -145,6 +146,7 @@ impl Default for PageState {
                 ..Default::default()
             }),
             changed: watch::channel(0).0,
+            context_closed: None,
             locator_realms: tokio::sync::Mutex::new(HashMap::new()),
             evaluation_runtimes: Mutex::new(HashMap::new()),
             handles: Mutex::new(HashMap::new()),
@@ -170,6 +172,7 @@ impl PageState {
         work: impl std::future::Future<Output = Result<T, ErrorRecord>>,
     ) -> Result<T, ErrorRecord> {
         let mut changes = self.changed.subscribe();
+        let mut parent = self.context_closed.clone();
         let lost = async {
             loop {
                 {
@@ -177,11 +180,14 @@ impl PageState {
                     if let Err(error) = state.check("page.evaluate") {
                         return error;
                     }
+                    if let Err(error) = check_parent(&parent, "page.evaluate") {
+                        return error;
+                    }
                     if !state.context_is_alive(context) {
                         return super::evaluation::context_destroyed();
                     }
                 }
-                if changes.changed().await.is_err() {
+                if lifecycle_change(&mut changes, &mut parent).await.is_err() {
                     return super::closed("page.evaluate");
                 }
             }
@@ -199,12 +205,16 @@ impl PageState {
         work: impl std::future::Future<Output = Result<T, ErrorRecord>>,
     ) -> Result<T, ErrorRecord> {
         let mut changes = self.changed.subscribe();
+        let mut parent = self.context_closed.clone();
         let lost = async {
             loop {
                 if let Err(error) = self.state.lock().unwrap().check(method) {
                     return error;
                 }
-                if changes.changed().await.is_err() {
+                if let Err(error) = check_parent(&parent, method) {
+                    return error;
+                }
+                if lifecycle_change(&mut changes, &mut parent).await.is_err() {
                     return super::closed(method);
                 }
             }
@@ -214,6 +224,33 @@ impl PageState {
             error = lost => Err(error),
             result = work => result,
         }
+    }
+}
+
+fn check_parent(
+    parent: &Option<watch::Receiver<Option<ErrorRecord>>>,
+    method: &str,
+) -> Result<(), ErrorRecord> {
+    if let Some(mut error) = parent.as_ref().and_then(|parent| parent.borrow().clone()) {
+        error.method = method.into();
+        return Err(error);
+    }
+    Ok(())
+}
+
+async fn lifecycle_change(
+    page: &mut watch::Receiver<u64>,
+    parent: &mut Option<watch::Receiver<Option<ErrorRecord>>>,
+) -> Result<(), watch::error::RecvError> {
+    let parent_changed = async {
+        match parent {
+            Some(parent) => parent.changed().await,
+            None => std::future::pending().await,
+        }
+    };
+    tokio::select! {
+        result = page.changed() => result,
+        result = parent_changed => result,
     }
 }
 
@@ -1060,6 +1097,98 @@ fn text(value: &Value, field: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn parent_closure_wakes_page_and_realm_waiters_without_page_events() {
+        let (parent, closure) = watch::channel(None);
+        let page = PageState {
+            context_closed: Some(closure),
+            ..PageState::default()
+        };
+        let realm = ExecutionContext {
+            session_identifier: "session".into(),
+            identifier: 1,
+            unique_identifier: "original".into(),
+            frame_identifier: "frame".into(),
+        };
+        page.state
+            .lock()
+            .unwrap()
+            .execution_contexts
+            .insert(realm.key(), realm.clone());
+        let close = async {
+            tokio::task::yield_now().await;
+            parent.send_replace(Some(crate::closed("context")));
+        };
+        let (page_result, realm_result, ()) =
+            tokio::time::timeout(std::time::Duration::from_secs(1), async {
+                tokio::join!(
+                    page.while_alive::<()>("page.screenshot", std::future::pending()),
+                    page.while_execution_context::<()>(&realm, std::future::pending()),
+                    close,
+                )
+            })
+            .await
+            .unwrap();
+        for (result, method) in [
+            (page_result, "page.screenshot"),
+            (realm_result, "page.evaluate"),
+        ] {
+            let error = result.unwrap_err();
+            assert_eq!(error.code, ErrorCode::TargetClosed);
+            assert_eq!(&*error.method, method);
+        }
+        let state = page.state.lock().unwrap();
+        assert!(state.failure.is_none());
+        assert!(state.context_is_alive(&realm));
+        assert_eq!(*page.changed.borrow(), 0);
+    }
+
+    #[tokio::test]
+    async fn parent_closure_precedes_realm_loss_without_replacing_original_page_failure() {
+        for parent_closed in [false, true] {
+            for page_failed in [false, true] {
+                let (parent, closure) = watch::channel(None);
+                let page = PageState {
+                    context_closed: Some(closure),
+                    ..PageState::default()
+                };
+                let realm = ExecutionContext {
+                    session_identifier: "session".into(),
+                    identifier: 1,
+                    unique_identifier: "destroyed".into(),
+                    frame_identifier: "frame".into(),
+                };
+                if page_failed {
+                    page.state.lock().unwrap().failure = Some(ErrorRecord::new(
+                        ErrorCode::ResourceLimit,
+                        "chromium",
+                        "original page failure",
+                    ));
+                }
+                if parent_closed {
+                    parent.send_replace(Some(crate::closed("context")));
+                }
+                let error = page
+                    .while_execution_context(&realm, async { Ok(()) })
+                    .await
+                    .unwrap_err();
+                assert_eq!(
+                    error.code,
+                    if page_failed {
+                        ErrorCode::ResourceLimit
+                    } else if parent_closed {
+                        ErrorCode::TargetClosed
+                    } else {
+                        ErrorCode::Evaluation
+                    }
+                );
+                if page_failed {
+                    assert_eq!(&*error.message, "original page failure");
+                }
+            }
+        }
+    }
 
     #[test]
     fn large_request_metadata_is_published_once_and_lifecycle_messages_keep_exact_references() {

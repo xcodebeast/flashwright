@@ -755,7 +755,7 @@ impl Engine {
             let mut document = page_state::DocumentState::with_network_budget(self.network_budget.clone());
             document.initialize_main_frame(&target_identifier, &session_identifier);
             document.interception = routing_state::RequestInterception::new(self.routing_budget.clone());
-            let state = Arc::new(PageState { purpose, state: Mutex::new(document), ..PageState::default() });
+            let state = Arc::new(PageState { purpose, state: Mutex::new(document), context_closed: Some(context.state.closed.subscribe()), ..PageState::default() });
             let page = Page { context_identifier: context_identifier.clone(), target_identifier: target_identifier.clone(), session_identifier: session_identifier.clone(), state: state.clone() };
             retained_page = Some(page.clone());
             let renderer = state.renderer_sessions.lock().unwrap().register_root(&target_identifier, &session_identifier)?;
