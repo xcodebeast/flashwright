@@ -253,6 +253,50 @@ async fn owned_event_burst_is_lossless_and_applied_before_the_following_reply() 
 }
 
 #[tokio::test]
+async fn coalesced_event_burst_allows_a_bounded_consumer_to_drain() {
+    let (host, peer) = duplex(1024 * 1024);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let (outgoing, mut incoming) = tokio::sync::mpsc::channel(128);
+    connection
+        .observe_events(move |event| {
+            if event.method != "Flashwright.disconnected" {
+                outgoing.try_send(event.sequence).map_err(|_| {
+                    ErrorRecord::new(
+                        ErrorCode::ResourceLimit,
+                        "event",
+                        "bounded consumer starved",
+                    )
+                })?;
+            }
+            Ok(())
+        })
+        .unwrap();
+    let consumer = tokio::spawn(async move {
+        for expected in 1..=2048 {
+            assert_eq!(incoming.recv().await, Some(expected));
+        }
+    });
+    let mut command = connection
+        .start_command("barrier", json!({}), None)
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let identifier = read_command(&mut reader).await["id"].as_u64().unwrap();
+    let mut burst = b"{\"method\":\"event\",\"params\":{}}\0".repeat(2048);
+    burst.extend_from_slice(format!("{{\"id\":{identifier},\"result\":{{}}}}\0").as_bytes());
+    writer.write_all(&burst).await.unwrap();
+    timeout(Duration::from_secs(2), command.response())
+        .await
+        .unwrap()
+        .unwrap();
+    timeout(Duration::from_secs(2), consumer)
+        .await
+        .unwrap()
+        .unwrap();
+}
+
+#[tokio::test]
 async fn owned_event_failure_invalidates_pending_work_with_its_original_error() {
     let (host, peer) = duplex(4096);
     let (reader, writer) = split(host);
