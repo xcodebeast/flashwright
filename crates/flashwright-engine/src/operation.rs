@@ -357,11 +357,31 @@ impl Operation {
         parameters: Value,
         kind: ResourceKind,
     ) -> Result<String, ErrorRecord> {
+        self.allocate_while_owner_alive(owner, method, parameters, kind, std::future::pending())
+            .await
+    }
+
+    /// Original-owner closure keeps the same late-reply custody as cancellation.
+    pub(crate) async fn allocate_while_owner_alive(
+        &self,
+        owner: &impl ResourceOwner,
+        method: &str,
+        parameters: Value,
+        kind: ResourceKind,
+        owner_closed: impl Future<Output = ErrorRecord>,
+    ) -> Result<String, ErrorRecord> {
         self.check()?;
         let mut request = owner.connection().start_command(method, parameters, None)?;
+        let interrupted = async {
+            tokio::select! {
+                biased;
+                error = self.cancelled() => error,
+                error = owner_closed => error,
+            }
+        };
         let result = tokio::select! {
             biased;
-            mut error = self.cancelled() => {
+            mut error = interrupted => {
                 if request.prevent_dispatch() {
                     error.cleanup = Some("notDispatched".into());
                     return Err(error);
@@ -851,6 +871,61 @@ mod tests {
             disposal.dispose(owner.as_ref(), "original-page").await,
             "browserClosedAfterDisposalFailure"
         );
+    }
+
+    #[tokio::test]
+    async fn original_context_closure_preserves_late_allocation_custody() {
+        for outcome in ["allocated", "rejected", "withheld"] {
+            let (owner, mut peer, _cancellation, operation) = setup();
+            let state = Arc::new(crate::context_state::ContextState::default());
+            let original_state = state.clone();
+            let original_owner = owner.clone();
+            let allocation = tokio::spawn(async move {
+                operation
+                    .allocate_while_owner_alive(
+                        original_owner.as_ref(),
+                        "Target.createTarget",
+                        json!({}),
+                        ResourceKind::Page,
+                        original_state.closure("context.newPage"),
+                    )
+                    .await
+            });
+            let creation = peer.command().await;
+            state.closed.send_replace(Some(crate::closed("context")));
+            assert!(!allocation.is_finished());
+            match outcome {
+                "allocated" => {
+                    peer.reply(&creation, json!({"targetId":"late-original-page"}))
+                        .await;
+                    let disposal = peer.command().await;
+                    assert_eq!(disposal["method"], "Target.closeTarget");
+                    assert_eq!(disposal["params"]["targetId"], "late-original-page");
+                    assert!(!allocation.is_finished());
+                    peer.reply(&disposal, json!({"success":true})).await;
+                }
+                "rejected" => {
+                    peer.writer.write_all(format!("{}\0", json!({"id":creation["id"],"error":{"code":-32602,"message":"browserContextId"}})).as_bytes()).await.unwrap();
+                }
+                _ => {}
+            }
+            let error = timeout(Duration::from_secs(2), allocation)
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap_err();
+            assert_eq!(error.code, ErrorCode::TargetClosed);
+            assert_eq!(error.method.as_ref(), "context.newPage");
+            assert_eq!(
+                error.cleanup.as_deref(),
+                Some(match outcome {
+                    "allocated" => "resourceDisposed",
+                    "rejected" => "allocationRejected",
+                    _ => "browserClosedAfterUnknownAllocation",
+                })
+            );
+            assert_eq!(owner.closed.load(Ordering::SeqCst), outcome == "withheld");
+        }
     }
 
     #[tokio::test]
