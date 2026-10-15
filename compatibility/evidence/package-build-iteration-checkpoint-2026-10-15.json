@@ -1,0 +1,1374 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "status": "verified-development-package-build-improvement",
+  "scope": "Complete JavaScript package builds on macOS arm64 with Bun 1.4.2, warmed filesystem/dependencies, matched original source edits and unchanged output bytes.",
+  "toolchainSha256": {
+    "bunExecutable": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5",
+    "node22Executable": "913b144fdb40638b1acef7974ab3c33fbd527cc0974cb5da467ab1e6ac51b4d4",
+    "node24Executable": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32",
+    "node_modules/typescript/lib/typescript.js": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+    "node_modules/typescript/lib/_tsc.js": "e8f349eabd48486bdb2bf9dc1a00c89d58297270c54b745838879e2859194419",
+    "node_modules/@types/node/package.json": "2135b9ba75cf7d7075206d20b8a3fd7a6b05f9680b38b62a86d1882296b8297a",
+    "node_modules/flashwright-upstream-runner/package.json": "8be9edc5642a8c761b677e7af8b9937f36c0443a91e14765877716d70034e5bf"
+  },
+  "nodeVersions": {
+    "node22": "22.22.0",
+    "node24": "24.15.0"
+  },
+  "rawFinalLogSha256": {
+    "bun-module-identities.log": "8d1c8d60d32d43fdd132824782192cba707eb3391c117b5cadc063d7b4eabb3c",
+    "bun-reuse.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bun-runtime-change.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "controls-bun.log": "afd462fb3a753f7f6d9e6cc1821713ecbaa6cf4732c784239e066d1abf31d99d",
+    "core-implementation-edit-01-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-02-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-03-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-04-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-05-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-06-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-07-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "core-implementation-edit-08-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "measurement.log": "24d3d25ed5200fb759c1ffeaa4f2982dc7ee116a0361d663d3f8f627611132c2",
+    "node22-module-identities.log": "8d1c8d60d32d43fdd132824782192cba707eb3391c117b5cadc063d7b4eabb3c",
+    "node22-reuse.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "node22-runtime-change.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "node24-module-identities.log": "8d1c8d60d32d43fdd132824782192cba707eb3391c117b5cadc063d7b4eabb3c",
+    "node24-reuse.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "node24-runtime-change.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-01-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-02-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-03-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-04-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-05-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-06-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-07-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runner-implementation-edit-08-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-01-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-02-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-03-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-04-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-05-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-06-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-07-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unchanged-08-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "warmup-baseline.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "warmup-candidate.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "baseCommit": "0afdbd361fba82eade9e7da588afdea381953ae3",
+  "change": "Reuse whole compiled packages only after compiler-input, build-tool and complete output verification. Changed packages use the pinned full command-line compiler with compiler-owned filesystem tracing. Output verification uses synchronous reads; publication preserves the original compiler observations without a redundant replay. Runner assets, runtime digests, notices and public facades are regenerated.",
+  "contract": {
+    "baseline": "Original full package builder at 0afdbd361fba82eade9e7da588afdea381953ae3; current package sources in both arms",
+    "candidate": "Current builder with verified complete-package reuse",
+    "workloads": [
+      "unchanged",
+      "core-implementation-edit",
+      "runner-implementation-edit"
+    ],
+    "order": [
+      "baseline",
+      "candidate",
+      "candidate",
+      "baseline",
+      "baseline",
+      "candidate",
+      "candidate",
+      "baseline"
+    ],
+    "samplesPerConditionAndWorkload": 4,
+    "acceptance": "At least 25% lower median complete build elapsed time in each warmed workload, exact package bytes equal, functional controls pass. Cache creation retained separately.",
+    "timer": "time.monotonic around the complete runtime subprocess; edits and hashing outside timer.",
+    "storage": "One package fixture per condition with shared dependency symlinks; no Cargo or browser artifacts copied.",
+    "runtime": "bun",
+    "runtimeVersion": "1.4.2",
+    "compilerVersion": "5.9.3",
+    "host": {
+      "system": "Darwin",
+      "release": "27.0.0",
+      "architecture": "arm64",
+      "logicalCpus": 11,
+      "model": "Mac15,6",
+      "memoryBytes": 38654705664,
+      "osVersion": "27.0.1"
+    },
+    "controllerSha256": "e6bced20eafc58ff8d5c59f1eb3282eed86c0492891a1c764a15f5e2016180f4",
+    "nativeLinuxVerified": false
+  },
+  "observations": [
+    {
+      "label": "warmup-baseline",
+      "condition": "baseline",
+      "workload": "cache-creation",
+      "warmup": true,
+      "seconds": 4.302173875039443,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        7.8544921875,
+        14.44873046875,
+        42.42431640625
+      ],
+      "hostLoadAverageAfter": [
+        7.62548828125,
+        14.29150390625,
+        42.20458984375
+      ],
+      "failure": null
+    },
+    {
+      "label": "warmup-candidate",
+      "condition": "candidate",
+      "workload": "cache-creation",
+      "warmup": true,
+      "seconds": 5.009029209148139,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        7.62548828125,
+        14.29150390625,
+        42.20458984375
+      ],
+      "hostLoadAverageAfter": [
+        7.1748046875,
+        14.08740234375,
+        41.96875
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-01-baseline",
+      "condition": "baseline",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 8.16888212505728,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        7.1748046875,
+        14.08740234375,
+        41.96875
+      ],
+      "hostLoadAverageAfter": [
+        6.76025390625,
+        13.88671875,
+        41.734375
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-02-candidate",
+      "condition": "candidate",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 3.882542291888967,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.76025390625,
+        13.88671875,
+        41.734375
+      ],
+      "hostLoadAverageAfter": [
+        6.458984375,
+        13.70556640625,
+        41.50732421875
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-03-candidate",
+      "condition": "candidate",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 1.4622352498117834,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.458984375,
+        13.70556640625,
+        41.50732421875
+      ],
+      "hostLoadAverageAfter": [
+        6.458984375,
+        13.70556640625,
+        41.50732421875
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-04-baseline",
+      "condition": "baseline",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 5.084064083173871,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.458984375,
+        13.70556640625,
+        41.50732421875
+      ],
+      "hostLoadAverageAfter": [
+        6.3076171875,
+        13.43505859375,
+        41.0859375
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-05-baseline",
+      "condition": "baseline",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 5.046717165969312,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.3076171875,
+        13.43505859375,
+        41.0859375
+      ],
+      "hostLoadAverageAfter": [
+        5.96240234375,
+        13.2451171875,
+        40.8564453125
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-06-candidate",
+      "condition": "candidate",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 1.1636987498495728,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        5.96240234375,
+        13.2451171875,
+        40.8564453125
+      ],
+      "hostLoadAverageAfter": [
+        5.96240234375,
+        13.2451171875,
+        40.8564453125
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-07-candidate",
+      "condition": "candidate",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 1.4200343750417233,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        5.96240234375,
+        13.2451171875,
+        40.8564453125
+      ],
+      "hostLoadAverageAfter": [
+        5.96240234375,
+        13.2451171875,
+        40.8564453125
+      ],
+      "failure": null
+    },
+    {
+      "label": "unchanged-08-baseline",
+      "condition": "baseline",
+      "workload": "unchanged",
+      "warmup": false,
+      "seconds": 4.588800458004698,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        5.96240234375,
+        13.2451171875,
+        40.8564453125
+      ],
+      "hostLoadAverageAfter": [
+        6.28564453125,
+        13.19091796875,
+        40.67529296875
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-01-baseline",
+      "condition": "baseline",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 4.5624933750368655,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.28564453125,
+        13.19091796875,
+        40.67529296875
+      ],
+      "hostLoadAverageAfter": [
+        6.1025390625,
+        13.0380859375,
+        40.4599609375
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-02-candidate",
+      "condition": "candidate",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 3.004383583087474,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.1025390625,
+        13.0380859375,
+        40.4599609375
+      ],
+      "hostLoadAverageAfter": [
+        6.01416015625,
+        12.904296875,
+        40.251953125
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-03-candidate",
+      "condition": "candidate",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 3.0082775831688195,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.01416015625,
+        12.904296875,
+        40.251953125
+      ],
+      "hostLoadAverageAfter": [
+        6.01416015625,
+        12.904296875,
+        40.251953125
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-04-baseline",
+      "condition": "baseline",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 4.365729124983773,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.01416015625,
+        12.904296875,
+        40.251953125
+      ],
+      "hostLoadAverageAfter": [
+        6.0927734375,
+        12.80615234375,
+        40.056640625
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-05-baseline",
+      "condition": "baseline",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 4.0306466249749064,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.0927734375,
+        12.80615234375,
+        40.056640625
+      ],
+      "hostLoadAverageAfter": [
+        5.9248046875,
+        12.65966796875,
+        39.84521484375
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-06-candidate",
+      "condition": "candidate",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 3.1894560838118196,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        5.9248046875,
+        12.65966796875,
+        39.84521484375
+      ],
+      "hostLoadAverageAfter": [
+        6.9716796875,
+        12.7646484375,
+        39.72265625
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-07-candidate",
+      "condition": "candidate",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 3.6545710421632975,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.9716796875,
+        12.7646484375,
+        39.72265625
+      ],
+      "hostLoadAverageAfter": [
+        6.9716796875,
+        12.7646484375,
+        39.72265625
+      ],
+      "failure": null
+    },
+    {
+      "label": "core-implementation-edit-08-baseline",
+      "condition": "baseline",
+      "workload": "core-implementation-edit",
+      "warmup": false,
+      "seconds": 3.8620064170099795,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.9716796875,
+        12.7646484375,
+        39.72265625
+      ],
+      "hostLoadAverageAfter": [
+        7.1337890625,
+        12.7021484375,
+        39.54248046875
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-01-baseline",
+      "condition": "baseline",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 4.022144417045638,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        7.1337890625,
+        12.7021484375,
+        39.54248046875
+      ],
+      "hostLoadAverageAfter": [
+        6.962890625,
+        12.57421875,
+        39.33984375
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-02-candidate",
+      "condition": "candidate",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 2.776112499879673,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.962890625,
+        12.57421875,
+        39.33984375
+      ],
+      "hostLoadAverageAfter": [
+        6.8056640625,
+        12.4482421875,
+        39.13818359375
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-03-candidate",
+      "condition": "candidate",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 2.4172241671476513,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.8056640625,
+        12.4482421875,
+        39.13818359375
+      ],
+      "hostLoadAverageAfter": [
+        6.8056640625,
+        12.4482421875,
+        39.13818359375
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-04-baseline",
+      "condition": "baseline",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 4.425360332941636,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.8056640625,
+        12.4482421875,
+        39.13818359375
+      ],
+      "hostLoadAverageAfter": [
+        6.82080078125,
+        12.357421875,
+        38.94970703125
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-05-baseline",
+      "condition": "baseline",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 5.481910499976948,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.82080078125,
+        12.357421875,
+        38.94970703125
+      ],
+      "hostLoadAverageAfter": [
+        6.8349609375,
+        12.26806640625,
+        38.76220703125
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-06-candidate",
+      "condition": "candidate",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 2.723571625072509,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.8349609375,
+        12.26806640625,
+        38.76220703125
+      ],
+      "hostLoadAverageAfter": [
+        6.60791015625,
+        12.13037109375,
+        38.55810546875
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-07-candidate",
+      "condition": "candidate",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 2.8827557500917464,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.60791015625,
+        12.13037109375,
+        38.55810546875
+      ],
+      "hostLoadAverageAfter": [
+        6.60791015625,
+        12.13037109375,
+        38.55810546875
+      ],
+      "failure": null
+    },
+    {
+      "label": "runner-implementation-edit-08-baseline",
+      "condition": "baseline",
+      "workload": "runner-implementation-edit",
+      "warmup": false,
+      "seconds": 5.040447583189234,
+      "exitCode": 0,
+      "hostLoadAverageBefore": [
+        6.60791015625,
+        12.13037109375,
+        38.55810546875
+      ],
+      "hostLoadAverageAfter": [
+        6.95947265625,
+        12.111328125,
+        38.396484375
+      ],
+      "failure": null
+    }
+  ],
+  "results": {
+    "unchanged": {
+      "samples": {
+        "baseline": [
+          8.16888212505728,
+          5.084064083173871,
+          5.046717165969312,
+          4.588800458004698
+        ],
+        "candidate": [
+          3.882542291888967,
+          1.4622352498117834,
+          1.1636987498495728,
+          1.4200343750417233
+        ]
+      },
+      "medianSeconds": {
+        "baseline": 5.065390624571592,
+        "candidate": 1.4411348124267533
+      },
+      "reductionPercent": 71.54938445544585,
+      "observedMaximumSeconds": {
+        "baseline": 8.16888212505728,
+        "candidate": 3.882542291888967
+      }
+    },
+    "core-implementation-edit": {
+      "samples": {
+        "baseline": [
+          4.5624933750368655,
+          4.365729124983773,
+          4.0306466249749064,
+          3.8620064170099795
+        ],
+        "candidate": [
+          3.004383583087474,
+          3.0082775831688195,
+          3.1894560838118196,
+          3.6545710421632975
+        ]
+      },
+      "medianSeconds": {
+        "baseline": 4.1981878749793395,
+        "candidate": 3.0988668334903196
+      },
+      "reductionPercent": 26.185608510777524,
+      "observedMaximumSeconds": {
+        "baseline": 4.5624933750368655,
+        "candidate": 3.6545710421632975
+      }
+    },
+    "runner-implementation-edit": {
+      "samples": {
+        "baseline": [
+          4.022144417045638,
+          4.425360332941636,
+          5.481910499976948,
+          5.040447583189234
+        ],
+        "candidate": [
+          2.776112499879673,
+          2.4172241671476513,
+          2.723571625072509,
+          2.8827557500917464
+        ]
+      },
+      "medianSeconds": {
+        "baseline": 4.732903958065435,
+        "candidate": 2.749842062476091
+      },
+      "reductionPercent": 41.89947468107755,
+      "observedMaximumSeconds": {
+        "baseline": 5.481910499976948,
+        "candidate": 2.8827557500917464
+      }
+    }
+  },
+  "outputByteComparisons": [
+    {
+      "baseline": "warmup-baseline",
+      "candidate": "warmup-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "unchanged-01-baseline",
+      "candidate": "unchanged-02-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "unchanged-04-baseline",
+      "candidate": "unchanged-03-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "unchanged-05-baseline",
+      "candidate": "unchanged-06-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "unchanged-08-baseline",
+      "candidate": "unchanged-07-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "core-implementation-edit-01-baseline",
+      "candidate": "core-implementation-edit-02-candidate",
+      "outputInventorySha256": "0bed9c7dbbbca03e3bcc18e3e9a0c4eb4425a543a8ea68cab7571496463faeb9"
+    },
+    {
+      "baseline": "core-implementation-edit-04-baseline",
+      "candidate": "core-implementation-edit-03-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "core-implementation-edit-05-baseline",
+      "candidate": "core-implementation-edit-06-candidate",
+      "outputInventorySha256": "0bed9c7dbbbca03e3bcc18e3e9a0c4eb4425a543a8ea68cab7571496463faeb9"
+    },
+    {
+      "baseline": "core-implementation-edit-08-baseline",
+      "candidate": "core-implementation-edit-07-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "runner-implementation-edit-01-baseline",
+      "candidate": "runner-implementation-edit-02-candidate",
+      "outputInventorySha256": "e432c560e285e09c60b0da40cbba0391d1fca6860f892d3ee5b218cfce7e6247"
+    },
+    {
+      "baseline": "runner-implementation-edit-04-baseline",
+      "candidate": "runner-implementation-edit-03-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    },
+    {
+      "baseline": "runner-implementation-edit-05-baseline",
+      "candidate": "runner-implementation-edit-06-candidate",
+      "outputInventorySha256": "e432c560e285e09c60b0da40cbba0391d1fca6860f892d3ee5b218cfce7e6247"
+    },
+    {
+      "baseline": "runner-implementation-edit-08-baseline",
+      "candidate": "runner-implementation-edit-07-candidate",
+      "outputInventorySha256": "34550359b07dd79614c983112498387c26c042b192b26ff155b044e9f779a8ab"
+    }
+  ],
+  "sourceInputs": "../../benchmarks/results/package-build-2026-10-15/input-hashes.json",
+  "adoptedSourceSha256": {
+    "SPECS.md": "3ef18f3162b998999fd85045c02c3a22c55b0800b2ef7156cb0ca57450a40750",
+    "tools/build-packages.mjs": "d81d5a877d4c91bf8c7343eff13762629052581ccc17d4785e9412ca3f562d42",
+    "tools/build-runner-runtime.mjs": "1284a7886cdce502db0fdaa9fd529e5c06e98be8b998a8f1aae202759b235de1",
+    "tools/incremental-package-build.mjs": "f2893266e8e2bf2a7cd47e48fe5cdbb8b7c5eecc9652bdd8b843cc25c61afac7",
+    "tools/package-compiler.mjs": "37fd467891789947d3a3d53a71a5c7e16393bdf67bd657ca31e67076bb0ede2a",
+    "tools/test-package-build.mjs": "a4afdb47adc8a1642ed3619d68e55cba7c85394338c3cf1c5b357cbfc4100fb8",
+    "tools/verify-core.mjs": "1fd824e904ca95c49679cceff92b5d30e1a1e0a43802eb1fc0f50a9f6c9ebec9",
+    "benchmarks/package-build/measure.py": "e6bced20eafc58ff8d5c59f1eb3282eed86c0492891a1c764a15f5e2016180f4"
+  },
+  "functionalControls": {
+    "status": "passed",
+    "changedDuringCompilerReadRejected": true,
+    "changedAfterCompilerExitRebuilt": true,
+    "runtime": "1.4.2",
+    "observations": [
+      {
+        "label": "clean",
+        "seconds": 6.7169602500000005,
+        "exitCode": 0
+      },
+      {
+        "label": "unchanged",
+        "seconds": 1.038265125,
+        "exitCode": 0
+      },
+      {
+        "label": "inferred-type-source-position",
+        "seconds": 3.3023640830000005,
+        "exitCode": 0
+      },
+      {
+        "label": "inferred-type-position-clean-equivalence",
+        "seconds": 5.449309249999998,
+        "exitCode": 0
+      },
+      {
+        "label": "inferred-type-position-restored",
+        "seconds": 2.9099339169999983,
+        "exitCode": 0
+      },
+      {
+        "label": "missing-output",
+        "seconds": 3.877443708999999,
+        "exitCode": 0
+      },
+      {
+        "label": "damaged-output",
+        "seconds": 4.246691124999997,
+        "exitCode": 0
+      },
+      {
+        "label": "unexpected-output",
+        "seconds": 3.0605018330000022,
+        "exitCode": 0
+      },
+      {
+        "label": "damaged-compiler-state",
+        "seconds": 3.9253585830000013,
+        "exitCode": 0
+      },
+      {
+        "label": "added-source",
+        "seconds": 4.311809792,
+        "exitCode": 0
+      },
+      {
+        "label": "changed-implementation",
+        "seconds": 3.768427082999995,
+        "exitCode": 0
+      },
+      {
+        "label": "changed-clean-equivalence",
+        "seconds": 5.827620083000002,
+        "exitCode": 0
+      },
+      {
+        "label": "removed-source",
+        "seconds": 3.366403667000006,
+        "exitCode": 0
+      },
+      {
+        "label": "nested-source",
+        "seconds": 3.493253042000004,
+        "exitCode": 0
+      },
+      {
+        "label": "nested-source-renamed",
+        "seconds": 3.8597594580000005,
+        "exitCode": 0
+      },
+      {
+        "label": "nested-source-removed",
+        "seconds": 3.9989934589999976,
+        "exitCode": 0
+      },
+      {
+        "label": "resolution-fallback",
+        "seconds": 3.8126547920000013,
+        "exitCode": 0
+      },
+      {
+        "label": "previously-missing-resolution-candidate",
+        "seconds": 2.875735707999993,
+        "exitCode": 1
+      },
+      {
+        "label": "resolution-recovery",
+        "seconds": 3.894644790999999,
+        "exitCode": 0
+      },
+      {
+        "label": "type-error",
+        "seconds": 3.0399193749999975,
+        "exitCode": 1
+      },
+      {
+        "label": "type-error-recovery",
+        "seconds": 4.055073707999997,
+        "exitCode": 0
+      },
+      {
+        "label": "cross-package-type",
+        "seconds": 7.055390916999997,
+        "exitCode": 0
+      },
+      {
+        "label": "changed-dependency-type",
+        "seconds": 4.322021166999999,
+        "exitCode": 1
+      },
+      {
+        "label": "dependency-type-recovery",
+        "seconds": 6.123250832999998,
+        "exitCode": 0
+      },
+      {
+        "label": "compiler-option-change",
+        "seconds": 5.867124666000003,
+        "exitCode": 0
+      },
+      {
+        "label": "compiler-option-clean-equivalence",
+        "seconds": 5.325495624999996,
+        "exitCode": 0
+      },
+      {
+        "label": "inherited-option-without-maps",
+        "seconds": 4.766500374999989,
+        "exitCode": 0
+      },
+      {
+        "label": "inherited-option-clean-equivalence",
+        "seconds": 4.941705375000005,
+        "exitCode": 0
+      },
+      {
+        "label": "maps-restored",
+        "seconds": 5.014289958999987,
+        "exitCode": 0
+      },
+      {
+        "label": "resident-runtime-change",
+        "seconds": 0.7499269170000044,
+        "exitCode": 0
+      },
+      {
+        "label": "runner-hook-change",
+        "seconds": 0.730539791999996,
+        "exitCode": 0
+      },
+      {
+        "label": "post-compilation-failure",
+        "seconds": 0.4005432079999882,
+        "exitCode": 1
+      },
+      {
+        "label": "post-compilation-recovery",
+        "seconds": 3.913586041999981,
+        "exitCode": 0
+      },
+      {
+        "label": "recovery-clean-equivalence",
+        "seconds": 5.003969874999981,
+        "exitCode": 0
+      }
+    ],
+    "baselineOutputFiles": 455
+  },
+  "runtimeControls": [
+    {
+      "runtime": "node22",
+      "mode": "runtime-change",
+      "seconds": 7.075376083143055,
+      "originalBytesEqual": true
+    },
+    {
+      "runtime": "node22",
+      "mode": "reuse",
+      "seconds": 1.3580852500163019,
+      "originalBytesEqual": true
+    },
+    {
+      "runtime": "node24",
+      "mode": "runtime-change",
+      "seconds": 5.844399833120406,
+      "originalBytesEqual": true
+    },
+    {
+      "runtime": "node24",
+      "mode": "reuse",
+      "seconds": 1.0186815839260817,
+      "originalBytesEqual": true
+    },
+    {
+      "runtime": "bun",
+      "mode": "runtime-change",
+      "seconds": 6.062775041908026,
+      "originalBytesEqual": true
+    },
+    {
+      "runtime": "bun",
+      "mode": "reuse",
+      "seconds": 1.4774575419723988,
+      "originalBytesEqual": true
+    }
+  ],
+  "moduleIdentities": {
+    "bun": "all four package ESM/CommonJS export identities match",
+    "node22": "all four package ESM/CommonJS export identities match",
+    "node24": "all four package ESM/CommonJS export identities match"
+  },
+  "review": "Independent read-only review found no remaining actionable compiler/cache/harness defect after correction of compiler input ownership, signal cleanup and benchmark snapshot/failure recording.",
+  "rejectedExperiments": [
+    {
+      "id": "001",
+      "reason": "Incremental CLI emission retained stale inferred-type declaration-map positions; a subsequent custom incremental API variant emitted differing declaration hashes. Both were rejected; the latter does not establish that the declared type was semantically wrong."
+    },
+    {
+      "id": "002",
+      "reason": "Fresh compiler graph discovery before and after compilation missed the declared per-workload performance target.",
+      "results": {
+        "unchanged": {
+          "samples": {
+            "baseline": [
+              3.642086459090933,
+              3.341766708996147,
+              3.5007471670396626,
+              3.386307124979794
+            ],
+            "candidate": [
+              1.584109708899632,
+              1.8944808749947697,
+              1.7587424169760197,
+              1.8254608749412
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 3.4435271460097283,
+            "candidate": 1.7921016459586099
+          },
+          "reductionPercent": 47.95738293989488,
+          "observedMaximumSeconds": {
+            "baseline": 3.642086459090933,
+            "candidate": 1.8944808749947697
+          }
+        },
+        "core-implementation-edit": {
+          "samples": {
+            "baseline": [
+              3.4029483750928193,
+              3.6887019998393953,
+              3.1900044998619705,
+              3.243456665892154
+            ],
+            "candidate": [
+              3.3147965411189944,
+              3.635739707853645,
+              3.4539443750400096,
+              3.132673083804548
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 3.3232025204924867,
+            "candidate": 3.384370458079502
+          },
+          "reductionPercent": -1.8406322578844891,
+          "observedMaximumSeconds": {
+            "baseline": 3.6887019998393953,
+            "candidate": 3.635739707853645
+          }
+        },
+        "runner-implementation-edit": {
+          "samples": {
+            "baseline": [
+              3.4101788750849664,
+              3.527120582992211,
+              3.2452994589693844,
+              3.327298709191382
+            ],
+            "candidate": [
+              2.793435415951535,
+              2.822693708818406,
+              2.7172262920066714,
+              2.9686664580367506
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 3.368738792138174,
+            "candidate": 2.8080645623849705
+          },
+          "reductionPercent": 16.643446237555803,
+          "observedMaximumSeconds": {
+            "baseline": 3.527120582992211,
+            "candidate": 2.9686664580367506
+          }
+        }
+      }
+    },
+    {
+      "id": "003",
+      "reason": "Replaying recorded observations avoided repeated graph discovery on hits, but duplicate graph parsing on misses still missed the declared target.",
+      "results": {
+        "unchanged": {
+          "samples": {
+            "baseline": [
+              3.3409783749375492,
+              3.3263142500072718,
+              3.194747457979247,
+              3.236494957935065
+            ],
+            "candidate": [
+              0.9105203750077635,
+              1.209864417091012,
+              0.8026867501903325,
+              1.0655381248798221
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 3.2814046039711684,
+            "candidate": 0.9880292499437928
+          },
+          "reductionPercent": 69.89005108519454,
+          "observedMaximumSeconds": {
+            "baseline": 3.3409783749375492,
+            "candidate": 1.209864417091012
+          }
+        },
+        "core-implementation-edit": {
+          "samples": {
+            "baseline": [
+              4.104386958992109,
+              3.6303845420479774,
+              3.164354459149763,
+              3.768605540972203
+            ],
+            "candidate": [
+              3.020862208213657,
+              3.548697958001867,
+              3.1022269579116255,
+              2.6213834998197854
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 3.6994950415100902,
+            "candidate": 3.0615445830626413
+          },
+          "reductionPercent": 17.244257697046272,
+          "observedMaximumSeconds": {
+            "baseline": 4.104386958992109,
+            "candidate": 3.548697958001867
+          }
+        },
+        "runner-implementation-edit": {
+          "samples": {
+            "baseline": [
+              3.449436833150685,
+              3.2901312080211937,
+              3.545202041976154,
+              3.3019631661009043
+            ],
+            "candidate": [
+              2.1763447499834,
+              2.5720646248664707,
+              2.5616256250068545,
+              2.7041424999479204
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 3.3756999996257946,
+            "candidate": 2.5668451249366626
+          },
+          "reductionPercent": 23.96110065405088,
+          "observedMaximumSeconds": {
+            "baseline": 3.545202041976154,
+            "candidate": 2.7041424999479204
+          }
+        }
+      }
+    },
+    {
+      "id": "004",
+      "reason": "Concurrent independent graph discovery could label old compiler output with newer source input hashes. Rejected in review without a performance run despite ordinary controls passing."
+    },
+    {
+      "id": "005",
+      "reason": "Compiler-owned tracing passed all controls and original output comparisons, but the core edit reduction was 24.558%, below the predeclared 25% in every workload.",
+      "results": {
+        "unchanged": {
+          "samples": {
+            "baseline": [
+              4.149847707943991,
+              4.161364291096106,
+              4.21755599998869,
+              4.341428374871612
+            ],
+            "candidate": [
+              1.0829719579778612,
+              0.9712833750527352,
+              1.0438871248625219,
+              1.0888580000028014
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 4.189460145542398,
+            "candidate": 1.0634295414201915
+          },
+          "reductionPercent": 74.6165495200692,
+          "observedMaximumSeconds": {
+            "baseline": 4.341428374871612,
+            "candidate": 1.0888580000028014
+          }
+        },
+        "core-implementation-edit": {
+          "samples": {
+            "baseline": [
+              4.320575082907453,
+              4.182744791964069,
+              4.707879124907777,
+              3.9071391250472516
+            ],
+            "candidate": [
+              3.2065503750927746,
+              3.3444942091591656,
+              3.1529198749922216,
+              3.208509082905948
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 4.251659937435761,
+            "candidate": 3.2075297289993614
+          },
+          "reductionPercent": 24.558177836445928,
+          "observedMaximumSeconds": {
+            "baseline": 4.707879124907777,
+            "candidate": 3.3444942091591656
+          }
+        },
+        "runner-implementation-edit": {
+          "samples": {
+            "baseline": [
+              4.221118125133216,
+              4.499291624873877,
+              4.338417374994606,
+              4.196475917007774
+            ],
+            "candidate": [
+              2.8187224590219557,
+              2.433366500074044,
+              2.600601290818304,
+              2.675767790991813
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 4.279767750063911,
+            "candidate": 2.6381845409050584
+          },
+          "reductionPercent": 38.35682927267112,
+          "observedMaximumSeconds": {
+            "baseline": 4.499291624873877,
+            "candidate": 2.8187224590219557
+          }
+        }
+      }
+    },
+    {
+      "id": "006",
+      "reason": "Synchronous output hashing alone still missed the core-edit target; no isolated benefit is claimed for it. Stage attribution then identified redundant input replay at receipt publication.",
+      "results": {
+        "unchanged": {
+          "samples": {
+            "baseline": [
+              4.171364875044674,
+              4.772564874961972,
+              4.661348792025819,
+              4.087301250081509
+            ],
+            "candidate": [
+              0.8973994159605354,
+              1.3362382499035448,
+              1.3818788339849561,
+              0.9222090840339661
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 4.4163568335352466,
+            "candidate": 1.1292236669687554
+          },
+          "reductionPercent": 74.43087799441189,
+          "observedMaximumSeconds": {
+            "baseline": 4.772564874961972,
+            "candidate": 1.3818788339849561
+          }
+        },
+        "core-implementation-edit": {
+          "samples": {
+            "baseline": [
+              4.847496208967641,
+              4.231447542086244,
+              4.271011332981288,
+              4.090106208110228
+            ],
+            "candidate": [
+              3.578557999804616,
+              3.328537333989516,
+              3.7326633748598397,
+              3.891500584082678
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 4.251229437533766,
+            "candidate": 3.655610687332228
+          },
+          "reductionPercent": 14.010505877261469,
+          "observedMaximumSeconds": {
+            "baseline": 4.847496208967641,
+            "candidate": 3.891500584082678
+          }
+        },
+        "runner-implementation-edit": {
+          "samples": {
+            "baseline": [
+              4.1766175001394,
+              4.41101766587235,
+              4.365110374987125,
+              4.276828583097085
+            ],
+            "candidate": [
+              2.703959417063743,
+              2.483167374972254,
+              2.5390980830416083,
+              2.7088528748136014
+            ]
+          },
+          "medianSeconds": {
+            "baseline": 4.320969479042105,
+            "candidate": 2.6215287500526756
+          },
+          "reductionPercent": 39.330079447035814,
+          "observedMaximumSeconds": {
+            "baseline": 4.41101766587235,
+            "candidate": 2.7088528748136014
+          }
+        }
+      }
+    }
+  ],
+  "failedControlAttempts": [
+    {
+      "experiment": "005",
+      "log": "controls-bun.log",
+      "outcome": "Initial clean build exceeded the original 60-second test deadline during severe host contention."
+    },
+    {
+      "experiment": "005",
+      "log": "controls-bun-002.log",
+      "outcome": "Second clean build exceeded 60 seconds during severe host contention."
+    },
+    {
+      "experiment": "005",
+      "log": "controls-bun-003.log",
+      "outcome": "Six completed controls, then damaged-output recovery exceeded the extended 180-second deadline. Later full runs retained separately; failures were not treated as passes."
+    }
+  ],
+  "contentionDiagnostic": {
+    "scope": "Single core-package compile, exploratory, not a performance acceptance comparison. Exact output equality passed.",
+    "observations": [
+      {
+        "label": "original",
+        "loadBefore": [
+          163.341796875,
+          125.36474609375,
+          65.04443359375
+        ],
+        "exitCode": 0,
+        "seconds": 27.872995082987472,
+        "loadAfter": [
+          165.5361328125,
+          129.3154296875,
+          68.552734375
+        ]
+      },
+      {
+        "label": "traced",
+        "loadBefore": [
+          168.3759765625,
+          130.50537109375,
+          69.32861328125
+        ],
+        "exitCode": 0,
+        "seconds": 24.373904540902004,
+        "loadAfter": [
+          172.53564453125,
+          134.52783203125,
+          72.5498046875
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Four measured samples per condition and workload are an engineering screen, not confidence intervals or p95 estimates. Every completed sample is retained; observed maxima are reported.",
+    "Initial cache creation is retained separately and is not a cold-filesystem or cold-toolchain measurement. Full compilation plus tracing/hashing can cost more than the original builder.",
+    "Implementation-only edit workloads preserve exported declarations. Changes to a core declaration dependency can require both packages to compile; no speed claim is made for that case.",
+    "Background host load is recorded per sample. Earlier functional runs timed out during a much larger contention spike; those failures and the original-compiler attribution check are retained.",
+    "TypeScript command-line execution is an internal export of the pinned 5.9.3 compiler. Changing that dependency requires these byte-comparison and functional gates.",
+    "Receipts retain compiler-owned observations. A source edit after validation may allow the current build to finish; the next build rejects reuse against the changed input.",
+    "Serialize builds within a checkout. Receipts are local, disposable build state under ignored workbench; they are not an authenticated remote cache.",
+    "Full 203-command core verification was not rerun for this packaging-only change. Original emitted package bytes match; prior browser/Rust behavior evidence remains separate.",
+    "No release, Chromium, Rust, E2E or native Linux performance claim. Native Linux remains unverified."
+  ],
+  "sanitization": "Runtime executable path normalized to bun. Source/output inventory keys remain repository-relative; numeric observations and source hashes are unchanged.",
+  "storage": {
+    "removedLogicalFixtureBytes": 140701994,
+    "retainedCompressedSourceBytes": 9454420,
+    "scope": "Twelve disposable baseline/candidate package fixtures removed after checking for dependent processes and mounts. Original measurements, output inventories, logs and compressed source snapshots retained privately. No Cargo targets or browser artifacts copied."
+  }
+}
