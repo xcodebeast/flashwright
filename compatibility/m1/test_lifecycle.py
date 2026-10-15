@@ -7,6 +7,7 @@ import re
 import select
 import signal
 import subprocess
+import sys
 import time
 import tempfile
 import unittest
@@ -44,7 +45,15 @@ class OwnedBrowserCase(unittest.TestCase):
         self.identities = {}
         self.profile = None
         self.diagnostics = tempfile.TemporaryFile(mode="w+t")
-        self.worker = subprocess.Popen([os.environ["FLASHWRIGHT_TEST_NODE"], self.worker_script], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.diagnostics, text=True, bufsize=1, start_new_session=True)
+        # Intentional renderer faults must reach the browser without waiting for
+        # a host core-dump service. Exec preserves the worker PID/session and
+        # changes only this fixture's descendants, never the supervisor's limits.
+        worker_command = [sys.executable, "-c",
+                          "import os,resource,sys\n"
+                          "resource.setrlimit(resource.RLIMIT_CORE, (0, 0))\n"
+                          "os.execvp(sys.argv[1], sys.argv[1:])\n",
+                          os.environ["FLASHWRIGHT_TEST_NODE"], self.worker_script]
+        self.worker = subprocess.Popen(worker_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.diagnostics, text=True, bufsize=1, start_new_session=True)
         self.addCleanup(self.release_owned_browser)
         self.worker.diagnostics = self.diagnostics
         message = read_message(self.worker)
