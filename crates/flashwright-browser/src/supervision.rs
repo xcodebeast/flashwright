@@ -22,6 +22,55 @@ enum GuardianEvent {
     ParentLost { node: bool },
 }
 
+/// Keep the browser leader unreaped until its process group has stopped, even
+/// when a later guardian operation returns an error.
+struct BrowserCustody {
+    child: std::process::Child,
+    capture: Option<crate::native_resource_capture::Capture>,
+    reaped: bool,
+}
+
+impl BrowserCustody {
+    fn id(&self) -> u32 {
+        self.child.id()
+    }
+
+    fn wait(&mut self) -> std::io::Result<std::process::ExitStatus> {
+        let status = self.child.wait()?;
+        self.reaped = true;
+        if let Some(capture) = &self.capture {
+            capture.record_browser_exit(self.child.id(), status);
+        }
+        Ok(status)
+    }
+
+    fn finish_capture(&mut self) -> std::io::Result<()> {
+        if let Some(capture) = &mut self.capture {
+            capture.finish()?;
+        }
+        Ok(())
+    }
+}
+
+impl Drop for BrowserCustody {
+    fn drop(&mut self) {
+        if self.reaped {
+            return;
+        }
+        // Enumeration failure must not release the unreaped group leader. The
+        // caller may time out, but this independent owner still owes cleanup.
+        let group = Pid::from_raw(self.child.id() as i32);
+        while let Err(error) = crate::process_group::terminate(group) {
+            let _ = writeln!(std::io::stderr(), "guardian group cleanup: {error}");
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        while let Err(error) = self.wait() {
+            let _ = writeln!(std::io::stderr(), "guardian original browser reap: {error}");
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+}
+
 /// Take ownership only of an inherited descriptor explicitly assigned by the parent launch contract.
 /// This is the sole raw-descriptor boundary; all later ownership and spawning uses safe APIs.
 #[allow(unsafe_code)]
@@ -86,7 +135,7 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
         .stdout(Stdio::null())
         .stderr(Stdio::inherit())
         .process_group(0);
-    command.fd_mappings(vec![
+    let mut mappings = vec![
         FdMapping {
             parent_fd: browser_input,
             child_fd: 3,
@@ -95,8 +144,27 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
             parent_fd: browser_output,
             child_fd: 4,
         },
-    ])?;
-    let mut browser = command.spawn()?;
+    ];
+    let capture =
+        if let Some(directory) = std::env::var_os("FLASHWRIGHT_EXPERIMENT_NATIVE_RESOURCES") {
+            let (capture, diagnostic) =
+                crate::native_resource_capture::Capture::start(std::path::Path::new(&directory))?;
+            mappings.push(FdMapping {
+                parent_fd: diagnostic,
+                child_fd: 5,
+            });
+            command.env("FLASHWRIGHT_FORK_DIAGNOSTIC_FD", "5");
+            command.env("FLASHWRIGHT_NATIVE_RESOURCE_DIAGNOSTICS", "1");
+            Some(capture)
+        } else {
+            None
+        };
+    command.fd_mappings(mappings)?;
+    let mut browser = BrowserCustody {
+        child: command.spawn()?,
+        capture,
+        reaped: false,
+    };
     if crate::launch_audit::record_launch(
         &command,
         profile.path(),
@@ -215,6 +283,14 @@ pub fn run_guardian(arguments: &[OsString]) -> Result<(), Box<dyn std::error::Er
             profile.path().display()
         );
     }
+    // Finish diagnostics after custody cleanup and before publishing successful
+    // guardian completion. Capture failure must not bypass browser termination.
+    if !browser.reaped {
+        crate::process_group::terminate(browser_group)?;
+        browser.wait()?;
+    }
+    browser.finish_capture()?;
+    drop(browser);
     profile.close()?;
     if trace_ownership {
         let _ = writeln!(
@@ -253,4 +329,54 @@ pub(crate) fn child_exited_without_reaping(process: Pid) -> std::io::Result<bool
             information.si_code,
             nix::libc::CLD_EXITED | nix::libc::CLD_KILLED | nix::libc::CLD_DUMPED
         ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn guardian_error_retains_custody_until_browser_termination_and_reap() {
+        let mut unrelated = Command::new("sleep")
+            .arg("30")
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let child = Command::new("sleep")
+            .arg("30")
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let process = Pid::from_raw(child.id() as i32);
+        let fail_after_spawn = || -> std::io::Result<()> {
+            let _custody = BrowserCustody {
+                child,
+                capture: None,
+                reaped: false,
+            };
+            Err(std::io::Error::other("injected guardian work failure"))
+        };
+        let result = fail_after_spawn();
+        let owned_process_gone = kill(process, None) == Err(nix::errno::Errno::ESRCH);
+        let unrelated_alive = unrelated.try_wait().unwrap().is_none();
+        let _ = unrelated.kill();
+        let _ = unrelated.wait();
+        assert!(result.is_err());
+        assert!(owned_process_gone);
+        assert!(unrelated_alive);
+    }
+
+    #[test]
+    fn successful_reap_releases_custody_without_touching_other_processes() {
+        let child = Command::new("true").process_group(0).spawn().unwrap();
+        let mut custody = BrowserCustody {
+            child,
+            capture: None,
+            reaped: false,
+        };
+        let status = custody.wait().unwrap();
+        assert!(status.success());
+        assert!(custody.reaped);
+        drop(custody);
+    }
 }

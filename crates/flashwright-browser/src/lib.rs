@@ -11,4 +11,5 @@ pub use connection::Connection;
 
 mod guardian_metadata;
 mod launch_audit;
+mod native_resource_capture;
 mod process_group;
