@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-context-snapshot-native-and-controlled-functionality",
+  "date": "2026-10-15",
+  "sourceCommit": "082f645bc4677ccc4fa481970206f0e6455fee17",
+  "platform": "darwin-arm64",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "frameworkReferenceVersion": "1.60.0",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "custom-headless-shell",
+    "sha256": "cb48296946ca66cf6b3f5910ea96ffe8cf0a5a62c2c62d0f449772b8a661a939",
+    "v8ContextSnapshot": true,
+    "snapshotSha256": "c9600207c7ab5819a4e436aabd1c6fe845cba12ec013fad4e8f48690ab1e8c78",
+    "argsSha256": "91b15b395948726d85ff0c209f67a8b02851b43142216c659c50a7ed3533718e",
+    "crossContextCodeCache": false
+  },
+  "profileChange": "Restored use_v8_context_snapshot=true for subsequent runtime measurements. Other compiler profile settings unchanged. The focused graph retained the browser and native test targets; regular archives were recomputed for the current generator dependency closure.",
+  "nativeTests": {
+    "suites": 99,
+    "registered": 987,
+    "passed": 984,
+    "upstreamDisabled": 3,
+    "nativeSourceFilesUnchanged": 117,
+    "selectedRuntimeAssetsUnchanged": 7
+  },
+  "controlled": {
+    "scope": "Six original controlled families at one and four workers on both frameworks. Configuration-time instrumentation preserves original workload callbacks and the fixture-start-through-owner-reap interval. One functional batch.",
+    "counts": {
+      "testExecutions": 360,
+      "intentionalFailures": 60,
+      "javascriptProcesses": 158,
+      "workerLifetimes": 110,
+      "browserOwners": 110,
+      "nativeChildBirths": 580,
+      "nativeChildReaps": 580,
+      "cells": 24,
+      "expectedPasses": 300,
+      "bridgeNegativeControlsRejected": 16
+    },
+    "sourceFilesUnchanged": 1176,
+    "javascriptDependenciesUnchanged": 721,
+    "gnRuntimeDependencyEntriesUnchanged": 4721,
+    "gnRuntimeDependencyFileBytes": 428432114,
+    "allFourWorkerCellsObservedOverlap": true,
+    "allWatchdogsClean": true
+  },
+  "receipts": {
+    "nativeCompletionSha256": "c5253377b4bb9cfd23502fce58434cecea99badee9edf5ca9f773ab8a59470fe",
+    "nativeVerifierSha256": "156550189868de01858f7177cc2321920e9ade099a1bd024029dc90d803c8d0d",
+    "controlledInputsSha256": "c4cecc2533e021eb464262156995d1b97402dea431646066f4cbab6b933f813e",
+    "controlledReportSha256": "39f4936f1aae4c7235e4d99fd061b60a464538c26fc778457a758b8355d1940d",
+    "bridgeVerificationSha256": "f593f7b6da9c992cb7241a48a41cfef983451891745e78a46db2f4c18e8e1de8"
+  },
+  "limitations": [
+    "The native test gate freezes seven selected runtime assets; the controlled batch separately freezes the complete GN-declared runtime dependency inventory. Neither establishes observed file-access coverage.",
+    "This checkpoint does not compare snapshot-on and snapshot-off timing, prove a clean-build speedup, or admit final performance results. Earlier snapshot-disabled captures remain separate.",
+    "Application collector integration, complete descendant CPU accounting and final resource-adapter admission remain open.",
+    "Sampled RSS is non-atomic and is neither a true peak nor an enforced memory limit.",
+    "Native Linux remains unverified by user direction."
+  ],
+  "performanceAdmission": false,
+  "finalResourceAdmission": false,
+  "nativeLinuxVerified": false
+}
