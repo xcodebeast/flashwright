@@ -10,6 +10,7 @@ pub use chromium::{Chromium, LaunchOptions};
 pub use connection::Connection;
 
 mod guardian_metadata;
+mod guardian_reap_audit;
 mod launch_audit;
 mod native_resource_capture;
 mod process_group;
