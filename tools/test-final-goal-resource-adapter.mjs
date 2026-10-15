@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
-import { adaptFinalGoalResources, watchdogProcessIdentity } from './final-goal-resource-adapter.mjs';
+import { adaptSampledResourceDiagnostics, watchdogProcessIdentity } from './final-goal-resource-adapter.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
 const firstStart = 'Sun Oct 11 03:00:00 2026';
@@ -68,9 +68,9 @@ function input(state) {
 test('simultaneous RSS and cumulative CPU come from original samples, not sums of process peaks', () => {
   const adapterInput = input(fixture());
   const original = structuredClone(adapterInput);
-  const resources = adaptFinalGoalResources(adapterInput);
+  const resources = adaptSampledResourceDiagnostics(adapterInput);
   assert.equal(resources.sampledConcurrentBytes, 1100);
-  assert.equal(resources.observedProcessTreeCpuSeconds, 1.2000000000000002);
+  assert.equal(resources.sampledProcessCpuSeconds, 1.2000000000000002);
   assert.equal(resources.ownedProcesses.length, 2);
   assert.deepEqual(resources.watchdogClock, JSON.parse(adapterInput.watchdogReportBytes).clock);
   assert.deepEqual(resources.ownerInterval, adapterInput.lifecycle.clock.ownerInterval);
@@ -90,12 +90,12 @@ test('distinct logical workers on one process share original host CPU and RSS ex
   const state = fixture();
   state.lifecycle.events.push(event('worker-started', 1012, 11, firstStart, { workerIdentity: 'original-worker-2' }),
     event('worker-ended', 1087, 11, firstStart, { workerIdentity: 'original-worker-2' }));
-  const resources = adaptFinalGoalResources(input(state));
+  const resources = adaptSampledResourceDiagnostics(input(state));
   assert.equal(resources.workerIntervals.length, 2);
   assert.equal(new Set(resources.workerIntervals.map(worker => worker.hostProcessIdentity)).size, 1);
   assert.equal(resources.ownedProcesses.length, 2);
   assert.equal(resources.sampledConcurrentBytes, 1100);
-  assert.equal(resources.observedProcessTreeCpuSeconds, 1.2000000000000002);
+  assert.equal(resources.sampledProcessCpuSeconds, 1.2000000000000002);
 });
 
 test('PID reuse keeps CPU from both original starts without simultaneous double counting', () => {
@@ -108,10 +108,10 @@ test('PID reuse keeps CPU from both original starts without simultaneous double 
     event('process-ended', 1041, 11, firstStart), event('process-owned', 1042, 11, secondStart, { components: ['workers'] }),
     event('worker-started', 1043, 11, secondStart, { workerIdentity: 'original-worker-2' }),
     event('worker-ended', 1088, 11, secondStart, { workerIdentity: 'original-worker-2' }));
-  const resources = adaptFinalGoalResources(input(state));
+  const resources = adaptSampledResourceDiagnostics(input(state));
   assert.equal(resources.ownedProcesses.length, 3);
   assert.equal(resources.sampledConcurrentBytes, 1100);
-  assert.equal(resources.observedProcessTreeCpuSeconds, 1.1);
+  assert.equal(resources.sampledProcessCpuSeconds, 1.1);
   assert.notEqual(resources.workerIntervals[0].hostProcessIdentity, resources.workerIntervals[1].hostProcessIdentity);
 });
 
@@ -122,7 +122,7 @@ test('known short-lived unsampled processes and explicit gaps remain original mi
     event('process-ended', 1050, 13, secondStart),
     event('process-missing', 1065, 12, firstStart, { reason: 'A known child reparented before observation' }));
   state.requiredResourceComponents.push('database');
-  const resources = adaptFinalGoalResources(input(state));
+  const resources = adaptSampledResourceDiagnostics(input(state));
   assert.deepEqual(new Set(resources.missingRequiredProcessIdentities), new Set([
     'synthetic-host/13/Sun Oct 11 03:00:01 2026', 'synthetic-host/12/Sun Oct 11 03:00:00 2026']));
   assert.deepEqual(resources.coverage.missingRequiredComponents, ['database']);
@@ -136,14 +136,14 @@ test('a zombie snapshot cannot revive the previous identity after explicit PID r
     event('process-ended', 1041, 11, firstStart), event('process-owned', 1042, 11, secondStart, { components: ['workers'] }));
   state.lifecycle.events = state.lifecycle.events.filter(entry => entry.timestampMilliseconds !== 1088);
   state.watchdog.samples[2].processes[0].state = 'Z';
-  assert.throws(() => adaptFinalGoalResources(input(state)), /later original PID generation/);
+  assert.throws(() => adaptSampledResourceDiagnostics(input(state)), /later original PID generation/);
 });
 
 test('a short logical worker between samples remains a gap even when its shared host was observed elsewhere', () => {
   const state = fixture();
   state.lifecycle.events.push(event('worker-started', 1040, 11, firstStart, { workerIdentity: 'short-worker' }),
     event('worker-ended', 1050, 11, firstStart, { workerIdentity: 'short-worker' }));
-  const resources = adaptFinalGoalResources(input(state));
+  const resources = adaptSampledResourceDiagnostics(input(state));
   assert.deepEqual(resources.missingRequiredProcessIdentities, ['synthetic-host/11/Sun Oct 11 03:00:00 2026']);
   assert.equal(resources.coverage.missingProcessObservations[0].observations[0].workerIdentity, 'short-worker');
 });
@@ -153,9 +153,9 @@ test('terminal Z/X CPU resets retain the prior original maximum and the reset ob
     const state = fixture();
     state.watchdog.samples[3].processes[0].cpuSeconds = 0;
     state.watchdog.samples[3].processes[0].state = observedState;
-    const resources = adaptFinalGoalResources(input(state));
+    const resources = adaptSampledResourceDiagnostics(input(state));
     assert.equal(resources.samples[3].processes[0].cpuSeconds, 0.3);
-    assert.equal(resources.observedProcessTreeCpuSeconds, 1.1);
+    assert.equal(resources.sampledProcessCpuSeconds, 1.1);
     assert.deepEqual(resources.missingRequiredProcessIdentities, []);
     assert.deepEqual(resources.coverage.cpuObservationResets, [{ identity: 'synthetic-host/11/Sun Oct 11 03:00:00 2026',
       timestampMilliseconds: 1100, previousCpuSeconds: 0.3, observedCpuSeconds: 0, observedState }]);
@@ -169,11 +169,11 @@ test('live and unknown CPU counter regressions retain the raw reset and force a 
     originalObservation.cpuSeconds = 0;
     if (observedState === undefined) delete originalObservation.state;
     else originalObservation.state = observedState;
-    const resources = adaptFinalGoalResources(input(state));
+    const resources = adaptSampledResourceDiagnostics(input(state));
     const identity = 'synthetic-host/11/Sun Oct 11 03:00:00 2026';
     assert.deepEqual(resources.missingRequiredProcessIdentities, [identity]);
     assert.equal(resources.samples[3].processes[0].cpuSeconds, 0.3);
-    assert.equal(resources.observedProcessTreeCpuSeconds, 1.1);
+    assert.equal(resources.sampledProcessCpuSeconds, 1.1);
     assert.deepEqual(resources.coverage.cpuObservationResets, [{ identity, timestampMilliseconds: 1100,
       previousCpuSeconds: 0.3, observedCpuSeconds: 0, observedState: observedState ?? null }]);
     const gap = resources.coverage.missingProcessObservations[0].observations[0];
@@ -186,7 +186,7 @@ test('live and unknown CPU counter regressions retain the raw reset and force a 
 
 test('missing component policy remains visible instead of a fabricated process observation', () => {
   const state = fixture(); state.requiredResourceComponents.push('mail');
-  const resources = adaptFinalGoalResources(input(state));
+  const resources = adaptSampledResourceDiagnostics(input(state));
   assert.deepEqual(resources.coverage.missingRequiredComponents, ['mail']);
   assert.equal(resources.ownedProcesses.length, 2);
 });
@@ -196,7 +196,7 @@ test('failed termination and original remaining identity/signals are preserved',
   state.watchdog.remainingObservedProcesses = [12];
   state.watchdog.cleanupSignals = [{ process: 12, signal: 'SIGKILL', cleanupElapsedSeconds: 0.01 }];
   state.lifecycle.events.push(event('process-remaining', 1100, 12, firstStart));
-  const resources = adaptFinalGoalResources(input(state));
+  const resources = adaptSampledResourceDiagnostics(input(state));
   assert.equal(resources.ownerExitCode, -9); assert.equal(resources.timedOut, true);
   assert.deepEqual(resources.remainingOwnedProcesses, ['synthetic-host/12/Sun Oct 11 03:00:00 2026']);
   assert.deepEqual(resources.cleanupSignals, state.watchdog.cleanupSignals);
@@ -244,16 +244,16 @@ const invalidCases = [
   ['negative CPU', state => state.watchdog.samples[1].processes[0].cpuSeconds = -1, /sampled CPU/],
 ];
 for (const [description, mutate, expected] of invalidCases) test(`rejects ${description}`, () => {
-  const state = fixture(); mutate(state); assert.throws(() => adaptFinalGoalResources(input(state)), expected);
+  const state = fixture(); mutate(state); assert.throws(() => adaptSampledResourceDiagnostics(input(state)), expected);
 });
 
 test('retained bytes and lifecycle order cannot be replaced by supplied metadata', () => {
   const adapterInput = input(fixture());
   adapterInput.watchdogReportBytes = Buffer.concat([adapterInput.watchdogReportBytes, Buffer.from(' ')]);
-  assert.throws(() => adaptFinalGoalResources(adapterInput), /bytes differ/);
+  assert.throws(() => adaptSampledResourceDiagnostics(adapterInput), /bytes differ/);
   const unordered = input(fixture());
   [unordered.lifecycle.events[1], unordered.lifecycle.events[2]] = [unordered.lifecycle.events[2], unordered.lifecycle.events[1]];
-  assert.throws(() => adaptFinalGoalResources(unordered), /unordered/);
+  assert.throws(() => adaptSampledResourceDiagnostics(unordered), /unordered/);
 });
 
 test('forged watchdog aggregate summaries and missing sampled identities reject', () => {
@@ -264,7 +264,7 @@ test('forged watchdog aggregate summaries and missing sampled identities reject'
     const adapterInput = input(fixture()); const watchdog = JSON.parse(adapterInput.watchdogReportBytes); mutate(watchdog);
     adapterInput.watchdogReportBytes = Buffer.from(JSON.stringify(watchdog));
     adapterInput.lifecycle.provenance.watchdogSha256 = hash(adapterInput.watchdogReportBytes);
-    assert.throws(() => adaptFinalGoalResources(adapterInput), /differs|omits/);
+    assert.throws(() => adaptSampledResourceDiagnostics(adapterInput), /differs|omits/);
   }
 });
 
@@ -278,12 +278,12 @@ test('aggregate ordering preserves the contract CPU sum despite floating-point o
   watchdog.observedCpuSeconds = watchdog.processes.reduce((total, process) => total + process.cpuSeconds, 0);
   adapterInput.watchdogReportBytes = Buffer.from(JSON.stringify(watchdog));
   adapterInput.lifecycle.provenance.watchdogSha256 = hash(adapterInput.watchdogReportBytes);
-  const resources = adaptFinalGoalResources(adapterInput);
+  const resources = adaptSampledResourceDiagnostics(adapterInput);
   const maxima = new Map();
   for (const sample of resources.samples) for (const process of sample.processes) maxima.set(process.identity, process.cpuSeconds);
   const contractCpuTotal = [...maxima.values()].reduce((total, value) => total + value, 0);
   assert.notEqual(watchdog.observedCpuSeconds, contractCpuTotal);
-  assert.equal(resources.observedProcessTreeCpuSeconds, contractCpuTotal);
+  assert.equal(resources.sampledProcessCpuSeconds, contractCpuTotal);
 });
 
 
@@ -299,7 +299,7 @@ for (const [description, mutate, expected] of [
   ['nonpositive original resolution', state => { state.watchdog.clock.resolutionSeconds = 0; }, /clock resolution/],
 ]) test(`rejects ${description} even with correctly hashed raw bytes`, () => {
   const state = fixture(); mutate(state);
-  assert.throws(() => adaptFinalGoalResources(input(state)), expected);
+  assert.throws(() => adaptSampledResourceDiagnostics(input(state)), expected);
 });
 
 
@@ -313,8 +313,8 @@ test('exact nanosecond join rejects origins that round to the same millisecond n
   for (const event of state.lifecycle.events) event.timestampMilliseconds += offset;
   state.lifecycle.clock.ownerInterval.startMilliseconds += offset;
   state.lifecycle.clock.ownerInterval.endMilliseconds += offset;
-  assert.equal(adaptFinalGoalResources(input(state)).watchdogClock.originNanoseconds, originalOrigin);
+  assert.equal(adaptSampledResourceDiagnostics(input(state)).watchdogClock.originNanoseconds, originalOrigin);
   state.watchdog.clock.originNanoseconds = String(BigInt(originalOrigin) + 1n);
   assert.equal(Number(BigInt(state.watchdog.clock.originNanoseconds)) / 1e6, originMilliseconds);
-  assert.throws(() => adaptFinalGoalResources(input(state)), /Lifecycle origin differs/);
+  assert.throws(() => adaptSampledResourceDiagnostics(input(state)), /Lifecycle origin differs/);
 });

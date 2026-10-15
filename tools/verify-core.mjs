@@ -176,7 +176,7 @@ const commands = [
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-parity-catalog.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-competitor-contract.mjs', './tools/test-competitor-sampling.mjs', './tools/test-broad-matrix.mjs', './tools/test-broad-matrix-snapshot.mjs', './tools/test-cypress-contract.mjs', './tools/test-runner-suite-contract.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-runner-suite-diagnostics.mjs', './tools/test-runner-matrix-contract.mjs', './tools/test-runner-matrix-snapshot.mjs'],
-  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-final-goal-contract.mjs', './tools/test-final-goal-resource-adapter.mjs', './tools/test-final-goal-owner-tree.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-final-goal-contract.mjs', './tools/test-final-goal-resource-adapter.mjs', './tools/test-final-goal-owner-tree.mjs', './tools/test-final-goal-original-resources.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-rust-dependency-notices.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-benchmark-backend-guard.mjs'],
   [process.execPath, 'tools/typecheck.mjs'],

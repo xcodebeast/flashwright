@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { finalGoalHash } from '../benchmarks/final-goal-contract.mjs';
-import { adaptFinalGoalResources } from './final-goal-resource-adapter.mjs';
+import { finalGoalHash, finalGoalResourceContext } from '../benchmarks/final-goal-contract.mjs';
+import { adaptSampledResourceDiagnostics } from './final-goal-resource-adapter.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
 
@@ -53,19 +53,26 @@ export function attachSyntheticResourceOriginals(run, declaration, scenario) {
     clock: { type: 'monotonic', identity: clock.identity, watchdogOriginNanoseconds: clock.originNanoseconds,
       watchdogOriginMilliseconds: originMilliseconds, ownerInterval: structuredClone(report.ownerInterval) }, events };
   report.watchdogClock = structuredClone(clock);
-  run.resources = adaptFinalGoalResources({ watchdogReportBytes: watchdogBytes, lifecycle,
+  run.resources = adaptSampledResourceDiagnostics({ watchdogReportBytes: watchdogBytes, lifecycle,
     collectorSha256: declaration.resourceCollectorSha256, requiredResourceComponents: scenario.requiredResourceComponents });
-  run.syntheticOriginals = { watchdog, lifecycle };
+  const originalOwnerCpu = { status: 'observed', method: 'atomic-wait4-original-owner',
+    process: resources.ownedProcesses.find(process => process.components.includes('runner')).processId,
+    exitCode: 0, waitStatus: 0, userSeconds: 0.75, systemSeconds: 0.25, cpuSeconds: 1 };
+  run.resources.ownedProcesses.find(process => process.processId === originalOwnerCpu.process).role = 'owner';
+  Object.assign(run.resources, { schemaVersion: 2, cpuAccounting: 'atomic-wait4-original-owner',
+    originalOwnerCpu, originalOwnerInclusiveCpuSeconds: 1, originalRunnerExitCode: report.runnerExitCode,
+    originalAttempts: report.tests.map(test => ({ testId: test.id, bodySha256: test.bodySha256,
+      workerIdentity: test.workerIdentity, retry: test.retry, status: test.status, interval: structuredClone(test.interval) })) });
+  Object.assign(run.resources.provenance, { bootIdentitySha256: declaration.host.bootIdentitySha256,
+    sourceManifestSha256: finalGoalHash(declaration.sourceManifest), dependencyManifestSha256: finalGoalHash(declaration.dependencyManifest),
+    executables: Object.fromEntries(['runtime', 'browser', 'driver', 'launcher'].map(name => [name,
+      { path: `/synthetic/${name}`, sha256: name === 'launcher' ? declaration.launcherSha256[report.engine] : declaration[`${name}Sha256`] }])),
+    capture: { engine: report.engine, family: report.scenarioId.replace(/^runner-/, ''), workers: report.identity.workers,
+      session: hash(`synthetic-session/${clock.identity}`).slice(0, 32), ownerProcess: originalOwnerCpu.process,
+      clockIdentity: clock.identity, inventorySha256: hash(`synthetic-inventory/${clock.identity}`) } });
+  run.syntheticOriginals = { watchdog, lifecycle, 'owner-tree': { syntheticOnly: true, noOriginalOwnerRecords: true } };
   run.evidence.find(receipt => receipt.kind === 'watchdog').sha256 = hash(watchdogBytes);
   run.evidence.find(receipt => receipt.kind === 'lifecycle').sha256 = hash(Buffer.from(JSON.stringify(lifecycle)));
-}
-
-/** Rehash changed synthetic watchdog bytes without repairing the deliberately corrupted clock. */
-export function refreshSyntheticWatchdogHash(run) {
-  const digest = hash(Buffer.from(JSON.stringify(run.syntheticOriginals.watchdog)));
-  run.evidence.find(receipt => receipt.kind === 'watchdog').sha256 = digest;
-  run.syntheticOriginals.lifecycle.provenance.watchdogSha256 = digest;
-  run.resources.provenance.watchdogSha256 = digest;
 }
 
 /** Write invented retained-file controls; all source/approval/admission records remain synthetic. */
@@ -81,7 +88,8 @@ export async function retainSyntheticCampaign(directory, state) {
       resourceCollectorSha256: state.declaration.resourceCollectorSha256, syntheticOnly: true }));
   for (const gate of state.declaration.gates) for (const evidence of gate.evidence)
     Object.assign(evidence, await writeJson(evidence.path, { status: 'passed', gateId: gate.id,
-      verifierSha256: gate.verifierSha256, sourceManifestSha256: finalGoalHash(state.declaration.sourceManifest), syntheticOnly: true }));
+      verifierSha256: gate.verifierSha256, sourceManifestSha256: finalGoalHash(state.declaration.sourceManifest),
+      ...(gate.id === 'resource-collector-admission' ? { resourceContext: finalGoalResourceContext(state.declaration) } : {}), syntheticOnly: true }));
   const campaign = { schemaVersion: 1, configuration: await writeJson('configuration.json', state.configuration),
     declaration: await writeJson('declaration.json', state.declaration), scenarios: [] };
   for (const scenario of state.scenarioResults) {

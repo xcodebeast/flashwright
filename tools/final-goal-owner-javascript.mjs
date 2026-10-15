@@ -58,6 +58,7 @@ export function verifyJavaScriptOwners({ owner, resources, runner, prepared, pla
   assert.equal(resources.rootPollCpu.method, 'atomic-wait4-original-owner');
   assert.equal(resources.rootPollCpu.exitCode, roots[0].exitHook.code);
   assert.equal(runners[0].header.process, owner.runnerProcess);
+  assert.equal(runners[0].exitHook.code, owner.runnerExit.code, 'Original runner terminal status differs from owner report');
   assert.equal(workers.length, prepared.family === 'failure' ? 15 : prepared.workers);
   const launchEdges = [];
   for (const parent of processes) {
@@ -179,7 +180,7 @@ export function verifyJavaScriptOwners({ owner, resources, runner, prepared, pla
       assert(eventNanoseconds(start) <= eventNanoseconds(finish) && eventNanoseconds(finish) <= parentEdge.exit);
       if (index > 0) assert(eventNanoseconds(finishes[index - 1]) <= eventNanoseconds(start), 'Worker ran original attempts concurrently');
       intervals.push({ process: worker.header.process, workerIndex, parallelIndex, testId: start.testId,
-        attemptIdentity: start.attemptIdentity, retry: start.retry, callbackSha256: start.callbackSha256,
+        attemptIdentity: start.attemptIdentity, retry: start.retry, status: finish.status, callbackSha256: start.callbackSha256,
         start: eventNanoseconds(start), finish: eventNanoseconds(finish) });
     }
     assert.equal(unmatchedResults.length, 0);

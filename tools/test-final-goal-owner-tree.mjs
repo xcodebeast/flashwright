@@ -59,6 +59,12 @@ const controls = [
   ['changed enrolled plan', evidence => json(evidence, 'planBytes', value => value.session = '0'.repeat(32))],
   ['foreign enrolled worker parent', evidence => records(journal(evidence, 'worker'), values => values[0].nativeIdentity.parentUniqueId = '1')],
   ['missing original JS child exit', evidence => records(journal(evidence, 'runner'), values => values.splice(values.findIndex(value => value.kind === 'child-exit-observed'), 1))],
+  ['coherently relabelled original runner exit', evidence => {
+    records(journal(evidence, 'runner'), values => values.find(value => value.kind === 'process-exit-hook-observed').code = 1);
+    records(journal(evidence, 'owner'), values => {
+      for (const value of values.filter(value => ['child-exit-observed', 'child-close-observed'].includes(value.kind))) value.code = 1;
+    });
+  }],
   ['missing dispatched original callback', evidence => records(journal(evidence, 'worker'), values => values.splice(values.findIndex(value => value.kind === 'attempt-begin-dispatched'), 1))],
   ['mismatched callback identity', evidence => records(journal(evidence, 'worker'), values => values.find(value => value.kind === 'attempt-end-dispatched').callbackSha256 = '0'.repeat(64))],
   ['missing native launch', evidence => records(nativeLedger(evidence), values => values.splice(values.findIndex(value => value.event === 'native-child-launched'), 1))],

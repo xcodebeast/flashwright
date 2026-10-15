@@ -19,6 +19,13 @@ const inventoryInputs = {
   guardianReaps: { maximumEntries: 32, maximumBytes: 64 * 1024 },
 };
 
+export const ownerTreeEvidenceLimits = Object.freeze({
+  maximumAggregateBytes,
+  fixed: Object.freeze(Object.fromEntries(Object.entries(fixedInputs).map(([field, [, bytes]]) => [field, bytes]))),
+  inventories: Object.freeze(Object.fromEntries(Object.entries(inventoryInputs).map(([field, limits]) =>
+    [field, Object.freeze({ ...limits })]))),
+});
+
 export function hashBytes(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
