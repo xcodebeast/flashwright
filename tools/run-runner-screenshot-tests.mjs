@@ -34,7 +34,7 @@ try {
     }
     const reportPath = join(directory, 'results.json');
     const executable = engine === 'playwright' ? 'node_modules/playwright/cli.js' : 'packages/flashwright-test/cli.cjs';
-    const child = spawn(process.execPath, [executable, 'test', '--config', join(directory, 'playwright.config.ts')], {
+    const child = spawn('python3', ['tools/process-fault-fixture.py', process.execPath, executable, 'test', '--config', join(directory, 'playwright.config.ts')], {
       env: { ...process.env, FLASHWRIGHT_BROWSER_PATH: browserPath, FLASHWRIGHT_DRIVER_PATH: driverPath, FLASHWRIGHT_SCREENSHOT_REPORT: reportPath, FLASHWRIGHT_SCREENSHOT_OUTPUT: outputDirectory, FLASHWRIGHT_TEST_BASE_URL: `http://127.0.0.1:${server.address().port}` },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
