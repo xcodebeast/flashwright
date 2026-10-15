@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import threading
 import time
 import unittest
 from unittest.mock import patch
@@ -15,52 +16,91 @@ from types import SimpleNamespace
 from tools.watchdog import RootProcessCpuAccounting, cleanup_owned_processes, main, record_cpu_observation
 
 
+class PollingChild:
+    """Model Popen's POSIX wait lock and terminal status for syscall controls."""
+
+    def __init__(self, process=101):
+        self.pid = process
+        self.returncode = None
+        self._waitpid_lock = threading.Lock()
+
+    def _handle_exitstatus(self, status):
+        self.returncode = os.waitstatus_to_exitcode(status)
+
+
 class RootCpuAccountingTests(unittest.TestCase):
-    def test_receipt_is_bound_to_first_consuming_poll_and_excludes_earlier_helpers(self):
-        class Child:
-            pid = 101
-            returncode = None
-            calls = 0
-
-            def poll(self):
-                self.calls += 1
-                if self.calls == 2:
-                    self.returncode = 17
-                return self.returncode
-
-        child = Child()
+    def test_receipt_comes_only_from_the_original_owners_terminal_wait4(self):
+        child = PollingChild()
         accounting = RootProcessCpuAccounting(child, time.monotonic())
-        observations = [SimpleNamespace(ru_utime=user, ru_stime=system) for user, system in [
-            (50, 20), (50, 20), (53, 21), (54.25, 21.5)]]
-        with patch('tools.watchdog.resource.getrusage', side_effect=observations) as read:
+        usage = SimpleNamespace(ru_utime=1.25, ru_stime=0.5, ru_maxrss=1024)
+        with patch('tools.watchdog.os.wait4', side_effect=[(0, 0, None), (101, 17 << 8, usage)]) as wait:
             self.assertIsNone(accounting.poll())
             self.assertEqual(accounting.receipt['status'], 'not-observed')
             self.assertEqual(accounting.poll(), 17)
             receipt = dict(accounting.receipt)
             self.assertEqual(accounting.poll(), 17)
-            self.assertEqual(read.call_count, 4)
-        self.assertEqual(child.calls, 2)
+            self.assertEqual(wait.call_count, 2)
+            self.assertTrue(all(call.args == (101, os.WNOHANG) for call in wait.call_args_list))
         self.assertEqual(accounting.receipt, receipt)
         self.assertEqual(receipt['status'], 'observed')
+        self.assertEqual(receipt['method'], 'atomic-wait4-original-owner')
+        self.assertEqual(receipt['waitStatus'], 17 << 8)
         self.assertEqual(receipt['cpuSeconds'], 1.75)
-        self.assertEqual(receipt['before'], {'userSeconds': 53, 'systemSeconds': 21})
+        self.assertEqual(receipt['inclusiveMaximumResidentBytes'], 1024 if sys.platform == 'darwin' else 1048576)
+        self.assertNotIn('before', receipt)
+        self.assertNotIn('after', receipt)
+        self.assertGreater(int(receipt['reapedNanoseconds']), 0)
         self.assertGreaterEqual(receipt['finishedElapsedSeconds'], receipt['startedElapsedSeconds'])
 
-    def test_accounting_failure_preserves_original_poll_outcome(self):
-        class Child:
-            pid = 102
-            returncode = None
+    def test_nonterminal_and_interrupted_waits_do_not_publish_usage(self):
+        child = PollingChild()
+        accounting = RootProcessCpuAccounting(child, time.monotonic())
+        usage = SimpleNamespace(ru_utime=1, ru_stime=1, ru_maxrss=1)
+        with patch('tools.watchdog.os.wait4', side_effect=[InterruptedError(), (101, (signal.SIGSTOP << 8) | 0x7f, usage)]):
+            self.assertIsNone(accounting.poll())
+            self.assertIsNone(accounting.poll())
+        self.assertIsNone(child.returncode)
+        self.assertEqual(accounting.receipt['status'], 'not-observed')
+        self.assertFalse(child._waitpid_lock.locked())
 
-            def poll(self):
-                self.returncode = -9
-                return self.returncode
+    def test_concurrent_wait_lock_never_reaps_or_invents_usage(self):
+        child = PollingChild()
+        accounting = RootProcessCpuAccounting(child, time.monotonic())
+        with child._waitpid_lock, patch('tools.watchdog.os.wait4') as wait:
+            self.assertIsNone(accounting.poll())
+            wait.assert_not_called()
+        self.assertEqual(accounting.receipt['status'], 'not-observed')
 
-        accounting = RootProcessCpuAccounting(Child(), time.monotonic())
-        with patch('tools.watchdog.resource.getrusage', side_effect=OSError('usage unavailable')):
-            self.assertEqual(accounting.poll(), -9)
-        self.assertEqual(accounting.receipt['status'], 'unavailable')
-        self.assertEqual(accounting.receipt['exitCode'], -9)
+    def test_status_cached_by_another_reaper_never_fabricates_zero_cpu(self):
+        with subprocess.Popen([sys.executable, '-c', 'raise SystemExit(7)']) as child:
+            self.assertEqual(child.wait(timeout=5), 7)
+            accounting = RootProcessCpuAccounting(child, time.monotonic())
+            with patch('tools.watchdog.os.wait4') as wait:
+                self.assertEqual(accounting.poll(), 7)
+                wait.assert_not_called()
+        self.assertEqual(accounting.receipt['status'], 'not-observed')
         self.assertNotIn('cpuSeconds', accounting.receipt)
+
+    def test_external_waitpid_reports_unavailable_instead_of_observed_zero(self):
+        with subprocess.Popen([sys.executable, '-c', 'raise SystemExit(7)']) as child:
+            self.assertEqual(os.waitpid(child.pid, 0), (child.pid, 7 << 8))
+            accounting = RootProcessCpuAccounting(child, time.monotonic())
+            self.assertEqual(accounting.poll(), 0)
+            self.assertEqual(accounting.receipt['status'], 'unavailable')
+            self.assertEqual(accounting.receipt['reason'], 'original-owner-not-waitable')
+        self.assertNotIn('cpuSeconds', accounting.receipt)
+
+    def test_signal_exit_retains_actual_wait_status(self):
+        with subprocess.Popen([sys.executable, '-c', 'import os,signal; os.kill(os.getpid(),signal.SIGKILL)']) as child:
+            accounting = RootProcessCpuAccounting(child, time.monotonic())
+            deadline = time.monotonic() + 5
+            while accounting.poll() is None:
+                self.assertLess(time.monotonic(), deadline)
+                time.sleep(0.01)
+            self.assertEqual(child.returncode, -signal.SIGKILL)
+        self.assertEqual(accounting.receipt['status'], 'observed')
+        self.assertTrue(os.WIFSIGNALED(accounting.receipt['waitStatus']))
+        self.assertEqual(os.WTERMSIG(accounting.receipt['waitStatus']), signal.SIGKILL)
 
     def test_real_waited_descendant_cpu_survives_root_terminal_poll(self):
         leaf = 'import time; start=time.process_time()\nwhile time.process_time()-start < 0.2: pass'
@@ -80,6 +120,7 @@ class RootCpuAccountingTests(unittest.TestCase):
             self.assertGreaterEqual(original['childCpuSeconds'], 0.2)
             receipt = report['rootPollCpu']
             self.assertEqual(receipt['status'], 'observed')
+            self.assertEqual(receipt['method'], 'atomic-wait4-original-owner')
             self.assertEqual(receipt['process'], report['ownerLaunch']['process'])
             self.assertEqual(receipt['exitCode'], 0)
             self.assertGreaterEqual(receipt['cpuSeconds'], original['childCpuSeconds'])
@@ -89,17 +130,12 @@ class RootCpuAccountingTests(unittest.TestCase):
 
 class WatchdogLifecycleTests(unittest.TestCase):
     def test_root_exit_after_snapshot_preserves_its_observed_descendants(self):
-        class Child:
-            pid = 101
-            returncode = None
-            snapshot_taken = False
+        child = PollingChild()
+        child.snapshot_taken = False
 
-            def poll(self):
-                if self.snapshot_taken:
-                    self.returncode = 0
-                return self.returncode
-
-        child = Child()
+        def wait(process, options):
+            self.assertEqual((process, options), (101, os.WNOHANG))
+            return (101, 0, SimpleNamespace(ru_utime=0.5, ru_stime=0.25, ru_maxrss=1)) if child.snapshot_taken else (0, 0, None)
 
         def snapshot():
             child.snapshot_taken = True
@@ -112,6 +148,7 @@ class WatchdogLifecycleTests(unittest.TestCase):
             path = Path(directory) / "report.json"
             with patch("sys.argv", ["watchdog", "--timeout", "5", "--report", str(path), "--", "unused"]), \
                     patch("tools.watchdog.subprocess.Popen", return_value=child), \
+                    patch("tools.watchdog.os.wait4", side_effect=wait), \
                     patch("tools.watchdog.process_snapshot", side_effect=snapshot), \
                     patch("tools.watchdog.adopt_orphaned_descendants", return_value=False), \
                     patch("tools.watchdog.signal.signal"), patch("tools.watchdog.time.sleep"), \

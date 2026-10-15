@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-original-owner-atomic-accounting",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "pythonVersion": "3.14.4",
+  "baseCommit": "17619eaca1e0685581ea2ec60febdb5158d89ef6",
+  "sourceFiles": {
+    "tools/watchdog.py": "60825670cf0528fef0229a81828b4e46ee7455c5e19bcf9bbc6df1fcb247f0bf",
+    "tools/test_watchdog.py": "e288699837badb2230e1256ce8c95b4551a88a956f591e51b34dbbc714902894",
+    "SPECS.md": "b81d25922944e1d3616ca5c5e0f6d11169449c00509e053b89ac019807e73869"
+  },
+  "change": "Capture resource usage from the same successful terminal wait4 that reaps the original supervised owner, under Popen wait serialization. Replace before/after child-usage deltas. Sampled CPU/RSS fields remain separate and unchanged.",
+  "verification": {
+    "watchdogTests": {
+      "passed": 17,
+      "testCases": [
+        "test_concurrent_wait_lock_never_reaps_or_invents_usage",
+        "test_external_waitpid_reports_unavailable_instead_of_observed_zero",
+        "test_nonterminal_and_interrupted_waits_do_not_publish_usage",
+        "test_real_waited_descendant_cpu_survives_root_terminal_poll",
+        "test_receipt_comes_only_from_the_original_owners_terminal_wait4",
+        "test_signal_exit_retains_actual_wait_status",
+        "test_status_cached_by_another_reaper_never_fabricates_zero_cpu",
+        "test_clean_job_needs_no_watchdog_cleanup",
+        "test_clock_and_empty_sample_precede_original_child_execution",
+        "test_cpu_records_retain_a_child_while_it_is_an_unreaped_zombie",
+        "test_cpu_reset_and_reused_process_identifiers_preserve_both_identities",
+        "test_deep_unresponsive_tree_reaches_bounded_whole_tree_escalation",
+        "test_parent_death_allows_delayed_descendant_cleanup",
+        "test_parent_exit_near_deadline_gives_promoted_child_a_fresh_grace_period",
+        "test_root_exit_after_snapshot_preserves_its_observed_descendants",
+        "test_timeout_kills_owned_descendants_and_preserves_an_unrelated_process",
+        "test_zombie_owner_in_first_snapshot_still_gives_descendants_cleanup_grace"
+      ],
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "1a826e2553146748958761aa188dd4dd00a97185b64f524cf96298cb04e15713",
+      "supervisorReceiptSha256": "828d16be1ea63e05a11a5d11f2aecbabed912652bfc0b640159192ed2739329a",
+      "exitCode": 0,
+      "timeout": false,
+      "interrupted": false,
+      "remainingObservedProcesses": [],
+      "cleanupSignals": []
+    },
+    "resourceAdapterRegression": {
+      "status": "passed",
+      "command": "bun test ./tools/test-final-goal-resource-adapter.mjs",
+      "stdoutSha256": "6043908c8d26d62698476b88f737f39d5d3e91008d4155a81730902f5a37479c",
+      "stderrSha256": "c6c88d1f39b4e45c2411e8d5ee0820287d86746e3b5514063ecbdb531af4e9fb",
+      "scope": "Existing sampled-resource contract stays unchanged; not atomic whole-tree admission.",
+      "setupAttempt": "Direct Bun script invocation failed before tests because node:test requires the test runner; both original logs retained."
+    },
+    "review": "Independent read-only review found no actionable correctness defect. Lock contention control is deterministic, not concurrent stress coverage."
+  },
+  "limitations": [
+    "CPU includes only usage actually rolled up through reaping; independent descendant ownership and terminal reaping are still required for complete-tree claims.",
+    "Cached status and external reaping do not provide observed kernel CPU; ECHILD preserves Popen fallback exit convention with an unavailable accounting receipt.",
+    "Per-owner maximum RSS is not concurrent tree memory.",
+    "Final benchmark resource adapter still uses its historical sampled contract; native ownership bridge integration and complete comparative admission remain open.",
+    "Native Linux verification remains unperformed."
+  ],
+  "comparativePerformanceAdmission": false,
+  "completeTreeCoverageAdmission": false,
+  "nativeLinuxVerified": false
+}
