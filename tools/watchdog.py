@@ -191,6 +191,8 @@ def main():
     reports = parser.add_mutually_exclusive_group()
     reports.add_argument("--report", type=Path)
     reports.add_argument("--report-directory", type=Path)
+    parser.add_argument("--capture-inputs", type=Path,
+                        help="Verify declared source, dependency and executable inputs around the original launch (macOS arm64).")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     arguments = parser.parse_args()
     command = arguments.command[1:] if arguments.command[:1] == ["--"] else arguments.command
@@ -199,11 +201,31 @@ def main():
     if arguments.report_directory:
         identifier = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ") + "-" + uuid.uuid4().hex[:8]
         arguments.report = arguments.report_directory / (identifier + ".json")
+    if arguments.capture_inputs and not arguments.report:
+        parser.error("--capture-inputs requires an immutable resource report.")
     environment = os.environ.copy()
     if arguments.report:
         if arguments.report.exists():
             parser.error("Resource reports are immutable; choose a new path or --report-directory.")
         environment["FLASHWRIGHT_RESOURCE_REPORT"] = str(arguments.report.resolve())
+    capture_identity = uuid.uuid4().hex
+    context = None
+    capture_context = None
+    if arguments.capture_inputs:
+        if __package__:
+            from .final_goal_capture_context import CaptureContext
+        else:
+            from final_goal_capture_context import CaptureContext
+        before_path = arguments.report.with_name(arguments.report.name + ".context-before.json")
+        after_path = arguments.report.with_name(arguments.report.name + ".context-after.json")
+        if before_path.exists() or after_path.exists():
+            parser.error("Capture snapshots are immutable; choose a new report path.")
+        context = CaptureContext(arguments.capture_inputs, capture_identity, command)
+        before = context.snapshot("before", before_path)
+        if before["status"] != "verified":
+            print("Capture inputs failed before launch; see " + before["path"], file=sys.stderr)
+            return 125
+        capture_context = {"schemaVersion": 1, "before": before, "status": "pending"}
     subreaper = adopt_orphaned_descendants()
     # Capture the origin before Popen: a fast child can execute before Popen returns.
     # This is the supervisor clock only; other runtimes still need a measured mapping.
@@ -211,7 +233,7 @@ def main():
     started = started_nanoseconds / 1_000_000_000
     clock = {
         "schemaVersion": 1,
-        "identity": uuid.uuid4().hex,
+        "identity": capture_identity,
         "type": "monotonic",
         "implementation": time.get_clock_info("monotonic").implementation,
         "originNanoseconds": str(started_nanoseconds),
@@ -313,12 +335,22 @@ def main():
             "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU sums maximum observed process time per PID/start identity, preserving work when zombie accounting resets; it is not an exact kernel tree accounting. ps CPU precision is platform-dependent (centiseconds on macOS, whole seconds on the pinned Linux image). RSS is a concurrent sum, not summed per-process maxima.",
             "samples": samples,
         }
+        if context:
+            try:
+                capture_context["after"] = context.snapshot("after", after_path)
+                capture_context["status"] = capture_context["after"]["status"]
+            except (OSError, ValueError) as error:
+                # A failed evidence write must not discard the original owner's result or wait4 receipt.
+                capture_context["status"] = "failed"
+                capture_context["error"] = type(error).__name__ + ": " + str(error)
+            report["captureContext"] = capture_context
         if arguments.report:
             arguments.report.parent.mkdir(parents=True, exist_ok=True)
             with arguments.report.open("x") as report_file:
                 json.dump(report, report_file, indent=2)
                 report_file.write("\n")
-    return 124 if timed_out else 130 if interrupted else 125 if remaining or child.returncode is None else child.returncode
+    capture_failed = capture_context is not None and capture_context["status"] != "verified"
+    return 124 if timed_out else 130 if interrupted else 125 if remaining or child.returncode is None or capture_failed else child.returncode
 
 
 if __name__ == "__main__":
