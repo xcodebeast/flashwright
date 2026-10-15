@@ -1,12 +1,14 @@
-import { execFileSync } from 'node:child_process';
+import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdir, copyFile, writeFile, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { buildRunnerRuntime } from './build-runner-runtime.mjs';
+import { preparePackageBuild } from './incremental-package-build.mjs';
 
 const require = createRequire(import.meta.url);
-const compiler = require.resolve('typescript/bin/tsc');
+assert.ok(process.argv.slice(2).every(argument => argument === '--clean'), 'Usage: bun tools/build-packages.mjs [--clean]');
+const clean = process.argv.includes('--clean');
 const runtimeDigest = createHash('sha256');
 const runtimeSources = (await readFile('packages/resident-runtime/sources.txt', 'utf8')).trimEnd().split('\n');
 for (const name of runtimeSources) {
@@ -40,10 +42,12 @@ async function writeNotices(packageDirectory) {
 for (const name of ['flashwright-core', 'flashwright-runner']) {
   const packageDirectory = `packages/${name}`;
   const destination = `${packageDirectory}/dist/commonjs`;
-  await rm(`${packageDirectory}/dist`, { recursive: true, force: true });
-  await mkdir(destination, { recursive: true });
-  if (name === 'flashwright-runner') await buildRunnerRuntime(`${packageDirectory}/dist/upstream`);
-  execFileSync(process.execPath, [compiler, '--project', `${packageDirectory}/tsconfig.json`, '--outDir', destination, '--module', 'CommonJS', '--moduleResolution', 'Node'], { stdio: 'inherit' });
+  const compilation = await preparePackageBuild(packageDirectory, { clean });
+  if (name === 'flashwright-runner') {
+    await rm(`${packageDirectory}/dist/upstream`, { recursive: true, force: true });
+    await buildRunnerRuntime(`${packageDirectory}/dist/upstream`);
+  }
+  await compilation.compile();
   await writeFile(`${destination}/package.json`, '{"type":"commonjs"}\n');
   if (name === 'flashwright-core') {
     await copyFile('packages/resident-runtime/serialization.cjs', `${destination}/serialization.cjs`);
@@ -56,6 +60,7 @@ for (const name of ['flashwright-core', 'flashwright-runner']) {
   if (name === 'flashwright-core') await writeModuleFacade(packageDirectory, 'runner-integration');
   if (name === 'flashwright-runner') await writeModuleFacade(packageDirectory, 'reporter');
   await writeNotices(packageDirectory);
+  await compilation.complete();
 }
 
 /** Aliased public packages are stateless facades over canonical implementation dependencies. */

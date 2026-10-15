@@ -81,6 +81,7 @@ const commands = [
   [process.execPath, 'tools/build-driver.mjs', ...(driverBuildProfile === 'release' ? ['--release'] : [])],
   [process.execPath, 'tools/verify-driver-binary-paths.mjs', driverPath],
   [process.execPath, 'tools/build-packages.mjs'],
+  [process.execPath, 'tools/test-package-build.mjs'],
   [process.execPath, 'tools/record-owned-runner-provenance.mjs', '--check'],
   ['python3', 'tools/watchdog.py', '--timeout', '60', '--report-directory', join(destination, 'function-wait-host-resources'), '--', process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-function-wait-runtime.mjs', './tools/test-function-wait-host.mjs'],
   ['python3', 'tools/watchdog.py', '--timeout', '180', '--report-directory', join(destination, 'function-wait-behavior-resources'), '--', process.execPath, 'tools/run-function-wait-tests.mjs', join(destination, 'function-waits')],
