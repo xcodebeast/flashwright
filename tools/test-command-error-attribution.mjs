@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { PassThrough, Writable } from 'node:stream';
@@ -23,7 +23,7 @@ function initializeOwnedHostTransform() {
 
 initializeOwnedHostTransform();
 await mkdir(join(repositoryDirectory, '.cache'), { recursive: true });
-const fixtureDirectory = await mkdtemp(join(repositoryDirectory, '.cache/command-error-attribution-'));
+const fixtureDirectory = await realpath(await mkdtemp(join(repositoryDirectory, '.cache/command-error-attribution-')));
 const previousCacheDirectory = process.env.PWTEST_CACHE_DIR;
 process.env.PWTEST_CACHE_DIR = join(fixtureDirectory, 'transform-cache');
 const previousFormatter = Error.prepareStackTrace;

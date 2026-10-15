@@ -365,6 +365,40 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     return result;
   }
 
+  /** This bounded hint only changes retry timing. The next pointer attempt must still
+   * resolve anew and observe two fresh frames before native input. Synchronous reads
+   * leave no independent frame callback alive after registry cancellation. */
+  async function waitForPointerReadiness(units, deadline, maximumWaitMilliseconds, token, checked) {
+    if (expired(deadline)) return { status: 'expired' };
+    const request = decodeRequest(units);
+    const selector = injected.parseSelector(request.selector);
+    let previousElement;
+    let previousRectangle;
+    const result = await conditions.wait({
+      token,
+      timeoutMilliseconds: Math.min(maximumWaitMilliseconds, deadline === null ? Infinity : Math.max(0, deadline - Date.now())),
+      check: () => {
+        try {
+          const element = injected.querySelector(selector, document, request.strict ?? true);
+          // A changed target or satisfied checkbox deserves a fresh ordinary attempt.
+          if (!element || previousElement && previousElement !== element) return { status: 'observation', matches: true };
+          if (checked !== null && injected.elementState(element, 'checked').matches === checked) return { status: 'observation', matches: true };
+          const target = injected.retarget(element, 'no-follow-label');
+          if (!target?.isConnected) return { status: 'observation', matches: true };
+          const rectangle = target.getBoundingClientRect();
+          const current = { x: rectangle.x, y: rectangle.y, width: rectangle.width, height: rectangle.height };
+          const matches = previousRectangle !== undefined && Object.keys(current).every(key => current[key] === previousRectangle[key]);
+          previousElement = element;
+          previousRectangle = current;
+          return { status: 'observation', matches };
+        } catch (error) { return { status: 'error', message: codec.encode(String(error?.stack ?? error)) }; }
+      },
+    });
+    if (conditionInstrumentation) result.conditionMetrics = inspectAssertionConditions();
+    return result;
+  }
+
+
   function readElement(element, request) {
     switch (request.action) {
       case 'textContent': return element.textContent;
@@ -562,6 +596,8 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       if (!element) return retry('locator resolved to no elements');
       return actionResult(injected.focusNode(element, true));
     }),
+    waitForPointerReadiness: (units, deadline, maximumWaitMilliseconds, token, checked) => safely(() => waitForPointerReadiness(units, deadline, maximumWaitMilliseconds, token, checked)),
+    cancelPointerReadiness: token => conditions.cancel(token),
     preparePointer: (units, deadline, token, settings) => safely(() => preparePointer(units, deadline, token, settings)),
     armPointer: (token, point) => safely(() => armPointer(token, point)),
     finishPointer: token => safely(() => {

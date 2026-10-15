@@ -2,7 +2,7 @@ import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs'
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { sourceManifest } from './source-manifest.mjs';
@@ -17,7 +17,7 @@ const browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? ch
 const sources = await sourceManifest();
 const report = { status: 'running', ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   sources, driverSha256: hash(await readFile(driver)), browser, checks: [],
-  scope: 'Private platform tarball and clean offline npm ESM/CommonJS consumers with scripts disabled, no driver override and no Cargo in consumer PATH. No publication, other package manager or performance claim.',
+  scope: 'Private platform tarball and clean offline ESM/CommonJS consumers installed with Bun, with scripts disabled, no driver override and no Cargo in consumer PATH. No publication, other package manager or performance claim.',
 };
 function run(label, command, environment, cwd = process.cwd()) {
   const wrapped = ['tools/watchdog.py', '--timeout', '120', '--report-directory', join(destination, 'resources'), '--', ...command];
@@ -74,11 +74,22 @@ try {
   assert.equal(consumer.packagedRuntime.archiveSha256, report.runtimeArchiveSha256);
   await copyFile(join(consumer.consumerDirectory, consumer.package), join(destination, 'library.tgz'));
   for (const [name, artifact] of Object.entries(consumer.implementationArchives)) await copyFile(artifact.archive, join(destination, `${name}.tgz`));
-  await copyFile('compatibility/m1/runtime-package.mjs', join(consumer.consumerDirectory, 'runtime-package.mjs'));
-  const environment = { ...process.env, PATH: `${dirname(process.execPath)}:/usr/bin:/bin`, PLAYWRIGHT_SKIP_BROWSER_GC: '1', FLASHWRIGHT_BROWSER_PATH: browser.executablePath };
-  delete environment.FLASHWRIGHT_DRIVER_PATH;
-  await writeFile(join(destination, 'ownership-integrity-output.txt'), run('package ownership, corrupted artifacts and deadlines', [process.execPath, 'runtime-package.mjs'], environment, consumer.consumerDirectory));
+  // Only retained evidence is consumed here; the installation has finished cleanup.
+  assert.equal(consumer.runtimeIntegrity?.status, 'passed');
+  const integrityBytes = await readFile(join(consumer.consumerDirectory, 'runtime-package-checks.json'));
+  assert.equal(hash(integrityBytes), consumer.runtimeIntegrity.reportSha256);
+  report.runtimeIntegrity = consumer.runtimeIntegrity;
+  await copyFile(join(consumer.consumerDirectory, 'ownership-integrity-output.txt'), join(destination, 'ownership-integrity-output.txt'));
   await copyFile(join(consumer.consumerDirectory, 'runtime-package-checks.json'), join(destination, 'runtime-package-checks.json'));
+  const cleanupBytes = await readFile(join(consumer.consumerDirectory, 'cleanup-receipt.json'));
+  const cleanup = JSON.parse(cleanupBytes);
+  assert.equal(cleanup.status, 'passed');
+  for (const name of ['node_modules', 'install-cache']) {
+    await assert.rejects(lstat(join(consumer.consumerDirectory, name)), { code: 'ENOENT' });
+  }
+  assert.equal(cleanup.retainedInputsBefore[join(cleanup.consumerDirectory, 'runtime-package-checks.json')], consumer.runtimeIntegrity.reportSha256);
+  report.consumerCleanup = { status: cleanup.status, receiptSha256: hash(cleanupBytes), removedPaths: cleanup.removedPaths };
+  await copyFile(join(consumer.consumerDirectory, 'cleanup-receipt.json'), join(destination, 'consumer-cleanup.json'));
   report.status = 'passed';
 } catch (error) { report.status = 'failed'; report.error = error.stack; }
 report.sourceChangedDuringVerification = JSON.stringify(sources) !== JSON.stringify(await sourceManifest());

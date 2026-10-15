@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, join, dirname } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -360,6 +360,19 @@ await writeFile(runtimeVersionPath, "exports.residentRuntimeSha256 = 'deliberate
 await writeFile(join(directory, 'incompatible.mjs'), `import assert from 'node:assert/strict';\nimport { chromium } from 'flashwright';\nawait assert.rejects(chromium.launch(), error => error.name === 'ProtocolError' && (error.message.includes('mismatch') || error.message.includes('does not match')));\n`);
 execFileSync('python3', [resolve('tools/watchdog.py'), '--timeout', '15', '--', process.execPath, join(directory, 'incompatible.mjs')], { cwd: directory, env: environment, stdio: 'inherit' });
 await writeFile(runtimeVersionPath, originalRuntimeVersion);
+// The installation owner runs every dependent check before retiring its packages.
+let runtimeIntegrity = null;
+if (runtimeArchive) {
+  await copyFile('compatibility/m1/runtime-package.mjs', join(directory, 'runtime-package.mjs'));
+  const output = execFileSync('python3', [resolve('tools/watchdog.py'), '--timeout', '120', '--report-directory', join(directory, 'runtime-integrity-resources'), '--', process.execPath, 'runtime-package.mjs'], {
+    cwd: directory, env: environment, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024,
+  });
+  await writeFile(join(directory, 'ownership-integrity-output.txt'), output);
+  const bytes = await readFile(join(directory, 'runtime-package-checks.json'));
+  const result = JSON.parse(bytes);
+  assert.equal(result.status, 'passed');
+  runtimeIntegrity = { status: result.status, checks: result.checks, reportSha256: createHash('sha256').update(bytes).digest('hex') };
+}
 const installed = JSON.parse(await readFile(join(directory, 'node_modules/flashwright/package.json'), 'utf8'));
 assert.equal(installed.version, '0.0.0');
 const reportDirectory = process.env.FLASHWRIGHT_PACKED_REPORT_DIRECTORY ?? 'compatibility/evidence';
@@ -368,7 +381,7 @@ const evidence = {
   installation, ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   package: archive.slice(directory.length + 1),
   implementationArchives: Object.fromEntries(await Promise.all(Object.entries(archives).filter(([name]) => name !== 'flashwright').map(async ([name, path]) => [name, { archive: path, sha256: createHash('sha256').update(await readFile(path)).digest('hex') }]))), archiveSha256: createHash('sha256').update(await readFile(archive)).digest('hex'),
-  consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH ?? null,
+  consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH ?? null, runtimeIntegrity,
   packagedRuntime: runtimePackagePath ? { packageName: runtimePackageName, archiveSha256: createHash('sha256').update(await readFile(runtimeArchive)).digest('hex'), manifest: JSON.parse(await readFile(join(dirname(runtimePackagePath), 'runtime.json'), 'utf8')), installation: 'offline local tarballs, lifecycle scripts disabled, Cargo absent from consumer PATH' } : null,
   driverSha256: createHash('sha256').update(await readFile(selectedDriver)).digest('hex'),
   checks: ['Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'default Download event, class/page identity, exact binary path/save/stream bytes, cancellation and deletion in both module formats', 'all nine Download method declarations and boolean acceptDownloads policy', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
