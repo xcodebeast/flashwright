@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-controlled-native-owner-collector",
+  "date": "2026-10-15",
+  "sourceCommit": "d29aa638145dea2d0b77c3ee167b3c43b1e5f878",
+  "platform": "darwin-arm64",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "frameworkReferenceVersion": "1.60.0",
+  "driverSha256": "468dc6a757bc613a13ea5b6f89d8fa370e06fdc76e9b881f5c59a1780e2147ec",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "custom-headless-shell",
+    "sha256": "7f35ab69f2fb47dab455d6ae64e6b74ff99896d88a417ad4edf423b6ce36d755",
+    "crossContextCodeCache": false,
+    "v8ContextSnapshot": false
+  },
+  "scope": "Functional collector verification with original controlled workload callbacks and complete fixture-start-through-owner-reap boundary. Configuration-time JavaScript enrollment and original test-event dispatch observation; optional native diagnostics. Instrumentation cost included.",
+  "counts": {
+    "cells": 24,
+    "testExecutions": 360,
+    "expectedPasses": 300,
+    "intentionalFailures": 60,
+    "javascriptProcesses": 158,
+    "workerLifetimes": 110,
+    "browserOwners": 110,
+    "nativeChildBirthsAndReaps": 580,
+    "observedWrapperImageChanges": 55,
+    "bridgeNegativeControlsRejected": 16,
+    "bridgeUnchangedControlAccepted": 1
+  },
+  "checks": [
+    "All six original controlled families at one and four workers on both frameworks.",
+    "All four-worker cells observed overlapping original test dispatch intervals.",
+    "All 60 intentional failures retained verified original error, callsite, code frame and fixture snapshot.",
+    "Kernel unique process and parent identities join original JavaScript launches to native owner records.",
+    "Coherent executable-path observations allow only the pinned wrapper-to-browser image change with ordered observations and increasing global version.",
+    "All captures exited normally without watchdog timeout, cleanup signals or remaining observed processes.",
+    "Source, JavaScript dependencies, pinned executables and GN-declared native runtime dependencies unchanged before and after the batch."
+  ],
+  "receipts": {
+    "inputsSha256": "b4b05735a4e8ec698de265bacfc6b02221195a10dfbc4a75490524cb173c1f11",
+    "reportSha256": "c0b3eadc04728227afe156eadb9af4454ed1b94b7eadc9ffb7d30b899c480327",
+    "bridgeVerificationSha256": "7b84ad945e9fb3b3a02e754f8b3ea46dfbc9c845198411455feca991ebcd8529",
+    "verifierSha256": "16fca9e06f90a0ff6409bc09770ace83bb1a917882e191a540d3967c6df4da70"
+  },
+  "priorAttemptsRetained": [
+    "Configuration and launch observation failures retained separately.",
+    "Exact version and one-step version assumptions rejected valid wrapper exec handoffs; macOS uses a shared global fork/exec version counter."
+  ],
+  "limitations": [
+    "Controlled families only; current application collector integration remains open.",
+    "Test dispatch intervals include fixtures and hooks; they are not callback-only timing.",
+    "Kernel queries before parent-observed exit do not prove a process was non-zombie.",
+    "Sampled RSS is non-atomic and is neither a true peak nor an enforced limit.",
+    "Original root wait4 CPU is recorded once; independent complete descendant accounting and final resource adapter admission remain open.",
+    "The native runtime manifest hashes GN-declared runtime dependencies; it is not an observed file-access inventory.",
+    "One functional batch, with a development browser profile; no speed or final performance claim.",
+    "Native Linux remains unverified by user direction."
+  ],
+  "performanceAdmission": false,
+  "finalResourceAdmission": false,
+  "nativeLinuxVerified": false
+}
