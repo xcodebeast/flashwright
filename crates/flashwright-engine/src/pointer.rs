@@ -9,6 +9,7 @@ use serde::Serialize;
 use tokio::time::sleep;
 
 mod completion;
+mod readiness;
 
 #[derive(Clone, Copy, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -317,7 +318,19 @@ impl PointerAction<'_> {
                     return Err(self.decorate(error, delivery));
                 }
             };
-            self.pause(retry_count, &reason, delivery).await?;
+            let used_hint = if reason == "error:unstable"
+                && !selector.crosses_frames()
+                && std::env::var("FLASHWRIGHT_EXPERIMENT_POINTER_READINESS").as_deref() == Ok("1")
+            {
+                readiness::wait(self, &attempt.realm, &selector.request, retry_count)
+                    .await
+                    .map_err(|error| self.decorate(error, delivery))?
+            } else {
+                false
+            };
+            if !used_hint {
+                self.pause(retry_count, &reason, delivery).await?;
+            }
             retry_count += 1;
         }
     }

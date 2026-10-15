@@ -8,6 +8,14 @@ import { quantile, summarize, comparePaired } from '../benchmarks/statistics.mjs
 import { launchArguments } from '../benchmarks/paired-contract.mjs';
 import { verifyResidentLoadInvocation } from './verify-resident-load.mjs';
 import { verifyDriverComparisonCore } from './driver-comparison-contract.mjs';
+import { readEngineConfiguration } from './engine-configuration.mjs';
+
+test('readiness experiments cannot reuse the default engine verification contract', () => {
+  const defaults = { residentAssertions: true, conditionInstrumentation: false };
+  assert.deepEqual(readEngineConfiguration({}), defaults);
+  assert.deepEqual(readEngineConfiguration({ FLASHWRIGHT_EXPERIMENT_POINTER_READINESS: '0' }), defaults);
+  assert.deepEqual(readEngineConfiguration({ FLASHWRIGHT_EXPERIMENT_POINTER_READINESS: '1' }), { ...defaults, pointerReadiness: true });
+});
 
 test('driver comparisons require identical execution contracts across independently verified backends', () => {
   const browser = { executablePath: '/browser', sha256: 'browser-hash', version: '148.0.7778.96', distribution: 'chromium-headless-shell' };

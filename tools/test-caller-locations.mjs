@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, realpath, writeFile, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,6 +30,7 @@ const removeMapper = runnerIntegration.installSourcePositionMapper(1, position =
 const originalFormatter = Error.prepareStackTrace;
 try {
   await writeFile(fixture, source);
+  const canonicalFixture = await realpath(fixture);
   const caller = await transform.requireOrImport(fixture);
   assert.throws(() => runnerIntegration.installSourcePositionMapper(1, position => position), /already installed/);
   assert.throws(() => runnerIntegration.installSourcePositionMapper(2, position => position), /unsupported runner integration/);
@@ -45,13 +46,13 @@ try {
   Error.prepareStackTrace = () => { throw Error('application stack formatter must not run'); };
   await assert.rejects(caller(context), error => error === originalFailure);
   Error.prepareStackTrace = originalFormatter;
-  const location = locations.find(location => location.file === fixture);
+  const location = locations.find(location => location.file === canonicalFixture);
   assert.ok(location, 'retain the user caller through transformed framework frames');
   assert.equal(location.line, expectedLine, 'apply the pinned TypeScript transform map exactly once');
   const callLine = source.split('\n')[expectedLine - 1];
   assert.ok(location.column >= callLine.indexOf('newPage') + 1 && location.column <= callLine.indexOf('newPage(') + 'newPage'.length + 1);
   assert.equal(location.function, 'userCallSite');
-  assert.ok(stack.includes(`${fixture}:${expectedLine}:`));
+  assert.ok(stack.includes(`${canonicalFixture}:${expectedLine}:`));
   console.log(JSON.stringify({ status: 'passed', runtime: process.versions.bun ? `bun ${process.versions.bun}` : process.version, originalFailurePreserved: true, globalFormatterUntouchedByCapture: true, caller: { line: location.line, column: location.column, function: location.function } }, null, 2));
 } finally {
   Error.prepareStackTrace = originalFormatter;

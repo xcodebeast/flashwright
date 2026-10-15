@@ -39,9 +39,10 @@ try {
   const descriptors = JSON.parse(await readFile('node_modules/playwright-core/lib/server/deviceDescriptorsSource.json', 'utf8'));
   await writeFile(join(consumer, 'expected.json'), JSON.stringify(descriptors));
   await writeFile(join(consumer, 'identity.mjs'), `import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { realpathSync } from 'node:fs';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import { devices as direct } from 'flashwright';
 import { devices as aliased } from 'playwright';
 const require = createRequire(import.meta.url);
@@ -49,8 +50,28 @@ assert.equal(direct, aliased);
 assert.equal(direct, require('flashwright').devices);
 assert.equal(direct, require('playwright').devices);
 assert.deepEqual(direct, JSON.parse(readFileSync('expected.json', 'utf8')));
-for (const name of ['@flashwright/runner', '@flashwright/test', 'flashwright-upstream-runner', 'playwright-core']) assert.throws(() => require.resolve(name), { code: 'MODULE_NOT_FOUND' });
-console.log(JSON.stringify({ descriptors: Object.keys(direct).length, mixedIdentity: true, runnerInstalled: false }));
+const consumer = realpathSync('.');
+function assertLocal(path) {
+  const name = relative(consumer, realpathSync(path));
+  assert.ok(name !== '..' && !name.startsWith('..' + sep) && !isAbsolute(name), 'Consumer must not borrow a repository dependency: ' + path);
+}
+for (const name of ['flashwright', 'playwright', '@flashwright/core']) assertLocal(require.resolve(name));
+for (const path of Object.keys(require.cache)) assertLocal(path);
+// Ancestor packages are resolvable when TMPDIR is in the checkout. Inspect the
+// installed closure, including nested packages, instead of ancestor resolution.
+const forbidden = new Set(['@flashwright/runner', '@flashwright/test', 'flashwright-upstream-runner', 'playwright-core']);
+const installedPackages = new Set();
+for (const name of readdirSync('node_modules', { recursive: true })) {
+  if (name !== 'package.json' && !name.endsWith(sep + 'package.json')) continue;
+  const path = join('node_modules', name);
+  assertLocal(path);
+  const metadata = JSON.parse(readFileSync(path, 'utf8'));
+  if (metadata.name) installedPackages.add(metadata.name);
+  assert.ok(!forbidden.has(metadata.name), 'Library-only installation contains ' + metadata.name);
+}
+assert.ok(installedPackages.has('@flashwright/core'));
+assert.ok(installedPackages.has('flashwright'));
+console.log(JSON.stringify({ descriptors: Object.keys(direct).length, mixedIdentity: true, runnerInstalled: false, dependencyImportsLocal: true, installedPackages: [...installedPackages].sort() }));
 `);
   const runtime = JSON.parse(execFileSync(process.execPath, ['identity.mjs'], { cwd: consumer, encoding: 'utf8' }));
   report.checks.push(runtime);

@@ -3,5 +3,7 @@ export function readEngineConfiguration(environment = process.env) {
   return {
     residentAssertions: environment.FLASHWRIGHT_RESIDENT_ASSERTIONS !== '0',
     conditionInstrumentation: environment.FLASHWRIGHT_CONDITION_INSTRUMENTATION === '1',
+    // Keep historical default records comparable while distinguishing opt-in runs.
+    ...(environment.FLASHWRIGHT_EXPERIMENT_POINTER_READINESS === '1' ? { pointerReadiness: true } : {}),
   };
 }

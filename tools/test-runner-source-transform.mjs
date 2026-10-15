@@ -13,8 +13,9 @@ const arguments_ = process.argv.slice(2).filter(argument => argument !== '--sour
 assert.ok(arguments_.length <= 1, 'Pass an optional fresh output directory and --source-helper only for source controls');
 assert.equal(await realpath(process.cwd()), await realpath(projectDirectory), 'Run from this checkout');
 await mkdir(join(projectDirectory, '.cache'), { recursive: true });
-const destination = arguments_.length ? resolve(arguments_[0]) : await mkdtemp(join(projectDirectory, '.cache/runner-source-transform-'));
-if (arguments_.length) { await mkdir(dirname(destination), { recursive: true }); await mkdir(destination); }
+const requestedDestination = arguments_.length ? resolve(arguments_[0]) : await mkdtemp(join(projectDirectory, '.cache/runner-source-transform-'));
+if (arguments_.length) { await mkdir(dirname(requestedDestination), { recursive: true }); await mkdir(requestedDestination); }
+const destination = await realpath(requestedDestination);
 const helperPath = join(projectDirectory, sourceHelper
   ? 'packages/flashwright-runner/runner-source-transform.cjs'
   : 'packages/flashwright-runner/dist/upstream/flashwright-source-transform.cjs');
