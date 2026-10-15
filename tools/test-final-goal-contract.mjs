@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, symlink, truncate, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, mkdtemp, readFile, rm, symlink, truncate, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { analyzeFinalGoal, finalGoalHash, renderFinalGoalReport } from '../benchmarks/final-goal-contract.mjs';
+import { analyzeFinalGoal, finalGoalHash, finalGoalResourceVerifierPaths, renderFinalGoalReport } from '../benchmarks/final-goal-contract.mjs';
 import { finalGoalEvidenceLimits, verifyFinalGoalEvidence } from './verify-final-goal.mjs';
-import { attachSyntheticResourceOriginals, refreshSyntheticWatchdogHash, retainSyntheticCampaign } from './final-goal-synthetic-fixture.mjs';
+import { attachSyntheticResourceOriginals, retainSyntheticCampaign } from './final-goal-synthetic-fixture.mjs';
+
+const temporaryRoot = fileURLToPath(new URL('../workbench/final-goal-contract/', import.meta.url));
+await mkdir(temporaryRoot, { recursive: true });
 
 const draft = JSON.parse(await readFile(new URL('../benchmarks/configurations/final-goal.json', import.meta.url), 'utf8'));
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -28,11 +31,13 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
   }
   const declaration = { status: 'sealed', configurationSha256: finalGoalHash(configuration),
     sourceManifest: { 'fixture-source.mjs': hash('source'), 'fixture-collector.mjs': hash('collector'),
+      ...Object.fromEntries(finalGoalResourceVerifierPaths.map(path => [path, hash(`synthetic-source/${path}`)])),
       'fixture-lifecycle.mjs': hash('synthetic-lifecycle-producer'),
       ...Object.fromEntries(configuration.requiredGateIds.map(id => [`${id}.mjs`, hash(id)])) }, dependencyManifest: { 'fixture-package.json': hash('dependencies') },
     runtimeSha256: hash('bun'), browserSha256: hash('browser'), driverSha256: hash('driver'), resourceCollectorSha256: hash('collector'), resourceCollectorPath: 'fixture-collector.mjs',
     lifecycleProducerPath: 'fixture-lifecycle.mjs', lifecycleProducerSha256: hash('synthetic-lifecycle-producer'),
-    host: { logicalCpuCount: 11, physicalMemoryBytes: 36 * 1024 ** 3, identitySha256: hash('host') },
+    host: { logicalCpuCount: 11, physicalMemoryBytes: 36 * 1024 ** 3, identitySha256: hash('host'), bootIdentitySha256: hash('boot') },
+    launcherSha256: { playwright: hash('reference-launcher'), flashwright: hash('candidate-launcher') },
     approvalEvidence: [receipt('approval.json')], gates: configuration.requiredGateIds.map(id => ({ id, status: 'passed',
       verifierPath: `${id}.mjs`, verifierSha256: hash(id), evidence: [receipt(`${id}.json`)] })) };
   const scenarioResults = configuration.scenarios.map((scenario, scenarioIndex) => ({ id: scenario.id,
@@ -71,10 +76,10 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
               evidence: [receipt(`${scenario.id}/${cell.id}/${launchIndex}/${engine}/failure-${index}.json`)] } } : {}) })) };
         const resources = { collectorSha256: declaration.resourceCollectorSha256, ownerExitCode: 0, timedOut: false, interrupted: false,
           remainingOwnedProcesses: [], cleanupSignals: [], missingRequiredProcessIdentities: [], ownedProcesses, samples, sampledConcurrentBytes: ownedProcesses.length * 1000,
-          observedProcessTreeCpuSeconds: observedCpu, captureInterval: { startMilliseconds: start - 1, endMilliseconds: start + duration + 1 },
+          originalOwnerInclusiveCpuSeconds: observedCpu, captureInterval: { startMilliseconds: start - 1, endMilliseconds: start + duration + 1 },
           workerIntervals: ownedProcesses.filter(process => process.components.includes('workers')).map((process, index) => ({ identity: `${start}/logical-worker/${index}`, hostProcessIdentity: process.identity,
             startMilliseconds: start + 1, endMilliseconds: start + duration - 1 })) };
-        runs[engine] = { report, resources, evidence: ['report', 'resources', 'watchdog', 'lifecycle'].map(kind => ({
+        runs[engine] = { report, resources, evidence: ['report', 'resources', 'watchdog', 'lifecycle', 'owner-tree'].map(kind => ({
           ...receipt(`${scenario.id}/${cell.id}/${launchIndex}/${engine}/${kind}.json`), kind })) };
         attachSyntheticResourceOriginals(runs[engine], declaration, scenario);
       }
@@ -86,9 +91,7 @@ function fixture(winningIds = draft.scenarios.map(scenario => scenario.id)) {
 const candidate = state => state.scenarioResults[0].cells[0].attempts[0].runs.flashwright;
 function updateResources(run) {
   run.resources.sampledConcurrentBytes = Math.max(...run.resources.samples.map(sample => sample.processes.reduce((total, process) => total + process.residentBytes, 0)));
-  const cpu = new Map();
-  for (const sample of run.resources.samples) for (const process of sample.processes) cpu.set(process.identity, process.cpuSeconds);
-  run.resources.observedProcessTreeCpuSeconds = [...cpu.values()].reduce((total, value) => total + value, 0);
+
 }
 function refreshConfiguration(state) {
   state.declaration.configurationSha256 = finalGoalHash(state.configuration);
@@ -217,10 +220,16 @@ test('a slower worker cell prevents a scenario win without adding denominator vo
 });
 
 test('valid comparable CPU and memory regressions veto even when that row is not a win', () => {
-  for (const metric of ['cpuSeconds', 'residentBytes']) {
+  for (const metric of ['originalOwnerCpu', 'residentBytes']) {
     const state = fixture(draft.scenarios.slice(1).map(scenario => scenario.id));
     for (const pair of state.scenarioResults[0].cells[0].attempts) {
-      for (const process of pair.runs.flashwright.resources.samples[1].processes) process[metric] *= 2;
+      const resources = pair.runs.flashwright.resources;
+      if (metric === 'originalOwnerCpu') {
+        resources.originalOwnerCpu.userSeconds *= 2;
+        resources.originalOwnerCpu.systemSeconds *= 2;
+        resources.originalOwnerCpu.cpuSeconds *= 2;
+        resources.originalOwnerInclusiveCpuSeconds *= 2;
+      } else for (const process of resources.samples[1].processes) process.residentBytes *= 2;
       updateResources(pair.runs.flashwright);
     }
     const analysis = analyzeFinalGoal(state);
@@ -231,7 +240,7 @@ test('valid comparable CPU and memory regressions veto even when that row is not
 });
 
 test('missing owned resource identity and exceeded sampled ceiling are explicit noncomparable cases', () => {
-  for (const mutate of [run => run.resources.samples[1].processes.pop(), run => { run.resources.samples[1].processes[0].residentBytes = 8 * 1024 ** 3; }]) {
+  for (const mutate of [run => run.resources.missingRequiredProcessIdentities.push('missing-original-owner'), run => { run.resources.samples[1].processes[0].residentBytes = 8 * 1024 ** 3; }]) {
     const state = fixture(); mutate(candidate(state)); updateResources(candidate(state));
     const cell = analyzeFinalGoal(state).scenarios[0].cells[0];
     assert.equal(cell.status, 'noncomparable');
@@ -244,7 +253,7 @@ test('missing owned resource identity and exceeded sampled ceiling are explicit 
 test('repeated resource samples do not count original PID/start CPU twice', () => {
   const state = fixture(), run = candidate(state);
   run.resources.samples.splice(2, 0, { ...structuredClone(run.resources.samples[1]), timestampMilliseconds: run.report.ownerInterval.startMilliseconds + 6 });
-  assert.equal(analyzeFinalGoal(state).scenarios[0].cells[0].regressionRatios.observedProcessTreeCpuMedian, 1);
+  assert.equal(analyzeFinalGoal(state).scenarios[0].cells[0].regressionRatios.originalOwnerInclusiveCpuMedian, 1);
 });
 
 test('known collector coverage gaps cannot be hidden behind supplied completeness booleans', () => {
@@ -269,7 +278,7 @@ test('logical thread generations may share one host without counting its CPU or 
   const cell = analyzeFinalGoal(state).scenarios[0].cells[1];
   assert.equal(cell.confirmedWin, true);
   assert.ok(cell.regressionRatios.sampledConcurrentMemoryMaximum < 1);
-  assert.ok(cell.regressionRatios.observedProcessTreeCpuMedian < 1);
+  assert.equal(cell.regressionRatios.originalOwnerInclusiveCpuMedian, 1);
 });
 
 test('test lifetimes stay inside their logical worker and never overlap on one worker', () => {
@@ -336,7 +345,7 @@ for (const [name, mutate] of [
   ['wrong callback', state => { candidate(state).report.tests[0].bodySha256 = hash('changed-test'); }],
   ['skipped test', state => { candidate(state).report.tests[0].status = 'skipped'; }],
   ['reused test context', state => { candidate(state).report.tests[1].contextIdentity = candidate(state).report.tests[0].contextIdentity; }],
-  ['CPU summary forgery', state => { candidate(state).resources.observedProcessTreeCpuSeconds *= 0.1; }],
+  ['CPU summary forgery', state => { candidate(state).resources.originalOwnerInclusiveCpuSeconds *= 0.1; }],
   ['RSS summary forgery', state => { candidate(state).resources.sampledConcurrentBytes *= 0.1; }],
   ['duplicated sample PID/start', state => candidate(state).resources.samples[1].processes.push(candidate(state).resources.samples[1].processes[0])],
   ['missing raw failure', state => { state.scenarioResults[0].cells[0] = { ...nonwinner('unsupported'), attempts: [] }; }],
@@ -365,7 +374,7 @@ test('analyzer leaves retained input immutable and public renderer omits private
 });
 
 test('file loader binds draft bytes and rejects changed evidence, traversal and symlinks', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-contract-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-contract-'));
   try {
     const { campaign } = await retainedDraft(directory);
     const configurationBytes = await readFile(join(directory, 'configuration.json'));
@@ -384,7 +393,7 @@ test('file loader binds draft bytes and rejects changed evidence, traversal and 
 });
 
 test('loader rejects incomplete or repeated scenario topology before opening referenced files', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-topology-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-topology-'));
   try {
     const state = await retainedDraft(directory), original = structuredClone(state.campaign.scenarios);
     for (const mutate of [
@@ -403,7 +412,7 @@ test('loader rejects incomplete or repeated scenario topology before opening ref
 });
 
 test('loader rejects invalid cells and attempt topology before visiting receipts', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-attempts-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-attempts-'));
   try {
     const state = await retainedDraft(directory), original = structuredClone(state.scenarios[0]);
     for (const [mutate, expectedError] of [
@@ -425,7 +434,7 @@ test('loader rejects invalid cells and attempt topology before visiting receipts
 });
 
 test('loader charges repeated JSON reads and rejects the aggregate boundary before parsing', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-budget-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-budget-'));
   try {
     const state = await retainedDraft(directory);
     const approval = await state.writeJson('approval.json', { status: 'approved-before-measurement',
@@ -449,7 +458,7 @@ test('loader charges repeated JSON reads and rejects the aggregate boundary befo
 });
 
 test('loader streams opaque receipts and preserves raw JSON equality and path identities', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-streaming-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-streaming-'));
   try {
     const state = await retainedDraft(directory);
     const opaqueBytes = Buffer.alloc(finalGoalEvidenceLimits.opaqueReadChunkBytes * 2 + 17, 0x61);
@@ -486,7 +495,7 @@ test('loader streams opaque receipts and preserves raw JSON equality and path id
 });
 
 test('loader requires digests for every JSON receipt', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-receipt-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-receipt-'));
   try {
     const state = await retainedDraft(directory);
     delete state.campaign.configuration.sha256;
@@ -496,7 +505,7 @@ test('loader requires digests for every JSON receipt', async () => {
 });
 
 test('loader rejects oversized files before reserving JSON bytes or reading file content', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-file-limit-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-file-limit-'));
   try {
     await writeFile(join(directory, 'campaign.json'), '');
     await truncate(join(directory, 'campaign.json'), finalGoalEvidenceLimits.maximumFileBytes + 1);
@@ -539,6 +548,7 @@ for (const kind of ['watchdog-path', 'lifecycle-path', 'watchdog-sha', 'capture-
       run.report.watchdogClock.identity = reference.report.watchdogClock.identity;
       run.resources.watchdogClock.identity = reference.report.watchdogClock.identity;
       run.resources.provenance.clockIdentity = reference.report.watchdogClock.identity;
+      run.resources.provenance.capture.clockIdentity = reference.report.watchdogClock.identity;
     }
     assert.throws(() => analyzeFinalGoal(state), /Reused original resource/);
   });
@@ -552,22 +562,62 @@ function retainedResourceFixture() {
   return state;
 }
 
-test('retained original watchdog and lifecycle reconstruct resources without admitting a synthetic goal', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-originals-'));
+for (const [description, mutate, expected] of [
+  ['raw outcome relabelled', run => run.resources.originalAttempts[0].status = 'failed', /Original dispatched outcome differs/],
+  ['raw runner exit relabelled', run => run.resources.originalRunnerExitCode = 1, /Original runner exit differs/],
+  ['callback changed', run => run.resources.originalAttempts[0].bodySha256 = hash('different callback'), /Original dispatched callback differs/],
+  ['worker changed', run => run.resources.originalAttempts[0].workerIdentity = 'different-worker', /Original dispatched worker differs/],
+  ['interval changed', run => run.resources.originalAttempts[0].interval.endMilliseconds++, /Original dispatched interval differs/],
+  ['boot changed', run => run.resources.provenance.bootIdentitySha256 = hash('other boot'), /Resource boot differs/],
+  ['runtime changed', run => run.resources.provenance.executables.runtime.sha256 = hash('other runtime'), /Resource runtime executable differs/],
+  ['launcher changed', run => run.resources.provenance.executables.launcher.sha256 = hash('other launcher'), /Resource launcher differs/],
+  ['source changed', run => run.resources.provenance.sourceManifestSha256 = hash('other source'), /Resource source manifest differs/],
+  ['dependencies changed', run => run.resources.provenance.dependencyManifestSha256 = hash('other dependencies'), /Resource dependencies differ/],
+]) test(`original owner admission rejects ${description}`, () => {
+  const state = fixture(); mutate(candidate(state)); assert.throws(() => analyzeFinalGoal(state), expected);
+});
+
+test('sampled CPU changes and missing short-lived RSS do not fabricate terminal CPU', () => {
+  const state = fixture(), run = candidate(state);
+  for (const sample of run.resources.samples) for (const process of sample.processes) process.cpuSeconds = 999999;
+  run.resources.samples[1].processes.pop();
+  updateResources(run);
+  const cell = analyzeFinalGoal(state).scenarios[0].cells[0];
+  assert.equal(cell.regressionRatios.originalOwnerInclusiveCpuMedian, 1);
+  assert.equal(cell.confirmedWin, true);
+});
+
+test('collector admission cannot be borrowed from another host, boot or executable context', async () => {
+  for (const key of ['hostIdentitySha256', 'bootIdentitySha256', 'configurationSha256', 'runtimeSha256',
+    'browserSha256', 'driverSha256', 'resourceCollectorSha256', 'lifecycleProducerSha256']) {
+    const directory = await mkdtemp(join(temporaryRoot, 'flashwright-owner-admission-context-'));
+    try {
+      const state = retainedResourceFixture();
+      const { campaign, writeJson } = await retainSyntheticCampaign(directory, state);
+      const gate = state.declaration.gates.find(gate => gate.id === 'resource-collector-admission');
+      const admission = JSON.parse(await readFile(join(directory, gate.evidence[0].path), 'utf8'));
+      admission.resourceContext[key] = hash(`different/${key}`);
+      Object.assign(gate.evidence[0], await writeJson(gate.evidence[0].path, admission));
+      campaign.declaration = await writeJson(campaign.declaration.path, state.declaration);
+      await writeJson('campaign.json', campaign);
+      await assert.rejects(verifyFinalGoalEvidence(directory), /Resource collector admission differs/);
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
+});
+
+test('every raw resource verifier source must be included in the admitted manifest', () => {
+  for (const path of finalGoalResourceVerifierPaths) {
+    const state = fixture(); delete state.declaration.sourceManifest[path];
+    assert.throws(() => analyzeFinalGoal(state), /Missing resource verifier source/);
+  }
+});
+
+test('synthetic summaries cannot replace original raw ownership records', async () => {
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-resource-originals-'));
   try {
     const state = retainedResourceFixture();
     await retainSyntheticCampaign(directory, state);
-    const before = structuredClone(state);
-    const result = await verifyFinalGoalEvidence(directory);
-    assert.equal(result.analysis.goalAccepted, false);
-    assert.equal(result.analysis.evidenceComplete, false);
-    assert.equal(result.analysis.scenarios[0].cells[0].confirmedWin, true);
-    assert.deepEqual(state, before);
-    const run = candidate(state);
-    for (const kind of ['watchdog', 'lifecycle']) {
-      const receipt = run.evidence.find(item => item.kind === kind);
-      assert.equal(result.checkedFiles[receipt.path], receipt.sha256);
-    }
+    await assert.rejects(verifyFinalGoalEvidence(directory), /Owner tree borrows another watchdog path/);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 
@@ -576,15 +626,9 @@ for (const [description, mutate, expected] of [
   ['independent clock identity', run => { run.resources.watchdogClock.identity = hash('other-clock').slice(0, 32); }, /Resource clock|Resources differ/],
   ['independent watchdog hash', run => { run.resources.provenance.watchdogSha256 = hash('other-watchdog'); }, /watchdog hash|Resources differ/],
   ['independent lifecycle producer', run => { run.resources.provenance.lifecycleSourceSha256 = hash('other-producer'); }, /lifecycle producer|Resources differ/],
-  ['correctly rehashed raw origin', run => {
-    run.syntheticOriginals.watchdog.clock.originNanoseconds = String(BigInt(run.syntheticOriginals.watchdog.clock.originNanoseconds) + 1n);
-    refreshSyntheticWatchdogHash(run);
-  }, /Lifecycle origin differs/],
-  ['correctly rehashed missing raw clock', run => { delete run.syntheticOriginals.watchdog.clock; refreshSyntheticWatchdogHash(run); }, /original watchdog clock/],
-  ['resource sample and summary changed together', run => { run.resources.samples[1].processes[0].residentBytes += 1; updateResources(run); }, /Resources differ/],
-  ['lifecycle owner differs from report', run => { run.syntheticOriginals.lifecycle.clock.ownerInterval.endMilliseconds -= 1; }, /Resources differ|owner interval differs/],
+
 ]) test(`retained verifier rejects ${description}`, async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-corruption-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-resource-corruption-'));
   try {
     const state = retainedResourceFixture(); mutate(candidate(state));
     await retainSyntheticCampaign(directory, state);
@@ -594,7 +638,7 @@ for (const [description, mutate, expected] of [
 
 for (const kind of ['watchdog', 'lifecycle']) for (const duplicate of [false, true]) {
   test(`comparable originals reject ${duplicate ? 'duplicate' : 'missing'} ${kind} receipts`, async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-resource-receipts-'));
+    const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-resource-receipts-'));
     try {
       const state = retainedResourceFixture(), run = candidate(state);
       const receipt = run.evidence.find(item => item.kind === kind);
@@ -609,7 +653,7 @@ for (const kind of ['watchdog', 'lifecycle']) for (const duplicate of [false, tr
 
 test('original failed and noncomparable attempts keep partial watchdog bytes without invented lifecycle success', async () => {
   for (const status of ['failed', 'noncomparable']) {
-    const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-partial-originals-'));
+    const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-partial-originals-'));
     try {
       const state = retainedResourceFixture();
       const cell = nonwinner(status), partialWatchdog = { schemaVersion: 2, exitCode: -9, timedOut: true,
@@ -646,7 +690,7 @@ function omitSyntheticSuccessOnlyResources(cell) {
 
 for (const failureKind of ['behavior', 'coverage'])
   test(`declared comparable raw eight-pair ${failureKind} failure keeps original partial receipts`, async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-classified-originals-'));
+    const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-classified-originals-'));
     try {
       const state = retainedResourceFixture(), cell = state.scenarioResults[0].cells[0], run = candidate(state);
       if (failureKind === 'behavior') {
@@ -676,7 +720,7 @@ for (const failureKind of ['behavior', 'coverage'])
   });
 
 test('unsealed declared comparable original pairs remain inspectable without successful clock or lifecycle', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-goal-draft-originals-'));
+  const directory = await mkdtemp(join(temporaryRoot, 'flashwright-final-goal-draft-originals-'));
   try {
     const state = retainedResourceFixture(), cell = state.scenarioResults[0].cells[0];
     state.configuration.status = 'draft';

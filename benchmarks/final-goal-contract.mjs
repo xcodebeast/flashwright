@@ -11,6 +11,13 @@ const cellIds = ['single-worker', 'matched-throughput'];
 const nonwinningStatuses = ['unsupported', 'failed', 'noncomparable', 'unmeasured'];
 const hashPattern = /^[a-f0-9]{64}$/;
 
+export const finalGoalResourceVerifierPaths = Object.freeze([
+  'benchmarks/final-goal-contract.mjs', 'benchmarks/statistics.mjs',
+  'tools/verify-final-goal.mjs', 'tools/final-goal-original-resources.mjs', 'tools/final-goal-owner-evidence.mjs',
+  'tools/final-goal-owner-tree.mjs', 'tools/final-goal-owner-records.mjs', 'tools/final-goal-owner-javascript.mjs',
+  'tools/final-goal-owner-native.mjs', 'tools/final-goal-clock-projection.mjs', 'tools/watchdog.py',
+]);
+
 /** Hash structured declarations independently of property insertion order. */
 export function finalGoalHash(value) {
   function canonicalize(item) {
@@ -19,6 +26,19 @@ export function finalGoalHash(value) {
     return item;
   }
   return createHash('sha256').update(JSON.stringify(canonicalize(value))).digest('hex');
+}
+
+/** Collector admission applies to one declared source, executable and host/boot context. */
+export function finalGoalResourceContext(declaration) {
+  return {
+    configurationSha256: declaration.configurationSha256,
+    sourceManifestSha256: finalGoalHash(declaration.sourceManifest),
+    dependencyManifestSha256: finalGoalHash(declaration.dependencyManifest),
+    hostIdentitySha256: declaration.host.identitySha256, bootIdentitySha256: declaration.host.bootIdentitySha256,
+    resourceCollectorSha256: declaration.resourceCollectorSha256, lifecycleProducerSha256: declaration.lifecycleProducerSha256,
+    runtimeSha256: declaration.runtimeSha256, browserSha256: declaration.browserSha256,
+    driverSha256: declaration.driverSha256, launcherSha256: structuredClone(declaration.launcherSha256),
+  };
 }
 
 function requireHash(value, description) {
@@ -72,7 +92,7 @@ export function verifyFinalGoalConfiguration(configuration) {
   assert.deepEqual(configuration.resourcePolicy, { logicalCpuCount: 11, physicalMemoryBytes: 36 * 1024 ** 3,
     maximumSampledConcurrentBytes: 8 * 1024 ** 3, operatingSystemEnforcedLimits: false });
   assert.deepEqual(configuration.maximumRegressionRatios, { completeMedian: 1.05, completeObservedMaximum: 1.15,
-    sampledConcurrentMemoryMaximum: 1.10, observedProcessTreeCpuMedian: 1.10 });
+    sampledConcurrentMemoryMaximum: 1.10, originalOwnerInclusiveCpuMedian: 1.10 });
   for (const scenario of configuration.scenarios) {
     assert.ok(typeof scenario.countingGroup === 'string' && scenario.countingGroup);
     assert.ok(Number.isSafeInteger(scenario.expectedTestCount) && scenario.expectedTestCount > 0);
@@ -101,6 +121,8 @@ function verifyDeclaration(configuration, declaration) {
   assert.equal(declaration.configurationSha256, finalGoalHash(configuration), 'Final configuration changed after declaration');
   if (declaration.status !== 'sealed' || configuration.status !== 'sealed') return false;
   requireManifest(declaration.sourceManifest, 'Missing campaign source manifest');
+  for (const path of finalGoalResourceVerifierPaths)
+    requireHash(declaration.sourceManifest[path], `Missing resource verifier source: ${path}`);
   requireManifest(declaration.dependencyManifest, 'Missing pinned dependency manifest');
   requireHash(declaration.runtimeSha256, 'Missing runtime executable identity');
   requireHash(declaration.browserSha256, 'Missing browser executable identity');
@@ -123,6 +145,8 @@ function verifyDeclaration(configuration, declaration) {
   assert.equal(declaration.host.logicalCpuCount, configuration.resourcePolicy.logicalCpuCount);
   assert.equal(declaration.host.physicalMemoryBytes, configuration.resourcePolicy.physicalMemoryBytes);
   requireHash(declaration.host.identitySha256, 'Missing declared host identity');
+  requireHash(declaration.host.bootIdentitySha256, 'Missing declared boot identity');
+  for (const engine of engines) requireHash(declaration.launcherSha256?.[engine], 'Missing admitted browser launcher identity');
   return true;
 }
 
@@ -204,7 +228,7 @@ function verifyTests(report, resources, scenario, cell) {
   return failures;
 }
 
-/** Derive sampled RSS and observed CPU once per original namespace/PID/start identity. */
+/** Derive sampled RSS independently; terminal owner CPU is inclusive and counted exactly once. */
 function observedResources(resources, scenario, interval) {
   assert.ok(Array.isArray(resources.ownedProcesses) && resources.ownedProcesses.length, 'Missing original owned process identities');
   assert.ok(Array.isArray(resources.samples) && resources.samples.length, 'Missing original resource samples');
@@ -217,7 +241,6 @@ function observedResources(resources, scenario, interval) {
     assert.ok(Array.isArray(process.components) && process.components.length, 'Missing process coverage attribution');
     owned.set(process.identity, process);
   }
-  const cpuByIdentity = new Map();
   let sampledConcurrentBytes = 0, previousTime = -Infinity;
   for (const sample of resources.samples) {
     assert.ok(Number.isFinite(sample.timestampMilliseconds) && sample.timestampMilliseconds >= previousTime
@@ -231,26 +254,19 @@ function observedResources(resources, scenario, interval) {
       assert.ok(owned.has(process.identity) && !identities.has(process.identity), 'Unknown or duplicated resource PID/start identity');
       identities.add(process.identity);
       assert.ok(Number.isSafeInteger(process.residentBytes) && process.residentBytes >= 0, 'Invalid sampled RSS');
-      assert.ok(Number.isFinite(process.cpuSeconds) && process.cpuSeconds >= 0
-        && process.cpuSeconds >= (cpuByIdentity.get(process.identity) ?? 0), 'Invalid or regressed original process CPU observation');
-      cpuByIdentity.set(process.identity, process.cpuSeconds);
       concurrentBytes += process.residentBytes;
       assert.ok(Number.isSafeInteger(concurrentBytes), 'Sampled concurrent RSS overflows');
     }
     sampledConcurrentBytes = Math.max(sampledConcurrentBytes, concurrentBytes);
   }
-  const observedProcessTreeCpuSeconds = [...cpuByIdentity.values()].reduce((total, value) => total + value, 0);
   requirePositive(sampledConcurrentBytes, 'No observed sampled process-tree RSS');
-  requirePositive(observedProcessTreeCpuSeconds, 'No observed process-tree CPU');
-  const missing = [...owned.keys()].filter(identity => !cpuByIdentity.has(identity));
-  const reasons = missing.map(() => 'Missing required original process identity observation');
+  const reasons = [];
   assert.ok(Array.isArray(resources.missingRequiredProcessIdentities), 'Collector must retain known missing original identities');
   reasons.push(...resources.missingRequiredProcessIdentities.map(() => 'Collector recorded a missing required original process identity'));
-  for (const component of scenario.requiredResourceComponents) if (![...owned.values()].some(process => process.components.includes(component)
-    && cpuByIdentity.has(process.identity))) reasons.push(`Missing complete resource coverage: ${component}`);
+  for (const component of scenario.requiredResourceComponents) if (![...owned.values()].some(process => process.components.includes(component))) reasons.push(`Missing complete resource coverage: ${component}`);
   assert.ok(resources.samples[0].timestampMilliseconds <= interval.startMilliseconds
     && resources.samples.at(-1).timestampMilliseconds >= interval.endMilliseconds, 'Resource samples omit complete clock boundaries');
-  return { sampledConcurrentBytes, observedProcessTreeCpuSeconds, reasons };
+  return { sampledConcurrentBytes, reasons };
 }
 
 function verifyRun(run, engine, scenario, cell, configuration, declaration) {
@@ -298,7 +314,20 @@ function verifyRun(run, engine, scenario, cell, configuration, declaration) {
   assert.deepEqual(resources.cleanupSignals, []);
   const observations = observedResources(resources, scenario, interval);
   assert.equal(resources.sampledConcurrentBytes, observations.sampledConcurrentBytes, 'Reported memory differs from retained process samples');
-  assert.equal(resources.observedProcessTreeCpuSeconds, observations.observedProcessTreeCpuSeconds, 'Reported CPU differs from retained original identities');
+  assert.equal(resources.schemaVersion, 2, 'Final resources require original owner schema 2');
+  assert.equal(resources.cpuAccounting, 'atomic-wait4-original-owner', 'Sampled CPU cannot admit final resource comparisons');
+  assert.equal(resources.observedProcessTreeCpuSeconds, undefined, 'Legacy sampled CPU cannot be promoted to tree CPU');
+  const ownerCpu = resources.originalOwnerCpu;
+  assert.equal(ownerCpu?.method, 'atomic-wait4-original-owner');
+  assert.equal(ownerCpu.status, 'observed');
+  assert.equal(ownerCpu.exitCode, 0);
+  assert.equal(ownerCpu.waitStatus, 0);
+  assert.ok(resources.ownedProcesses.some(process => process.processId === ownerCpu.process && process.role === 'owner'),
+    'Original CPU owner is absent from reconstructed ownership');
+  for (const value of [ownerCpu.userSeconds, ownerCpu.systemSeconds]) assert.ok(Number.isFinite(value) && value >= 0);
+  assert.equal(ownerCpu.cpuSeconds, ownerCpu.userSeconds + ownerCpu.systemSeconds);
+  assert.equal(resources.originalOwnerInclusiveCpuSeconds, ownerCpu.cpuSeconds, 'Reported CPU differs from original owner wait4');
+  requirePositive(resources.originalOwnerInclusiveCpuSeconds, 'No original owner CPU');
   if (!behaviorFailures.length) {
     const concurrency = maximumIntervalConcurrency(resources.workerIntervals, interval);
     assert.equal(concurrency, cell.workers, 'Configured worker count does not prove actual matched concurrency');
@@ -315,7 +344,7 @@ function verifyRun(run, engine, scenario, cell, configuration, declaration) {
 /** Admit original receipts only after failed attempts and known coverage gaps remain nonwinners. */
 function verifyResourceProvenance(run, declaration, originalResourceIdentities) {
   const { report, resources } = run;
-  for (const kind of ['report', 'resources', 'watchdog', 'lifecycle'])
+  for (const kind of ['report', 'resources', 'watchdog', 'lifecycle', 'owner-tree'])
     assert.equal(run.evidence.filter(receipt => receipt.kind === kind).length, 1, `Missing unique raw ${kind} file`);
   const watchdogReceipt = run.evidence.find(receipt => receipt.kind === 'watchdog');
   const watchdogClock = finalGoalClockProjection(report.watchdogClock);
@@ -327,9 +356,38 @@ function verifyResourceProvenance(run, declaration, originalResourceIdentities) 
   assert.equal(resources.provenance?.lifecycleSourceSha256, declaration.lifecycleProducerSha256,
     'Resource lifecycle producer differs from admitted source');
   assert.deepEqual(resources.ownerInterval, report.ownerInterval, 'Lifecycle owner interval differs from original report');
+  assert.equal(resources.provenance.bootIdentitySha256, declaration.host.bootIdentitySha256, 'Resource boot differs from declared boot');
+  assert.equal(resources.provenance.sourceManifestSha256, finalGoalHash(declaration.sourceManifest), 'Resource source manifest differs');
+  assert.equal(resources.provenance.dependencyManifestSha256, finalGoalHash(declaration.dependencyManifest), 'Resource dependencies differ');
+  for (const name of ['runtime', 'browser', 'driver'])
+    assert.equal(resources.provenance.executables?.[name]?.sha256, declaration[`${name}Sha256`], `Resource ${name} executable differs`);
+  assert.equal(resources.provenance.executables?.launcher?.sha256, declaration.launcherSha256[report.engine], 'Resource launcher differs');
+  const capture = resources.provenance.capture;
+  assert.equal(capture?.engine, report.engine);
+  assert.equal(capture.workers, report.identity.workers);
+  assert.equal(capture.clockIdentity, watchdogClock.identity);
+  assert.equal(capture.ownerProcess, resources.originalOwnerCpu.process);
+  assert.match(capture.session ?? '', /^[a-f0-9]{32}$/);
+  requireHash(capture.inventorySha256, 'Missing original owner-tree inventory');
+  assert.equal(capture.family, report.scenarioId.replace(/^runner-/, ''), 'Owner capture does not cover this scenario');
+  assert.equal(resources.originalRunnerExitCode, report.runnerExitCode, 'Original runner exit differs');
+  assert.ok(Array.isArray(resources.originalAttempts), 'Missing original dispatched attempts');
+  assert.equal(resources.originalAttempts.length, report.tests.length);
+  const originalAttempts = new Map(resources.originalAttempts.map(attempt => [attempt.testId, attempt]));
+  assert.equal(originalAttempts.size, report.tests.length);
+  for (const test of report.tests) {
+    const attempt = originalAttempts.get(test.id);
+    assert.ok(attempt, 'Original dispatch is missing for reported test');
+    assert.equal(attempt.bodySha256, test.bodySha256, 'Original dispatched callback differs');
+    assert.equal(attempt.workerIdentity, test.workerIdentity, 'Original dispatched worker differs');
+    assert.equal(attempt.retry, test.retry);
+    assert.equal(attempt.status, test.status, 'Original dispatched outcome differs');
+    assert.deepEqual(attempt.interval, test.interval, 'Original dispatched interval differs');
+  }
   const lifecycleReceipt = run.evidence.find(receipt => receipt.kind === 'lifecycle');
+  const treeReceipt = run.evidence.find(receipt => receipt.kind === 'owner-tree');
   for (const [kind, value] of [['path', watchdogReceipt.path], ['path', lifecycleReceipt.path],
-    ['watchdogSha256', watchdogReceipt.sha256], ['captureIdentity', watchdogClock.identity]]) {
+    ['watchdogSha256', watchdogReceipt.sha256], ['path', treeReceipt.path], ['captureIdentity', capture.session], ['captureIdentity', watchdogClock.identity]]) {
     assert.ok(!originalResourceIdentities[kind].has(value), `Reused original resource ${kind}`);
     originalResourceIdentities[kind].add(value);
   }
@@ -396,7 +454,7 @@ function analyzeCell(result, scenario, cell, configuration, declaration, campaig
     completeMedian: ratio(run => run.report.completeMilliseconds, median),
     completeObservedMaximum: ratio(run => run.report.completeMilliseconds, maximum),
     sampledConcurrentMemoryMaximum: ratio(run => run.resources.sampledConcurrentBytes, maximum),
-    observedProcessTreeCpuMedian: ratio(run => run.resources.observedProcessTreeCpuSeconds, median),
+    originalOwnerInclusiveCpuMedian: ratio(run => run.resources.originalOwnerInclusiveCpuSeconds, median),
   };
   const regressions = Object.keys(regressionRatios).filter(metric => regressionRatios[metric] > configuration.maximumRegressionRatios[metric]);
   const pointEstimateWin = complete.medianPairedSpeedup >= configuration.minimumSpeedup;

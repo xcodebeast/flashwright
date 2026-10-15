@@ -29,9 +29,9 @@
     "completeMedian": 1.05,
     "completeObservedMaximum": 1.15,
     "sampledConcurrentMemoryMaximum": 1.1,
-    "observedProcessTreeCpuMedian": 1.1
+    "originalOwnerInclusiveCpuMedian": 1.1
   },
-  "regressionAggregation": "Candidate/reference: medians of complete wall and observed process-tree CPU; observed maxima of complete wall and sampled simultaneous complete-tree RSS. All valid comparable cells participate, including nonwinning cells. Missing/noncomparable/failed observations never fabricate numeric ratios.",
+  "regressionAggregation": "Candidate/reference: medians of complete wall and original-owner inclusive wait4 CPU; observed maxima of complete wall and sampled simultaneous complete-tree RSS. All valid comparable cells participate, including nonwinning cells. Missing/noncomparable/failed observations never fabricate numeric ratios.",
   "cells": [
     {
       "id": "single-worker",
@@ -51,14 +51,14 @@
   ],
   "samplingPolicy": "Eight independent paired launches per cell. Alternate first engine by pair index and rotate scenario order. Retain all attempts. No selective reruns or removal. An external interruption invalidates the entire affected run; retain its original evidence. No serving process or database seed may be prepared outside the complete clock. Identical disclosed one-time package/application compilation may be outside.",
   "confidencePolicy": "Point wins use median paired ratio >= 2; confirmed wins also require per-cell 95% paired confidence lower bound >= 2. Count each distinct scenario once, requiring both resource cells. At least five of nine confirmed scenarios and at least two of three application wins. No simultaneous 95% majority-confidence claim.",
-  "resourceCoveragePolicy": "Same declared whole host and worker limits for both engines, serial executions, no competing test/build jobs. Record background confounds. Include all test-owned backend/database/mail work. Missing required coverage or sampled tree RSS above 8 GiB makes a cell noncomparable; never silently exclude it. Sampled bounds are not OS-enforced limits; retain short-lived/reparented-process limitations.",
+  "resourceCoveragePolicy": "Same declared whole host and worker limits for both engines, serial executions, no competing test/build jobs. Record background confounds. Include all test-owned backend/database/mail work. Missing required coverage or sampled tree RSS above 8 GiB makes a cell noncomparable; never silently exclude it. Sampled bounds are not OS-enforced limits; retain short-lived/reparented-process limitations. CPU uses the original owner terminal wait4 receipt exactly once after raw launch, identity and reap reconstruction. Sampled CPU is diagnostic only. RSS includes non-atomic boundary observations; unsampled short-lived memory remains explicit.",
   "sealingRequirements": [
     "Final source/dependency/executable/host manifests",
     "Exact dynamically admitted original test inventories/callback hashes and application policies",
     "Reviewed complete-clock and resource collectors, including owned database and mail coverage",
     "Behavior/lifecycle and independent Playwright 1.60 baseline admission",
     "Premeasurement root approval and collector ordering evidence",
-    "Unique original watchdog/lifecycle receipts per comparable complete owner launch; lifecycle producer path/SHA in admitted source, original host and exact watchdog-clock joins, and adapter-reconstructed resources"
+    "Unique original watchdog, capture-binding and bounded raw owner-tree inventories per comparable launch; admitted observer/verifier source and executable hashes, host/boot/session/clock and original callback joins; resource values reconstructed from raw files. Application and external backend owners require their own admitted schemas."
   ],
   "scope": "Initial native macOS arm64 only. Native Linux unverified at human request and separately open. Historical engineering configs/results remain unchanged. This draft cannot accept any performance claim.",
   "scenarios": [

@@ -178,7 +178,7 @@ function readSamples(watchdog, lifecycle, owned) {
 }
 
 /**
- * Produce final-contract resource fields from retained watchdog bytes and prospective events.
+ * Preserve legacy sampled resource diagnostics; this output cannot admit final benchmark CPU.
  * Lifecycle input schema 1 contains provenance {sourceSha256, watchdogSha256}, host
  * {namespace, identitySha256}, clock {type:'monotonic', identity, watchdogOriginMilliseconds,
  * ownerInterval}, and ordered events. Every event has type, timestampMilliseconds and process
@@ -188,7 +188,7 @@ function readSamples(watchdog, lifecycle, owned) {
  * wall time. Hashes bind supplied evidence; independent source/clock/collector admission remains
  * external. This adapter neither records test/context identities nor grants acceptance.
  */
-export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collectorSha256, requiredResourceComponents }) {
+export function adaptSampledResourceDiagnostics({ watchdogReportBytes, lifecycle, collectorSha256, requiredResourceComponents }) {
   assert.ok(Buffer.isBuffer(watchdogReportBytes) || typeof watchdogReportBytes === 'string', 'Missing original watchdog report bytes');
   requireHash(collectorSha256, 'Missing collector source provenance');
   assert.equal(lifecycle?.schemaVersion, 1, 'Unknown lifecycle schema');
@@ -241,8 +241,8 @@ export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collec
   assert.equal(watchdog.observedProcessCount, aggregateIdentities.size, 'Watchdog aggregate process count differs');
   assert.equal(watchdog.maximumSampledConcurrentRssBytes, observations.sampledConcurrentBytes, 'Watchdog peak RSS differs from original samples');
   assert.equal(watchdog.observedCpuSeconds, originalCpuTotal, 'Watchdog cumulative CPU differs from original aggregate');
-  const observedProcessTreeCpuSeconds = [...observations.cumulativeCpu.values()].reduce((total, value) => total + value, 0);
-  assert.ok(approximatelyEqual(originalCpuTotal, observedProcessTreeCpuSeconds, aggregateIdentities.size), 'Sampled CPU differs from original aggregate');
+  const sampledProcessCpuSeconds = [...observations.cumulativeCpu.values()].reduce((total, value) => total + value, 0);
+  assert.ok(approximatelyEqual(originalCpuTotal, sampledProcessCpuSeconds, aggregateIdentities.size), 'Sampled CPU differs from original aggregate');
   for (const [identity] of owned) if (!observations.cumulativeCpu.has(identity)) {
     const reasons = missing.get(identity) ?? [];
     reasons.push({ reason: 'Original owned process was never observed in a watchdog snapshot' });
@@ -270,12 +270,13 @@ export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collec
   const missingRequiredComponents = requiredResourceComponents.filter(component => ![...owned.values()].some(process =>
     process.components.includes(component) && observations.cumulativeCpu.has(process.identity)));
   return {
+    schemaVersion: 1, cpuAccounting: 'maximum-per-observed-process-identity',
     collectorSha256, ownerExitCode: watchdog.exitCode, timedOut: watchdog.timedOut, interrupted: watchdog.interrupted,
     watchdogClock, ownerInterval: structuredClone(lifecycle.clock.ownerInterval),
     captureInterval, ownedProcesses: [...owned.values()].map(({ identity, namespace, processId, startIdentity, components }) =>
       ({ identity, namespace, processId, startIdentity, components })),
     workerIntervals: [...workers.values()], samples: observations.samples,
-    sampledConcurrentBytes: observations.sampledConcurrentBytes, observedProcessTreeCpuSeconds,
+    sampledConcurrentBytes: observations.sampledConcurrentBytes, sampledProcessCpuSeconds,
     missingRequiredProcessIdentities: [...missing.keys()], remainingOwnedProcesses: [...remaining],
     cleanupSignals: structuredClone(watchdog.cleanupSignals),
     provenance: { watchdogSha256: lifecycle.provenance.watchdogSha256, lifecycleSourceSha256: lifecycle.provenance.sourceSha256,
@@ -289,3 +290,5 @@ export function adaptFinalGoalResources({ watchdogReportBytes, lifecycle, collec
         'This conversion does not admit source, clock, instrumentation, test/context ownership or final performance acceptance.'] },
   };
 }
+
+export { adaptFinalGoalResources } from './final-goal-original-resources.mjs';

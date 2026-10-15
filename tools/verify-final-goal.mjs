@@ -4,8 +4,8 @@ import { constants } from 'node:fs';
 import { lstat, open } from 'node:fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { adaptFinalGoalResources } from './final-goal-resource-adapter.mjs';
-import { analyzeFinalGoal, finalGoalHash, finalGoalScenarioIds, renderFinalGoalReport,
+import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidence.mjs';
+import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
 
 export const finalGoalEvidenceLimits = Object.freeze({
@@ -15,7 +15,7 @@ export const finalGoalEvidenceLimits = Object.freeze({
 });
 
 /** Hash ordinary files with a fixed buffer; only JSON reads retain bytes until parsing. */
-async function retainedFile(directory, path, reserveJsonBytes) {
+async function retainedFile(directory, path, reserveJsonBytes, { maximumFileBytes = finalGoalEvidenceLimits.maximumFileBytes, expectedSize } = {}) {
   assert.ok(typeof path === 'string' && path && !isAbsolute(path) && !path.includes('\\') && normalize(path) === path
     && !path.split('/').some(part => ['', '.', '..'].includes(part)), 'Evidence path must be relative and contained');
   let current = directory;
@@ -26,14 +26,15 @@ async function retainedFile(directory, path, reserveJsonBytes) {
     const information = await lstat(current);
     assert.ok(!information.isSymbolicLink(), 'Evidence custody contains a symbolic link');
     assert.ok(index === path.split('/').length - 1 ? information.isFile() : information.isDirectory(), 'Unexpected evidence file type');
-    assert.ok(index !== path.split('/').length - 1 || information.size <= finalGoalEvidenceLimits.maximumFileBytes, 'Oversized evidence file');
+    assert.ok(index !== path.split('/').length - 1 || information.size <= maximumFileBytes, 'Oversized evidence file');
   }
   const before = await lstat(current);
   const file = await open(current, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   try {
     const opened = await file.stat();
     assert.ok(opened.isFile() && opened.dev === before.dev && opened.ino === before.ino && opened.size === before.size
-      && opened.size <= finalGoalEvidenceLimits.maximumFileBytes, 'Evidence changed before read');
+      && opened.size <= maximumFileBytes, 'Evidence changed before read');
+    assert.ok(expectedSize === undefined || opened.size === expectedSize, 'Raw owner evidence size differs before read');
     if (reserveJsonBytes) reserveJsonBytes(opened.size);
     const bytes = Buffer.alloc(reserveJsonBytes ? opened.size + 1
       : Math.min(opened.size + 1, finalGoalEvidenceLimits.opaqueReadChunkBytes));
@@ -115,12 +116,12 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     assert.equal(file.sha256, entry.sha256, 'Retained evidence bytes changed');
     checked.set(entry.path, file.sha256);
   }
-  async function jsonFile(path, expectedSha256, bytesOnly = false) {
-    const file = await retainedFile(directory, path, reserveJsonBytes);
+  async function jsonFile(path, expectedSha256, bytesOnly = false, limits) {
+    const file = await retainedFile(directory, path, reserveJsonBytes, limits);
     if (expectedSha256 !== undefined) assert.equal(file.sha256, expectedSha256, 'Retained evidence bytes changed');
     if (checked.has(path)) assert.equal(checked.get(path), file.sha256, 'Retained evidence bytes changed');
     checked.set(path, file.sha256);
-    return bytesOnly ? file.jsonBytes : JSON.parse(file.jsonBytes.toString('utf8'));
+    return bytesOnly ? file.jsonBytes : JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(file.jsonBytes));
   }
   async function jsonEvidence(entry) {
     verifyReceiptIdentity(entry);
@@ -166,6 +167,8 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     assert.equal(admission.gateId, gate.id);
     assert.equal(admission.verifierSha256, gate.verifierSha256);
     assert.equal(admission.sourceManifestSha256, finalGoalHash(declaration.sourceManifest), 'Gate does not bind admitted campaign source');
+    if (gate.id === 'resource-collector-admission') assert.deepEqual(admission.resourceContext,
+      finalGoalResourceContext(declaration), 'Resource collector admission differs from declared capture context');
   }
   const analysis = analyzeFinalGoal({ configuration, declaration, scenarioResults });
   const analyzedScenarios = new Map(analysis.scenarios.map(scenario => [scenario.id, scenario]));
@@ -177,13 +180,17 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
       for (const attempt of cell.attempts) for (const run of Object.values(attempt.runs)) {
         const watchdogReceipt = run.evidence.find(receipt => receipt.kind === 'watchdog');
         const lifecycleReceipt = run.evidence.find(receipt => receipt.kind === 'lifecycle');
-        const watchdogReportBytes = await jsonFile(watchdogReceipt.path, watchdogReceipt.sha256, true);
+        const treeReceipt = run.evidence.find(receipt => receipt.kind === 'owner-tree');
+        const manifest = await jsonEvidence(treeReceipt);
+        assert.equal(manifest.files?.watchdogReportBytes?.path, watchdogReceipt.path, 'Owner tree borrows another watchdog path');
+        assert.equal(manifest.files?.watchdogReportBytes?.sha256, watchdogReceipt.sha256, 'Owner tree borrows another watchdog capture');
         const lifecycle = await jsonEvidence(lifecycleReceipt);
-        const derivedResources = adaptFinalGoalResources({ watchdogReportBytes, lifecycle,
+        const derivedResources = await reconstructFinalGoalResourceEvidence(manifest, { lifecycle,
           collectorSha256: declaration.resourceCollectorSha256,
-          requiredResourceComponents: scenarios.get(result.id).requiredResourceComponents });
-        assert.deepEqual(derivedResources, run.resources, 'Resources differ from original watchdog/lifecycle reconstruction');
-        assert.deepEqual(lifecycle.clock.ownerInterval, run.report.ownerInterval, 'Lifecycle owner interval differs from original report');
+          requiredResourceComponents: scenarios.get(result.id).requiredResourceComponents },
+        (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
+        assert.deepEqual(derivedResources, run.resources, 'Resources differ from original raw owner-tree reconstruction');
+        assert.deepEqual(derivedResources.ownerInterval, run.report.ownerInterval, 'Original owner interval differs from report');
         assert.deepEqual(derivedResources.watchdogClock, run.report.watchdogClock, 'Raw watchdog clock differs from original report');
       }
     }
