@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-current-native-capture-core",
+  "date": "2026-10-15",
+  "sourceCommit": "08b8921e3eac9d12689bbc99e0fead146e3b9a5e",
+  "platform": "darwin-arm64",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "driverBuildProfile": "release",
+  "driverSha256": "468dc6a757bc613a13ea5b6f89d8fa370e06fdc76e9b881f5c59a1780e2147ec",
+  "browser": {
+    "sha256": "2447c7bdea8e8ad38b52594f1ba53e18821c05445e8a07ad1cf3b0f23931d89d",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "full-chromium"
+  },
+  "checksPassed": 200,
+  "checkLogHashesVerified": 200,
+  "sourceEntriesUnchanged": 1176,
+  "sourceChangedDuringVerification": false,
+  "browserChangedDuringVerification": false,
+  "engineConfiguration": {
+    "residentAssertions": true,
+    "conditionInstrumentation": false
+  },
+  "rustTests": {
+    "passed": 478,
+    "failed": 0,
+    "ignored": 1
+  },
+  "supervision": {
+    "exitCode": 0,
+    "timedOut": false,
+    "cleanupSignals": [],
+    "remainingObservedProcesses": []
+  },
+  "receipts": {
+    "coreReportSha256": "acd8d5edad866a8b4b13e9786d0cb311d84f718f879e77290e0de51f6f1124bb",
+    "coreLogSha256": "325aa5aeba58539ed9ec1b1a0610f08373949d83c7d8e29233083be7ad8ce5c8",
+    "watchdogSha256": "f77934c2e0bb32d29124c76d592435aa320ff5b8936f1556fb314994710011ee"
+  },
+  "priorAttempt": {
+    "status": "failed-before-build",
+    "cause": "Download parity review retained the previous supervisor implementation hash. Updated that single source reference; parity classifications and generated tables did not change.",
+    "retained": true
+  },
+  "scope": "Full development core with the merged guardian custody and opt-in native resource capture implementation. Default runtime settings; no renderer reservation, native diagnostics or pointer-readiness experiment enabled in this gate.",
+  "limitations": [
+    "One native macOS arm64 host and the pinned full Chrome distribution.",
+    "Native Linux remains unverified by user direction.",
+    "This gate does not verify the private benchmark collector, establish whole-resource coverage, prove a speedup or complete release acceptance."
+  ],
+  "performanceAdmission": false,
+  "nativeLinuxVerified": false,
+  "releaseAdmission": false
+}
