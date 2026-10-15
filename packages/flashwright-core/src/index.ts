@@ -406,6 +406,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
       waitForSelector: { className: 'Frame', parameters: ['selector', 'options'] },
       waitForFunction: { className: 'Frame', parameters: ['expression', 'arg', 'options'], prepareArguments: prepareFunctionWaitArguments },
       setInputFiles: { className: 'Frame', parameters: ['selector', 'files', 'options'] },
+      setContent: { className: 'Frame', parameters: ['html', 'options'] },
       addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'], completion: 'independent' }, waitForNavigation: { parameters: ['options'], completion: 'independent' }, waitForURL: { parameters: ['url', 'options'], completion: 'independent' }, waitForResponse: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForEvent: eventWaitTrace, close: {},
     });
   }
@@ -759,6 +760,17 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     const result = await this.client.request('page.goto', { page: this.identifier, url: resolved, waitUntil: navigationOptions.waitUntil ?? 'load', ...(navigationOptions.referer !== undefined ? { referer: navigationOptions.referer } : {}) }, timeout) as { response: ResponseMetadata | null; frames: FrameSnapshot[] };
     for (const snapshot of result.frames) this.updateFrame(snapshot);
     return result.response ? this.responseFor(result.response) : null;
+  }
+  async setContent(html: string, contentOptions: NavigationWaitOptions = {}): Promise<void> {
+    const method = 'page.setContent';
+    this.checkOpen(method);
+    options(method, contentOptions, ['timeout', 'waitUntil']);
+    if (typeof html !== 'string') throw failure('InvalidArgumentError', method, 'html must be a string');
+    if (html.length > 1000000) throw failure('ResourceLimitError', method, 'HTML exceeds 1000000 UTF-16 units');
+    const timeout = validateTimeout(contentOptions.timeout ?? this.navigationTimeout(), method);
+    const waitUntil = contentOptions.waitUntil ?? 'load';
+    if (!['load', 'domcontentloaded', 'networkidle', 'commit'].includes(waitUntil)) throw failure('InvalidArgumentError', `${method}.waitUntil`, 'invalid navigation lifecycle state');
+    await this.client.request(method, { page: this.identifier, htmlUtf16Base64: Buffer.from(html, 'utf16le').toString('base64'), waitUntil }, timeout);
   }
   reload(navigationOptions: NavigationWaitOptions = {}): Promise<Response | null> {
     return this.navigateHistory('page.reload', navigationOptions);

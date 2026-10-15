@@ -57,6 +57,9 @@ try {
   assert.deepEqual(await scriptedPage.evaluate(() => [globalThis.contextSeed, globalThis.pageSeed]), [undefined, undefined]);
   await scriptedContext.close();
   const page = await browser.newPage();
+  assert.equal(await page.setContent('<title>Packed content</title><p>replacement</p>', { waitUntil: 'domcontentloaded', timeout: 3000 }), undefined);
+  assert.equal(await page.title(), 'Packed content');
+  assert.equal(await page.locator('p').textContent(), 'replacement');
   assert.equal(await page.evaluate(value => value.answer, { answer: 42 }), 42);
   const parentHandle = await page.evaluateHandle(() => ({ child: { answer: 42 } }));
   const childHandle = await parentHandle.getProperty('child');
@@ -218,6 +221,11 @@ async function example(): Promise<number> {
     // @ts-expect-error Download policy preserves boolean option types.
     await browser.newContext({ acceptDownloads: 'false' });
     const page: Page = await context.newPage();
+    const replacedContent: void = await page.setContent('<p>packed</p>', { waitUntil: 'load', timeout: 1000 });
+    // @ts-expect-error Content replacement accepts text, not a binary buffer.
+    await page.setContent(Buffer.from('packed'));
+    // @ts-expect-error Content replacement preserves navigation lifecycle option types.
+    await page.setContent('packed', { waitUntil: 'paint' });
     const insertedText: void = await page.keyboard.insertText('packedé😃');
     await page.keyboard.insertText('');
     // @ts-expect-error Native text insertion accepts strings only.
@@ -385,6 +393,7 @@ const evidence = {
   packagedRuntime: runtimePackagePath ? { packageName: runtimePackageName, archiveSha256: createHash('sha256').update(await readFile(runtimeArchive)).digest('hex'), manifest: JSON.parse(await readFile(join(dirname(runtimePackagePath), 'runtime.json'), 'utf8')), installation: 'offline local tarballs, lifecycle scripts disabled, Cargo absent from consumer PATH' } : null,
   driverSha256: createHash('sha256').update(await readFile(selectedDriver)).digest('hex'),
   checks: ['Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'default Download event, class/page identity, exact binary path/save/stream bytes, cancellation and deletion in both module formats', 'all nine Download method declarations and boolean acceptDownloads policy', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  contentReplacement: 'Page.setContent return, title, DOM, waitUntil and timeout options pass in packed ESM and CommonJS consumers',
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
 const destination = join(reportDirectory, `packed-library-${process.platform}-${process.arch}-${runtimeArtifactLabel}.json`);

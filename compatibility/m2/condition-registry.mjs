@@ -565,6 +565,35 @@ try {
   await finish(await start(text('css=p', 'never', { timeoutMilliseconds: 30 })), 'expired');
   await clean('application realm cannot forge an isolated condition outcome');
 
+  await reset('<p>before</p>', true, false, true, true);
+  const documentReplacement = await start(text('css=p', 'after'));
+  await evaluate(`(() => {
+    document.open();
+    testConditions.documentReplaced();
+    document.write('<p>after</p>');
+    document.close();
+  })()`);
+  await finish(documentReplacement);
+  const replacementState = await clean('document replacement preserves waits with fallback frames and timers withheld');
+  assert(replacementState.mutationBatches > 0);
+
+  await reset('<input value="before">', false, false, true, true);
+  const replacementEvent = await start({ selector: 'css=input', expression: 'to.have.value', request: { expectedText: [{ string: 'after' }] } });
+  await evaluate(`(() => {
+    document.open();
+    testConditions.documentReplaced();
+    document.write('<input value="before">');
+    document.close();
+  })()`);
+  await page.evaluate(() => {
+    const input = document.querySelector('input');
+    input.value = 'after';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await finish(replacementEvent);
+  const replacementEventState = await clean('document replacement restores input-event listeners with observers and fallbacks withheld');
+  assert.equal(replacementEventState.mutationBatches, 0);
+
   await reset('<p>before</p>');
   const navigation = await start(text('css=p', 'never'));
   const oldResult = evaluate(`testPromises.get(${JSON.stringify(navigation)})`).then(result => result.status, error => error.message);
