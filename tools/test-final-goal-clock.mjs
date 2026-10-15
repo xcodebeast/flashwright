@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import test from 'node:test';
 import { createFinalGoalClock } from './final-goal-clock.mjs';
 
+const projectDirectory = resolve(import.meta.dirname, '..');
 const python = process.env.FLASHWRIGHT_PYTHON_PATH ?? 'python3';
 const pythonClock = JSON.parse(spawnSync(python, ['-c', `
 import json,time
@@ -50,7 +50,8 @@ for line in sys.stdin:
 
 test('closed and incompatible capture records fail before emitting a timestamp', async () => {
   for (const changed of [
-    { implementation: 'clock_gettime(CLOCK_MONOTONIC)' },
+    { implementation: pythonClock.implementation === 'mach_absolute_time()' ? 'clock_gettime(CLOCK_MONOTONIC)' : 'mach_absolute_time()' },
+    { implementation: 'clock_gettime(CLOCK_MONOTONIC_RAW)' },
     { originNanoseconds: '-1' },
     { originNanoseconds: '18446744073709551615' },
     { identity: 'missing' },
@@ -79,9 +80,10 @@ test('caller mutation during native module loading cannot relabel the original c
 });
 
 test('separate Bun processes retain the actual watchdog origin and a common OS time domain', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'flashwright-final-clock-test-'));
+  await mkdir(join(projectDirectory, 'workbench'), { recursive: true });
+  const directory = await mkdtemp(join(projectDirectory, 'workbench', 'flashwright-final-clock-test-'));
   const clockModule = new URL('./final-goal-clock.mjs', import.meta.url).href;
-  const watchdog = resolve(import.meta.dirname, 'watchdog.py');
+  const watchdog = join(projectDirectory, 'tools/watchdog.py');
   const worker = join(directory, 'worker.mjs');
   const controller = join(directory, 'controller.py');
   const resources = join(directory, 'resources.json');
