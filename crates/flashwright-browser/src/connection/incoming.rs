@@ -360,6 +360,7 @@ pub(super) async fn read_messages<Reader: AsyncRead + Unpin>(
 ) {
     let mut chunk = [0_u8; 65536];
     let mut message = FrameBuffer::new(MAXIMUM_WIRE_BYTES);
+    let mut messages_since_yield = 0;
     let failure = 'reading: loop {
         let length = match reader.read(&mut chunk).await {
             Ok(0) => break disconnected(),
@@ -382,6 +383,14 @@ pub(super) async fn read_messages<Reader: AsyncRead + Unpin>(
             }
             message.reset();
             start = end + 1;
+            // A single read can contain thousands of complete events. Give the
+            // bounded output writer and operation waiters a turn between batches,
+            // even when the browser pipe stays readable. Keep wire order intact.
+            messages_since_yield += 1;
+            if messages_since_yield == 32 {
+                messages_since_yield = 0;
+                tokio::task::yield_now().await;
+            }
         }
         if let Err(error) = message.append(&chunk[start..length]) {
             break error;
