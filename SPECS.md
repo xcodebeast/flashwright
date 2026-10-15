@@ -27,6 +27,8 @@ The delivery target is a practical drop-in replacement for most projects, not ex
 
 The primary objective is decisive, reproducible performance leadership while approaching drop-in use across almost any Playwright codebase in the declared browser scope. Small unresolved gains do not meet that ambition. Modified Chromium, native browser operations, renderer preparation and a different browser architecture are valid experiments when they preserve real application behavior and improve complete work. The current component choices are hypotheses, not limits on the design space; apply S6 evidence and S13 semantic gates to replacements
 
+The [integrated content-core checkpoint](compatibility/evidence/integrated-content-core-checkpoint-2026-10-15.json) passes all 202 macOS core checks at 53960c2b using the release driver and full Chrome for Testing. It includes Page.setContent, the development-build improvement and browser shutdown changes, with 492 Rust tests passed and one ignored. All 1196 source entries and the browser remained unchanged; the original supervisor observed no remaining processes or cleanup signals. Native Linux, other browser distributions, release publication and the representative majority-scenario 2× performance goal remain unverified.
+
 ## S2 Selected decisions and rationale
 
 Earlier exploration informed these choices, but its removed artifacts aren't reproducible evidence for the main build. Establish new baselines in M0 using S6; don't quote retired pilot numbers as verified product performance
