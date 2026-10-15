@@ -3,6 +3,7 @@
 
 import argparse
 import ctypes
+import errno
 from datetime import datetime, timezone
 import json
 import os
@@ -83,7 +84,45 @@ def adopt_orphaned_descendants():
     return True
 
 
+def parse_linux_process_stat(output, clock_ticks, page_size, boot_seconds):
+    # comm is parenthesized but can itself contain spaces, ')' and newlines.
+    # Everything after its final ')' has the fixed /proc/PID/stat field order.
+    process = int(output.split(' (', 1)[0])
+    fields = output[output.rindex(')') + 2:].split()
+    return process, {
+        "parent": int(fields[1]), "group": int(fields[2]),
+        "rssBytes": int(fields[21]) * page_size,
+        "cpuSeconds": (int(fields[11]) + int(fields[12])) / clock_ticks,
+        "state": fields[0],
+        "started": time.asctime(time.localtime(boot_seconds + int(fields[19]) // clock_ticks)),
+    }
+
+
+def linux_process_snapshot():
+    clock_ticks = os.sysconf('SC_CLK_TCK')
+    page_size = os.sysconf('SC_PAGE_SIZE')
+    boot_seconds = next(int(line.split()[1]) for line in Path('/proc/stat').read_text().splitlines()
+                        if line.startswith('btime '))
+    processes = {}
+    with os.scandir('/proc') as entries:
+        for entry in entries:
+            if not entry.name.isdecimal():
+                continue
+            try:
+                output = (Path(entry.path) / 'stat').read_text(errors='surrogateescape')
+            except OSError as error:
+                if error.errno in (errno.ENOENT, errno.ESRCH, errno.EACCES, errno.EPERM):
+                    continue  # Exited or hidden processes are outside this sample.
+                raise
+            process, details = parse_linux_process_stat(output, clock_ticks, page_size, boot_seconds)
+            assert process == int(entry.name)
+            processes[process] = details
+    return processes
+
+
 def process_snapshot():
+    if sys.platform == 'linux':
+        return linux_process_snapshot()
     output = subprocess.check_output(["ps", "-axo", "pid=,ppid=,pgid=,rss=,time=,stat=,lstart="], text=True)
     processes = {}
     for line in output.splitlines():
@@ -332,7 +371,7 @@ def main():
             "cleanupSignals": cleanup_signals,
             "cleanup": cleanup,
             "linuxChildSubreaper": subreaper,
-            "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU sums maximum observed process time per PID/start identity, preserving work when zombie accounting resets; it is not an exact kernel tree accounting. ps CPU precision is platform-dependent (centiseconds on macOS, whole seconds on the pinned Linux image). RSS is a concurrent sum, not summed per-process maxima.",
+            "coverage": "Observed descendants including detached browser groups; sub-sampling-lifetime children and processes reparented before observation may be missed. CPU sums maximum observed process time per PID/start identity, preserving work when zombie accounting resets; it is not an exact kernel tree accounting. Linux CPU uses /proc/PID/stat user/system ticks at SC_CLK_TCK resolution; macOS uses ps centiseconds. Start tokens retain process-table whole-second precision. RSS is a concurrent sum of sampled resident counters, not summed per-process maxima or an exact page-table census.",
             "samples": samples,
         }
         if context:

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import select
 import subprocess
 import sys
 import tempfile
@@ -13,7 +14,44 @@ import time
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
-from tools.watchdog import RootProcessCpuAccounting, cleanup_owned_processes, main, record_cpu_observation
+from tools.watchdog import (RootProcessCpuAccounting, cleanup_owned_processes, main,
+                           parse_linux_process_stat, process_snapshot, record_cpu_observation)
+
+
+@unittest.skipUnless(sys.platform == 'linux', 'Linux native process counters')
+class LinuxProcessSnapshotTests(unittest.TestCase):
+    def test_native_fields_exclude_waited_child_cpu_and_parse_unusual_names(self):
+        fields = ['0'] * 22
+        for index, value in {0: 'S', 1: '41', 2: '42', 11: '7', 12: '18',
+                             13: '9000', 14: '8000', 19: '12345', 21: '4'}.items():
+            fields[index] = value
+        stat = '123 (name with ) and\na newline) ' + ' '.join(fields)
+        process, observed = parse_linux_process_stat(stat, 250, 16384, 0)
+        self.assertEqual(process, 123)
+        self.assertEqual(observed, {
+            'parent': 41, 'group': 42, 'state': 'S', 'cpuSeconds': 0.1,
+            'rssBytes': 65536, 'started': time.asctime(time.localtime(49)),
+        })
+        with self.assertRaises((ValueError, IndexError)):
+            parse_linux_process_stat('123 (truncated) S 1', 250, 16384, 0)
+
+    def test_subsecond_cpu_is_observed_before_the_child_exits(self):
+        script = ('import time,sys; started=time.process_time()\n'
+                  'while time.process_time()-started < 0.2: pass\n'
+                  'print("ready",flush=True); sys.stdin.read()')
+        with subprocess.Popen([sys.executable, '-c', script], stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE, text=True) as child:
+            try:
+                self.assertTrue(select.select([child.stdout], [], [], 5)[0])
+                self.assertEqual(child.stdout.readline().strip(), 'ready')
+                observed = process_snapshot()[child.pid]
+                self.assertGreaterEqual(observed['cpuSeconds'], 0.19)
+                self.assertEqual(observed['parent'], os.getpid())
+                self.assertGreater(observed['rssBytes'], 0)
+                started = subprocess.check_output(['ps', '-p', str(child.pid), '-o', 'lstart='], text=True).strip()
+                self.assertEqual(observed['started'], started)
+            finally:
+                child.communicate(timeout=5)
 
 
 class PollingChild:
