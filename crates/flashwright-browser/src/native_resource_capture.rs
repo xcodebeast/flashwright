@@ -2,9 +2,9 @@
 
 use std::fs::{File, OpenOptions};
 use std::io::{self, Write};
-use std::os::fd::OwnedFd;
+use std::os::fd::{AsRawFd, OwnedFd};
 use std::os::unix::fs::OpenOptionsExt;
-use std::os::unix::net::UnixDatagram;
+use std::os::unix::net::{UnixDatagram, UnixStream};
 use std::os::unix::process::ExitStatusExt;
 use std::path::Path;
 use std::process::ExitStatus;
@@ -19,6 +19,7 @@ const MAXIMUM_SHUTDOWN_DRAIN: Duration = Duration::from_millis(100);
 
 pub(crate) struct Capture {
     stopped: Arc<AtomicBool>,
+    shutdown: Option<UnixStream>,
     reader: Option<JoinHandle<io::Result<()>>>,
     browser_exit: Arc<Mutex<Option<serde_json::Value>>>,
 }
@@ -43,8 +44,9 @@ impl Capture {
         maximum_bytes: usize,
     ) -> io::Result<(Self, OwnedFd)> {
         let (incoming, outgoing) = UnixDatagram::pair()?;
-        incoming.set_read_timeout(Some(Duration::from_millis(50)))?;
+        incoming.set_nonblocking(true)?;
         outgoing.set_nonblocking(true)?;
+        let (shutdown, shutdown_reader) = UnixStream::pair()?;
         let stopped = Arc::new(AtomicBool::new(false));
         let reader_stopped = stopped.clone();
         let browser_exit = Arc::new(Mutex::new(None));
@@ -53,10 +55,15 @@ impl Capture {
             .name("native-resource-capture".into())
             .spawn(move || {
                 collect(
-                    |buffer| incoming.recv(buffer),
+                    |buffer| {
+                        if !reader_stopped.load(Ordering::Acquire) {
+                            wait_for_input_or_shutdown(&incoming, &shutdown_reader)?;
+                        }
+                        incoming.recv(buffer)
+                    },
                     output,
                     completion,
-                    reader_stopped,
+                    reader_stopped.clone(),
                     recorded_exit,
                     maximum_bytes,
                     MAXIMUM_SHUTDOWN_DRAIN,
@@ -65,6 +72,7 @@ impl Capture {
         Ok((
             Self {
                 stopped,
+                shutdown: Some(shutdown),
                 reader: Some(reader),
                 browser_exit,
             },
@@ -76,6 +84,9 @@ impl Capture {
     /// producer cannot extend the bounded shutdown drain indefinitely.
     pub(crate) fn finish(&mut self) -> io::Result<()> {
         self.stopped.store(true, Ordering::Release);
+        // Closing a separate control socket wakes poll without injecting a diagnostic record.
+        // The reader then consumes the data socket nonblockingly until it is drained.
+        self.shutdown.take();
         match self.reader.take() {
             Some(reader) => reader
                 .join()
@@ -89,6 +100,30 @@ impl Capture {
             "process": process, "code": status.code(), "signal": status.signal(),
         }));
     }
+}
+
+#[allow(unsafe_code)]
+fn wait_for_input_or_shutdown(incoming: &UnixDatagram, shutdown: &UnixStream) -> io::Result<()> {
+    let mut descriptors =
+        [incoming.as_raw_fd(), shutdown.as_raw_fd()].map(|descriptor| nix::libc::pollfd {
+            fd: descriptor,
+            events: nix::libc::POLLIN,
+            revents: 0,
+        });
+    // Both borrowed sockets remain open for this call, and poll writes only into this array.
+    let result = unsafe { nix::libc::poll(descriptors.as_mut_ptr(), 2, -1) };
+    if result < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if descriptors
+        .iter()
+        .any(|descriptor| descriptor.revents & nix::libc::POLLNVAL != 0)
+    {
+        return Err(io::Error::other(
+            "native capture poll descriptor is invalid",
+        ));
+    }
+    Ok(())
 }
 
 impl Drop for Capture {
@@ -207,6 +242,58 @@ mod tests {
     use super::*;
 
     #[test]
+    fn control_socket_wakes_reader_while_diagnostic_writer_remains_open() {
+        let (incoming, _outgoing) = UnixDatagram::pair().unwrap();
+        let (shutdown, shutdown_reader) = UnixStream::pair().unwrap();
+        let (started_sender, started_receiver) = std::sync::mpsc::channel();
+        let (finished_sender, finished_receiver) = std::sync::mpsc::channel();
+        let reader = std::thread::spawn(move || {
+            started_sender.send(()).unwrap();
+            finished_sender
+                .send(wait_for_input_or_shutdown(&incoming, &shutdown_reader))
+                .unwrap();
+        });
+        started_receiver.recv().unwrap();
+        assert!(matches!(
+            finished_receiver.recv_timeout(Duration::from_millis(20)),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ));
+        drop(shutdown);
+        finished_receiver
+            .recv_timeout(Duration::from_secs(1))
+            .unwrap()
+            .unwrap();
+        reader.join().unwrap();
+    }
+
+    #[test]
+    fn shutdown_control_preserves_queued_data_with_an_open_writer() {
+        let directory = tempfile::tempdir().unwrap();
+        let output = directory.path().join("events");
+        let completion = directory.path().join("completion");
+        let (mut capture, writer) = Capture::start_reader(
+            private_file(&output).unwrap(),
+            private_file(&completion).unwrap(),
+            1000,
+        )
+        .unwrap();
+        let writer = UnixDatagram::from(writer);
+        for _ in 0..16 {
+            writer.send(b"{}\n").unwrap();
+        }
+        capture.record_browser_exit(123, ExitStatus::from_raw(0));
+        capture.finish().unwrap();
+        assert_eq!(std::fs::read_to_string(output).unwrap(), "{}\n".repeat(16));
+        let record: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(completion).unwrap()).unwrap();
+        assert_eq!(record["status"], "captured");
+        assert_eq!(record["datagramsReceived"], 16);
+        assert_eq!(record["shutdownDrainComplete"], true);
+        assert!(capture.finish().is_ok());
+        drop(writer);
+    }
+
+    #[test]
     fn continuous_input_cannot_prevent_shutdown_after_capacity_failure() {
         let directory = tempfile::tempdir().unwrap();
         let output_path = directory.path().join("events");
@@ -285,6 +372,7 @@ mod tests {
     fn reader_panic_is_returned_by_explicit_finish() {
         let mut capture = Capture {
             stopped: Arc::new(AtomicBool::new(false)),
+            shutdown: None,
             reader: Some(std::thread::spawn(|| panic!("injected reader failure"))),
             browser_exit: Arc::new(Mutex::new(None)),
         };
