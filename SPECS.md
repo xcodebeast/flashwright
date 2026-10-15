@@ -791,6 +791,8 @@ Release verification must cover:
 
 Core verification runs against the explicitly selected pinned stock Chromium distribution, either full Chrome for Testing or Chromium headless shell. Shared conformance fixtures retain the same cases and expected behavior for both. Record the executable version, distribution and hash in each receipt; a successful run on one distribution does not verify the other.
 
+Intentional process-fault lifecycle fixtures disable core dumps only in their spawned worker tree before executing the selected runtime. Host dump handlers can otherwise delay renderer termination and crash notification beyond the fixture deadline. Preserve the original worker PID/session, crash assertions and cleanup deadlines; do not change system dump settings or ordinary product launch behavior.
+
 a. Rust formatting/lint/unit/integration, TypeScript declaration/runtime checks and reproducible locked builds
 b. Differential API fixtures for supported defaults/options, return/error values, locators, events, callbacks, input, navigation and artifacts; compare semantic outcomes with S4's permitted sampling differences
 c. Cancellation/deadline races, blocked outgoing pipe, blocked renderer/Rust/Node worker, stale generations, crashes/disconnects, callback rejection and resource cleanup
