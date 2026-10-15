@@ -438,5 +438,33 @@
       "status": "passed",
       "resultSha256": "35f664f2826211526662071a529e5cb7ba58e06a5f981d77265309d6d0010899"
     }
+  },
+  "currentHelperVerification": {
+    "date": "2026-10-15",
+    "sourceCommit": "198fa0d7cb23b30e4ec96389b969d7e658b74387",
+    "status": "passed",
+    "platform": "darwin",
+    "helperHashes": {
+      "compile-chromium-sources.mjs": "9f5721add9a7d120b636d3f6b5ae2dea0356f3843e9bda518dfaa7bb6181f2ab",
+      "configure-chromium-build.mjs": "2d4ecc9e5e2d03872f9ee5570ba78c453e1a3c9e7c8c5f02b965180561fe0baa"
+    },
+    "checks": [
+      "regeneration-before-query",
+      "multiple-source-variants",
+      "paths-with-spaces",
+      "no-link",
+      "unchanged-object-reuse",
+      "independent-errors",
+      "unselected-and-outside-source-rejection",
+      "preserved-args",
+      "stable-configuration",
+      "different-root-rejection",
+      "single-generation-for-unchanged-policy",
+      "regeneration-for-changed-archive-dependencies"
+    ],
+    "archiveDependencyExclusions": "passed",
+    "testSourceSha256": "5ed09992c9a70b34f079726b240281cd7c222d25f1322b684b3d8c6ae6b67dea",
+    "receiptSha256": "35f664f2826211526662071a529e5cb7ba58e06a5f981d77265309d6d0010899",
+    "scope": "Current helpers include the later unchanged-archive-policy generation skip. Small real GN/Ninja/Clang fixtures pass; the Chromium checkout is read only and successful fixture outputs are removed. This is regression verification, not a repeat of the historical timing comparisons."
   }
 }

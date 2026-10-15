@@ -423,8 +423,15 @@
         "driver",
         "application-server"
       ],
-      "admissionState": "Pinned offline reproduction absent in reviewed integration checkout. External-demo functional evidence cannot be promoted to final speed acceptance.",
-      "suiteSource": "compatibility/migration-projects/svgomg/tests/example.spec.ts"
+      "admissionState": "The retained offline SVGOMG distribution exists and all 49 original file identities verify. Historical local functional admission passed all six unchanged tests on Playwright and Flashwright with the declared common HTML/setup/import adaptations; see compatibility/evidence/svgomg-functional-checkpoint-2026-10-11.json. This replaces the stale missing-corpus note. Final callback and application-policy manifests, current two-cell admission, complete-clock/resource adapters and paired measurements remain pending. Historical functional evidence is not final performance acceptance.",
+      "suiteSource": "compatibility/migration-projects/offline-svgomg/provenance.json",
+      "corpusAdmission": {
+        "checkpoint": "compatibility/evidence/svgomg-functional-checkpoint-2026-10-11.json",
+        "checkpointSha256": "da1e549b9573ae5972df6f3590ae1cb7e54a701e7e4e2639de1b1dac401cd045",
+        "manifestSha256": "4155f485c05b43d33e62d7be9cd8d4bb5c3e68e68fbdd4898d1ee294fe6c427f",
+        "retainedFilesVerified": 49,
+        "performanceAccepted": false
+      }
     },
     {
       "id": "application-backend-corpus",
@@ -464,14 +471,14 @@
         "database",
         "mail"
       ],
-      "admissionState": "Development-only functional diagnosis passed all original 62 tests for pinned Playwright 1.60.0 and a Flashwright development alias at workers 1 and 4; the original candidate 61/62 navigation failure remains retained separately. A later fresh packed alias test consumer passed all original 62 tests at workers 1 and 4 using the actual installed release-build driver, unchanged test/helper bodies, 118 unchanged frontend files plus a declared test-only package.json adaptation, the common prebuilt frontend and fresh PostgreSQL/Mailpit state with four FastAPI workers; see compatibility/evidence/backend-corpus-packed-checkpoint-2026-10-11.json. Both functional gates used trace off; this draft's on-first-retry policy requires fresh admission and measurements before sealing. Final callback/source/application-policy manifests, current full-core and complete-clock/owned-resource collector admission and paired measurements remain pending. This selected packed functional gate does not establish native Linux, release publication or performance acceptance.",
+      "admissionState": "Development-only functional diagnosis passed all original 62 tests for pinned Playwright 1.60.0 and a Flashwright development alias at workers 1 and 4; the original candidate 61/62 navigation failure remains retained separately. A later fresh packed alias test consumer passed all original 62 tests at workers 1 and 4 using the actual installed release-build driver, unchanged test/helper bodies, 118 unchanged frontend files plus a declared test-only package.json adaptation, the common prebuilt frontend and fresh PostgreSQL/Mailpit state with four FastAPI workers; see compatibility/evidence/backend-corpus-packed-checkpoint-2026-10-11.json. Both functional gates used trace off; this draft's on-first-retry policy requires fresh admission and measurements before sealing. Final callback/source/application-policy manifests, current full-core and complete-clock/owned-resource collector admission and paired measurements remain pending. This selected packed functional gate does not establish native Linux, release publication or performance acceptance. The later common signup-helper correction passes all62 tests in each of four development launches (both frameworks at workers1and4), with229 native child lifetimes reconciled; see compatibility/evidence/backend-signup-synchronization-checkpoint-2026-10-15.json. These corrected-corpus trace-off runs remain separate from original-helper and packed runs and admit no speed claim.",
       "suiteSource": "fastapi/full-stack-fastapi-template/frontend/tests",
       "upstream": {
         "repository": "https://github.com/fastapi/full-stack-fastapi-template",
         "commit": "7257e606cb94eada1dca40173e2b7f99dd549bc6",
         "referenceVersion": "1.63.0",
         "comparisonReferenceVersion": "1.60.0",
-        "configurationAdaptation": "Common pinned dependency, browser/resource and reporter/environment configuration only; unchanged test/helper bodies. Independently admit baseline on 1.60.0.",
+        "configurationAdaptation": "Common pinned dependency, browser/resource and reporter/environment configuration; all62 test bodies unchanged. New comparisons use the identical signup synchronization correction in both frameworks, as required by SPECS S6. Historical original-helper results remain separate.",
         "lexicalSpecTestCounts": {
           "admin": 12,
           "items": 9,
@@ -501,7 +508,15 @@
           "frontend/playwright.config.ts": "6b2552f656b75af4dca3a99b780bd1e0241d833df9e4350dbc0f9e98b27bf34f",
           "compose.override.yml": "eee327dadb2e34d2e338bb623a676ecf476bc3d7f2d896b6ac24c7ef4ce05b79"
         },
-        "sourceInventoryStage": "The pinned seven test files and helper bodies are preserved. The earlier reference/development reports and later fresh packed alias reports independently match all 62 original project/file/title/line identities (61 Chromium tests plus auth setup) at workers 1 and 4. The packed reports also preserve all original runner IDs; see compatibility/evidence/backend-corpus-packed-checkpoint-2026-10-11.json. The separate lexical inventory remains historical; final callback/source manifests and sealing are pending."
+        "sourceInventoryStage": "Historical development and packed admissions preserved the pinned seven test files and helper bodies. New comparisons retain all62 test bodies and apply the declared common signup-helper correction; the original retainedSourceManifest remains the upstream identity, not the corrected copy. Final callback/source manifests and sealing remain pending.",
+        "corpusCorrection": {
+          "checkpoint": "compatibility/evidence/backend-signup-synchronization-checkpoint-2026-10-15.json",
+          "path": "frontend/tests/utils/user.ts",
+          "originalSha256": "161c6c87d3da96ad4c51243a63af5c1948bf86bf64a1e48d8a7998194efd9dbc",
+          "correctedSha256": "212c3ec29fbd12762366699fdd5b18c5a09de17f083b4a5e51745979cef7bdc6",
+          "sameBytesBothFrameworks": true,
+          "poolWithOriginalHelperTimings": false
+        }
       }
     }
   ],
