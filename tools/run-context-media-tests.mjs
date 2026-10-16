@@ -16,7 +16,7 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const report = { status: 'running', ...runtimeMetadata, sources: await sourceManifest(),
   browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? reference.executablePath()),
   driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, placement: {},
-  scope: 'Immutable context media preferences in main and same-process documents. Cross-origin placement is recorded per case; cross-process coverage requires both reference target inspection and candidate remote-operation rejection. Remote user init scripts remain unsupported. No performance claim.',
+  scope: 'Immutable context media preferences in main and same-process documents. Cross-origin placement is recorded per case; cross-process coverage requires both reference target inspection and candidate remote-operation rejection. Remote user init scripts have a separate conformance gate. No performance claim.',
   candidateRemoteOwnershipChecks: [] };
 function readMedia() {
   return { light: matchMedia('(prefers-color-scheme:light)').matches,
@@ -89,7 +89,7 @@ async function run(name, chromium) {
         observations.push({ label, initial, parent, child, successor, later: laterState });
         await state(siblingPage, defaults, false);
       } finally { await context.close(); }
-      // Remote init scripts have an independent unsupported boundary. Observe first application script instead.
+      // Observe media in the first application script; init-script lifecycle has separate coverage.
       const remoteContext = await browser.newContext(options);
       try {
         const page = await remoteContext.newPage(); await page.goto(origin + '/remote-parent');

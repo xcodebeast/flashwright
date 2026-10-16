@@ -25,6 +25,14 @@ const { once } = await import('node:events');
 const { readFile, stat } = await import('node:fs/promises');
 const downloadBytes = Buffer.from([0, 255, 65, 195, 169, 0]);
 const server = createServer((request, response) => {
+  if (request.url === '/packed-init') {
+    response.end('<iframe name="init-child" src="http://localhost:' + server.address().port + '/packed-init-child"></iframe>');
+    return;
+  }
+  if (request.url === '/packed-init-child') {
+    response.end('<script>globalThis.initialSeeds = [globalThis.contextSeed, globalThis.pageSeed]</script>');
+    return;
+  }
   if (request.url === '/packed-download') {
     response.writeHead(200, { 'content-type': 'application/octet-stream', 'content-disposition': 'attachment; filename="packed.bin"' });
     response.end(downloadBytes);
@@ -57,11 +65,13 @@ try {
   assert.deepEqual(await scriptedPage.evaluate(() => globalThis.contextSeed), { text: 'packed context' });
   const pageScript = await scriptedPage.addInitScript({ content: 'globalThis.pageSeed = "packed page";' });
   assert.equal(await scriptedPage.evaluate(() => globalThis.pageSeed), undefined);
-  await scriptedPage.goto('http://127.0.0.1:' + server.address().port);
+  await scriptedPage.goto('http://127.0.0.1:' + server.address().port + '/packed-init');
   assert.deepEqual(await scriptedPage.evaluate(() => [globalThis.contextSeed, globalThis.pageSeed]), [{ text: 'packed context' }, 'packed page']);
+  assert.deepEqual(await scriptedPage.frame('init-child').evaluate(() => initialSeeds), [{ text: 'packed context' }, 'packed page']);
   await contextScript.dispose(); await pageScript[Symbol.asyncDispose]();
-  await scriptedPage.goto('http://127.0.0.1:' + server.address().port);
+  await scriptedPage.goto('http://127.0.0.1:' + server.address().port + '/packed-init');
   assert.deepEqual(await scriptedPage.evaluate(() => [globalThis.contextSeed, globalThis.pageSeed]), [undefined, undefined]);
+  assert.deepEqual(await scriptedPage.frame('init-child').evaluate(() => initialSeeds), [undefined, undefined]);
   await scriptedContext.close();
   const page = await browser.newPage();
   assert.equal(await page.setContent('<title>Packed content</title><p>replacement</p>', { waitUntil: 'domcontentloaded', timeout: 3000 }), undefined);

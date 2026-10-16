@@ -813,7 +813,7 @@ impl Engine {
             }
             if purpose == PagePurpose::Public {
                 self.configure_page_routing(&page_identifier, &page, &browser, context.state.routing_registered.load(Ordering::Acquire), operation).await?;
-                self.initialize_page_scripts(&page_identifier, &page, &browser, operation).await?;
+                self.initialize_renderer_scripts(&page_identifier, &page, &browser, &renderer, operation).await?;
                 self.initialize_page_filmstrip(&page_identifier, &page, &context, &browser);
                 initialize_command("Target.setAutoAttach", renderer_setup::auto_attach_parameters()).await?;
             }
