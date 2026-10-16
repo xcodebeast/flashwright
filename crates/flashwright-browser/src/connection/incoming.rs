@@ -309,7 +309,10 @@ impl FrameBuffer {
     }
 }
 
-fn receive_message(state: &Arc<ConnectionState>, message: &[u8]) -> Result<(), ErrorRecord> {
+fn receive_message(
+    state: &Arc<ConnectionState>,
+    message: &[u8],
+) -> Result<Option<super::PendingEvent>, ErrorRecord> {
     let received_at = std::time::Instant::now();
     let envelope: Envelope<'_> =
         serde_json::from_slice(message).map_err(|error| protocol_error(error.to_string()))?;
@@ -339,19 +342,19 @@ fn receive_message(state: &Arc<ConnectionState>, message: &[u8]) -> Result<(), E
             envelope.params.map(RawValue::to_owned)
         };
         // Opaque event JSON preserves escaped lone UTF-16 surrogates.
-        dispatch_event(
+        return dispatch_event(
             state,
             method.into_owned(),
             envelope.session_identifier.map(Cow::into_owned),
             parameters,
             received_at,
-        )?;
+        );
     } else {
         return Err(protocol_error(
             "CDP message has neither a reply identity nor an event method".to_owned(),
         ));
     }
-    Ok(())
+    Ok(None)
 }
 
 pub(super) async fn read_messages<Reader: AsyncRead + Unpin>(
@@ -375,14 +378,26 @@ pub(super) async fn read_messages<Reader: AsyncRead + Unpin>(
             if let Err(error) = message.append(&chunk[start..end]) {
                 break 'reading error;
             }
-            let Some(state) = state.upgrade() else {
+            let Some(live) = state.upgrade() else {
                 return;
             };
-            if let Err(error) = receive_message(&state, &message.bytes) {
-                break 'reading error;
-            }
+            let event = receive_message(&live, &message.bytes);
+            // A blocked completion must not keep its own pump owner alive after
+            // the last connection/command is dropped.
+            drop(live);
+            // The event owns its projected parameters. Release the original wire
+            // frame (possibly a large request body) before output backpressure.
             message.reset();
             start = end + 1;
+            match event {
+                Err(error) => break 'reading error,
+                Ok(Some(event)) => {
+                    if let Err(error) = super::finish_event(&state, event).await {
+                        break 'reading error;
+                    }
+                }
+                Ok(None) => {}
+            }
             // A single read can contain thousands of complete events. Give the
             // bounded output writer and operation waiters a turn between batches,
             // even when the browser pipe stays readable. Keep wire order intact.
@@ -454,7 +469,10 @@ mod tests {
         ] {
             let bytes = serde_json::to_vec(&message).unwrap();
             assert_eq!(
-                receive_message(&connection.inner, &bytes).unwrap_err().code,
+                receive_message(&connection.inner, &bytes)
+                    .err()
+                    .unwrap()
+                    .code,
                 ErrorCode::ResourceLimit
             );
             assert!(events.try_recv().is_err());
