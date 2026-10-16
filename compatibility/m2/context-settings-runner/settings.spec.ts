@@ -67,10 +67,6 @@ test.describe('per-test JavaScript override', () => {
   });
 });
 
-test('the next test restores configured context settings', async ({ page }) => {
-  await inherited(page);
-});
-
 
 test.describe('individual media override', () => {
   test.use({ colorScheme: 'light' });
@@ -97,7 +93,6 @@ test('explicit media defaults suppress inherited context preferences', async ({ 
   } finally { await defaults.close(); }
 });
 
-
 test.describe('environment color scheme', () => {
   test.use({ colorScheme: null });
   test('preserves null as an explicit fixture value', async ({ page, colorScheme, browser }) => {
@@ -108,4 +103,9 @@ test.describe('environment color scheme', () => {
         .toBe(await comparison.evaluate(() => matchMedia('(prefers-color-scheme:dark)').matches));
     } finally { await comparison.close(); }
   });
+});
+
+// afterAll inherits the final test's scope; finish with the configured defaults.
+test('the next test restores configured context settings', async ({ page }) => {
+  await inherited(page);
 });
