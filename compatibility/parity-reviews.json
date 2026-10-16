@@ -807,8 +807,8 @@
       "title": "Tracing",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies. Public standalone API manual chunks and canonical owner identity now have independent action/network/resource ZIP checks and runner coexistence checks.",
-      "limitations": "Live traces, video, group/groupEnd and HAR recording remain unsupported. DOM snapshots cover supported states and same-process frames; unsupported custom-element/out-of-process states fail export explicitly. API traces retain request actions and wire resources without DOM/filmstrip work; snapshots:false suppresses API network capture. Manual defaults remain independent of runner defaults. Focused macOS development evidence does not establish full current release-core, Linux or performance acceptance.",
+      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies. Public standalone API manual chunks and canonical owner identity now have independent action/network/resource ZIP checks and runner coexistence checks. The snapshot encoding checkpoint adds native Linux full-Chrome Unicode wire accounting, exact renderer byte boundaries, public Bun/Node22/Node24 replay and fresh packed ESM/CommonJS artifact checks.",
+      "limitations": "Live traces, video, group/groupEnd and HAR recording remain unsupported. DOM snapshots cover supported states and same-process frames; unsupported custom-element/out-of-process states fail export explicitly. API traces retain request actions and wire resources without DOM/filmstrip work; snapshots:false suppresses API network capture. Manual defaults remain independent of runner defaults. Focused development evidence includes native Linux full Chrome for snapshot encoding; full current release-core, the broader platform matrix and representative performance acceptance remain open.",
       "defaults": "Manual screenshots, snapshots and sources default to false. Omitting a stop path discards the archive. Runner policy defaults are separate.",
       "differences": [
         "The retained concurrent manual stop/dispose case produced a valid native archive; pinned Playwright stop rejected ENOENT and left an invalid partial ZIP while disposal fulfilled. This is a cleanup difference, not equal-outcome timing evidence."
@@ -817,6 +817,14 @@
         {
           "path": "packages/flashwright-core/src/tracing.ts",
           "sha256": "81035b35ac9a59aebd876dc6eba96de4e4b7994f27e5115fdc1ee7d711def565"
+        },
+        {
+          "path": "crates/flashwright-browser/src/snapshot_reply.rs",
+          "sha256": "3ff1b815bbf6673f56a774791db22c99acdfe7eb72972b4da502e31ecfb0534e"
+        },
+        {
+          "path": "packages/resident-runtime/snapshot-runtime.js",
+          "sha256": "01957212c31f7ab4d2fabb77947ca656df02d43ff3aa65c5803480544cf35f1d"
         }
       ],
       "evidence": [
@@ -838,6 +846,11 @@
         {
           "path": "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
           "sha256": "f6873fc3f1bc502b7260de7c8255bf0c43f5b67a0b9315d3845c53e586d65cdb",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/snapshot-encoding-checkpoint-2026-10-17.json",
+          "sha256": "03cff1c2a764b3196eccc2ed703fb0c3eba27a3062cdc94e55d6a5021a94a8c1",
           "kind": "conformance"
         }
       ],
