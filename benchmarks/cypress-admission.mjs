@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { startFixtureServer } from './fixture-server.mjs';
 import { identifyBrowser } from '../tools/browser-identity.mjs';
 import { runtimeMetadata } from '../tools/javascript-runtime.mjs';
 import { hash } from '../tools/competitor-inputs.mjs';
 
+assert.ok(['darwin', 'linux'].includes(process.platform), 'Cypress admission supports macOS and Linux');
+const linux = process.platform === 'linux';
 const reportPath = resolve(process.argv[2]);
 const output = dirname(reportPath);
 const dependencies = resolve(process.env.FLASHWRIGHT_COMPETITOR_DIRECTORY);
@@ -18,24 +20,26 @@ for (const name of ['package.json', 'bun.lock']) assert.deepEqual(await readFile
 const dependencyRequire = createRequire(join(dependencies, 'package.json'));
 const packagePath = dependencyRequire.resolve('cypress/package.json');
 const packageManifest = JSON.parse(await readFile(packagePath, 'utf8'));
-const bundleManifest = JSON.parse(await readFile(join(bundle, 'Contents/Resources/app/package.json'), 'utf8'));
+const bundleManifest = JSON.parse(await readFile(join(bundle, linux ? 'resources/app/package.json' : 'Contents/Resources/app/package.json'), 'utf8'));
 assert.equal(packageManifest.version, version);
 assert.equal(bundleManifest.version, version);
+if (linux) process.env.FLASHWRIGHT_BROWSER_PATH = await realpath(process.env.FLASHWRIGHT_BROWSER_PATH);
 const browser = await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH);
 assert.equal(browser.version, configuration.browserVersion);
 const project = join(output, 'project');
 await mkdir(project);
-for (const name of ['cypress.config.cjs', 'workloads.cy.js']) await copyFile(`benchmarks/cypress/${name}`, join(project, name));
+const projectFiles = ['cypress.config.cjs', 'workloads.cy.js', ...(linux ? ['linux-processes.cjs', 'linux-title-policy.cjs', 'linux-environment-policy.cjs'] : [])];
+for (const name of projectFiles) await copyFile(`benchmarks/cypress/${name}`, join(project, name));
 await writeFile(join(project, 'admission-configuration.json'), JSON.stringify(configuration, null, 2) + '\n', { flag: 'wx' });
 Object.assign(process.env, {
-  CYPRESS_RUN_BINARY: join(bundle, 'Contents/MacOS/Cypress'),
+  CYPRESS_RUN_BINARY: join(bundle, linux ? 'Cypress' : 'Contents/MacOS/Cypress'),
   FLASHWRIGHT_CYPRESS_OWNER: String(process.pid),
   FLASHWRIGHT_CYPRESS_LAUNCH_REPORT: join(output, 'launch.json'),
   FLASHWRIGHT_CYPRESS_OBSERVATIONS: join(output, 'observations.jsonl'),
   FLASHWRIGHT_CYPRESS_PROCESSES: join(output, 'browser-processes.json'),
 });
 const report = {
-  schemaVersion: 1, engine: 'cypress', comparisonClass: 'runner-outcome', ...runtimeMetadata,
+  schemaVersion: 1, platform: process.platform, architecture: process.arch, engine: 'cypress', comparisonClass: 'runner-outcome', ...runtimeMetadata,
   package: { name: packageManifest.name, version, manifestSha256: hash(await readFile(packagePath)), lockSha256: hash(await readFile(join(dependencies, 'bun.lock'))) },
   bundle: { version: bundleManifest.version, electronVersion: bundleManifest.electronVersion, electronNodeVersion: bundleManifest.electronNodeVersion, executableSha256: hash(await readFile(process.env.CYPRESS_RUN_BINARY)) },
   browser, configuration, failures: [], result: null,

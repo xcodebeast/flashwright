@@ -130,6 +130,7 @@ const commands = [
   ['python3', 'tools/watchdog.py', '--timeout', '90', '--report-directory', join(destination, 'pointer-cleanup-resources'), '--', process.execPath, 'tools/test-pointer-cleanup.mjs', join(destination, 'pointer-cleanup')],
   [process.execPath, 'tools/test-caller-locations.mjs'],
   [process.execPath, 'tools/test-command-error-attribution.mjs'],
+  [process.execPath, 'tools/test-cypress-linux.mjs'],
   [process.execPath, 'tools/test-runner-source-transform.mjs', join(destination, 'runner-source-transform')],
   [process.execPath, 'tools/test-native-error-attribution.mjs', join(destination, 'native-error-attribution')],
   [process.execPath, 'compatibility/m1/client-request-order.mjs'],

@@ -127,22 +127,31 @@ With the snapshot's recorded source checkout, verify exported hashes and indepen
 
 ## Cypress runner outcome admission
 
-Cypress 16.1.1 executes 105 ordinary isolated runner tests on Bun 1.4.2, Node 22.22.0 and Node 24.15.0 with full Chrome 148.0.7778.96. Each run produces 90 passes and 15 intentional missing-element failures, with no unexpected failures or skipped tests. The failure cases remain actual runner failures. Each run makes 120 fixture document requests and 15 real backend requests, verifies cookie/local/session storage reset, and finishes with clean process cleanup.
+The macOS arm64 checkpoint runs Cypress 16.1.1 with 105 ordinary isolated runner tests on Bun 1.4.2, Node 22.22.0 and Node 24.15.0 with full Chrome 148.0.7778.96. Each run produces 90 passes and 15 intentional missing-element failures, with no unexpected failures or skipped tests. The failure cases remain actual runner failures. Each run makes 120 fixture document requests and 15 real backend requests, verifies cookie/local/session storage reset, and finishes with clean process cleanup.
 
 The [checkpoint](../compatibility/evidence/cypress-admission-checkpoint-2026-10-10.json) and [retained reports](../benchmarks/results/cypress-admission-2026-10-10/manifest.json) include every test, event count, duration and resource observation. The first attempt failed in the harness's process-capture hook; that failed report is retained. Source, installed dependency, complete Cypress application bundle, browser and runtime bytes are recorded and checked before and after each run.
 
 Default `click` and `type` dispatch untrusted events here. Cypress's native proxy, launch policy and per-test storage reset differ from the native-input, fresh-context library flows. Every case includes runner page preparation. Proposed launch options and the owned browser command are recorded separately. These are outcome-admission results; equivalent-operation admission and performance acceptance remain false. This follows Cypress's documented [event behavior](https://docs.cypress.io/app/core-concepts/interacting-with-elements), [test isolation](https://docs.cypress.io/app/core-concepts/test-isolation) and [browser launch hook](https://docs.cypress.io/api/node-events/browser-launch-api).
 
-For macOS arm64 reproduction, copy `benchmarks/competitors/cypress/package.json` and `bun.lock` into a new isolated directory and run `bun install --frozen-lockfile --ignore-scripts`. Explicitly install the pinned Cypress binary using its CLI with an owned `CYPRESS_CACHE_FOLDER`, as described in [advanced installation](https://docs.cypress.io/app/references/advanced-installation). Set `FLASHWRIGHT_COMPETITOR_DIRECTORY` to that dependency directory, `FLASHWRIGHT_CYPRESS_BUNDLE` to its `16.1.1/Cypress.app`, and `FLASHWRIGHT_BROWSER_PATH` to full Chrome 148.0.7778.96. Run:
+For macOS arm64 or Linux x64 reproduction, copy `benchmarks/competitors/cypress/package.json` and `bun.lock` into a new isolated directory and run `bun install --frozen-lockfile --ignore-scripts`. Explicitly install the pinned Cypress binary using its CLI with an owned `CYPRESS_CACHE_FOLDER`, as described in [advanced installation](https://docs.cypress.io/app/references/advanced-installation). Set `FLASHWRIGHT_COMPETITOR_DIRECTORY` to that dependency directory, `FLASHWRIGHT_CYPRESS_BUNDLE` to its `16.1.1/Cypress.app` on macOS or `16.1.1/Cypress` on Linux, and `FLASHWRIGHT_BROWSER_PATH` to full Chrome 148.0.7778.96. Run:
 
 ```sh
-bun tools/run-cypress-admission.mjs .cache/new-cypress-admission
+bun tools/run-cypress-admission.mjs workbench/new-cypress-admission
 bun test ./tools/test-cypress-contract.mjs
+bun tools/test-cypress-linux.mjs
 bun tools/verify-cypress-snapshot.mjs benchmarks/results/cypress-admission-2026-10-10
 bun tools/verify-competitor-snapshot.mjs benchmarks/results/cypress-admission-2026-10-10/regressions
 ```
 
-`FLASHWRIGHT_COMPETITOR_RUNTIME` selects an absolute Node executable; Bun is the default. The snapshot verifier needs its recorded source checkout and checks normalized exported bytes independently. The expanded Cypress configuration stays private by hash because it contains environment-specific configuration; the public curated report preserves every test and observation. Headless shell and native Linux remain unmeasured for this Cypress class.
+`FLASHWRIGHT_COMPETITOR_RUNTIME` selects an absolute Node executable; Bun is the default. The snapshot verifier needs its recorded source checkout and checks normalized exported bytes independently. The expanded Cypress configuration stays private by hash because it contains environment-specific configuration; the public curated report preserves every test and observation. The retained macOS snapshot remains platform-specific. Headless shell remains unmeasured for this Cypress class.
+
+On Linux, install Xvfb and the X11 client library used by Python's `ctypes` readiness check. The harness selects native `Xvfb` from PATH, or an absolute executable through `FLASHWRIGHT_XVFB_PATH`; shell wrappers are rejected. If that executable needs a private library directory, set `FLASHWRIGHT_XVFB_LIBRARY_PATH`. The harness hashes the selected display executable and private libraries before and after the run and applies that private library path only to Xvfb. It creates an owned display and isolated HOME/XDG directories, waits for both original children, and rejects forced cleanup or leftover display sockets.
+
+The Linux collector preserves either the exact NUL-separated command bytes or Chromium's rewritten process title. A rewritten title cannot prove original argument boundaries. Linux Chromium can overwrite the original environment storage when rewriting that title; the harness verifies the exact source-defined overwritten bytes and runner launch environment, while explicitly leaving the relocated live browser environment unobserved. Paths containing spaces and browser symlink selections are supported; ambiguous flag-delimiter text inside rewritten-title paths is rejected.
+
+The [native Linux checkpoint](../compatibility/evidence/native-linux-cypress-checkpoint-2026-10-16.json) records two complete Bun runs with 105 tests each: 90 passes, 15 intended failures, no skipped or unexpected failures, and clean shutdown. The final run verifies the source and retained output hashes after the byte-comparison correction. It exercises a Chrome symlink and an output directory containing a space. Node 22 is covered by synthetic rejection controls only.
+
+Linux support here is the standalone outcome-admission command. The broad matrix coordinator and historical snapshot verifier still select the macOS launch policy and have not been admitted for Linux. Passing this command establishes neither equivalent native input/fresh-context behavior nor comparative performance.
 
 ## Backend application functional gates
 
