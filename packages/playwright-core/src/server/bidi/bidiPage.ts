@@ -417,7 +417,7 @@ export class BidiPage implements PageDelegate {
   }
 
   async updateHttpCredentials() {
-    await this._networkManager.setCredentials(this._browserContext._options.httpCredentials);
+    await this._networkManager.setCredentials(this._browserContext._options.httpCredentials, this._browserContext.proxyCredentials());
   }
 
   async updateFileChooserInterception() {
