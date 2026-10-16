@@ -22,7 +22,7 @@ const outputs = {
     referenceVersion: '1.60.0', source: 'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/clientHelper.ts',
     referenceFiles: ['client/clientHelper.ts', 'client/disposable.ts', 'server/page.ts', 'server/browserContext.ts', 'server/chromium/crPage.ts'],
     distributionPath, distributionSha256: hash(distribution), retainedExtract, extractSha256: hash(extract), implementationPath, implementationSha256: hash(await readFile(implementationPath)),
-    relationship: 'The facade adapts the pinned function/JSON-argument, content/path precedence and sourceURL preparation. Native registration uses the same per-script IIFE scope and Chromium runImmediately only for newly created pages. Disposable ownership, cancellation and wire representation are independently implemented.',
+    relationship: 'The facade adapts the pinned function/JSON-argument, content/path precedence and sourceURL preparation. Native registration uses the same per-script IIFE scope and Chromium runImmediately only during root or child renderer initialization. Disposable ownership, cancellation and wire representation are independently implemented.',
     changes: ['Typed invalid/unsupported/source-limit failures before allocation.', 'Transport a validated JSON string through Rust without losing UTF-16 or introducing an eval wrapper.', 'Bound retained scripts and roll back partial or unreturned registrations.'],
     license: 'Apache-2.0', licensePath: 'compatibility/upstream/LICENSE.playwright', noticePath: 'compatibility/upstream/NOTICE.playwright',
   }, null, 2) + '\n',

@@ -1,6 +1,7 @@
 //! Context/page-owned native document initialization, including disposable registrations.
 
 use super::*;
+use crate::renderer_sessions::RendererSession;
 use flashwright_browser::values::Utf16String;
 use serde::Serialize;
 use serde_json::value::RawValue;
@@ -108,22 +109,39 @@ impl Engine {
         }
         let result = async {
             for (page_identifier, page) in &pages {
-                if let Err(error) = self
-                    .install_init_script(&script, page_identifier, page, &browser, false, operation)
-                    .await
-                {
-                    if script.page_identifier.is_none()
-                        && operation.check().is_ok()
-                        && !self
-                            .registry
-                            .lock()
-                            .unwrap()
-                            .pages
-                            .contains_key(page_identifier)
+                let owners = page.state.renderer_sessions.lock().unwrap().ready();
+                for owner in owners {
+                    if let Err(error) = self
+                        .install_init_script(
+                            &script,
+                            page_identifier,
+                            page,
+                            &browser,
+                            &owner,
+                            false,
+                            operation,
+                        )
+                        .await
                     {
-                        continue;
+                        if owner.is_retired()
+                            && operation.check().is_ok()
+                            && page.state.state.lock().unwrap().check(method).is_ok()
+                        {
+                            continue;
+                        }
+                        if script.page_identifier.is_none()
+                            && operation.check().is_ok()
+                            && !self
+                                .registry
+                                .lock()
+                                .unwrap()
+                                .pages
+                                .contains_key(page_identifier)
+                        {
+                            continue;
+                        }
+                        return Err(error);
                     }
-                    return Err(error);
                 }
             }
             operation.check()?;
@@ -136,8 +154,7 @@ impl Engine {
             {
                 return Err(closed(method));
             }
-            // Attachment holds this registry lock too: no remote frame can enter
-            // between final admission and publication of this registration.
+            // Pending renderer setup acquires the read barrier after this publication.
             for (page_identifier, page) in &pages {
                 if registry.pages.contains_key(page_identifier) {
                     check_script_page(page, method)?;
@@ -163,11 +180,12 @@ impl Engine {
     }
 
     /// The creation read barrier allows concurrent pages, while excluding registration/disposal.
-    pub(super) async fn initialize_page_scripts(
+    pub(super) async fn initialize_renderer_scripts(
         &self,
         page_identifier: &str,
         page: &Page,
         browser: &Chromium,
+        owner: &RendererSession,
         operation: &Operation,
     ) -> Result<(), ErrorRecord> {
         let scripts: Vec<_> = self
@@ -178,23 +196,36 @@ impl Engine {
             .iter()
             .filter(|(_, script)| {
                 script.context_identifier == page.context_identifier
-                    && script.page_identifier.is_none()
+                    && script
+                        .page_identifier
+                        .as_deref()
+                        .is_none_or(|identifier| identifier == page_identifier)
             })
             .map(|(identifier, script)| (identifier.clone(), script.clone()))
             .collect();
         for (_, script) in scripts {
-            self.install_init_script(&script, page_identifier, page, browser, true, operation)
-                .await?;
+            self.install_init_script(
+                &script,
+                page_identifier,
+                page,
+                browser,
+                owner,
+                true,
+                operation,
+            )
+            .await?;
         }
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn install_init_script(
         &self,
         script: &InitScript,
         page_identifier: &str,
         page: &Page,
         browser: &Chromium,
+        owner: &RendererSession,
         run_immediately: bool,
         operation: &Operation,
     ) -> Result<(), ErrorRecord> {
@@ -210,36 +241,47 @@ impl Engine {
                 source: &script.source,
                 run_immediately,
             },
-            Some(&page.session_identifier),
+            Some(&owner.session_identifier),
         )?;
+        let mut retirement = owner.retirement();
+        let mut response_received = false;
         let result = operation
-            .wait(page.state.while_alive("addInitScript", command.response()))
+            .wait(page.state.while_alive("addInitScript", async {
+                tokio::select! {
+                    result = command.response() => { response_received = true; result },
+                    _ = async {
+                        while !*retirement.borrow_and_update() {
+                            if retirement.changed().await.is_err() { break; }
+                        }
+                    } => Err(closed("addInitScript")),
+                }
+            }))
             .await;
         let response = match result {
             Ok(response) => response,
             Err(mut error) => {
-                if !matches!(error.code, ErrorCode::Cancelled | ErrorCode::Timeout) {
-                    if error.browser_error_code.is_none()
-                        && self
-                            .registry
-                            .lock()
-                            .unwrap()
-                            .pages
-                            .contains_key(page_identifier)
-                    {
-                        self.retire_init_script_page(page_identifier, page, browser)
-                            .await;
-                    }
-                    return Err(error);
+                if response_received && renderer_setup::session_is_gone(&error) {
+                    owner.mark_destroyed();
                 }
                 if command.prevent_dispatch() {
                     error.cleanup = Some("notDispatched".into());
                     return Err(error);
                 }
+                if owner.is_destroyed() || (response_received && error.browser_error_code.is_some())
+                {
+                    return Err(error);
+                }
+                // A consumed malformed/oversized reply cannot be polled again, and may have
+                // omitted a successfully allocated identity. Dispose its original owner.
+                if response_received {
+                    self.retire_init_script_page(page_identifier, page, browser)
+                        .await;
+                    return Err(error);
+                }
                 match timeout(CLEANUP_BUDGET, command.response()).await {
                     Ok(Ok(response)) => {
                         if let Some(native_identifier) = response["identifier"].as_str() {
-                            page.state
+                            owner
                                 .init_scripts
                                 .lock()
                                 .unwrap()
@@ -249,13 +291,10 @@ impl Engine {
                                 .await;
                         }
                     }
-                    Ok(Err(_))
-                        if !self
-                            .registry
-                            .lock()
-                            .unwrap()
-                            .pages
-                            .contains_key(page_identifier) => {}
+                    Ok(Err(error)) if renderer_setup::session_is_gone(&error) => {
+                        owner.mark_destroyed();
+                    }
+                    _ if owner.is_destroyed() => {}
                     _ => {
                         self.retire_init_script_page(page_identifier, page, browser)
                             .await;
@@ -276,7 +315,7 @@ impl Engine {
                 ));
             }
         };
-        page.state
+        owner
             .init_scripts
             .lock()
             .unwrap()
@@ -322,14 +361,17 @@ impl Engine {
         let Some(script) = script else {
             return Ok(Value::Null);
         };
-        if let Err(mut error) = operation
-            .wait(self.remove_native_scripts(identifier, &script, &browser))
-            .await
-        {
+        let mut removal = Box::pin(self.remove_native_scripts(identifier, &script, &browser));
+        if let Err(mut error) = operation.wait(&mut removal).await {
             error.cleanup = Some(
-                self.retire_init_script_owner(&script, &browser)
-                    .await
-                    .into(),
+                if matches!(error.code, ErrorCode::Cancelled | ErrorCode::Timeout)
+                    && matches!(timeout(CLEANUP_BUDGET, &mut removal).await, Ok(Ok(())))
+                {
+                    "initScriptDisposed"
+                } else {
+                    self.retire_init_script_owner(&script, &browser).await
+                }
+                .into(),
             );
             return Err(error);
         }
@@ -354,12 +396,9 @@ impl Engine {
             .ok()?;
         let (_cancellation_sender, cancellation) = watch::channel(false);
         let operation = Operation::new("initScript.dispose".into(), None, cancellation);
-        match timeout(
-            CLEANUP_BUDGET,
-            self.dispose_init_script(json!({"script":identifier}), &operation),
-        )
-        .await
-        {
+        let mut disposal =
+            Box::pin(self.dispose_init_script(json!({"script":identifier}), &operation));
+        match timeout(CLEANUP_BUDGET, &mut disposal).await {
             Ok(Ok(_)) => Some("initScriptDisposed"),
             _ => Some(self.retire_init_script_owner(&script, &browser).await),
         }
@@ -376,12 +415,8 @@ impl Engine {
             .unwrap()
             .init_scripts
             .remove(identifier);
-        match timeout(
-            CLEANUP_BUDGET,
-            self.remove_native_scripts(identifier, script, browser),
-        )
-        .await
-        {
+        let mut removal = Box::pin(self.remove_native_scripts(identifier, script, browser));
+        match timeout(CLEANUP_BUDGET, &mut removal).await {
             Ok(Ok(())) => "initScriptDisposed",
             _ => self.retire_init_script_owner(script, browser).await,
         }
@@ -398,37 +433,41 @@ impl Engine {
             .lock()
             .unwrap()
             .pages
-            .iter()
-            .filter(|(_, page)| page.context_identifier == script.context_identifier)
-            .map(|(identifier, page)| (identifier.clone(), page.clone()))
+            .values()
+            .filter(|page| page.context_identifier == script.context_identifier)
+            .cloned()
             .collect();
-        for (page_identifier, page) in pages {
-            let native_identifier = page
-                .state
-                .init_scripts
-                .lock()
-                .unwrap()
-                .get(identifier)
-                .cloned();
-            if let Some(native_identifier) = native_identifier {
-                let removal = browser
-                    .connection
-                    .call(
+        for page in pages {
+            let owners = page.state.renderer_sessions.lock().unwrap().originals();
+            for owner in owners {
+                let native_identifier = owner.init_scripts.lock().unwrap().get(identifier).cloned();
+                if let Some(native_identifier) = native_identifier {
+                    if owner.is_destroyed() {
+                        owner.init_scripts.lock().unwrap().remove(identifier);
+                        continue;
+                    }
+                    let mut command = browser.connection.start_command(
                         "Page.removeScriptToEvaluateOnNewDocument",
                         json!({"identifier":native_identifier}),
-                        Some(&page.session_identifier),
-                    )
-                    .await;
-                if self
-                    .registry
-                    .lock()
-                    .unwrap()
-                    .pages
-                    .contains_key(&page_identifier)
-                {
-                    removal?;
+                        Some(&owner.session_identifier),
+                    )?;
+                    let mut destruction = owner.destruction();
+                    let removal = tokio::select! {
+                        result = command.response() => result,
+                        _ = async {
+                            while !*destruction.borrow_and_update() {
+                                if destruction.changed().await.is_err() { break; }
+                            }
+                        } => Ok(Value::Null),
+                    };
+                    if removal.as_ref().is_err_and(renderer_setup::session_is_gone) {
+                        owner.mark_destroyed();
+                    }
+                    if !owner.is_destroyed() {
+                        removal?;
+                    }
+                    owner.init_scripts.lock().unwrap().remove(identifier);
                 }
-                page.state.init_scripts.lock().unwrap().remove(identifier);
             }
         }
         Ok(())
@@ -476,14 +515,5 @@ fn script_limit(method: &str) -> ErrorRecord {
 }
 
 fn check_script_page(page: &Page, method: &str) -> Result<(), ErrorRecord> {
-    let state = page.state.state.lock().unwrap();
-    state.check(method)?;
-    if state.frames.values().any(|frame| frame.remote) {
-        return Err(ErrorRecord::new(
-            ErrorCode::UnsupportedFeature,
-            method,
-            "init scripts in out-of-process frames are not implemented",
-        ));
-    }
-    Ok(())
+    page.state.state.lock().unwrap().check(method)
 }

@@ -1,0 +1,1692 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "status": "verified-experimental-remote-init-scripts",
+  "baseCommit": "f5d2d4b2406d332b5a84934bbb6533c959955d82",
+  "scope": "Focused native Linux x64 development conformance with full Chrome for Testing. No current full-core, macOS, release or comparative performance acceptance.",
+  "referenceVersion": "1.60.0",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+  "implementationSha256": {
+    "crates/flashwright-engine/src/events.rs": "58bbcc6690d0bbc3ac1e85943479af9a82549b82457f399e62d9b87aa2892bfc",
+    "crates/flashwright-engine/src/init_scripts.rs": "ed35d6dd2f51c050976a22b588b3b609a9c4cbb07ee2b9156e9e250af29ae1ae",
+    "crates/flashwright-engine/src/lib.rs": "07cf171be8fe2d0bf662ff6b23a2e2e3445d52b45a21d9e6aad9ff3bc03317d4",
+    "crates/flashwright-engine/src/page_state.rs": "bdc8d3fafb3b3af0c1d184961e25087abda03931e465b33a64e44a53aea22cc8",
+    "crates/flashwright-engine/src/renderer_sessions.rs": "9b7850ad06996a613f6a9ba85500ee13822412ac72bf2f644f87cb7b2a433d7e",
+    "crates/flashwright-engine/src/renderer_setup.rs": "f58e985cc425ef32418f809483bb108a97b366716dec542ec48326c468e34f60"
+  },
+  "fixtureSha256": {
+    "compatibility/m1/remote_init_script_races.py": "b881e739d1e4c4b9624ab62e3f7f9226fb86b9a315b74f87bfa729dbdf385b68",
+    "compatibility/m2/remote-init-scripts.mjs": "b1d81ca1676e91f6b4cc5c490c0a856cc87e9e72e891a5242d597fdbe3b104f3",
+    "compatibility/m2/init-scripts.mjs": "3918f8731d32f1e8b605ab58868c101c0d2844cc35009ac649d797d651714eca",
+    "tools/init-script-race-proxy.py": "c8be8caaa04cbf73bba6099c8576c17d9cc62f2785aaa969d907ab46d79e9208",
+    "tools/run-remote-init-script-tests.mjs": "7bef5b278a752f8a20e1dcbfde0cecc486a723d33730609463f4ae6b8a9fc5c8",
+    "tools/test-packed-package.mjs": "1aa631df4649718222da37a87cb861105b4537a86abde0a6f4b377db8ba3c07b"
+  },
+  "contract": {
+    "registration": "Context/page scripts belong to their exact original renderer sessions. Existing ready renderers receive runImmediately:false; pending renderers install applicable scripts before resume. The context configuration read barrier includes readiness publication.",
+    "disposal": "Disposal removes IDs through original sessions, including retained retired owners. Logical retirement is distinct from confirmed native destruction. Pending commands and original renderer leases survive bounded recovery; uncertain settlement retires the original page/context.",
+    "failure": "Consumed malformed replies are never repolled. Native error shortcuts require this command response provenance. Confirmed session destruction wakes pending removal even when its native reply is withheld."
+  },
+  "differentials": [
+    {
+      "runtime": "bun 1.4.2",
+      "status": "passed",
+      "sharedGroupsPerEngine": 6,
+      "groups": [
+        "Context and page scripts run exactly once before application code in root, remote and nested documents",
+        "Page and context scopes remain isolated across remote documents",
+        "Registration in existing remote renderers does not execute retroactively",
+        "Later scripts survive remote navigation, return to the parent renderer and a new remote renderer",
+        "Disposal preserves existing values and removes scripts from all future documents",
+        "Concurrent registrations and disposal preserve exact-once execution across frame replacement"
+      ],
+      "actualRemotePlacementBothEngines": true,
+      "existingInitScriptOutcomeFields": [
+        "initialDiagnostics",
+        "storageWithoutInitSideEffects",
+        "noRetroactiveContext",
+        "noRetroactivePage",
+        "initialBlank",
+        "main",
+        "child",
+        "contextOnly",
+        "disposalDoesNotUndo",
+        "afterPageDisposal",
+        "contextDisposal",
+        "arguments",
+        "sources",
+        "independentScopes",
+        "concurrentRegistration",
+        "closedOwnerDisposal"
+      ],
+      "sourceEntriesUnchangedDuringEachRun": 1254,
+      "report": {
+        "path": "workbench/remote-init-001/final/remote-bun/report.json",
+        "sha256": "184d9161314425054164d6ebde46bf955618e63fe5f20ccf7043b6f1d110889e",
+        "bytes": 154157
+      },
+      "existingInitScriptReport": {
+        "path": "workbench/remote-init-001/final/init-bun/report.json",
+        "sha256": "8c2224506cbb1ebdd30a202dc598bd90ade2f4f3b3ded676e8077dfd92543d2f",
+        "bytes": 158085
+      }
+    },
+    {
+      "runtime": "v22.22.0",
+      "status": "passed",
+      "sharedGroupsPerEngine": 6,
+      "groups": [
+        "Context and page scripts run exactly once before application code in root, remote and nested documents",
+        "Page and context scopes remain isolated across remote documents",
+        "Registration in existing remote renderers does not execute retroactively",
+        "Later scripts survive remote navigation, return to the parent renderer and a new remote renderer",
+        "Disposal preserves existing values and removes scripts from all future documents",
+        "Concurrent registrations and disposal preserve exact-once execution across frame replacement"
+      ],
+      "actualRemotePlacementBothEngines": true,
+      "existingInitScriptOutcomeFields": [
+        "initialDiagnostics",
+        "storageWithoutInitSideEffects",
+        "noRetroactiveContext",
+        "noRetroactivePage",
+        "initialBlank",
+        "main",
+        "child",
+        "contextOnly",
+        "disposalDoesNotUndo",
+        "afterPageDisposal",
+        "contextDisposal",
+        "arguments",
+        "sources",
+        "independentScopes",
+        "concurrentRegistration",
+        "closedOwnerDisposal"
+      ],
+      "sourceEntriesUnchangedDuringEachRun": 1254,
+      "report": {
+        "path": "workbench/remote-init-001/final/remote-node22/report.json",
+        "sha256": "7288a839283c9eb5867f67e1b4c8d867bc40100ca8199e15bb3b4270c189ab9d",
+        "bytes": 154156
+      },
+      "existingInitScriptReport": {
+        "path": "workbench/remote-init-001/final/init-node22/report.json",
+        "sha256": "f9b88f77231a39a4c01fb720baebdea1022ab7398229b10f8070c990d973323a",
+        "bytes": 158060
+      }
+    },
+    {
+      "runtime": "v24.15.0",
+      "status": "passed",
+      "sharedGroupsPerEngine": 6,
+      "groups": [
+        "Context and page scripts run exactly once before application code in root, remote and nested documents",
+        "Page and context scopes remain isolated across remote documents",
+        "Registration in existing remote renderers does not execute retroactively",
+        "Later scripts survive remote navigation, return to the parent renderer and a new remote renderer",
+        "Disposal preserves existing values and removes scripts from all future documents",
+        "Concurrent registrations and disposal preserve exact-once execution across frame replacement"
+      ],
+      "actualRemotePlacementBothEngines": true,
+      "existingInitScriptOutcomeFields": [
+        "initialDiagnostics",
+        "storageWithoutInitSideEffects",
+        "noRetroactiveContext",
+        "noRetroactivePage",
+        "initialBlank",
+        "main",
+        "child",
+        "contextOnly",
+        "disposalDoesNotUndo",
+        "afterPageDisposal",
+        "contextDisposal",
+        "arguments",
+        "sources",
+        "independentScopes",
+        "concurrentRegistration",
+        "closedOwnerDisposal"
+      ],
+      "sourceEntriesUnchangedDuringEachRun": 1254,
+      "report": {
+        "path": "workbench/remote-init-001/final/remote-node24/report.json",
+        "sha256": "64e737066e9870bd477b906e507335366d78b606160612214b12acab1b5a388a",
+        "bytes": 154156
+      },
+      "existingInitScriptReport": {
+        "path": "workbench/remote-init-001/final/init-node24/report.json",
+        "sha256": "3f8a9e74b9c725fca1e56de07296d314464dada7c3ffef5a239d1de499d62650",
+        "bytes": 158060
+      }
+    }
+  ],
+  "lifecycle": {
+    "status": "passed",
+    "cases": [
+      {
+        "mode": "writer-add",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "3e81c8ef36583c945196ad0a31c68d4f1e1709ea444939ae099d2b11a10611b1"
+      },
+      {
+        "mode": "reader-add",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "fcdb6b7728f1ed8a665cb72c953ad51128f80a4a5451f94b4563a2c4663cd37e"
+      },
+      {
+        "mode": "writer-dispose",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "885efe3be8939f023cea762c62a38de092f71c4bca8b72bd6966e95c962147d8"
+      },
+      {
+        "mode": "reader-dispose",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "76ab011ad5bd1e5dcec5de9f60b778f8d8069ba03e68ebfe9c5e4629232823da"
+      },
+      {
+        "mode": "late-add-cancel",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "48cf899c490495aa2bbd731dbc3d285d8fa189ef9fc31c6c77de4e07cbfee56b"
+      },
+      {
+        "mode": "malformed-add",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "4d57c73a765a5beef284901df02fab4e5adbc4e47273771c8292c34a68439cac"
+      },
+      {
+        "mode": "remove-destroyed",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "7209c23fc0020c08e13c133f80cbb54ae52a8e3ad99ee9cf8dd8757921e33c9b"
+      },
+      {
+        "mode": "remove-timeout",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "653442f798d293dae6fa394a28d90b863231fb009e72adae1d206fbd5defa927"
+      },
+      {
+        "mode": "late-add-destroyed",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "72bbef5040a5f84df3c627138d56e8d8177ddddbcfdadfb9c8d59aa0c32bc272"
+      },
+      {
+        "mode": "late-remove-cancel",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "f2bb59593a25a513a23f2dec7cda3884869e9d4b43151fa68e63b111323f135e"
+      },
+      {
+        "mode": "blocked-init-close",
+        "exitCode": 0,
+        "clean": true,
+        "resourceSha256": "0178c4e9759507d6a38e1b9c1666014b20a6c61945a6eb3fd38a95ab36598e6f"
+      }
+    ],
+    "report": {
+      "path": "workbench/remote-init-001/final/lifecycle/report.json",
+      "sha256": "4a35325a4faa592a84ae6803cdd2ddad1c7dfd62a4ad8177cb670e1bcff6d049",
+      "bytes": 153948
+    },
+    "existingNativeInitScriptTests": 9,
+    "rustPassed": 517,
+    "rustIgnored": 1
+  },
+  "regressions": {
+    "remoteEvaluationSharedGroupsPerEngine": 8,
+    "remainingRoutingAndStorageBoundaries": 5,
+    "remoteInputSharedGroupsPerEngine": 18,
+    "rootInitializationDetachmentStages": 16
+  },
+  "packed": {
+    "runtime": "bun 1.4.2",
+    "formats": [
+      "ESM",
+      "CommonJS"
+    ],
+    "status": "passed",
+    "checks": [
+      "public request wait runtime and declarations",
+      "Bun packed tarball",
+      "fresh consumer install",
+      "ESM runtime",
+      "CommonJS runtime",
+      "NodeNext ESM declarations",
+      "NodeNext CommonJS declarations",
+      "evaluation generic inference",
+      "typed page error listeners and event waits in both module formats",
+      "console live handles, context event waits and fluent typed listeners in both module formats",
+      "cookie and object/file storage-state round trips with public declarations",
+      "locator declarations, selection and native text input",
+      "native trusted click, checkbox input and keyboard shortcuts with public option types",
+      "default Download event, class/page identity, exact binary path/save/stream bytes, cancellation and deletion in both module formats",
+      "all nine Download method declarations and boolean acceptDownloads policy",
+      "owned browser cleanup",
+      "real HTTP navigation and response body",
+      "incompatible resident runtime rejected before launch"
+    ],
+    "remoteInitScriptChecks": "Context/page seeds observed before child application code; disposal removes both in successor child documents. Public declarations compile in both module formats.",
+    "report": {
+      "path": "workbench/remote-init-001/continuation/packed/packed-library-linux-x64-bun-1.4.2.json",
+      "sha256": "198ce71c17e54775107eb6d6a83fab66ae8886ec617bdd2e49192aacca03d3e7",
+      "bytes": 3252
+    }
+  },
+  "verification": [
+    {
+      "name": "fmt",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "3421dfed4ffcd9f67145d1fca80119d7996316f69f809c28a1863ed0158dbebd"
+    },
+    {
+      "name": "clippy",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "4221c8de0c0d6017046e13e5179877813234f6f8c6d04cb5eecb93ef1c2aac31"
+    },
+    {
+      "name": "rust",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "02bc50d2e41684662c04946e58c53a036bc29c0651dcdf8a1e8890922e8b3767"
+    },
+    {
+      "name": "native-init",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "5038eeb1f8ca99764361eb16e138997d5ef67a9e2e5f69d9359e3528014fba56"
+    },
+    {
+      "name": "lifecycle",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "6746037965f389be66dd6e52f0d542c38fb77d363ea1fee74e8bba153d03b759"
+    },
+    {
+      "name": "remote-bun",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "e74eba5a48c505353775137a3cca9aaec2f3e8a7183e11ca94877513f3706a41"
+    },
+    {
+      "name": "init-bun",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "f2ec524d7e8373b7168664f85bb6155a2feb6a4852257ad1ea429073c1b29ed2"
+    },
+    {
+      "name": "remote-node22",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "dbfb20bd3ea89ddd8ab183790dbdc3e7393b4c3983a1d651475f7ae36749e77d"
+    },
+    {
+      "name": "init-node22",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "c1ad86743e8c8081eb545c61ec18024f00b8dbda1bc305fa6905cf84928ec1f4"
+    },
+    {
+      "name": "remote-node24",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "3641d54121474cdac669077f34e236b21af94d3b2f941889c1811d0dbcb63d68"
+    },
+    {
+      "name": "init-node24",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "826e5580f0b5dc0859dd802812a161b801a80b0cf1530899ac187fe3e9427f7d"
+    },
+    {
+      "name": "remote-evaluation",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "b48a8f9d4f4fbf06d763fe62b53127d70e756dba0e044276e7718ad11a456e77"
+    },
+    {
+      "name": "remote-input",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "e73a186f581de1b4d930d5f7369ae573d2758f14d443db3f0f2d164a65b84af4"
+    },
+    {
+      "name": "page-initialization",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "e2295c378e37a4e599f777cf922792e41fbe4bc23b01888dc7d069fe455ade8f"
+    },
+    {
+      "name": "packages",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "154ef204c6547050549452be005e25e8b1e6eb25bd67bd362ba2ec3cf826f978"
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "07552af47d4d6f9c8f4cea58c57e9ad675605df0dc3cde313627d38b55a2697e"
+    },
+    {
+      "name": "provenance",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "1fde1e3cb637eadf965226eba11d611cbeb9aa6b9cdce206f33a93764f29448a"
+    },
+    {
+      "name": "binary-paths",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "d3a554461e52cfd67bd1c2465f832c58690f2aa41064b566ed604243dbcc2bf3"
+    },
+    {
+      "name": "packed",
+      "exitCode": 0,
+      "noObservedRemainingProcessesOrCleanupSignals": true,
+      "resourceSha256": "812b57b2833dc390913cc936d162d1ff6604658586f35a61ce8a24075cf76ac6"
+    }
+  ],
+  "retainedEarlierAttempts": [
+    {
+      "path": "workbench/remote-init-001/functional",
+      "status": "passed-on-earlier-development-driver",
+      "scope": "Six shared groups per engine; superseded by final three-runtime checks."
+    },
+    {
+      "path": "workbench/remote-init-001/race-results.json",
+      "status": "eight-initial-cases-passed",
+      "scope": "Earlier development driver."
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/report.json",
+      "status": "failed-source-identity-check",
+      "scope": "All eleven child tests passed, but a concurrent ownership correction changed inputs. Rebuilt and repeated full lifecycle batch under unchanged sources."
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-evaluation/report.json",
+      "status": "failed-stale-fixture-count",
+      "scope": "Eight shared evaluation groups and five routing/storage boundaries completed. Fixture still expected nine boundaries after four obsolete init-script rejections were replaced by dedicated positive conformance. Corrected count and continued only affected/unstarted checks."
+    }
+  ],
+  "limitations": [
+    "No performance measurement or claim; the representative majority-scenario 2x objective remains open.",
+    "Popups, workers, remote routing/storage collection and remote artifact export remain outside this slice.",
+    "Native macOS and headless-shell refresh, full-current-core and release gates remain open.",
+    "Raw runs remain private under ignored workbench. These receipts bind them; source manifests include historical evidence with its original scope.",
+    "Core verification integration and wording/parity updates followed functional checks; selected Rust implementation and driver bytes were reverified unchanged."
+  ],
+  "rawReceipts": [
+    {
+      "path": "workbench/remote-init-001/build-002.log",
+      "sha256": "72531b2a109b8442420f1759f305203e5660a7534ca671053255cdfedf8efe0d",
+      "bytes": 747
+    },
+    {
+      "path": "workbench/remote-init-001/build-final.log",
+      "sha256": "71dfb4f3186ad5ab19e47cb60739a04e70a20f23f63978182be06b2c65e5b870",
+      "bytes": 747
+    },
+    {
+      "path": "workbench/remote-init-001/build.log",
+      "sha256": "3b78918d02bdbb603d21dcd8071aa989b5536a70773db024895a11ec078e12b4",
+      "bytes": 747
+    },
+    {
+      "path": "workbench/remote-init-001/check.log",
+      "sha256": "d88a791c3737a99a4e14a562fe3fc13d46298e3bd6555e9820d7e20e7f63d56f",
+      "bytes": 1572
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/binary-paths-resources.json",
+      "sha256": "d3a554461e52cfd67bd1c2465f832c58690f2aa41064b566ed604243dbcc2bf3",
+      "bytes": 4037
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/binary-paths.log",
+      "sha256": "f3727eb950d6ecc95426dd9863e67021ecf6722bf7e5fcd59a42e9e2dac4e076",
+      "bytes": 58
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/check-results.json",
+      "sha256": "e349eac05032b6a3d5e379c48a286499bcdc1b0c63a9d754e4e78d1e4270af27",
+      "bytes": 3459
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/packages-resources.json",
+      "sha256": "154ef204c6547050549452be005e25e8b1e6eb25bd67bd362ba2ec3cf826f978",
+      "bytes": 5447
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/packages.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/packed/packed-library-linux-x64-bun-1.4.2.json",
+      "sha256": "198ce71c17e54775107eb6d6a83fab66ae8886ec617bdd2e49192aacca03d3e7",
+      "bytes": 3252
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/packed-resources.json",
+      "sha256": "812b57b2833dc390913cc936d162d1ff6604658586f35a61ce8a24075cf76ac6",
+      "bytes": 128337
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/packed.log",
+      "sha256": "3bf329a89f1d9ace96778feb769b4b1e3be7430b03648dfa9538d57cc95190fc",
+      "bytes": 249
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Browser.getWindowForTarget/protocol/protocol-40530.jsonl",
+      "sha256": "bb59489687e915cc88f2ace5835f13a73fc9c4c58bbd98e60aaa507c7e098368",
+      "bytes": 15195
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Browser.getWindowForTarget/resources.json",
+      "sha256": "1088744ea285e62260c7fb94ed839361047069596b1f96f566a41f3f5890451d",
+      "bytes": 13839
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Browser.setWindowBounds/protocol/protocol-40656.jsonl",
+      "sha256": "4a9602aeebb1198fd0b73b8b508a5f75fe14df6f6085d33cd526f35045746e80",
+      "bytes": 15510
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Browser.setWindowBounds/resources.json",
+      "sha256": "8fb9ef321a24bf874fe8438e6953626ef113ed3a064493f947ae49a061711a54",
+      "bytes": 13607
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setDeviceMetricsOverride/protocol/protocol-40783.jsonl",
+      "sha256": "53a068268154202e5a719924294e1399f83b79266949f86a212f93652b7ea211",
+      "bytes": 15949
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setDeviceMetricsOverride/resources.json",
+      "sha256": "d01bcf1fecd97e300dd2fb1a827bda3a8e91342720310c0ef0af469ab8f4be0b",
+      "bytes": 13584
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setEmulatedMedia/protocol/protocol-40278.jsonl",
+      "sha256": "44948721a01b11884a58ca1330cca56e7a56f3a0c2c15f630666f58d3fe075a4",
+      "bytes": 14590
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setEmulatedMedia/resources.json",
+      "sha256": "7dab44e0e00c105b267bc06735a22ec4d874198b7df3453f48ed65e4b3320f36",
+      "bytes": 13598
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setFocusEmulationEnabled/protocol/protocol-40404.jsonl",
+      "sha256": "3a044e667fb774705969e6f057200f4c63581a60c1e2ebf1c1fbc699103d02b3",
+      "bytes": 14904
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setFocusEmulationEnabled/resources.json",
+      "sha256": "d6ec4417bea629693d6f3931f3bfd216d2828f9f1b271c7cbd2d2838d8cc33d8",
+      "bytes": 13823
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setScriptExecutionDisabled/protocol/protocol-41287.jsonl",
+      "sha256": "6d1ab922c982cfbf94780c3a96ac6fc7531abeaf951f18f5c5664ea23806a682",
+      "bytes": 15533
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setScriptExecutionDisabled/resources.json",
+      "sha256": "998ab2d4df5cb770407121bca9ab3f614c34da625e8db7d0e0de18d5340ba4b1",
+      "bytes": 13834
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setTouchEmulationEnabled/protocol/protocol-41416.jsonl",
+      "sha256": "d029f3c8b3dabb881794e7e7ff0f9544c69136aef23f81e40b59b84663c7c4f3",
+      "bytes": 17176
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setTouchEmulationEnabled/resources.json",
+      "sha256": "d48057780d23b907d5e807f60af150be274dbd78d361be66e48e175ea00ad368",
+      "bytes": 13595
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setUserAgentOverride/protocol/protocol-41542.jsonl",
+      "sha256": "0d988ac964af606e1c219d54e8bad25078564b39a00ed7cc7264b2f1dbb28463",
+      "bytes": 17164
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Emulation.setUserAgentOverride/resources.json",
+      "sha256": "b7e800d62c9b426c275710e2137a3a7cfbfd61511e966a8d738d4fc4a97fc46d",
+      "bytes": 13592
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Log.enable/protocol/protocol-40156.jsonl",
+      "sha256": "bd7a728574da88103d1053df5a925e6fc449b1be5792e7267fd5b8197f0047c8",
+      "bytes": 14276
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Log.enable/resources.json",
+      "sha256": "62c358eae88596860266538281f7d17e6a7fda26a7e5a72485224ef24d1086be",
+      "bytes": 13610
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Network.enable/protocol/protocol-39900.jsonl",
+      "sha256": "166435d11c95dc7e63530f74d38c8e60ab93cea42364a2393efa7205b26f0ca3",
+      "bytes": 13554
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Network.enable/resources.json",
+      "sha256": "47ecfe9f6a826b9c7f4ff23b8547bf36f1e2b74540e53f3a4e93cf04cc9bb000",
+      "bytes": 13590
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Page.enable/protocol/protocol-39648.jsonl",
+      "sha256": "b0c81c4445fcdf53b5ec2edb5af16160e9cd9b17d7dc2553632ec1ac41a9b273",
+      "bytes": 12224
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Page.enable/resources.json",
+      "sha256": "ab6bf7b1fed5e5026fc7165b8c3c458680b6fbb8427d983bed496788147b486a",
+      "bytes": 13586
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Page.getFrameTree/protocol/protocol-41035.jsonl",
+      "sha256": "3bd632f19935ff6d2c20c8cd60cff18bffcf6002c4c9e51955a4c0baf3287efd",
+      "bytes": 16513
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Page.getFrameTree/resources.json",
+      "sha256": "84b8bc741430ee30c15532f1a78b184c748d00525678b0b18674ef6b4ec441cc",
+      "bytes": 13584
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Page.setLifecycleEventsEnabled/protocol/protocol-39774.jsonl",
+      "sha256": "387b23acd5b79814d369ad19f47d0946cf2a75cfa6311a6442cd265051280b23",
+      "bytes": 13132
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Page.setLifecycleEventsEnabled/resources.json",
+      "sha256": "80e04bd6f32e2b900d9d7f0858390684e63f189bafa1018b7f6a982bb2c6eb8a",
+      "bytes": 12721
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Runtime.enable/protocol/protocol-40029.jsonl",
+      "sha256": "ef48a661379662b962c925f5a134b4304050d88d271f6815317e1d208202b698",
+      "bytes": 13999
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Runtime.enable/resources.json",
+      "sha256": "55a203c37fd4de25435f3a27a63927e462ae2713e0ce39c4f8e1d5c6581d8c76",
+      "bytes": 13602
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Security.setIgnoreCertificateErrors/protocol/protocol-41161.jsonl",
+      "sha256": "2c8a3f4dbe143fe6760b376a39e5b17f42ddc77dddabfcf20d22547ad088e9a0",
+      "bytes": 15530
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Security.setIgnoreCertificateErrors/resources.json",
+      "sha256": "7299b7562a3a7135d163505bd721e0119a895f3a193624ee622144dfaa05e2c8",
+      "bytes": 13589
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Target.setAutoAttach/protocol/protocol-40909.jsonl",
+      "sha256": "a33b6cddb0ac6d50312861f801973c55fef25bd0d18025cce88edda2678b08a8",
+      "bytes": 16227
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/Target.setAutoAttach/resources.json",
+      "sha256": "2f0c31fd29e4096cd22c1497833cc25972d519675c69883b3dcc2f7ef57443c5",
+      "bytes": 13583
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization/report.json",
+      "sha256": "3428e373123260c02f1b46f7381b72cb56a7b880e71ae3c6dff09717ca27e552",
+      "bytes": 154105
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization-resources.json",
+      "sha256": "e2295c378e37a4e599f777cf922792e41fbe4bc23b01888dc7d069fe455ade8f",
+      "bytes": 192601
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/page-initialization.log",
+      "sha256": "46e71e7ca455d91784d609110bda47afaa1274ae08c30cb186320c2939e404b1",
+      "bytes": 138
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/provenance-resources.json",
+      "sha256": "1fde1e3cb637eadf965226eba11d611cbeb9aa6b9cdce206f33a93764f29448a",
+      "bytes": 4960
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/provenance.log",
+      "sha256": "c7e839ae8fc678e1c912e3a2c3430d6a9ab6bab8c2e06170b1c1f71b709d3c0e",
+      "bytes": 52
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-evaluation/report.json",
+      "sha256": "f3f62d96cf687869ed43ed3b0661f72fc4e79b4ff30059e4c83fa6b737c9737e",
+      "bytes": 155281
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-evaluation-resources.json",
+      "sha256": "b48a8f9d4f4fbf06d763fe62b53127d70e756dba0e044276e7718ad11a456e77",
+      "bytes": 51455
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-evaluation.log",
+      "sha256": "869d2ad7c7e15652b6ff7d72815e4c6da604fb364b4a470b7ee062db7698664c",
+      "bytes": 130
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-input/candidate/protocol-39078.jsonl",
+      "sha256": "866bce24acd7220691f136ec11236c1900e958c114ea1c6ea79c8bc02c0d9274",
+      "bytes": 869654
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-input/reference/protocol-38553.jsonl",
+      "sha256": "b1eb47b45386048b8c373f296cd7d72f2a355eced8d5ee22a2ed887dffc7be26",
+      "bytes": 1296132
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-input/report.json",
+      "sha256": "18d5f1ead9037e605f1d63967c11345752791cedf1e626875aacc7393dd818f2",
+      "bytes": 156968
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-input-resources.json",
+      "sha256": "e73a186f581de1b4d930d5f7369ae573d2758f14d443db3f0f2d164a65b84af4",
+      "bytes": 433712
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/remote-input.log",
+      "sha256": "3337aa41ad4e7128dada05a6981d55f65490ab9808c6770902618f239a970432",
+      "bytes": 2224
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/typecheck-resources.json",
+      "sha256": "07552af47d4d6f9c8f4cea58c57e9ad675605df0dc3cde313627d38b55a2697e",
+      "bytes": 23805
+    },
+    {
+      "path": "workbench/remote-init-001/continuation/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-init-001/final/check-results.json",
+      "sha256": "e4565935b4e389202bfd087a018b7e5a1f5a1f3eff431124ef00e9d2c54792a5",
+      "bytes": 4621
+    },
+    {
+      "path": "workbench/remote-init-001/final/clippy-resources.json",
+      "sha256": "4221c8de0c0d6017046e13e5179877813234f6f8c6d04cb5eecb93ef1c2aac31",
+      "bytes": 51087
+    },
+    {
+      "path": "workbench/remote-init-001/final/clippy.log",
+      "sha256": "425805bca1afc11d6ec12c045f4d9e324a82e30b992bd1b45d97e823fa571c3b",
+      "bytes": 768
+    },
+    {
+      "path": "workbench/remote-init-001/final/fmt-resources.json",
+      "sha256": "3421dfed4ffcd9f67145d1fca80119d7996316f69f809c28a1863ed0158dbebd",
+      "bytes": 6315
+    },
+    {
+      "path": "workbench/remote-init-001/final/fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-bun/report.json",
+      "sha256": "8c2224506cbb1ebdd30a202dc598bd90ade2f4f3b3ded676e8077dfd92543d2f",
+      "bytes": 158085
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-bun-resources.json",
+      "sha256": "f2ec524d7e8373b7168664f85bb6155a2feb6a4852257ad1ea429073c1b29ed2",
+      "bytes": 45775
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-bun.log",
+      "sha256": "39194bdf892e6fabe938f70c7cc05219a29532e75a8eef972e6de4bd4725b214",
+      "bytes": 112
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-node22/report.json",
+      "sha256": "f9b88f77231a39a4c01fb720baebdea1022ab7398229b10f8070c990d973323a",
+      "bytes": 158060
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-node22-resources.json",
+      "sha256": "c1ad86743e8c8081eb545c61ec18024f00b8dbda1bc305fa6905cf84928ec1f4",
+      "bytes": 47031
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-node22.log",
+      "sha256": "54bf1cec71eef93ee2e4da053c34e4c92cfc0bff718e0a9e2cd885387f921d72",
+      "bytes": 115
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-node24/report.json",
+      "sha256": "3f8a9e74b9c725fca1e56de07296d314464dada7c3ffef5a239d1de499d62650",
+      "bytes": 158060
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-node24-resources.json",
+      "sha256": "826e5580f0b5dc0859dd802812a161b801a80b0cf1530899ac187fe3e9427f7d",
+      "bytes": 49861
+    },
+    {
+      "path": "workbench/remote-init-001/final/init-node24.log",
+      "sha256": "07210309bf98e62e62c69773820cf590a8d93188a3e6d4c10e52faa610eeb59c",
+      "bytes": 115
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/blocked-init-close/protocol/protocol-33310.jsonl",
+      "sha256": "bfd6253981aa40bb5e418c4d924cc22e41d69bb2d375facc0d1d0c45aaffe729",
+      "bytes": 31472
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/blocked-init-close/resources.json",
+      "sha256": "0178c4e9759507d6a38e1b9c1666014b20a6c61945a6eb3fd38a95ab36598e6f",
+      "bytes": 16958
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/blocked-init-close/test.log",
+      "sha256": "ba6d7ecfd8f738f9034714a6a98ea9e8647e9c5e0e8980bfabd0809f63979fcf",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-cancel/control.json",
+      "sha256": "e8dcc3776287174771d985df1d7100f4e9e15d5510fc78ab41703d251b9f667a",
+      "bytes": 85
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-cancel/held.json",
+      "sha256": "4239d5da2471d76010687773fb8ab39051ad6df2679d9e14aa265add08f3ccca",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-cancel/protocol/protocol-32401.jsonl",
+      "sha256": "d7742ff49d001f2da888ccf241fc1398daec29333e6b37908ef384c6465535df",
+      "bytes": 36550
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-cancel/resources.json",
+      "sha256": "48cf899c490495aa2bbd731dbc3d285d8fa189ef9fc31c6c77de4e07cbfee56b",
+      "bytes": 21630
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-cancel/test.log",
+      "sha256": "bf90498c8706165ebbc0b2014c0838cfe780ac5c21612d281c90aa8df32e2ae1",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-destroyed/control.json",
+      "sha256": "e8dcc3776287174771d985df1d7100f4e9e15d5510fc78ab41703d251b9f667a",
+      "bytes": 85
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-destroyed/held.json",
+      "sha256": "f41d9fa1b98b69866e11a0782f39b4de8fe9346546db12d71df4b58e78f78ab8",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-destroyed/protocol/protocol-33017.jsonl",
+      "sha256": "cea920ad3c66d6606c964fd11fb92d277cbb81144e73d13005080261bd107f82",
+      "bytes": 42452
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-destroyed/resources.json",
+      "sha256": "72bbef5040a5f84df3c627138d56e8d8177ddddbcfdadfb9c8d59aa0c32bc272",
+      "bytes": 18174
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-add-destroyed/test.log",
+      "sha256": "2c9f16dae67099f51e9bc70b58f61d36e8bd30a0080b5bce475187e96a9ba616",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-remove-cancel/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-remove-cancel/held.json",
+      "sha256": "ebeb1c8010fcc41c5e9898e8c7f157bedfb1f0e224a8a332c1fbd3ea4ae0b03f",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-remove-cancel/protocol/protocol-33158.jsonl",
+      "sha256": "509dd489950f67936ef4b30af251185a36f7a7bca095112aec847aae8da1396b",
+      "bytes": 37545
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-remove-cancel/resources.json",
+      "sha256": "f2bb59593a25a513a23f2dec7cda3884869e9d4b43151fa68e63b111323f135e",
+      "bytes": 21660
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/late-remove-cancel/test.log",
+      "sha256": "4873b20926e6c66ad1845136f75f0ba6fa417504284d3b682993b31cb512d3ff",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/malformed-add/control.json",
+      "sha256": "e2bada5681116d9f693234f1edf624ca1665c3d9b13d3a0f58ca2629eb60fe17",
+      "bytes": 90
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/malformed-add/held.json",
+      "sha256": "c0c8c1a4dfc3c7073a3ae62f48c3fd0077ca4466e74549cd178ed69673e8f6ef",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/malformed-add/protocol/protocol-32552.jsonl",
+      "sha256": "a2141525ebe6edc7daad9b83ac46df855854b89414a48c5b755d40e792490416",
+      "bytes": 33799
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/malformed-add/resources.json",
+      "sha256": "4d57c73a765a5beef284901df02fab4e5adbc4e47273771c8292c34a68439cac",
+      "bytes": 16945
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/malformed-add/test.log",
+      "sha256": "e201ed24498a2be5b21c01219d376f11ac00fbeef6f2d2c4b20d90b4eef04a97",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-add/control.json",
+      "sha256": "a00b58a3668307068982e3a00a0891da02bc8ca4d921dc91f9944954bc2661df",
+      "bytes": 59
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-add/held.json",
+      "sha256": "67ac39deeec71805b077ba3f1a46c3d98f79871e8b4683f2c84e817b4bebfead",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-add/protocol/protocol-31922.jsonl",
+      "sha256": "b21c58d214041cbbef5237192c8d7c5f27e3a1a34af536efb2fc4e3033e7b04f",
+      "bytes": 36087
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-add/resources.json",
+      "sha256": "fcdb6b7728f1ed8a665cb72c953ad51128f80a4a5451f94b4563a2c4663cd37e",
+      "bytes": 24962
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-add/test.log",
+      "sha256": "248bf62b51227a19d71fc94e9db47c7dcf93b79f9955cbda4dbfe2664b860cba",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-dispose/control.json",
+      "sha256": "a00b58a3668307068982e3a00a0891da02bc8ca4d921dc91f9944954bc2661df",
+      "bytes": 59
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-dispose/held.json",
+      "sha256": "862d207d3b3e6f0ee653191d105777c3d51c1e31a18a9ed85206514532ed84f6",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-dispose/protocol/protocol-32248.jsonl",
+      "sha256": "556f27f43069fd80d7b009998c5ee1b1d044d85fc6bb958fde0109f5478e65dd",
+      "bytes": 37145
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-dispose/resources.json",
+      "sha256": "76ab011ad5bd1e5dcec5de9f60b778f8d8069ba03e68ebfe9c5e4629232823da",
+      "bytes": 21492
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/reader-dispose/test.log",
+      "sha256": "1713c0550835713374b7cef61a28e186e688ab7b060340ee47ddf84c4b412f12",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-destroyed/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-destroyed/held.json",
+      "sha256": "08a3b68a24a88938aeb5bd83560b75c04c875d5d83e1e93ad93ffd8622e76860",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-destroyed/protocol/protocol-32700.jsonl",
+      "sha256": "33b3f5bbc20618d2667b42f89604e95e8aa90e5cfef7b968b1a8b3267061ad8f",
+      "bytes": 44988
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-destroyed/resources.json",
+      "sha256": "7209c23fc0020c08e13c133f80cbb54ae52a8e3ad99ee9cf8dd8757921e33c9b",
+      "bytes": 19352
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-destroyed/test.log",
+      "sha256": "4ac5c9b12d0328f867809d097fd4164617dadfa8f3d1d871ae7804e3423736ee",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-timeout/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-timeout/held.json",
+      "sha256": "5fd5d30eaf8d5e06fe3638a2d2505fb171ab1d3197ed384ef5c0c7a4310c2b3c",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-timeout/protocol/protocol-32860.jsonl",
+      "sha256": "108f45d57170bfd492356af1ad3ff68b7eb0c835390533ba33ae272d0fcd0d78",
+      "bytes": 35187
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-timeout/resources.json",
+      "sha256": "653442f798d293dae6fa394a28d90b863231fb009e72adae1d206fbd5defa927",
+      "bytes": 54945
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/remove-timeout/test.log",
+      "sha256": "f11640b4e7c71868d96752f2a66e0ec25652bfa9890bc7dda3a9379ea5fd880e",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/report.json",
+      "sha256": "4a35325a4faa592a84ae6803cdd2ddad1c7dfd62a4ad8177cb670e1bcff6d049",
+      "bytes": 153948
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-add/control.json",
+      "sha256": "c48c0c158e817cccb872238cc67b134d4ca55020076eeaf31945afca136b8805",
+      "bytes": 86
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-add/held.json",
+      "sha256": "ce97e5b10b05175405fc3ea92f88aafef2e61be11c493ece98e21223722a7eb0",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-add/protocol/protocol-31770.jsonl",
+      "sha256": "128486ebc78d50e2552c07b141281ef2a45add1cf683b2bd2cfd340f08ca72b2",
+      "bytes": 36545
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-add/resources.json",
+      "sha256": "3e81c8ef36583c945196ad0a31c68d4f1e1709ea444939ae099d2b11a10611b1",
+      "bytes": 17702
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-add/test.log",
+      "sha256": "9f5c8381de419b6f2cdc047beda6ae452304936429dae91f93c3270ab0a468c6",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-dispose/control.json",
+      "sha256": "8f136daf902b2e8da73fbe1e68fdf3cc410b6dd09ac86788772ba0b210b16376",
+      "bytes": 89
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-dispose/held.json",
+      "sha256": "0dfd2bc63bd105d328166730004f7fb8d4d3f61cdb54b741c54d990120f2b316",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-dispose/protocol/protocol-32092.jsonl",
+      "sha256": "146d9c77e3998f8f861a7862881b79fee99f07d0695f4eb1d89939daad5adb8e",
+      "bytes": 36553
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-dispose/resources.json",
+      "sha256": "885efe3be8939f023cea762c62a38de092f71c4bca8b72bd6966e95c962147d8",
+      "bytes": 17773
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle/writer-dispose/test.log",
+      "sha256": "b6766c85fffc91272de3f6b1d3a0182df511f8c9011f406864cfb6d87da983c0",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle-resources.json",
+      "sha256": "6746037965f389be66dd6e52f0d542c38fb77d363ea1fee74e8bba153d03b759",
+      "bytes": 258904
+    },
+    {
+      "path": "workbench/remote-init-001/final/lifecycle.log",
+      "sha256": "0c27c8335366aa0a7389b42738602fcbd6ba7bbd2a6a611a0196888cff8ccd59",
+      "bytes": 248
+    },
+    {
+      "path": "workbench/remote-init-001/final/native-init-resources.json",
+      "sha256": "5038eeb1f8ca99764361eb16e138997d5ef67a9e2e5f69d9359e3528014fba56",
+      "bytes": 177262
+    },
+    {
+      "path": "workbench/remote-init-001/final/native-init.log",
+      "sha256": "398c3480c2aef082ebc6d4b683815ce969fee2f0432fd27df659c6b70a57610b",
+      "bytes": 1734
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-bun/flashwright/protocol-33779.jsonl",
+      "sha256": "d72c7513046506040d1d7f7d39926ebfa9e51dd3c841206dbdcbbb1687e4a91f",
+      "bytes": 363784
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-bun/playwright/protocol-33469.jsonl",
+      "sha256": "a4c94978f1258f82bc2aafd9d7272b858caca3e520828945e25977a6e2940e55",
+      "bytes": 405639
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-bun/report.json",
+      "sha256": "184d9161314425054164d6ebde46bf955618e63fe5f20ccf7043b6f1d110889e",
+      "bytes": 154157
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-bun-resources.json",
+      "sha256": "e74eba5a48c505353775137a3cca9aaec2f3e8a7183e11ca94877513f3706a41",
+      "bytes": 50055
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-bun.log",
+      "sha256": "4ebd17610b559d392acac163796c040f09275486b000860ee3b8b02705bc0fd8",
+      "bytes": 1160
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-evaluation/report.json",
+      "sha256": "e1c2fdfd26af8ce9148e2c60a7860e7fbd154d62e915d37a0fb55d0acc38204c",
+      "bytes": 155508
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-evaluation-resources.json",
+      "sha256": "639396a8656ef1f98eaa2331633b5122726c62aecc637dcefa86abdb93a18a8f",
+      "bytes": 52364
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-evaluation.log",
+      "sha256": "73d0cef180f2ab50189c45c115c47180457cffc5d7e490b9ff15f3e25c7f9703",
+      "bytes": 123
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node22/flashwright/protocol-35030.jsonl",
+      "sha256": "bc19fa5ae5197489cf3c9b0db079f3a8f53b11c03543acaff5bb840b3e676f3b",
+      "bytes": 365389
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node22/playwright/protocol-34722.jsonl",
+      "sha256": "0063c72a08ea75bcbd4862ac4c1c4ec6bd7169715d62ce396e9b44de1bbc1d9f",
+      "bytes": 408947
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node22/report.json",
+      "sha256": "7288a839283c9eb5867f67e1b4c8d867bc40100ca8199e15bb3b4270c189ab9d",
+      "bytes": 154156
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node22-resources.json",
+      "sha256": "dbfb20bd3ea89ddd8ab183790dbdc3e7393b4c3983a1d651475f7ae36749e77d",
+      "bytes": 53155
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node22.log",
+      "sha256": "4ebd17610b559d392acac163796c040f09275486b000860ee3b8b02705bc0fd8",
+      "bytes": 1160
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node24/flashwright/protocol-36282.jsonl",
+      "sha256": "f68e7bd5b4708b157c4dba1d4b9a5b6256b666553c73832a1c1ed993b3a860e1",
+      "bytes": 364091
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node24/playwright/protocol-35972.jsonl",
+      "sha256": "e47f0733eca53d0f6dc45e63109b1dbc2c86c4c10a538f685474e5bc564aedb9",
+      "bytes": 407366
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node24/report.json",
+      "sha256": "64e737066e9870bd477b906e507335366d78b606160612214b12acab1b5a388a",
+      "bytes": 154156
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node24-resources.json",
+      "sha256": "3641d54121474cdac669077f34e236b21af94d3b2f941889c1811d0dbcb63d68",
+      "bytes": 53773
+    },
+    {
+      "path": "workbench/remote-init-001/final/remote-node24.log",
+      "sha256": "4ebd17610b559d392acac163796c040f09275486b000860ee3b8b02705bc0fd8",
+      "bytes": 1160
+    },
+    {
+      "path": "workbench/remote-init-001/final/rust-resources.json",
+      "sha256": "02bc50d2e41684662c04946e58c53a036bc29c0651dcdf8a1e8890922e8b3767",
+      "bytes": 168352
+    },
+    {
+      "path": "workbench/remote-init-001/final/rust.log",
+      "sha256": "870b130219ddd15cc0872d65d8af2b119d61c35a2eb6b442d1c0c11e80134e30",
+      "bytes": 55732
+    },
+    {
+      "path": "workbench/remote-init-001/functional/flashwright/protocol-23851.jsonl",
+      "sha256": "f73eb247c872edf4ff835bd0d62445da0a170673cf5dfc5148b9b14c96a1bbca",
+      "bytes": 362372
+    },
+    {
+      "path": "workbench/remote-init-001/functional/playwright/protocol-23517.jsonl",
+      "sha256": "9197eff314f5c625653d82557a0e6b9a6439bf94bf10a290c3d9764547472b45",
+      "bytes": 405563
+    },
+    {
+      "path": "workbench/remote-init-001/functional/report.json",
+      "sha256": "7372318d5a7dcaee4d0aa9a4950eb395fb117099d5731d966695f703957fb0e5",
+      "bytes": 153816
+    },
+    {
+      "path": "workbench/remote-init-001/functional-resources.json",
+      "sha256": "4676c729425b619021a3aee03afc8cf60b4ff665d937aaa23b25154b3e614701",
+      "bytes": 51442
+    },
+    {
+      "path": "workbench/remote-init-001/functional.log",
+      "sha256": "4ebd17610b559d392acac163796c040f09275486b000860ee3b8b02705bc0fd8",
+      "bytes": 1160
+    },
+    {
+      "path": "workbench/remote-init-001/late-add-cancel/control.json",
+      "sha256": "e8dcc3776287174771d985df1d7100f4e9e15d5510fc78ab41703d251b9f667a",
+      "bytes": 85
+    },
+    {
+      "path": "workbench/remote-init-001/late-add-cancel/held.json",
+      "sha256": "6bd1a0dfac7513ee49904bb2dba1715c3d6a046f5723f11926b87013c20e94fc",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/late-add-cancel/protocol/protocol-26208.jsonl",
+      "sha256": "922e15d5774ef6050f78234e96f38998a468edce78f50bd221a18012f5133b4e",
+      "bytes": 37544
+    },
+    {
+      "path": "workbench/remote-init-001/late-add-cancel/resources.json",
+      "sha256": "02956f6e41e4aa9e8527bf1e0dbdd9d08c7f11b143a304582414702e80288574",
+      "bytes": 21631
+    },
+    {
+      "path": "workbench/remote-init-001/late-add-cancel/test.log",
+      "sha256": "e5ce003056bbc046f2d410d41152af3fe12e582f2cfe826e142f5114c1826c76",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/blocked-init-close/protocol/protocol-28785.jsonl",
+      "sha256": "387e358c404fc7a59e365261cfc4f813aea2aa0c5ef32dd1a2748baa28260cbf",
+      "bytes": 31562
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/blocked-init-close/resources.json",
+      "sha256": "384017f62219bb240342faf7fadce38910d807cf017eefcb8f7bf324d10222d5",
+      "bytes": 16974
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/blocked-init-close/test.log",
+      "sha256": "28aff46f4c1f2f3e1ec92d069c778a7c40e77d64a1ada84dd94554c23f057a0a",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-cancel/control.json",
+      "sha256": "e8dcc3776287174771d985df1d7100f4e9e15d5510fc78ab41703d251b9f667a",
+      "bytes": 85
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-cancel/held.json",
+      "sha256": "f37bb619fe220fe8b065c2d99dbb2929216917e2a7527fbd08202c31b0b8ec6d",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-cancel/protocol/protocol-27800.jsonl",
+      "sha256": "31f32f3bccc3108318137b5fa06ce57a541bd42f7037011904e2d2ab0b069235",
+      "bytes": 36550
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-cancel/resources.json",
+      "sha256": "81b240c166f0db817502f1dba00685005bd13ea1c9ea2ebad4e1ac9a504dca63",
+      "bytes": 21389
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-cancel/test.log",
+      "sha256": "579b7b751754402d86b6ac4aa76affb9ccb15cf0ca054455651bab813097383b",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-destroyed/control.json",
+      "sha256": "e8dcc3776287174771d985df1d7100f4e9e15d5510fc78ab41703d251b9f667a",
+      "bytes": 85
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-destroyed/held.json",
+      "sha256": "d80df7ee68f8c575e073fa6e668bf97ceca57917e538f62671252c75ae38308e",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-destroyed/protocol/protocol-28426.jsonl",
+      "sha256": "4d63a69901e62c18d0352c3b69c49ce92f919283674e37b205bb107c7669b7f8",
+      "bytes": 41370
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-destroyed/resources.json",
+      "sha256": "2fda814a6ffc2a7de89a6d7fc35e59c86df773ebc9ff7beaeb1c2da365cb314e",
+      "bytes": 17713
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-add-destroyed/test.log",
+      "sha256": "6fdd5cdd37dcd3f44cc6b5dc0ded5357d234ed3ff1f0839e878244b415aa7c90",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-remove-cancel/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-remove-cancel/held.json",
+      "sha256": "edc4b012515777a694c1006c3097fd25f9a13928ed05cb0c77c94a52d268511b",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-remove-cancel/protocol/protocol-28612.jsonl",
+      "sha256": "c463ec5454572e2941222b3d14dbfbc8db03145e39fd669688c67f9a85a06854",
+      "bytes": 37545
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-remove-cancel/resources.json",
+      "sha256": "fd1365d15897278f32bbc349f6fd4ce1e8d0343ccfb79b5f0ed8409b878036a1",
+      "bytes": 21649
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/late-remove-cancel/test.log",
+      "sha256": "f389709536f2029ee388eaf461cb94a7b70d391d654066d1dd2ae525ec5053f6",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/malformed-add/control.json",
+      "sha256": "e2bada5681116d9f693234f1edf624ca1665c3d9b13d3a0f58ca2629eb60fe17",
+      "bytes": 90
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/malformed-add/held.json",
+      "sha256": "528a38fa0f9fbe1cc18b7e2c7cb10b83d1a1b8b627bc0df5a41baa00ff75bd5a",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/malformed-add/protocol/protocol-27952.jsonl",
+      "sha256": "8c1c036794c176504780f488219c534079904e215f100bcd4a636624c3f139e2",
+      "bytes": 32920
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/malformed-add/resources.json",
+      "sha256": "6b34dbfeb3e7982b0d2f0130b972eaac78945154890090a4002908af38bc42a5",
+      "bytes": 16955
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/malformed-add/test.log",
+      "sha256": "28aff46f4c1f2f3e1ec92d069c778a7c40e77d64a1ada84dd94554c23f057a0a",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-add/control.json",
+      "sha256": "a00b58a3668307068982e3a00a0891da02bc8ca4d921dc91f9944954bc2661df",
+      "bytes": 59
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-add/held.json",
+      "sha256": "7a70eb7dcbd2db389c16a0fd484a9cd9d7fda77d9c94e58ff61cc458af22d472",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-add/protocol/protocol-27338.jsonl",
+      "sha256": "99bedcb519af77171c0e1d2f38cee01ccf1f6035bf4ddeda218a2cce028cb64e",
+      "bytes": 35997
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-add/resources.json",
+      "sha256": "3ecfd72d97092109236ced68210a9ca5844674ba2705a904ab4855c0ea1fcd41",
+      "bytes": 21265
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-add/test.log",
+      "sha256": "2732ed56a6321421e7e3e877dbc072045f0db5c648e43b4325b4861827f2acfb",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-dispose/control.json",
+      "sha256": "a00b58a3668307068982e3a00a0891da02bc8ca4d921dc91f9944954bc2661df",
+      "bytes": 59
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-dispose/held.json",
+      "sha256": "27f440445dab830ad10440ef7e00526f1e36a7d9d9cefc37d14927c33aded935",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-dispose/protocol/protocol-27651.jsonl",
+      "sha256": "ec560979f8a3dbe88a253f33209fb6013858e811f3f9108577911d2761b135b5",
+      "bytes": 37145
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-dispose/resources.json",
+      "sha256": "d4cf4e5372a04dbbbd9bbc3a1bcbb46122af068ba599a87a60b0f0d8b54ce9e0",
+      "bytes": 20795
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/reader-dispose/test.log",
+      "sha256": "416d842f5e1dfb956a0abdfa52c1568e95a5189bfc627319408db4c9d284a42e",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-destroyed/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-destroyed/held.json",
+      "sha256": "d91dab49196bd884c9ac6666178efe986388a262fd0b00f10da7ba41a6077695",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-destroyed/protocol/protocol-28100.jsonl",
+      "sha256": "9cb40fb06e0bd4957d05f7b875214e3ea9ee7a3ef2f4260c604edf47e512c3f7",
+      "bytes": 44988
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-destroyed/resources.json",
+      "sha256": "08ee619c349d730c8661a8572e659672b704e744dad4ea5363573f2081c256e9",
+      "bytes": 18188
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-destroyed/test.log",
+      "sha256": "a780c4e1339079421b2862c6ea1879c1ab2890cb49e53d4c3bd096486b4737d5",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-timeout/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-timeout/held.json",
+      "sha256": "d5949344bbb4e6719e54257e9c66bd3df9e0bd530b0523648484abcbeb0db121",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-timeout/protocol/protocol-28263.jsonl",
+      "sha256": "d8b20516eb9bdba252d03ce21a3a108d6776903f78d2c033eca3e6b3963684e3",
+      "bytes": 34654
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-timeout/resources.json",
+      "sha256": "6b9e5fb8ca90f366169a9c7cd3ec7d179083c0856c6b0a5d7efc2cb32f6da566",
+      "bytes": 55111
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/remove-timeout/test.log",
+      "sha256": "ef68de8bfdd3b12c7b0f6aede5f1c88b230b5edcd0fddf0b21c683a4ee57d7ed",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/report.json",
+      "sha256": "9cfd779ece9109b41694807552bac721fdc14a83cc4a91229ca19e0510db31ec",
+      "bytes": 155597
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-add/control.json",
+      "sha256": "c48c0c158e817cccb872238cc67b134d4ca55020076eeaf31945afca136b8805",
+      "bytes": 86
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-add/held.json",
+      "sha256": "076632bda647004dd2a67cba3cca352a7a6fbe74b1a6604fc7e82d4d8e8bfec8",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-add/protocol/protocol-27111.jsonl",
+      "sha256": "a698b02938e8a8837d593576624634f408c6eb79ffd0238c721d92d74415f09e",
+      "bytes": 36545
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-add/resources.json",
+      "sha256": "9e0187b2d34cf39a9978a5121fbfa4bd384ef0ad08a708d2cc7b8c6c62ac07a8",
+      "bytes": 18133
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-add/test.log",
+      "sha256": "b916608e4424049a0f1a5f6d7aae3e1062f76d3a1e7c443ad1d584105834917e",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-dispose/control.json",
+      "sha256": "8f136daf902b2e8da73fbe1e68fdf3cc410b6dd09ac86788772ba0b210b16376",
+      "bytes": 89
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-dispose/held.json",
+      "sha256": "4e848e54d85bac07922e18a979e63ec0246591dea4de7caf4a5189b3942c6e03",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-dispose/protocol/protocol-27499.jsonl",
+      "sha256": "40a19c157679737edc840ddc9eaff59581a9c36df06bee1f5a56689bc90bd9bd",
+      "bytes": 36553
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-dispose/resources.json",
+      "sha256": "017425a0a816eaf07afdcabd7c4c163a0b1ea2313364ef785e2e262061b5f754",
+      "bytes": 17708
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle/writer-dispose/test.log",
+      "sha256": "4ac5c9b12d0328f867809d097fd4164617dadfa8f3d1d871ae7804e3423736ee",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/lifecycle.log",
+      "sha256": "0c27c8335366aa0a7389b42738602fcbd6ba7bbd2a6a611a0196888cff8ccd59",
+      "bytes": 248
+    },
+    {
+      "path": "workbench/remote-init-001/malformed-add/control.json",
+      "sha256": "e2bada5681116d9f693234f1edf624ca1665c3d9b13d3a0f58ca2629eb60fe17",
+      "bytes": 90
+    },
+    {
+      "path": "workbench/remote-init-001/malformed-add/held.json",
+      "sha256": "7e9f7b876b2bae9fd0606bb0bce545c0b436edfad317a42b87e3239070392823",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/malformed-add/protocol/protocol-26361.jsonl",
+      "sha256": "fb4bd1609c7e333c7dcecbd3408edca2c32b0186399aca1abd5ff1af341b3231",
+      "bytes": 32920
+    },
+    {
+      "path": "workbench/remote-init-001/malformed-add/resources.json",
+      "sha256": "8c57449a2ce6a03cca57b3b4a511349ce055da2674d6c76e9b29a268f3d54690",
+      "bytes": 17680
+    },
+    {
+      "path": "workbench/remote-init-001/malformed-add/test.log",
+      "sha256": "4034d7d5120b2351fa4440090ffc473388d6bfb3f00929da97aa74eca2c70190",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/race-results.json",
+      "sha256": "285f3cb78249bbb181037ef8ecd0bd370a08c7c3457dbecb86d85ac9cdb9f35f",
+      "bytes": 605
+    },
+    {
+      "path": "workbench/remote-init-001/reader-add/control.json",
+      "sha256": "a00b58a3668307068982e3a00a0891da02bc8ca4d921dc91f9944954bc2661df",
+      "bytes": 59
+    },
+    {
+      "path": "workbench/remote-init-001/reader-add/held.json",
+      "sha256": "d554bf846eddf56d34b590c298c2d8025a0c9e49d995b6a6dd1831760db34a0a",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/reader-add/protocol/protocol-25686.jsonl",
+      "sha256": "93457b1db450fc74287782e025fd3d0aba23cac003f2d7184bae8180445c13c4",
+      "bytes": 36146
+    },
+    {
+      "path": "workbench/remote-init-001/reader-add/resources.json",
+      "sha256": "81145c8c11ff8892ab1a7bea7b635ac72a8933f4b3d7abd435d3be37b27b5955",
+      "bytes": 21020
+    },
+    {
+      "path": "workbench/remote-init-001/reader-add/test.log",
+      "sha256": "3d7767b812b7780dd98e8239cafe83def84f1f40b8b4c461fc70a2707362e8c5",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/reader-dispose/control.json",
+      "sha256": "a00b58a3668307068982e3a00a0891da02bc8ca4d921dc91f9944954bc2661df",
+      "bytes": 59
+    },
+    {
+      "path": "workbench/remote-init-001/reader-dispose/held.json",
+      "sha256": "1758385506491f4d8b7fc3cc2cd4846ef3219483792d53b0de97817db97b0c61",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/reader-dispose/protocol/protocol-26057.jsonl",
+      "sha256": "8067ead9115441c35ed5567ef0f441da7c909051f34831202144809ee80bb13a",
+      "bytes": 37145
+    },
+    {
+      "path": "workbench/remote-init-001/reader-dispose/resources.json",
+      "sha256": "dcd02ae2c7db00a77c76f318bf91adc1bc51b1c4e46d86096b4f52007f3f4cb6",
+      "bytes": 20796
+    },
+    {
+      "path": "workbench/remote-init-001/reader-dispose/test.log",
+      "sha256": "655d6f135aa8b1da00fb4336e84470efd75686caf3a66f52d9bf5a1fa3352492",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/remove-destroyed/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/remove-destroyed/held.json",
+      "sha256": "2e60d0a53e209130700b1c9af83692826063b1861539369b2c978c476af653c7",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/remove-destroyed/protocol/protocol-26511.jsonl",
+      "sha256": "0272b6d0e4419c7fc3c1373ca1e358beb5b053cc4fa6f2ede425654582809ca7",
+      "bytes": 44988
+    },
+    {
+      "path": "workbench/remote-init-001/remove-destroyed/resources.json",
+      "sha256": "1049b11b9c4b2fbaff4dc8903158d8ff753bb5594aea519335383ada1033c9c1",
+      "bytes": 18169
+    },
+    {
+      "path": "workbench/remote-init-001/remove-destroyed/test.log",
+      "sha256": "a780c4e1339079421b2862c6ea1879c1ab2890cb49e53d4c3bd096486b4737d5",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/remove-timeout/control.json",
+      "sha256": "1430cf3a8c68b48fd3dc54ad0e6516e8df7b35f4dcf7941c1e21212d37d8076e",
+      "bytes": 88
+    },
+    {
+      "path": "workbench/remote-init-001/remove-timeout/held.json",
+      "sha256": "97cad7253c4c87dacb92c91d465d8ae8a243f54af31241fe9a99de17d2468b8d",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/remove-timeout/protocol/protocol-26676.jsonl",
+      "sha256": "2f8fcda1472c0b65af5c951eca21dd12244650158c215e73457df8e4cf570dab",
+      "bytes": 35302
+    },
+    {
+      "path": "workbench/remote-init-001/remove-timeout/resources.json",
+      "sha256": "b3358381dcd3b1cb6049aa70be3bb847217951b063e6f48384b495a6646e91b4",
+      "bytes": 54680
+    },
+    {
+      "path": "workbench/remote-init-001/remove-timeout/test.log",
+      "sha256": "293b076077d7831d0b42ffdeb5c3d390902a4dafbf88197de9d79a2ec7342a64",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/writer-add/control.json",
+      "sha256": "c48c0c158e817cccb872238cc67b134d4ca55020076eeaf31945afca136b8805",
+      "bytes": 86
+    },
+    {
+      "path": "workbench/remote-init-001/writer-add/held.json",
+      "sha256": "7dd1beb664c795b5bc3a58562894258dcd1398032249b67030497507653a27b7",
+      "bytes": 82
+    },
+    {
+      "path": "workbench/remote-init-001/writer-add/protocol/protocol-25527.jsonl",
+      "sha256": "b2274a140e9ff333f28934d0ec27bfcb817f4e0f4dc1610cf6eefe28bac94198",
+      "bytes": 36545
+    },
+    {
+      "path": "workbench/remote-init-001/writer-add/resources.json",
+      "sha256": "eced19c7506eb4c3a6bfbf9443ed2ea326c76f7819434d6c466895984a9068f4",
+      "bytes": 19400
+    },
+    {
+      "path": "workbench/remote-init-001/writer-add/test.log",
+      "sha256": "b686f71f85e9ea02decd45547eb77585c70b9ab8e083e8e17dc79d8ed04b051b",
+      "bytes": 175
+    },
+    {
+      "path": "workbench/remote-init-001/writer-dispose/control.json",
+      "sha256": "8f136daf902b2e8da73fbe1e68fdf3cc410b6dd09ac86788772ba0b210b16376",
+      "bytes": 89
+    },
+    {
+      "path": "workbench/remote-init-001/writer-dispose/held.json",
+      "sha256": "f5e5afe832bf553f35d75f8db87c238c314a01f9b5aa64fa4a90f49ef3d37cd7",
+      "bytes": 83
+    },
+    {
+      "path": "workbench/remote-init-001/writer-dispose/protocol/protocol-25904.jsonl",
+      "sha256": "6cf0ba98aba091a3eb2153532a4496c22c3fcdabc35de2391438a304f8d0fa0a",
+      "bytes": 37326
+    },
+    {
+      "path": "workbench/remote-init-001/writer-dispose/resources.json",
+      "sha256": "be86fc36e3e5f06e48573b5f1846c0c362a418a0c0c1e5adc2cb55a0f2f76d18",
+      "bytes": 17748
+    },
+    {
+      "path": "workbench/remote-init-001/writer-dispose/test.log",
+      "sha256": "b38ef3ecd90f225dd84ce716b7df83fd5d17083185cbde57bca22a6ec9f16e32",
+      "bytes": 175
+    }
+  ]
+}

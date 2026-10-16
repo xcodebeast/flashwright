@@ -8,7 +8,7 @@ const INITIALIZATION_BUDGET: Duration = Duration::from_secs(10);
 const CLEANUP_BUDGET: Duration = Duration::from_secs(1);
 
 /// Only the protocol's exact missing-session response proves this addressed session is gone.
-fn session_is_gone(error: &ErrorRecord) -> bool {
+pub(super) fn session_is_gone(error: &ErrorRecord) -> bool {
     error.code == ErrorCode::Protocol
         && error.browser_error_code == Some(-32001)
         && serde_json::from_str::<Value>(&error.message).is_ok_and(|payload| {
@@ -128,19 +128,11 @@ impl Engine {
                     )
                 });
                 if state.failure.is_none() {
-                    let has_init_scripts = !page.state.init_scripts.lock().unwrap().is_empty()
-                        || registry.init_scripts.values().any(|script| {
-                            script.context_identifier == page.context_identifier
-                                && script
-                                    .page_identifier
-                                    .as_deref()
-                                    .is_none_or(|owner| owner == page_identifier)
-                        });
                     let has_routes = state.interception.enabled
                         || page.state.routing_transition.load(Ordering::Acquire)
                         || page.state.routing_registered.load(Ordering::Acquire)
                         || context.state.routing_registered.load(Ordering::Acquire);
-                    state.failure = unsupported_remote_configuration(has_init_scripts, has_routes);
+                    state.failure = unsupported_remote_configuration(has_routes);
                 }
             }
             page.state
@@ -181,11 +173,17 @@ impl Engine {
                     retirement.clone(),
                 );
                 let outcome = engine
-                    .initialize_renderer(&page, &context, &browser, &owner, &operation)
+                    .initialize_renderer(
+                        &page_identifier,
+                        &page,
+                        &context,
+                        &browser,
+                        &owner,
+                        &operation,
+                    )
                     .await;
                 match outcome {
                     Ok(()) => {
-                        owner.mark_ready();
                         let mut state = page.state.state.lock().unwrap();
                         state.sequence += 1;
                         page.state.changed.send_replace(state.sequence);
@@ -219,12 +217,18 @@ impl Engine {
 
     async fn initialize_renderer(
         &self,
+        page_identifier: &str,
         page: &Page,
         context: &Context,
         browser: &Chromium,
         owner: &RendererSession,
         operation: &Operation,
     ) -> Result<(), ErrorRecord> {
+        let _configuration = operation
+            .wait(context.state.while_alive(METHOD, async {
+                Ok(context.state.page_configuration.read().await)
+            }))
+            .await?;
         let mut commands = vec![
             ("Page.enable", json!({})),
             ("Page.setLifecycleEventsEnabled", json!({"enabled":true})),
@@ -260,7 +264,6 @@ impl Engine {
             ));
         }
         commands.push(("Target.setAutoAttach", auto_attach_parameters()));
-        commands.push(("Runtime.runIfWaitingForDebugger", json!({})));
         for (method, parameters) in commands {
             operation
                 .wait(page.state.while_alive(
@@ -269,7 +272,23 @@ impl Engine {
                 ))
                 .await?;
         }
-        operation.check()
+        self.initialize_renderer_scripts(page_identifier, page, browser, owner, operation)
+            .await?;
+        operation
+            .wait(page.state.while_alive(
+                METHOD,
+                renderer_command(
+                    &browser.connection,
+                    owner,
+                    "Runtime.runIfWaitingForDebugger",
+                    json!({}),
+                ),
+            ))
+            .await?;
+        operation.check()?;
+        // Registration's writer must see either a pending owner or this fully initialized owner.
+        owner.mark_ready();
+        Ok(())
     }
 
     /// Acknowledged resume and detachment settle this session only. Uncertain cleanup disposes
@@ -366,16 +385,8 @@ impl Engine {
 }
 
 /// A direct attachment has the same configuration limits as a renderer swap.
-pub(crate) fn unsupported_remote_configuration(
-    has_init_scripts: bool,
-    has_routes: bool,
-) -> Option<ErrorRecord> {
-    let (method, message) = if has_init_scripts {
-        (
-            "addInitScript",
-            "init scripts in out-of-process child frames are not implemented",
-        )
-    } else if has_routes {
+pub(crate) fn unsupported_remote_configuration(has_routes: bool) -> Option<ErrorRecord> {
+    let (method, message) = if has_routes {
         (
             "route.configure",
             "request routing in out-of-process child frames is not implemented",

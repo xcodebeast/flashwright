@@ -18,7 +18,7 @@ const driverPath = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/
 const report = {
   schemaVersion: 1, status: 'running', reference: '1.60.0', ...runtimeMetadata,
   platform: process.platform, architecture: process.arch, outcomes: {}, candidateBoundaries: [],
-  scope: 'Application worker and audio worklet liveness, sandboxed SVG previews, cross-site Frame and handle evaluation, lazy FrameLocator element resolution, nested renderer documents, interrupted callbacks without replay, renderer return, and context closure. Candidate-only checks reject unsupported remote init scripts, routing, and storage collection in either configuration order. Remote input, network delivery, diagnostics, performance, and release acceptance are outside this fixture.',
+  scope: 'Application worker and audio worklet liveness, sandboxed SVG previews, cross-site Frame and handle evaluation, lazy FrameLocator element resolution, nested renderer documents, interrupted callbacks without replay, renderer return, and context closure. Candidate-only checks reject unsupported remote routing and storage collection in either configuration order; init scripts have a separate remote fixture. Remote input, network delivery, diagnostics, performance, and release acceptance are outside this fixture.',
 };
 
 let port;
@@ -184,16 +184,14 @@ async function run(engine, chromium) {
 async function verifyCandidateBoundaries(browser) {
   const unsupported = error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message);
   for (const scope of ['page', 'context']) {
-    for (const feature of ['scripts', 'routes']) {
+    for (const feature of ['routes']) {
       for (const configureFirst of [true, false]) {
         const token = `${scope}-${feature}-${configureFirst}`;
         const context = await browser.newContext();
         try {
           const page = await context.newPage();
           const owner = scope === 'page' ? page : context;
-          const configure = () => feature === 'scripts'
-            ? owner.addInitScript(() => { window.boundaryInitScript = true; })
-            : owner.route('**/never-matches-this-fixture', route => route.continue());
+          const configure = () => owner.route('**/never-matches-this-fixture', route => route.continue());
           const navigate = () => page.goto(`http://127.0.0.1:${port}/boundary-parent?token=${token}`, { timeout: 5000 });
           if (configureFirst) {
             await configure();
@@ -248,7 +246,9 @@ try {
   await run('flashwright', candidateChromium);
   assert.deepEqual(report.outcomes.flashwright, report.outcomes.reference);
   assert.equal(report.outcomes.flashwright.length, 8);
-  assert.equal(report.candidateBoundaries.length, 9);
+  // Four routing orders plus the remaining storage boundary; remote init scripts
+  // now have positive conformance and forced-race fixtures of their own.
+  assert.equal(report.candidateBoundaries.length, 5);
   report.sourceChangedDuringVerification = JSON.stringify(await sourceManifest()) !== JSON.stringify(report.sources);
   report.driverChangedDuringVerification = hash(await readFile(driverPath)) !== report.driverSha256;
   report.browserChangedDuringVerification = hash(await readFile(browserPath)) !== report.browser.sha256;

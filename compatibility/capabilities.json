@@ -471,11 +471,16 @@
       "status": "experimental",
       "milestone": "M4",
       "implementation": [
-        "packages/flashwright-core/src/index.ts"
+        "packages/flashwright-core/src/index.ts",
+        "crates/flashwright-engine/src/init_scripts.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs",
+        "crates/flashwright-engine/src/renderer_sessions.rs"
       ],
       "evidence": [
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
-        "compatibility/m2/init-scripts.mjs"
+        "compatibility/m2/init-scripts.mjs",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json",
+        "compatibility/m2/remote-init-scripts.mjs"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 318,
@@ -1660,7 +1665,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 738,
@@ -1729,7 +1735,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 782,
@@ -1852,7 +1859,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 870,
@@ -11327,7 +11335,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2119,
@@ -11492,7 +11501,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2145,
@@ -11605,7 +11615,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2202,
@@ -11853,7 +11864,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2252,
@@ -11944,7 +11956,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2285,
@@ -12123,7 +12136,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2318,
@@ -12158,7 +12172,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2348,
@@ -12383,7 +12398,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2391,
@@ -13070,7 +13086,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2693,
@@ -13197,7 +13214,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2709,
@@ -13254,7 +13272,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2732,
@@ -13325,7 +13344,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2737,
@@ -13396,7 +13416,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2763,
@@ -13514,7 +13535,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2791,
@@ -13581,7 +13603,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2796,
@@ -13726,7 +13749,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2843,
@@ -13815,7 +13839,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2873,
@@ -13904,7 +13929,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2903,
@@ -13993,7 +14019,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 2951,
@@ -14254,7 +14281,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3068,
@@ -14308,7 +14336,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3114,
@@ -14397,7 +14426,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3142,
@@ -14803,7 +14833,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3297,
@@ -14988,7 +15019,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3330,
@@ -15455,7 +15487,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3457,
@@ -15950,7 +15983,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3597,
@@ -16107,7 +16141,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3638,
@@ -16658,7 +16693,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3901,
@@ -16788,7 +16824,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 3919,
@@ -17439,7 +17476,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4201,
@@ -17674,7 +17712,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4247,
@@ -17731,7 +17770,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4287,
@@ -17914,7 +17954,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4313,
@@ -18981,7 +19022,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4642,
@@ -19108,7 +19150,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4658,
@@ -19165,7 +19208,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4696,
@@ -19330,7 +19374,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4722,
@@ -24343,7 +24388,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 5982,
@@ -24720,7 +24766,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6153,
@@ -24885,7 +24932,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6179,
@@ -24976,7 +25024,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6196,
@@ -25011,7 +25060,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6225,
@@ -25259,7 +25309,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6275,
@@ -25354,7 +25405,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6328,
@@ -25579,7 +25631,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6371,
@@ -26086,7 +26139,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6540,
@@ -26213,7 +26267,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6556,
@@ -26270,7 +26325,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6579,
@@ -26341,7 +26397,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6584,
@@ -26427,7 +26484,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6631,
@@ -26664,7 +26722,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6708,
@@ -26827,7 +26886,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 6786,
@@ -27393,7 +27453,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7064,
@@ -27578,7 +27639,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7097,
@@ -28045,7 +28107,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7224,
@@ -28540,7 +28603,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7363,
@@ -28697,7 +28761,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7410,
@@ -28764,7 +28829,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7420,
@@ -28799,7 +28865,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7452,
@@ -28929,7 +28996,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7470,
@@ -28986,7 +29054,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7519,
@@ -29221,7 +29290,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7565,
@@ -29278,7 +29348,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7605,
@@ -29461,7 +29532,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7631,
@@ -30227,7 +30299,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7874,
@@ -30354,7 +30427,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7890,
@@ -30411,7 +30485,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7928,
@@ -30576,7 +30651,8 @@
         "compatibility/m2/selector-actions.mjs",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7954,
@@ -30667,7 +30743,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 7974,
@@ -31144,11 +31221,16 @@
       "status": "experimental",
       "milestone": "M4",
       "implementation": [
-        "packages/flashwright-core/src/index.ts"
+        "packages/flashwright-core/src/index.ts",
+        "crates/flashwright-engine/src/init_scripts.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs",
+        "crates/flashwright-engine/src/renderer_sessions.rs"
       ],
       "evidence": [
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
-        "compatibility/m2/init-scripts.mjs"
+        "compatibility/m2/init-scripts.mjs",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json",
+        "compatibility/m2/remote-init-scripts.mjs"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 8224,
@@ -39253,7 +39335,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9119,
@@ -39418,7 +39501,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9176,
@@ -39729,7 +39813,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9291,
@@ -39778,7 +39863,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9296,
@@ -44923,7 +45009,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10065,
@@ -45008,7 +45095,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10086,
@@ -45057,7 +45145,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10091,
@@ -45124,7 +45213,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10130,
@@ -45191,7 +45281,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10142,
@@ -45463,7 +45554,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10237,
@@ -45497,7 +45589,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10244,
@@ -45607,7 +45700,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10262,
@@ -46352,7 +46446,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10479,
@@ -47008,7 +47103,8 @@
         "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10660,
@@ -53772,7 +53868,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 12900,
@@ -53949,7 +54046,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 12939,
@@ -54000,7 +54098,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 12973,
@@ -54033,7 +54132,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 12988,
@@ -55124,7 +55224,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 13374,
@@ -55157,7 +55258,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 13390,
@@ -56326,7 +56428,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 13806,
@@ -56467,7 +56570,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 13852,
@@ -56584,7 +56688,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 13881,
@@ -56635,7 +56740,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 13893,
@@ -57233,7 +57339,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14192,
@@ -57677,7 +57784,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14331,
@@ -57750,7 +57858,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14362,
@@ -57823,7 +57932,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14387,
@@ -57896,7 +58006,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14412,
@@ -57969,7 +58080,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14439,
@@ -58042,7 +58154,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14464,
@@ -58115,7 +58228,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14489,
@@ -58184,7 +58298,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14513,
@@ -58253,7 +58368,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14532,
@@ -58286,7 +58402,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14543,
@@ -58445,7 +58562,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14599,
@@ -58496,7 +58614,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 14627,
@@ -59865,7 +59984,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 15143,
@@ -60237,7 +60357,8 @@
         "tools/test-packed-package.mjs",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 15271,
@@ -78371,7 +78492,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19602,
@@ -78417,7 +78539,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19609,
@@ -78481,7 +78604,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19629,
@@ -78583,7 +78707,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19659,
@@ -78685,7 +78810,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19689,
@@ -78787,7 +78913,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19737,
@@ -79061,7 +79188,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19856,
@@ -79128,7 +79256,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19902,
@@ -79230,7 +79359,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19930,
@@ -79332,7 +79462,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19943,
@@ -79378,7 +79509,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19954,
@@ -79460,7 +79592,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19967,
@@ -79506,7 +79639,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19976,
@@ -79588,7 +79722,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19998,
@@ -79652,7 +79787,8 @@
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 20020,
@@ -79745,7 +79881,8 @@
         "compatibility/m2/runner/keyboard-insert-text-types.ts",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 20115,
@@ -79778,7 +79915,8 @@
         "compatibility/m2/runner/keyboard-insert-text-types.ts",
         "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
         "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
-        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json"
+        "compatibility/evidence/remote-input-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 20115,
@@ -95688,7 +95826,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23816,
@@ -95722,7 +95861,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23823,
@@ -95832,7 +95972,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23841,
@@ -96447,7 +96588,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 24025,
@@ -111265,7 +111407,8 @@
         "tools/run-context-media-tests.mjs",
         "compatibility/m2/context-settings-runner/settings.spec.ts",
         "tools/test-packed-package.mjs",
-        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json"
+        "compatibility/evidence/frame-assertion-lease-checkpoint-2026-10-16.json",
+        "compatibility/evidence/remote-init-script-checkpoint-2026-10-17.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 7084,

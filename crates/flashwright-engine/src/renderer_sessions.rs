@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use std::sync::{
-    Arc, Weak,
+    Arc, Mutex, Weak,
     atomic::{AtomicBool, Ordering},
 };
 
@@ -17,7 +17,8 @@ pub(crate) struct RendererSession {
     parent: Option<Arc<RendererSession>>,
     retired: watch::Sender<bool>,
     ready: AtomicBool,
-    destroyed: AtomicBool,
+    destroyed: watch::Sender<bool>,
+    pub(crate) init_scripts: Mutex<HashMap<String, String>>,
     _reservation: OwnedSemaphorePermit,
 }
 
@@ -39,11 +40,15 @@ impl RendererSession {
     }
 
     pub(crate) fn is_destroyed(&self) -> bool {
-        self.destroyed.load(Ordering::Acquire)
+        *self.destroyed.borrow()
     }
 
     pub(crate) fn mark_destroyed(&self) {
-        self.destroyed.store(true, Ordering::Release);
+        self.destroyed.send_replace(true);
+    }
+
+    pub(crate) fn destruction(&self) -> watch::Receiver<bool> {
+        self.destroyed.subscribe()
     }
 
     pub(crate) fn parent_session_identifier(&self) -> Option<&str> {
@@ -85,6 +90,22 @@ fn invalid(message: &str) -> ErrorRecord {
 }
 
 impl RendererSessions {
+    pub(crate) fn ready(&self) -> Vec<Arc<RendererSession>> {
+        self.sessions
+            .values()
+            .filter(|owner| owner.is_ready())
+            .cloned()
+            .collect()
+    }
+
+    /// Disposal also addresses retired sessions still retained by setup or pending commands.
+    pub(crate) fn originals(&self) -> Vec<Arc<RendererSession>> {
+        self.original_sessions
+            .values()
+            .filter_map(Weak::upgrade)
+            .collect()
+    }
+
     pub(crate) fn get(&self, identifier: &str) -> Option<Arc<RendererSession>> {
         self.sessions.get(identifier).cloned()
     }
@@ -198,7 +219,8 @@ impl RendererSessions {
             parent,
             retired: watch::channel(false).0,
             ready: AtomicBool::new(false),
-            destroyed: AtomicBool::new(false),
+            destroyed: watch::channel(false).0,
+            init_scripts: Mutex::new(HashMap::new()),
             _reservation: reservation,
         });
         self.original_sessions
@@ -229,6 +251,46 @@ impl RendererSessions {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn script_cleanup_retains_original_ids_and_observes_destruction_after_retirement() {
+        let mut sessions = RendererSessions::default();
+        let root = sessions.register_root("page", "root").unwrap();
+        root.mark_ready();
+        let old = sessions.register_child(&root, "frame", "old").unwrap();
+        old.mark_ready();
+        old.init_scripts
+            .lock()
+            .unwrap()
+            .insert("script".into(), "native-old".into());
+        let mut destruction = old.destruction();
+        sessions.retire(&old);
+        assert!(!*destruction.borrow_and_update());
+        assert!(!destruction.has_changed().unwrap());
+        let successor = sessions
+            .register_child(&root, "frame", "successor")
+            .unwrap();
+        assert_eq!(sessions.ready().len(), 1);
+        let retained = sessions.originals();
+        assert!(retained.iter().any(|owner| Arc::ptr_eq(owner, &old)));
+        old.mark_destroyed();
+        destruction.changed().await.unwrap();
+        assert!(*destruction.borrow());
+        assert!(!successor.is_destroyed());
+        assert!(successor.init_scripts.lock().unwrap().is_empty());
+        assert_eq!(
+            old.init_scripts
+                .lock()
+                .unwrap()
+                .get("script")
+                .map(String::as_str),
+            Some("native-old")
+        );
+        drop(old);
+        assert!(sessions.original("old").is_some());
+        drop(retained);
+        assert!(sessions.original("old").is_none());
+    }
 
     #[test]
     fn late_child_cleanup_cannot_replace_a_live_successor_or_borrow_another_parent() {

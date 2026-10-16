@@ -14,7 +14,7 @@
   "extractSha256": "23d2b9a926c766c5bd68703ecea41b6a7b6d9e314b2f9bec5aa2e4a693717355",
   "implementationPath": "packages/flashwright-core/src/init-scripts.ts",
   "implementationSha256": "eae72392e679ad47baa2df842985318b66ad60b3f605a1f2e396f302b13a1381",
-  "relationship": "The facade adapts the pinned function/JSON-argument, content/path precedence and sourceURL preparation. Native registration uses the same per-script IIFE scope and Chromium runImmediately only for newly created pages. Disposable ownership, cancellation and wire representation are independently implemented.",
+  "relationship": "The facade adapts the pinned function/JSON-argument, content/path precedence and sourceURL preparation. Native registration uses the same per-script IIFE scope and Chromium runImmediately only during root or child renderer initialization. Disposable ownership, cancellation and wire representation are independently implemented.",
   "changes": [
     "Typed invalid/unsupported/source-limit failures before allocation.",
     "Transport a validated JSON string through Rust without losing UTF-16 or introducing an eval wrapper.",

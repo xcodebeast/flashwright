@@ -415,7 +415,6 @@ impl Engine {
                     }
                     if is_owned_renderer_swap && state.failure.is_none() {
                         state.failure = crate::renderer_setup::unsupported_remote_configuration(
-                            !page.state.init_scripts.lock().unwrap().is_empty(),
                             state.interception.enabled
                                 || page.state.routing_transition.load(Ordering::Acquire)
                                 || page.state.routing_registered.load(Ordering::Acquire)
@@ -514,7 +513,6 @@ impl Engine {
             .unwrap()
             .init_scripts
             .retain(|_, script| script.page_identifier.as_deref() != Some(identifier));
-        page.state.init_scripts.lock().unwrap().clear();
         let trace_context = self.context(&page.context_identifier, "context.trace").ok();
         let mut state = page.state.state.lock().unwrap();
         if event == "crash" && state.failure.is_some() {
