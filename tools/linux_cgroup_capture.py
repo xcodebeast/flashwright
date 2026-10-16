@@ -224,7 +224,7 @@ def native_summary(native, identity, command, leaf_identity, before, after, coll
             'resourceAdmission': False}
 
 
-def capture(leaf, collector, request, directory, timeout_ms, command):
+def capture(leaf, collector, request, directory, timeout_ms, command, output_paths=()):
     require(sys.platform == 'linux' and platform.machine() == 'x86_64', 'Capture requires Linux x64')
     require(type(timeout_ms) is int and 50 <= timeout_ms <= 3600000, 'Timeout must be 50..3600000 milliseconds')
     require(1 <= len(command) <= 4096 and os.path.isabs(command[0])
@@ -236,6 +236,11 @@ def capture(leaf, collector, request, directory, timeout_ms, command):
     workbench = Path(__file__).resolve().parents[1] / 'workbench'
     require(directory.resolve().is_relative_to(workbench.resolve()) and directory.resolve() != workbench.resolve(),
             'Raw diagnostic output must be in workbench')
+    require(len(output_paths) <= 256 and len(set(output_paths)) == len(output_paths), 'Invalid output inventory')
+    for path in output_paths:
+        inputs.absolute_path(path)
+        require(Path(path).resolve().is_relative_to(workbench.resolve()) and not os.path.lexists(path),
+                'Declared workload outputs must be fresh workbench paths')
     directory.mkdir(parents=True, exist_ok=False)
     identity = uuid.uuid4().hex
     wrapper_command = [str(WRAPPER), *WRAPPER_FLAGS, *command]
@@ -246,6 +251,7 @@ def capture(leaf, collector, request, directory, timeout_ms, command):
               'captureIdentity': identity, 'resourceAdmission': False, 'performanceAccepted': False,
               'workloadCommand': command, 'wrapperCommand': wrapper_command, 'collectorCommand': invocation,
               'timeoutMilliseconds': timeout_ms, 'originalCollectorWait': None,
+              'requestedOutputs': list(output_paths), 'capturedOutputs': [],
               'outerCleanupRequired': False, 'callerOwnsServiceAndGroupRemoval': True,
               'limitations': [
                   'The native original wait belongs to the wrapper, not the inner runtime; no CPU totals are added.',
@@ -261,9 +267,16 @@ def capture(leaf, collector, request, directory, timeout_ms, command):
         report['before'], before = boundary(context, leaf, collector, directory / 'before.json')
         require(before['status'] == 'verified', 'Before snapshot rejected; command was not launched')
         leaf_identity = before['policy']['ancestorsLeafFirst'][0]['directoryIdentity']
+        clock = time.get_clock_info('monotonic')
+        require(clock.monotonic and not clock.adjustable and clock.implementation == 'clock_gettime(CLOCK_MONOTONIC)',
+                'Unexpected Linux capture clock')
+        report['workloadClock'] = {'schemaVersion': 1, 'type': 'monotonic', 'implementation': clock.implementation,
+                                   'identity': identity, 'originNanoseconds': str(time.monotonic_ns()),
+                                   'resolutionSeconds': clock.resolution}
+        environment = dict(os.environ, FLASHWRIGHT_CAPTURE_CLOCK=inputs.encode(report['workloadClock']).decode().strip())
         with (directory / 'stdout.txt').open('xb') as stdout, (directory / 'stderr.txt').open('xb') as stderr:
             process = subprocess.Popen(invocation, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                       close_fds=True)
+                                       close_fds=True, env=environment)
             report['collectorProcess'] = process.pid
             report['originalCollectorWait'], report['collectorSignals'] = wait_collector(process, timeout_ms / 1000 + 8)
             report['outerCleanupRequired'] = bool(report['collectorSignals'])
@@ -283,6 +296,13 @@ def capture(leaf, collector, request, directory, timeout_ms, command):
                                           or native['cleanupError'] or native['after']['processes'] != '')
         require(after['status'] == 'verified', 'After snapshot rejected')
         require(not report['outerCleanupRequired'], 'Collector exceeded its completion deadline')
+        total_output_bytes = 0
+        for path in output_paths:
+            receipt, _ = inputs.read_stable_file(path, inputs.MAXIMUM_SNAPSHOT_BYTES)
+            require(Path(receipt['resolvedPath']).is_relative_to(workbench.resolve()), 'Workload output left workbench')
+            total_output_bytes += receipt['bytes']
+            require(total_output_bytes <= 128 * 1024 * 1024, 'Workload output inventory exceeds byte limit')
+            report['capturedOutputs'].append(receipt)
         # A nonzero collector/workload or rejected teardown remains a captured
         # diagnostic outcome; neither status nor this exit admits resources.
         report['status'] = 'captured'
@@ -307,10 +327,11 @@ def main():
     parser.add_argument('--inputs', required=True)
     parser.add_argument('--output', required=True)
     parser.add_argument('--timeout-ms', type=int, required=True)
+    parser.add_argument('--retain-output', action='append', default=[])
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
-    report = capture(args.leaf, args.collector, args.inputs, args.output, args.timeout_ms, command)
+    report = capture(args.leaf, args.collector, args.inputs, args.output, args.timeout_ms, command, args.retain_output)
     print(inputs.encode({'status': report['status'], 'resourceAdmission': False,
                         'report': str(Path(args.output).absolute() / 'capture.json')}).decode())
     return 0 if report['status'] == 'captured' else 1

@@ -22,7 +22,7 @@ export function applicationResults(report) {
 }
 
 /** A completed failing test is useful gap evidence; a skipped or interrupted corpus is incomplete. */
-export function verifyApplicationRun({ run, report, resources, corpus, project, browser, command }) {
+export function verifyApplicationOutcomes({ run, report, corpus, project, browser, command }) {
   assert.deepEqual(run.command, command);
   assert.deepEqual(run.configuration, applicationConfiguration(project, browser));
   assert.deepEqual(report.errors, []);
@@ -77,16 +77,6 @@ export function verifyApplicationRun({ run, report, resources, corpus, project, 
   assert.equal(report.stats.flaky, 0);
   assert.ok(Number.isFinite(report.stats.duration) && report.stats.duration > 0);
   assert.deepEqual(run.exit, { code: passed === specifications.length ? 0 : 1, signal: null });
-  assert.equal(resources.schemaVersion, 2);
-  assert.deepEqual(resources.command, command);
-  assert.equal(resources.exitCode, run.exit.code);
-  assert.equal(resources.timedOut, false);
-  assert.equal(resources.interrupted, false);
-  assert.deepEqual(resources.cleanupSignals, [], 'Watchdog intervention prevents clean application admission');
-  assert.deepEqual(resources.remainingObservedProcesses, []);
-  assert.ok(Number.isFinite(resources.elapsedSeconds) && resources.elapsedSeconds * 1000 >= report.stats.duration);
-  assert.ok(Number.isFinite(resources.observedCpuSeconds) && resources.observedCpuSeconds >= 0);
-  assert.ok(Number.isFinite(resources.maximumSampledConcurrentRssBytes) && resources.maximumSampledConcurrentRssBytes > 0);
   const assets = corpus.manifest.files.filter(entry => entry.role === 'asset');
   for (const request of run.requests) {
     assert.equal(request.method, 'GET');
@@ -100,4 +90,20 @@ export function verifyApplicationRun({ run, report, resources, corpus, project, 
     for (const [path, minimum] of Object.entries(corpus.manifest.httpExpectations.whenAllPassedMinimum)) assert.ok(counts(path) >= minimum, path);
   }
   return { stats: report.stats, errors: report.errors, tests: applicationResults(report), completeCorpusExecuted: true, passed: passed === specifications.length };
+}
+
+/** Keep the watchdog resource contract separate from reusable application outcomes. */
+export function verifyApplicationRun({ run, report, resources, corpus, project, browser, command }) {
+  const outcomes = verifyApplicationOutcomes({ run, report, corpus, project, browser, command });
+  assert.equal(resources.schemaVersion, 2);
+  assert.deepEqual(resources.command, command);
+  assert.equal(resources.exitCode, run.exit.code);
+  assert.equal(resources.timedOut, false);
+  assert.equal(resources.interrupted, false);
+  assert.deepEqual(resources.cleanupSignals, [], 'Watchdog intervention prevents clean application admission');
+  assert.deepEqual(resources.remainingObservedProcesses, []);
+  assert.ok(Number.isFinite(resources.elapsedSeconds) && resources.elapsedSeconds * 1000 >= report.stats.duration);
+  assert.ok(Number.isFinite(resources.observedCpuSeconds) && resources.observedCpuSeconds >= 0);
+  assert.ok(Number.isFinite(resources.maximumSampledConcurrentRssBytes) && resources.maximumSampledConcurrentRssBytes > 0);
+  return outcomes;
 }

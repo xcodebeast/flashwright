@@ -96,6 +96,13 @@ class BoundaryTests(CaptureFixture):
         with self.assertRaises(FileExistsError):
             capture.capture('/synthetic', self.runtime, self.request_path, self.directory, 500, [str(self.runtime)])
 
+    def test_declared_workload_outputs_must_be_fresh_and_inside_workbench(self):
+        for paths in ([str(self.source)], ['/etc/passwd'], [str(self.directory / 'future')] * 2):
+            with self.subTest(paths=paths), patch.object(capture.subprocess, 'Popen') as launch, self.assertRaises(ValueError):
+                capture.capture('/synthetic', self.runtime, self.request_path, self.directory / 'outputs',
+                                500, [str(self.runtime)], paths)
+            launch.assert_not_called()
+
     def test_failed_after_publication_is_not_retried_or_allowed_to_hide_original_failure(self):
         calls = []
 
