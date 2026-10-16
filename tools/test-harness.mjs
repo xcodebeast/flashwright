@@ -13,6 +13,7 @@ import { readEngineConfiguration } from './engine-configuration.mjs';
 test('readiness experiments cannot reuse the default engine verification contract', () => {
   const defaults = { residentAssertions: true, conditionInstrumentation: false };
   assert.deepEqual(readEngineConfiguration({}), defaults);
+  assert.deepEqual(readEngineConfiguration({ FLASHWRIGHT_FRAME_ASSERTION_LEASES: '0' }), { ...defaults, frameAssertionLeases: false });
   assert.deepEqual(readEngineConfiguration({ FLASHWRIGHT_EXPERIMENT_POINTER_READINESS: '0' }), defaults);
   assert.deepEqual(readEngineConfiguration({ FLASHWRIGHT_EXPERIMENT_POINTER_READINESS: '1' }), { ...defaults, pointerReadiness: true });
 });

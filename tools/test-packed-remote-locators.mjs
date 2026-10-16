@@ -56,7 +56,7 @@ try {
       assert.equal(await child.locator('p').count(),1);
       await expect(child.getByRole('heading')).toHaveText('Remote');
       await page.frame('child').evaluate(() => {setTimeout(() => document.querySelector('#value').textContent='after',40);});
-      await expect(page.frame('child').locator('#value')).toHaveText('after');
+      await expect(child.locator('#value')).toHaveText('after');
       await context.close(); outcomes.push({format,remotePlacementGuard:true,reads:3,assertions:2});
     } finally { await browser.close(); }
   }
