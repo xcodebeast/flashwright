@@ -2,6 +2,8 @@
 
 Flashwright has not established performance leadership. The [five-engine checkpoint](../compatibility/evidence/broad-performance-checkpoint-2026-10-10.json) records 40 passing sampled launches after a 162-group core gate. All 926 recorded source files match commit `70dc299f`. The [complete comparison table](../benchmarks/results/broad-matrix-2026-10-10/evidence/table.md) includes every workload, preparation-inclusive totals, startup, CPU, concurrent memory, uncertainty and recorded semantic differences.
 
+The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its adapter and measurements are pending; it has no result in the historical five-engine snapshot. Start with the Chrome backend and an explicitly owned browser. The system-WebKit backend on macOS requires a separate comparison class. Bun documents process-wide Chrome reuse, so per-view isolation and cleanup must be verified before treating its work as equivalent. See the [WebView documentation](https://bun.com/docs/runtime/webview) and [contender configuration](../benchmarks/configurations/competitors.json).
+
 ## Latest measured broad comparison
 
 Eight rotated blocks ran on native macOS arm64 with full Chrome 148.0.7778.96. Bun 1.4.2 coordinated the run; every shared library workload used Node 22.22.0. Each library flow has three warmups and 12 measured observations per launch. Complete work includes preparation, warmup, semantic verification and cleanup; child process wall also includes imports and the sampling wrapper. Brackets below are 95% launch-clustered intervals.
@@ -177,7 +179,7 @@ To reproduce the historical comparisons, verify the recorded Flashwright binary 
 
 Current goal acceptance follows the [draft final-goal contract](../benchmarks/configurations/final-goal.json). Its nine scenarios each have two worker cells; all 18 cells remain unmeasured for final admission, and the contract remains unsealed. Native Linux remains unverified.
 
-The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for every declared contender. Inspect its requirements without starting a browser:
+The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for its original five engines. Bun.WebView is declared but not yet implemented by this coordinator. Inspect its requirements without starting a browser:
 
 ```sh
 bun benchmarks/broad-matrix.mjs --plan
