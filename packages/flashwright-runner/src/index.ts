@@ -101,23 +101,24 @@ export const test = upstream._baseTest.extend<TestFixtures, WorkerFixtures>({
   baseURL: [async ({}, use) => use(process.env.PLAYWRIGHT_TEST_BASE_URL), { option: true }],
   viewport: [async ({ contextOptions }, use) => use(contextOptions.viewport === undefined ? { width: 1280, height: 720 } : contextOptions.viewport), { option: true }],
   contextOptions: [{}, { option: true }], actionTimeout: [0, { option: true }], navigationTimeout: [0, { option: true }],
-  acceptDownloads: [async ({ contextOptions }, use) => use(contextOptions.acceptDownloads ?? true), { option: true }], bypassCSP: [undefined, { option: true }], colorScheme: [undefined, { option: true }],
+  acceptDownloads: [async ({ contextOptions }, use) => use(contextOptions.acceptDownloads ?? true), { option: true }], bypassCSP: [undefined, { option: true }], colorScheme: [async ({ contextOptions }, use) => use(contextOptions.colorScheme === undefined ? 'light' : contextOptions.colorScheme), { option: true }],
   clientCertificates: [undefined, { option: true }], deviceScaleFactor: [async ({ contextOptions }, use) => use(contextOptions.deviceScaleFactor), { option: true }], extraHTTPHeaders: [undefined, { option: true }],
   geolocation: [undefined, { option: true }], hasTouch: [async ({ contextOptions }, use) => use(contextOptions.hasTouch), { option: true }], httpCredentials: [undefined, { option: true }],
   ignoreHTTPSErrors: [async ({ contextOptions }, use) => use(contextOptions.ignoreHTTPSErrors), { option: true }], isMobile: [async ({ contextOptions }, use) => use(contextOptions.isMobile), { option: true }], javaScriptEnabled: [async ({ contextOptions }, use) => use(contextOptions.javaScriptEnabled), { option: true }],
   locale: [undefined, { option: true }], offline: [undefined, { option: true }], permissions: [undefined, { option: true }],
   proxy: [undefined, { option: true }], storageState: [async ({ contextOptions }, use) => use(contextOptions.storageState), { option: true }], timezoneId: [undefined, { option: true }],
   userAgent: [async ({ contextOptions }, use) => use(contextOptions.userAgent), { option: true }], serviceWorkers: [undefined, { option: true }], testIdAttribute: ['data-testid', { option: true }],
-  _validateContextOptions: [async ({ bypassCSP, colorScheme, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers, testIdAttribute }, use) => {
-    unsupportedOptions({ bypassCSP, colorScheme, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers });
+  _validateContextOptions: [async ({ bypassCSP, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers, testIdAttribute }, use) => {
+    unsupportedOptions({ bypassCSP, clientCertificates, extraHTTPHeaders, geolocation, httpCredentials, locale, offline, permissions, proxy, timezoneId, serviceWorkers });
     if (testIdAttribute !== 'data-testid') throw failure('UnsupportedFeatureError', 'test.use.testIdAttribute', 'custom test-ID attributes are not implemented');
     await use();
   }, { auto: true }],
-  _combinedContextOptions: async ({ _validateContextOptions, contextOptions, viewport, baseURL, storageState, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled, acceptDownloads }, use) => {
+  _combinedContextOptions: async ({ _validateContextOptions, contextOptions, viewport, baseURL, storageState, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled, acceptDownloads, colorScheme }, use) => {
     void _validateContextOptions;
     unsupportedOptions(Object.fromEntries(Object.entries(contextOptions).filter(([name]) => ['extraHTTPHeaders', 'httpCredentials', 'proxy', 'clientCertificates'].includes(name))), 'test.use.contextOptions');
     await use({
       ...contextOptions, viewport,
+      ...(colorScheme === undefined ? {} : { colorScheme }),
       ...(userAgent === undefined ? {} : { userAgent }),
       ...(deviceScaleFactor === undefined ? {} : { deviceScaleFactor }),
       ...(isMobile === undefined ? {} : { isMobile }),

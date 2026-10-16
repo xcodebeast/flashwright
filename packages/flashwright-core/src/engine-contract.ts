@@ -1,6 +1,7 @@
 export const requiredCapabilities = [
   'browser.launch', 'browser.close', 'browser.newContext', 'browser.newContext.deviceEmulation', 'context.newPage', 'context.close',
   'browser.newContext.ignoreHTTPSErrors', 'browser.newContext.javaScriptEnabled',
+  'browser.newContext.colorScheme', 'browser.newContext.reducedMotion', 'browser.newContext.forcedColors', 'browser.newContext.contrast',
   'page.addInitScript', 'context.addInitScript', 'initScript.dispose', 'network.request.references', 'network.routing',
   'page.close', 'page.evaluate', 'page.event.pageerror', 'page.screenshot', 'page.goto', 'page.reload', 'page.goBack', 'page.goForward', 'page.waitForLoadState', 'response.body', 'response.body.occurrence', 'request.postData.bytes', 'network.headers',
   'page.navigation.capture', 'page.navigation.next', 'page.navigation.complete',

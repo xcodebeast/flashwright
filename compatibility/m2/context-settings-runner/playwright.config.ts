@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     launchOptions: { executablePath: process.env.FLASHWRIGHT_BROWSER_PATH!, slowMo: 0 },
     baseURL: process.env.FLASHWRIGHT_SETTINGS_SECURE_ORIGIN!,
-    contextOptions: { ignoreHTTPSErrors: false, javaScriptEnabled: true },
-    ignoreHTTPSErrors: true, javaScriptEnabled: false,
+    contextOptions: { ignoreHTTPSErrors: false, javaScriptEnabled: true, colorScheme: 'light', reducedMotion: 'reduce', forcedColors: 'active', contrast: 'more' },
+    ignoreHTTPSErrors: true, javaScriptEnabled: false, colorScheme: 'dark',
   },
 });

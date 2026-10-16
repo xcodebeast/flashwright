@@ -80,6 +80,10 @@ pub const CAPABILITIES: &[&str] = &[
     "browser.newContext.deviceEmulation",
     "browser.newContext.ignoreHTTPSErrors",
     "browser.newContext.javaScriptEnabled",
+    "browser.newContext.colorScheme",
+    "browser.newContext.reducedMotion",
+    "browser.newContext.forcedColors",
+    "browser.newContext.contrast",
     "browser.newContext.acceptDownloads",
     "page.event.download",
     "download.path",
@@ -595,6 +599,10 @@ impl Engine {
                 "hasTouch",
                 "ignoreHTTPSErrors",
                 "javaScriptEnabled",
+                "colorScheme",
+                "reducedMotion",
+                "forcedColors",
+                "contrast",
                 "acceptDownloads",
             ],
         )?;
@@ -786,7 +794,7 @@ impl Engine {
                 if !context.settings.javascript_enabled {
                     initialize_command("Emulation.setScriptExecutionDisabled", json!({"value":true})).await?;
                 }
-                initialize_command("Emulation.setEmulatedMedia", context_settings::default_media_parameters()).await?;
+                initialize_command("Emulation.setEmulatedMedia", context.settings.media_parameters()).await?;
             }
             // Match the reference's page focus/visibility policy so fresh frame checks
             // keep running when another page becomes the browser's active tab.

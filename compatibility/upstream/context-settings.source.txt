@@ -34,3 +34,26 @@ async _updateEmulateMedia() {
         ];
         await this._client.send("Emulation.setEmulatedMedia", { media, features });
       }
+
+// client.contextMedia
+async function prepareBrowserContextParams(platform, options2) {
+  if (options2.extraHTTPHeaders)
+    validateHeaders(options2.extraHTTPHeaders);
+  const contextParams = {
+    ...options2,
+    viewport: options2.viewport === null ? void 0 : options2.viewport,
+    noDefaultViewport: options2.viewport === null,
+    extraHTTPHeaders: options2.extraHTTPHeaders ? headersObjectToArray(options2.extraHTTPHeaders) : void 0,
+    storageState: options2.storageState ? await prepareStorageState(platform, options2.storageState) : void 0,
+    serviceWorkers: options2.serviceWorkers,
+    colorScheme: options2.colorScheme === null ? "no-override" : options2.colorScheme,
+    reducedMotion: options2.reducedMotion === null ? "no-override" : options2.reducedMotion,
+    forcedColors: options2.forcedColors === null ? "no-override" : options2.forcedColors,
+    contrast: options2.contrast === null ? "no-override" : options2.contrast,
+    acceptDownloads: toAcceptDownloadsProtocol(options2.acceptDownloads),
+    clientCertificates: await toClientCertificatesProtocol(platform, options2.clientCertificates)
+  };
+  if (contextParams.recordVideo && contextParams.recordVideo.dir)
+    contextParams.recordVideo.dir = platform.path().resolve(contextParams.recordVideo.dir);
+  return contextParams;
+}

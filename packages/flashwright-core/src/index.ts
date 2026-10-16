@@ -189,7 +189,7 @@ export class Browser extends EventEmitter {
       if (runnerDefaults && contextOptions && typeof contextOptions === 'object' && !Array.isArray(contextOptions)) {
         contextOptions = { ...runnerDefaults.contextOptions, ...contextOptions };
       }
-      options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState', 'screen', 'userAgent', 'deviceScaleFactor', 'isMobile', 'hasTouch', 'defaultBrowserType', 'ignoreHTTPSErrors', 'javaScriptEnabled', 'acceptDownloads']);
+      options('browser.newContext', contextOptions, ['viewport', 'baseURL', 'storageState', 'screen', 'userAgent', 'deviceScaleFactor', 'isMobile', 'hasTouch', 'defaultBrowserType', 'ignoreHTTPSErrors', 'javaScriptEnabled', 'acceptDownloads', 'colorScheme', 'reducedMotion', 'forcedColors', 'contrast']);
       const deviceOptions = prepareDeviceOptions(contextOptions);
       const contextSettings = prepareContextSettings(contextOptions);
       if (contextOptions.baseURL !== undefined && typeof contextOptions.baseURL !== 'string') throw failure('InvalidArgumentError', 'browser.newContext.baseURL', 'expected a string');

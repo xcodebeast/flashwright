@@ -232,7 +232,7 @@ impl Engine {
             ("Log.enable", json!({})),
             (
                 "Emulation.setEmulatedMedia",
-                context_settings::default_media_parameters(),
+                context.settings.media_parameters(),
             ),
         ];
         if context.settings.ignore_https_errors {
