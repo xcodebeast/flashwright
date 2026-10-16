@@ -1,0 +1,517 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-16",
+  "status": "passed-custody-controls-not-resource-admitted",
+  "baseCommit": "9da0d91e0af69e56c0f9ee625e3fcfe556524ff5",
+  "scope": "Linux x64 cgroup capture foundation; no E2E speed claim, final resource admission or production namespace policy.",
+  "sources": [
+    {
+      "path": "tools/run-linux-cgroup-command-tests.py",
+      "bytes": 18713,
+      "sha256": "7fda36f3b0d6d5f587a2af133dbb3a4396d8c413eefbf4560efdb42493d13bd3"
+    },
+    {
+      "path": "tools/linux-cgroup-command.c",
+      "bytes": 15038,
+      "sha256": "4f42570246447bb2646bd129771022112bbbbf8d8ed78c2900ba75247502e5bc"
+    },
+    {
+      "path": "tools/linux-cgroup-wait-fixture.c",
+      "bytes": 2896,
+      "sha256": "60bf8c9df812de0d3f040ad1d00c1d83264a7f03ad7f0c16266cb62301270652"
+    }
+  ],
+  "nativeControls": {
+    "count": 24,
+    "passed": 24,
+    "allGroupsRemoved": true,
+    "controller": {
+      "path": "workbench/linux-cgroup-command-controls-007/controller.json",
+      "bytes": 1547,
+      "sha256": "25cf687cbc00a47d76392ff400612d98b8fd703ce05a04d8fb976d8b959a14ac"
+    },
+    "results": {
+      "path": "workbench/linux-cgroup-command-controls-007/native-results.json",
+      "bytes": 28508,
+      "sha256": "43a8d6f584b9926ef21258ca3b903eb0d21a2968c840201a8eef114cde9a3a2b"
+    },
+    "newWaitControls": [
+      {
+        "case": "wait-reaped",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80555,
+        "originalWaitCpuMicroseconds": 80555,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-command-controls-007/wait-reaped/receipt.json",
+          "bytes": 2283,
+          "sha256": "12b9a0093fcbda9b4f6bfd4c384cae94d0a1939ba8df3ea84d3c18e9a3a2cbd0"
+        }
+      },
+      {
+        "case": "wait-ignored",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80888,
+        "originalWaitCpuMicroseconds": 775,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-command-controls-007/wait-ignored/receipt.json",
+          "bytes": 2278,
+          "sha256": "3af99c6b3eb1cef871d54e22d2f03308642ee4363851fe8a5827cb4ef5267070"
+        }
+      },
+      {
+        "case": "wait-nocldwait",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80841,
+        "originalWaitCpuMicroseconds": 731,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-command-controls-007/wait-nocldwait/receipt.json",
+          "bytes": 2283,
+          "sha256": "b46456ed2857ddca9671eaa34af8e42714558bfbd94fdd41a3401797cc01fc3d"
+        }
+      },
+      {
+        "case": "wait-subreaper-reaped",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80955,
+        "originalWaitCpuMicroseconds": 80954,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-command-controls-007/wait-subreaper-reaped/receipt.json",
+          "bytes": 2294,
+          "sha256": "07029edc3df9caa617f3a01474cc4a1001e391cdca1d59dff200adbf8d1e78c6"
+        }
+      },
+      {
+        "case": "wait-subreaper-ignored",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80995,
+        "originalWaitCpuMicroseconds": 781,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-command-controls-007/wait-subreaper-ignored/receipt.json",
+          "bytes": 2288,
+          "sha256": "8390c96f53ec1027847af589c0cbf9acf1011e5d878f2138fc120f87926a2bde"
+        }
+      },
+      {
+        "case": "wait-subreaper-nocldwait",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 81266,
+        "originalWaitCpuMicroseconds": 1015,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-command-controls-007/wait-subreaper-nocldwait/receipt.json",
+          "bytes": 2292,
+          "sha256": "b6ee4a7c856812ea14c531350931c8eb8fe28ac288f89d11506bd9e03135339a"
+        }
+      }
+    ]
+  },
+  "waitConclusion": "Consuming wait controls retain child CPU. Explicit SIGCHLD_IGN and SA_NOCLDWAIT lose over 80 ms through direct children and through actual orphan adoption by an intermediate subreaper, while the outer collector reports zero adopted children and clean observed teardown. Outer wait sums cannot repair that missing coverage.",
+  "sourceAudit": {
+    "upstream": {
+      "tag": "v7.2.5",
+      "commit": "a300e35c0a4b4a38fb53742ea6e2a203c98ee523",
+      "repository": "https://github.com/gregkh/linux",
+      "sourceManifest": "sources.json",
+      "sourceManifestSha256": "5be0b062d3b92515feec2ef33ea47a782294ca0d54e6a80130492a7efea939b6"
+    },
+    "hostRelease": "7.2.5-3-omarchy",
+    "auditReceipt": {
+      "path": "workbench/linux-wait-cpu-audit-001/audit.json",
+      "bytes": 11428,
+      "sha256": "feb42c4de008b9e7357ffc21de19e3ffe126266dcf2291f3ce00367f4bda9118"
+    },
+    "sourceManifest": {
+      "path": "workbench/linux-wait-cpu-audit-001/sources.json",
+      "bytes": 7197,
+      "sha256": "5be0b062d3b92515feec2ef33ea47a782294ca0d54e6a80130492a7efea939b6"
+    },
+    "limitations": "Installed version-matching headers, .config and Makefile; upstream stable v7.2.5 source retained. No full Omarchy source/patch provenance or loaded-kernel attestation established. Local cgroup.h differs from the upstream header, so version equality must not be presented as exact source equality.",
+    "conclusions": [
+      "Unique normal untraced consuming waits can represent disjoint reaping subtrees; that does not prove all task CPU reached those waits.",
+      "For 16 records covering a common underlying total, timeval serialization truncation is below 32 microseconds. It cannot alone explain the prior 1374-microsecond browser residual.",
+      "Task exit and final scheduler accounting boundaries are a source-supported candidate, not a proven cause of the prior browser residual."
+    ]
+  },
+  "namespaceExperiment": {
+    "bubblewrapVersion": "0.12.0",
+    "bubblewrapExecutable": {
+      "bytes": 84464,
+      "sha256": "7c44fa8e7326e62e81ab3f70ff682bfc0eb3b447b39cf9fbb779a31948364762"
+    },
+    "source": {
+      "url": "https://raw.githubusercontent.com/containers/bubblewrap/v0.12.0/bubblewrap.c",
+      "sha256": "3f17ee26057cae9d660801ca8d9ba84722f1bafdcd072d5151ee1c64eeeb15f4",
+      "bytes": 113001
+    },
+    "rows": [
+      {
+        "case": "reaped",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80641,
+        "originalWaitCpuMicroseconds": 80640,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/reaped/native.json",
+          "bytes": 2283,
+          "sha256": "91a929162aed1c75c5fd6d65518400569caa4395fe9f09b8faf38905b90b1eff"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "ignored",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80775,
+        "originalWaitCpuMicroseconds": 698,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/ignored/native.json",
+          "bytes": 2278,
+          "sha256": "8dafd5a739071166338e75b0653c95a59cd069554a2ccb0993152bf568ab5086"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "nocldwait",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80718,
+        "originalWaitCpuMicroseconds": 651,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/nocldwait/native.json",
+          "bytes": 2280,
+          "sha256": "9a564cbcef14d6904de22d29f5b1f8f634837f76413ac68ed99251226003cdd0"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "nested-reaped",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80665,
+        "originalWaitCpuMicroseconds": 80664,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/nested-reaped/native.json",
+          "bytes": 2291,
+          "sha256": "1ff3777dcf4c82a903669130c1e786d0bb036f72621a328d0f6a89f21a0cb758"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "nested-ignored",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80937,
+        "originalWaitCpuMicroseconds": 856,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/nested-ignored/native.json",
+          "bytes": 2288,
+          "sha256": "a1ea484c4bb458c2e07aaa8915ee9743ff6f6fcf4093178d76aca2d7d9c09adf"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "nested-nocldwait",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 80857,
+        "originalWaitCpuMicroseconds": 780,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/nested-nocldwait/native.json",
+          "bytes": 2287,
+          "sha256": "7f7ed81e8e3ab9e767734f7d28bc937133d769b4547c4cfdc890f35126b9d205"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "namespace-pid",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 19923,
+        "originalWaitCpuMicroseconds": 768,
+        "adoptedChildren": 1,
+        "cleanObservedTeardown": false,
+        "groupKilled": true,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/namespace-pid/native.json",
+          "bytes": 2954,
+          "sha256": "daeb95072533919d5ce38c9d3bbfa385b65589c7aa772df3d3407d5ae08962c2"
+        },
+        "collectorExitCode": 1,
+        "controlExpectationsPassed": true,
+        "probeChecks": {
+          "direct": {
+            "succeeded": false,
+            "errno": 30
+          },
+          "proc-self-root": {
+            "succeeded": false,
+            "errno": 30
+          },
+          "proc-host-parent": {
+            "succeeded": false,
+            "errno": 2
+          },
+          "current": {
+            "succeeded": false,
+            "errno": 30
+          },
+          "unshare-user": {
+            "succeeded": false,
+            "errno": 28
+          },
+          "unshare-mount": {
+            "succeeded": false,
+            "errno": 1
+          },
+          "unshare-cgroup": {
+            "succeeded": false,
+            "errno": 1
+          },
+          "unmount-cover": {
+            "succeeded": false,
+            "errno": 1
+          }
+        }
+      },
+      {
+        "case": "namespace-same-pid",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 18233,
+        "originalWaitCpuMicroseconds": 18232,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/namespace-same-pid/native.json",
+          "bytes": 2789,
+          "sha256": "214c1803616059f0507f948790f9029c36cbef15a9a966eece771971defe0724"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true,
+        "probeChecks": {
+          "direct": {
+            "succeeded": false,
+            "errno": 30
+          },
+          "proc-self-root": {
+            "succeeded": false,
+            "errno": 30
+          },
+          "proc-host-parent": {
+            "succeeded": false,
+            "errno": 13
+          },
+          "current": {
+            "succeeded": false,
+            "errno": 30
+          },
+          "unshare-user": {
+            "succeeded": false,
+            "errno": 28
+          },
+          "unshare-mount": {
+            "succeeded": false,
+            "errno": 1
+          },
+          "unshare-cgroup": {
+            "succeeded": false,
+            "errno": 1
+          },
+          "unmount-cover": {
+            "succeeded": false,
+            "errno": 1
+          }
+        }
+      },
+      {
+        "case": "escape-control",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 12321,
+        "originalWaitCpuMicroseconds": 94185,
+        "adoptedChildren": 0,
+        "cleanObservedTeardown": true,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-001/escape-control/native.json",
+          "bytes": 2521,
+          "sha256": "492beb7dfefdb3296bd507ca0abec3a26cee683891200c2bd24c8d6f1c683fd7"
+        },
+        "collectorExitCode": 0,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "live-orphan",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 17460,
+        "originalWaitCpuMicroseconds": 16993,
+        "adoptedChildren": 1,
+        "cleanObservedTeardown": false,
+        "groupKilled": true,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-002/live-orphan/native.json",
+          "bytes": 2686,
+          "sha256": "ed81b825144c54d66d913a818c36b40c222e0db9ba16168d679c77763db9b0d8"
+        },
+        "collectorExitCode": 1,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "dead-orphan",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 99002,
+        "originalWaitCpuMicroseconds": 18719,
+        "adoptedChildren": 1,
+        "cleanObservedTeardown": false,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-002/dead-orphan/native.json",
+          "bytes": 2693,
+          "sha256": "5d2f8e61ec998d33e110c8fc12f5ea9b2f4c543bf6fe785678a62eb58f9cd4f7"
+        },
+        "collectorExitCode": 1,
+        "controlExpectationsPassed": true
+      },
+      {
+        "case": "browser",
+        "originalWaitExitCode": 0,
+        "cgroupCpuMicroseconds": 1549656,
+        "originalWaitCpuMicroseconds": 746535,
+        "adoptedChildren": 13,
+        "cleanObservedTeardown": false,
+        "groupKilled": false,
+        "timedOut": false,
+        "noRemainingChildren": true,
+        "resourceAdmission": false,
+        "nativeReceipt": {
+          "path": "workbench/linux-cgroup-namespace-001/run-002/browser/native.json",
+          "bytes": 4670,
+          "sha256": "913f6074365cbacf3e6da1ecca897d8a822d778b256ba10a9c60dda481966ff2"
+        },
+        "collectorExitCode": 1,
+        "controlExpectationsPassed": true
+      }
+    ],
+    "interpretation": [
+      "Private user, mount and cgroup namespaces with a read-only cgroup mount and dropped capabilities blocked eight tested operations: current and ancestor membership writes, proc-root aliases, new user/mount/cgroup namespaces and uncovering the read-write mount. Resolve the actually opened mount through its fdinfo mount ID, not every same-path mountinfo entry.",
+      "The PID-namespace variant passed the escape probe but introduced an adopted init process and failed clean teardown. The same-PID variant passed the escape probe without that additional adoption.",
+      "The same-PID wrapper preserved live-orphan rejection and forced cleanup, and dead-orphan rejection without forced cleanup.",
+      "The same-PID real library smoke passed both Flashwright and reference browser work, but retained 13 adopted descendants and collector exit 1. Its original wait belongs to bubblewrap and its cgroup cost includes the wrapper. This is not a pure Flashwright timing or original-Bun CPU receipt.",
+      "Initial nested private wait probes changed the intermediate parent disposition but did not orphan the worker. The committed 24-case native suite separately verifies actual subreaper adoption."
+    ],
+    "openRequirements": [
+      "Exhaustive workload-side membership restrictions and visible mount/descriptor inputs",
+      "Trusted external supervisor and no foreign group injection",
+      "Ancestor quotas, cpusets and resource policy bindings",
+      "Executable, dependency, host and original workload identity integration",
+      "External backends and host-service work custody",
+      "Final resource adapter support for cgroup CPU and explicit memory semantics"
+    ]
+  },
+  "verification": {
+    "nativeOriginalExec": "terminal 0; 24 controls passed",
+    "namespaceOriginalExecs": [
+      "terminal 0; 9 private controls passed",
+      "terminal 0; 3 additional controls passed"
+    ],
+    "readOnlyFixtureReview": "No actionable issue; current fixture and runner bindings match native007.",
+    "competitorConfigurationTests": {
+      "path": "workbench/linux-cgroup-namespace-001/competitor-config-tests.log",
+      "bytes": 3059,
+      "sha256": "8df0e8c278356808dca68ff0a8ed590521401f6e30a94fb67e5e247bbee4e272"
+    }
+  },
+  "retainedManifest": {
+    "path": "workbench/linux-cgroup-namespace-001/retained-files.json",
+    "bytes": 37852,
+    "sha256": "dee3840de1b86676f3d5bcd5e9b780c8455508b533cb5204ad54367097d7155f"
+  },
+  "retainedFiles": 190,
+  "resourceAdmission": false,
+  "performanceAccepted": false,
+  "majorityScenarioTwoTimesGoal": "unverified"
+}

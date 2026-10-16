@@ -20,6 +20,9 @@ import uuid
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = Path(__file__).resolve()
+WAIT_FIXTURE = ROOT / 'tools/linux-cgroup-wait-fixture.c'
+WAIT_MODES = ['wait-' + mode for mode in ['reaped', 'ignored', 'nocldwait',
+              'subreaper-reaped', 'subreaper-ignored', 'subreaper-nocldwait']]
 
 
 def save(path, value):
@@ -115,6 +118,8 @@ def delegated(directory):
     modes = ['tree', 'exit-seven', 'signal-exit', 'missing-executable', 'timeout', 'interrupt',
              'live-orphan', 'dead-orphan', 'replace-path', 'escape', 'remove-counter', 'ignored-sigchld', 'denied-clone', 'occupied-report',
              'used-group', 'nested-group', 'symlink-group', 'ordinary-directory']
+    rejected_before_launch = set(modes[13:])
+    modes += WAIT_MODES
     try:
         for mode in modes:
             out = directory / mode
@@ -149,6 +154,8 @@ def delegated(directory):
                            str(out), str(effective_group), str(parent)]
                 if mode == 'missing-executable':
                     command = [str(out / 'missing')]
+                elif mode in WAIT_MODES:
+                    command = [str(directory / 'wait-fixture'), mode.removeprefix('wait-')]
                 duration = '150' if mode == 'timeout' else '5000'
                 invocation = [str(collector), str(effective_group), str(output), uuid.uuid4().hex, duration, *command]
                 row['command'] = invocation
@@ -165,7 +172,7 @@ def delegated(directory):
                         process.send_signal(signal.SIGTERM)
                     row['exitCode'] = process.wait(timeout=10)
                     row['originalCollectorWait'] = True
-                if mode in modes[13:]:
+                if mode in rejected_before_launch:
                     assert row['exitCode'] == (4 if mode == 'occupied-report' else 3), row
                     assert not (out / 'executed').exists()
                     if mode == 'occupied-report':
@@ -231,6 +238,13 @@ def delegated(directory):
                     if mode == 'escape':
                         assert owner_cpu - charged >= 90000, row
                         row['coverageGapDemonstrated'] = 'Clean endpoints do not prove exclusive cgroup membership; resourceAdmission stays false.'
+                    if mode in WAIT_MODES:
+                        assert receipt['adoptedChildren'] == 0 and charged >= 80000, row
+                        if mode.endswith('reaped'):
+                            assert owner_cpu >= 80000 and abs(charged - owner_cpu) < 5000, row
+                        else:
+                            assert charged - owner_cpu >= 70000, row
+                            row['coverageGapDemonstrated'] = 'Automatic child reaping loses wait CPU despite clean teardown and zero outer adoptions.'
                 row['status'] = 'passed'
             finally:
                 (parent.parent / 'cgroup.subtree_control').write_text('+cpu +memory')
@@ -271,6 +285,8 @@ def main():
     report['unit'] = unit
     subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror',
                     str(ROOT / 'tools/linux-cgroup-command.c'), '-o', str(directory / 'collector')], check=True, timeout=30)
+    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror',
+                    str(WAIT_FIXTURE), '-o', str(directory / 'wait-fixture')], check=True, timeout=30)
     try:
         command = ['systemd-run', '--user', '--unit=' + unit, '--property=Type=exec',
                    '--property=RemainAfterExit=yes', '--property=Delegate=cpu memory',
@@ -297,7 +313,7 @@ def main():
         (directory / 'unit-log.txt').write_text(journal.stdout + journal.stderr)
         assert 'Result=success\n' in state and 'ExecMainStatus=0\n' in state, state
         results = json.loads((directory / 'native-results.json').read_text())
-        assert len(results['rows']) == results['expectedCases'] == 18
+        assert len(results['rows']) == results['expectedCases'] == 18 + len(WAIT_MODES)
         assert all(row['status'] == 'passed' and row['groupsRemoved'] for row in results['rows'])
         report['status'] = 'passed-native-controls'
     finally:
@@ -307,10 +323,10 @@ def main():
         if stopped.returncode or report['remainingCgroups']:
             report['status'] = 'failed-cleanup'
         report['sources'] = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-                             for p in [SCRIPT, ROOT / 'tools/linux-cgroup-command.c']}
+                             for p in [SCRIPT, ROOT / 'tools/linux-cgroup-command.c', WAIT_FIXTURE]}
         save(directory / 'controller.json', report)
     assert report['status'] == 'passed-native-controls', report
-    print('18 native controls passed; final resource admission remains separate.')
+    print(f'{18 + len(WAIT_MODES)} native controls passed; final resource admission remains separate.')
     return 0
 
 
