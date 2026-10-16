@@ -215,11 +215,9 @@ impl Downloads {
         for download in &entries {
             access.push(download.file_access.clone().lock_owned().await);
         }
-        match tokio::fs::remove_dir_all(&self.directory).await {
-            Ok(()) => {}
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-            Err(error) => return Err(file_error("context.close", error)),
-        }
+        remove_directory(|| tokio::fs::remove_dir_all(&self.directory))
+            .await
+            .map_err(|error| file_error("context.close", error))?;
         self.entries.lock().unwrap().clear();
         Ok(())
     }
@@ -275,6 +273,27 @@ impl Downloads {
         }
         Ok(())
     }
+}
+
+async fn remove_directory<F, Fut>(mut remove: F) -> std::io::Result<()>
+where
+    F: FnMut() -> Fut,
+    Fut: std::future::Future<Output = std::io::Result<()>>,
+{
+    // CDP disposal does not join Chromium's file worker. A queued rename can
+    // add an entry after remove_dir_all has enumerated the directory. Keep the
+    // guardian's enclosing-directory ownership even after this removal succeeds.
+    for attempt in 0..=10 {
+        match remove().await {
+            Ok(()) => return Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::DirectoryNotEmpty && attempt < 10 => {
+                tokio::time::sleep(Duration::from_millis(10 * (attempt + 1))).await;
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    unreachable!("the final removal attempt returns its result")
 }
 
 fn resource_limit() -> ErrorRecord {
@@ -649,6 +668,54 @@ impl PreparedDownload {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn directory_removal_recovers_an_entry_created_after_enumeration() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("context");
+        std::fs::create_dir(&directory).unwrap();
+        let mut raced = false;
+        remove_directory(|| {
+            let result = if !raced {
+                raced = true;
+                assert_eq!(std::fs::read_dir(&directory).unwrap().count(), 0);
+                // Model the browser worker adding an entry between recursive
+                // enumeration and rmdir; require the actual OS failure.
+                std::fs::write(directory.join("late.crdownload"), b"partial").unwrap();
+                let error = std::fs::remove_dir(&directory).unwrap_err();
+                assert_eq!(error.kind(), std::io::ErrorKind::DirectoryNotEmpty);
+                Err(error)
+            } else {
+                std::fs::remove_dir_all(&directory)
+            };
+            std::future::ready(result)
+        })
+        .await
+        .unwrap();
+        assert!(!directory.exists());
+        remove_directory(|| tokio::fs::remove_dir_all(&directory))
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn directory_removal_preserves_other_errors_and_bounds_contention() {
+        for (kind, expected_calls) in [
+            (std::io::ErrorKind::PermissionDenied, 1),
+            (std::io::ErrorKind::DirectoryNotEmpty, 11),
+        ] {
+            let mut calls = 0;
+            let error = remove_directory(|| {
+                calls += 1;
+                std::future::ready(Err(std::io::Error::new(kind, "original failure")))
+            })
+            .await
+            .unwrap_err();
+            assert_eq!(error.kind(), kind);
+            assert_eq!(error.to_string(), "original failure");
+            assert_eq!(calls, expected_calls);
+        }
+    }
 
     fn downloads() -> Downloads {
         Downloads::new(
