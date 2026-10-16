@@ -22207,17 +22207,24 @@
       "kind": "MethodSignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/waits.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/upstream/navigation-waits-provenance.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 5118,
       "signature": "waitForRequest(urlOrPredicate: string|RegExp|((request: Request) => boolean|Promise<boolean>), options?: { timeout?: number; }): Promise<Request>;",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "page-request-waits"
     },
     {
       "id": "playwright-core/types/types.d.ts.Page.waitForRequest.urlOrPredicate#1",
@@ -22225,17 +22232,24 @@
       "kind": "parameter",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/waits.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/upstream/navigation-waits-provenance.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 5118,
       "signature": "urlOrPredicate: string|RegExp|((request: Request) => boolean|Promise<boolean>)",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "page-request-waits"
     },
     {
       "id": "playwright-core/types/types.d.ts.Page.waitForRequest.urlOrPredicate.request#1",
@@ -22243,17 +22257,24 @@
       "kind": "parameter",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/waits.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/upstream/navigation-waits-provenance.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 5118,
       "signature": "request: Request",
       "defaults": [],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "page-request-waits"
     },
     {
       "id": "playwright-core/types/types.d.ts.Page.waitForRequest.options#1",
@@ -22261,17 +22282,24 @@
       "kind": "parameter",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/waits.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/upstream/navigation-waits-provenance.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 5118,
       "signature": "options?: { timeout?: number; }",
       "defaults": [],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "page-request-waits"
     },
     {
       "id": "playwright-core/types/types.d.ts.Page.waitForRequest.options.timeout#1",
@@ -22279,10 +22307,17 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/waits.ts"
+      ],
+      "evidence": [
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/evidence/request-waits-checkpoint-2026-10-16.json",
+        "compatibility/upstream/navigation-waits-provenance.json"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 5124,
       "signature": "timeout?: number;",
@@ -22291,8 +22326,8 @@
         "[page.setDefaultTimeout(timeout)](https://playwright.dev/docs/api/class-page#page-set-default-timeout) method."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "page-request-waits"
     },
     {
       "id": "playwright-core/types/types.d.ts.Page.waitForResponse#1",
@@ -123739,5 +123774,5 @@
     }
   ],
   "reviewSource": "compatibility/parity-reviews.json",
-  "reviewedEntries": 528
+  "reviewedEntries": 533
 }

@@ -1131,11 +1131,11 @@
 | playwright-core/types/types.d.ts.Page.waitForNavigation.options.url#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForNavigation.options.url.url#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForNavigation.options.waitUntil#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForRequest#1 | MethodSignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForRequest.urlOrPredicate#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForRequest.urlOrPredicate.request#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForRequest.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Page.waitForRequest.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Page.waitForRequest#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#page-request-waits) |
+| playwright-core/types/types.d.ts.Page.waitForRequest.urlOrPredicate#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#page-request-waits) |
+| playwright-core/types/types.d.ts.Page.waitForRequest.urlOrPredicate.request#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#page-request-waits) |
+| playwright-core/types/types.d.ts.Page.waitForRequest.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#page-request-waits) |
+| playwright-core/types/types.d.ts.Page.waitForRequest.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#page-request-waits) |
 | playwright-core/types/types.d.ts.Page.waitForResponse#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#core-navigation) |
 | playwright-core/types/types.d.ts.Page.waitForResponse.urlOrPredicate#1 | parameter | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Page.waitForResponse.urlOrPredicate.response#1 | parameter | planned / unverified | Unreviewed |

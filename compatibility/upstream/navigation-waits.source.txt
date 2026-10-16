@@ -49,6 +49,18 @@ async waitForURL(url2, options2 = {}) {
         await this.waitForNavigation({ url: url2, ...options2 });
       }
 
+// page.waitForRequest
+async waitForRequest(urlOrPredicate, options2 = {}) {
+        const predicate = async (request2) => {
+          if (isString(urlOrPredicate) || isRegExp(urlOrPredicate))
+            return urlMatches(this._browserContext._options.baseURL, request2.url(), urlOrPredicate);
+          return await urlOrPredicate(request2);
+        };
+        const trimmedUrl = trimUrl(urlOrPredicate);
+        const logLine = trimmedUrl ? `waiting for request ${trimmedUrl}` : void 0;
+        return await this._waitForEvent(Events.Page.Request, { predicate, timeout: options2.timeout }, logLine);
+      }
+
 // page.waitForResponse
 async waitForResponse(urlOrPredicate, options2 = {}) {
         const predicate = async (response2) => {
