@@ -169,6 +169,7 @@ pub struct Engine {
     event_delivery: Mutex<flashwright_protocol::OutputDelivery>,
     fatal: watch::Sender<bool>,
     resident_assertions: bool,
+    frame_assertion_leases: bool,
     condition_instrumentation: bool,
     attachment_slots: Arc<tokio::sync::Semaphore>,
     file_chooser_slots: Arc<tokio::sync::Semaphore>,
@@ -272,6 +273,8 @@ impl Engine {
             trace_diagnostic_budget: OnceLock::new(),
             api_requests: api_requests::RequestRegistry::with_limits(limits),
             resident_assertions: std::env::var("FLASHWRIGHT_RESIDENT_ASSERTIONS").as_deref()
+                != Ok("0"),
+            frame_assertion_leases: std::env::var("FLASHWRIGHT_FRAME_ASSERTION_LEASES").as_deref()
                 != Ok("0"),
             condition_instrumentation: std::env::var("FLASHWRIGHT_CONDITION_INSTRUMENTATION")
                 .as_deref()

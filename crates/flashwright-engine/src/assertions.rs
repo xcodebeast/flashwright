@@ -49,6 +49,29 @@ struct AssertionRequest<'request> {
     units: Cow<'request, [u16]>,
 }
 
+#[derive(Clone, Copy)]
+enum AssertionWait {
+    Snapshot,
+    Resident,
+    FrameLease(u64),
+}
+
+type ResidentCleanup = tokio::task::JoinHandle<(Option<Value>, &'static str)>;
+
+struct AssertionAttempt {
+    value: Value,
+    deferred_cleanup: Option<ResidentCleanup>,
+}
+
+impl From<Value> for AssertionAttempt {
+    fn from(value: Value) -> Self {
+        Self {
+            value,
+            deferred_cleanup: None,
+        }
+    }
+}
+
 impl Engine {
     pub(crate) async fn run_assertion(
         &self,
@@ -92,14 +115,17 @@ impl Engine {
             Some(true),
         );
         let mut observation = None;
+        let mut pending_cleanup: HashMap<String, ResidentCleanup> = HashMap::new();
         let result = async {
             let mut attempts = 0;
             loop {
                 operation.check()?;
+                let mut used_frame_lease = false;
                 let result = async {
                     let resolved = self
                         .resolve_frame_selector(&page, &browser, &mut selector, operation, METHOD)
                         .await?;
+                    let has_frame = resolved.is_some();
                     let (realm, units) = match resolved {
                         Some(realm) => (realm, selector.request.as_ref()),
                         None => (
@@ -113,19 +139,83 @@ impl Engine {
                         is_not: request.is_not,
                         units: Cow::Borrowed(units),
                     };
-                    self.assertion_attempt(
-                        &page,
-                        &browser,
-                        &realm,
-                        &current,
-                        operation,
-                        self.resident_assertions && !selector.crosses_frames(),
-                    )
-                    .await
+                    let wait = if !self.resident_assertions {
+                        AssertionWait::Snapshot
+                    } else if !selector.crosses_frames() {
+                        AssertionWait::Resident
+                    } else if self.frame_assertion_leases && has_frame {
+                        used_frame_lease = true;
+                        AssertionWait::FrameLease([20, 50, 100][attempts.min(2)])
+                    } else {
+                        AssertionWait::Snapshot
+                    };
+                    if used_frame_lease {
+                        pending_cleanup.retain(|_, cleanup| !cleanup.is_finished());
+                        if pending_cleanup.contains_key(&realm.context.unique_identifier) {
+                            // Keep resolving ancestors, but don't pile more commands into
+                            // a renderer whose original cancellation is still pending.
+                            used_frame_lease = false;
+                            return Ok(json!({"status":"leasePending"}));
+                        }
+                        // Keep the ordinary single-observation fast path. Only a
+                        // result obtained after waiting needs ancestry revalidation.
+                        let immediate = self
+                            .assertion_attempt(
+                                &page,
+                                &browser,
+                                &realm,
+                                &current,
+                                operation,
+                                AssertionWait::Snapshot,
+                            )
+                            .await?
+                            .value;
+                        let Some(current_observation) = terminal_observation(&immediate) else {
+                            return Ok(immediate);
+                        };
+                        if current_observation["matches"].as_bool() != Some(request.is_not) {
+                            return Ok(immediate);
+                        }
+                        observation = Some(current_observation);
+                    }
+                    let attempt = self
+                        .assertion_attempt(&page, &browser, &realm, &current, operation, wait)
+                        .await?;
+                    if let Some(cleanup) = attempt.deferred_cleanup {
+                        pending_cleanup.insert(realm.context.unique_identifier.clone(), cleanup);
+                    }
+                    let result = attempt.value;
+                    if used_frame_lease {
+                        // A matching child is insufficient: the original root may now
+                        // select another live iframe, or the selected document changed.
+                        let selected = self
+                            .resolve_frame_selector(
+                                &page,
+                                &browser,
+                                &mut selector,
+                                operation,
+                                METHOD,
+                            )
+                            .await?;
+                        if !selected.is_some_and(|selected| {
+                            selected.context == realm.context
+                                && selected.main_context == realm.main_context
+                                && selected.loader == realm.loader
+                        }) {
+                            return Ok(json!({"status":"frameChanged"}));
+                        }
+                        if result["status"] == "expired" {
+                            return Ok(terminal_observation(&result)
+                                .unwrap_or_else(|| json!({"status":"frameChanged"})));
+                        }
+                    }
+                    Ok(result)
                 }
                 .await;
                 match result {
                     Ok(result) => match result["status"].as_str() {
+                        Some("frameChanged") => observation = None,
+                        Some("leasePending") => {}
                         Some("matched") | Some("observation") => {
                             let current = if result["status"] == "matched" {
                                 result["observation"].clone()
@@ -200,7 +290,10 @@ impl Engine {
                     }
                     Err(error) => return Err(error),
                 }
-                if self.resident_assertions && !selector.crosses_frames() {
+                if used_frame_lease {
+                    attempts += 1;
+                    tokio::task::yield_now().await;
+                } else if self.resident_assertions && !selector.crosses_frames() {
                     tokio::task::yield_now().await;
                 } else {
                     let delay = [20, 50, 100][attempts.min(2)];
@@ -216,10 +309,16 @@ impl Engine {
         }
         .await;
         result.map_err(|mut error| {
-            if matches!(error.code, ErrorCode::Timeout | ErrorCode::Cancelled)
-                && error.diagnostics.is_none()
-            {
-                error.diagnostics = observation.map(Box::new);
+            if matches!(error.code, ErrorCode::Timeout | ErrorCode::Cancelled) {
+                if error.diagnostics.is_none() {
+                    error.diagnostics = observation.map(Box::new);
+                }
+                if pending_cleanup
+                    .values()
+                    .any(|cleanup| !cleanup.is_finished())
+                {
+                    error.cleanup = Some("residentCancellationPending".into());
+                }
             }
             error
         })
@@ -232,8 +331,19 @@ impl Engine {
         realm: &LocatorRealm,
         request: &AssertionRequest<'_>,
         operation: &Operation,
-        resident: bool,
-    ) -> Result<Value, ErrorRecord> {
+        wait: AssertionWait,
+    ) -> Result<AssertionAttempt, ErrorRecord> {
+        let resident = !matches!(wait, AssertionWait::Snapshot);
+        let mut renderer_deadline = operation.renderer_deadline();
+        if let AssertionWait::FrameLease(milliseconds) = wait {
+            let lease = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis() as u64
+                + milliseconds;
+            renderer_deadline =
+                Some(renderer_deadline.map_or(lease, |deadline| deadline.min(lease)));
+        }
         let token = self.identifier("assertion");
         let function = if resident {
             "function(request, deadline, expression, isNot, token) { return globalThis.__flashwrightLocatorRuntime.waitForAssertion(request, deadline, expression, isNot, token); }"
@@ -241,7 +351,7 @@ impl Engine {
             "function(request, deadline, expression, isNot) { return globalThis.__flashwrightLocatorRuntime.assertion(request, deadline, expression, isNot); }"
         };
         let mut arguments = json!([
-            { "value": request.units }, { "value": operation.renderer_deadline() },
+            { "value": request.units }, { "value": renderer_deadline },
             { "value": request.expression }, { "value": request.is_not },
         ]);
         if resident {
@@ -254,14 +364,46 @@ impl Engine {
             "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": function, "arguments": arguments,
             "returnByValue": true, "awaitPromise": true,
         }), Some(&realm.context.session_identifier))?;
-        match operation
-            .wait(
+        let response = {
+            let pending = operation.wait(
                 page.state
                     .while_execution_context(&realm.context, command.response()),
-            )
-            .await
-        {
-            Ok(result) => runtime_value(result),
+            );
+            if let AssertionWait::FrameLease(milliseconds) = wait {
+                timeout(Duration::from_millis(milliseconds), pending).await
+            } else {
+                Ok(pending.await)
+            }
+        };
+        let response = match response {
+            Ok(response) => response,
+            Err(_) => match operation.check() {
+                Err(error) => Err(error),
+                Ok(()) => {
+                    if command.prevent_dispatch() {
+                        return Ok(json!({"status":"leasePending"}).into());
+                    }
+                    if let Some(response) = command.try_response() {
+                        return response.and_then(runtime_value).map(Into::into);
+                    }
+                    let page = page.clone();
+                    let browser = browser.clone();
+                    let realm = realm.clone();
+                    // Host expiry must work even when JavaScript cannot run its timer.
+                    // Retain the original command, token and world until cancellation
+                    // is acknowledged or that owner disappears; never retarget cleanup.
+                    let cleanup = tokio::spawn(async move {
+                        cancel_resident_condition(&page, &browser, &realm, &token, command).await
+                    });
+                    return Ok(AssertionAttempt {
+                        value: json!({"status":"leasePending"}),
+                        deferred_cleanup: Some(cleanup),
+                    });
+                }
+            },
+        };
+        match response {
+            Ok(result) => runtime_value(result).map(Into::into),
             Err(mut error)
                 if resident && matches!(error.code, ErrorCode::Timeout | ErrorCode::Cancelled) =>
             {

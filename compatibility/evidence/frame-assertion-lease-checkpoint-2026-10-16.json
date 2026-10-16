@@ -1,0 +1,530 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-16",
+  "status": "verified-default-frame-assertion-leases",
+  "baseCommit": "34854f0d28f7173fe4eb2c92fddb5a35c84e3ab2",
+  "scope": "Selected native Linux full-Chrome assertion optimization. Default library path with ordinary immediate checks, bounded child subscriptions, original-root path revalidation and host-enforced cancellation. No new public API coverage classification; full current core, release and representative majority-scenario 2x remain open.",
+  "driverSha256": "405a21fa61554cb938b5e53aecaad7fadc280998f7861a0f1c3e67b7be05ca6a",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "implementationSha256": {
+    "crates/flashwright-engine/src/assertions.rs": "344e0b9e344d9170ed61345d9a5da85a3e6420fe9289be94f016dfafd038212d",
+    "crates/flashwright-engine/src/lib.rs": "18f5c117980ff233c31293eaa5f2d95af4a902783451cfab9cace4c7fb3831df"
+  },
+  "fixtureSha256": {
+    "compatibility/m2/frame-assertion-lifetime.mjs": "366f3e65547836d29071152e9d642e420364d791be4086b06d3a72b8ac5c9222",
+    "tools/test-packed-remote-locators.mjs": "900e2befe67373ad818fa59e575ec542d3531c4a493ed1433e7fead01c2a660e",
+    "tools/engine-configuration.mjs": "9aab63ba9706b9e721498f916b13e631110dc2a0ba3034d3cc7ad9e13bc45e0f",
+    "tools/test-harness.mjs": "9d413d8f5bc59e5551a69d44bf17acf59d433266f1b54b178bd760a74917637e",
+    "tools/verify-core.mjs": "f5c32825efe9e253ad2cd1db34dea19dadce1e6e08d5d9e632e7a284e63b66ac"
+  },
+  "lifetime": [
+    {
+      "name": "lifetime",
+      "runtime": "bun 1.4.2",
+      "engineConfiguration": {
+        "residentAssertions": true,
+        "conditionInstrumentation": false
+      },
+      "cases": [
+        {
+          "engine": "playwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "pending-cleanup-diagnostic",
+          "cleanup": "residentCancellationPending",
+          "status": "passed"
+        }
+      ],
+      "originalReport": {
+        "path": "workbench/frame-path-residency-013/lifetime/report.json",
+        "sha256": "994cbf6b8af8963e79713e1e6e2ac4fef8e06fa4602e984ff9e855534aca3ecd",
+        "bytes": 153595
+      }
+    },
+    {
+      "name": "lifetime-node22",
+      "runtime": "v22.22.0",
+      "engineConfiguration": {
+        "residentAssertions": true,
+        "conditionInstrumentation": false
+      },
+      "cases": [
+        {
+          "engine": "playwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "pending-cleanup-diagnostic",
+          "cleanup": "residentCancellationPending",
+          "status": "passed"
+        }
+      ],
+      "originalReport": {
+        "path": "workbench/frame-path-residency-013/lifetime-node22/report.json",
+        "sha256": "47e45fb9f386fb47548562c4a4fa579f23935d1b33c8246a98922647a8b21e74",
+        "bytes": 153594
+      }
+    },
+    {
+      "name": "lifetime-node24",
+      "runtime": "v24.15.0",
+      "engineConfiguration": {
+        "residentAssertions": true,
+        "conditionInstrumentation": false
+      },
+      "cases": [
+        {
+          "engine": "playwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "pending-cleanup-diagnostic",
+          "cleanup": "residentCancellationPending",
+          "status": "passed"
+        }
+      ],
+      "originalReport": {
+        "path": "workbench/frame-path-residency-013/lifetime-node24/report.json",
+        "sha256": "e3f98d2285eca72a0cfa48082eb1a901f3f0c2b181c22156ecfe6f8b4402f010",
+        "bytes": 153701
+      }
+    },
+    {
+      "name": "lifetime-control",
+      "runtime": "bun 1.4.2",
+      "engineConfiguration": {
+        "residentAssertions": true,
+        "conditionInstrumentation": false,
+        "frameAssertionLeases": false
+      },
+      "cases": [
+        {
+          "engine": "playwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "playwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "lazy-live-switch",
+          "remotePlacement": true,
+          "selectedValue": "ready",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "captured-frame-control",
+          "remotePlacement": true,
+          "selectedValue": "before",
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-live-switch",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "blocked-timeout",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "unbounded-owner-close",
+          "remotePlacement": true,
+          "status": "passed"
+        },
+        {
+          "engine": "flashwright",
+          "scenario": "pending-cleanup-diagnostic",
+          "status": "passed"
+        }
+      ],
+      "originalReport": {
+        "path": "workbench/frame-path-residency-013/lifetime-control/report.json",
+        "sha256": "71d7a06325f996258bfaec07efa44743147638b499462f654a0c0b4109415536",
+        "bytes": 153582
+      }
+    }
+  ],
+  "regressions": {
+    "frameLocatorChecks": 212,
+    "frameLocatorTraces": "passed",
+    "remoteLocatorGroupsPerEngine": 7,
+    "actualRunnerAriaCases": 2,
+    "ordinaryAssertions": "passed both engines",
+    "rust": {
+      "passed": 510,
+      "failed": 0,
+      "ignored": 1
+    },
+    "clippyWorkspaceAllTargetsDenyWarnings": "passed",
+    "configurationHarness": "passed",
+    "packed": {
+      "runtime": "bun 1.4.2",
+      "outcomes": [
+        {
+          "format": "esm",
+          "remotePlacementGuard": true,
+          "reads": 3,
+          "assertions": 2
+        },
+        {
+          "format": "commonjs",
+          "remotePlacementGuard": true,
+          "reads": 3,
+          "assertions": 2
+        }
+      ],
+      "cleanup": "passed",
+      "originalReport": {
+        "path": "workbench/frame-path-residency-013/packed/report.json",
+        "sha256": "cb51c21543b46a412c903337a6991650c356e26aef9f70c7623ae2a6ab034284",
+        "bytes": 153251
+      }
+    }
+  },
+  "engineeringScreen": {
+    "path": "benchmarks/results/frame-assertions-linux-2026-10-16.json",
+    "sha256": "ca8f2c2edee4f43bcaf59fad9853c4b08630e5737481ef5e3c30a4db6d256bde",
+    "bytes": 768296
+  },
+  "resources": [
+    {
+      "path": "workbench/frame-path-residency-013/resources-assertions.json",
+      "sha256": "f3a8dc04e102e472285512b3ad806d33489c1e8bc0b9719483d4435c5b524081",
+      "bytes": 96794,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-frame-locators.json",
+      "sha256": "b84a05a4ec6e06430f8c8efae3b26ebb82d0faaac3b83660846b6615d217508f",
+      "bytes": 640635,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-frame-traces.json",
+      "sha256": "e9124431cba62d89525535bd1e583e6bc9b4f0079667d8dec86b8fc31abca5ac",
+      "bytes": 4502,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-harness.json",
+      "sha256": "15f6302cb8edb5b898e3420432a61611ddc962a2b66b44a486d57894f3528a88",
+      "bytes": 3944,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-lifetime-control.json",
+      "sha256": "f1a1dc7d9fbe55e3bf67a968e009f6ec4a04b7ebda0ad70528f4f48276443489",
+      "bytes": 248472,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-lifetime-node22.json",
+      "sha256": "328095959d7aa7ade4172ec5b75049132f0d406664a42be429a91a21504a4d25",
+      "bytes": 246794,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-lifetime-node24.json",
+      "sha256": "5046f9d8672d98fc554ff88f1ff967544d6abbf687dde88982bed0d0c0822fd9",
+      "bytes": 246667,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-lifetime.json",
+      "sha256": "639e2fea870e7d1b0da21d1ed5b95819789c91f7aa73e814933032bb7140319c",
+      "bytes": 246393,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-packed.json",
+      "sha256": "def730eae76c85062dfb1fecb67a88bf7ae4b52c7abc911005e7fcd5b8676c3d",
+      "bytes": 38157,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/resources-remote-locators.json",
+      "sha256": "d7f1ee12d0d0abad0259acd2cb5b1f7209daa628f2084c94848562c8b26b54ac",
+      "bytes": 105494,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/frame-path-residency-013/rust-resources.json",
+      "sha256": "595d1864b1be0bcdea8629b75678cdddc77fcfe3e50bc6704f055e3b2af49c7f",
+      "bytes": 168112,
+      "exitCode": 0,
+      "observedRemainingProcesses": 0,
+      "cleanupSignals": 0
+    }
+  ],
+  "priorAttempts": [
+    {
+      "id": "015",
+      "outcome": "Initial final-binary four-page screen failed: one already-true phase regressed27%, with nearly unchanged CPU. Preserved both original pairs and predeclared a balanced six-block extension; the expanded paired uncertainty gate includes all eight original pairs, no timing exclusions."
+    },
+    {
+      "id": "004",
+      "outcome": "Harness rejected45s collector budget before workload launch; corrected to supported30s bound."
+    },
+    {
+      "id": "005",
+      "outcome": "Complete mixed workflow improved, but already-true assertions regressed20\u201333%; rejected. Added immediate snapshot fast path."
+    },
+    {
+      "id": "006",
+      "outcome": "Blocked old child prevented lazy path from following ready new child; baseline passed and renderer-only lease failed. Added Rust lease timer and original-world cleanup ownership."
+    },
+    {
+      "id": "007-review",
+      "outcome": "Review found missing pending-cleanup diagnostics on later timeout; corrected and tested with blocked renderer."
+    },
+    {
+      "id": "011",
+      "outcome": "Functional fixture over-required expected text in owner-closed matcher error; retained failed original."
+    },
+    {
+      "id": "012",
+      "outcome": "Fixture then over-required closed wording in pinned reference matcher; changed to observed page closure plus bounded rejection. Retained failed original."
+    }
+  ],
+  "adoption": "Enable leases by default after current lifetime, shared frame/assertion, packed-consumer and complete-flow regression evidence. Initial four-page per-pair gate failed; the expanded predeclared uncertainty gate includes that failure and all additional observations. Sporadic already-true phase variability remains visible; this is not a tail-regression or final performance acceptance claim. FLASHWRIGHT_FRAME_ASSERTION_LEASES=0 retains the host-polled diagnostic control. Existing resident-assertions-off also disables leases.",
+  "constructorSourceReview": "The only lib.rs change adds the diagnostic frame-lease selection field. Download, public ARIA, keyboard insertion and context-media operation bodies are unchanged. Their constructor hash references are refreshed as source review, not fresh feature-conformance claims."
+}
