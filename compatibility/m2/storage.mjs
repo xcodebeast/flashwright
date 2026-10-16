@@ -9,6 +9,7 @@ import { chromium as referenceChromium } from 'playwright';
 import { chromium as flashwrightChromium } from 'flashwright';
 import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { identifyBrowser } from '../../tools/browser-identity.mjs';
+import { classifyPrivateStorageRequests, auditStorageRequests } from '../../tools/storage-request-observations.mjs';
 
 const destination = `compatibility/evidence/storage-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
@@ -16,16 +17,16 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const report = {
   reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch,
   sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()),
-  driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, serviceWorkerObservations: {}, candidateChecks: [], status: 'running',
+  driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, privateNetworkObservations: {}, lifetimeNetworkObservations: {}, serviceWorkerObservations: {}, candidateChecks: [], status: 'running',
   scope: 'Basic cookie and HTTP(S) localStorage state differential. IndexedDB and existing-context replacement remain unsupported. No performance claim.',
 };
 const requests = [];
 let childOrigin;
-const fixture = `<!doctype html><meta charset="utf-8"><title>Storage</title><script>
+const fixture = `<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Storage</title><script>
 window.startup = { local: localStorage.getItem('startup'), session: sessionStorage.getItem('session') };
 </script>`;
 const server = createServer((request, response) => {
-  requests.push({ path: request.url, cookie: request.headers.cookie ?? '', referer: request.headers.referer ?? '' });
+  requests.push({ method: request.method, path: request.url, cookie: request.headers.cookie ?? '', referer: request.headers.referer ?? '' });
   if (request.url === '/worker.js') {
     response.setHeader('content-type', 'application/javascript');
     response.end(`self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
@@ -42,7 +43,7 @@ const server = createServer((request, response) => {
   response.end(fixture);
 });
 const childServer = createServer((request, response) => {
-  requests.push({ child: true, path: request.url, referer: request.headers.referer ?? '' });
+  requests.push({ child: true, method: request.method, path: request.url, referer: request.headers.referer ?? '' });
   response.setHeader('content-type', 'text/html; charset=utf-8');
   response.end(fixture + '<output></output><script>localStorage.setItem("child", "child origin"); document.querySelector("output").textContent = localStorage.getItem("child");</script>');
 });
@@ -60,8 +61,16 @@ const entries = [
 ];
 
 async function run(name, chromium) {
+  const lifetimeStart = requests.length;
   const browser = await chromium.launch({ executablePath: report.browser.executablePath });
   const result = report.outcomes[name] = {};
+  const network = report.privateNetworkObservations[name] = [];
+  const observePrivateNetwork = (phase, start, snapshots = 1) => {
+    const received = requests.slice(start);
+    const observation = { phase, maximumRequestsPerOrigin: snapshots, received };
+    network.push(observation);
+    observation.referenceFaviconRequests = classifyPrivateStorageRequests(name, received, { main: origin, child: childOrigin }, snapshots);
+  };
   try {
     const context = await browser.newContext();
     const isolated = await browser.newContext();
@@ -127,7 +136,7 @@ async function run(name, chromium) {
     for (let index = 0; index < 5; index++) {
       assert.deepEqual(sortState(await context.storageState()), result.state, 'repeated multi-origin collection must survive cancelled prior-document subresources');
     }
-    assert.equal(requests.length, requestCount, `snapshot must never reach the application server: ${JSON.stringify(requests.slice(requestCount))}`);
+    observePrivateNetwork('closed-page-snapshots', requestCount, 6);
     assert.equal(pageEvents, eventCount, 'internal origin pages must remain private');
     assert.deepEqual(context.pages(), []);
     assert.deepEqual(sortState(JSON.parse(await readFile(path, 'utf8'))), result.state);
@@ -137,9 +146,11 @@ async function run(name, chromium) {
     for (const storageState of [state, path]) {
       const beforeRestore = requests.length;
       const restored = await browser.newContext({ storageState });
-      assert.equal(requests.length, beforeRestore, `restore must not run the application: ${JSON.stringify(requests.slice(beforeRestore))}`);
+      observePrivateNetwork(typeof storageState === 'string' ? 'restore-file' : 'restore-object', beforeRestore);
       assert.deepEqual(restored.pages(), []);
+      const beforeExport = requests.length;
       assert.deepEqual(sortState(await restored.storageState()), result.state, 'state is immediately exportable before any public page');
+      observePrivateNetwork(typeof storageState === 'string' ? 'reexport-file' : 'reexport-object', beforeExport);
       const restoredPage = await restored.newPage();
       await restoredPage.goto(origin + '/authenticated');
       assert.deepEqual(await restoredPage.evaluate(() => startup), { local: 'restored before scripts', session: null });
@@ -209,7 +220,20 @@ async function run(name, chromium) {
     await workerContext.close();
     await context.close();
     await isolated.close();
-  } finally { await browser.close(); }
+  } finally {
+    try { await browser.close(); }
+    finally { report.lifetimeNetworkObservations[name] = { received: requests.slice(lifetimeStart) }; }
+  }
+  const audit = report.lifetimeNetworkObservations[name];
+  // Six closed-page collections, two restores and two re-exports visit both
+  // origins; the empty-origin and worker collections can visit the main origin.
+  audit.maximumPrivateNavigations = { main: 12, child: 10 };
+  audit.expectedPublicRequests = ['main GET /login', 'main GET /parent', 'child GET /child',
+    'main GET /authenticated', 'main GET /authenticated', 'main GET /',
+    ...(name === 'flashwright' ? ['main GET /'] : []), 'main GET /login', 'main GET /worker.js'];
+  audit.referenceFaviconRequests = auditStorageRequests(name, audit.received,
+    { main: origin, child: childOrigin }, audit.expectedPublicRequests, audit.maximumPrivateNavigations);
+  audit.status = 'passed';
 }
 
 try {

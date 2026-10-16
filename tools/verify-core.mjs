@@ -214,6 +214,7 @@ const commands = [
   [process.execPath, 'tools/test-packed-migration.mjs'],
   [process.execPath, 'tools/test-benchmark-contract.mjs'],
   [process.execPath, 'tools/test-resident-load.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-storage-request-observations.mjs'],
   [process.execPath, 'tools/run-storage-tests.mjs'],
   [process.execPath, 'tools/run-screenshot-tests.mjs'],
   [process.execPath, 'tools/run-device-tests.mjs'],
