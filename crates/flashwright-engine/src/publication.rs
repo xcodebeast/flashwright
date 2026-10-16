@@ -389,7 +389,7 @@ mod tests {
         let page = engine.page("page", "test").unwrap();
         engine.finish_page("page", &page, closed("page"), "close");
         assert!(
-            matches!(messages.try_recv().unwrap(), DriverOutput::Message(DriverMessage::Event { event, .. }) if event == "close")
+            matches!(messages.try_recv().unwrap(), DriverOutput::AcknowledgedMessage { message: DriverMessage::Event { event, .. }, .. } if event == "close")
         );
     }
 

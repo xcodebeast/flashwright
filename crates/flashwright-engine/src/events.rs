@@ -43,34 +43,36 @@ impl Engine {
     }
 
     pub(crate) fn emit(&self, target: &str, event: &str, parameters: Value) {
-        if self
-            .outgoing
-            .try_send(
-                DriverMessage::Event {
-                    target: target.to_owned(),
-                    event: event.to_owned(),
-                    parameters,
-                }
-                .into(),
-            )
-            .is_err()
-        {
-            let _ = self.fatal.send(true);
-        }
+        self.publish_event_output(DriverMessage::Event {
+            target: target.to_owned(),
+            event: event.to_owned(),
+            parameters,
+        });
     }
 
     /// The writer closes only after delivering the originating bounded event failure.
     pub(crate) fn event_failure(&self, mut error: ErrorRecord) {
         error.input_delivery = flashwright_protocol::InputDelivery::Uncertain;
+        self.publish_event_output(DriverMessage::Error {
+            request_id: None,
+            error,
+        });
+    }
+
+    fn publish_event_output(&self, message: DriverMessage) {
+        // Registration and FIFO insertion stay inside the original state mutation.
+        // Only the later reader completion awaits the writer, with all locks released.
+        let mut delivery = self.event_delivery.lock().unwrap();
+        let Ok(acknowledgement) = delivery.register() else {
+            let _ = self.fatal.send(true);
+            return;
+        };
         if self
             .outgoing
-            .try_send(
-                DriverMessage::Error {
-                    request_id: None,
-                    error,
-                }
-                .into(),
-            )
+            .try_send(DriverOutput::AcknowledgedMessage {
+                message,
+                acknowledgement,
+            })
             .is_err()
         {
             let _ = self.fatal.send(true);
@@ -83,29 +85,44 @@ impl Engine {
         browser: &Arc<Chromium>,
     ) -> Result<(), ErrorRecord> {
         let engine = Arc::downgrade(self);
-        browser.connection.observe_events(move |event| {
-            let Some(engine) = engine.upgrade() else {
-                return Ok(());
-            };
-            if event.method == "Flashwright.disconnected" {
-                if let Some(browser) = engine.remove_browser(&identifier) {
-                    let cleanup = engine.begin_browser_cleanup(identifier.clone(), browser);
+        let disconnected_engine = engine.clone();
+        let disconnected_identifier = identifier.clone();
+        browser.connection.observe_events_with_backpressure(
+            move |event| {
+                let Some(engine) = engine.upgrade() else {
+                    return Ok(None);
+                };
+                if let Err(error) = engine.handle_event(&identifier, event) {
+                    engine.event_failure(error.clone());
+                    // Invalid state must close immediately, even if the host has
+                    // stopped reading the already-enqueued global error.
+                    return Err(error);
+                }
+                let pending = engine.event_delivery.lock().unwrap().pending();
+                match pending {
+                    Some(pending) => Ok(Some(Box::pin(pending.wait()))),
+                    None => Ok(None),
+                }
+            },
+            move |_| {
+                if let Some(engine) = disconnected_engine.upgrade()
+                    && let Some(browser) = engine.remove_browser(&disconnected_identifier)
+                {
+                    let cleanup =
+                        engine.begin_browser_cleanup(disconnected_identifier.clone(), browser);
                     tokio::spawn(async move {
                         match cleanup.await {
                             Ok(Ok(())) => {}
-                            Ok(Err(error)) => eprintln!("flashwright cleanup: {}", error.message),
+                            Ok(Err(error)) => {
+                                eprintln!("flashwright cleanup: {}", error.message)
+                            }
                             Err(error) => eprintln!("flashwright cleanup task: {error}"),
                         }
                     });
                 }
-                return Ok(());
-            }
-            if let Err(error) = engine.handle_event(&identifier, event) {
-                engine.event_failure(error.clone());
-                return Err(error);
-            }
-            Ok(())
-        })
+                Ok(())
+            },
+        )
     }
 
     fn handle_event(
@@ -977,14 +994,19 @@ mod tests {
             .unwrap();
         assert!(messages.try_recv().is_err());
         engine.handle_event("browser", event("session")).unwrap();
-        let DriverOutput::Message(DriverMessage::Event {
-            target,
-            event,
-            parameters,
-        }) = messages.try_recv().unwrap()
+        let DriverOutput::AcknowledgedMessage {
+            message:
+                DriverMessage::Event {
+                    target,
+                    event,
+                    parameters,
+                },
+            acknowledgement,
+        } = messages.try_recv().unwrap()
         else {
             panic!("expected page exception event");
         };
+        acknowledgement.complete();
         assert_eq!(target, "page");
         assert_eq!(event, "pageerror");
         assert_eq!(parameters["exceptionJson"], exception);
@@ -1247,7 +1269,7 @@ mod tests {
             assert!(engine.page("page", "test").is_err());
             assert!(engine.context("context", "test").is_ok());
             assert!(
-                matches!(messages.try_recv().unwrap(), DriverOutput::Message(flashwright_protocol::DriverMessage::Event { event, .. }) if event == "close")
+                matches!(messages.try_recv().unwrap(), DriverOutput::AcknowledgedMessage { message: flashwright_protocol::DriverMessage::Event { event, .. }, .. } if event == "close")
             );
             assert!(messages.try_recv().is_err());
         }

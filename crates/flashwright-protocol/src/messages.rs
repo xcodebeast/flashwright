@@ -7,6 +7,10 @@ use crate::{CAPABILITY_INVENTORY_VERSION, PACKAGE_VERSION, PROTOCOL_VERSION};
 #[derive(Debug)]
 pub enum DriverOutput {
     Message(DriverMessage),
+    AcknowledgedMessage {
+        message: DriverMessage,
+        acknowledgement: crate::OutputAcknowledgement,
+    },
     Frame(crate::EncodedFrame),
     Attachment(crate::AttachmentStream),
 }
