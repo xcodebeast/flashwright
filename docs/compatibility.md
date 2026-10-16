@@ -599,11 +599,12 @@ Assessment: experimental / verified-subset.
 
 Implementation: [packages/flashwright-core/src/index.ts](../packages/flashwright-core/src/index.ts).
 
-Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/m2/storage.mjs](../compatibility/m2/storage.mjs) (source-review).
+Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/m2/storage.mjs](../compatibility/m2/storage.mjs) (source-review), [tools/storage-request-observations.mjs](../tools/storage-request-observations.mjs) (source-review), [tools/test-storage-request-observations.mjs](../tools/test-storage-request-observations.mjs) (source-review).
 
 Intentional differences:
 
 - Temporary storage collection pages bypass service-worker fetch interception and do not execute application code; pinned 1.60.0 can execute a worker-supplied document and mutate the state being collected (S4.j).
+- Private storage pages do not send application-server requests. Pinned full Chrome can emit an auxiliary favicon request from its reference fallback; the differential records exact bounded reference icons separately and audits all server traffic through browser closure (S4.j).
 
 <a id="core-device-options"></a>
 
