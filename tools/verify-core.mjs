@@ -194,6 +194,7 @@ const commands = [
   [process.execPath, 'tools/run-routing-tests.mjs'],
   [process.execPath, 'tools/run-history-navigation-tests.mjs'],
   [process.execPath, 'tools/run-navigation-wait-tests.mjs'],
+  [process.execPath, 'tools/run-request-wait-tests.mjs', join(destination, 'request-waits')],
   [process.execPath, 'tools/run-locator-tests.mjs'],
   [process.execPath, 'tools/run-pointer-tests.mjs'],
   [process.execPath, 'tools/run-keyboard-tests.mjs'],

@@ -15,6 +15,7 @@ function visit(node) {
     if (name === 'waitForNavigation' && contents.includes('navigatedEvent')) snippets.set('frame.waitForNavigation', contents);
     if (name === '_setupNavigationWaiter') snippets.set('frame.setupNavigationWaiter', contents);
     if (name === 'waitForURL' && contents.includes('urlMatches')) snippets.set('frame.waitForURL', contents);
+    if (name === 'waitForRequest' && contents.includes('urlOrPredicate')) snippets.set('page.waitForRequest', contents);
     if (name === 'waitForResponse' && contents.includes('urlOrPredicate')) snippets.set('page.waitForResponse', contents);
   }
   if (ts.isFunctionDeclaration(node) && node.name?.text === 'urlMatches') snippets.set('urlMatches', node.getText(parsed));
@@ -22,7 +23,7 @@ function visit(node) {
   ts.forEachChild(node, visit);
 }
 visit(parsed);
-const selected = ['frame.waitForNavigation', 'frame.setupNavigationWaiter', 'frame.waitForURL', 'page.waitForResponse', 'urlMatches', 'isURLPattern'];
+const selected = ['frame.waitForNavigation', 'frame.setupNavigationWaiter', 'frame.waitForURL', 'page.waitForRequest', 'page.waitForResponse', 'urlMatches', 'isURLPattern'];
 for (const name of selected) assert.ok(snippets.has(name), `Pinned navigation waiter contract missing ${name}`);
 const declarations = await readFile('node_modules/playwright-core/types/types.d.ts', 'utf8');
 const patternDeclaration = declarations.split('\n').find(line => line.startsWith('type URLPattern ='));
@@ -37,7 +38,7 @@ const outputs = {
     referenceVersion: '1.60.0', sources: ['https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/frame.ts', 'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/page.ts', 'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/utils/isomorphic/urlMatch.ts'], distributionPath, distributionSha256: hash(source),
     retainedExtract: 'compatibility/upstream/navigation-waits.source.txt', extractSha256: hash(extract), implementation,
     relationship: 'Independent native navigation journal and host watermark preserve the pinned host-observed boundary, URL filtering, unconditional navigation failure, nullable response and one navigation deadline. Native URLPattern recognition and conditional declaration adapt the pinned helper; existing string/glob code retains its own provenance.',
-    changes: ['Private immutable navigation events advance the host watermark before public callbacks; page allocation metadata supplies its initial value.', 'Acceptance-order capture validates the supplied host cursor; event selection and lifecycle completion share bounded native history without persistent waiter allocation.', 'Uniform client readiness promise stages preserve request invocation order for finite/unbounded timeouts, including handshake resolution.', 'Page closure and the same deadline cover native waits and host callback promises. User callback errors retain their identity.', 'URLPattern is supported only through the runtime native global for navigation/URL/frame matching. waitForResponse preserves its narrower pinned string/RegExp/Response-predicate contract.'],
+    changes: ['Private immutable navigation events advance the host watermark before public callbacks; page allocation metadata supplies its initial value.', 'Acceptance-order capture validates the supplied host cursor; event selection and lifecycle completion share bounded native history without persistent waiter allocation.', 'Uniform client readiness promise stages preserve request invocation order for finite/unbounded timeouts, including handshake resolution.', 'Page closure and the same deadline cover native waits and host callback promises. User callback errors retain their identity.', 'URLPattern is supported only through the runtime native global for navigation/URL/frame matching. waitForRequest and waitForResponse preserve their narrower pinned string/RegExp/request-or-response predicate contracts; request observation returns the original object before response completion.'],
     license: 'Apache-2.0', licensePath: 'compatibility/upstream/LICENSE.playwright', noticePath: 'compatibility/upstream/NOTICE.playwright',
   }, null, 2) + '\n',
 };

@@ -407,7 +407,7 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
       waitForFunction: { className: 'Frame', parameters: ['expression', 'arg', 'options'], prepareArguments: prepareFunctionWaitArguments },
       setInputFiles: { className: 'Frame', parameters: ['selector', 'files', 'options'] },
       setContent: { className: 'Frame', parameters: ['html', 'options'] },
-      addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'], completion: 'independent' }, waitForNavigation: { parameters: ['options'], completion: 'independent' }, waitForURL: { parameters: ['url', 'options'], completion: 'independent' }, waitForResponse: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForEvent: eventWaitTrace, close: {},
+      addInitScript: { parameters: ['script', 'arg'] }, evaluate: { className: 'Frame', method: 'evaluateExpression', parameters: ['expression', 'arg'] }, evaluateHandle: { className: 'Frame', method: 'evaluateExpressionHandle', parameters: ['expression', 'arg'] }, title: { className: 'Frame' }, screenshot: { parameters: ['options'] }, goto: { className: 'Frame', parameters: ['url', 'options'] }, reload: { parameters: ['options'] }, goBack: { parameters: ['options'] }, goForward: { parameters: ['options'] }, waitForLoadState: { parameters: ['state', 'options'], completion: 'independent' }, waitForNavigation: { parameters: ['options'], completion: 'independent' }, waitForURL: { parameters: ['url', 'options'], completion: 'independent' }, waitForRequest: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForResponse: { parameters: ['urlOrPredicate', 'options'], completion: 'independent' }, waitForEvent: eventWaitTrace, close: {},
     });
   }
 
@@ -802,6 +802,11 @@ export class Page extends SubscribedEventEmitter<{ [Event in keyof PageEvents]: 
     const configured = typeof waitOptions === 'function' ? { predicate: waitOptions } : waitOptions;
     options('page.waitForEvent', configured, ['predicate', 'timeout']);
     return waitForEvent(this, event, configured, this.timeout(), 'page.waitForEvent');
+  }
+  async waitForRequest(matcher: string | RegExp | ((request: Request) => boolean | Promise<boolean>), waitOptions: { timeout?: number } = {}): Promise<Request> {
+    options('page.waitForRequest', waitOptions, ['timeout']);
+    if (typeof matcher !== 'string' && typeof matcher !== 'function' && !(matcher instanceof RegExp)) throw failure('InvalidArgumentError', 'page.waitForRequest', 'expected a string, regular expression or request predicate');
+    return this.waitForEvent('request', { ...waitOptions, predicate: request => typeof matcher === 'function' ? matcher(request) : matchesURL(request.url(), matcher, this.owner.baseURL) });
   }
   async waitForResponse(matcher: string | RegExp | ((response: Response) => boolean | Promise<boolean>), waitOptions: { timeout?: number } = {}): Promise<Response> {
     options('page.waitForResponse', waitOptions, ['timeout']);

@@ -74,6 +74,12 @@ try {
   const response = await page.goto('http://127.0.0.1:' + server.address().port);
   assert.equal(response.status(), 200);
   assert.equal(await page.title(), 'Packed consumer');
+  const observedRequest = page.waitForRequest('**/packed-request');
+  await page.evaluate(() => fetch('/packed-request').then(() => undefined));
+  const packedRequest = await observedRequest;
+  assert.equal(packedRequest.method(), 'GET');
+  assert.equal(packedRequest.frame(), page.mainFrame());
+  assert.ok(packedRequest.url().endsWith('/packed-request'));
   const routedRequests = [];
   await page.context().route('**/packed-route', async (route, request) => {
     routedRequests.push(request);
@@ -221,6 +227,11 @@ async function example(): Promise<number> {
     // @ts-expect-error Download policy preserves boolean option types.
     await browser.newContext({ acceptDownloads: 'false' });
     const page: Page = await context.newPage();
+    const waitedRequest = await page.waitForRequest(async request => request.method() === 'POST', { timeout: 1000 });
+    const requestURL: string = waitedRequest.url();
+    // @ts-expect-error A request predicate cannot read response-only status.
+    await page.waitForRequest(request => request.status() === 200);
+    void requestURL;
     const replacedContent: void = await page.setContent('<p>packed</p>', { waitUntil: 'load', timeout: 1000 });
     // @ts-expect-error Content replacement accepts text, not a binary buffer.
     await page.setContent(Buffer.from('packed'));
@@ -392,7 +403,7 @@ const evidence = {
   consumerDirectory: directory, runtimeOverride: environment.FLASHWRIGHT_DRIVER_PATH ?? null, runtimeIntegrity,
   packagedRuntime: runtimePackagePath ? { packageName: runtimePackageName, archiveSha256: createHash('sha256').update(await readFile(runtimeArchive)).digest('hex'), manifest: JSON.parse(await readFile(join(dirname(runtimePackagePath), 'runtime.json'), 'utf8')), installation: 'offline local tarballs, lifecycle scripts disabled, Cargo absent from consumer PATH' } : null,
   driverSha256: createHash('sha256').update(await readFile(selectedDriver)).digest('hex'),
-  checks: ['Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'default Download event, class/page identity, exact binary path/save/stream bytes, cancellation and deletion in both module formats', 'all nine Download method declarations and boolean acceptDownloads policy', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
+  checks: ['public request wait runtime and declarations', 'Bun packed tarball', 'fresh consumer install', 'ESM runtime', 'CommonJS runtime', 'NodeNext ESM declarations', 'NodeNext CommonJS declarations', 'evaluation generic inference', 'typed page error listeners and event waits in both module formats', 'console live handles, context event waits and fluent typed listeners in both module formats', 'cookie and object/file storage-state round trips with public declarations', 'locator declarations, selection and native text input', 'native trusted click, checkbox input and keyboard shortcuts with public option types', 'default Download event, class/page identity, exact binary path/save/stream bytes, cancellation and deletion in both module formats', 'all nine Download method declarations and boolean acceptDownloads policy', 'owned browser cleanup', 'real HTTP navigation and response body', 'incompatible resident runtime rejected before launch'],
   contentReplacement: 'Page.setContent return, title, DOM, waitUntil and timeout options pass in packed ESM and CommonJS consumers',
   remaining: ['Published platform runtime acquisition', 'pnpm and Yarn consumer matrix', 'package aliases'],
 };
