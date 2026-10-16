@@ -235,7 +235,8 @@ async function runnerCaptureIsInternal() {
     const recorder = lifecycle.start(information);
     await lifecycle.finish(recorder);
     assert.equal(information.attachments.length, 1);
-    assert.equal(information.attachments[0].name, 'screenshot');
+    assert.equal(information.attachments[0].name, 'screenshot',
+      information.attachments[0].body?.toString() ?? 'runner screenshot attachment missing');
     await page.screenshot();
     const path = join(outputDir, 'manual.zip');
     await context.tracing.stop({ path });
