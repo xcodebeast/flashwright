@@ -54,7 +54,26 @@ async function capture(context, marker) {
     document.querySelector('#marker').textContent = value;
     console.log(value);
     const response = await (await fetch(`/payload?marker=${value}`)).text();
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 0))));
+    // Animation callbacks precede presentation; two callbacks can finish before
+    // Chromium emits its first screencast frame. Exercise visible paint across
+    // a finite real interval, then independently require the archived frame.
+    const marker = document.querySelector('#marker');
+    const originalColor = marker.style.color;
+    await new Promise(resolve => {
+      let started;
+      let sequence = 0;
+      const paint = () => {
+        const now = performance.now();
+        started ??= now;
+        marker.style.color = sequence++ % 2 ? 'rgb(180, 0, 0)' : 'rgb(0, 0, 180)';
+        if (now - started < 350) requestAnimationFrame(paint);
+        else {
+          marker.style.color = originalColor;
+          requestAnimationFrame(() => setTimeout(resolve, 0));
+        }
+      };
+      requestAnimationFrame(paint);
+    });
     return response;
   }, marker), `original resource ${marker}`);
 }
