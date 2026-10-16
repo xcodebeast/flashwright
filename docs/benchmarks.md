@@ -197,6 +197,10 @@ The input request uses the existing `CaptureContext.collect_inputs` schema descr
 
 The [integration checkpoint](../compatibility/evidence/linux-cgroup-capture-checkpoint-2026-10-16.json) retains 16 host tests, six final native controls and the earlier attempts. The browser smoke passes, while its fourteen adopted descendants remain a failed teardown condition. No comparative timing samples were collected.
 
+The later [application accounting checkpoint](../compatibility/evidence/linux-application-cgroup-checkpoint-2026-10-16.json) connects the capture to actual complete application work: 24 TodoMVC and six SVGOMG tests pass on each engine. Fixture startup/shutdown and runner execution are inside the measured group. Declared outputs are hashed at capture completion; the verifier independently reconstructs the original corpus and engine entrypoints. All four groups drain without collector killing, with three already-exited adopted descendants each. The native clean flag remains false, while the separate drained-membership observation is true. This distinction permits reading the kernel charges without pretending that terminal-wait CPU covered the whole tree.
+
+Read those observations with `python3 -B tools/linux_cgroup_resources.py CAPTURE_DIRECTORY/capture.json`. Its CPU fields are cgroup microseconds; memory is kernel charged peak, including cache-ownership effects, rather than simultaneous process RSS. These metrics follow the [kernel cgroup interfaces](https://docs.kernel.org/admin-guide/cgroup-v2.html). The macOS wait/RSS adapter remains separate. The application checkpoint is a functional integration check with one execution per cell, not repeated comparative sampling or a speed ranking.
+
 The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for its original five engines. Bun.WebView is declared but not yet implemented by this coordinator. Inspect its requirements without starting a browser:
 
 ```sh
