@@ -36,7 +36,9 @@ module.exports = {
           return null;
         },
         admissionBrowserProcesses() {
-          const processes = recordOwnedBrowserProcesses();
+          const processes = process.platform === 'linux'
+            ? require('./linux-processes.cjs').recordOwnedBrowserProcesses()
+            : recordOwnedBrowserProcesses();
           writeFileSync(process.env.FLASHWRIGHT_CYPRESS_PROCESSES, JSON.stringify(processes, null, 2) + '\n');
           return processes.length;
         },
