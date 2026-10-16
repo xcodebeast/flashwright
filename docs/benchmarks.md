@@ -184,6 +184,19 @@ Current goal acceptance follows the [draft final-goal contract](../benchmarks/co
 
 Linux resource measurement is under development. The [policy and namespace checkpoint](../compatibility/evidence/linux-cgroup-policy-checkpoint-2026-10-16.json) verifies a bounded reader for visible ancestor restrictions and a namespace wrapper compatible with Bun.WebView's native Chrome launch. It retains the browser's storage/action differences and rejection for four adopted descendants. Cgroup CPU, terminal-wait CPU and sampled memory remain distinct observations; this checkpoint adds no comparative timing results or resource admission.
 
+For diagnostic Linux captures, `tools/linux_cgroup_capture.py` joins the declared input inventory, visible ancestor policies and native cgroup receipt. Its caller must first create a fresh delegated leaf with CPU/memory accounting, keep the supervisor outside that leaf, and own an independent outer deadline and service/group cleanup. Build `tools/linux-cgroup-command.c` as described in its header, then invoke the coordinator with absolute paths:
+
+```sh
+python3 -B tools/linux_cgroup_capture.py \
+  --leaf "$FRESH_CGROUP_LEAF" --collector "$NATIVE_COLLECTOR" \
+  --inputs "$CAPTURE_INPUT_REQUEST" --output "$FRESH_WORKBENCH_DIRECTORY" \
+  --timeout-ms 30000 -- "$BUN_EXECUTABLE" "$WORKLOAD_SCRIPT"
+```
+
+The input request uses the existing `CaptureContext.collect_inputs` schema described in SPECS S6. Output contains exclusive before/after snapshots, stdout/stderr, the unchanged native receipt and `capture.json`. Input/tool hashing happens outside the command interval. The original Python wait belongs to the collector; the native wait belongs to bubblewrap, which launches the declared runtime. Neither CPU receipt becomes a complete tree total. A coordinator exit of zero means the diagnostic evidence was captured: a workload exit of seven or a native timeout can still be recorded successfully. Read the separate wrapper exit, timeout, adoption and clean-teardown fields. Changed inputs/policies or a missing original wait reject the capture. Every receipt remains unadmitted for resources and performance; the caller must still stop its owned service and remove the original cgroups, including after rejected captures.
+
+The [integration checkpoint](../compatibility/evidence/linux-cgroup-capture-checkpoint-2026-10-16.json) retains 16 host tests, six final native controls and the earlier attempts. The browser smoke passes, while its fifteen adopted descendants remain a failed teardown condition. No comparative timing samples were collected.
+
 The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for its original five engines. Bun.WebView is declared but not yet implemented by this coordinator. Inspect its requirements without starting a browser:
 
 ```sh
