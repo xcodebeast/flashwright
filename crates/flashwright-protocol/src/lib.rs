@@ -4,6 +4,9 @@ mod admission;
 pub mod attachment;
 pub mod framing;
 pub mod messages;
+mod output_delivery;
+
+pub use output_delivery::{OutputAcknowledgement, OutputBarrier, OutputDelivery};
 
 pub use admission::{
     MINIMUM_DIALOG_PENDING_OPERATIONS, admits_operation, is_recovery_operation,

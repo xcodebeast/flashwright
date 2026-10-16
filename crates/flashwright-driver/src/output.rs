@@ -200,12 +200,16 @@ pub async fn write_output<Writer: AsyncWrite + Unpin>(
     output: DriverOutput,
     limits: &ResourceLimits,
 ) -> Result<OutputDisposition, FrameError> {
-    let message = match output {
+    let (message, acknowledgement) = match output {
         DriverOutput::Frame(frame) => {
             writer.write_frame(&frame).await?;
             return Ok(OutputDisposition::Continue);
         }
-        DriverOutput::Message(message) => message,
+        DriverOutput::Message(message) => (message, None),
+        DriverOutput::AcknowledgedMessage {
+            message,
+            acknowledgement,
+        } => (message, Some(acknowledgement)),
         DriverOutput::Attachment(_) => return Err(FrameError::InvalidAttachment),
     };
     let rejection = match &message {
@@ -224,6 +228,9 @@ pub async fn write_output<Writer: AsyncWrite + Unpin>(
         None => match EncodedFrame::encode(&message, limits.control_frame_bytes) {
             Ok(frame) => {
                 writer.write_frame(&frame).await?;
+                if let Some(acknowledgement) = acknowledgement {
+                    acknowledgement.complete();
+                }
                 return Ok(
                     if matches!(
                         message,
@@ -242,10 +249,14 @@ pub async fn write_output<Writer: AsyncWrite + Unpin>(
             Err(error) => return Err(error),
         },
     };
+    let error = resource_error(reason, InputDelivery::Uncertain, None);
+    if let Some(acknowledgement) = acknowledgement {
+        acknowledgement.reject(error.clone());
+    }
     writer
         .write(&DriverMessage::Error {
             request_id: None,
-            error: resource_error(reason, InputDelivery::Uncertain, None),
+            error,
         })
         .await?;
     Ok(OutputDisposition::CloseStream)
@@ -258,6 +269,126 @@ mod tests {
     use serde_json::json;
     use tokio::io::duplex;
     use tokio::sync::{mpsc, watch};
+
+    #[tokio::test]
+    async fn event_receipt_waits_for_the_complete_frame_not_writer_dequeue() {
+        let limits = ResourceLimits::default();
+        let (host, peer) = duplex(16);
+        let mut delivery = flashwright_protocol::OutputDelivery::default();
+        let acknowledgement = delivery.register().unwrap();
+        let mut barrier = Box::pin(delivery.pending().unwrap().wait());
+        let output = DriverOutput::AcknowledgedMessage {
+            message: DriverMessage::Event {
+                target: "page".into(),
+                event: "console".into(),
+                parameters: json!({"original":"x".repeat(2048)}),
+            },
+            acknowledgement,
+        };
+        let writer_limits = limits.clone();
+        let writer = tokio::spawn(async move {
+            write_output(
+                &mut FrameWriter::new(host, writer_limits.control_frame_bytes),
+                output,
+                &writer_limits,
+            )
+            .await
+        });
+        assert!(
+            tokio::time::timeout(std::time::Duration::from_millis(20), &mut barrier)
+                .await
+                .is_err()
+        );
+        let mut reader = FrameReader::new(peer, limits.control_frame_bytes);
+        let event: DriverMessage = reader.read().await.unwrap().unwrap();
+        let DriverMessage::Event { parameters, .. } = event else {
+            panic!("expected original event")
+        };
+        assert_eq!(parameters["original"], "x".repeat(2048));
+        assert_eq!(writer.await.unwrap().unwrap(), OutputDisposition::Continue);
+        barrier.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn rejected_event_wakes_owner_before_blocked_global_error_is_written() {
+        let limits = ResourceLimits {
+            control_frame_bytes: 512,
+            ..ResourceLimits::default()
+        };
+        let (host, peer) = duplex(16);
+        let mut delivery = flashwright_protocol::OutputDelivery::default();
+        let acknowledgement = delivery.register().unwrap();
+        let barrier = delivery.pending().unwrap();
+        let output = DriverOutput::AcknowledgedMessage {
+            message: DriverMessage::Event {
+                target: "page".into(),
+                event: "console".into(),
+                parameters: json!({"original": "x".repeat(1024)}),
+            },
+            acknowledgement,
+        };
+        let writer_limits = limits.clone();
+        let writer = tokio::spawn(async move {
+            write_output(
+                &mut FrameWriter::new(host, writer_limits.control_frame_bytes),
+                output,
+                &writer_limits,
+            )
+            .await
+        });
+        let error = tokio::time::timeout(std::time::Duration::from_secs(1), barrier.wait())
+            .await
+            .unwrap()
+            .unwrap_err();
+        assert_eq!(error.code, ErrorCode::ResourceLimit);
+        assert_eq!(error.method.as_ref(), "protocol.output");
+        assert!(!writer.is_finished());
+        let mut reader = FrameReader::new(peer, limits.control_frame_bytes);
+        let message: DriverMessage = reader.read().await.unwrap().unwrap();
+        let DriverMessage::Error {
+            request_id: None,
+            error: received,
+        } = message
+        else {
+            panic!("expected bounded global error")
+        };
+        assert_eq!(
+            serde_json::to_value(received).unwrap(),
+            serde_json::to_value(error).unwrap()
+        );
+        assert_eq!(
+            writer.await.unwrap().unwrap(),
+            OutputDisposition::CloseStream
+        );
+    }
+
+    #[tokio::test]
+    async fn failed_write_drops_its_receipt_and_wakes_the_event_owner() {
+        let limits = ResourceLimits::default();
+        let (host, peer) = duplex(16);
+        drop(peer);
+        let mut delivery = flashwright_protocol::OutputDelivery::default();
+        let acknowledgement = delivery.register().unwrap();
+        let barrier = delivery.pending().unwrap();
+        let output = DriverOutput::AcknowledgedMessage {
+            message: DriverMessage::Event {
+                target: "page".into(),
+                event: "close".into(),
+                parameters: serde_json::Value::Null,
+            },
+            acknowledgement,
+        };
+        assert!(
+            write_output(
+                &mut FrameWriter::new(host, limits.control_frame_bytes),
+                output,
+                &limits
+            )
+            .await
+            .is_err()
+        );
+        assert_eq!(barrier.wait().await.unwrap_err().code, ErrorCode::Protocol);
+    }
 
     #[tokio::test]
     async fn native_api_post_redirect_cookie_auth_and_binary_response_use_real_dispatch() {

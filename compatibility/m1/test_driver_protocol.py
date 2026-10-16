@@ -178,6 +178,48 @@ class DriverProtocolTests(OwnedDriverCase):
         self.assertNotEqual(self.driver.wait(timeout=8), 0)
         self.assert_resources_released()
 
+    def start_console_burst(self):
+        self.request("page.console.subscribe", {"page": self.page, "enabled": True})
+        self.request("page.evaluate", self.evaluation("42"))
+        command = self.command("page.evaluate", self.evaluation("(() => { for (let index = 0; index < 256; index++) console.log(index, 'x'.repeat(2048)); return 42; })()"), timeout=10000)
+        self.send(command)
+        self.assertTrue(select.select([self.driver.stdout], [], [], 5)[0], "event output never started")
+        return command
+
+    def test_finite_output_pause_preserves_every_event_before_the_following_reply(self):
+        command = self.start_console_burst()
+        # Fill the real stdout pipe; the 512 argument handles stay below their
+        # independent 4096-reference limit. No host reads during this finite pause.
+        time.sleep(0.5)
+        self.assertIsNone(self.driver.poll())
+        observed = []
+        while True:
+            length, = struct.unpack("<I", self.read_exact(4))
+            self.assertLessEqual(length, self.limits["controlFrameBytes"])
+            message = json.loads(self.read_exact(length))
+            if message["kind"] != "event":
+                break
+            self.assertEqual(message["target"], self.page)
+            self.assertEqual(message["event"], "console")
+            arguments = json.loads(message["parameters"]["consoleJson"])["args"]
+            observed.append(arguments[0]["value"])
+            self.assertEqual(arguments[1]["value"], "x" * 2048)
+        self.assertEqual(observed, list(range(256)))
+        self.assertEqual(message["requestId"], command["requestId"])
+        self.assertEqual(message["kind"], "result")
+        self.assertEqual(message["value"], {"kind": "number", "value": 42})
+        self.assertEqual(self.request("page.evaluate", self.evaluation("6 * 7")), {"kind": "number", "value": 42})
+
+    def test_host_eof_cleans_up_while_event_output_is_blocked(self):
+        self.start_console_burst()
+        time.sleep(0.5)
+        self.assertIsNone(self.driver.poll())
+        # Never drain stdout. EOF must interrupt the driver independently of the
+        # paused CDP reader and complete original guardian/profile cleanup.
+        self.driver.stdin.close()
+        self.assertEqual(self.driver.wait(timeout=8), 0)
+        self.assert_resources_released()
+
     def test_cancelled_allocation_with_unresponsive_browser_reports_cleanup(self):
         os.kill(self.browser_process, signal.SIGSTOP)
         self.send(self.command("browser.newContext", {"browser": self.browser}, timeout=100))
