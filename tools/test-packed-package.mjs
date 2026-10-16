@@ -36,6 +36,13 @@ server.listen(0, '127.0.0.1');
 await once(server, 'listening');
 const browser = await chromium.launch({ slowMo: 0 });
 try {
+  const media = await browser.newContext({ colorScheme: 'dark', reducedMotion: 'reduce', forcedColors: 'active', contrast: 'more' });
+  try {
+    const mediaPage = await media.newPage();
+    assert.deepEqual(await mediaPage.evaluate(() => [matchMedia('(prefers-color-scheme:dark)').matches,
+      matchMedia('(prefers-reduced-motion:reduce)').matches, matchMedia('(forced-colors:active)').matches,
+      matchMedia('(prefers-contrast:more)').matches]), [true, true, true, true]);
+  } finally { await media.close(); }
   const disabled = await browser.newContext({ javaScriptEnabled: false, ignoreHTTPSErrors: true });
   try {
     const disabledPage = await disabled.newPage();
@@ -221,7 +228,9 @@ const typeBody = `
 async function example(): Promise<number> {
   const browser: Browser = await chromium.launch({ slowMo: 0 });
   try {
-    const context: BrowserContext = await browser.newContext({ ignoreHTTPSErrors: true, javaScriptEnabled: false, acceptDownloads: true });
+    const context: BrowserContext = await browser.newContext({ ignoreHTTPSErrors: true, javaScriptEnabled: false, acceptDownloads: true, colorScheme: 'dark', reducedMotion: null, forcedColors: 'active', contrast: 'more' });
+    // @ts-expect-error Media preferences preserve their finite value types.
+    await browser.newContext({ contrast: 'high' });
     // @ts-expect-error Context settings preserve boolean option types.
     await browser.newContext({ javaScriptEnabled: 'false' });
     // @ts-expect-error Download policy preserves boolean option types.

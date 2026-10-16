@@ -3,18 +3,20 @@
   "sources": [
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/chromium/crPage.ts",
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/server/page.ts",
+    "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright-core/src/client/browserContext.ts",
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts"
   ],
   "distributionPath": "node_modules/playwright-core/lib/coreBundle.js",
   "distributionSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5",
   "retainedExtract": "compatibility/upstream/context-settings.source.txt",
-  "extractSha256": "5dcb0eb9511b616a622f528dfb3e3a384cdd35bcf00b29f5208963329ba0eb1f",
+  "extractSha256": "c329abb048a701f57e59e6c23db55b51311f8189c2fbf1be40e60a16f5cf2673",
   "implementation": {
-    "crates/flashwright-engine/src/context_settings.rs": "ab527e711ac51c364fcc4072c613913730b180d36f6b0a5046b5905a8cbb3cc6",
-    "crates/flashwright-engine/src/lib.rs": "1c89962288023ba48f844d68619e919d89ce13015ed5a8a658629ca4cc1ec3d1",
-    "packages/flashwright-core/src/context-settings.ts": "0b987c84983484eef9b4c03ca279862e1c597585479b594e36c6191b3f55eb5f",
-    "packages/flashwright-core/src/index.ts": "bc7d1ffabf7e31c024ffa7380f6c3525c0a072910b3104e994a53f6fcf0bfed4",
-    "packages/flashwright-runner/src/index.ts": "0f55408a83860d97070ef2793fab1d871be5bae01629b78cd77b3404d0e1e8b5"
+    "crates/flashwright-engine/src/context_settings.rs": "9f6eaa9e2549c29f2266a3f795cdd6208b1b6aaecf466453f4770c5f2ebb8216",
+    "crates/flashwright-engine/src/lib.rs": "967eb0abbdc84e2bd1b8e23e1ebddd2ef56a0028b4070935342e6870e5ebaa4f",
+    "crates/flashwright-engine/src/renderer_setup.rs": "ebb8c2a080bf6d2df68a39bcbf35db9fe5461d398bf1c993867a1325c3a79267",
+    "packages/flashwright-core/src/context-settings.ts": "3c53b5ae30cf5edb495f9221a531868cd7ecf092692055a689fdc419f7440254",
+    "packages/flashwright-core/src/index.ts": "3ee552ea2ea8d948e6c3ba54f9c7f5c404ed6a0f8f81375e7c909a08b239f3a0",
+    "packages/flashwright-runner/src/index.ts": "391c3d81e3216b270bc6843de46017886ff9297ece4c55d7310f780b28f6642c"
   },
   "relationship": "Independent native context policy follows the pinned opt-in certificate bypass, opt-out JavaScript execution and explicit light/normal-accessibility media defaults before public page use. Private storage pages retain independent execution settings.",
   "changes": [
@@ -22,7 +24,7 @@
     "Apply sequential owned initialization commands under the existing cancellation and allocation cleanup contract.",
     "Forward runner settings through the canonical context-default boundary; explicit undefined/false/true retains precedence.",
     "Explicit slowMo:0 selects ordinary execution; nonzero values remain typed unsupported.",
-    "Set default media features before user init scripts so operating-system dark and higher-contrast preferences do not change application CSS. Explicit media overrides remain unsupported."
+    "Set default media features before user init scripts so operating-system dark and higher-contrast preferences do not change application CSS. Validate and apply explicit context media preferences, preserving null as environment inheritance; page-level emulateMedia remains unsupported."
   ],
   "license": "Apache-2.0",
   "licensePath": "compatibility/upstream/LICENSE.playwright",

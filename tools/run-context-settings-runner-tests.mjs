@@ -9,7 +9,7 @@ import { startContextSettingsFixture } from './context-settings-fixture.mjs';
 import { identifyBrowser } from './browser-identity.mjs';
 import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 
-const destination = resolve(`compatibility/evidence/context-settings-runner-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
+const destination = resolve(process.argv[2] ?? `compatibility/evidence/context-settings-runner-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(destination, { recursive: true });
 const hash = value => createHash('sha256').update(value).digest('hex');
 const driver = process.env.FLASHWRIGHT_DRIVER_PATH ?? resolve('target/debug/flashwright-driver');
@@ -37,7 +37,7 @@ try {
     const results = JSON.parse(await readFile(resultPath, 'utf8'));
     report.outcomes[engine] = { code, results };
     assert.equal(code, 0, `${engine} context settings must pass`);
-    assert.equal(results.stats.expected, 6);
+    assert.equal(results.stats.expected, 9);
   }
   assert.deepEqual(await sourceManifest(), report.sources);
   assert.equal(hash(await readFile(driver)), report.driverSha256);
