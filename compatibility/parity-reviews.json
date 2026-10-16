@@ -1746,8 +1746,8 @@
       "title": "Nine additional locator assertions",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence.",
-      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. The combined artifact integration passes all 179 macOS core groups. Rendered child-frame fallback composition, native Linux and release acceptance remain open.",
+      "scope": "toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence. Selected remote class/CSS/ID/value/role/accessibility predicates pass the native Linux full-Chrome Bun/Node 22 differential; this does not promote additional argument or option combinations.",
+      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. The combined artifact integration passes all 179 macOS core groups. Rendered child-frame fallback composition and release acceptance remain open. Native Linux coverage is limited to the separately recorded selected remote predicates and existing assertion regression.",
       "defaults": "Recorded cases include configured/per-call timeouts and pinned predicate defaults; this review does not promote every declaration default.",
       "differences": [
         "Retained matcher accessibility diagnostics truncate explicitly after16384 UTF-16 units; complete predicate inputs remain unchanged."
@@ -1756,6 +1756,18 @@
         {
           "path": "packages/flashwright-runner/src/matchers.ts",
           "sha256": "49df225963dd9cd83832e79a19956bedcd493cc61a8fa654f7a787bca33195b6"
+        },
+        {
+          "path": "crates/flashwright-engine/src/locators.rs",
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
+        },
+        {
+          "path": "crates/flashwright-engine/src/assertions.rs",
+          "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
         }
       ],
       "evidence": [
@@ -1782,6 +1794,11 @@
         {
           "path": "compatibility/evidence/artifact-integration-checkpoint-2026-10-10.json",
           "sha256": "0d8f66e3209d8350b4509c05274d9ede010e686cd672ef50938dd2f80b5705b3",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
           "kind": "conformance"
         }
       ],
@@ -1829,8 +1846,8 @@
       "title": "Browser, context, page and frame ownership",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls. The owner-close checkpoint verifies sibling, subscription and registry retirement after throwing or removed close listeners, preserving the first thrown value and healthy event order. The engine-shutdown checkpoint verifies that final engine release drains terminal replies, unfinished input streams and queued writes without replacing original operation failures.",
-      "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation slice is verified; remote input/network/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls. The owner-close checkpoint verifies sibling, subscription and registry retirement after throwing or removed close listeners, preserving the first thrown value and healthy event order. The engine-shutdown checkpoint verifies that final engine release drains terminal replies, unfinished input streams and queued writes without replacing original operation failures. Selected remote locator operations now have native Linux Bun/Node 22 replacement and detachment coverage. A blocked child renderer cannot prevent independent parent locator initialization, and context closure retires the original unbounded read.",
+      "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation and selected locator read/assertion slices are verified; remote input/network/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -1861,6 +1878,18 @@
         {
           "path": "packages/flashwright-core/src/client.ts",
           "sha256": "fff0d9d4ad1c7c9c2ac6b67346ae11eba181f056df801773788ba9fd58ba979c"
+        },
+        {
+          "path": "crates/flashwright-engine/src/locators.rs",
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
+        },
+        {
+          "path": "crates/flashwright-engine/src/assertions.rs",
+          "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
         }
       ],
       "evidence": [
@@ -1942,6 +1971,11 @@
         {
           "path": "compatibility/evidence/engine-shutdown-drain-checkpoint-2026-10-12.json",
           "sha256": "a4d347e475432d23e389e296ebc49d9f5f8315ba5a6c57ac3a00067e5e0bb32f",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
           "kind": "conformance"
         }
       ],
@@ -2117,8 +2151,8 @@
       "title": "Locator construction, reads and resolution",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "CSS/text/role/label/test-ID and other listed Page builders, chaining/filtering/composition, live reads, state checks, selector waits and original-element handle resolution have shared fixture coverage.",
-      "limitations": "Only explicitly listed Frame and nested Locator builders are reviewed here. Open shadow DOM and tested same-process child frames are covered; closed shadow DOM, general cross-process frames and unlisted options are not.",
+      "scope": "CSS/text/role/label/test-ID and other listed Page builders, chaining/filtering/composition, live reads, state checks, selector waits and original-element handle resolution have shared fixture coverage. Selected remote read/state queries and selector waits now pass the native Linux full-Chrome differential on Bun and Node 22, plus fresh Bun packed ESM/CommonJS consumers.",
+      "limitations": "Open shadow DOM, tested same-process child frames and the separately recorded remote read/wait subset are covered. Closed shadow DOM, general remote input/artifact behavior and unlisted options remain outside this subset.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -2133,6 +2167,18 @@
         {
           "path": "packages/flashwright-core/src/frame.ts",
           "sha256": "93d0c915163395adb8bbbd50b36dfa6052c68db7230e36271b5ac4716654c74e"
+        },
+        {
+          "path": "crates/flashwright-engine/src/locators.rs",
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
+        },
+        {
+          "path": "crates/flashwright-engine/src/assertions.rs",
+          "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
         }
       ],
       "evidence": [
@@ -2155,6 +2201,11 @@
           "path": "tools/test-packed-package.mjs",
           "sha256": "c0903b320741a779a8b947a0e2910d51c45db268bf69f2af69cb0ad1c6ed34f6",
           "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -2461,7 +2512,7 @@
       "implementation": [
         {
           "path": "crates/flashwright-engine/src/locators.rs",
-          "sha256": "d9360e27adc063c767c274f422ce1d51a9b0713a46799c00bd16328449c41a9c"
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
         },
         {
           "path": "crates/flashwright-engine/src/locators/traced_action.rs",
@@ -2515,6 +2566,11 @@
         {
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
           "kind": "conformance"
         }
       ],
@@ -2702,8 +2758,8 @@
       "title": "Lazy FrameLocator paths",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Page/Frame/Locator frameLocator, Locator.contentFrame and all FrameLocator descriptor methods. The retained 212-check differential exercises strictness, absence, nesting, same-frame composite normalization, native input/upload, child main-world evaluation, captured targets, whole-path retries, closure and traced forms. Packed consumers exercise runtime exports and declarations. A separate full-Chrome renderer-ownership checkpoint exercises selected remote selector-to-handle and element evaluation paths, renderer return and no callback replay.",
-      "limitations": "The broad 212-check slice covers same-process frames on native macOS arm64/Bun 1.4.2/Chromium 148. Selected remote evaluation paths pass Bun and Node 22/24 checks on full Chrome; stock headless shell did not place that fixture in a remote renderer. Remote input, general locator reads/assertions, network delivery and artifacts, exhaustive getBy option/value combinations, native Linux and release acceptance remain open. Method coverage is an experimental subset; only separately listed options are promoted. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "scope": "Page/Frame/Locator frameLocator, Locator.contentFrame and all FrameLocator descriptor methods. The retained 212-check differential exercises strictness, absence, nesting, same-frame composite normalization, native input/upload, child main-world evaluation, captured targets, whole-path retries, closure and traced forms. Packed consumers exercise runtime exports and declarations. A separate full-Chrome renderer-ownership checkpoint exercises selected remote selector-to-handle and element evaluation paths, renderer return and no callback replay. The remote locator checkpoint adds selected remote reads, waits and assertions, nested local/remote paths, renderer return and replacement on native Linux x64 with full Chrome, Bun and Node 22. The existing 212-check differential and trace checks also pass on Linux.",
+      "limitations": "The broad 212-check slice covers same-process frames on native macOS arm64/Bun 1.4.2/Chromium 148. Selected remote evaluation paths pass Bun and Node 22/24 checks on full Chrome; stock headless shell did not place that fixture in a remote renderer. Remote input, network delivery and artifacts, exhaustive getBy option/value combinations and release acceptance remain open. Native Linux now has the separately recorded read/assertion and 212-check development coverage; other runtime/platform combinations retain their original evidence scope. Method coverage is an experimental subset; only separately listed options are promoted. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
       "defaults": "Descriptors are lazy and retain their original root Frame. Actions/assertions resolve iframe components strictly; count/list reads use the pinned first iframe match. Page/Frame selector calls retain per-call strictness. Missing iframe behavior is method-specific. Each eligible retry re-resolves the whole path; captured callbacks and uncertain input are never replayed.",
       "differences": [
         "Frame-path assertions use ordinary host retry intervals to observe changing ancestor selectors; known-frame assertions retain resident observation."
@@ -2727,11 +2783,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/locators.rs",
-          "sha256": "d9360e27adc063c767c274f422ce1d51a9b0713a46799c00bd16328449c41a9c"
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
         },
         {
           "path": "crates/flashwright-engine/src/assertions.rs",
-          "sha256": "fb4bf271dab51be4b6466939868358c6e85c729ff10665222fe133f3fbb626c3"
+          "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21"
         },
         {
           "path": "crates/flashwright-engine/src/element_resolution.rs",
@@ -2776,6 +2832,10 @@
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
           "sha256": "ebb8c2a080bf6d2df68a39bcbf35db9fe5461d398bf1c993867a1325c3a79267"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
         }
       ],
       "evidence": [
@@ -2802,6 +2862,11 @@
         {
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
           "kind": "conformance"
         }
       ],
@@ -3511,7 +3576,7 @@
       "title": "Core locator and page assertions",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Text/count/value/attribute assertions, visible/hidden/enabled/disabled/editable/attached/empty/focused/checked states, page title and URL assertions have retry, negation, timeout and native-runner fixture evidence.",
+      "scope": "Text/count/value/attribute assertions, visible/hidden/enabled/disabled/editable/attached/empty/focused/checked states, page title and URL assertions have retry, negation, timeout and native-runner fixture evidence. Selected remote locator predicates, negation, delayed conditions, original timeout observations and detachment pass the native Linux full-Chrome Bun/Node 22 differential and fresh Bun packed consumers. Page title/URL coverage is unchanged.",
       "limitations": "toHaveURL supports strings/regular expressions; its callback form rejects. Unlisted argument/default combinations and inherited generic matcher behavior remain unverified.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
@@ -3519,6 +3584,18 @@
         {
           "path": "packages/flashwright-runner/src/matchers.ts",
           "sha256": "49df225963dd9cd83832e79a19956bedcd493cc61a8fa654f7a787bca33195b6"
+        },
+        {
+          "path": "crates/flashwright-engine/src/locators.rs",
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
+        },
+        {
+          "path": "crates/flashwright-engine/src/assertions.rs",
+          "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
         }
       ],
       "evidence": [
@@ -3531,6 +3608,11 @@
           "path": "compatibility/m2/assertions.mjs",
           "sha256": "6c1da1f141f24fbd1cbbb24a2ad77e4e7f5b36858b97eb8eb32c2a82c6e3104d",
           "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -3609,8 +3691,8 @@
       "title": "ARIA snapshot assertions",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Page and Locator inline/file ARIA assertions retain role-tree predicates, same-process frame scoping, negation, retries, configured child matching, soft failures and tested baseline policies. Three runtime gates each pass 25 conformance checks.",
-      "limitations": "Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Child-frame failure-context composition and out-of-process frames remain unsupported; public default ariaSnapshot and merged artifact acceptance have separate evidence. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "scope": "Page and Locator inline/file ARIA assertions retain role-tree predicates, same-process frame scoping, negation, retries, configured child matching, soft failures and tested baseline policies. Three runtime gates each pass 25 conformance checks. Actual pinned and native runner tests additionally verify remote inline ARIA predicates, negation, delayed retry and original mismatch on native Linux full Chrome with Bun and Node 22.",
+      "limitations": "Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Child-frame failure-context composition and public remote ariaSnapshot composition remain unsupported. Remote inline ARIA matching has the separate Linux checkpoint; it does not newly admit remote file-baseline/update options. Public default ariaSnapshot and merged artifact acceptance have separate evidence. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
       "defaults": "Pinned template parsing and runner snapshot naming/update configuration; original assertion timeout and a 100000 UTF-16-unit limit per template or generated snapshot string. Ordinary mismatch diagnostics remain bounded.",
       "differences": [
         "Bun inline generation/update policies fail with UnsupportedFeatureError before browser dispatch instead of producing the pinned reference header-only patch.",
@@ -3643,7 +3725,15 @@
         },
         {
           "path": "crates/flashwright-engine/src/assertions.rs",
-          "sha256": "fb4bf271dab51be4b6466939868358c6e85c729ff10665222fe133f3fbb626c3"
+          "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21"
+        },
+        {
+          "path": "crates/flashwright-engine/src/locators.rs",
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
         }
       ],
       "evidence": [
@@ -3660,6 +3750,11 @@
         {
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
           "kind": "conformance"
         }
       ],
@@ -3705,7 +3800,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/locators.rs",
-          "sha256": "d9360e27adc063c767c274f422ce1d51a9b0713a46799c00bd16328449c41a9c"
+          "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591"
         },
         {
           "path": "packages/flashwright-core/src/aria-snapshot.ts",
@@ -3763,6 +3858,11 @@
         {
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-locator-read-checkpoint-2026-10-16.json",
+          "sha256": "7244a57dec28029883dd4a08cdfaff3080dc4bfe69aae4b91060bcd85960c902",
           "kind": "conformance"
         }
       ],

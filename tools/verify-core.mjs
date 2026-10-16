@@ -172,6 +172,10 @@ const commands = [
   ['python3', 'tools/verify-selector-action-traces.py', join(destination, 'selector-actions')],
   ['python3', 'tools/watchdog.py', '--timeout', '300', '--report-directory', join(destination, 'frame-locator-resources'), '--', process.execPath, 'compatibility/m2/frame-locators.mjs', join(destination, 'frame-locators')],
   ['python3', 'tools/verify-frame-locator-traces.py', join(destination, 'frame-locators')],
+  ...(browser.distribution === 'full-chromium' ? [
+    ['python3', 'tools/watchdog.py', '--timeout', '90', '--report-directory', join(destination, 'remote-locator-resources'), '--', process.execPath, 'compatibility/m2/remote-locator-reads.mjs', join(destination, 'remote-locator-reads')],
+    ['python3', 'tools/watchdog.py', '--timeout', '180', '--report-directory', join(destination, 'packed-remote-locator-resources'), '--', process.execPath, 'tools/test-packed-remote-locators.mjs', join(destination, 'packed-remote-locators')],
+  ] : []),
   ['python3', 'tools/watchdog.py', '--timeout', '60', '--report-directory', join(destination, 'input-retry-resources'), '--', process.execPath, 'tools/test-input-retry-snapshots.mjs', join(destination, 'input-retry-snapshots')],
   [process.execPath, 'node_modules/typescript/bin/tsc', '--noEmit', '--project', 'compatibility/m2/context-settings-runner/tsconfig.json'],
   [process.execPath, 'tools/test-device-metadata.mjs'],

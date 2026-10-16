@@ -255,7 +255,10 @@ impl Engine {
             "returnByValue": true, "awaitPromise": true,
         }), Some(&realm.context.session_identifier))?;
         match operation
-            .wait(page.state.while_alive(METHOD, command.response()))
+            .wait(
+                page.state
+                    .while_execution_context(&realm.context, command.response()),
+            )
             .await
         {
             Ok(result) => runtime_value(result),
@@ -325,7 +328,7 @@ async fn cancel_resident_condition(
     token: &str,
     mut original: Command,
 ) -> (Option<Value>, &'static str) {
-    let result = page.state.while_alive(METHOD, async {
+    let result = page.state.while_execution_context(&realm.context, async {
         let cancellation = browser.connection.call("Runtime.callFunctionOn", json!({
             "uniqueContextId": realm.context.unique_identifier,
             "functionDeclaration": "function(token) { return globalThis.__flashwrightLocatorRuntime.cancelAssertion(token); }",

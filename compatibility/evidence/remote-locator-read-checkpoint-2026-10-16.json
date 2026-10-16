@@ -1,0 +1,1170 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-16",
+  "status": "verified-experimental-remote-locator-reads-and-assertions",
+  "baseCommit": "b2c1323502d9b38a31f71b6d55c0804c53f2fc74",
+  "scope": "Focused native Linux x64 functionality on full Chrome for Testing, Bun 1.4.2 and Node 22.22.0. Selected remote locator reads, waits and assertions; no full-core, release or performance admission.",
+  "referenceVersion": "1.60.0",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "driverSha256": "3c4c9e691cdde6ab7105144cad54db62a97eab8d7c6ea6588b32cfa0d342d0e4",
+  "implementationSha256": {
+    "crates/flashwright-engine/src/locators.rs": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591",
+    "crates/flashwright-engine/src/assertions.rs": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21",
+    "crates/flashwright-engine/src/page_state.rs": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc"
+  },
+  "fixtureSha256": {
+    "compatibility/m2/remote-locator-reads.mjs": "873a4fdbe028866522dd6890c0782ee4e9fd20e83d1e190d04f497d6093d588f",
+    "tools/test-packed-remote-locators.mjs": "5a1ab21f303e42e604d91a2eff6e921382e2aa8ffac6e42ace983ab6f9b2e7ad",
+    "tools/verify-core.mjs": "82286c69333186ab638dc49154837d61a2eb5cbd3ae68653e79a223578bde52e"
+  },
+  "contract": {
+    "selection": "Read/state operations and supported assertions address the selected ready remote renderer and exact isolated execution context. Lazy paths resolve from the original owning Frame under the original operation deadline.",
+    "lifetime": "Pending reads, assertions and resident cancellation observe original-world destruction. Detached direct Frames cannot bind replacement frames; lazy paths may resolve replacements. Submitted callbacks are not replayed.",
+    "initialization": "Per-original-main-world initialization gates serialize shared setup. The page-wide realm cache is released before browser commands. A blocked child cannot hold unrelated parent initialization; publication rechecks original document ownership.",
+    "cleanup": "Resident cancellation retains its original token, realm and command. The 50 ms foreground diagnostic grace does not bound background cleanup while the original renderer remains alive and blocked."
+  },
+  "differentials": [
+    {
+      "runtime": "bun 1.4.2",
+      "status": "passed",
+      "sharedGroupsPerEngine": 7,
+      "groups": [
+        "remote reads, booleans, strictness and missing-element deadline",
+        "nested local and remote frame paths",
+        "shared remote assertion predicates and negation",
+        "delayed resident assertion, selector waits and original timeout observation",
+        "lazy path resolves a replacement iframe without reusing the detached Frame",
+        "pending direct-frame assertion follows renderer return; lazy path follows remote successor",
+        "original pending remote assertion retires on detachment while parent remains usable"
+      ],
+      "actualRemotePlacementBothEngines": true,
+      "blockedChildSetupParentRead": "passed with original child Page.createIsolatedWorld still pending; context closure retired the original unbounded read",
+      "runnerAria": [
+        {
+          "engine": "playwright",
+          "passed": 1,
+          "retries": 0,
+          "skipped": 0,
+          "unexpected": 0,
+          "specSha256": "a3d3b3bd75976d24f9ba51a9175a5660077e93e141f1aadd8b1217d98d55b951",
+          "configSha256": "fdf4ed4b5241a294599fe43ba672507955dddac329df83feadbd7b489c9f1c5b"
+        },
+        {
+          "engine": "flashwright",
+          "passed": 1,
+          "retries": 0,
+          "skipped": 0,
+          "unexpected": 0,
+          "specSha256": "294e66045d2ba6bb7decc543cd9ee1c0f41ae25b3e71a0ee56eafe47e94cbdf0",
+          "configSha256": "cd475997fdc210d12f8ab12221ec29c0cbd41f12533388c1c01f39c06b5509a0"
+        }
+      ],
+      "sourceEntriesUnchanged": 1237,
+      "originalReport": {
+        "path": "workbench/remote-locator-read-001/run-007/report.json",
+        "sha256": "fe6022322882843ae3abd04d8bf4a648aa6e9d5ac37707b3a39586b13db506c0",
+        "bytes": 153772
+      }
+    },
+    {
+      "runtime": "v22.22.0",
+      "status": "passed",
+      "sharedGroupsPerEngine": 7,
+      "groups": [
+        "remote reads, booleans, strictness and missing-element deadline",
+        "nested local and remote frame paths",
+        "shared remote assertion predicates and negation",
+        "delayed resident assertion, selector waits and original timeout observation",
+        "lazy path resolves a replacement iframe without reusing the detached Frame",
+        "pending direct-frame assertion follows renderer return; lazy path follows remote successor",
+        "original pending remote assertion retires on detachment while parent remains usable"
+      ],
+      "actualRemotePlacementBothEngines": true,
+      "blockedChildSetupParentRead": "passed with original child Page.createIsolatedWorld still pending; context closure retired the original unbounded read",
+      "runnerAria": [
+        {
+          "engine": "playwright",
+          "passed": 1,
+          "retries": 0,
+          "skipped": 0,
+          "unexpected": 0,
+          "specSha256": "400fe3cc5e6c5a7b5b0570b0e14ac1fe6e2b4678d55ea0b79aef0bfe62f9aa26",
+          "configSha256": "073f4b2e44521d0d6e883f6b55ab1f780519f19cddda83cb8b915573c2c6019e"
+        },
+        {
+          "engine": "flashwright",
+          "passed": 1,
+          "retries": 0,
+          "skipped": 0,
+          "unexpected": 0,
+          "specSha256": "49a4cbd19a716577d40fe2683a97f93b515ddebe7c3df933a839307096557911",
+          "configSha256": "7a15a829e284dfc194c62bdbdeffbbc88885097d23520dbbb65ac39be006b6ea"
+        }
+      ],
+      "sourceEntriesUnchanged": 1237,
+      "originalReport": {
+        "path": "workbench/remote-locator-read-001/run-node22/report.json",
+        "sha256": "7d31bb1e3837289a76412c5705d65ac3070bfc53e3e027099b0ec601ab68ab75",
+        "bytes": 153782
+      }
+    }
+  ],
+  "packedConsumer": {
+    "runtime": "bun 1.4.2",
+    "outcomes": [
+      {
+        "format": "esm",
+        "remotePlacementGuard": true,
+        "reads": 3,
+        "assertions": 2
+      },
+      {
+        "format": "commonjs",
+        "remotePlacementGuard": true,
+        "reads": 3,
+        "assertions": 2
+      }
+    ],
+    "cleanup": "passed",
+    "sourceEntriesUnchanged": 1238,
+    "scope": "Fresh Bun-installed ESM/CommonJS library and matcher packages, explicit development driver; platform package acquisition is not tested.",
+    "archives": {
+      "flashwright-core": "8dcbeaad924b735d9949910c00e2bc9c0d36e6703e44b08a06ea10a68a70efff",
+      "flashwright": "18e325290bd6abc76bfabdd62bc9bfbb3b1aa9af95aa1499fa592cb76447dc1b",
+      "flashwright-runner": "2d34c7dec605a2f0bd3aeccbd8700d4ff69c0f1a1334e3f27ae63b53c6a574ff",
+      "flashwright-test": "d42f27e6ae2730b5a1fadf96b25f2ccc9421913dcee95dca3f8f43f9831b3d31"
+    },
+    "originalReport": {
+      "path": "workbench/remote-locator-read-001/packed-002/report.json",
+      "sha256": "51041ed2101ea8efd7e9cfb2a6482d7271766e92778e91f49747ef1442dc7a72",
+      "bytes": 153000
+    },
+    "cleanupReceipt": {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/cleanup-receipt.json",
+      "sha256": "41ec7f817cf4989f8f529d7b2b72e3d118b4c946885e24a7278b7f6bc68b0eb1",
+      "bytes": 7486
+    },
+    "priorPassedAttempt": "packed/report.json used the earlier producer. packed-002 verifies the producer correction that preserves completed verification if cleanup fails."
+  },
+  "regressions": {
+    "rust": {
+      "passed": 510,
+      "failed": 0,
+      "ignored": 1
+    },
+    "clippyWorkspaceAllTargetsDenyWarnings": "passed",
+    "legacyLocators": "passed both engines after correcting the private mount wrapper",
+    "assertions": "passed both engines",
+    "frameLocatorsSharedChecks": 212,
+    "frameLocatorTraces": "passed",
+    "remoteEvaluationSharedGroupsPerEngine": 8,
+    "remoteEvaluationCandidateBoundaryControls": 9,
+    "remotePublicAriaRejection": "passed with actual remote placement",
+    "sourceEntriesUnchangedDuringSequencedRegressions": 1238,
+    "sharedInitializationRegressions": {
+      "selectorActions": "137 checks passed",
+      "selectorActionTraces": "passed",
+      "publicDefaultAriaSnapshots": "passed",
+      "sourceEntriesUnchanged": 1239
+    }
+  },
+  "attempts": [
+    {
+      "id": "run-001",
+      "exitCode": 1,
+      "classification": "Harness import rejected duplicate pinned test-runner copies before browser launch."
+    },
+    {
+      "id": "run-002",
+      "exitCode": 1,
+      "classification": "Reference passed the first five shared groups; harness incorrectly required a detached word in the early-detach matcher error. Corrected to verify frame detachment and bounded rejection."
+    },
+    {
+      "id": "run-003",
+      "exitCode": 0,
+      "classification": "Initial six shared groups passed both engines before the blocked-child control was added."
+    },
+    {
+      "id": "run-004",
+      "exitCode": 1,
+      "classification": "Real engine defect: blocked child initialization held the page-wide realm lock and parent read timed out. Original binary and sources retained."
+    },
+    {
+      "id": "run-005",
+      "exitCode": 0,
+      "classification": "Same blocked-child fixture passed after per-world initialization gates and short cache locking."
+    },
+    {
+      "id": "run-006",
+      "exitCode": 1,
+      "classification": "Harness tried the ARIA matcher outside a test runner; first two reference groups passed. Corrected by running actual generated tests through each runner."
+    },
+    {
+      "id": "run-007",
+      "exitCode": 0,
+      "classification": "Final Bun differential, lifecycle and actual runner coverage passed."
+    },
+    {
+      "id": "run-node22",
+      "exitCode": 0,
+      "classification": "Final Node 22 differential, lifecycle and actual runner coverage passed."
+    },
+    {
+      "id": "legacy-locators",
+      "exitCode": 134,
+      "classification": "Bun aborted before fixture/browser execution in an incomplete private bubblewrap environment. Corrected /dev and /proc mounts; original failure retained."
+    },
+    {
+      "id": "legacy-locators-002",
+      "exitCode": 0,
+      "classification": "Original locator regression passed with corrected private mounts."
+    }
+  ],
+  "originalResourceReceipts": [
+    {
+      "path": "workbench/remote-locator-read-001/resources-001.json",
+      "sha256": "5084d00cd5fbdcc8253fafebecf8f4a1a5bed462c7aab1ed259bb40b4a7b772a",
+      "bytes": 4468,
+      "exitCode": 1,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-002.json",
+      "sha256": "751e188a8907b765dda024af27fa924e977be17fcf468dfc0438329be061c161",
+      "bytes": 29950,
+      "exitCode": 1,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-003.json",
+      "sha256": "8ee70f7f84442720736eb2d0341a901108c2f99a452bb7849fa4966bd3c065ac",
+      "bytes": 55090,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-004.json",
+      "sha256": "adc99b62073ceb9e4d3a2451b662cd3c17a81fdd5df1e437348b72c036c3e640",
+      "bytes": 78377,
+      "exitCode": 1,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-005.json",
+      "sha256": "8c13c67f6a1d3614ca5265d563537bafdf7ffb2242f6074a098ef7bf865be45c",
+      "bytes": 65911,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-006.json",
+      "sha256": "87a5f92937d4e6f734e7f0454dfbf6a0bcec6f4537df226b53c2c036d38cf9a7",
+      "bytes": 22132,
+      "exitCode": 1,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-007.json",
+      "sha256": "4bc7db0888f759537132d5597bc9f85363894a50ea77b4b831f5bc3b657f5253",
+      "bytes": 105736,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-assertions.json",
+      "sha256": "76cdcef5a02b1f39cf09f3a1cb1c8dd08c4d71b5e1ad917a9959436d790d6182",
+      "bytes": 105519,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-frame-locators.json",
+      "sha256": "9183e3772eb34dfc51adaa778e75a4f1e87a847ff984c40ebd8e69bb398a6754",
+      "bytes": 664718,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-frame-traces.json",
+      "sha256": "891549ddb02d38954dbcd7e44698ae151b717d5eb8c078b7e695c2d63d935996",
+      "bytes": 4500,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-legacy-locators-002.json",
+      "sha256": "b310858d8843c41875282d14429a9037e64a23153b6a55112af0ea32a753961e",
+      "bytes": 45040,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-legacy-locators.json",
+      "sha256": "add0b28e778ff7bb3281a4d600658ff84599397272833fe2e755aa431a3e269d",
+      "bytes": 37213,
+      "exitCode": 134,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-node22.json",
+      "sha256": "55023a76f75612f515e246e652dde078d6faf34f9258bd0fb5625afc7946a4de",
+      "bytes": 109640,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-packed-002.json",
+      "sha256": "6c33c29cccfa662b42b70cd98be9aa40a9937f5d5469484c893abc66055cc58f",
+      "bytes": 38204,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-packed.json",
+      "sha256": "e1a08f6bd5ae4c078f68c10af5880aaffdaa4d796ea02b0453795683e0261ca6",
+      "bytes": 38439,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-public-aria.json",
+      "sha256": "9826ccf88820b3d0198516d8c70e205db82fc731fb8910aa0c6f97a9659a3539",
+      "bytes": 187706,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-remote-aria-rejection.json",
+      "sha256": "fd7418e490a902ee2d8889daf7aef6a3deaecdc51b104d3f41ba948efc3ff2bb",
+      "bytes": 14466,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-remote-evaluation.json",
+      "sha256": "bc37395cf5055b75ab9e527009a5e618bf8963d613b0c39a9d9b0c2fa5cdfe35",
+      "bytes": 63242,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-selector-actions.json",
+      "sha256": "9197af8b656c9bc486845de14509c3b1fecba1bf8039a13da4ad9362cc36cb9c",
+      "bytes": 321978,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-selector-traces.json",
+      "sha256": "1be20bb31c3e5a1537fda4373a99a33cd04b57e1f583941124eb1569ae69399b",
+      "bytes": 3984,
+      "exitCode": 0,
+      "timedOut": false,
+      "remainingObservedProcesses": 0,
+      "cleanupSignals": 0
+    }
+  ],
+  "resourceScope": "Functional external-watchdog checks only. No observed surviving processes or cleanup signals in any retained attempt. Sampled resource counters do not admit complete process-tree performance accounting.",
+  "review": "Independent read-only lifetime and initialization-lock reviews retained privately; follow-up found no actionable correctness defect. Stale invalidation can evict a successor cache entry and cause safe reinitialization, never return an old realm.",
+  "limitations": [
+    "Native remote input, public Page/Locator ariaSnapshot composition, remote routing and remote init scripts retain their explicit gaps.",
+    "Remote ARIA assertion coverage is inline predicates, negation, delayed retry and original mismatch in actual runners; exhaustive file-baseline and update options are not newly admitted.",
+    "Fresh current full-core, macOS, Node 24, platform-package acquisition, native CI and release acceptance remain open.",
+    "No performance comparison or majority-scenario 2x result is established.",
+    "Each original report binds its own source manifest. Harness and producer revisions differ between attempts; no single unchanged whole-tree manifest is claimed across the campaign."
+  ],
+  "privateArtifacts": [
+    {
+      "path": "workbench/remote-locator-read-001/assertions-003.rs",
+      "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21",
+      "bytes": 14915
+    },
+    {
+      "path": "workbench/remote-locator-read-001/assertions.log",
+      "sha256": "39ec9d05ca789cd6da6fc6ce37ae10157f1e01d907d09a5d99a61d16f23fc824",
+      "bytes": 376
+    },
+    {
+      "path": "workbench/remote-locator-read-001/build-001.log",
+      "sha256": "bab78bb1061195900037c4169d3df3aeb128e9c4e354dfe515ce330cbcafe254",
+      "bytes": 747
+    },
+    {
+      "path": "workbench/remote-locator-read-001/build-002.log",
+      "sha256": "17f19667efaa6d769c0707fbbfd576f0f4ce1c66eae965b009bc10e81e49a7fc",
+      "bytes": 747
+    },
+    {
+      "path": "workbench/remote-locator-read-001/clippy.log",
+      "sha256": "4490814a85ff8f1254903e9d757c1f2fdb5d1e3e4c70353d316138f174dc57a3",
+      "bytes": 768
+    },
+    {
+      "path": "workbench/remote-locator-read-001/consolidate.py",
+      "sha256": "147226c435c8e75238899062f0d01cce67f40b4945374662ddc4b5a1c1465467",
+      "bytes": 11854
+    },
+    {
+      "path": "workbench/remote-locator-read-001/driver-003",
+      "sha256": "622701d429d0fcf3afbcda48f2613750f157e745240c6acbd4770736093ebe1a",
+      "bytes": 14339568
+    },
+    {
+      "path": "workbench/remote-locator-read-001/final-source/compatibility/m2/remote-locator-reads.mjs",
+      "sha256": "873a4fdbe028866522dd6890c0782ee4e9fd20e83d1e190d04f497d6093d588f",
+      "bytes": 20367
+    },
+    {
+      "path": "workbench/remote-locator-read-001/final-source/crates/flashwright-engine/src/assertions.rs",
+      "sha256": "97fed40bec68ed634656fac785d40439c9055249452be61819e0538efbcdbf21",
+      "bytes": 14915
+    },
+    {
+      "path": "workbench/remote-locator-read-001/final-source/crates/flashwright-engine/src/locators.rs",
+      "sha256": "65037e105b9123424c09fd22f42f8f59cdc9288908334ccdf5593cae248f5591",
+      "bytes": 25910
+    },
+    {
+      "path": "workbench/remote-locator-read-001/final-source/crates/flashwright-engine/src/page_state.rs",
+      "sha256": "acc1bfd101bd9f87052d938904ec15667720dab3d8dd4cb226d0aa78ad65ebcc",
+      "bytes": 84874
+    },
+    {
+      "path": "workbench/remote-locator-read-001/final-source/tools/test-packed-remote-locators.mjs",
+      "sha256": "5a1ab21f303e42e604d91a2eff6e921382e2aa8ffac6e42ace983ab6f9b2e7ad",
+      "bytes": 5997
+    },
+    {
+      "path": "workbench/remote-locator-read-001/final-source/tools/verify-core.mjs",
+      "sha256": "82286c69333186ab638dc49154837d61a2eb5cbd3ae68653e79a223578bde52e",
+      "bytes": 24353
+    },
+    {
+      "path": "workbench/remote-locator-read-001/fixture-001.mjs",
+      "sha256": "a76228cf5d21eaf97b4a9d75328e1df9edbdde493f9830fe67ed84d2e698cb87",
+      "bytes": 11671
+    },
+    {
+      "path": "workbench/remote-locator-read-001/fixture-002.mjs",
+      "sha256": "9825f4a1257312eeb784a797cabbf1b247f6672075cb93b520feb7c75c8eb041",
+      "bytes": 11798
+    },
+    {
+      "path": "workbench/remote-locator-read-001/fixture-003.mjs",
+      "sha256": "393f1f1232625b290f335374c78dea30d153b1512952fdcaffd1772f9a77b405",
+      "bytes": 11931
+    },
+    {
+      "path": "workbench/remote-locator-read-001/fixture-005.mjs",
+      "sha256": "c99553afcb6ab03f5bf0f908af2e9c0607b163ca4cf65b0265622b83416f62db",
+      "bytes": 14001
+    },
+    {
+      "path": "workbench/remote-locator-read-001/fixture-006.mjs",
+      "sha256": "0fab805162d83aaaaa14a0fc9461c86ed1d7e9436d31c4e68a70bf979018ecf2",
+      "bytes": 16388
+    },
+    {
+      "path": "workbench/remote-locator-read-001/frame-locators/flashwright.zip",
+      "sha256": "19efeeae30a8020c60fb3253568f1bf50f5858999306eabbbfee28abf27f9866",
+      "bytes": 2852041
+    },
+    {
+      "path": "workbench/remote-locator-read-001/frame-locators/reference.zip",
+      "sha256": "0ab550e635a267cfd0b965183b0b7a7c46605451a88002425560110144067267",
+      "bytes": 1330732
+    },
+    {
+      "path": "workbench/remote-locator-read-001/frame-locators/report.json",
+      "sha256": "badc0ee06f57f8df73c92d0361cb8441de9c79a53abc6d36a38aca95fa0a3fcf",
+      "bytes": 275514
+    },
+    {
+      "path": "workbench/remote-locator-read-001/frame-locators/trace-verification.json",
+      "sha256": "9fbb1ab7bbc9f25a1aa0e3daeded0e251b37fe507a796ff80cd1e2473b75591f",
+      "bytes": 49892
+    },
+    {
+      "path": "workbench/remote-locator-read-001/frame-locators.log",
+      "sha256": "2e8b8d087e9ad823185f2c108c5282464a9c0e7617e783a7ac40c37e5b30e751",
+      "bytes": 148
+    },
+    {
+      "path": "workbench/remote-locator-read-001/frame-traces.log",
+      "sha256": "49a115bf4522052ababd9e7ca3cec7084b0904b92d719d7cd6a19bf1f327f304",
+      "bytes": 342
+    },
+    {
+      "path": "workbench/remote-locator-read-001/legacy-evidence/assertions-linux-x64-bun-1.4.2.json",
+      "sha256": "ab0af662853f1faaf922c0b8ac3a99b06967162e6ee819d4a4865cca58495a8a",
+      "bytes": 1459
+    },
+    {
+      "path": "workbench/remote-locator-read-001/legacy-evidence/locators-linux-x64-bun-1.4.2.json",
+      "sha256": "f6a5571dea7e1b94be4cb8b34f1d17026438b2f607d312cf78f863d9646b1d90",
+      "bytes": 6800
+    },
+    {
+      "path": "workbench/remote-locator-read-001/legacy-locators-002.log",
+      "sha256": "25ab327b227326042042a158da01e5c641dbe63dde3e1967fd7d4a3a69e59fbc",
+      "bytes": 186
+    },
+    {
+      "path": "workbench/remote-locator-read-001/legacy-locators.log",
+      "sha256": "2a0c4550bf474b614b76c40408cc3f35521825b6d377475ad83e07e29125568b",
+      "bytes": 719
+    },
+    {
+      "path": "workbench/remote-locator-read-001/locators-003.rs",
+      "sha256": "9dbb2052ef475c648b270b35c1beac30d6fd369bff6c22d185a339d105a2e57e",
+      "bytes": 24536
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/consumer/bun.lock",
+      "sha256": "9832ef7daad57f75794ce5dfd2b108e3687406bb591a597a429ed326d2c5e3ca",
+      "bytes": 2322
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/consumer/cleanup-receipt.json",
+      "sha256": "d743242a2b15f10a35a217b846c013b4bf2d01490007c16fc74e4b6c009b9f5e",
+      "bytes": 7366
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/consumer/consumer.mjs",
+      "sha256": "353ecb77bdbf23d88b3ab096dfb454aeaa597833a2de23a1077b06055ccff978",
+      "bytes": 2426
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/consumer/install.log",
+      "sha256": "f53f737810bb7dab81d6834549149bee02fd03b64fbc170392f96d8d27750d30",
+      "bytes": 389
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/consumer/package.json",
+      "sha256": "1589602edae0b03b4b3e1aae858e41c9d8c48d5b950bc3a314580e82e9f74155",
+      "bytes": 190
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/consumer/stdout.txt",
+      "sha256": "64805e25269c03ab8640a544b2241dbd733b059d248f8915f2fe3babf970e7d7",
+      "bytes": 147
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/flashwright-0.0.0.tgz",
+      "sha256": "18e325290bd6abc76bfabdd62bc9bfbb3b1aa9af95aa1499fa592cb76447dc1b",
+      "bytes": 6288
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/flashwright-core-0.0.0.tgz",
+      "sha256": "8dcbeaad924b735d9949910c00e2bc9c0d36e6703e44b08a06ea10a68a70efff",
+      "bytes": 440658
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/flashwright-runner-0.0.0.tgz",
+      "sha256": "2d34c7dec605a2f0bd3aeccbd8700d4ff69c0f1a1334e3f27ae63b53c6a574ff",
+      "bytes": 961770
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/flashwright-test-0.0.0.tgz",
+      "sha256": "d42f27e6ae2730b5a1fadf96b25f2ccc9421913dcee95dca3f8f43f9831b3d31",
+      "bytes": 5829
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed/report.json",
+      "sha256": "82dde67a2aaae627608f5e94cbe1f6ad2b04c099abdf27f1c8a4a21cc462ad9a",
+      "bytes": 152980
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/bun.lock",
+      "sha256": "0b48d96fa64c2fcd561f030d7bdff414e76fc630fa1ff2395f120c345857597e",
+      "bytes": 2322
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/cleanup-receipt.json",
+      "sha256": "41ec7f817cf4989f8f529d7b2b72e3d118b4c946885e24a7278b7f6bc68b0eb1",
+      "bytes": 7486
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/consumer.mjs",
+      "sha256": "353ecb77bdbf23d88b3ab096dfb454aeaa597833a2de23a1077b06055ccff978",
+      "bytes": 2426
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/install.log",
+      "sha256": "92a974553bac6f76c7a673292f01073b3cdb2e6983fd083b8d2efb4c504ac36d",
+      "bytes": 389
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/package.json",
+      "sha256": "1589602edae0b03b4b3e1aae858e41c9d8c48d5b950bc3a314580e82e9f74155",
+      "bytes": 190
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/consumer/stdout.txt",
+      "sha256": "64805e25269c03ab8640a544b2241dbd733b059d248f8915f2fe3babf970e7d7",
+      "bytes": 147
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/flashwright-0.0.0.tgz",
+      "sha256": "18e325290bd6abc76bfabdd62bc9bfbb3b1aa9af95aa1499fa592cb76447dc1b",
+      "bytes": 6288
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/flashwright-core-0.0.0.tgz",
+      "sha256": "8dcbeaad924b735d9949910c00e2bc9c0d36e6703e44b08a06ea10a68a70efff",
+      "bytes": 440658
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/flashwright-runner-0.0.0.tgz",
+      "sha256": "2d34c7dec605a2f0bd3aeccbd8700d4ff69c0f1a1334e3f27ae63b53c6a574ff",
+      "bytes": 961770
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/flashwright-test-0.0.0.tgz",
+      "sha256": "d42f27e6ae2730b5a1fadf96b25f2ccc9421913dcee95dca3f8f43f9831b3d31",
+      "bytes": 5829
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002/report.json",
+      "sha256": "51041ed2101ea8efd7e9cfb2a6482d7271766e92778e91f49747ef1442dc7a72",
+      "bytes": 153000
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-002.log",
+      "sha256": "260ec49842debb9c3173ed75220bb76721796be06bb04caea9ff7047dff0715d",
+      "bytes": 322
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed-producer-001.mjs",
+      "sha256": "912f115224a145aaaf23bcbffb7d62fa671f66d122d7860aafddd6bdc8dc67d1",
+      "bytes": 5625
+    },
+    {
+      "path": "workbench/remote-locator-read-001/packed.log",
+      "sha256": "f0624b63edefc20069fe16e3f09537aad460acf95fdf8429bb365eaa8e715e1e",
+      "bytes": 318
+    },
+    {
+      "path": "workbench/remote-locator-read-001/previous-driver",
+      "sha256": "d0addc3aae8f68a7e82c5cb2963ac50497d978790b32909317fcbf3b8b38ebdd",
+      "bytes": 14314776
+    },
+    {
+      "path": "workbench/remote-locator-read-001/public-aria/flashwright-aria.zip",
+      "sha256": "b0f1ef5a7bc4a67292c84c749acbf921f45c3cacbe3d09fd7aca8856b0e474ed",
+      "bytes": 24400
+    },
+    {
+      "path": "workbench/remote-locator-read-001/public-aria/playwright-aria.zip",
+      "sha256": "6770ca003f23bf972b5b6ac47284d9dfc4cc84298fc97df3212e09471da5fd05",
+      "bytes": 8054
+    },
+    {
+      "path": "workbench/remote-locator-read-001/public-aria/report.json",
+      "sha256": "235593f9f308ba345b3ad292768dc48c77d6827384a5c3ae476bcd2e9748f6d9",
+      "bytes": 155558
+    },
+    {
+      "path": "workbench/remote-locator-read-001/public-aria.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/regression-inputs.json",
+      "sha256": "ac9408e52e7c8e568d65a26b8b46791e1474216d24805bab4707e54309421843",
+      "bytes": 146856
+    },
+    {
+      "path": "workbench/remote-locator-read-001/regression-results.json",
+      "sha256": "6132e315e555e7fcff1f4d6b92f0e3dd0b3a8f06d7b811901e70e1e81903732d",
+      "bytes": 2369
+    },
+    {
+      "path": "workbench/remote-locator-read-001/regression-verification.json",
+      "sha256": "2202b20a740e35954058c2d5f6ba89f1ac4949a435f22dbc0bb8cc45ce55a034",
+      "bytes": 65
+    },
+    {
+      "path": "workbench/remote-locator-read-001/regressions.py",
+      "sha256": "ab5c5a9b1a00f6626028347ac2ffcc1a109f8891b677696fc7d419af508fbbb4",
+      "bytes": 2678
+    },
+    {
+      "path": "workbench/remote-locator-read-001/remote-aria-rejection/report.json",
+      "sha256": "dfb420b84901bbb7570d4cd27f6b8274b911500d03dd5fccfdc68c855f4bc716",
+      "bytes": 151453
+    },
+    {
+      "path": "workbench/remote-locator-read-001/remote-aria-rejection/wire/protocol-3898188.jsonl",
+      "sha256": "10fea26bc907b6a703b926dc098dd67037977ddcf3b558e2687b061c5d2ec286",
+      "bytes": 30864
+    },
+    {
+      "path": "workbench/remote-locator-read-001/remote-aria-rejection.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/remote-evaluation/report.json",
+      "sha256": "33dce92044d1d95d22053076d30448e050a9e6c24c8d0ee3c44d74791ac2b857",
+      "bytes": 153741
+    },
+    {
+      "path": "workbench/remote-locator-read-001/remote-evaluation.log",
+      "sha256": "086e8574a29bb587010ec4e8ced5753d1fd74b0ef739e23d66d0d6b246daa79d",
+      "bytes": 125
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-001.json",
+      "sha256": "5084d00cd5fbdcc8253fafebecf8f4a1a5bed462c7aab1ed259bb40b4a7b772a",
+      "bytes": 4468
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-002.json",
+      "sha256": "751e188a8907b765dda024af27fa924e977be17fcf468dfc0438329be061c161",
+      "bytes": 29950
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-003.json",
+      "sha256": "8ee70f7f84442720736eb2d0341a901108c2f99a452bb7849fa4966bd3c065ac",
+      "bytes": 55090
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-004.json",
+      "sha256": "adc99b62073ceb9e4d3a2451b662cd3c17a81fdd5df1e437348b72c036c3e640",
+      "bytes": 78377
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-005.json",
+      "sha256": "8c13c67f6a1d3614ca5265d563537bafdf7ffb2242f6074a098ef7bf865be45c",
+      "bytes": 65911
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-006.json",
+      "sha256": "87a5f92937d4e6f734e7f0454dfbf6a0bcec6f4537df226b53c2c036d38cf9a7",
+      "bytes": 22132
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-007.json",
+      "sha256": "4bc7db0888f759537132d5597bc9f85363894a50ea77b4b831f5bc3b657f5253",
+      "bytes": 105736
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-assertions.json",
+      "sha256": "76cdcef5a02b1f39cf09f3a1cb1c8dd08c4d71b5e1ad917a9959436d790d6182",
+      "bytes": 105519
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-frame-locators.json",
+      "sha256": "9183e3772eb34dfc51adaa778e75a4f1e87a847ff984c40ebd8e69bb398a6754",
+      "bytes": 664718
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-frame-traces.json",
+      "sha256": "891549ddb02d38954dbcd7e44698ae151b717d5eb8c078b7e695c2d63d935996",
+      "bytes": 4500
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-legacy-locators-002.json",
+      "sha256": "b310858d8843c41875282d14429a9037e64a23153b6a55112af0ea32a753961e",
+      "bytes": 45040
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-legacy-locators.json",
+      "sha256": "add0b28e778ff7bb3281a4d600658ff84599397272833fe2e755aa431a3e269d",
+      "bytes": 37213
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-node22.json",
+      "sha256": "55023a76f75612f515e246e652dde078d6faf34f9258bd0fb5625afc7946a4de",
+      "bytes": 109640
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-packed-002.json",
+      "sha256": "6c33c29cccfa662b42b70cd98be9aa40a9937f5d5469484c893abc66055cc58f",
+      "bytes": 38204
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-packed.json",
+      "sha256": "e1a08f6bd5ae4c078f68c10af5880aaffdaa4d796ea02b0453795683e0261ca6",
+      "bytes": 38439
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-public-aria.json",
+      "sha256": "9826ccf88820b3d0198516d8c70e205db82fc731fb8910aa0c6f97a9659a3539",
+      "bytes": 187706
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-remote-aria-rejection.json",
+      "sha256": "fd7418e490a902ee2d8889daf7aef6a3deaecdc51b104d3f41ba948efc3ff2bb",
+      "bytes": 14466
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-remote-evaluation.json",
+      "sha256": "bc37395cf5055b75ab9e527009a5e618bf8963d613b0c39a9d9b0c2fa5cdfe35",
+      "bytes": 63242
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-selector-actions.json",
+      "sha256": "9197af8b656c9bc486845de14509c3b1fecba1bf8039a13da4ad9362cc36cb9c",
+      "bytes": 321978
+    },
+    {
+      "path": "workbench/remote-locator-read-001/resources-selector-traces.json",
+      "sha256": "1be20bb31c3e5a1537fda4373a99a33cd04b57e1f583941124eb1569ae69399b",
+      "bytes": 3984
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-001.log",
+      "sha256": "cee9ebbf0f3d15fbebe0fe9b706fd289f325ea2582f6de57fffdc7550202d9aa",
+      "bytes": 1355
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-002/playwright/protocol-3873928.jsonl",
+      "sha256": "886eb207a3b43aefccd2a47d37e5be785569200829eed5d7bec04ef4d76e69e5",
+      "bytes": 223199
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-002/report.json",
+      "sha256": "7147df5fe8b9108c8ead197d63a35fe5a6169c7d4a18af33d8b5323fe5cbe268",
+      "bytes": 151515
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-002.log",
+      "sha256": "a1f8b404d6d731fb581bbec46a5c95c1f1c750347d45c43310c62d358bc2c676",
+      "bytes": 963
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-003/flashwright/protocol-3875683.jsonl",
+      "sha256": "10393003da1ad4698252a293881bbbd27ab71177f80b5629973f2969671e2fee",
+      "bytes": 180016
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-003/playwright/protocol-3875444.jsonl",
+      "sha256": "7f0e33280d362c9eb29897521ccd5153cdb9bf6c88cc64b8b79aba13a1e10522",
+      "bytes": 283033
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-003/report.json",
+      "sha256": "0d23390ab3bdb7c7ad57d0676f41f3bd86cc5079f21b25f98159d4b3ae3ea6a8",
+      "bytes": 151913
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-003.log",
+      "sha256": "5d5f3cbe5667171323769155308f43149a4a4546c561a684e5af4d0acae9247e",
+      "bytes": 886
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-004/flashwright/protocol-3877117.jsonl",
+      "sha256": "0ffd81e3cf31bc90ffdbfa9cc285e53e3c66465b1debff2db183e204abe3c7b3",
+      "bytes": 217930
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-004/playwright/protocol-3876923.jsonl",
+      "sha256": "eef274834b93eb863e4d618a6f1b7cf871e24a57918ac9babe8ccbe9d53beda1",
+      "bytes": 295409
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-004/report.json",
+      "sha256": "3de0ad2eb941e05b1eaad10080a2e9914659e8ec3248fd7ee775ff8fddafef3d",
+      "bytes": 152339
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-004.log",
+      "sha256": "94fd57a15df4c8233ace8f615c9b584b22a6f64042e3a34294067d97bfdf8182",
+      "bytes": 1308
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-005/flashwright/protocol-3879742.jsonl",
+      "sha256": "6cc5d99a7680726ee52a30715095b283891b41fdcd94ab88c1695eeeb0b7688a",
+      "bytes": 219380
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-005/playwright/protocol-3879601.jsonl",
+      "sha256": "cb981cb130698e24a9728cb904f054193a981dbc0295f860797aa260afee4929",
+      "bytes": 294600
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-005/report.json",
+      "sha256": "f9592883f29e68533959226b90b9f40aea1d4cce4c3fc12ae524b4db9a3fc5c1",
+      "bytes": 152677
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-005.log",
+      "sha256": "5d5f3cbe5667171323769155308f43149a4a4546c561a684e5af4d0acae9247e",
+      "bytes": 886
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-006/playwright/protocol-3881724.jsonl",
+      "sha256": "df22e9eda21f1f94ef2b84f3f2a8a0b2df5fd5d6f3c7d3309c60c49462eff435",
+      "bytes": 246692
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-006/report.json",
+      "sha256": "cb7122942f17f14a203da4270cffbe789c5c1978ffe4d2c8dc410c15d1a58f16",
+      "bytes": 151181
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-006.log",
+      "sha256": "57cc4708a36843f41fb60057fab1e10b0288b6cb179a8be662f859802e411181",
+      "bytes": 650
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright/protocol-3884263.jsonl",
+      "sha256": "2bbdc0d15becafe52e47585261a63b2ef7cab9aeb978f81cf772e2b4fe4210e5",
+      "bytes": 273838
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright-aria-runner/artifacts/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright-aria-runner/config.mjs",
+      "sha256": "cd475997fdc210d12f8ab12221ec29c0cbd41f12533388c1c01f39c06b5509a0",
+      "bytes": 708
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright-aria-runner/remote.spec.mjs",
+      "sha256": "294e66045d2ba6bb7decc543cd9ee1c0f41ae25b3e71a0ee56eafe47e94cbdf0",
+      "bytes": 1180
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright-aria-runner/runner.json",
+      "sha256": "afc683b1aa98fe45617e2bf8521dc933a3920d7a0dcefade5440e640cf8f6e48",
+      "bytes": 2966
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright-aria-runner/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/flashwright-aria-runner/stdout.txt",
+      "sha256": "701facb73ed25573d166c91ffb88eb89cfb891db1dc6ffb7e0ec696ee9802b57",
+      "bytes": 223
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright/protocol-3883984.jsonl",
+      "sha256": "565179b190b15ca366842895b057d2c31fa8623ffd145dbf334284ecc586b3ee",
+      "bytes": 336476
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright-aria-runner/artifacts/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright-aria-runner/config.mjs",
+      "sha256": "fdf4ed4b5241a294599fe43ba672507955dddac329df83feadbd7b489c9f1c5b",
+      "bytes": 705
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright-aria-runner/remote.spec.mjs",
+      "sha256": "a3d3b3bd75976d24f9ba51a9175a5660077e93e141f1aadd8b1217d98d55b951",
+      "bytes": 1263
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright-aria-runner/runner.json",
+      "sha256": "4314c3e530bd1795f207c4b4d22bf0a0ca7495c51bbc14e98486f841114f8f2f",
+      "bytes": 2960
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright-aria-runner/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/playwright-aria-runner/stdout.txt",
+      "sha256": "c800b21d05d34545ff1a765667d39ce21ee91f4ea230e32817b7f32e105befe7",
+      "bytes": 222
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007/report.json",
+      "sha256": "fe6022322882843ae3abd04d8bf4a648aa6e9d5ac37707b3a39586b13db506c0",
+      "bytes": 153772
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-007.log",
+      "sha256": "5de08b91c9efebd393c6bb98fb708960ff4daa9a83736b407cc2571ff232740d",
+      "bytes": 1040
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright/protocol-3886954.jsonl",
+      "sha256": "6864b6c8b0dc3b5dc1465cb45b7757929fc829dc810447ddf4d5fbc9fbfee9dc",
+      "bytes": 275384
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright-aria-runner/artifacts/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright-aria-runner/config.mjs",
+      "sha256": "7a15a829e284dfc194c62bdbdeffbbc88885097d23520dbbb65ac39be006b6ea",
+      "bytes": 717
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright-aria-runner/remote.spec.mjs",
+      "sha256": "49a4cbd19a716577d40fe2683a97f93b515ddebe7c3df933a839307096557911",
+      "bytes": 1180
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright-aria-runner/runner.json",
+      "sha256": "ef0553b8160fdbbed3050a9d56da78d082bba447b32fc4a2014020fc0143e1e4",
+      "bytes": 2981
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright-aria-runner/stderr.txt",
+      "sha256": "b9c4a03f3db64f1794925dac0c8bcf0b420fded86e1327761b0a109b5d61f5f7",
+      "bytes": 348
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/flashwright-aria-runner/stdout.txt",
+      "sha256": "dea2a4560933056a083bded750b64dc3dcf2e372c2b8293800914d060c55ae8d",
+      "bytes": 230
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright/protocol-3886804.jsonl",
+      "sha256": "009003aad0f15ed63315679030d70178f25ab7f9cd3eb9fcb2d5d3f46ee8589c",
+      "bytes": 323554
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright-aria-runner/artifacts/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright-aria-runner/config.mjs",
+      "sha256": "073f4b2e44521d0d6e883f6b55ab1f780519f19cddda83cb8b915573c2c6019e",
+      "bytes": 714
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright-aria-runner/remote.spec.mjs",
+      "sha256": "400fe3cc5e6c5a7b5b0570b0e14ac1fe6e2b4678d55ea0b79aef0bfe62f9aa26",
+      "bytes": 1263
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright-aria-runner/runner.json",
+      "sha256": "5057d639f6453c32c426cd0250afce08d50769676c48dd557c368f62c5b593ea",
+      "bytes": 2986
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright-aria-runner/stderr.txt",
+      "sha256": "ea0d3590a7a13e0385f53157af1482ad6b337b4f1b6a03d90198d48e43936cc1",
+      "bytes": 348
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/playwright-aria-runner/stdout.txt",
+      "sha256": "bcbb59464395454bd087d805b0e776c7e94217dd40e6556a0f9e12944a36f76d",
+      "bytes": 229
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22/report.json",
+      "sha256": "7d31bb1e3837289a76412c5705d65ac3070bfc53e3e027099b0ec601ab68ab75",
+      "bytes": 153782
+    },
+    {
+      "path": "workbench/remote-locator-read-001/run-node22.log",
+      "sha256": "5de08b91c9efebd393c6bb98fb708960ff4daa9a83736b407cc2571ff232740d",
+      "bytes": 1040
+    },
+    {
+      "path": "workbench/remote-locator-read-001/rust-tests.log",
+      "sha256": "e0cf1e161c65976709ab3d66ebcb7c4890e9584e25841c9953ac8c338eab179c",
+      "bytes": 54972
+    },
+    {
+      "path": "workbench/remote-locator-read-001/selector-actions/flashwright.zip",
+      "sha256": "8fd83d183cc0b36742e6d650cabf5c54829ab6e3d8496f13b101eb50b09a1795",
+      "bytes": 1489114
+    },
+    {
+      "path": "workbench/remote-locator-read-001/selector-actions/reference.zip",
+      "sha256": "2ee7f2399e0755e56624264527f8d3550481ae684de85f7b68c11e98b7545ef2",
+      "bytes": 391024
+    },
+    {
+      "path": "workbench/remote-locator-read-001/selector-actions/report.json",
+      "sha256": "f9366b7b31121472062c8aac827d7751d5f64ccf99a8e9d7936a0bbb615e1038",
+      "bytes": 76272
+    },
+    {
+      "path": "workbench/remote-locator-read-001/selector-actions/trace-verification.json",
+      "sha256": "161ede51925c02769ef6bdd15321cee01a78e240f465277e1f626f7cad54ac32",
+      "bytes": 487
+    },
+    {
+      "path": "workbench/remote-locator-read-001/selector-actions.log",
+      "sha256": "582244f2bec3eec23d51efd33ca4582aeabdcbf37e3010a9143463c52747cbf1",
+      "bytes": 137
+    },
+    {
+      "path": "workbench/remote-locator-read-001/selector-traces.log",
+      "sha256": "d0020fe107a69a8221a8f24bac804788bd3f6b0b3147346a7d9c33862869c012",
+      "bytes": 407
+    },
+    {
+      "path": "workbench/remote-locator-read-001/shared-regression-inputs.json",
+      "sha256": "75dc60d06a3e9c2f9da93a5ebd346497f7f8d454b9f4bdba48193b453ca00136",
+      "bytes": 146999
+    },
+    {
+      "path": "workbench/remote-locator-read-001/shared-regression-results.json",
+      "sha256": "10efcdd23e08e8800e97fb12267620a1ee786e2969cb8247be361b2ece4fdc9a",
+      "bytes": 1242
+    },
+    {
+      "path": "workbench/remote-locator-read-001/shared-regression-verification.json",
+      "sha256": "7ecf41c243fd271570faed182aae1ba9a30edcd53bb72c3aa00f66f64471179d",
+      "bytes": 65
+    },
+    {
+      "path": "workbench/remote-locator-read-001/shared-regressions.py",
+      "sha256": "7eb4d09a34c41d52d7a29d6b1cfd32fff8a50a7bdcbdf2f3aab16fc398f8fc15",
+      "bytes": 2293
+    }
+  ]
+}
