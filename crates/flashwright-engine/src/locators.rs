@@ -27,9 +27,32 @@ pub(crate) struct LocatorRealm {
     pub main_context: page_state::ExecutionContext,
 }
 
-/// Unsupported remote operations reject before waiting for a paused renderer's world.
+fn supports_remote_locator(method: &str) -> bool {
+    matches!(
+        method,
+        "frame.waitForSelector"
+            | "assertion.run"
+            | "locator.count"
+            | "locator.allTextContents"
+            | "locator.allInnerTexts"
+            | "locator.textContent"
+            | "locator.innerText"
+            | "locator.innerHTML"
+            | "locator.getAttribute"
+            | "locator.inputValue"
+            | "locator.isVisible"
+            | "locator.isHidden"
+            | "locator.isEnabled"
+            | "locator.isDisabled"
+            | "locator.isEditable"
+            | "locator.isChecked"
+            | "locator.waitFor"
+    )
+}
+
+/// Input and artifact operations need their own remote-session semantics.
 fn check_remote_locator_operation(remote: bool, method: &str) -> Result<(), ErrorRecord> {
-    if remote && method != "frame.waitForSelector" {
+    if remote && !supports_remote_locator(method) {
         return Err(ErrorRecord::new(
             ErrorCode::UnsupportedFeature,
             method,
@@ -309,9 +332,35 @@ impl Engine {
                 Some(frame_identifier),
                 operation,
                 method,
-                method == "frame.waitForSelector",
+                supports_remote_locator(method),
             )
             .await?;
+        // A blocked renderer cannot hold other frames' initialization hostage.
+        // CDP unique context identities survive numeric-ID and frame-ID reuse.
+        let initialization = {
+            let mut locks = page.state.locator_initializations.lock().unwrap();
+            locks.retain(|_, lock| lock.strong_count() != 0);
+            match locks
+                .get(&main_context.unique_identifier)
+                .and_then(|lock| lock.upgrade())
+            {
+                Some(lock) => lock,
+                None => {
+                    let lock = Arc::new(tokio::sync::Mutex::new(()));
+                    locks.insert(
+                        main_context.unique_identifier.clone(),
+                        Arc::downgrade(&lock),
+                    );
+                    lock
+                }
+            }
+        };
+        let _initialization =
+            operation
+                .wait(page.state.while_execution_context(&main_context, async {
+                    Ok(initialization.lock().await)
+                }))
+                .await?;
         let mut realms = operation
             .wait(async { Ok(page.state.locator_realms.lock().await) })
             .await?;
@@ -339,9 +388,10 @@ impl Engine {
         if let Some(realm) = realms.get(frame_identifier) {
             return Ok(realm.clone());
         }
+        drop(realms);
         let created = operation
-            .wait(page.state.while_alive(
-                method,
+            .wait(page.state.while_execution_context(
+                &main_context,
                 browser.connection.call(
                     "Page.createIsolatedWorld",
                     json!({ "frameId": frame_identifier, "worldName": LOCATOR_WORLD_NAME }),
@@ -374,10 +424,18 @@ impl Engine {
             "(() => {{ if (globalThis.__flashwrightLocatorRuntime) return true; const module = {{}}; {INJECTED_RUNTIME}; const exports = {{}}; {VALUE_CODEC}; {CONDITION_REGISTRY}; {FAILURE_CONTEXT_SNAPSHOT}; {ARIA_SNAPSHOT_RUNTIME}; {LOCATOR_RUNTIME}; const injected = new (module.exports.InjectedScript())(globalThis, {{isUnderTest:false,sdkLanguage:'javascript',testIdAttributeName:'data-testid',stableRafCount:1,browserName:'chromium',shouldPrependErrorPrefix:false,isUtilityWorld:true,customEngines:[]}}); Object.defineProperty(globalThis, '__flashwrightLocatorRuntime', {{value:createLocatorRuntime(injected, exports.createValueCodec(), {{conditionInstrumentation:{}}})}}); return true; }})()",
             self.condition_instrumentation,
         );
-        let initialized = operation.wait(page.state.while_alive(method, browser.connection.call(
+        let initialized = operation.wait(page.state.while_execution_context(&realm.context, browser.connection.call(
             "Runtime.evaluate", json!({ "expression": expression, "uniqueContextId": realm.context.unique_identifier, "returnByValue": true }), Some(&realm.context.session_identifier),
         ))).await?;
         check_exception(&initialized, method)?;
+        let mut realms = operation
+            .wait(
+                page.state
+                    .while_execution_context(&realm.main_context, async {
+                        Ok(page.state.locator_realms.lock().await)
+                    }),
+            )
+            .await?;
         if !super::element_resolution::same_document(page, &realm, &realm.main_context) {
             return Err(evaluation::context_destroyed());
         }
@@ -404,9 +462,18 @@ impl Engine {
             "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }], "returnByValue": true, "awaitPromise": true,
             "userGesture": true,
         }), Some(&realm.context.session_identifier))?;
-        let result = operation
-            .wait(page.state.while_alive(method, command.response()))
-            .await;
+        let result = if supports_remote_locator(method) {
+            operation
+                .wait(
+                    page.state
+                        .while_execution_context(&realm.context, command.response()),
+                )
+                .await
+        } else {
+            operation
+                .wait(page.state.while_alive(method, command.response()))
+                .await
+        };
         let result = result.map_err(|mut error| {
             if ["fill", "selectOption", "focus", "blur"].contains(&action)
                 && !context_was_not_found(&error)
