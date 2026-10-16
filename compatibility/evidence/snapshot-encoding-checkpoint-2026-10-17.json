@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-focused-development-gates",
+  "platform": "linux",
+  "architecture": "x64",
+  "referenceVersion": "1.60.0",
+  "driverSha256": "31db523d6ba4da084f6627e30242285f35092d9a8b8101f826537a3c623da359",
+  "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+  "implementation": {
+    "crates/flashwright-browser/src/snapshot_reply.rs": "3ff1b815bbf6673f56a774791db22c99acdfe7eb72972b4da502e31ecfb0534e",
+    "packages/resident-runtime/snapshot-runtime.js": "01957212c31f7ab4d2fabb77947ca656df02d43ff3aa65c5803480544cf35f1d",
+    "tools/probe-snapshot-trace-integration.mjs": "659d083b996819e1446d913a1f07a4a491109318e8d5e4296201a0c16ebe08be",
+    "tools/test-snapshot-runtime.mjs": "a682ea1cec23c8daf530335ccf5d26b466dd5b485c416b31fdbc79f9e507f869"
+  },
+  "scope": "Unicode snapshot admission correction and ASCII byte-count fast path; no DOM/style/input omissions, new cache, browser patch or change to artifact policy.",
+  "nativeTests": {
+    "passed": 516,
+    "failed": 0,
+    "ignored": 1,
+    "exhaustiveUtf16Units": 65536
+  },
+  "unicodeCounterReproduction": {
+    "replySha256": "2f08e6e45ca76a87cb93c5864e38372f631528c435f1cf6110966525d3062b49",
+    "rawFrameBytes": 1431654,
+    "rawDataBytes": 1431204,
+    "canonicalDataBytes": 747204,
+    "counters": {
+      "bytes": 747694,
+      "overrideBytes": 0,
+      "cssReadBytes": 106,
+      "nodes": 7513,
+      "depth": 7,
+      "cssDepth": 1,
+      "attributes": 4505,
+      "sheets": 1,
+      "rules": 3,
+      "overrideCount": 0
+    }
+  },
+  "publicChecks": {
+    "Bun 1.4.2": [
+      "public snapshot validation rejects invalid values before a fresh valid recording",
+      "actual journal links native phases with independent clock samples, screenshots=false",
+      "actual journal links native phases with independent clock samples, screenshots=true",
+      "Unicode snapshots preserve native wire escapes, lone UTF-16 and incremental replay",
+      "chunk gaps keep one native recording and late old calls cannot acquire a successor",
+      "failed snapshot export preserves the destination and allows a fresh recording after cleanup",
+      "unsupported custom-element snapshots fail export without changing the public action or destination",
+      "cross-origin frame placement either captures same-process frames or rejects remote export explicitly"
+    ],
+    "Node 22.22.0": [
+      "public snapshot validation rejects invalid values before a fresh valid recording",
+      "actual journal links native phases with independent clock samples, screenshots=false",
+      "actual journal links native phases with independent clock samples, screenshots=true",
+      "Unicode snapshots preserve native wire escapes, lone UTF-16 and incremental replay",
+      "chunk gaps keep one native recording and late old calls cannot acquire a successor",
+      "failed snapshot export preserves the destination and allows a fresh recording after cleanup",
+      "unsupported custom-element snapshots fail export without changing the public action or destination",
+      "cross-origin frame placement either captures same-process frames or rejects remote export explicitly"
+    ],
+    "Node 24.15.0": [
+      "public snapshot validation rejects invalid values before a fresh valid recording",
+      "actual journal links native phases with independent clock samples, screenshots=false",
+      "actual journal links native phases with independent clock samples, screenshots=true",
+      "Unicode snapshots preserve native wire escapes, lone UTF-16 and incremental replay",
+      "chunk gaps keep one native recording and late old calls cannot acquire a successor",
+      "failed snapshot export preserves the destination and allows a fresh recording after cleanup",
+      "unsupported custom-element snapshots fail export without changing the public action or destination",
+      "cross-origin frame placement either captures same-process frames or rejects remote export explicitly"
+    ]
+  },
+  "rendererBoundaries": {
+    "cases": 134,
+    "oracle": "JSON.stringify plus TextEncoder, exact and one-byte-below budgets with rollback"
+  },
+  "packed": {
+    "status": "passed",
+    "runtime": "Bun 1.4.2",
+    "formats": [
+      "filmstrip-commonjs.spec.cts",
+      "filmstrip-esm.spec.ts"
+    ],
+    "snapshotCounts": [
+      18,
+      18
+    ],
+    "scope": "Fresh packed aliases with poisoned upstream browser/request backends, screenshot/filmstrip/source/network verification, explicit development driver."
+  },
+  "checks": [
+    {
+      "group": "packages",
+      "exitCode": 0,
+      "resourcesSha256": "0192bbb2faf6bf7285e698cec59ca368e83b61a167c7b8dbc8716265c12c36c1",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "native",
+      "exitCode": 0,
+      "resourcesSha256": "c241cbca5644aef59584b1330e519562e22ee12c9fffcb068a80f30c412d6ff8",
+      "logSha256": "12860b36bb93a55856fec0266c6a97e990345b366ad812802eef25c6a0c4db62"
+    },
+    {
+      "group": "clippy",
+      "exitCode": 0,
+      "resourcesSha256": "de8d526cc3badc9c47194e8ba17bc13109778d8568c6f5abbf1bd5f1fe78453a",
+      "logSha256": "6556147e66ecbdb8260a1633061b342a05515dedb6024ec2413bb1ea253ba8a0"
+    },
+    {
+      "group": "format",
+      "exitCode": 0,
+      "resourcesSha256": "60b8222e2bcf4a35f38b8ca0498efaec294e1170b935a0370d068388a115c085",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "runtime",
+      "exitCode": 0,
+      "resourcesSha256": "94fbb049587b7b55eda0a27b30e17b1b7a135af8d9a699fb5a148034de05273d",
+      "logSha256": "1bc310224412f87a97fede9e510beb87c8da667eff11a639d2fce138ea25d6c4"
+    },
+    {
+      "group": "css",
+      "exitCode": 0,
+      "resourcesSha256": "81d83a65e1cc4e82b2e57874f9804690d8161e257daaabccb611741226a90cf0",
+      "logSha256": "9a0524d8e5fd2afee8d44b04b640c11a9c4842a248a86f20bcee52dd27eb07e2"
+    },
+    {
+      "group": "custom",
+      "exitCode": 0,
+      "resourcesSha256": "2a2d76113f34e8352291bf71762d04cf135987d0019788a203a2a41aaa2db195",
+      "logSha256": "7696b38c4c928330371828e63841843b70b22f2febc6acb64658b364e835a51c"
+    },
+    {
+      "group": "native-phases",
+      "exitCode": 0,
+      "resourcesSha256": "f57243d120d9e56b7f9fa5cbc5ff6c53854a6ee878c5493194632bcaf927a062",
+      "logSha256": "e78fe736972c2ebca4c94c79302b84c0e8dc452fa3ff7dacfd3d571e95dfda8d"
+    },
+    {
+      "group": "public",
+      "exitCode": 0,
+      "resourcesSha256": "ac2d86e5ab521334f9a48c53cd7232823821720aea8375676839fdd753450d61",
+      "logSha256": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d"
+    },
+    {
+      "group": "input-retry",
+      "exitCode": 0,
+      "resourcesSha256": "41a9c4ad857eb6d96355c14387b0b0201f33ccc7821e4d0e4790dbe4da84628a",
+      "logSha256": "34edf85f76dae73a2c7d8241fd690c67fe0179be22d7ce9e0beefa69e0ed8f24"
+    },
+    {
+      "group": "resource-viewer",
+      "exitCode": 0,
+      "resourcesSha256": "c87636526bdbdda1d70bf8e0a2db94b4a55cfce839d52f6165ed056b3d3e2ea6",
+      "logSha256": "f8427a81f9716a244f09d7c9a56d7c9be9afd3bfec1c86a230862327d887041c"
+    },
+    {
+      "group": "benchmark-large-ascii",
+      "exitCode": 0,
+      "resourcesSha256": "7da058117a2024eee09509d5ca9398223e35c6b19761f9ea96bf1f9f04721b16",
+      "logSha256": "9c410b3168ee470bfbcf15818361f5664eb107a1390678adc83885cab7a3236e"
+    },
+    {
+      "group": "benchmark-small-ascii",
+      "exitCode": 0,
+      "resourcesSha256": "a612fe94126555df35569e9dd13894b02f84c282f194f8a80f0671caae19e525",
+      "logSha256": "cef0dfd8f730c5fc4bdc74a8e2de52d86e775e960ecbe2bf0b634ab726b0429d"
+    },
+    {
+      "group": "benchmark-large-unicode",
+      "exitCode": 0,
+      "resourcesSha256": "7a500e4247bfa5f8cfc7c158029a584b9a4fbee10c801378bdb4b08d4ae2a464",
+      "logSha256": "aa67388ae74d90ed28cd07d80edef5e1344217533b273b0ea72b7191bf2b5633"
+    },
+    {
+      "group": "benchmark-reference",
+      "exitCode": 0,
+      "resourcesSha256": "920965537008d1c55828709022c37daebf2471580723356bb373ca51dbb7965d",
+      "logSha256": "5a18fa0cc7fc32a3b6e8b59ce90185c31d449e116071d48d18b67d8414ec3cc5"
+    },
+    {
+      "group": "public-node22",
+      "exitCode": 0,
+      "resourcesSha256": "f0d70cb2baf5477cbe7ecb88427c5671bf3ebe536ea9afe9116601dd1e49cec3",
+      "logSha256": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d"
+    },
+    {
+      "group": "public-node24",
+      "exitCode": 0,
+      "resourcesSha256": "43df62b4ca47f51f142df3f3037ce20b6b07d23b7d62fbc150e27eaa8863e495",
+      "logSha256": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d"
+    },
+    {
+      "group": "packed",
+      "exitCode": 0,
+      "resourcesSha256": "77c492e6a574d1df076e480cb804449f924e61e40b44fc6fe3b92b722a4d89df",
+      "logSha256": "fa92287bf68f19e11f2a645fb310a0bead004742c61afc8cb169403fff192c10"
+    },
+    {
+      "group": "provenance-continued",
+      "exitCode": 0,
+      "resourcesSha256": "4fdb236019e9aa475ce6a337ed1b6abf5435f058427761b408f81768698a04a9",
+      "logSha256": "b89ee7fa997445e9335546d0929471eb13364417753424a5ee7ef07e68123293"
+    },
+    {
+      "group": "typecheck-continued",
+      "exitCode": 0,
+      "resourcesSha256": "5b4589f396207485dbb1aa21b9b702f43dc304825f0775a76664ae6174edf4e6",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "binary-paths-continued",
+      "exitCode": 0,
+      "resourcesSha256": "16836f77f4ec3e837df0e2af300dd07945a9c92f5a7402ffdd8b630eeb10c53e",
+      "logSha256": "f3727eb950d6ecc95426dd9863e67021ecf6722bf7e5fcd59a42e9e2dac4e076"
+    }
+  ],
+  "comparison": {
+    "path": "benchmarks/results/snapshot-capture-linux-2026-10-17.json",
+    "sha256": "f5dd45d4fd0a051dbdfe629c1ad6bb94da06743d6701f87ce0fbb9abd525595a"
+  },
+  "sourceVerification": {
+    "entriesUnchangedAfterPairedCampaign": 17147,
+    "note": "Manifest covers tracked inputs and both library distributions. Later benchmark, provenance and documentation additions are not claimed as measured source."
+  },
+  "retainedAttempts": [
+    "Initial optimization public fixture used a stale remote count rejection guard; corrected to the still-unsupported remote ariaSnapshot guard, retaining original failure.",
+    "The first paired campaign stopped after four successful ASCII cells when the original baseline Unicode trace export failed. No remaining cells were launched; that campaign is not pooled with the corrected comparison.",
+    "The original Unicode HTTP fixture omitted charset and produced mojibake; it still exposed non-ASCII wire escape overhead. The complete corrected comparison uses explicit UTF8 and verifies exact DOM and replay metadata.",
+    "Private wire proxy attempts first omitted its clock-port setting, then treated a CDP result list as an object. Both diagnostic failures are retained; the third captured the original product failure.",
+    "One native regression fixture accidentally used an adjacent surrogate pair while expecting two lone surrogates; inserting a separating ASCII character corrected the fixture. The initial failed test log is retained.",
+    "The first public Unicode regression attempted unsupported native fill with lone surrogates. The corrected fixture fills valid Unicode and creates lone-surrogate DOM text through evaluation; its old-driver negative control fails at the expected snapshot counter rejection.",
+    "Final packed and browser checks completed, then the controller refused to overwrite an existing provenance log. Only the three unstarted host checks ran in a continuation with new filenames.",
+    "Unavailable after thread interruption; every original child terminal status is preserved in results and watchdog receipts. No replacement launches."
+  ],
+  "limitations": [
+    "Private synthetic engineering comparison, not representative 2x acceptance or comparison with Playwright.",
+    "Four pairs do not establish tail behavior.",
+    "CPU and RSS are incomplete sampled diagnostics, not admitted total-tree resource measurements.",
+    "Both timed variants are Flashwright, with the identical Unicode correctness fix; there is no new Playwright speed claim.",
+    "Actual browser argv, kernel boot identity and resource policy were not bound at every performance boundary. Source and binary identities and ordinary launch options are retained, but this is not final matched-resource admission.",
+    "Host CPU metadata was observed again at analysis time; it is not an authenticated per-launch host snapshot.",
+    "The checked-in benchmark is a CLI/import-path adaptation of the measured private workload; fresh candidate controls on all three workloads and one reference Unicode control verify it, but their times are not pooled with the paired campaign.",
+    "Current full-core, macOS refresh, release gates and representative majority-scenario 2x objective remain open."
+  ],
+  "receipts": {
+    "snapshot-ascii-003/packages-resources.json": "0192bbb2faf6bf7285e698cec59ca368e83b61a167c7b8dbc8716265c12c36c1",
+    "snapshot-ascii-003/packages.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot-ascii-003/native-resources.json": "c241cbca5644aef59584b1330e519562e22ee12c9fffcb068a80f30c412d6ff8",
+    "snapshot-ascii-003/native.log": "12860b36bb93a55856fec0266c6a97e990345b366ad812802eef25c6a0c4db62",
+    "snapshot-ascii-003/clippy-resources.json": "de8d526cc3badc9c47194e8ba17bc13109778d8568c6f5abbf1bd5f1fe78453a",
+    "snapshot-ascii-003/clippy.log": "6556147e66ecbdb8260a1633061b342a05515dedb6024ec2413bb1ea253ba8a0",
+    "snapshot-ascii-003/format-resources.json": "60b8222e2bcf4a35f38b8ca0498efaec294e1170b935a0370d068388a115c085",
+    "snapshot-ascii-003/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot-ascii-003/runtime-resources.json": "94fbb049587b7b55eda0a27b30e17b1b7a135af8d9a699fb5a148034de05273d",
+    "snapshot-ascii-003/runtime.log": "1bc310224412f87a97fede9e510beb87c8da667eff11a639d2fce138ea25d6c4",
+    "snapshot-ascii-003/css-resources.json": "81d83a65e1cc4e82b2e57874f9804690d8161e257daaabccb611741226a90cf0",
+    "snapshot-ascii-003/css.log": "9a0524d8e5fd2afee8d44b04b640c11a9c4842a248a86f20bcee52dd27eb07e2",
+    "snapshot-ascii-003/custom-resources.json": "2a2d76113f34e8352291bf71762d04cf135987d0019788a203a2a41aaa2db195",
+    "snapshot-ascii-003/custom.log": "7696b38c4c928330371828e63841843b70b22f2febc6acb64658b364e835a51c",
+    "snapshot-ascii-003/native-phases-resources.json": "f57243d120d9e56b7f9fa5cbc5ff6c53854a6ee878c5493194632bcaf927a062",
+    "snapshot-ascii-003/native-phases.log": "e78fe736972c2ebca4c94c79302b84c0e8dc452fa3ff7dacfd3d571e95dfda8d",
+    "snapshot-ascii-003/public-resources.json": "ac2d86e5ab521334f9a48c53cd7232823821720aea8375676839fdd753450d61",
+    "snapshot-ascii-003/public.log": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d",
+    "snapshot-ascii-003/input-retry-resources.json": "41a9c4ad857eb6d96355c14387b0b0201f33ccc7821e4d0e4790dbe4da84628a",
+    "snapshot-ascii-003/input-retry.log": "34edf85f76dae73a2c7d8241fd690c67fe0179be22d7ce9e0beefa69e0ed8f24",
+    "snapshot-ascii-003/resource-viewer-resources.json": "c87636526bdbdda1d70bf8e0a2db94b4a55cfce839d52f6165ed056b3d3e2ea6",
+    "snapshot-ascii-003/resource-viewer.log": "f8427a81f9716a244f09d7c9a56d7c9be9afd3bfec1c86a230862327d887041c",
+    "snapshot-final-001/benchmark-large-ascii-resources.json": "7da058117a2024eee09509d5ca9398223e35c6b19761f9ea96bf1f9f04721b16",
+    "snapshot-final-001/benchmark-large-ascii.log": "9c410b3168ee470bfbcf15818361f5664eb107a1390678adc83885cab7a3236e",
+    "snapshot-final-001/benchmark-small-ascii-resources.json": "a612fe94126555df35569e9dd13894b02f84c282f194f8a80f0671caae19e525",
+    "snapshot-final-001/benchmark-small-ascii.log": "cef0dfd8f730c5fc4bdc74a8e2de52d86e775e960ecbe2bf0b634ab726b0429d",
+    "snapshot-final-001/benchmark-large-unicode-resources.json": "7a500e4247bfa5f8cfc7c158029a584b9a4fbee10c801378bdb4b08d4ae2a464",
+    "snapshot-final-001/benchmark-large-unicode.log": "aa67388ae74d90ed28cd07d80edef5e1344217533b273b0ea72b7191bf2b5633",
+    "snapshot-final-001/benchmark-reference-resources.json": "920965537008d1c55828709022c37daebf2471580723356bb373ca51dbb7965d",
+    "snapshot-final-001/benchmark-reference.log": "5a18fa0cc7fc32a3b6e8b59ce90185c31d449e116071d48d18b67d8414ec3cc5",
+    "snapshot-final-001/public-node22-resources.json": "f0d70cb2baf5477cbe7ecb88427c5671bf3ebe536ea9afe9116601dd1e49cec3",
+    "snapshot-final-001/public-node22.log": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d",
+    "snapshot-final-001/public-node24-resources.json": "43df62b4ca47f51f142df3f3037ce20b6b07d23b7d62fbc150e27eaa8863e495",
+    "snapshot-final-001/public-node24.log": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d",
+    "snapshot-final-001/packed-resources.json": "77c492e6a574d1df076e480cb804449f924e61e40b44fc6fe3b92b722a4d89df",
+    "snapshot-final-001/packed.log": "fa92287bf68f19e11f2a645fb310a0bead004742c61afc8cb169403fff192c10",
+    "snapshot-final-001/provenance-continued-resources.json": "4fdb236019e9aa475ce6a337ed1b6abf5435f058427761b408f81768698a04a9",
+    "snapshot-final-001/provenance-continued.log": "b89ee7fa997445e9335546d0929471eb13364417753424a5ee7ef07e68123293",
+    "snapshot-final-001/typecheck-continued-resources.json": "5b4589f396207485dbb1aa21b9b702f43dc304825f0775a76664ae6174edf4e6",
+    "snapshot-final-001/typecheck-continued.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot-final-001/binary-paths-continued-resources.json": "16836f77f4ec3e837df0e2af300dd07945a9c92f5a7402ffdd8b630eeb10c53e",
+    "snapshot-final-001/binary-paths-continued.log": "f3727eb950d6ecc95426dd9863e67021ecf6722bf7e5fcd59a42e9e2dac4e076",
+    "snapshot-ascii-003/00-large-ascii-0-baseline/report.json": "2acc99b3833b400c668eac37aa0f4d5c034de6e32606a0345cac4c8add9d00c1",
+    "snapshot-ascii-003/00-large-ascii-0-baseline-resources.json": "5448fdcddae8092dd256769fce8ca71779fa64ce3c0b25e285092a78cc7bf700",
+    "snapshot-ascii-003/00-large-ascii-0-baseline/trace.zip": "5327070d168cabf9d674183c8c51b0da5bfde5758d4fc5610a1de77e3092dfe1",
+    "snapshot-ascii-003/01-large-ascii-0-ascii/report.json": "ac503d28dd8d4364bed7d9d21d96ffe6138e58ad27ceff58435f78d328a07ca4",
+    "snapshot-ascii-003/01-large-ascii-0-ascii-resources.json": "29d91da0302d39e60610ce1a5480b80e2c9eb5b77909d57f1ecbf825e6bd9e2c",
+    "snapshot-ascii-003/01-large-ascii-0-ascii/trace.zip": "691a8518e1a6d3840b51881c583e6d79b62973c48fa52cb21476a7d4a098c5df",
+    "snapshot-ascii-003/02-small-ascii-0-baseline/report.json": "99eff69af91f8cd1d400138a6f5ded612a6c00289af8e357ab8ce8a3011812d8",
+    "snapshot-ascii-003/02-small-ascii-0-baseline-resources.json": "d69c0ecff69577ef23579ac54e785f25b3031fdff64de1c4eb6db3ac8b54fc34",
+    "snapshot-ascii-003/02-small-ascii-0-baseline/trace.zip": "ca8a718968e23110a1fd5f94db2556a25d37b70187c7f345c01f9229d14ad90a",
+    "snapshot-ascii-003/03-small-ascii-0-ascii/report.json": "db8fdb14ccba25a876373ee22ec00f070fbbb6e97bbe70978eab3c62d68e5f15",
+    "snapshot-ascii-003/03-small-ascii-0-ascii-resources.json": "d4ade824baf40abbde9d1594a1ff4d917c07a1aa8e157d0a7fa69e5c9d50ba45",
+    "snapshot-ascii-003/03-small-ascii-0-ascii/trace.zip": "9ada607819b9b0460db1d9de237ec1931a2eee9cd2c7facce914d018f32dcca8",
+    "snapshot-ascii-003/04-large-unicode-0-baseline/report.json": "9d9a041641a0227f872c62573471d9dbbec84dfcb2c6a048136f995281f5131b",
+    "snapshot-ascii-003/04-large-unicode-0-baseline-resources.json": "59db2ea76e81be1c47a51bdc521e2b1784fa01843cf7de7bc59f2c1dd0f3e129",
+    "snapshot-ascii-003/04-large-unicode-0-baseline/trace.zip": "1ec6a19526e5bd45e472ef53f1b823e7e3fa589d19e25d18fbd902259e025b4c",
+    "snapshot-ascii-003/05-large-unicode-0-ascii/report.json": "5c8154639aa1d877672e2d70eaf52eb0483278b5d139afffe1c8ea016bebc796",
+    "snapshot-ascii-003/05-large-unicode-0-ascii-resources.json": "c1dd6acf411a690a9047209cb15f2605e5f52304d5b501218c9237b74fd7b6fc",
+    "snapshot-ascii-003/05-large-unicode-0-ascii/trace.zip": "5ccc33ed6c9aa145d8a6d8154217c7aff0de9b930bc0383aad83a3f30a20c432",
+    "snapshot-ascii-003/06-large-unicode-1-ascii/report.json": "263d9f3f4b6211cf9d1a11a595b72b1c555c0a754aa1c1eaa113d3c23bde537f",
+    "snapshot-ascii-003/06-large-unicode-1-ascii-resources.json": "e7bd60b62bac27397ecc7eb38456261fa593a07baf3cd298e5dc85e446576ac2",
+    "snapshot-ascii-003/06-large-unicode-1-ascii/trace.zip": "38e7393b15cec756d493741d312c4d931662c6d8c3bc2c7b24e6a1fbc6783c30",
+    "snapshot-ascii-003/07-large-unicode-1-baseline/report.json": "7202220593c15e487943eec007c08e50331793bc27889c811d31c8b737e2fb8a",
+    "snapshot-ascii-003/07-large-unicode-1-baseline-resources.json": "6e55ccb1aee0f9597167c0dcbf72eed0811efad6109d9d3844dbc66d7b6f0d18",
+    "snapshot-ascii-003/07-large-unicode-1-baseline/trace.zip": "74862c5a391d099c9fa3917b1c741a3f4dea52b0440fd7894c5946c2babef993",
+    "snapshot-ascii-003/08-small-ascii-1-ascii/report.json": "b8a59d35d4fdf3efd2e53faaa313492b19dff731c2e6be6935f944309d45d203",
+    "snapshot-ascii-003/08-small-ascii-1-ascii-resources.json": "9d26baa27228a918a7ab38b2033ad19f42b0b131f4a6d9557b7d8de039003b4d",
+    "snapshot-ascii-003/08-small-ascii-1-ascii/trace.zip": "bc18676a4c63cd4ee6e36644ebb9deec3c8019046178a5fe05020ef258a055f1",
+    "snapshot-ascii-003/09-small-ascii-1-baseline/report.json": "a4f426c29d7668a5970509b59f35ca765406689712f9d4c9c5dc18ee49b76953",
+    "snapshot-ascii-003/09-small-ascii-1-baseline-resources.json": "4f281563b99d51ebf61cd37feef201e2aa6c177983da5ec41a8072e9a030eba8",
+    "snapshot-ascii-003/09-small-ascii-1-baseline/trace.zip": "1b07753ad47169121178b728e0c4fe30be3e15418c9be212b20410115042d533",
+    "snapshot-ascii-003/10-large-ascii-1-ascii/report.json": "338753ec45b81ef89aa8a6e0e3e7064913fcc72269beb322aa36452084566b9e",
+    "snapshot-ascii-003/10-large-ascii-1-ascii-resources.json": "6b432ee8e84414f9de06cbeb85c8ee3a13602391405450074b7ffc1ee727e906",
+    "snapshot-ascii-003/10-large-ascii-1-ascii/trace.zip": "5ab71dad52f11bebdc8fb3d5558a246c16d6ae18d4bdb79faa6a3b64134cf7de",
+    "snapshot-ascii-003/11-large-ascii-1-baseline/report.json": "18bd57203d74619a828c963fc757d4f64bddad77b7406a06c33d3aff6a6547b1",
+    "snapshot-ascii-003/11-large-ascii-1-baseline-resources.json": "4972cbab162d1f19acf623bca8f0568d808878a1acb538b0fe5978dfb0afc056",
+    "snapshot-ascii-003/11-large-ascii-1-baseline/trace.zip": "a8f99bcff0d067f0fe7d865003876d18471b5e3e243860df04659e9921300d07",
+    "snapshot-ascii-003/12-large-ascii-2-baseline/report.json": "c5ca1183716eec49d5aca961e616e256f04c0836819ff7717c05b6daecbd5c54",
+    "snapshot-ascii-003/12-large-ascii-2-baseline-resources.json": "b955a8237d2a31685f8c6013158bb8e79ea933273dea4710e079718564ef2052",
+    "snapshot-ascii-003/12-large-ascii-2-baseline/trace.zip": "f06b02604459e34527a27cbefde8a9a50fdcab9326c28875de14a6ea208784bf",
+    "snapshot-ascii-003/13-large-ascii-2-ascii/report.json": "ec18e02632304cefdf895995a92af8dad1cdda6f8c2bd24bc7e949aaa31c74af",
+    "snapshot-ascii-003/13-large-ascii-2-ascii-resources.json": "8d8e94666db2f3d4d37141e3fc6313432d5de807a8a10f815ae7918476f23f6b",
+    "snapshot-ascii-003/13-large-ascii-2-ascii/trace.zip": "3c29a4ec6a072fae51d77d0f2a713101f90fb2822a1269c98cb51907f2598426",
+    "snapshot-ascii-003/14-small-ascii-2-baseline/report.json": "c060ae7af1b1989f03e0ac07dbe4acbe1fb8fabe08ec05e1cd6a69e09cfd8eea",
+    "snapshot-ascii-003/14-small-ascii-2-baseline-resources.json": "13c2da9cbaf1ad754bc4833ee325c313030ea4346686c885c93f50ee4aa93490",
+    "snapshot-ascii-003/14-small-ascii-2-baseline/trace.zip": "911d3db837b2647e988cd64ae9e847c38f646f05d22fce1aa5bf83e8c6a1de5e",
+    "snapshot-ascii-003/15-small-ascii-2-ascii/report.json": "9e9bb55c41dfc1e36453cae430df2cd2ea7387f6964114dd8072487276500aa1",
+    "snapshot-ascii-003/15-small-ascii-2-ascii-resources.json": "ed6b893daf5ed26592db533f71da0770c1dd4a353c345319e50fc58dbc3ccd41",
+    "snapshot-ascii-003/15-small-ascii-2-ascii/trace.zip": "cd66dcbc3ae0174ddb83266a29630b99ad58cc5c4d983e100ccceba6e564d16b",
+    "snapshot-ascii-003/16-large-unicode-2-baseline/report.json": "e10885e5dfc865ff4ff3d4a2758aa538d7f704ffbb4759ad060e2573392b8aea",
+    "snapshot-ascii-003/16-large-unicode-2-baseline-resources.json": "ba978b939f4533314909b6f39eb85674b9dbc402b5022c1da62db2fbffdebaea",
+    "snapshot-ascii-003/16-large-unicode-2-baseline/trace.zip": "1fde0bd4ce67d7aa960ab506527c34b91ece939e59465faa33ef3cd78f094ab1",
+    "snapshot-ascii-003/17-large-unicode-2-ascii/report.json": "caf0ba65340e91613000e8a95c525f78ed52bead0f1dc863059525c38554ccdc",
+    "snapshot-ascii-003/17-large-unicode-2-ascii-resources.json": "fcf1b3d3349ecb19b3768bab69889322185f1f4bd32a8d061b1005d01cd781d1",
+    "snapshot-ascii-003/17-large-unicode-2-ascii/trace.zip": "7281946d168869956428cb38153ab902837c09696f3841615dceb1cfd6fe4dae",
+    "snapshot-ascii-003/18-large-unicode-3-ascii/report.json": "1179809b3feea90b96d7a323fbc16c8c85706c39192d60fbaff54ccc2a40a65c",
+    "snapshot-ascii-003/18-large-unicode-3-ascii-resources.json": "f87dd2fcd9ad13735c57418c99a0e1e75b67a56b0e3545de4e26a923acf83a21",
+    "snapshot-ascii-003/18-large-unicode-3-ascii/trace.zip": "95faa180f85ece7bc53d60fdcbcde8cd14a7506a7104ed8f3ab33d8e374b3eb8",
+    "snapshot-ascii-003/19-large-unicode-3-baseline/report.json": "082a01948eae3b94981a11dd38976129698184f8ac9975022c72b95d46626443",
+    "snapshot-ascii-003/19-large-unicode-3-baseline-resources.json": "47961afdeba85bcd360e61d4dcb60feee6c276240cd15190254517d8fd97b663",
+    "snapshot-ascii-003/19-large-unicode-3-baseline/trace.zip": "6a21d6caa7dc23b46306d104e29514ad45f91584b87b95a4bcf513ab273e9477",
+    "snapshot-ascii-003/20-small-ascii-3-ascii/report.json": "a11376448195717f4fcbdc2a62766ebe91e1e5c1f0b6a81f45aa21f7ef9ebff6",
+    "snapshot-ascii-003/20-small-ascii-3-ascii-resources.json": "dc7387521a9e799ba29dcc9128e0eb08d5ccadc4419a7802fb8b0c5037ff3134",
+    "snapshot-ascii-003/20-small-ascii-3-ascii/trace.zip": "a87899cbd448aacf1127fd4194936031a58e394c033901b01ee0440614595211",
+    "snapshot-ascii-003/21-small-ascii-3-baseline/report.json": "8d2866cdccf4c7b64d323f2e72b2fd40e9643ac8a5161f368ee91b186ff0d146",
+    "snapshot-ascii-003/21-small-ascii-3-baseline-resources.json": "83c855a7c23f872cb20c0cca8fb449696ccfb26edbceaa6448853ce79d634a6f",
+    "snapshot-ascii-003/21-small-ascii-3-baseline/trace.zip": "6ac35c4800791249fee50f62c9e36827e7369a615ee82eda97089c00309f62f1",
+    "snapshot-ascii-003/22-large-ascii-3-ascii/report.json": "091ca6d89956ffca6eba2d37c3c62bcd697c6212465f7fc56e44cb94614d8d38",
+    "snapshot-ascii-003/22-large-ascii-3-ascii-resources.json": "46117fb4016aa9428ec8b92517cad0e366d648943cbdaa7fa390f0af3dd429bc",
+    "snapshot-ascii-003/22-large-ascii-3-ascii/trace.zip": "319e8222d2e4b38ce428f2aaae4ab103132c115ba4448bae8096840b8db71fdc",
+    "snapshot-ascii-003/23-large-ascii-3-baseline/report.json": "75d49afad504b3d005da3c7a0a03636df63518dc6d2d6c356738aaecb2d7b1cb",
+    "snapshot-ascii-003/23-large-ascii-3-baseline-resources.json": "69578cce0242ef5de54478a8ea8b2158c50d68097c827ab96ba1643eb768d380",
+    "snapshot-ascii-003/23-large-ascii-3-baseline/trace.zip": "c694da37183bfbd2f1b45fee12b09cdd1c6f50cd8e5e219aa1f3268b148d7042",
+    "snapshot-ascii-001/runtime-resources.json": "7450a36ead96cf32b9a349611fc7676bf2520b2863ae9fd97d7541d34ab51466",
+    "snapshot-ascii-001/css-resources.json": "14ea3a918782d692ab7aaf6763d8bb15480e842af53bdaa253be11b9ad559b4d",
+    "snapshot-ascii-001/custom-resources.json": "edb7ef61da56863c7ec5e08d2e2f8a5414e99e4746f2fae8d43ce57f4efc9bdf",
+    "snapshot-ascii-001/native-phases-resources.json": "ba9ae8cf7fc0c770304fefd1c2376764455b1efb55bb957daf5cd26a66cdcc56",
+    "snapshot-ascii-001/public-resources.json": "36ce705110666b562e8280e6bedbc660d1244fbed0a58cc7a95df81db83664e6",
+    "snapshot-ascii-001/public-continued-resources.json": "5ceb0583f367c18d907a55487b911e46f1fe7796297b0dc0277417c3332c63b4",
+    "snapshot-ascii-001/input-retry-resources.json": "bff9706bf43450b671fa7cbcfcff42188b60dee00120fe6a2d4a4e7f8079fca8",
+    "snapshot-ascii-001/resource-viewer-resources.json": "76a3f0b3a0fe3041d9d54182132c96fc6cfa7becbe708e54fb9023b7e8241503",
+    "snapshot-ascii-002/00-large-ascii-0-baseline-resources.json": "3fbca032cf145f279ab37e06ae24ee6ecab125e55b69dac6c285637ccbbef430",
+    "snapshot-ascii-002/01-large-ascii-0-ascii-resources.json": "16d7db58e123081de86fb7d9bb36e3141519b823850b361e02a6f7e92a815f1a",
+    "snapshot-ascii-002/02-small-ascii-0-baseline-resources.json": "40a793d4e5a3bb3cac06ab729e01d01aabe14a0a9e66ce667d5dd5ee8faa5f02",
+    "snapshot-ascii-002/03-small-ascii-0-ascii-resources.json": "f6bf26ca7a597e41a7a70d8bab4d00432ca3169de09163620815316f94615968",
+    "snapshot-ascii-002/04-large-unicode-0-baseline-resources.json": "ae40b22e9f29568c48b163f1e55f80ec7e1b3d5c544a89d96e9d18eb862fe8c0",
+    "snapshot-unicode-wire-001/resources.json": "f402e8400bac2e184e5900946f7c17b1a59ab360082e68c9245702ddd711750e",
+    "snapshot-unicode-wire-001/resources-002.json": "4233056e8551c5e5c3a6c3f0cb29957a6cbb6ba2eb2606d1864e9010baafa9d3",
+    "snapshot-unicode-wire-001/resources-003.json": "1e98880f38a207747ec9b7bacf3fbd0de90a9fbbe6b09465759588787838ad39",
+    "snapshot-unicode-fix-001/public-negative-resources.json": "2046ac7a965f8b8f4b3a86beb909467c1c1a50163515323c634b7ea299d48ab4",
+    "snapshot-unicode-fix-001/public-negative-002-resources.json": "78eb102b921bd6e247e273b50720f83f23ea7d0ef739da121f7c4dd172bb18f1",
+    "snapshot-unicode-fix-001/public-positive-resources.json": "eddc7217a4bf3f6d68c77be51ffe5ecdc410d996296fdcc201ca1e2f6fbe95df",
+    "snapshot-metrics-screen-001/00-candidate-0-resources.json": "def342cef31c232153a22ce2d5a0bed91bace146ea5ec11a843d0ee1a0ad7b20",
+    "snapshot-metrics-screen-002/00-candidate-0-resources.json": "9e1ad83dcc8c52d5241063a9b51cd6df9d337084be59cede3a69d61eda9b05ac",
+    "snapshot-metrics-screen-002/01-candidate-1-resources.json": "988e7033a790e5aa030149b93b1993e7e989a420e980ecaa1ee2073fbcdcae4a",
+    "snapshot-metrics-screen-002/02-reference-1-resources.json": "bb51797a6549b9bc155e15da1b70b6d2ef1dfeb7e962b131a8224743812d0e17",
+    "snapshot-metrics-screen-002/03-reference-0-resources.json": "2a9b0ae57c5360c0f4c5cb350b29b347a657f25bc8b65572599e243147922e88",
+    "snapshot-metrics-screen-002/04-reference-0-resources.json": "11171273eb5918bc76c038c26fa1ac440ee404283a1dd145e93c47b96e023bf3",
+    "snapshot-metrics-screen-002/05-reference-1-resources.json": "6146832e2d0ca640a9c4222aa0e00a25a625e27ae4a1ef6597f60113f3b386a8",
+    "snapshot-metrics-screen-002/06-candidate-1-resources.json": "eb9dbdf6e417d0509549f6607af2a631ab44c7e9af85517c7a23aba24bca3dab",
+    "snapshot-metrics-screen-002/07-candidate-0-resources.json": "61559e927a73aeb458d39df319459c942fdf614926cd54d8b383b3ba770c22a6",
+    "snapshot-cost-screen-001/00-reference-off-resources.json": "9c42fa4228e1de5b16403ceb4c99b82060fcfdb1b61f4016199a14eecabb23a1",
+    "snapshot-cost-screen-001/01-reference-on-resources.json": "4051afe7317a66d3ac8c22179dc3f4ba9adbc17fdad23677dddbcc5a2dbd2334",
+    "snapshot-cost-screen-001/02-candidate-on-resources.json": "96bddb591bee02ef9148b6b83d7e594d31727235b8492a0e953c44b1ac62f24c",
+    "snapshot-cost-screen-001/03-candidate-off-resources.json": "445a2d719bdd9dbedb388cdc531108db8fcbf93c50f33904b4dc0c4b2db3dec5",
+    "snapshot-cost-screen-001/04-candidate-off-resources.json": "c595eee83f4c219c9d2f0fe8b6f1ba9304317374869177718a429744e08e8666",
+    "snapshot-cost-screen-001/05-candidate-on-resources.json": "536fb08576158f547eba383be3e3bdbdd9abfa44c23004a0ef7207e561881eef",
+    "snapshot-cost-screen-001/06-reference-on-resources.json": "c09fed097a5fa6f9b6e23b73008e70ef22042ea137695fe93d736be516e483ec",
+    "snapshot-cost-screen-001/07-reference-off-resources.json": "3b9387c67fe973029cb343e6411fcd617a1a7eeef9d18c8a8e1c698e5a8b177c",
+    "snapshot-ascii-003/plan.json": "3503b8be57d70282441002a68f11362cc3df8caf374add7ddfe6f235a6d35524",
+    "snapshot-ascii-003/analysis.json": "5f6b07d17819bfd127dcdd9529eb56e4a8b41ed23eea40d3502a0ce2928dc725",
+    "snapshot-ascii-003/inputs-before.json": "4416e84ff72e44a2670a55dd909d0897b893c2ba4dac1676d42a4ec4f926a821",
+    "snapshot-ascii-003/screen.mjs": "e113976642b234811477174cef008a452b2a838411b8ded2a3dc647ad428691e",
+    "snapshot-ascii-003/run.py": "b17da47a56cb6d0c6f47dada6655f64ff0f84575fd0cac8679007f7f2c8a81ae",
+    "snapshot-ascii-003/analyze.py": "d13ea7a732ec7801c13cee73e2e26cc5ef2718c156a790cc5744d47f90047a30",
+    "snapshot-unicode-wire-001/reply.json": "2f08e6e45ca76a87cb93c5864e38372f631528c435f1cf6110966525d3062b49",
+    "snapshot-unicode-wire-001/diagnosis.json": "5a14153182c048d6fe19dd75df7fb0606ea726803749409c40259b123b7bd044",
+    "snapshot-unicode-review-001/report.md": "786040317347397d37d6d9aa173b357e00fb1adc7fa09244d8fe8fbfa02bb581",
+    "snapshot-unicode-review-001/final.md": "9c671645e66fe20f509527bd57dfea4b50ad42e25ed71a193a23e838be449dec",
+    "snapshot-final-001/packed/report.json": "2cbb7fcd821de0fff74d223d71edd681c3cc83bb8bf1b53edd7c0aa7283f146c",
+    "snapshot-ascii-003/public/report.json": "7aacd89c0851a8c2ef55fbbd15da5257f70d1b02745af37d3fe8285e8645cf76",
+    "snapshot-final-001/public-node22/report.json": "d7d24ffdd5b4bec9f986a7ddf2bb1fbc3765d9a77ee8eb5789a595107f3bd075",
+    "snapshot-final-001/public-node24/report.json": "30b8025639b3e2e7c35bb0747d1fa9692d3ed3f58a020278c08113fb880341d1"
+  }
+}

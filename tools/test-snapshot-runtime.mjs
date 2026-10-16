@@ -182,6 +182,33 @@ try {
     const collect = value => typeof value === 'string' ? [value] : Array.isArray(value) ? value.flatMap(collect) : value && typeof value === 'object' ? Object.values(value).flatMap(collect) : [];
     assert.ok(collect(result.data.html).filter(value => value === text).length >= 2);
   });
+  await check('ASCII fast path and escaped UTF-16 retain exact byte admission', async () => {
+    const result = await page.evaluate(() => {
+      const target = document.querySelector('#replace');
+      const original = target.textContent;
+      const text = document.createTextNode(''); target.replaceChildren(text);
+      const values = Array.from({ length: 128 }, (_, code) => String.fromCharCode(code));
+      values.push('ordinary ASCII '.repeat(1024), '\ud800', '\udfff', '\ud83d\ude00', 'a\ud800b\udfff',
+        Array.from({ length: 65536 }, (_, code) => String.fromCharCode(code)).join(''));
+      try {
+        const configuration = { maximumCacheBytes: 0 };
+        const base = snapshotFactory(configuration).capture({ token: 'empty', snapshotNumber: 1 });
+        const overhead = base.counters.bytes - 2;
+        for (const value of values) {
+          text.data = value;
+          const maximumDataBytes = overhead + new TextEncoder().encode(JSON.stringify(value)).length;
+          const exact = snapshotFactory({ ...configuration, maximumDataBytes }).capture({ token: 'exact', snapshotNumber: 1 });
+          if (exact.counters.bytes !== maximumDataBytes) throw new Error('Incorrect JSON byte charge');
+          const owner = snapshotFactory({ ...configuration, maximumDataBytes: maximumDataBytes - 1 });
+          let rejected = false;
+          try { owner.capture({ token: 'over', snapshotNumber: 1 }); } catch (error) { rejected = /byte limit/.test(error.message); }
+          if (!rejected || owner.inspect().tentative !== null) throw new Error('Byte boundary did not roll back');
+        }
+        return values.length;
+      } finally { target.textContent = original; }
+    });
+    assert.equal(result, 134);
+  });
   await check('exact data admission passes and one-byte-lower admission fails cleanly', async () => {
     const baseline = await page.evaluate(() => snapshotFactory({ maximumCacheBytes: 0 }).capture({ token: 'budget', snapshotNumber: 1 }));
     const exact = await page.evaluate(maximumDataBytes => snapshotFactory({ maximumDataBytes, maximumCacheBytes: 0 }).capture({ token: 'exact', snapshotNumber: 1 }), baseline.counters.bytes);

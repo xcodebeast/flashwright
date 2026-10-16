@@ -27,6 +27,9 @@ function createSnapshotCapture(configuration = {}) {
 
   /** Count JSON string bytes before any escaped copy, preserving lone UTF-16 surrogates. */
   function stringBytes(value) {
+    if (value.length + 2 > limits.maximumDataBytes) throw failure('a string exceeds the capture byte limit');
+    // The native regexp scan avoids a JS loop for ordinary unescaped ASCII.
+    if (!/["\\\x00-\x1f\x7f-\uffff]/.test(value)) return value.length + 2;
     let bytes = 2;
     for (let index = 0; index < value.length; index++) {
       const character = value.charCodeAt(index);
