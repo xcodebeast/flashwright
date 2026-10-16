@@ -261,6 +261,64 @@ fn validate_cache(cache: &SnapshotCache) -> Result<(), ErrorRecord> {
     Ok(())
 }
 
+/// Renderer counters use JSON.stringify's UTF-8 string representation. CDP may
+/// instead escape Unicode, including surrogate pairs. Count that extra encoding
+/// without allocating decoded strings (which cannot represent lone surrogates).
+/// RawValue has already validated every escape; actual wire/storage limits still
+/// apply to the original bytes independently of this counter comparison.
+fn string_escape_overhead(raw: &RawValue) -> usize {
+    fn hex_unit(bytes: &[u8]) -> u16 {
+        bytes.iter().fold(0, |value, byte| {
+            (value << 4)
+                | u16::from(match byte {
+                    b'0'..=b'9' => byte - b'0',
+                    b'a'..=b'f' => byte - b'a' + 10,
+                    b'A'..=b'F' => byte - b'A' + 10,
+                    _ => unreachable!("RawValue validated the escape"),
+                })
+        })
+    }
+    let bytes = raw.get().as_bytes();
+    let mut offset = 0;
+    let mut overhead = 0;
+    while offset < bytes.len() {
+        if bytes[offset] != b'\\' {
+            offset += 1;
+            continue;
+        }
+        match bytes[offset + 1] {
+            b'/' => overhead += 1,
+            b'u' => {
+                let unit = hex_unit(&bytes[offset + 2..offset + 6]);
+                offset += 6;
+                let encoded_bytes = match unit {
+                    8 | 9 | 10 | 12 | 13 | 34 | 92 => 2,
+                    0..=31 => 6,
+                    32..=127 => 1,
+                    128..=2047 => 2,
+                    0xd800..=0xdbff
+                        if bytes.get(offset..offset + 2) == Some(b"\\u")
+                            && (0xdc00..=0xdfff)
+                                .contains(&hex_unit(&bytes[offset + 2..offset + 6])) =>
+                    {
+                        // Two six-byte escapes encode one four-byte UTF-8 scalar.
+                        overhead += 8;
+                        offset += 6;
+                        continue;
+                    }
+                    0xd800..=0xdfff => 6,
+                    _ => 3,
+                };
+                overhead += 6 - encoded_bytes;
+                continue;
+            }
+            _ => {}
+        }
+        offset += 2;
+    }
+    overhead
+}
+
 /// The caller supplies the complete wire frame size, including the outer CDP id/session envelope.
 /// Native ownership must still check the returned token, sequence and counters against its exact grants.
 /// Decoding does not release remote exception objects; the capture caller retains its attempt object group.
@@ -325,7 +383,8 @@ pub fn decode_snapshot_reply(
         ));
     }
     let counters = &capture.counters;
-    if counters.bytes < charged_data_bytes
+    let renderer_data_bytes = charged_data_bytes - string_escape_overhead(capture.data);
+    if counters.bytes < renderer_data_bytes
         || counters.bytes > admission.maximum_data_bytes
         || counters.override_bytes > counters.bytes
         || counters.css_read_bytes > admission.maximum_data_bytes
@@ -392,6 +451,100 @@ mod tests {
         assert!(matches!(captured.data.encoding, AttachmentEncoding::Raw));
         assert_eq!(captured.token, "capture-1");
         assert_eq!(captured.snapshot_number, 1);
+    }
+
+    #[test]
+    fn escape_accounting_matches_utf8_for_every_utf16_unit_and_surrogate_edges() {
+        for unit in 0..=u16::MAX {
+            let raw = RawValue::from_string(format!(r#""\u{unit:04x}""#)).unwrap();
+            let canonical_bytes = char::from_u32(u32::from(unit))
+                .map(|character| serde_json::to_string(&character).unwrap().len())
+                .unwrap_or(8); // A lone surrogate stays escaped, plus quotes.
+            assert_eq!(
+                raw.get().len() - string_escape_overhead(&raw),
+                canonical_bytes
+            );
+        }
+        for (escaped, canonical) in [
+            (r#""\uD800\uDC00""#, "\u{10000}"),
+            (r#""\udbff\udfff""#, "\u{10ffff}"),
+            (r#""\ud83d\ude00""#, "😀"),
+            (
+                r#""\u0022\u005c\u0008\u0009\u000a\u000c\u000d\/""#,
+                "\"\\\x08\t\n\x0c\r/",
+            ),
+            (r#""\\u00e9\"\\\/é😀""#, "\\u00e9\"\\/é😀"),
+        ] {
+            let raw = RawValue::from_string(escaped.into()).unwrap();
+            assert_eq!(
+                raw.get().len() - string_escape_overhead(&raw),
+                serde_json::to_string(canonical).unwrap().len(),
+                "{escaped}"
+            );
+        }
+        for (escaped, overhead) in [
+            (r#""\ud800\ud800\udc00""#, 8),
+            (r#""\udc00\ud800""#, 0),
+            (r#"["\ud800","\udc00"]"#, 0),
+            (r#""\ud800\\udc00""#, 0),
+        ] {
+            let raw = RawValue::from_string(escaped.into()).unwrap();
+            assert_eq!(string_escape_overhead(&raw), overhead, "{escaped}");
+        }
+    }
+
+    #[test]
+    fn escaped_unicode_counters_do_not_relax_wire_data_wrapper_or_alias_limits() {
+        let html = r#"["HTML",{"title":"\u00e9\u0394\ud83d\ude00"},"\ud800A\udfff\u0000"]"#;
+        let overrides = r#"[{"url":"https://example.test/\u00e9.css","content":"p::before{content:'\ud83d\ude00'}","contentType":"text/css"}]"#;
+        let original = fixture(html, overrides, 1);
+        let evaluation: EvaluationReply<'_> = parse(&original).unwrap();
+        let object: CapturedObject<'_> = parse(evaluation.result).unwrap();
+        let capture: CaptureValue<'_> = parse(object.value).unwrap();
+        let data_bytes = capture.data.get().len();
+        let charged_bytes = data_bytes + 256;
+        let renderer_bytes = charged_bytes - 4 - 4 - 8 - 4 - 8;
+        assert_eq!(string_escape_overhead(capture.data), 28);
+        let raw = RawValue::from_string(original.get().replacen(
+            &format!(r#""bytes":{charged_bytes}"#),
+            &format!(r#""bytes":{renderer_bytes}"#),
+            1,
+        ))
+        .unwrap();
+        let wrapper_bytes = frame_bytes(&raw) - data_bytes;
+        let exact = SnapshotReplyAdmission::new(charged_bytes, wrapper_bytes).unwrap();
+        let SnapshotReply::Captured(captured) =
+            decode_snapshot_reply(&raw, frame_bytes(&raw), exact).unwrap()
+        else {
+            panic!("expected DATA")
+        };
+        assert_eq!(captured.data.bytes, capture.data.get().as_bytes());
+        assert_eq!(captured.data.decoded_length, data_bytes);
+        assert_eq!(captured.counters.bytes, renderer_bytes);
+        for limited_admission in [
+            SnapshotReplyAdmission::new(charged_bytes - 1, wrapper_bytes).unwrap(),
+            SnapshotReplyAdmission::new(charged_bytes, wrapper_bytes - 1).unwrap(),
+            SnapshotReplyAdmission::new(renderer_bytes, wrapper_bytes).unwrap(),
+        ] {
+            assert_eq!(
+                decode_snapshot_reply(&raw, frame_bytes(&raw), limited_admission)
+                    .unwrap_err()
+                    .code,
+                ErrorCode::ResourceLimit
+            );
+        }
+        let undercount = RawValue::from_string(raw.get().replacen(
+            &format!(r#""bytes":{renderer_bytes}"#),
+            &format!(r#""bytes":{}"#, renderer_bytes - 1),
+            1,
+        ))
+        .unwrap();
+        assert_eq!(
+            decode_snapshot_reply(&undercount, frame_bytes(&undercount), exact)
+                .unwrap_err()
+                .code,
+            ErrorCode::ResourceLimit
+        );
     }
 
     #[test]

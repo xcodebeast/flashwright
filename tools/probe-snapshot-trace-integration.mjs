@@ -86,6 +86,37 @@ try {
       } finally { await context.close(); }
     });
   }
+  await check('Unicode snapshots preserve native wire escapes, lone UTF-16 and incremental replay', async () => {
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage(); await page.goto(origin);
+      const input = 'métadonnées Δ 😀 '.repeat(128);
+      const text = input + '\ud800A\udfff';
+      await page.evaluate(text => {
+        const element = document.createElement('p');
+        element.id = 'unicode'; element.title = text; element.textContent = text;
+        document.body.appendChild(element);
+      }, text);
+      await startSnapshots(context.tracing);
+      await page.locator('#input').fill(input);
+      assert.equal(await page.locator('#unicode').textContent(), text);
+      const path = join(output, 'unicode.zip');
+      await context.tracing.stop({ path });
+      const trace = await inspect(path);
+      const storage = new iso.SnapshotStorage();
+      const main = trace.snapshots.filter(snapshot => snapshot.isMainFrame);
+      assert.ok(main.length >= 4);
+      let finalHtml;
+      for (const snapshot of main) {
+        const html = storage.addFrameSnapshot('context', snapshot, []).render().html;
+        assert.ok(html.includes(text), 'literal and incremental snapshots preserve exact UTF-16 text');
+        assert.ok(html.includes(`title="${text}"`));
+        finalHtml = html;
+      }
+      assert.ok(finalHtml.includes(`__playwright_value_="${input}"`));
+      assert.equal(await page.locator('#input').inputValue(), input);
+    } finally { await context.close(); }
+  });
   await check('chunk gaps keep one native recording and late old calls cannot acquire a successor', async () => {
     const context = await browser.newContext();
     try {
@@ -169,7 +200,7 @@ try {
       const child = page.frames().find(frame => frame !== page.mainFrame());
       assert.ok(child);
       let remote = false;
-      try { assert.equal(await child.locator('body').count(), 1); }
+      try { await child.locator('body').ariaSnapshot(); }
       catch (error) { assert.equal(error.name, 'UnsupportedFeatureError'); remote = true; }
       report.crossOriginFramePlacement = remote ? 'out-of-process' : 'same-process';
       await startSnapshots(context.tracing);
