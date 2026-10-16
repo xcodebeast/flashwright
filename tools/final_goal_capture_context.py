@@ -1,4 +1,4 @@
-"""Retain prospective file and macOS boot identities around an original launch.
+"""Retain prospective file and host boot identities around an original launch.
 
 This is local reproducibility evidence, not executable-memory attestation. The
 reviewed caller still owns inventory completeness and actual process custody.
@@ -21,6 +21,7 @@ MAXIMUM_FILE_BYTES = 1024 * 1024 * 1024
 MAXIMUM_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
 MAXIMUM_FILES = 30000
 HASH_PATTERN = re.compile(r"[a-f0-9]{64}\Z")
+BOOT_PATTERN = re.compile(r"[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\Z")
 
 
 def require(condition, message):
@@ -119,6 +120,59 @@ def read_mac_host():
     return {"configuration": configuration, "identitySha256": identity, "bootIdentitySha256": boot_digest,
             "namespace": identity + ":" + boot_digest,
             "scope": "Configuration and kernel boot session; not a persistent machine identity across boots"}
+
+
+def read_linux_host():
+    """Read kernel configuration without retaining a hostname, machine ID or raw boot UUID."""
+    require(sys.platform == "linux" and platform.machine() == "x86_64", "Capture context requires Linux x64")
+
+    def read_proc(path, limit):
+        with open(path, "rb") as stream:
+            contents = stream.read(limit + 1)
+        require(len(contents) <= limit, "Kernel host field exceeds byte limit")
+        return contents.decode("utf-8", errors="strict").strip()
+
+    boot = read_proc("/proc/sys/kernel/random/boot_id", 64)
+    require(BOOT_PATTERN.fullmatch(boot), "Missing kernel boot-session identity")
+    models = sorted({line.split(":", 1)[1].strip()
+                     for line in read_proc("/proc/cpuinfo", 4 * 1024 * 1024).splitlines()
+                     if line.split(":", 1)[0].strip() == "model name" and ":" in line})
+    require(models and all(0 < len(model) <= 4096 and "\0" not in model for model in models),
+            "Missing kernel CPU model")
+    logical_cpus = os.sysconf("SC_NPROCESSORS_ONLN")
+    pages = os.sysconf("SC_PHYS_PAGES")
+    page_size = os.sysconf("SC_PAGESIZE")
+    affinity = sorted(os.sched_getaffinity(0))
+    require(all(type(value) is int and value > 0 for value in [logical_cpus, pages, page_size])
+            and affinity and all(type(cpu) is int and cpu >= 0 for cpu in affinity),
+            "Invalid host resource configuration")
+    kernel = os.uname()
+    require(all(0 < len(value) <= 4096 and "\0" not in value for value in [kernel.release, kernel.version]),
+            "Missing kernel version")
+    configuration = {"platform": "linux", "architecture": "x64", "logicalCpuCount": logical_cpus,
+                     "physicalMemoryBytes": pages * page_size, "kernelRelease": kernel.release,
+                     "kernelBuild": kernel.version, "cpuModels": models, "allowedCpuIds": affinity,
+                     "resourceScope": "Kernel online CPUs, physical memory and collector affinity; cgroup quotas and workload affinity require separate admission"}
+    boot_digest = digest(boot.lower().encode())
+    identity = digest(encode({"configuration": configuration, "bootIdentitySha256": boot_digest}))
+    return {"configuration": configuration, "identitySha256": identity, "bootIdentitySha256": boot_digest,
+            "namespace": identity + ":" + boot_digest,
+            "scope": "Configuration and kernel boot session; not a persistent machine identity across boots"}
+
+
+def read_host():
+    if sys.platform == "darwin":
+        return read_mac_host()
+    if sys.platform == "linux":
+        return read_linux_host()
+    raise ValueError("Capture context requires macOS arm64 or Linux x64")
+
+
+def host_clock_implementation(host):
+    configuration = host["configuration"]
+    target = (configuration["platform"], configuration["architecture"])
+    require(target in [("darwin", "arm64"), ("linux", "x64")], "Unsupported capture host")
+    return "mach_absolute_time()" if target[0] == "darwin" else "clock_gettime(CLOCK_MONOTONIC)"
 
 
 def write_receipt(path, record):
@@ -245,13 +299,14 @@ class CaptureContext:
             record["beforeReceipt"] = self.before_receipt
         try:
             require(re.fullmatch(r"[a-f0-9]{32}", self.capture_identity), "Invalid capture identity")
+            record["host"] = read_host()
             clock = time.get_clock_info("monotonic")
-            require(clock.monotonic and not clock.adjustable and clock.implementation == "mach_absolute_time()",
+            require(clock.monotonic and not clock.adjustable
+                    and clock.implementation == host_clock_implementation(record["host"]),
                     "Unexpected supervisor clock domain")
             record["clock"] = {"implementation": clock.implementation, "resolutionSeconds": clock.resolution}
-            record["host"] = read_mac_host()
             record["inputs"] = self.collect_inputs()
-            require(read_mac_host() == record["host"], "Host or boot changed during input collection")
+            require(read_host() == record["host"], "Host or boot changed during input collection")
             record["producer"], _ = read_stable_file(str(Path(__file__).resolve()))
             record["supervisorSource"], _ = read_stable_file(str(Path(__file__).with_name("watchdog.py").resolve()))
             record["supervisorRuntime"], _ = read_stable_file(str(Path(sys.executable).resolve()))
@@ -307,7 +362,8 @@ def verify_capture_context(report_path):
                 and snapshot.get("phase") == phase, "Invalid verified snapshot")
         require(snapshot["captureIdentity"] == report["clock"]["identity"], "Snapshot capture identity differs")
         require(snapshot["command"] == report["command"], "Snapshot command differs")
-        require(snapshot["clock"]["implementation"] == report["clock"]["implementation"] == "mach_absolute_time()"
+        require(snapshot["clock"]["implementation"] == report["clock"]["implementation"]
+                == host_clock_implementation(snapshot["host"])
                 and snapshot["clock"]["resolutionSeconds"] == report["clock"]["resolutionSeconds"], "Snapshot clock differs")
         for field in ["startedNanoseconds", "finishedNanoseconds"]:
             require(isinstance(snapshot[field], str) and re.fullmatch(r"[1-9][0-9]{0,38}", snapshot[field]), "Invalid snapshot clock value")

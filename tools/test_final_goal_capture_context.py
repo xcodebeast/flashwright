@@ -1,6 +1,7 @@
 """Check original launch boundaries, input mutation and bounded file collection."""
 
 import json
+import io
 import os
 from pathlib import Path
 import platform
@@ -139,7 +140,8 @@ class CaptureInputTests(CaptureFixture):
             self.context.collect_inputs()
 
 
-@unittest.skipUnless(sys.platform == "darwin" and platform.machine() == "arm64", "native macOS arm64 capture")
+@unittest.skipUnless((sys.platform, platform.machine()) in [("darwin", "arm64"), ("linux", "x86_64")],
+                     "native macOS arm64 or Linux x64 capture")
 class CaptureBoundaryTests(CaptureFixture):
     def snapshot(self, phase):
         path = self.directory / (phase + ".json")
@@ -180,8 +182,8 @@ class CaptureBoundaryTests(CaptureFixture):
         self.assertIn("changed after launch: inputs", after["error"])
 
     def test_host_change_and_unknown_clock_fail(self):
-        host = capture.read_mac_host()
-        with patch.object(capture, "read_mac_host", side_effect=[host, {**host, "namespace": "changed"}]):
+        host = capture.read_host()
+        with patch.object(capture, "read_host", side_effect=[host, {**host, "namespace": "changed"}]):
             before = self.snapshot("before")
         self.assertEqual(before["status"], "failed")
         self.assertIn("Host or boot changed", before["error"])
@@ -189,6 +191,24 @@ class CaptureBoundaryTests(CaptureFixture):
                 "monotonic": True, "adjustable": False, "implementation": "other"})()):
             receipt = self.context.snapshot("before", self.directory / "unknown-clock.json")
         self.assertEqual(receipt["status"], "failed")
+
+    def test_retained_verifier_binds_clock_to_recorded_host(self):
+        result = self.launch("pass")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(self.report_path.read_text())
+        wrong_clock = ("clock_gettime(CLOCK_MONOTONIC)" if sys.platform == "darwin" else "mach_absolute_time()")
+        report["clock"]["implementation"] = wrong_clock
+        for phase in ["before", "after"]:
+            path = Path(report["captureContext"][phase]["path"])
+            snapshot = json.loads(path.read_text())
+            snapshot["clock"]["implementation"] = wrong_clock
+            if phase == "after":
+                snapshot["beforeReceipt"] = report["captureContext"]["before"]
+            path.write_bytes(capture.encode(snapshot))
+            report["captureContext"][phase] = {**self.receipt(path), "status": "verified"}
+        self.report_path.write_bytes(capture.encode(report))
+        with self.assertRaisesRegex(ValueError, "Snapshot clock differs"):
+            capture.verify_capture_context(self.report_path)
 
     def test_snapshot_outputs_are_immutable(self):
         self.snapshot("before")
@@ -285,6 +305,47 @@ class CaptureBoundaryTests(CaptureFixture):
         self.assertIn("FileExistsError", report["captureContext"]["error"])
         self.assertEqual(report["rootPollCpu"]["status"], "observed")
         self.assertEqual(path.read_text(), "occupied")
+
+
+class LinuxHostTests(unittest.TestCase):
+    def host(self, *, boot="12345678-1234-5678-9abc-1234567890ab", cpu="model name : Example CPU\n",
+             affinity=(1, 3), architecture="x86_64", memory_pages=4096):
+        def contents(path, mode):
+            self.assertEqual(mode, "rb")
+            return io.BytesIO({"/proc/sys/kernel/random/boot_id": boot.encode(),
+                               "/proc/cpuinfo": cpu.encode()}[path])
+
+        kernel = type("Kernel", (), {"release": "1.2.3", "version": "test build", "nodename": "private-machine-name"})()
+        with patch.object(capture.sys, "platform", "linux"), patch.object(capture.platform, "machine", return_value=architecture), \
+                patch("builtins.open", side_effect=contents), patch.object(capture.os, "uname", return_value=kernel), \
+                patch.object(capture.os, "sched_getaffinity", return_value=set(affinity), create=True), \
+                patch.object(capture.os, "sysconf", side_effect=lambda key: {
+                    "SC_NPROCESSORS_ONLN": 4, "SC_PHYS_PAGES": memory_pages, "SC_PAGESIZE": 4096}[key]):
+            return capture.read_host()
+
+    def test_host_keeps_configuration_and_hashed_boot_without_machine_name(self):
+        host = self.host(cpu="model name: Second CPU\nmodel name: Example CPU\nmodel name: Example CPU\n")
+        self.assertEqual(host["configuration"]["cpuModels"], ["Example CPU", "Second CPU"])
+        self.assertEqual(host["configuration"]["allowedCpuIds"], [1, 3])
+        self.assertEqual(host["configuration"]["physicalMemoryBytes"], 4096 * 4096)
+        self.assertEqual(capture.host_clock_implementation(host), "clock_gettime(CLOCK_MONOTONIC)")
+        self.assertNotIn("private-machine-name", json.dumps(host))
+        self.assertNotIn("12345678-1234-5678-9abc-1234567890ab", json.dumps(host))
+        changed_boot = self.host(boot="22345678-1234-5678-9abc-1234567890ab")
+        self.assertNotEqual(host["bootIdentitySha256"], changed_boot["bootIdentitySha256"])
+        self.assertNotEqual(self.host()["identitySha256"], self.host(affinity=(0, 1))["identitySha256"])
+
+    def test_invalid_or_unbounded_kernel_fields_fail(self):
+        for parameters in [{"boot": "not-a-uuid"}, {"boot": "x" * 65}, {"cpu": "model name: \n"},
+                           {"cpu": "x" * (4 * 1024 * 1024 + 1)}, {"affinity": ()},
+                           {"architecture": "aarch64"}, {"memory_pages": -1}]:
+            with self.subTest(parameters={key: str(value)[:60] for key, value in parameters.items()}), self.assertRaises(ValueError):
+                self.host(**parameters)
+
+    def test_retained_host_cannot_select_an_unknown_platform_clock(self):
+        for target in [("linux", "arm64"), ("darwin", "x64"), ("other", "x64")]:
+            with self.subTest(target=target), self.assertRaisesRegex(ValueError, "Unsupported capture host"):
+                capture.host_clock_implementation({"configuration": dict(zip(["platform", "architecture"], target))})
 
 
 if __name__ == "__main__":
