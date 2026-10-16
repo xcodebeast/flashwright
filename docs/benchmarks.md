@@ -182,6 +182,8 @@ To reproduce the historical comparisons, verify the recorded Flashwright binary 
 
 Current goal acceptance follows the [draft final-goal contract](../benchmarks/configurations/final-goal.json). Its nine scenarios each have two worker cells; all 18 cells remain unmeasured for final admission, and the contract remains unsealed. Native Linux remains unverified.
 
+Linux resource measurement is under development. The [policy and namespace checkpoint](../compatibility/evidence/linux-cgroup-policy-checkpoint-2026-10-16.json) verifies a bounded reader for visible ancestor restrictions and a namespace wrapper compatible with Bun.WebView's native Chrome launch. It retains the browser's storage/action differences and rejection for four adopted descendants. Cgroup CPU, terminal-wait CPU and sampled memory remain distinct observations; this checkpoint adds no comparative timing results or resource admission.
+
 The experimental [broad matrix coordinator](../benchmarks/broad-matrix.mjs) prepares eight independent launches for its original five engines. Bun.WebView is declared but not yet implemented by this coordinator. Inspect its requirements without starting a browser:
 
 ```sh
