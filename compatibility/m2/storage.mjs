@@ -25,7 +25,7 @@ const fixture = `<!doctype html><meta charset="utf-8"><title>Storage</title><scr
 window.startup = { local: localStorage.getItem('startup'), session: sessionStorage.getItem('session') };
 </script>`;
 const server = createServer((request, response) => {
-  requests.push({ path: request.url, cookie: request.headers.cookie ?? '' });
+  requests.push({ path: request.url, cookie: request.headers.cookie ?? '', referer: request.headers.referer ?? '' });
   if (request.url === '/worker.js') {
     response.setHeader('content-type', 'application/javascript');
     response.end(`self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
@@ -42,7 +42,7 @@ const server = createServer((request, response) => {
   response.end(fixture);
 });
 const childServer = createServer((request, response) => {
-  requests.push({ child: true, path: request.url });
+  requests.push({ child: true, path: request.url, referer: request.headers.referer ?? '' });
   response.setHeader('content-type', 'text/html; charset=utf-8');
   response.end(fixture + '<output></output><script>localStorage.setItem("child", "child origin"); document.querySelector("output").textContent = localStorage.getItem("child");</script>');
 });
@@ -127,7 +127,7 @@ async function run(name, chromium) {
     for (let index = 0; index < 5; index++) {
       assert.deepEqual(sortState(await context.storageState()), result.state, 'repeated multi-origin collection must survive cancelled prior-document subresources');
     }
-    assert.equal(requests.length, requestCount, 'snapshot must never reach the application server');
+    assert.equal(requests.length, requestCount, `snapshot must never reach the application server: ${JSON.stringify(requests.slice(requestCount))}`);
     assert.equal(pageEvents, eventCount, 'internal origin pages must remain private');
     assert.deepEqual(context.pages(), []);
     assert.deepEqual(sortState(JSON.parse(await readFile(path, 'utf8'))), result.state);
@@ -137,7 +137,7 @@ async function run(name, chromium) {
     for (const storageState of [state, path]) {
       const beforeRestore = requests.length;
       const restored = await browser.newContext({ storageState });
-      assert.equal(requests.length, beforeRestore, 'restore must not run the application');
+      assert.equal(requests.length, beforeRestore, `restore must not run the application: ${JSON.stringify(requests.slice(beforeRestore))}`);
       assert.deepEqual(restored.pages(), []);
       assert.deepEqual(sortState(await restored.storageState()), result.state, 'state is immediately exportable before any public page');
       const restoredPage = await restored.newPage();

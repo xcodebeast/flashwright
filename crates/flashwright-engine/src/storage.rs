@@ -314,10 +314,14 @@ async fn fulfill_storage_request(
     session_identifier: &str,
     request_identifier: &str,
 ) -> Result<(), ErrorRecord> {
+    // Full Chrome can request a fallback favicon after the private target starts
+    // closing and interception is detached. Give this inert document its own
+    // inline icon so storage collection never initiates that network request.
+    let document = b"<!doctype html><title>Storage</title><link rel=\"icon\" href=\"data:,\">";
     let result = connection.call("Fetch.fulfillRequest", json!({
         "requestId": request_identifier, "responseCode": 200,
         "responseHeaders": [{ "name": "Content-Type", "value": "text/html; charset=utf-8" }],
-        "body": "PCFkb2N0eXBlIGh0bWw+PHRpdGxlPlN0b3JhZ2U8L3RpdGxlPg==",
+        "body": flashwright_protocol::attachment::encode_base64(document),
     }), Some(session_identifier)).await;
     match result {
         Ok(_) => Ok(()),
