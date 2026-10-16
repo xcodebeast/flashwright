@@ -104,7 +104,7 @@ async function run(name, chromium) {
             report.placement[label] = targetInfos.some(target => target.type === 'iframe' && target.url === remote.url()) ? 'out-of-process' : 'same-process';
           } finally { await session.detach(); }
         } else if (report.placement[label] === 'out-of-process') {
-          await assert.rejects(page.frameLocator('iframe').locator('input').fill('probe'), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
+          await assert.rejects(page.frameLocator('iframe').locator('input').ariaSnapshot(), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
           report.candidateRemoteOwnershipChecks.push(label);
         }
         await page.evaluate(url => document.querySelector('iframe').src = url, origin + '/returned');

@@ -5,6 +5,7 @@ use flashwright_protocol::InputDelivery;
 use tokio::time::sleep;
 
 mod frame_selector;
+mod mutation;
 mod traced_action;
 pub(crate) use frame_selector::FrameSelector;
 
@@ -30,6 +31,20 @@ pub(crate) struct LocatorRealm {
 fn supports_remote_locator(method: &str) -> bool {
     matches!(
         method,
+        "locator.fill"
+            | "locator.selectOption"
+            | "locator.focus"
+            | "locator.blur"
+            | "locator.press"
+            | "locator.pressSequentially"
+            | "locator.click"
+            | "locator.dblclick"
+            | "locator.hover"
+            | "locator.check"
+            | "locator.uncheck"
+            | "locator.setChecked"
+    ) || matches!(
+        method,
         "frame.waitForSelector"
             | "assertion.run"
             | "locator.count"
@@ -50,7 +65,7 @@ fn supports_remote_locator(method: &str) -> bool {
     )
 }
 
-/// Input and artifact operations need their own remote-session semantics.
+/// Other element and artifact operations retain their separate remote capability gates.
 fn check_remote_locator_operation(remote: bool, method: &str) -> Result<(), ErrorRecord> {
     if remote && !supports_remote_locator(method) {
         return Err(ErrorRecord::new(
@@ -454,6 +469,7 @@ impl Engine {
         operation: &Operation,
         method: &str,
     ) -> Result<Value, ErrorRecord> {
+        operation.check()?;
         if ["fill", "selectOption", "focus", "blur"].contains(&action) {
             page.trace_before_input(operation);
         }
@@ -462,7 +478,10 @@ impl Engine {
             "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }], "returnByValue": true, "awaitPromise": true,
             "userGesture": true,
         }), Some(&realm.context.session_identifier))?;
-        let result = if supports_remote_locator(method) {
+        let result = if ["fill", "selectOption", "focus", "blur"].contains(&action) {
+            self.locator_mutation_response(page, browser, realm, operation, command)
+                .await
+        } else if supports_remote_locator(method) {
             operation
                 .wait(
                     page.state
@@ -475,12 +494,6 @@ impl Engine {
                 .await
         };
         let result = result.map_err(|mut error| {
-            if ["fill", "selectOption", "focus", "blur"].contains(&action)
-                && !context_was_not_found(&error)
-                && !command.prevent_dispatch()
-            {
-                error.input_delivery = InputDelivery::Uncertain;
-            }
             error.method = method.into();
             error
         })?;
@@ -489,6 +502,39 @@ impl Engine {
             .get("value")
             .cloned()
             .ok_or_else(|| invalid(method, "Chromium omitted locator result"))
+    }
+
+    pub(crate) async fn locator_mutation_response(
+        &self,
+        page: &Page,
+        browser: &Chromium,
+        realm: &LocatorRealm,
+        operation: &Operation,
+        command: flashwright_browser::connection::Command,
+    ) -> Result<Value, ErrorRecord> {
+        match mutation::wait(
+            &browser.connection,
+            page,
+            &realm.context,
+            operation,
+            command,
+        )
+        .await
+        {
+            Ok(value) => Ok(value),
+            Err(mut failure) => {
+                if failure.dispose_page {
+                    failure.error.cleanup = Some(
+                        page.state
+                            .disposal
+                            .dispose(browser, &page.target_identifier)
+                            .await
+                            .into(),
+                    );
+                }
+                Err(failure.error)
+            }
+        }
     }
 
     async fn insert_locator_text(

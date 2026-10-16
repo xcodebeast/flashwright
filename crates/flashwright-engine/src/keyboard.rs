@@ -529,27 +529,23 @@ impl Engine {
                 )
                 .await
             } else {
+                operation.check()?;
                 page.trace_before_input(operation);
-                let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
+                let command = browser.connection.start_command("Runtime.callFunctionOn", json!({
                     "uniqueContextId": realm.context.unique_identifier,
                     "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.prepareKeyboard(request, deadline); }",
                     "arguments": [{ "value": selector.request }, { "value": operation.renderer_deadline() }],
                     "returnByValue": true, "awaitPromise": true, "userGesture": true,
                 }), Some(&realm.context.session_identifier))?;
-                match operation
-                    .wait(page.state.while_alive(method, command.response()))
+                match self
+                    .locator_mutation_response(&page, &browser, &realm, operation, command)
                     .await
                 {
                     Ok(result) => {
                         check_exception(&result, method)?;
                         Ok(result["result"]["value"].clone())
                     }
-                    Err(mut error) => {
-                        if !context_was_destroyed(&error) && !command.prevent_dispatch() {
-                            error.input_delivery = InputDelivery::Uncertain;
-                        }
-                        Err(error)
-                    }
+                    Err(error) => Err(error),
                 }
             };
             let result = match preparation {

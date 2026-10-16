@@ -166,7 +166,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     } finally { cancelElementAction(token); }
   }
 
-  async function preparePointer(units, deadline, token, settings) {
+  async function preparePointer(units, deadline, token, settings, deferReadiness = false) {
     if (expired(deadline)) return { status: 'expired' };
     const selection = decodeRequest(units);
     const request = { selector: selection.selector, strict: selection.strict, ...settings, checked: settings.checked ?? undefined };
@@ -182,6 +182,13 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     const attempt = { element, request, deadline };
     pointerAttempts.set(token, attempt);
     if (deadline !== null) attempt.expiryTimer = setTimeout(() => cleanupPointer(token), Math.max(0, Math.min(deadline - Date.now(), 2147483647)));
+    return deferReadiness ? { status: 'ready' } : await pointerReadiness(token);
+  }
+
+  async function pointerReadiness(token) {
+    const attempt = pointerAttempts.get(token);
+    if (!attempt) return { status: 'expired' };
+    const { element, request, deadline } = attempt;
     if (!request.force) {
       const stable = await checkStability(attempt);
       if (stable !== 'done') { cleanupPointer(token); return retry(stable); }
@@ -599,7 +606,8 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     }),
     waitForPointerReadiness: (units, deadline, maximumWaitMilliseconds, token, checked) => safely(() => waitForPointerReadiness(units, deadline, maximumWaitMilliseconds, token, checked)),
     cancelPointerReadiness: token => conditions.cancel(token),
-    preparePointer: (units, deadline, token, settings) => safely(() => preparePointer(units, deadline, token, settings)),
+    preparePointer: (units, deadline, token, settings, deferReadiness) => safely(() => preparePointer(units, deadline, token, settings, deferReadiness)),
+    pointerReadiness: token => safely(() => pointerReadiness(token)),
     armPointer: (token, point) => safely(() => armPointer(token, point)),
     finishPointer: token => safely(() => {
       try { return finishPointer(token); }

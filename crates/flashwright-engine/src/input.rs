@@ -8,14 +8,24 @@ use flashwright_protocol::InputDelivery;
 mod tests;
 
 /// Cancellation cannot release the native credit for input whose dispatch has started.
-fn retain_pending_reply(mut command: Command) {
+fn retain_pending_reply(command: Command) {
+    retain_renderer_reply(command, None);
+}
+
+pub(crate) fn retain_renderer_reply(
+    mut command: Command,
+    owner: Option<Arc<renderer_sessions::RendererSession>>,
+) {
     if command.browser_reply_received()
         || command.prevent_dispatch()
         || command.try_response().is_some()
     {
         return;
     }
-    tokio::spawn(settle_pending_reply(command));
+    tokio::spawn(async move {
+        let _owner = owner;
+        settle_pending_reply(command).await;
+    });
 }
 
 async fn settle_pending_reply(mut command: Command) {

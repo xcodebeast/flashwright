@@ -53,7 +53,7 @@ try {
       const session = await context.newCDPSession(page);
       try { const {targetInfos} = await session.send('Target.getTargets'); assert(targetInfos.some(target => target.type === 'iframe' && target.url === `http://localhost:${port}/child`)); }
       finally { await session.detach(); }
-    } else await assert.rejects(target.fill('unadmitted'), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
+    } else await assert.rejects(target.ariaSnapshot(), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
     pages.push({context, child, target});
   }
   report.concurrency = Number(concurrency);

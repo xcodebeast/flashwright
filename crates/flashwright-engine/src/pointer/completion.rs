@@ -1,13 +1,18 @@
 //! Navigation may return before a by-value completion reply, but cannot abandon its owner.
 
+use crate::renderer_sessions::RendererSession;
 use flashwright_browser::connection::Command;
+use std::sync::Arc;
 
 /// Withdraw queued work synchronously; retain dispatched work under its original native credit.
-pub(super) fn retain(mut command: Command) {
+pub(super) fn retain(mut command: Command, owner: Option<Arc<RendererSession>>) {
     if command.prevent_dispatch() || command.try_response().is_some() {
         return;
     }
-    tokio::spawn(settle(command));
+    tokio::spawn(async move {
+        let _owner = owner;
+        settle(command).await;
+    });
 }
 
 async fn settle(mut command: Command) {
@@ -109,7 +114,7 @@ mod tests {
     #[tokio::test]
     async fn navigation_withdraws_a_completion_that_has_not_started() {
         let mut fixture = Fixture::new();
-        retain(fixture.completion());
+        retain(fixture.completion(), None);
         let _barrier = fixture
             .connection
             .start_command("barrier", json!({}), None)
