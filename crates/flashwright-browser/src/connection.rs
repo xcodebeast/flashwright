@@ -19,7 +19,24 @@ use incoming::{BinaryReplyKind, ReplySender, read_messages};
 const MAXIMUM_CONTROL_BYTES: usize = 8 * 1024 * 1024;
 const MAXIMUM_PENDING: usize = 1024;
 type Reply<Output = Value> = Result<Output, ErrorRecord>;
-type EventHandler = Box<dyn Fn(Event) -> Result<(), ErrorRecord> + Send + Sync>;
+/// Completion of already-applied event work, without blocking the runtime or a state lock.
+/// It must not wait for another message from this connection's reader.
+pub type EventCompletion =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ErrorRecord>> + Send>>;
+
+type EventHandler =
+    Box<dyn Fn(Event) -> Result<Option<EventCompletion>, ErrorRecord> + Send + Sync>;
+
+struct EventObserver {
+    apply: EventHandler,
+    disconnected: Box<dyn Fn(Event) -> Result<(), ErrorRecord> + Send + Sync>,
+}
+
+struct PendingEvent {
+    sequence: u64,
+    secondary: Option<Event>,
+    completion: EventCompletion,
+}
 
 #[derive(Clone)]
 pub struct Connection {
@@ -31,7 +48,7 @@ struct ConnectionState {
     pending: Mutex<PendingReplies>,
     outgoing: mpsc::Sender<Vec<OutgoingCommand>>,
     events: broadcast::Sender<Event>,
-    event_handler: Mutex<Option<EventHandler>>,
+    event_handler: Mutex<Option<EventObserver>>,
     received_event_sequence: AtomicU64,
     processed_event_sequence: watch::Sender<u64>,
     pumps: Mutex<Vec<AbortHandle>>,
@@ -180,6 +197,25 @@ impl Connection {
         &self,
         handler: impl Fn(Event) -> Result<(), ErrorRecord> + Send + Sync + 'static,
     ) -> Result<(), ErrorRecord> {
+        let handler = Arc::new(handler);
+        let disconnected = handler.clone();
+        self.observe_events_with_backpressure(
+            move |event| handler(event).map(|()| None),
+            move |event| disconnected(event),
+        )
+    }
+
+    /// Apply state synchronously, then optionally await output admission before the
+    /// next wire message. No observer lock is held while polling the completion.
+    /// The disconnected callback must invalidate ownership without awaiting output;
+    /// closure cancels any outstanding completion and retains the original failure.
+    /// Read-side EOF is observed when reading resumes; explicit close and detected
+    /// writer failure interrupt the wait independently.
+    pub fn observe_events_with_backpressure(
+        &self,
+        handler: impl Fn(Event) -> Result<Option<EventCompletion>, ErrorRecord> + Send + Sync + 'static,
+        disconnected: impl Fn(Event) -> Result<(), ErrorRecord> + Send + Sync + 'static,
+    ) -> Result<(), ErrorRecord> {
         let mut observer = self.inner.event_handler.lock().unwrap();
         if let Some(error) = self.failure() {
             return Err(error);
@@ -189,7 +225,10 @@ impl Connection {
                 "browser event owner is already registered".into(),
             ));
         }
-        *observer = Some(Box::new(handler));
+        *observer = Some(EventObserver {
+            apply: Box::new(handler),
+            disconnected: Box::new(disconnected),
+        });
         Ok(())
     }
 
@@ -561,7 +600,7 @@ fn dispatch_event(
     session_identifier: Option<String>,
     parameters: Option<Box<RawValue>>,
     received_at: std::time::Instant,
-) -> Result<(), ErrorRecord> {
+) -> Result<Option<PendingEvent>, ErrorRecord> {
     let handler = state.event_handler.lock().unwrap();
     if method != "Flashwright.disconnected"
         && let Some(error) = &state.pending.lock().unwrap().closed
@@ -583,12 +622,63 @@ fn dispatch_event(
     let secondary = (state.events.receiver_count() != 0 && event.method != "Page.screencastFrame")
         .then(|| event.clone());
     if let Some(handler) = handler.as_ref() {
-        handler(event)?;
+        if event.method == "Flashwright.disconnected" {
+            (handler.disconnected)(event)?;
+        } else if let Some(completion) = (handler.apply)(event)? {
+            return Ok(Some(PendingEvent {
+                sequence,
+                secondary,
+                completion,
+            }));
+        }
     }
     if let Some(event) = secondary {
         let _ = state.events.send(event);
     }
     state.processed_event_sequence.send_replace(sequence);
+    Ok(None)
+}
+
+async fn finish_event(
+    state: &Weak<ConnectionState>,
+    mut event: PendingEvent,
+) -> Result<(), ErrorRecord> {
+    // Subscribe before testing closure so a writer failure cannot strand this wait.
+    let mut progress = state
+        .upgrade()
+        .ok_or_else(disconnected)?
+        .processed_event_sequence
+        .subscribe();
+    loop {
+        {
+            let live = state.upgrade().ok_or_else(disconnected)?;
+            if let Some(error) = &live.pending.lock().unwrap().closed {
+                return Err(error.clone());
+            }
+        }
+        tokio::select! {
+            biased;
+            changed = progress.changed() => {
+                changed.map_err(|_| disconnected())?;
+            }
+            result = &mut event.completion => {
+                result?;
+                break;
+            }
+        }
+    }
+    // Terminal invalidation and publication have the same serialization boundary
+    // as synchronous application. A completed old event cannot overwrite closure's
+    // newer sequence or become a secondary event after the disconnected notification.
+    let state = state.upgrade().ok_or_else(disconnected)?;
+    let _handler = state.event_handler.lock().unwrap();
+    if let Some(error) = &state.pending.lock().unwrap().closed {
+        return Err(error.clone());
+    }
+    if let Some(secondary) = event.secondary {
+        let _ = state.events.send(secondary);
+    }
+    state.processed_event_sequence.send_replace(event.sequence);
     Ok(())
 }
 

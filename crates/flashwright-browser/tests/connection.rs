@@ -358,6 +358,354 @@ async fn owned_event_failure_invalidates_pending_work_with_its_original_error() 
 }
 
 #[tokio::test]
+async fn paused_event_consumer_resumes_without_losing_order_or_advancing_replies() {
+    let (host, peer) = duplex(1024 * 1024);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut secondary = connection.subscribe();
+    let (outgoing, mut incoming) = tokio::sync::mpsc::channel(4);
+    let (applied, mut progress) = tokio::sync::watch::channel(0);
+    connection
+        .observe_events_with_backpressure(
+            move |event| {
+                applied.send_replace(event.sequence);
+                let outgoing = outgoing.clone();
+                Ok(Some(Box::pin(async move {
+                    for part in 0..2 {
+                        outgoing.send((event.sequence, part)).await.map_err(|_| {
+                            ErrorRecord::new(ErrorCode::Protocol, "event", "consumer closed")
+                        })?;
+                    }
+                    Ok(())
+                })))
+            },
+            |_| Ok(()),
+        )
+        .unwrap();
+    let mut command = connection
+        .start_command("barrier", json!({}), None)
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let identifier = read_command(&mut reader).await["id"].as_u64().unwrap();
+    let mut burst = b"{\"method\":\"event\",\"params\":{}}\0".repeat(256);
+    burst.extend_from_slice(
+        format!("{{\"id\":{identifier},\"result\":{{\"done\":true}}}}\0").as_bytes(),
+    );
+    writer.write_all(&burst).await.unwrap();
+    timeout(
+        Duration::from_secs(5),
+        progress.wait_for(|applied| *applied == 3),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    assert_eq!(incoming.len(), 4);
+    assert_eq!(secondary.try_recv().unwrap().sequence, 1);
+    assert_eq!(secondary.try_recv().unwrap().sequence, 2);
+    assert!(secondary.try_recv().is_err());
+    assert!(command.try_response().is_none());
+    assert!(
+        timeout(Duration::from_millis(20), connection.synchronize_events())
+            .await
+            .is_err()
+    );
+    assert_eq!(*progress.borrow(), 3);
+    assert!(connection.failure().is_none());
+
+    timeout(Duration::from_secs(5), async {
+        for sequence in 1..=256 {
+            for part in 0..2 {
+                assert_eq!(incoming.recv().await, Some((sequence, part)));
+            }
+        }
+        assert_eq!(command.response().await.unwrap()["done"], true);
+        connection.synchronize_events().await.unwrap();
+    })
+    .await
+    .unwrap();
+    for sequence in 3..=256 {
+        assert_eq!(secondary.try_recv().unwrap().sequence, sequence);
+    }
+    assert!(secondary.try_recv().is_err());
+    connection.close();
+}
+
+#[tokio::test]
+async fn closure_cancels_blocked_event_completion_without_waiting_for_the_consumer() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let mut secondary = connection.subscribe();
+    let (entered, mut entering) = tokio::sync::watch::channel(false);
+    let (dropped, mut dropping) = tokio::sync::watch::channel(false);
+    struct Dropped(tokio::sync::watch::Sender<bool>);
+    impl Drop for Dropped {
+        fn drop(&mut self) {
+            self.0.send_replace(true);
+        }
+    }
+    let closed = Arc::new(AtomicU64::new(0));
+    let terminal = closed.clone();
+    connection
+        .observe_events_with_backpressure(
+            move |_| {
+                let guard = Dropped(dropped.clone());
+                let entered = entered.clone();
+                Ok(Some(Box::pin(async move {
+                    let _guard = guard;
+                    entered.send_replace(true);
+                    std::future::pending::<Result<(), ErrorRecord>>().await
+                })))
+            },
+            move |event| {
+                assert_eq!(event.method, "Flashwright.disconnected");
+                terminal.fetch_add(1, Ordering::Release);
+                Ok(())
+            },
+        )
+        .unwrap();
+    let mut command = connection
+        .start_command("barrier", json!({}), None)
+        .unwrap();
+    let (_reader, mut writer) = split(peer);
+    writer
+        .write_all(b"{\"method\":\"blocked\",\"params\":{}}\0")
+        .await
+        .unwrap();
+    timeout(
+        Duration::from_secs(5),
+        entering.wait_for(|entered| *entered),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    connection.close();
+    connection.close();
+    assert_eq!(closed.load(Ordering::Acquire), 1);
+    assert_eq!(
+        command.response().await.unwrap_err().code,
+        ErrorCode::BrowserDisconnected
+    );
+    timeout(
+        Duration::from_secs(5),
+        dropping.wait_for(|dropped| *dropped),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        connection.synchronize_events().await.unwrap_err().code,
+        ErrorCode::BrowserDisconnected
+    );
+    let disconnected = secondary.try_recv().unwrap();
+    assert_eq!(disconnected.sequence, 2);
+    assert_eq!(disconnected.method, "Flashwright.disconnected");
+    assert!(secondary.try_recv().is_err());
+}
+
+#[tokio::test]
+async fn deferred_event_failure_preserves_its_error_and_suppresses_following_wire_messages() {
+    let (host, peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let applied = Arc::new(AtomicU64::new(0));
+    let observed = applied.clone();
+    connection
+        .observe_events_with_backpressure(
+            move |_| {
+                observed.fetch_add(1, Ordering::Release);
+                Ok(Some(Box::pin(async {
+                    tokio::task::yield_now().await;
+                    Err(ErrorRecord::new(
+                        ErrorCode::ResourceLimit,
+                        "event.output",
+                        "original publication failure",
+                    ))
+                })))
+            },
+            |_| Ok(()),
+        )
+        .unwrap();
+    let mut command = connection
+        .start_command("barrier", json!({}), None)
+        .unwrap();
+    let (reader, mut writer) = split(peer);
+    let mut reader = BufReader::new(reader);
+    let identifier = read_command(&mut reader).await["id"].as_u64().unwrap();
+    writer.write_all(format!("{{\"method\":\"first\"}}\0{{\"id\":{identifier},\"result\":{{}}}}\0{{\"method\":\"tooLate\"}}\0").as_bytes()).await.unwrap();
+    let error = timeout(Duration::from_secs(5), command.response())
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(error.code, ErrorCode::ResourceLimit);
+    assert_eq!(error.message.as_ref(), "original publication failure");
+    assert_eq!(applied.load(Ordering::Acquire), 1);
+    assert_eq!(connection.failure().unwrap().message, error.message);
+    connection.close();
+}
+
+#[tokio::test]
+async fn writer_failure_interrupts_event_backpressure_without_explicit_close() {
+    let (reader, mut browser_output) = duplex(4096);
+    let (writer, browser_input) = duplex(4096);
+    let connection = Connection::new(reader, writer);
+    let mut secondary = connection.subscribe();
+    let (entered, mut entering) = tokio::sync::watch::channel(false);
+    let (waiting, mut abandoned) = tokio::sync::mpsc::channel::<()>(1);
+    waiting.try_send(()).unwrap();
+    // The future owns the only sender after registration returns. Receiver EOF
+    // proves it was dropped after a writer-side failure wakes the reader.
+    let sender = Arc::new(Mutex::new(Some(waiting)));
+    connection
+        .observe_events_with_backpressure(
+            move |_| {
+                let waiting = sender.lock().unwrap().take().unwrap();
+                let entered = entered.clone();
+                Ok(Some(Box::pin(async move {
+                    entered.send_replace(true);
+                    waiting.closed().await;
+                    Ok(())
+                })))
+            },
+            |_| Ok(()),
+        )
+        .unwrap();
+    browser_output
+        .write_all(b"{\"method\":\"blocked\"}\0")
+        .await
+        .unwrap();
+    timeout(
+        Duration::from_secs(5),
+        entering.wait_for(|entered| *entered),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    drop(browser_input);
+    let mut command = connection
+        .start_command("triggerWriteFailure", json!({}), None)
+        .unwrap();
+    let error = timeout(Duration::from_secs(5), command.response())
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(error.code, ErrorCode::Protocol);
+    assert_eq!(connection.failure().unwrap().message, error.message);
+    assert_eq!(abandoned.recv().await, Some(()));
+    assert_eq!(
+        timeout(Duration::from_secs(5), abandoned.recv())
+            .await
+            .unwrap(),
+        None
+    );
+    assert_eq!(
+        secondary.try_recv().unwrap().method,
+        "Flashwright.disconnected"
+    );
+    assert!(secondary.try_recv().is_err());
+    connection.close();
+}
+
+#[tokio::test]
+async fn dropping_last_connection_owner_cancels_its_blocked_event_completion() {
+    let (host, mut peer) = duplex(4096);
+    let (reader, writer) = split(host);
+    let connection = Connection::new(reader, writer);
+    let (entered, mut entering) = tokio::sync::watch::channel(false);
+    let (waiting, mut abandoned) = tokio::sync::mpsc::channel::<()>(1);
+    let sender = Mutex::new(Some(waiting));
+    connection
+        .observe_events_with_backpressure(
+            move |_| {
+                let waiting = sender.lock().unwrap().take().unwrap();
+                let entered = entered.clone();
+                Ok(Some(Box::pin(async move {
+                    entered.send_replace(true);
+                    waiting.closed().await;
+                    Ok(())
+                })))
+            },
+            |_| Ok(()),
+        )
+        .unwrap();
+    peer.write_all(b"{\"method\":\"blocked\"}\0").await.unwrap();
+    timeout(
+        Duration::from_secs(5),
+        entering.wait_for(|entered| *entered),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    drop(connection);
+    assert_eq!(
+        timeout(Duration::from_secs(5), abandoned.recv())
+            .await
+            .unwrap(),
+        None
+    );
+}
+
+#[tokio::test]
+async fn read_eof_after_a_blocked_event_is_observed_when_delivery_resumes() {
+    let (reader, mut browser_output) = duplex(4096);
+    let (writer, _browser_input) = duplex(4096);
+    let connection = Connection::new(reader, writer);
+    let mut secondary = connection.subscribe();
+    let (entered, mut entering) = tokio::sync::watch::channel(false);
+    let gate = Arc::new(tokio::sync::Semaphore::new(0));
+    let waiting = gate.clone();
+    connection
+        .observe_events_with_backpressure(
+            move |_| {
+                let waiting = waiting.clone();
+                let entered = entered.clone();
+                Ok(Some(Box::pin(async move {
+                    entered.send_replace(true);
+                    let _permit = waiting.acquire().await.unwrap();
+                    Ok(())
+                })))
+            },
+            |_| Ok(()),
+        )
+        .unwrap();
+    let mut command = connection
+        .start_command("awaitReply", json!({}), None)
+        .unwrap();
+    browser_output
+        .write_all(b"{\"method\":\"blocked\"}\0")
+        .await
+        .unwrap();
+    timeout(
+        Duration::from_secs(5),
+        entering.wait_for(|entered| *entered),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    drop(browser_output);
+    assert!(connection.failure().is_none());
+    assert!(command.try_response().is_none());
+    assert!(secondary.try_recv().is_err());
+    gate.add_permits(1);
+    assert_eq!(
+        timeout(Duration::from_secs(5), command.response())
+            .await
+            .unwrap()
+            .unwrap_err()
+            .code,
+        ErrorCode::BrowserDisconnected
+    );
+    assert_eq!(secondary.try_recv().unwrap().method, "blocked");
+    assert_eq!(
+        secondary.try_recv().unwrap().method,
+        "Flashwright.disconnected"
+    );
+    assert!(secondary.try_recv().is_err());
+    connection.close();
+}
+
+#[tokio::test]
 async fn eof_settles_all_pending_requests_and_future_calls() {
     let (host, peer) = duplex(1024);
     let (reader, writer) = split(host);
