@@ -564,7 +564,7 @@
 | playwright/types/test.d.ts.PlaywrightTestOptions#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PlaywrightTestOptions.acceptDownloads#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#downloads) |
 | playwright/types/test.d.ts.PlaywrightTestOptions.bypassCSP#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.PlaywrightTestOptions.colorScheme#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright/types/test.d.ts.PlaywrightTestOptions.colorScheme#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright/types/test.d.ts.PlaywrightTestOptions.clientCertificates#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PlaywrightTestOptions.deviceScaleFactor#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.PlaywrightTestOptions.extraHTTPHeaders#1 | PropertySignature | planned / unverified | Unreviewed |

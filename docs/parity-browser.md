@@ -2308,13 +2308,13 @@
 | playwright-core/types/types.d.ts.Browser.newPage.options.clientCertificates.pfxPath#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.clientCertificates.pfx#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.clientCertificates.passphrase#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Browser.newPage.options.colorScheme#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Browser.newPage.options.contrast#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Browser.newPage.options.colorScheme#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
+| playwright-core/types/types.d.ts.Browser.newPage.options.contrast#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright-core/types/types.d.ts.Browser.newPage.options.deviceScaleFactor#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.extraHTTPHeaders#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.extraHTTPHeaders.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.extraHTTPHeaders.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Browser.newPage.options.forcedColors#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Browser.newPage.options.forcedColors#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright-core/types/types.d.ts.Browser.newPage.options.geolocation#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.geolocation.latitude#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.geolocation.longitude#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -2352,7 +2352,7 @@
 | playwright-core/types/types.d.ts.Browser.newPage.options.recordVideo.showActions.duration#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.recordVideo.showActions.position#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.recordVideo.showActions.fontSize#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.Browser.newPage.options.reducedMotion#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.Browser.newPage.options.reducedMotion#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright-core/types/types.d.ts.Browser.newPage.options.screen#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.screen.width#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.Browser.newPage.options.screen.height#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -4880,13 +4880,13 @@
 | playwright-core/types/types.d.ts.BrowserContextOptions.clientCertificates.pfxPath#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.clientCertificates.pfx#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.clientCertificates.passphrase#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.BrowserContextOptions.colorScheme#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.BrowserContextOptions.contrast#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.BrowserContextOptions.colorScheme#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
+| playwright-core/types/types.d.ts.BrowserContextOptions.contrast#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright-core/types/types.d.ts.BrowserContextOptions.deviceScaleFactor#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.extraHTTPHeaders#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.extraHTTPHeaders.&lt;call&gt;#1 | IndexSignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.extraHTTPHeaders.&lt;call&gt;.key#1 | parameter | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.BrowserContextOptions.forcedColors#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.BrowserContextOptions.forcedColors#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright-core/types/types.d.ts.BrowserContextOptions.geolocation#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.hasTouch#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.httpCredentials#1 | PropertySignature | planned / unverified | Unreviewed |
@@ -4917,7 +4917,7 @@
 | playwright-core/types/types.d.ts.BrowserContextOptions.recordVideo.showActions.duration#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.recordVideo.showActions.position#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.recordVideo.showActions.fontSize#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright-core/types/types.d.ts.BrowserContextOptions.reducedMotion#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright-core/types/types.d.ts.BrowserContextOptions.reducedMotion#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#context-media) |
 | playwright-core/types/types.d.ts.BrowserContextOptions.screen#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.screen.width#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright-core/types/types.d.ts.BrowserContextOptions.screen.height#1 | PropertySignature | planned / unverified | Unreviewed |
