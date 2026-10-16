@@ -24,7 +24,7 @@ const report = { schemaVersion: 1, status: 'running', platform: process.platform
   runtime: process.versions.bun ? `bun ${process.versions.bun}` : process.version,
   sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH),
   driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, placement: {},
-  scope: 'Shared remote locator reads, waits and assertions, strictness, nested frames, renderer replacement and original pending-assertion retirement. Remote input and public ARIA snapshots remain unsupported. No performance claim.' };
+  scope: 'Shared remote locator reads, waits and assertions, strictness, nested frames, renderer replacement and original pending-assertion retirement. Public ARIA snapshots remain unsupported; native input has a separate conformance fixture. No performance claim.' };
 assert.equal(report.browser.distribution, 'full-chromium', 'This fixture requires actual cross-process frames in full Chromium');
 let port;
 const server = createServer((request, response) => {
@@ -150,10 +150,9 @@ async function run(name, chromium, expect) {
     const replacementFrame = page.frame('replacement'); assert.ok(replacementFrame);
     outcomes.push('lazy path resolves a replacement iframe without reusing the detached Frame');
 
-    const remoteInputError = error => error.name === 'UnsupportedFeatureError' && /out-of-process/i.test(error.message);
+    const remoteSnapshotError = error => error.name === 'UnsupportedFeatureError' && /out-of-process/i.test(error.message);
     if (name === 'flashwright') {
-      await assert.rejects(nested.locator('#successor').fill('unadmitted'), remoteInputError);
-      await assert.rejects(nested.locator('#successor').ariaSnapshot(), remoteInputError);
+      await assert.rejects(nested.locator('#successor').ariaSnapshot(), remoteSnapshotError);
       assert.equal(await nested.locator('#successor').textContent(), 'replacement');
     }
 
@@ -240,7 +239,7 @@ test('remote ARIA predicates preserve retry and original mismatch', async ({page
   const child = page.frameLocator('#child');
   ${engine === 'playwright' ? `const session = await context.newCDPSession(page);
   try { const {targetInfos} = await session.send('Target.getTargets'); assert(targetInfos.some(target => target.type === 'iframe' && target.url === ${JSON.stringify(child)})); }
-  finally { await session.detach(); }` : `await assert.rejects(child.locator('#input').fill('unadmitted'), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
+  finally { await session.detach(); }` : `await assert.rejects(child.locator('#input').ariaSnapshot(), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
   assert.equal(await child.locator('#input').inputValue(), 'initial');`}
   const heading = child.locator('#heading');
   await expect(heading).toMatchAriaSnapshot('- heading "Remote content" [level=2]');

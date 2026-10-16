@@ -9,6 +9,7 @@ use serde::Serialize;
 use tokio::time::sleep;
 
 mod completion;
+mod geometry;
 mod readiness;
 
 #[derive(Clone, Copy, Deserialize, Serialize)]
@@ -109,6 +110,7 @@ struct PointerAttempt<'action, 'operation> {
     pressed_modifiers: Vec<Modifier>,
     completed_input: bool,
     objects_released: bool,
+    object_sessions: std::sync::Mutex<HashMap<String, Arc<renderer_sessions::RendererSession>>>,
     resident_released: bool,
 }
 
@@ -253,6 +255,7 @@ impl PointerAction<'_> {
                 pressed_modifiers: Vec::new(),
                 completed_input: false,
                 objects_released: false,
+                object_sessions: std::sync::Mutex::new(HashMap::new()),
                 resident_released: false,
             };
             let result = attempt.perform(retry_count).await;
@@ -364,22 +367,55 @@ impl PointerAction<'_> {
                 error
             })
     }
+}
 
-    async fn call(&self, method: &str, parameters: Value) -> Result<Value, ErrorRecord> {
-        self.operation
-            .wait(self.page.state.while_alive(
-                &self.method,
-                self.browser.connection.call(
+impl PointerAttempt<'_, '_> {
+    async fn call(
+        &self,
+        realm: &LocatorRealm,
+        method: &str,
+        parameters: Value,
+    ) -> Result<Value, ErrorRecord> {
+        self.action
+            .operation
+            .wait(self.action.page.state.while_execution_context(
+                &realm.context,
+                self.action.browser.connection.call(
                     method,
                     parameters,
-                    Some(&self.page.session_identifier),
+                    Some(&realm.context.session_identifier),
                 ),
             ))
             .await
     }
-}
 
-impl PointerAttempt<'_, '_> {
+    async fn release_objects(&self) -> Result<(), ErrorRecord> {
+        let owners: Vec<_> = self
+            .object_sessions
+            .lock()
+            .unwrap()
+            .values()
+            .cloned()
+            .collect();
+        for owner in owners {
+            // Logical retirement alone is insufficient: the original target may still exist.
+            if owner.is_destroyed() {
+                continue;
+            }
+            if let Err(error) = release_group(
+                &self.action.browser.connection,
+                &owner.session_identifier,
+                &self.token,
+            )
+            .await
+                && !owner.is_destroyed()
+            {
+                return Err(error);
+            }
+        }
+        Ok(())
+    }
+
     /// Keep private node aliases and resident preparation owned until their replies settle.
     async fn allocation_call(
         &self,
@@ -388,27 +424,31 @@ impl PointerAttempt<'_, '_> {
         parameters: Value,
         executes_user_code: bool,
     ) -> Result<Value, ErrorRecord> {
+        self.action.operation.check()?;
+        let owner = self
+            .action
+            .page
+            .state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .get(&realm.context.session_identifier)
+            .ok_or_else(evaluation::context_destroyed)?;
+        self.object_sessions
+            .lock()
+            .unwrap()
+            .insert(owner.session_identifier.clone(), owner.clone());
         let mut command = self.action.browser.connection.start_command(
             method,
             parameters,
-            Some(&self.action.page.session_identifier),
+            Some(&realm.context.session_identifier),
         )?;
-        self.allocation_response(realm, &mut command, executes_user_code)
-            .await
-    }
-
-    async fn allocation_response(
-        &self,
-        realm: &LocatorRealm,
-        command: &mut Command,
-        executes_user_code: bool,
-    ) -> Result<Value, ErrorRecord> {
         match wait_for_allocation(
             &self.action.browser.connection,
             &self.action.page,
             &realm.context,
             self.action.operation,
-            command,
+            &mut command,
             executes_user_code,
         )
         .await
@@ -416,22 +456,40 @@ impl PointerAttempt<'_, '_> {
             Ok(value) => Ok(value),
             Err(mut failure) => {
                 if failure.reply_pending {
-                    failure.error.cleanup = Some(
-                        self.action
-                            .page
-                            .state
-                            .disposal
-                            .dispose(
-                                self.action.browser.as_ref(),
-                                &self.action.page.target_identifier,
-                            )
-                            .await
-                            .into(),
-                    );
+                    if owner.is_destroyed() {
+                        failure.error.cleanup = Some("pendingOriginalPointerReply".into());
+                    } else {
+                        failure.error.cleanup = Some(
+                            self.action
+                                .page
+                                .state
+                                .disposal
+                                .dispose(
+                                    self.action.browser.as_ref(),
+                                    &self.action.page.target_identifier,
+                                )
+                                .await
+                                .into(),
+                        );
+                    }
+                    crate::input::retain_renderer_reply(command, Some(owner));
                 }
                 Err(failure.error)
             }
         }
+    }
+
+    fn original_renderer(&self) -> Option<Arc<renderer_sessions::RendererSession>> {
+        self.object_sessions
+            .lock()
+            .unwrap()
+            .get(self.realm.context.session_identifier.as_ref())
+            .cloned()
+    }
+
+    fn original_renderer_destroyed(&self) -> bool {
+        self.original_renderer()
+            .is_some_and(|owner| owner.is_destroyed())
     }
 
     async fn runtime(
@@ -456,7 +514,9 @@ impl PointerAttempt<'_, '_> {
     async fn perform(&mut self, retry_count: usize) -> Result<(Outcome, Option<u64>), ErrorRecord> {
         let mut settings = json!(self.action.options);
         settings["action"] = json!(self.action.action);
-        let prepared = self.runtime(&self.realm, "function(request, deadline, token, settings) { return globalThis.__flashwrightLocatorRuntime.preparePointer(request, deadline, token, settings); }", json!([{ "value": self.request }, { "value": self.action.operation.renderer_deadline() }, { "value": self.token }, { "value": settings }]), true).await?;
+        let remote =
+            self.realm.context.session_identifier.as_ref() != self.action.page.session_identifier;
+        let prepared = self.runtime(&self.realm, "function(request, deadline, token, settings, deferReadiness) { return globalThis.__flashwrightLocatorRuntime.preparePointer(request, deadline, token, settings, deferReadiness); }", json!([{ "value": self.request }, { "value": self.action.operation.renderer_deadline() }, { "value": self.token }, { "value": settings }, { "value": remote }]), true).await?;
         match outcome(prepared, &self.action.method)? {
             Outcome::Ready => {}
             result => return Ok((result, None)),
@@ -469,20 +529,25 @@ impl PointerAttempt<'_, '_> {
         if let Some(position) = self.action.options.position {
             scroll["rect"] = json!({ "x": position.x, "y": position.y, "width": 0, "height": 0 });
         }
-        self.action.page.trace_before_input(self.action.operation);
-        if retry_count.is_multiple_of(4) {
-            if let Err(error) = self.action.call("DOM.scrollIntoViewIfNeeded", scroll).await {
-                if error.message.contains("Node does not have a layout object") {
-                    return self.geometry_failure("Element is not visible");
-                }
-                if error.message.contains("Node is detached from document") {
-                    return Ok((Outcome::Retry("element detached".into()), None));
-                }
-                return Err(error);
+        if remote {
+            // Scrolling a remote descendant must reach the compositor before the fresh
+            // stability observations; otherwise hit testing can route to its old surface.
+            let _ = self.scroll(scroll.clone(), retry_count).await;
+            let ready = self.runtime(&self.realm, "function(token) { return globalThis.__flashwrightLocatorRuntime.pointerReadiness(token); }", json!([{ "value": self.token }]), true).await?;
+            match outcome(ready, &self.action.method)? {
+                Outcome::Ready => {}
+                result => return Ok((result, None)),
             }
-        } else {
-            let alignment = ["", "end", "center", "start"][retry_count % 4];
-            self.runtime(&self.realm, "function(token, alignment) { globalThis.__flashwrightLocatorRuntime.scrollPointer(token, alignment); return true; }", json!([{ "value": self.token }, { "value": alignment }]), true).await?;
+        }
+        self.action.page.trace_before_input(self.action.operation);
+        if let Err(error) = self.scroll(scroll, retry_count).await {
+            if error.message.contains("Node does not have a layout object") {
+                return self.geometry_failure("Element is not visible");
+            }
+            if error.message.contains("Node is detached from document") {
+                return Ok((Outcome::Retry("element detached".into()), None));
+            }
+            return Err(error);
         }
         self.action
             .engine
@@ -520,9 +585,12 @@ impl PointerAttempt<'_, '_> {
             result => return Ok((result, None)),
         }
         self.action
-            .call(
-                "Runtime.releaseObjectGroup",
-                json!({ "objectGroup": self.token }),
+            .operation
+            .wait(
+                self.action
+                    .page
+                    .state
+                    .while_execution_context(&self.realm.context, self.release_objects()),
             )
             .await?;
         self.objects_released = true;
@@ -617,7 +685,7 @@ impl PointerAttempt<'_, '_> {
             .await;
         let finished = match observed {
             Ok(None) => {
-                completion::retain(completion);
+                completion::retain(completion, self.original_renderer());
                 None
             }
             Ok(Some(value)) => Some(Ok(value)),
@@ -633,18 +701,21 @@ impl PointerAttempt<'_, '_> {
                 )
                 .await;
                 if failure.reply_pending {
-                    failure.error.cleanup = Some(
-                        self.action
-                            .page
-                            .state
-                            .disposal
-                            .dispose(
-                                self.action.browser.as_ref(),
-                                &self.action.page.target_identifier,
-                            )
-                            .await
-                            .into(),
-                    );
+                    if !self.original_renderer_destroyed() {
+                        failure.error.cleanup = Some(
+                            self.action
+                                .page
+                                .state
+                                .disposal
+                                .dispose(
+                                    self.action.browser.as_ref(),
+                                    &self.action.page.target_identifier,
+                                )
+                                .await
+                                .into(),
+                        );
+                    }
+                    completion::retain(completion, self.original_renderer());
                 }
                 Some(Err(failure.error))
             }
@@ -675,6 +746,17 @@ impl PointerAttempt<'_, '_> {
         false
     }
 
+    async fn scroll(&self, parameters: Value, retry_count: usize) -> Result<(), ErrorRecord> {
+        if retry_count.is_multiple_of(4) {
+            self.call(&self.realm, "DOM.scrollIntoViewIfNeeded", parameters)
+                .await?;
+        } else {
+            let alignment = ["", "end", "center", "start"][retry_count % 4];
+            self.runtime(&self.realm, "function(token, alignment) { globalThis.__flashwrightLocatorRuntime.scrollPointer(token, alignment); return true; }", json!([{ "value": self.token }, { "value": alignment }]), true).await?;
+        }
+        Ok(())
+    }
+
     async fn delay(&self) -> Result<(), ErrorRecord> {
         let delay = self.action.options.delay.unwrap_or(0.0);
         if delay > 0.0 {
@@ -702,10 +784,16 @@ impl PointerAttempt<'_, '_> {
     }
 
     async fn clickable_point(&self, object: &str) -> Result<Option<Point>, ErrorRecord> {
+        let Some(offset) = self.session_offset().await? else {
+            return Ok(None);
+        };
         if let Some(position) = self.action.options.position {
             let model = self
-                .action
-                .call("DOM.getBoxModel", json!({ "objectId": object }))
+                .call(
+                    &self.realm,
+                    "DOM.getBoxModel",
+                    json!({ "objectId": object }),
+                )
                 .await?;
             let border = self.runtime(&self.realm, "function(token) { return globalThis.__flashwrightLocatorRuntime.border(token); }", json!([{ "value": self.token }]), true).await?;
             let Some(quad) = quad(&model["model"]["border"]) else {
@@ -722,19 +810,24 @@ impl PointerAttempt<'_, '_> {
                     .iter()
                     .map(|point| point.x)
                     .fold(f64::INFINITY, f64::min)
+                    + offset.x
                     + left
                     + position.x,
                 y: quad
                     .iter()
                     .map(|point| point.y)
                     .fold(f64::INFINITY, f64::min)
+                    + offset.y
                     + top
                     + position.y,
             }));
         }
         let quads = self
-            .action
-            .call("DOM.getContentQuads", json!({ "objectId": object }))
+            .call(
+                &self.realm,
+                "DOM.getContentQuads",
+                json!({ "objectId": object }),
+            )
             .await?;
         let main_frame = self
             .action
@@ -776,8 +869,8 @@ impl PointerAttempt<'_, '_> {
                 continue;
             };
             for point in &mut points {
-                point.x = point.x.clamp(0.0, width);
-                point.y = point.y.clamp(0.0, height);
+                point.x = (point.x + offset.x).clamp(0.0, width);
+                point.y = (point.y + offset.y).clamp(0.0, height);
             }
             let area = (0..4)
                 .map(|index| {
@@ -827,8 +920,7 @@ impl PointerAttempt<'_, '_> {
                 )
                 .await?;
             let owner = self
-                .action
-                .call("DOM.getFrameOwner", json!({ "frameId": child }))
+                .call(&realm, "DOM.getFrameOwner", json!({ "frameId": child }))
                 .await?;
             let element = self.allocation_call(&realm, "DOM.resolveNode", json!({ "backendNodeId": owner["backendNodeId"], "executionContextId": realm.context.identifier, "objectGroup": self.token }), false).await?;
             let object = string_field(&element["object"], "objectId")?;
@@ -979,21 +1071,20 @@ impl PointerAttempt<'_, '_> {
                 modifiers &= !mask;
                 connection.call("Input.dispatchKeyEvent", json!({ "type": "keyUp", "key": key, "code": code, "windowsVirtualKeyCode": virtual_key, "location": 1, "modifiers": modifiers }), session).await?;
             }
-            if !self.resident_released && (!self.completed_input || !self.navigation_can_stall()) {
+            if !self.resident_released
+                && !self.original_renderer_destroyed()
+                && (!self.completed_input || !self.navigation_can_stall())
+            {
                 let cleared = connection.call("Runtime.callFunctionOn", json!({ "uniqueContextId": self.realm.context.unique_identifier, "functionDeclaration": "function(token) { globalThis.__flashwrightLocatorRuntime.cleanupPointer(token); return true; }", "arguments": [{ "value": self.token }], "returnByValue": true }), Some(&self.realm.context.session_identifier)).await;
                 match cleared {
                     Ok(value) => check_exception(&value, &self.action.method)?,
-                    Err(error) if context_was_destroyed(&error) => {}
+                    Err(error)
+                        if context_was_destroyed(&error) || self.original_renderer_destroyed() => {}
                     Err(error) => return Err(error),
                 }
             }
             if !self.objects_released {
-                release_group(
-                    connection,
-                    &self.realm.context.session_identifier,
-                    &self.token,
-                )
-                .await?;
+                self.release_objects().await?;
             }
             Ok::<(), ErrorRecord>(())
         };

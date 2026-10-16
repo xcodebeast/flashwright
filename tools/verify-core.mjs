@@ -173,6 +173,7 @@ const commands = [
   ['python3', 'tools/watchdog.py', '--timeout', '300', '--report-directory', join(destination, 'frame-locator-resources'), '--', process.execPath, 'compatibility/m2/frame-locators.mjs', join(destination, 'frame-locators')],
   ['python3', 'tools/verify-frame-locator-traces.py', join(destination, 'frame-locators')],
   ...(browser.distribution === 'full-chromium' ? [
+    ['python3', 'tools/watchdog.py', '--timeout', '150', '--report-directory', join(destination, 'remote-input-resources'), '--', process.execPath, 'compatibility/m2/remote-input.mjs', join(destination, 'remote-input')],
     ['python3', 'tools/watchdog.py', '--timeout', '60', '--report-directory', join(destination, 'frame-assertion-resources'), '--', process.execPath, 'compatibility/m2/frame-assertion-lifetime.mjs', join(destination, 'frame-assertion-lifetime')],
     ['python3', 'tools/watchdog.py', '--timeout', '90', '--report-directory', join(destination, 'remote-locator-resources'), '--', process.execPath, 'compatibility/m2/remote-locator-reads.mjs', join(destination, 'remote-locator-reads')],
     ['python3', 'tools/watchdog.py', '--timeout', '180', '--report-directory', join(destination, 'packed-remote-locator-resources'), '--', process.execPath, 'tools/test-packed-remote-locators.mjs', join(destination, 'packed-remote-locators')],

@@ -50,14 +50,15 @@ try {
       const context = await browser.newContext(); const page = await context.newPage();
       await page.goto('http://127.0.0.1:'+port+'/');
       const child = page.frameLocator('#child');
-      await assert.rejects(child.locator('input').fill('unadmitted'), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
+      await assert.rejects(child.locator('input').ariaSnapshot(), error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
       assert.equal(await child.locator('input').inputValue(),'initial');
+      await child.locator('input').click();await child.locator('input').fill('packed');await child.locator('input').pressSequentially('!');assert.equal(await child.locator('input').inputValue(),'packed!');
       assert.equal(await child.getByRole('heading').textContent(),'Remote');
       assert.equal(await child.locator('p').count(),1);
       await expect(child.getByRole('heading')).toHaveText('Remote');
       await page.frame('child').evaluate(() => {setTimeout(() => document.querySelector('#value').textContent='after',40);});
       await expect(child.locator('#value')).toHaveText('after');
-      await context.close(); outcomes.push({format,remotePlacementGuard:true,reads:3,assertions:2});
+      await context.close(); outcomes.push({format,remotePlacementGuard:true,reads:4,assertions:2,nativeActions:3});
     } finally { await browser.close(); }
   }
 } finally { await new Promise(resolve => server.close(resolve)); }

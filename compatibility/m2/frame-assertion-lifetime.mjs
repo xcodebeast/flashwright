@@ -46,7 +46,7 @@ try {
               }
             } finally { await session.detach(); }
           } else {
-            for (const name of ['a', 'b']) await assert.rejects(page.frameLocator('#' + name).locator('p').fill('unadmitted'),
+            for (const name of ['a', 'b']) await assert.rejects(page.frameLocator('#' + name).locator('p').ariaSnapshot(),
               error => error.name === 'UnsupportedFeatureError' && /out-of-process/.test(error.message));
           }
           await expect(a.locator('p')).toHaveText('before');

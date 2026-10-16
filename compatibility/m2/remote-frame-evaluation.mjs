@@ -136,7 +136,7 @@ async function run(engine, chromium) {
     assert.equal(await object.evaluate(value => value.nested.value), 31);
     await object.dispose();
     if (engine === 'flashwright') {
-      await assert.rejects(remoteLocator.fill('unadmitted'), /out-of-process/);
+      await assert.rejects(remoteLocator.ariaSnapshot(), /out-of-process/);
       report.candidateBoundaries.push('Remote locator fill remains explicitly unsupported');
     }
     observations.push({ case: 'Frame evaluation, handles, and nested remote/same-process lazy locator evaluation' });

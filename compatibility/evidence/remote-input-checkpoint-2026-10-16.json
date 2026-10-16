@@ -1,0 +1,1014 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-focused-development-gates",
+  "referenceVersion": "1.60.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "browser": {
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "driverSha256": "c5c71a51e1db1618659c1c6e66f2feb75f9774dee18d4306f57b35e15a450d57",
+  "implementation": {
+    "crates/flashwright-engine/src/locators.rs": "ca05168ded1c8dda3ed2248d421001a15aa08cd48ff1cb7512a30e81eaec69d8",
+    "crates/flashwright-engine/src/locators/mutation.rs": "74413260f97709f3ae7120be49955aa573a21cb5a269bd4c8dba236be08bc3f1",
+    "crates/flashwright-engine/src/locators/mutation/tests.rs": "f66500ddc0d99a4520e7c84e7087dc8c19fdeaec905a80b096e108487db81c93",
+    "crates/flashwright-engine/src/keyboard.rs": "a54d1308722b69a176685f3476a1adff154d3482f79b5d3c1ab6315f9709ec39",
+    "crates/flashwright-engine/src/input.rs": "1eff1fa0cf71e51918f4f269fcd08d3d51af06bc7b57609fcc501f26f042fa3a",
+    "crates/flashwright-engine/src/pointer.rs": "1229cc35e43aea864c5d73dc044a91381f45e25bcd164836cd351ca49135754a",
+    "crates/flashwright-engine/src/pointer/geometry.rs": "842d8a3ee60fc5f499140895f434700e8a22184f1b013a974c6a8e137e5a7e7e",
+    "crates/flashwright-engine/src/pointer/completion.rs": "3933b182a0139ed00de357ede490283c89ec3023f0d598eae5d40d6dabfe9b24",
+    "packages/resident-runtime/locator-runtime.js": "86be00f5a1b5963e768d0fa1d5ffbc6bcdd7469476805c6b9e9c4dc618fb28b0",
+    "compatibility/m2/remote-input.mjs": "3b1329f5a1a3f1377a632c6255cc8ad23e06a0ebca1e889ff23a8a0d7752b191"
+  },
+  "sourceEntriesUnchangedThroughFinalVerification": 1246,
+  "scope": "Selected cross-process locator native input enabled by default after focused full-Chrome conformance. No release, full-current-core or comparative performance acceptance.",
+  "methods": [
+    "fill",
+    "selectOption",
+    "focus",
+    "blur",
+    "press",
+    "pressSequentially",
+    "click",
+    "dblclick",
+    "hover",
+    "check",
+    "uncheck",
+    "setChecked"
+  ],
+  "runs": [
+    {
+      "capture": "remote-bun",
+      "runtime": "bun 1.4.2",
+      "outcomes": {
+        "reference": [
+          "fill, Unicode, empty, controls, select, focus and direct Frame",
+          "native typing, editing shortcuts, current focus and canceled beforeinput",
+          "typing follows application focus into root",
+          "trusted pointer, explicit position, double-click, hover and checkbox",
+          "nested local and remote geometry, scrolling and input",
+          "parent overlay interception and trial avoids input",
+          "transformed iframe hit handling",
+          "strictness and absence deadline",
+          "lazy replacement and captured frame detachment",
+          "captured Frame and lazy path follow renderer return for input",
+          "child navigation from remote native click",
+          "top navigation from remote native click",
+          "unbounded fill retires with child while parent survives",
+          "unbounded press retires with child while parent survives",
+          "unbounded click retires with child while parent survives",
+          "uncertain fill focus is not replayed",
+          "uncertain press focus is not replayed",
+          "traced target ownership; remote snapshots retain their explicit capability gap"
+        ],
+        "candidate": [
+          "fill, Unicode, empty, controls, select, focus and direct Frame",
+          "native typing, editing shortcuts, current focus and canceled beforeinput",
+          "typing follows application focus into root",
+          "trusted pointer, explicit position, double-click, hover and checkbox",
+          "nested local and remote geometry, scrolling and input",
+          "parent overlay interception and trial avoids input",
+          "transformed iframe hit handling",
+          "strictness and absence deadline",
+          "lazy replacement and captured frame detachment",
+          "captured Frame and lazy path follow renderer return for input",
+          "child navigation from remote native click",
+          "top navigation from remote native click",
+          "unbounded fill retires with child while parent survives",
+          "unbounded press retires with child while parent survives",
+          "unbounded click retires with child while parent survives",
+          "uncertain fill focus is not replayed",
+          "uncertain press focus is not replayed",
+          "traced target ownership; remote snapshots retain their explicit capability gap"
+        ]
+      },
+      "remotePlacement": {
+        "reference": "out-of-process",
+        "candidate": "out-of-process"
+      },
+      "uncertainFocus": [
+        {
+          "engine": "reference",
+          "action": "fill",
+          "code": "TimeoutError",
+          "inputDelivery": null,
+          "cleanup": null
+        },
+        {
+          "engine": "reference",
+          "action": "press",
+          "code": "TimeoutError",
+          "inputDelivery": null,
+          "cleanup": null
+        },
+        {
+          "engine": "candidate",
+          "action": "fill",
+          "code": "TimeoutError",
+          "inputDelivery": "uncertain",
+          "cleanup": "resourceDisposed"
+        },
+        {
+          "engine": "candidate",
+          "action": "press",
+          "code": "TimeoutError",
+          "inputDelivery": "uncertain",
+          "cleanup": null
+        }
+      ],
+      "remoteSnapshotGap": "Explicit unsupported export retained after successful remote actions",
+      "traces": [
+        {
+          "engine": "reference",
+          "snapshots": false,
+          "sha256": "ce69a19ab531b9a59eefc18c8b01b849d5c803b73e442aa2a3afd53ac688defc"
+        },
+        {
+          "engine": "reference",
+          "snapshots": true,
+          "sha256": "03754d55f43ff3eab8383838c7a10bd94b98281408091940adef595e6fc3bf1d"
+        },
+        {
+          "engine": "candidate",
+          "snapshots": false,
+          "sha256": "85cf016ec56fa89ee633573f7d87ef9aa4a7af6a1ec45bb710f5f008bb57e1ce"
+        }
+      ],
+      "report": "workbench/remote-input-002/remote-bun/report.json"
+    },
+    {
+      "capture": "remote-node22",
+      "runtime": "v22.22.0",
+      "outcomes": {
+        "reference": [
+          "fill, Unicode, empty, controls, select, focus and direct Frame",
+          "native typing, editing shortcuts, current focus and canceled beforeinput",
+          "typing follows application focus into root",
+          "trusted pointer, explicit position, double-click, hover and checkbox",
+          "nested local and remote geometry, scrolling and input",
+          "parent overlay interception and trial avoids input",
+          "transformed iframe hit handling",
+          "strictness and absence deadline",
+          "lazy replacement and captured frame detachment",
+          "captured Frame and lazy path follow renderer return for input",
+          "child navigation from remote native click",
+          "top navigation from remote native click",
+          "unbounded fill retires with child while parent survives",
+          "unbounded press retires with child while parent survives",
+          "unbounded click retires with child while parent survives",
+          "uncertain fill focus is not replayed",
+          "uncertain press focus is not replayed",
+          "traced target ownership; remote snapshots retain their explicit capability gap"
+        ],
+        "candidate": [
+          "fill, Unicode, empty, controls, select, focus and direct Frame",
+          "native typing, editing shortcuts, current focus and canceled beforeinput",
+          "typing follows application focus into root",
+          "trusted pointer, explicit position, double-click, hover and checkbox",
+          "nested local and remote geometry, scrolling and input",
+          "parent overlay interception and trial avoids input",
+          "transformed iframe hit handling",
+          "strictness and absence deadline",
+          "lazy replacement and captured frame detachment",
+          "captured Frame and lazy path follow renderer return for input",
+          "child navigation from remote native click",
+          "top navigation from remote native click",
+          "unbounded fill retires with child while parent survives",
+          "unbounded press retires with child while parent survives",
+          "unbounded click retires with child while parent survives",
+          "uncertain fill focus is not replayed",
+          "uncertain press focus is not replayed",
+          "traced target ownership; remote snapshots retain their explicit capability gap"
+        ]
+      },
+      "remotePlacement": {
+        "reference": "out-of-process",
+        "candidate": "out-of-process"
+      },
+      "uncertainFocus": [
+        {
+          "engine": "reference",
+          "action": "fill",
+          "code": "TimeoutError",
+          "inputDelivery": null,
+          "cleanup": null
+        },
+        {
+          "engine": "reference",
+          "action": "press",
+          "code": "TimeoutError",
+          "inputDelivery": null,
+          "cleanup": null
+        },
+        {
+          "engine": "candidate",
+          "action": "fill",
+          "code": "TimeoutError",
+          "inputDelivery": "uncertain",
+          "cleanup": "resourceDisposed"
+        },
+        {
+          "engine": "candidate",
+          "action": "press",
+          "code": "TimeoutError",
+          "inputDelivery": "uncertain",
+          "cleanup": null
+        }
+      ],
+      "remoteSnapshotGap": "Explicit unsupported export retained after successful remote actions",
+      "traces": [
+        {
+          "engine": "reference",
+          "snapshots": false,
+          "sha256": "6e843af2670d14a5ecde486792b7cfea4093bcdb744227b0acacb1f41d32d660"
+        },
+        {
+          "engine": "reference",
+          "snapshots": true,
+          "sha256": "f111d7344c7b55220af24218be9cdda2e98a5cf9f9523c499b0a4d36f7984e42"
+        },
+        {
+          "engine": "candidate",
+          "snapshots": false,
+          "sha256": "5c0da74ec571c83213f682a679222a97b5f3afa54cd8ba440b15577826d0b27a"
+        }
+      ],
+      "report": "workbench/remote-input-002/remote-node22/report.json"
+    },
+    {
+      "capture": "remote-node24",
+      "runtime": "v24.15.0",
+      "outcomes": {
+        "reference": [
+          "fill, Unicode, empty, controls, select, focus and direct Frame",
+          "native typing, editing shortcuts, current focus and canceled beforeinput",
+          "typing follows application focus into root",
+          "trusted pointer, explicit position, double-click, hover and checkbox",
+          "nested local and remote geometry, scrolling and input",
+          "parent overlay interception and trial avoids input",
+          "transformed iframe hit handling",
+          "strictness and absence deadline",
+          "lazy replacement and captured frame detachment",
+          "captured Frame and lazy path follow renderer return for input",
+          "child navigation from remote native click",
+          "top navigation from remote native click",
+          "unbounded fill retires with child while parent survives",
+          "unbounded press retires with child while parent survives",
+          "unbounded click retires with child while parent survives",
+          "uncertain fill focus is not replayed",
+          "uncertain press focus is not replayed",
+          "traced target ownership; remote snapshots retain their explicit capability gap"
+        ],
+        "candidate": [
+          "fill, Unicode, empty, controls, select, focus and direct Frame",
+          "native typing, editing shortcuts, current focus and canceled beforeinput",
+          "typing follows application focus into root",
+          "trusted pointer, explicit position, double-click, hover and checkbox",
+          "nested local and remote geometry, scrolling and input",
+          "parent overlay interception and trial avoids input",
+          "transformed iframe hit handling",
+          "strictness and absence deadline",
+          "lazy replacement and captured frame detachment",
+          "captured Frame and lazy path follow renderer return for input",
+          "child navigation from remote native click",
+          "top navigation from remote native click",
+          "unbounded fill retires with child while parent survives",
+          "unbounded press retires with child while parent survives",
+          "unbounded click retires with child while parent survives",
+          "uncertain fill focus is not replayed",
+          "uncertain press focus is not replayed",
+          "traced target ownership; remote snapshots retain their explicit capability gap"
+        ]
+      },
+      "remotePlacement": {
+        "reference": "out-of-process",
+        "candidate": "out-of-process"
+      },
+      "uncertainFocus": [
+        {
+          "engine": "reference",
+          "action": "fill",
+          "code": "TimeoutError",
+          "inputDelivery": null,
+          "cleanup": null
+        },
+        {
+          "engine": "reference",
+          "action": "press",
+          "code": "TimeoutError",
+          "inputDelivery": null,
+          "cleanup": null
+        },
+        {
+          "engine": "candidate",
+          "action": "fill",
+          "code": "TimeoutError",
+          "inputDelivery": "uncertain",
+          "cleanup": "resourceDisposed"
+        },
+        {
+          "engine": "candidate",
+          "action": "press",
+          "code": "TimeoutError",
+          "inputDelivery": "uncertain",
+          "cleanup": null
+        }
+      ],
+      "remoteSnapshotGap": "Explicit unsupported export retained after successful remote actions",
+      "traces": [
+        {
+          "engine": "reference",
+          "snapshots": false,
+          "sha256": "4d1ccc200540b0b326d78a74399815293979e89355cc755c6631d4279b3630a2"
+        },
+        {
+          "engine": "reference",
+          "snapshots": true,
+          "sha256": "e1dd96f81ddfd551bb901adeefb263fd262bad8dd02775965d7afdd93a66810e"
+        },
+        {
+          "engine": "candidate",
+          "snapshots": false,
+          "sha256": "7fd8a3d9c5d4fe5757b4842172a7b359fd8048fd0036f9c3677fa1bca14b1c6c"
+        }
+      ],
+      "report": "workbench/remote-input-002/remote-node24/report.json"
+    }
+  ],
+  "nativeTests": {
+    "passed": 514,
+    "failed": 0,
+    "ignored": 1,
+    "newMutationOwnershipTests": 4
+  },
+  "heldRelease": {
+    "status": "passed",
+    "error": {
+      "code": "EvaluationError",
+      "method": "locator.click",
+      "message": "frame has been detached",
+      "referenceVersion": "1.60.0",
+      "browser": "chromium",
+      "inputDelivery": "notDispatched"
+    },
+    "nativeMouseCommands": 0,
+    "parentSurvived": true
+  },
+  "packed": {
+    "status": "passed",
+    "outcomes": [
+      {
+        "format": "esm",
+        "remotePlacementGuard": true,
+        "reads": 4,
+        "assertions": 2,
+        "nativeActions": 3
+      },
+      {
+        "format": "commonjs",
+        "remotePlacementGuard": true,
+        "reads": 4,
+        "assertions": 2,
+        "nativeActions": 3
+      }
+    ],
+    "scope": "Fresh Bun ESM/CommonJS consumers using an explicit development driver; no registry acquisition claim."
+  },
+  "checks": [
+    {
+      "capture": "remote-input-002",
+      "name": "rust",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-rust.json",
+      "log": "workbench/remote-input-002/rust.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "remote-bun",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-remote-bun.json",
+      "log": "workbench/remote-input-002/remote-bun.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "remote-node22",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-remote-node22.json",
+      "log": "workbench/remote-input-002/remote-node22.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "remote-node24",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-remote-node24.json",
+      "log": "workbench/remote-input-002/remote-node24.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "held-release",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-held-release.json",
+      "log": "workbench/remote-input-002/held-release.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "pointer",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-pointer.json",
+      "log": "workbench/remote-input-002/pointer.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "keyboard",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-keyboard.json",
+      "log": "workbench/remote-input-002/keyboard.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "locators",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-locators.json",
+      "log": "workbench/remote-input-002/locators.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "frame-locators",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-frame-locators.json",
+      "log": "workbench/remote-input-002/frame-locators.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "frame-traces",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-frame-traces.json",
+      "log": "workbench/remote-input-002/frame-traces.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "remote-reads",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-remote-reads.json",
+      "log": "workbench/remote-input-002/remote-reads.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "frame-lifetime",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-002/resources-frame-lifetime.json",
+      "log": "workbench/remote-input-002/frame-lifetime.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-002",
+      "name": "selector-actions",
+      "exitCode": 1,
+      "resource": "workbench/remote-input-002/resources-selector-actions.json",
+      "log": "workbench/remote-input-002/selector-actions.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-003",
+      "name": "selector-actions",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-003/resources-selector-actions.json",
+      "log": "workbench/remote-input-003/selector-actions.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-003",
+      "name": "selector-traces",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-003/resources-selector-traces.json",
+      "log": "workbench/remote-input-003/selector-traces.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-003",
+      "name": "packed",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-003/resources-packed.json",
+      "log": "workbench/remote-input-003/packed.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-003",
+      "name": "remote-evaluation",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-003/resources-remote-evaluation.json",
+      "log": "workbench/remote-input-003/remote-evaluation.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-003",
+      "name": "context-media",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-003/resources-context-media.json",
+      "log": "workbench/remote-input-003/context-media.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    },
+    {
+      "capture": "remote-input-003",
+      "name": "binary-paths",
+      "exitCode": 0,
+      "resource": "workbench/remote-input-003/resources-binary-paths.json",
+      "log": "workbench/remote-input-003/binary-paths.log",
+      "observedTeardown": "no remaining observed processes or cleanup signals"
+    }
+  ],
+  "retainedAttempts": [
+    {
+      "capture": "remote-input-001/run-001",
+      "status": "failed",
+      "note": "Initial expected-success fixture failed on a narrow checkbox with 9px iframe border and 7px padding in the pinned reference. Final fixture uses 2px border and 1px padding; no thick-border checkbox success claim.",
+      "driverSha256": "5ebeecf461596da1cacaefa46eeed57f394ecc9fba60c5d689d3e29ad9cbf415",
+      "report": "workbench/remote-input-001/run-001/report.json",
+      "resource": "workbench/remote-input-001/resources-001.json"
+    },
+    {
+      "capture": "remote-input-001/run-002",
+      "status": "failed",
+      "note": "Candidate nested remote click returned success without a trusted target click; rejected.",
+      "driverSha256": "5ebeecf461596da1cacaefa46eeed57f394ecc9fba60c5d689d3e29ad9cbf415",
+      "report": "workbench/remote-input-001/run-002/report.json",
+      "resource": "workbench/remote-input-001/resources-002.json"
+    },
+    {
+      "capture": "remote-input-001/run-003",
+      "status": "failed",
+      "note": "The missing nested click remained absent after a diagnostic delay; rejected.",
+      "driverSha256": "5ebeecf461596da1cacaefa46eeed57f394ecc9fba60c5d689d3e29ad9cbf415",
+      "report": "workbench/remote-input-001/run-003/report.json",
+      "resource": "workbench/remote-input-001/resources-003.json"
+    },
+    {
+      "capture": "remote-input-001/run-004",
+      "status": "failed",
+      "note": "Private protocol capture confirmed prepared coordinates and hit checks but no target click; rejected.",
+      "driverSha256": "5ebeecf461596da1cacaefa46eeed57f394ecc9fba60c5d689d3e29ad9cbf415",
+      "report": "workbench/remote-input-001/run-004/report.json",
+      "resource": "workbench/remote-input-001/resources-004.json"
+    },
+    {
+      "capture": "remote-input-001/run-005",
+      "status": "passed",
+      "note": "Preliminary scroll before fresh stability corrected the nine-group remote screen.",
+      "driverSha256": "425ebe61d31db6328e7779f274b281715b716b910bddfdf3510a96d6aca5fc73",
+      "report": "workbench/remote-input-001/run-005/report.json",
+      "resource": "workbench/remote-input-001/resources-005.json"
+    },
+    {
+      "capture": "remote-input-001/run-006",
+      "status": "failed",
+      "note": "Reference renderer reuse after a deliberately blocked child stalled the next scenario; failure controls were separated into fresh contexts.",
+      "driverSha256": "c7551d72bc03cdccdfb14ef89168c4d1f90ae52356b30098f41ccb9cfba09990",
+      "report": "workbench/remote-input-001/run-006/report.json",
+      "resource": "workbench/remote-input-001/resources-006.json"
+    },
+    {
+      "capture": "remote-input-001/run-007",
+      "status": "failed",
+      "note": "PostMessage was not a reliable entered-handler marker while the renderer was blocked; replaced with an acknowledged synchronous fixture request.",
+      "driverSha256": "a051e40962f6bbd6dc070863ed2b967354444d9e7c8cc7a9ec58ac210d77435b",
+      "report": "workbench/remote-input-001/run-007/report.json",
+      "resource": "workbench/remote-input-001/resources-007.json"
+    },
+    {
+      "capture": "remote-input-001/run-008",
+      "status": "failed",
+      "note": "Real defect: original pending fill reply after child removal caused parent disposal.",
+      "driverSha256": "a051e40962f6bbd6dc070863ed2b967354444d9e7c8cc7a9ec58ac210d77435b",
+      "report": "workbench/remote-input-001/run-008/report.json",
+      "resource": "workbench/remote-input-001/resources-008.json"
+    },
+    {
+      "capture": "remote-input-001/run-009",
+      "status": "failed",
+      "note": "Fill/press detachment corrected; pointer preparation still disposed the parent after child removal.",
+      "driverSha256": "c2d9dc1a3f045663c84bcb34909e22435dd482a350bb3092a54654606a29ebd9",
+      "report": "workbench/remote-input-001/run-009/report.json",
+      "resource": "workbench/remote-input-001/resources-009.json"
+    },
+    {
+      "capture": "remote-input-001/run-010",
+      "status": "failed",
+      "note": "Child removal cases passed; fixture incorrectly required parent survival for a still-live unsettled focus handler. S10 bounded disposal is now explicitly recorded.",
+      "driverSha256": "21584895fe239dede8002e7b673e68d83c302f1a60470fa4996215956dc7f908",
+      "report": "workbench/remote-input-001/run-010/report.json",
+      "resource": "workbench/remote-input-001/resources-010.json"
+    },
+    {
+      "capture": "remote-input-001/run-011",
+      "status": "failed",
+      "note": "Navigation fixture returned a function from evaluate by implicit assignment; candidate correctly rejected that unsupported value. Corrected fixture to return undefined.",
+      "driverSha256": "2e211cda91828e1799c62aa740e878cf9c7aaa96f3d25a4ecf4e709be4504841",
+      "report": "workbench/remote-input-001/run-011/report.json",
+      "resource": "workbench/remote-input-001/resources-011.json"
+    },
+    {
+      "capture": "remote-input-001/run-012",
+      "status": "passed",
+      "note": "All 17 original shared groups passed after corrections.",
+      "driverSha256": "2e211cda91828e1799c62aa740e878cf9c7aaa96f3d25a4ecf4e709be4504841",
+      "report": "workbench/remote-input-001/run-012/report.json",
+      "resource": "workbench/remote-input-001/resources-012.json"
+    }
+  ],
+  "otherRetainedFailures": [
+    "Initial native test compile failed after removing an import used by a child module; restored before testing.",
+    "One native test initially exercised the 128-message writer queue instead of native pending credits; corrected to drain each outgoing command before filling the pending table.",
+    "Initial clippy rejected a collapsible if; corrected, final clippy passed.",
+    "Final controller used a nonexistent selector-action launcher after twelve successful checks. The failed exit is preserved; the six-check continuation ran the real fixture, trace verifier, packed consumers, remote evaluation, context media and binary path verification."
+  ],
+  "limitations": [
+    "The still-live blocked focus handler preserves its TimeoutError and uncertain-delivery classification but may require page disposal after bounded cleanup, unlike the reference survivor. Physical child destruction preserves the healthy parent.",
+    "Remote snapshots still fail export explicitly. Remote routing/init scripts, unlisted ElementHandle input operations and other unsupported methods retain their separate gates.",
+    "Focused geometry covers tested offsets, border/padding, nested local/remote scrolling, explicit positions, parent overlays and translation transforms; it does not claim exhaustive affine geometry coverage.",
+    "Earlier thick-border reference failure is retained and not promoted to a supported-success guarantee.",
+    "Full current core, native macOS refresh, release packaging/platform matrix and majority-scenario 2x performance remain open.",
+    "Raw captures stay private; exported receipts bind their original bytes, while public outcomes and identities are sanitized. Metadata additions after verification are not claimed to belong to the unchanged execution manifest."
+  ],
+  "receipts": {
+    "workbench/remote-input-002/remote-bun/report.json": {
+      "sha256": "1c07dc76597534f042c5b32d4ace4c4a77946c86e37ab6d75e1130be34eb6e27",
+      "bytes": 156029
+    },
+    "workbench/remote-input-002/remote-node22/report.json": {
+      "sha256": "00068227a8cb333e907ab73c36519e45e2db3be1ccd5f36fc5f0fb8329f30de5",
+      "bytes": 156012
+    },
+    "workbench/remote-input-002/remote-node24/report.json": {
+      "sha256": "858c7e3b2182259ef1552dc79dc9963de6184688fe00d78e3544e037cebd23c6",
+      "bytes": 156012
+    },
+    "workbench/remote-input-002/resources-rust.json": {
+      "sha256": "f18a0c313df1e13d30207f74a28287f44b44d534a164bb0043decb75fd682a3e",
+      "bytes": 168088
+    },
+    "workbench/remote-input-002/rust.log": {
+      "sha256": "575d724ef7d8be2a97367f5535c6e6a24763ed4a873a86ccc2736bbb96c3755e",
+      "bytes": 55402
+    },
+    "workbench/remote-input-002/resources-remote-bun.json": {
+      "sha256": "93c5263cb5f63f36672b3f71ee6997a60924451b0980ff69ee672c49a86345c7",
+      "bytes": 439691
+    },
+    "workbench/remote-input-002/remote-bun.log": {
+      "sha256": "3337aa41ad4e7128dada05a6981d55f65490ab9808c6770902618f239a970432",
+      "bytes": 2224
+    },
+    "workbench/remote-input-002/resources-remote-node22.json": {
+      "sha256": "e1e1d2b872e3783abeaf6a3d53312c8bac526e1cbe167d5b68b56ca83e6eac82",
+      "bytes": 444691
+    },
+    "workbench/remote-input-002/remote-node22.log": {
+      "sha256": "3337aa41ad4e7128dada05a6981d55f65490ab9808c6770902618f239a970432",
+      "bytes": 2224
+    },
+    "workbench/remote-input-002/resources-remote-node24.json": {
+      "sha256": "507e8b2954ac2ff084a73f1c4fdad789220adb5977e331b23a213c528a05090a",
+      "bytes": 442565
+    },
+    "workbench/remote-input-002/remote-node24.log": {
+      "sha256": "3337aa41ad4e7128dada05a6981d55f65490ab9808c6770902618f239a970432",
+      "bytes": 2224
+    },
+    "workbench/remote-input-002/resources-held-release.json": {
+      "sha256": "e0470d46138de0ea1b5adf1d6733f23a4274ae09b20955cfb552c9838c1001c1",
+      "bytes": 35503
+    },
+    "workbench/remote-input-002/held-release.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "workbench/remote-input-002/resources-pointer.json": {
+      "sha256": "7e79aa79b36aecd21995f4166904d32d7d1508565511ae33af745f9e08543eb9",
+      "bytes": 158384
+    },
+    "workbench/remote-input-002/pointer.log": {
+      "sha256": "bd80e3bafc5a1fc24826685624c7819ead672c4c189a9376d2ab0550efda1d47",
+      "bytes": 722
+    },
+    "workbench/remote-input-002/resources-keyboard.json": {
+      "sha256": "603edffc5fe1bb05661a378fa260fe78fa6c9d005babb788e278dd9d9c0e4c2f",
+      "bytes": 91922
+    },
+    "workbench/remote-input-002/keyboard.log": {
+      "sha256": "235dbd0092c17e24fe19d33eb35813484fb0db6f2bd13fd744bcf04b07f23696",
+      "bytes": 594
+    },
+    "workbench/remote-input-002/resources-locators.json": {
+      "sha256": "cf05be36b833a1406441b60f093f02c2ccdb81043e24f400b5846d7fb08cd717",
+      "bytes": 41032
+    },
+    "workbench/remote-input-002/locators.log": {
+      "sha256": "9016bbfba28ee82f31962ee3d131071a4ce822e4f86a49358eeb0a58d75e0dd2",
+      "bytes": 207
+    },
+    "workbench/remote-input-002/resources-frame-locators.json": {
+      "sha256": "b4a4031ed4b9830954c677ce2ea7da29db68dca12cccaef86a02f5407f1a2aee",
+      "bytes": 636413
+    },
+    "workbench/remote-input-002/frame-locators.log": {
+      "sha256": "57b6c2cdd3557dab1eef0da4149e7439cf0e3d78527b75e6d5d2962532409d7e",
+      "bytes": 141
+    },
+    "workbench/remote-input-002/resources-frame-traces.json": {
+      "sha256": "d2775d8db71775353971466c68b10c90b9959c0845d23438f55c028cec0dd74e",
+      "bytes": 4498
+    },
+    "workbench/remote-input-002/frame-traces.log": {
+      "sha256": "2fc1d526dd49c5a689816459b21ec4293974a7a3cd786e4b3b01369d2697dec1",
+      "bytes": 335
+    },
+    "workbench/remote-input-002/resources-remote-reads.json": {
+      "sha256": "87dbe1d0d8f3555f9313464de10fb324bd34356d7a8d02c9804ea80841f5e492",
+      "bytes": 105008
+    },
+    "workbench/remote-input-002/remote-reads.log": {
+      "sha256": "5de08b91c9efebd393c6bb98fb708960ff4daa9a83736b407cc2571ff232740d",
+      "bytes": 1040
+    },
+    "workbench/remote-input-002/resources-frame-lifetime.json": {
+      "sha256": "1ebe816900d63a217351f889fc79f0a0beafb942d7954a86cbc1002cf64e0980",
+      "bytes": 248198
+    },
+    "workbench/remote-input-002/frame-lifetime.log": {
+      "sha256": "eb4198ae427bcbad20dcbf06ef0ae59b5a0e6c0acc9487c50590377ab4738bd5",
+      "bytes": 31
+    },
+    "workbench/remote-input-002/resources-selector-actions.json": {
+      "sha256": "a08660dfe4a0209cc78c9a575911b8d14e6a804e162954097a8c987b0f0ad106",
+      "bytes": 3973
+    },
+    "workbench/remote-input-002/selector-actions.log": {
+      "sha256": "ed635b866d5e73e261c9d5d89ffda69c72783044ecd0123ee45d169d69d0b7ac",
+      "bytes": 62
+    },
+    "workbench/remote-input-003/resources-selector-actions.json": {
+      "sha256": "8eaf46f96668cfd7bf03e8fb9a644dc828f9e90ea0d37a580f66b44970c29fad",
+      "bytes": 340410
+    },
+    "workbench/remote-input-003/selector-actions.log": {
+      "sha256": "cbf0fd4ee19a632885af6f56f233c7f5dbd6ba725df5250ce30d5a741f04dd16",
+      "bytes": 130
+    },
+    "workbench/remote-input-003/resources-selector-traces.json": {
+      "sha256": "892dd81f08f941412147e424bcb16e079340ca5e4a24a6fbd6e8af69233eb6a8",
+      "bytes": 3984
+    },
+    "workbench/remote-input-003/selector-traces.log": {
+      "sha256": "e70e9da5bf9ed34b39b2c50c662f69951b836ba906436fadcef34372189fc4b1",
+      "bytes": 407
+    },
+    "workbench/remote-input-003/resources-packed.json": {
+      "sha256": "91189a9b18093e9b60447a029cf1ee2e08016e21a08c4a2343cda9f90584143b",
+      "bytes": 58134
+    },
+    "workbench/remote-input-003/packed.log": {
+      "sha256": "362e19318f4d8a5a3d69a5e2462d4db1b276591ee64755e18a12ed3154071e6e",
+      "bytes": 347
+    },
+    "workbench/remote-input-003/resources-remote-evaluation.json": {
+      "sha256": "a441df630b66663c689805308be7f89823222130fdad4fb8743bababd8778013",
+      "bytes": 60110
+    },
+    "workbench/remote-input-003/remote-evaluation.log": {
+      "sha256": "1dc99835e76b7caa20667db15c474ae90873009a1d2f4dc3a2ad496d1f1a6c2b",
+      "bytes": 118
+    },
+    "workbench/remote-input-003/resources-context-media.json": {
+      "sha256": "e8fb00ff8e4430697e600a1f51a4cc3355d0784e6050200d4b00ad8d671b7d47",
+      "bytes": 90316
+    },
+    "workbench/remote-input-003/context-media.log": {
+      "sha256": "1d00f3deb3bbddd9dc3b7b46375be9ad3196e9feaf28cba012968498d0ddb7e0",
+      "bytes": 114
+    },
+    "workbench/remote-input-003/resources-binary-paths.json": {
+      "sha256": "7362f1bde64cc4145d1cb13cedc2970d16e8f2ff82689cd7f2828cd3fc01a919",
+      "bytes": 4054
+    },
+    "workbench/remote-input-003/binary-paths.log": {
+      "sha256": "f3727eb950d6ecc95426dd9863e67021ecf6722bf7e5fcd59a42e9e2dac4e076",
+      "bytes": 58
+    },
+    "workbench/remote-input-001/run-001/report.json": {
+      "sha256": "970c6ee7a372cb50f2b4de6b4b1c5cc828774dd41eec08af4bb07b2f36f97421",
+      "bytes": 152536
+    },
+    "workbench/remote-input-001/resources-001.json": {
+      "sha256": "2c9b92794b48206ad5b6192e7ccb1f383f365761c2d6cec94e13a2631d1b9dae",
+      "bytes": 116721
+    },
+    "workbench/remote-input-001/run-002/report.json": {
+      "sha256": "d5c43b7062debc454483e50892eda096bb496b051a4482b046f7c0f79bbd7969",
+      "bytes": 152185
+    },
+    "workbench/remote-input-001/resources-002.json": {
+      "sha256": "82b15805a66ad4069b6e24077a3f8d615c40bcb19cb3f959ce42f7e346ba2723",
+      "bytes": 88278
+    },
+    "workbench/remote-input-001/run-003/report.json": {
+      "sha256": "d234247d765e951d31620af8fa2740af3ee8a3733afac9793acb18b0ff534fed",
+      "bytes": 152185
+    },
+    "workbench/remote-input-001/resources-003.json": {
+      "sha256": "91b6e401141b70a3c24570b1ff8dac2af83eaecad547c40d6dbe840c74e32daa",
+      "bytes": 118617
+    },
+    "workbench/remote-input-001/run-004/report.json": {
+      "sha256": "322d57f9dc5c68e871ed3235541a8b9ef35ba5bb386fa8c1c0aba56519cf36a2",
+      "bytes": 152185
+    },
+    "workbench/remote-input-001/resources-004.json": {
+      "sha256": "bfadcdc343cd5f75d376644d4ff827f6a8123f4e9a347774ec62362e1cbe2465",
+      "bytes": 119591
+    },
+    "workbench/remote-input-001/run-005/report.json": {
+      "sha256": "198f74dae5dbe71c0819cb5b29b7ee9550646b1882883acbb181dc267d40738e",
+      "bytes": 152207
+    },
+    "workbench/remote-input-001/resources-005.json": {
+      "sha256": "ad0f5254a48ca9087adfef38dfb6e3e9d34f330ad7cef0a0cd1b9a781277c5da",
+      "bytes": 103789
+    },
+    "workbench/remote-input-001/run-006/report.json": {
+      "sha256": "29b4d91fe9190f0c2bc4d6a474d51ddea87f3b5528412c8288268fd85d95c3fc",
+      "bytes": 151578
+    },
+    "workbench/remote-input-001/resources-006.json": {
+      "sha256": "46b78b7e63349426bdc8265ab1630ae8c9dc12402fcaad730d4c78e954464de2",
+      "bytes": 150518
+    },
+    "workbench/remote-input-001/run-007/report.json": {
+      "sha256": "f25aefd643d122c23f43e6f0527f87e1567f59d24362743aa68da34c2ecf2a4a",
+      "bytes": 151655
+    },
+    "workbench/remote-input-001/resources-007.json": {
+      "sha256": "3e3cab7394f7e330723a6f116eb8c69186a3052081cbc4424dd76479da8b2642",
+      "bytes": 92511
+    },
+    "workbench/remote-input-001/run-008/report.json": {
+      "sha256": "85c6a04122adc94523538028d03ccae43c1a0c577102eb2b70302d75c83a8172",
+      "bytes": 152969
+    },
+    "workbench/remote-input-001/resources-008.json": {
+      "sha256": "2d59df72f77be8f3c43f4d6114f2ae30630a9aa16a86bb14075d43e6a2a2694c",
+      "bytes": 224774
+    },
+    "workbench/remote-input-001/run-009/report.json": {
+      "sha256": "dc6c1e516374a5a3ef46b2bc23e9ed4f4823f4cf4063d33a217caa56bd39714e",
+      "bytes": 153226
+    },
+    "workbench/remote-input-001/resources-009.json": {
+      "sha256": "f0a4df19181b0af7f75c0d56a33b3dc7fd7483e7bbe8d07cba843025f5cb9d69",
+      "bytes": 291581
+    },
+    "workbench/remote-input-001/run-010/report.json": {
+      "sha256": "caacd78bf9d5bf7f3c813ebaeaac0111fa82e6eb3ea0d26caf9e510c8f374fab",
+      "bytes": 153409
+    },
+    "workbench/remote-input-001/resources-010.json": {
+      "sha256": "5489052589a8dee7b2d280631229ef605b12c9c6b5b3c43d1d8c23e432e64ff5",
+      "bytes": 344348
+    },
+    "workbench/remote-input-001/run-011/report.json": {
+      "sha256": "46b13eae54c5d17b188116cb9d1b8312af164bfef242713bb7601517bf219629",
+      "bytes": 154035
+    },
+    "workbench/remote-input-001/resources-011.json": {
+      "sha256": "040e9e548211a8169cd0b5cec5556073156d5f2df61116314a2fa8576dc5ee07",
+      "bytes": 212006
+    },
+    "workbench/remote-input-001/run-012/report.json": {
+      "sha256": "7e06fc4bf1c7742461de06ccf3809e0bebae4bf58143e0fae8197d9e9ce1e4e5",
+      "bytes": 154391
+    },
+    "workbench/remote-input-001/resources-012.json": {
+      "sha256": "d79e2e46b43118ecf6ad12a034e922f1b70576eb99afef96b8270ec8516f1d6c",
+      "bytes": 409430
+    },
+    "workbench/remote-input-001/mutation-tests.log": {
+      "sha256": "ddd4c0616d34369a07c12d5cdb985c82b891277a54d301103591054e2b2b8610",
+      "bytes": 1033
+    },
+    "workbench/remote-input-001/mutation-tests-002.log": {
+      "sha256": "1cb333a708225083858d2dd18dbe87c7e29c68cca9c5b86fbd391d01270b26d2",
+      "bytes": 1962
+    },
+    "workbench/remote-input-001/mutation-tests-003.log": {
+      "sha256": "99754c33a3de5d68d6a9e11a61a802faf6e000e7bba11559eebe462e1295f73b",
+      "bytes": 1298
+    },
+    "workbench/remote-input-001/clippy.log": {
+      "sha256": "a0da657e4461ec3dfbca7bfe30df58a587359eab32b7e38859ddc165e277546a",
+      "bytes": 1632
+    },
+    "workbench/remote-input-001/clippy-002.log": {
+      "sha256": "a646dde478bb3551c47b9b2507402d4a64c63d63c394e20a36e9c1770aec324a",
+      "bytes": 768
+    },
+    "workbench/remote-input-001/build-009.log": {
+      "sha256": "bc9e063502f2b12dee75d8143d1db5d4cb3462119179b81cf0f73bc3b324b02f",
+      "bytes": 747
+    },
+    "workbench/remote-input-002/inputs.json": {
+      "sha256": "e932b5daef0bd5c88fb0a61c89e2a5cdaf5197525a3a2125205dd9e6301a1593",
+      "bytes": 147852
+    },
+    "workbench/remote-input-002/results.json": {
+      "sha256": "25eb331fb88a9f20c1ec4ece83c88b98d88496932727066a316a1a5d39ee6919",
+      "bytes": 5181
+    },
+    "workbench/remote-input-002/regressions.py": {
+      "sha256": "5ff1ba56df3390b4a09e7a3174b7cdeb98200b1e94d2e8245d2a528d9f6e0fad",
+      "bytes": 3106
+    },
+    "workbench/remote-input-003/inputs.json": {
+      "sha256": "e932b5daef0bd5c88fb0a61c89e2a5cdaf5197525a3a2125205dd9e6301a1593",
+      "bytes": 147852
+    },
+    "workbench/remote-input-003/results.json": {
+      "sha256": "307951c75477f825b71f54429f607fdd913c6e69d88b5e636cfc9d2cbd0b786b",
+      "bytes": 2474
+    },
+    "workbench/remote-input-003/regressions.py": {
+      "sha256": "dbb3ccae8df65ed9bea2238bd70b0c4f2df796b093a2e53c184391786e2a0dea",
+      "bytes": 2443
+    },
+    "workbench/remote-input-003/verification.json": {
+      "sha256": "d30af58771e4f5ee9d086fc0f7ce4da72dfea290c203051eef03ee20e600255e",
+      "bytes": 65
+    },
+    "workbench/remote-input-001/held-release.mjs": {
+      "sha256": "24a464e0d2470b5856e141337f525fda799c89c225059b82a1b7a8ebd6d9ccc0",
+      "bytes": 2709
+    },
+    "workbench/remote-input-001/held-release-proxy.py": {
+      "sha256": "d7a0fd93e32ccd65ebbd9f598d99e028b64e1c3e8ec8255a6cd08134677bb36b",
+      "bytes": 2418
+    },
+    "workbench/remote-input-002/held-release/report.json": {
+      "sha256": "3c88a3fe72ada11f18b55e6a403c46a1d1a84d3fe7bafed7cd2b17a0185de46e",
+      "bytes": 407
+    },
+    "workbench/remote-input-003/packed/report.json": {
+      "sha256": "845035df6e3ae68556c69f25fc34d3b6100e76df9607b59c304ec61587ce75ca",
+      "bytes": 154009
+    },
+    "workbench/remote-input-003/packed/consumer/cleanup-receipt.json": {
+      "sha256": "8cc253b84e61ba6f211da2cff2e4f8aeb53e3a91fc9e7ba8b94204997ba76888",
+      "bytes": 7156
+    },
+    "workbench/remote-input-002/pointer.json": {
+      "sha256": "fb15fdff904ead9a4d464f5935751f79aaf962d9022fe3053a39d08d2281385e",
+      "bytes": 363490
+    },
+    "workbench/remote-input-002/keyboard.json": {
+      "sha256": "18ca687a0c775bfb1a1a3b78b61bb3a25aae04613b4389abf9113b09aa822347",
+      "bytes": 910646
+    },
+    "workbench/remote-input-002/locators.json": {
+      "sha256": "8ee80e25ddc880046cbf371b4e8f5e6dce5eb93a584282c658579f129bf96b6d",
+      "bytes": 6800
+    },
+    "workbench/remote-input-002/frame-locators/report.json": {
+      "sha256": "da25851d4c8f70b97f00f3a4463ee1c13bde6b721a4907c45f80097e17dbcaff",
+      "bytes": 276564
+    },
+    "workbench/remote-input-002/frame-lifetime/report.json": {
+      "sha256": "c98af98826cccc29897909f263eebec1668757a9bc9b8b1d45685511abdc666e",
+      "bytes": 154341
+    },
+    "workbench/remote-input-002/remote-reads/report.json": {
+      "sha256": "e3ff3bd7a395954476b356bc9aaa59b3a6b089520b1207d90b0d350fc58b2051",
+      "bytes": 154930
+    },
+    "workbench/remote-input-003/selector-actions/report.json": {
+      "sha256": "9e0e7fbd641544905e17b4cd06994b365a3eb2328203888fdbc72b41acee10d5",
+      "bytes": 76272
+    },
+    "workbench/remote-input-003/remote-evaluation/report.json": {
+      "sha256": "e1318352cd3622cba881f9bd19a62afa928357ceaa4b1f53a9ee706ccab5165f",
+      "bytes": 154753
+    },
+    "workbench/remote-input-003/context-media/report.json": {
+      "sha256": "b62efafba69eda7990fabe2fccf43ea54e8f0238c1d83190013a56ae23b9306f",
+      "bytes": 168597
+    }
+  }
+}
