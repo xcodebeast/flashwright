@@ -2506,7 +2506,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 1050,
@@ -3953,7 +3954,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 1209,
@@ -20213,7 +20215,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4863,
@@ -38709,7 +38712,8 @@
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
         "compatibility/m2/storage.mjs",
         "tools/storage-request-observations.mjs",
-        "tools/test-storage-request-observations.mjs"
+        "tools/test-storage-request-observations.mjs",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9060,
@@ -38993,7 +38997,8 @@
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
         "compatibility/m2/storage.mjs",
         "tools/storage-request-observations.mjs",
-        "tools/test-storage-request-observations.mjs"
+        "tools/test-storage-request-observations.mjs",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9137,
@@ -39189,7 +39194,8 @@
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
         "compatibility/m2/storage.mjs",
         "tools/storage-request-observations.mjs",
-        "tools/test-storage-request-observations.mjs"
+        "tools/test-storage-request-observations.mjs",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9188,
@@ -40580,7 +40586,8 @@
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
         "compatibility/m2/storage.mjs",
         "tools/storage-request-observations.mjs",
-        "tools/test-storage-request-observations.mjs"
+        "tools/test-storage-request-observations.mjs",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 9619,
@@ -45111,10 +45118,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10237,
       "signature": "colorScheme?: null|\"light\"|\"dark\"|\"no-preference\";",
@@ -45122,8 +45142,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'light'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.Browser.newPage.options.contrast#1",
@@ -45131,10 +45151,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10244,
       "signature": "contrast?: null|\"no-preference\"|\"more\";",
@@ -45142,8 +45175,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'no-preference'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.Browser.newPage.options.deviceScaleFactor#1",
@@ -45227,10 +45260,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10262,
       "signature": "forcedColors?: null|\"active\"|\"none\";",
@@ -45238,8 +45284,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'none'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.Browser.newPage.options.geolocation#1",
@@ -45958,10 +46004,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 10479,
       "signature": "reducedMotion?: null|\"reduce\"|\"no-preference\";",
@@ -45969,8 +46028,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'no-preference'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.Browser.newPage.options.screen#1",
@@ -77047,7 +77106,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19413,
@@ -77087,7 +77147,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19422,
@@ -77127,7 +77188,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19427,
@@ -77167,7 +77229,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19432,
@@ -77207,7 +77270,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19437,
@@ -77247,7 +77311,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19447,
@@ -77287,7 +77352,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19461,
@@ -77327,7 +77393,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19461,
@@ -77367,7 +77434,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19469,
@@ -77407,7 +77475,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 19474,
@@ -94749,7 +94818,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23725,
@@ -94969,10 +95039,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23816,
       "signature": "colorScheme?: null|\"light\"|\"dark\"|\"no-preference\";",
@@ -94980,8 +95063,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'light'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.BrowserContextOptions.contrast#1",
@@ -94989,10 +95072,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23823,
       "signature": "contrast?: null|\"no-preference\"|\"more\";",
@@ -95000,8 +95096,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'no-preference'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.BrowserContextOptions.deviceScaleFactor#1",
@@ -95085,10 +95181,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 23841,
       "signature": "forcedColors?: null|\"active\"|\"none\";",
@@ -95096,8 +95205,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'none'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.BrowserContextOptions.geolocation#1",
@@ -95686,10 +95795,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright-core/types/types.d.ts",
       "line": 24025,
       "signature": "reducedMotion?: null|\"reduce\"|\"no-preference\";",
@@ -95697,8 +95819,8 @@
         "Passing `null` resets emulation to system defaults. Defaults to `'no-preference'`."
       ],
       "optional": true,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright-core/types/types.d.ts.BrowserContextOptions.screen#1",
@@ -110448,7 +110570,8 @@
         "compatibility/evidence/downloads-checkpoint-2026-10-10.json",
         "compatibility/evidence/downloads-2026-10-10/core/report.json",
         "compatibility/m2/downloads.mjs",
-        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json"
+        "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json"
       ],
       "source": "playwright/types/test.d.ts",
       "line": 7045,
@@ -110488,10 +110611,23 @@
       "kind": "PropertySignature",
       "reference": "1.60.0",
       "backend": "chromium",
-      "status": "planned",
+      "status": "experimental",
       "milestone": "M4",
-      "implementation": null,
-      "evidence": [],
+      "implementation": [
+        "packages/flashwright-core/src/context-settings.ts",
+        "packages/flashwright-core/src/index.ts",
+        "packages/flashwright-core/src/engine-contract.ts",
+        "packages/flashwright-runner/src/index.ts",
+        "crates/flashwright-engine/src/context_settings.rs",
+        "crates/flashwright-engine/src/lib.rs",
+        "crates/flashwright-engine/src/renderer_setup.rs"
+      ],
+      "evidence": [
+        "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+        "tools/run-context-media-tests.mjs",
+        "compatibility/m2/context-settings-runner/settings.spec.ts",
+        "tools/test-packed-package.mjs"
+      ],
       "source": "playwright/types/test.d.ts",
       "line": 7084,
       "signature": "colorScheme: ColorScheme;",
@@ -110500,8 +110636,8 @@
         "export default defineConfig({"
       ],
       "optional": false,
-      "assessment": "unverified",
-      "review": null
+      "assessment": "verified-subset",
+      "review": "context-media"
     },
     {
       "id": "playwright/types/test.d.ts.PlaywrightTestOptions.clientCertificates#1",
@@ -123782,5 +123918,5 @@
     }
   ],
   "reviewSource": "compatibility/parity-reviews.json",
-  "reviewedEntries": 533
+  "reviewedEntries": 542
 }

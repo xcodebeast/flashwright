@@ -2981,6 +2981,11 @@
           "path": "compatibility/evidence/page-disposal-ownership-checkpoint-2026-10-11.json",
           "sha256": "96b1c3997f243fbb3a7fdbd2a44e794112c912ee551fba7f6e6f7a48f460d649",
           "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+          "sha256": "32d51fdb4eb48bc763a31b7f24869b82b1cd6ebc26b48dcb71c25f0a95a7d2ec",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -3179,6 +3184,11 @@
           "path": "tools/test-storage-request-observations.mjs",
           "sha256": "92554cc20c5db4c4eb1ccae2730ada07b1f5a0f43a24e1a1e88be1b114274a5b",
           "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+          "sha256": "32d51fdb4eb48bc763a31b7f24869b82b1cd6ebc26b48dcb71c25f0a95a7d2ec",
+          "kind": "conformance"
         }
       ],
       "entries": [
@@ -4206,6 +4216,106 @@
         {
           "id": "playwright-core/types/types.d.ts.Page.waitForRequest.options.timeout#1",
           "declarationSha256": "323b2625ea821479c83813e19e23c9b2a6fc6b98ed0c183d364ff662fcbda11f"
+        }
+      ]
+    },
+    {
+      "id": "context-media",
+      "title": "Browser context media preferences",
+      "status": "experimental",
+      "assessment": "verified-subset",
+      "scope": "Immutable colorScheme, reducedMotion, forcedColors and contrast in ordinary newContext/newPage, plus runner contextOptions and individual colorScheme. Shared initial-script, application-script, navigation, CSS, child-frame, isolation, null/undefined and malformed-value cases pass on Linux. Full Chrome exercises actual out-of-process children; packed ESM/CommonJS consumers verify declarations and runtime values.",
+      "limitations": "Native Linux x64 development coverage. Headless shell children remained in-process. Node 22 has focused library differential coverage; the complete headless-shell core and packed gates use Bun 1.4.2. Current full-Chrome media and runner cases passed. The latest complete full-Chrome attempt failed at separate-browser reference touch inheritance, so that complete gate remains open. Native macOS, page-level emulateMedia, persistent contexts, remote user init scripts, release and comparative performance acceptance remain separate.",
+      "defaults": "Omitted preferences select light, no-preference, none and no-preference respectively. Null removes a feature override and inherits the browser environment. Chromium colorScheme no-preference can also follow the environment. Explicit undefined on manual runner contexts suppresses inherited values. Individual runner colorScheme overrides contextOptions; the other three preferences use contextOptions.",
+      "differences": [],
+      "implementation": [
+        {
+          "path": "packages/flashwright-core/src/context-settings.ts",
+          "sha256": "3c53b5ae30cf5edb495f9221a531868cd7ecf092692055a689fdc419f7440254"
+        },
+        {
+          "path": "packages/flashwright-core/src/index.ts",
+          "sha256": "3ee552ea2ea8d948e6c3ba54f9c7f5c404ed6a0f8f81375e7c909a08b239f3a0"
+        },
+        {
+          "path": "packages/flashwright-core/src/engine-contract.ts",
+          "sha256": "93efc9ed5296b63d842d2934276dbadf4140c45c1067c9bd66aae93f6b599a63"
+        },
+        {
+          "path": "packages/flashwright-runner/src/index.ts",
+          "sha256": "391c3d81e3216b270bc6843de46017886ff9297ece4c55d7310f780b28f6642c"
+        },
+        {
+          "path": "crates/flashwright-engine/src/context_settings.rs",
+          "sha256": "9f6eaa9e2549c29f2266a3f795cdd6208b1b6aaecf466453f4770c5f2ebb8216"
+        },
+        {
+          "path": "crates/flashwright-engine/src/lib.rs",
+          "sha256": "967eb0abbdc84e2bd1b8e23e1ebddd2ef56a0028b4070935342e6870e5ebaa4f"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_setup.rs",
+          "sha256": "ebb8c2a080bf6d2df68a39bcbf35db9fe5461d398bf1c993867a1325c3a79267"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "compatibility/evidence/context-media-checkpoint-2026-10-16.json",
+          "sha256": "32d51fdb4eb48bc763a31b7f24869b82b1cd6ebc26b48dcb71c25f0a95a7d2ec",
+          "kind": "conformance"
+        },
+        {
+          "path": "tools/run-context-media-tests.mjs",
+          "sha256": "10c5f085d84a8d6937fcd8e6b98a76b77219bb548192c63b58c5c09afd1c5881",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/m2/context-settings-runner/settings.spec.ts",
+          "sha256": "caa67db137e475bdfcb72353b411e1fa48b22696dce1f92068a15766d4b0bb06",
+          "kind": "source-review"
+        },
+        {
+          "path": "tools/test-packed-package.mjs",
+          "sha256": "c0903b320741a779a8b947a0e2910d51c45db268bf69f2af69cb0ad1c6ed34f6",
+          "kind": "source-review"
+        }
+      ],
+      "entries": [
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.newPage.options.colorScheme#1",
+          "declarationSha256": "6a23ccf9f9427771a428a2a58ee0449788d71b397c83191066ae5905cf2bdce2"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.newPage.options.contrast#1",
+          "declarationSha256": "18d55d5932ea339eaab5f7bbff142960df5c117d991ee804dc5b7e6a52c171c1"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.newPage.options.forcedColors#1",
+          "declarationSha256": "3c1fed51f6a673067f0675c27ac004917fc1c3d62c35fb9a7f6aa482f48423a0"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.Browser.newPage.options.reducedMotion#1",
+          "declarationSha256": "7560563b6945221f765cb9d52d8e833e306471053dd3c5404bdab3e1ce5cc56b"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContextOptions.colorScheme#1",
+          "declarationSha256": "2d0339f60bba96a2d5fb85f9f6bb2bf3696611de77e4e5e7b73b3a50f1ab189f"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContextOptions.contrast#1",
+          "declarationSha256": "c91f68e35fcf31f0edbf17ff21becd2a92522523f64bfa4ee7c469a44f7b7d53"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContextOptions.forcedColors#1",
+          "declarationSha256": "59b41d9f6fc3030e6ce53b0d61132d4281b2c64bd535d848aadacee2f2405270"
+        },
+        {
+          "id": "playwright-core/types/types.d.ts.BrowserContextOptions.reducedMotion#1",
+          "declarationSha256": "1ab3137a8a1fd3e67d3c95878337b6507a5e68a45bbb38351b325ad2f7f4bb06"
+        },
+        {
+          "id": "playwright/types/test.d.ts.PlaywrightTestOptions.colorScheme#1",
+          "declarationSha256": "20986ea0f3b61fd61699c3fea3ac88e2fbcbba5578413197a0077a3b305fa7ac"
         }
       ]
     }
