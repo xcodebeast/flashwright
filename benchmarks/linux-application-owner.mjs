@@ -9,9 +9,11 @@ assert.equal(process.platform, 'linux');
 assert.equal(process.versions.bun, '1.4.2');
 const directory = process.argv[2];
 const prepared = JSON.parse(await readFile(join(directory, 'prepared.json'), 'utf8'));
+assert([1, 4].includes(prepared.workers), 'Application policy requires one or four workers');
+assert.equal(prepared.configuration.workers, prepared.workers);
 const clock = await createFinalGoalClock(JSON.parse(process.env.FLASHWRIGHT_CAPTURE_CLOCK));
 const report = { schemaVersion: 1, status: 'running', ownerProcess: process.pid, engine: prepared.engine,
-  application: prepared.application, workers: 1, clock: clock.metadata, runnerCommand: prepared.runnerCommand,
+  application: prepared.application, workers: prepared.workers, clock: clock.metadata, runnerCommand: prepared.runnerCommand,
   events: [], failures: [], serviceClosed: false };
 const event = name => report.events.push({ name, nanoseconds: clock.nowNanoseconds().toString() });
 let server;
