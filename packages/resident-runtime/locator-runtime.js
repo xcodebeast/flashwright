@@ -383,6 +383,7 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     let previousRectangle;
     const result = await conditions.wait({
       token,
+      animationFramesOnly: true,
       timeoutMilliseconds: Math.min(maximumWaitMilliseconds, deadline === null ? Infinity : Math.max(0, deadline - Date.now())),
       check: () => {
         try {

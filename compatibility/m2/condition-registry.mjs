@@ -10,6 +10,7 @@ import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { createLifecycleTarget } from './lifecycle-target.mjs';
 import { verifyConditionQueryBatches } from './condition-query-batches.mjs';
 import { verifyConditionFallbackCadence } from './condition-fallback-cadence.mjs';
+import { verifyFrameHints } from './condition-frame-hints.mjs';
 
 const sources = await sourceManifest();
 const sourceNames = ['playwright-injected.js', 'serialization.cjs', 'locator-runtime.js', 'condition-registry.js'];
@@ -106,6 +107,7 @@ const state = (selector, expression, extra = {}) => ({ selector, expression, ...
 try {
   await verifyConditionQueryBatches({ reset, evaluate, page, cases });
   await verifyConditionFallbackCadence({ reset, evaluate, page, start, finish, clean, cases, registrySource });
+  await verifyFrameHints({ reset, evaluate, cases, registrySource });
   await reset('<p>already true</p>');
   await finish(await start(text('css=p', 'already true')));
   const immediate = await clean('already true skips discovery');

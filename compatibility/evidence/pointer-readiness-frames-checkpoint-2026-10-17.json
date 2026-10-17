@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "status": "passed-focused-frame-hint-development-checkpoint",
+  "scope": "Opt-in pointer-readiness mechanism correction on native Linux full Chrome. Focused behavior/lifetime evidence; complete-suite comparison retained separately.",
+  "sourceBaseCommit": "726a59458dd1340dfd366041abfebe2218be918c",
+  "candidateSourceAndDriverHashes": {
+    "packages/resident-runtime/condition-registry.js": "46d9eafd7f7f07b94d73747a85547ae10f82c900929f6d0a08329f3ddeb025d6",
+    "packages/resident-runtime/locator-runtime.js": "20ff5bc7b3e29082d5a2573e636fc6fec0393bc087cb88fb100a01917b39f348",
+    "compatibility/m2/condition-frame-hints.mjs": "80ca4940227a49da7020cec63e5140068d0a9ea6c3c3b3794426898b0e83c919",
+    "compatibility/m2/condition-registry.mjs": "982394ccf189092f64feec75f2497833bcf326cf937e54dac5d9a8fe62f7ca8b",
+    "target/release/flashwright-driver": "1357a413b6adf91128ead145648fabbb3afebbea5b8b99fab7416693283b4506"
+  },
+  "runtime": {
+    "name": "Bun",
+    "version": "1.4.2"
+  },
+  "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+  "change": "Finite frame-only registry conditions sample initially and subsequently on shared RAF callbacks, ignore event/mutation/timer duplicates, retain RAF pacing beyond100ms, and expire through the independent deadline. Original pointer preparation still resolves anew and checks fresh stability before input. Cancellation and document replacement retain shared scheduler ownership.",
+  "verification": {
+    "registryCases": 60,
+    "registryScope": "Existing registry cases plus controlled frame-only event/mutation/timer/mixed-condition, post100ms pacing, cancellation, stale callback, withheld-frame expiry and queued document replacement cases. Controlled scheduler tests are not real-time speed evidence.",
+    "pointerDifferential": "Existing public native-input fixture passed against both engines with candidate hint mode enabled; includes fresh stability, targeting, scroll, frame, concurrent input, navigation and timeout behavior.",
+    "assertionsDifferential": "Existing public assertion fixture passed against both engines; ordinary shared-registry behavior retained.",
+    "nativeReadinessLifetimeTests": 5,
+    "functionalReceipts": [
+      {
+        "name": "regression-bun-pointer-002",
+        "report": "pointer-linux-x64-bun-1.4.2.json",
+        "receipts": {
+          "plan.json": "273892c470fe601499858d4b1fda1533d5055c3261e27d09ce7b56a032416564",
+          "execution-verified.json": "75ab88f66a103e465b3468c0347d2ca8ef9a15bfedf594af02c3f951faffd410",
+          "resources.json": "07b58ed23659eab7f455e103ce3488e7a33fb7824c1eabd70892bbb7797751df",
+          "original-terminal.json": "414c8b8f6ab986a76ec9903819013f6e133ba728f18f12f2a7da4d387f46108e",
+          "evidence-upper/pointer-linux-x64-bun-1.4.2.json": "f1167e07260771b81c9e3f042bd51880fc449dfeb8985da7d5025d970a452548"
+        }
+      },
+      {
+        "name": "regression-bun-assertions-001",
+        "report": "assertions-linux-x64-bun-1.4.2.json",
+        "receipts": {
+          "plan.json": "39198a8b864f4aa685459affbc3b1e4afebc4d242f49798aeea790faf1664781",
+          "execution-verified.json": "95e0d19f2d6b95e39103de0b347c4586912d243f595b7478e2125e9b85e65198",
+          "resources.json": "d20063a1199fb2505eeb3e7dcb32a2637fc29fee0018a78b4f87bc37e472c754",
+          "original-terminal.json": "414c8b8f6ab986a76ec9903819013f6e133ba728f18f12f2a7da4d387f46108e",
+          "evidence-upper/assertions-linux-x64-bun-1.4.2.json": "a1dd2f81948b6a90af305b853c58fe3015d220be7eb960e7220e6e57a1ac0f55"
+        }
+      },
+      {
+        "name": "regression-bun-conditions-004",
+        "report": "resident-registry-linux-x64-bun-1.4.2-2026-10-17T10-18-12.802Z.json",
+        "receipts": {
+          "plan.json": "e5ed3968913365250993b24c83f7a1c04f0bffc6375527f7cf489ba95dc026a1",
+          "execution-verified.json": "26424190ab0078b527937374e515a8d7f5b5f0ebd2875830d6fde7cc3daeadd4",
+          "resources.json": "c2150a9e3a68cba10f3d8f75460b0f1ec916f089fa988ef709e0c4744136ab55",
+          "original-terminal.json": "414c8b8f6ab986a76ec9903819013f6e133ba728f18f12f2a7da4d387f46108e",
+          "evidence-upper/resident-registry-linux-x64-bun-1.4.2-2026-10-17T10-18-12.802Z.json": "c673bd3e09fd0e88ccd366e6f5cb7da79dd1ca7cbb8d85d618cff157c24239bf"
+        }
+      }
+    ]
+  },
+  "movingMechanism": {
+    "order": [
+      "old-first",
+      "new-first",
+      "new-second",
+      "old-second"
+    ],
+    "scope": "Four instrumented controlled moving-target probes in old/new/new/old order. Counts/mechanism only, not suite speed or final CPU/memory evidence. Original code and matched client snapshots preserve handshake.",
+    "rows": [
+      {
+        "case": "old-first",
+        "driverSha256": "42fab5c26ce5d25c70f989db305c9c18c61785c262cf84f8223dc500805c9a1a",
+        "counts": {
+          "preparePointer": 17,
+          "cleanupPointer": 16,
+          "waitForPointerReadiness": 15,
+          "pointerElement": 1,
+          "armPointer": 1,
+          "finishPointer": 1
+        },
+        "hintOutcomes": {
+          "matched": 15
+        },
+        "matchedThenUnstable": 14,
+        "lateReplies": 0,
+        "receipts": {
+          "plan.json": "2245fef0758478fb2158f4ae1d4da59246ce36414a3610e0c510799e0496abd7",
+          "original-terminal.json": "62cc194d2d3b06411ebaaf19c8f33eba06798c8f5bc1ff4107a940917d8acf84",
+          "resources.json": "caef3c2bd1921e9604cf515618050b0de84efcadf4c78182dc2f95113eaddb06",
+          "result.json": "3ef64647b58690cd3d5d2b450ba13b52cf4be645b3d5ec50d8fd72ddf3bdf267",
+          "protocol/protocol-1678046.jsonl": "d2285dd06ba473cb4f3fbe14af7b31e8e777564a91acfccdd0845d626777be67",
+          "profiles/client-1678034.json": "91c3f8b54ed74215d205b408a8050f7b369047756096bb0fbf37b9345f3a0d1f"
+        }
+      },
+      {
+        "case": "new-first",
+        "driverSha256": "1357a413b6adf91128ead145648fabbb3afebbea5b8b99fab7416693283b4506",
+        "counts": {
+          "preparePointer": 6,
+          "cleanupPointer": 5,
+          "waitForPointerReadiness": 4,
+          "cancelPointerReadiness": 3,
+          "pointerElement": 1,
+          "scrollPointer": 1,
+          "armPointer": 1,
+          "finishPointer": 1
+        },
+        "hintOutcomes": {
+          "cancelled": 2,
+          "expired": 1,
+          "matched": 1
+        },
+        "matchedThenUnstable": 0,
+        "lateReplies": 0,
+        "receipts": {
+          "plan.json": "167f580f676b331168ecc7be3d7bacc5edb649e9aea9b714a5054fa2219f1f22",
+          "original-terminal.json": "62cc194d2d3b06411ebaaf19c8f33eba06798c8f5bc1ff4107a940917d8acf84",
+          "resources.json": "d18f36cfb1c564a1a82850a87c65ffc1bf190d45530b1684c9620fcad16d4405",
+          "result.json": "a0c007467374315e1f599a19eaed0e22dec8c218f9ff2df3a2f6f2aaa99cf27b",
+          "protocol/protocol-1678372.jsonl": "4569875743880b26f1986ce45a0d1c80c2691981adee833c25d2ce37561d5c05",
+          "profiles/client-1678360.json": "b0b69bb2211c4997655ca483927b343cf384bed8324aca37fe409c9efee7797b"
+        }
+      },
+      {
+        "case": "new-second",
+        "driverSha256": "1357a413b6adf91128ead145648fabbb3afebbea5b8b99fab7416693283b4506",
+        "counts": {
+          "preparePointer": 6,
+          "cleanupPointer": 5,
+          "waitForPointerReadiness": 4,
+          "cancelPointerReadiness": 2,
+          "pointerElement": 1,
+          "scrollPointer": 1,
+          "armPointer": 1,
+          "finishPointer": 1
+        },
+        "hintOutcomes": {
+          "cancelled": 1,
+          "expired": 2,
+          "matched": 1
+        },
+        "matchedThenUnstable": 0,
+        "lateReplies": 0,
+        "receipts": {
+          "plan.json": "8df0b0866174035a7da8ef1b360a5f1ac2a5a35346e514ffb32723dcb1a091b3",
+          "original-terminal.json": "62cc194d2d3b06411ebaaf19c8f33eba06798c8f5bc1ff4107a940917d8acf84",
+          "resources.json": "1542afbe966e907d389534b1c1ae5a689bd53c37c222faf29bfa0f276c23a32c",
+          "result.json": "4e672e910f7e7a08c70bbe21956acaef893e191bf7d69f5e90346a3b4fdaffa9",
+          "protocol/protocol-1678670.jsonl": "4849edd04b259d6c9140a9221506b4ce233c6e595737efeaeda12dfd68ea018f",
+          "profiles/client-1678655.json": "21d27ec7d856fb113203cffacb6923008dde174348a134a6eccb4fff0a9bbf9d"
+        }
+      },
+      {
+        "case": "old-second",
+        "driverSha256": "42fab5c26ce5d25c70f989db305c9c18c61785c262cf84f8223dc500805c9a1a",
+        "counts": {
+          "preparePointer": 18,
+          "cleanupPointer": 17,
+          "waitForPointerReadiness": 16,
+          "pointerElement": 1,
+          "scrollPointer": 1,
+          "armPointer": 1,
+          "finishPointer": 1
+        },
+        "hintOutcomes": {
+          "matched": 16
+        },
+        "matchedThenUnstable": 15,
+        "lateReplies": 0,
+        "receipts": {
+          "plan.json": "cd4234d7d72b07350efe1cec51d423555e89eec7cca9c5981648d30edb3e1b73",
+          "original-terminal.json": "62cc194d2d3b06411ebaaf19c8f33eba06798c8f5bc1ff4107a940917d8acf84",
+          "resources.json": "d7daf7786415dd16f1294d960d04f6ea25962340b5b65b6ee9947beba76700b3",
+          "result.json": "99d2ed162a120644fa98ef01995e611775086f3503dc2e777425a241bfd55449",
+          "protocol/protocol-1678940.jsonl": "4ba5dee8e88db80ec4a8a073225634e1d0e8dc515a61ee89232e79c407809df5",
+          "profiles/client-1678928.json": "8204ce093c128cfa6a8fb184c15af4be1c53f76a7ba6e03f07387499878741d7"
+        }
+      }
+    ],
+    "interpretation": "Old matched hints were followed by14/15 unstable preparations; candidate each had4 registrations, of which1matched and none of the matched hints was followed by instability. Earlier candidate waits expired/cancelled within original bounds; all command replies accounted for. Every probe delivered exactlyone trusted click after observed movement stopped. These counts are not complete-suite speed or CPU savings."
+  },
+  "retainedFailures": [
+    {
+      "case": "regression-bun-conditions-002",
+      "result": "Expected failing queued-replacement test before queue-reset correction; original exit1, clean teardown."
+    },
+    {
+      "case": "regression-bun-pointer-001",
+      "result": "Reference corpus passed; candidate refused handshake because packages had not yet been rebuilt with new runtime digest. Original exit1 retained; matched package build precedes passing002."
+    },
+    {
+      "case": "moving-controller.log",
+      "result": "First systemd unit exited2 before watchdog/browser launch because watchdog path was relative to another cwd. Corrected absolute path and declared working directory precede the sole four-probe execution."
+    }
+  ],
+  "evidenceHashes": {
+    "candidate-inputs.json": "7ba1dfb217fa79ea771cab3ef6f44f30065a6455f6a8358f7f8d38a32dd76368",
+    "moving-analysis-v2.json": "b9a8833c73a1f3f9a411fb73ade0447a3a5e47cb3ce8b6113868b54fea414768",
+    "moving-verification.json": "a62c03b2ddc04a0e7e43b3f1606fe7566ef431b958ed1a348b52d187dbc9140e",
+    "analyze-moving-v2.py": "38ff16c168c7cb347523a38489825704c549aad288ce682bca8839db4d337a8c",
+    "run-moving.py": "3a26d1650f519fb5cd96ffac800d96411e447444e6897cd115c2784aacc4b16c",
+    "moving.mjs": "84b15426321b2bc37817c72069a1a068ff3fdbdb03df38daf4518d96ac8ed570",
+    "proxy.py": "e813a4c56fa105e062f8a30369f54dec83c3334384e8a7d03968059888014ae6",
+    "profile-client.mjs": "8600457f98ee705e7890287e1c6ddc0e1efba789afa730403f73a2694247cc4f",
+    "build-resources.json": "5f6f7ca71d3b85427f2a7a647d56b5183e5e04df1239f7cd58509f847c3e80b1",
+    "build-002-resources.json": "fee7090672fd502cd2a1ca8fb77df426a93b47a7208a3090723fcf7f24a73970",
+    "package-build-resources.json": "618363271ebc66d2a546a0c0059591213720fecc95d00f1d50524ad8292c5dd7",
+    "readiness-unit-resources.json": "d5344e61f66ab1f0ceb39ec3e604bc6f8166fc0e4bc91d1e175ca181de8667d7",
+    "readiness-unit.log": "fb989c487dad9dc43902da8c407cda28ae013ba5bfc09520ad5505e11c438e46",
+    "moving-controller.log": "01108bda245a928ec3b83d5f60e5603213608f2f0945da73aef497f4f48d1223",
+    "moving-controller-002.log": "3639af033c772b3eeb08049d65dda794f75bc0700797531bbca3d1b382d9f97e",
+    "moving-controller-resources.json": "d2c528582eaa233953d930aa0f3634618fb580bda0fa05f29445d2def393daa6",
+    "regression-bun-conditions-002/resources.json": "be762fa6a914c11d4c93139004588065d3bfac3e48bb7a926cced204c15f0c26",
+    "regression-bun-conditions-002/original-terminal.json": "9119ca25cd493e998767a5b1a3548bd1d2e289ac6cc2b0580e7e48a2ecb0763d",
+    "regression-bun-conditions-002/output.log": "2767694a541d34c090bc445ccae38fe5da2cf8a690c2628d58c9ea6bb70a6de4",
+    "regression-bun-pointer-001/resources.json": "0d41ccdd074d658340b7b67fafec697e97d3af3f87e63ae6dc3d1da8d01a0982",
+    "regression-bun-pointer-001/original-terminal.json": "9119ca25cd493e998767a5b1a3548bd1d2e289ac6cc2b0580e7e48a2ecb0763d",
+    "regression-bun-pointer-001/output.log": "c9c00002c931bfc9d8e27a124257f0d6af961c126cc262a3433aef5e2b86afe2"
+  },
+  "defaultAdopted": false,
+  "performanceAdmission": false,
+  "goalAchieved": false,
+  "limitations": [
+    "No full-core refresh, packed consumer, other-runtime/platform or release admission.",
+    "Four instrumented controlled probes with matched old/new client snapshots; relay and timestamps alter scheduling. No causal attribution of earlier uninstrumented regressions.",
+    "Selected functional source/executable identities and original supervisors verified; sampled resources do not establish complete CPU/memory accounting.",
+    "Keep the hint opt-in pending broader performance/default-adoption gates."
+  ],
+  "postScreenTestStrengthening": {
+    "path": "compatibility/m2/condition-frame-hints.mjs",
+    "beforeSha256": "80ca4940227a49da7020cec63e5140068d0a9ea6c3c3b3794426898b0e83c919",
+    "afterSha256": "d08417bc198f087575c5341c0ebeb291f1abd04e06a43126031f2a9a4945a761",
+    "verification": "Final registry004 requires a real ordinary fallback timer tick and ordinary predicate progress without any hint sampling. Production JS/driver unchanged from complete screen; old test/input manifests remain historical bindings."
+  }
+}

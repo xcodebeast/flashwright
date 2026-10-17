@@ -153,7 +153,10 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     condition.check = undefined;
     condition.resolve(result);
     if (!conditions.size) stop();
-    else scheduleDeadline();
+    else {
+      scheduleDeadline();
+      if (condition.animationFramesOnly) queueFallbackScheduling();
+    }
   }
 
   function scheduleDeadline() {
@@ -192,10 +195,12 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     count('fallbackSchedulingPasses');
     const now = performance.now();
     let needsFrames = false;
+    let needsTimerFallback = false;
     let nextDeadline = Infinity;
     for (const condition of conditions.values()) {
       if (condition.running || condition.dirty) continue;
-      if (now - condition.registeredAt < fastFallbackWindowMilliseconds) needsFrames = true;
+      if (condition.animationFramesOnly) needsFrames = true;
+      else if (now - condition.registeredAt < fastFallbackWindowMilliseconds) needsFrames = needsTimerFallback = true;
       else nextDeadline = Math.min(nextDeadline, condition.lastCheckStartedAt + pendingFallbackIntervalMilliseconds);
     }
     const queuedGeneration = generation;
@@ -216,7 +221,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     // Allow one batch's check-start spread to become due together. Scheduling at
     // the earliest individual timestamp fragments shared work into tiny timers.
     // Events still check immediately; this window only delays paced fallback.
-    if (needsFrames) nextDeadline = fallbackTimerDeadline ?? now + fallbackMilliseconds;
+    if (needsTimerFallback) nextDeadline = fallbackTimerDeadline ?? now + fallbackMilliseconds;
     else if (Number.isFinite(nextDeadline)) nextDeadline = Math.max(now, nextDeadline + maximumCheckMillisecondsPerTask);
     if (!Number.isFinite(nextDeadline)) {
       clearTimeout(fallbackTimer);
@@ -302,6 +307,9 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
 
   function invalidate() {
     for (const condition of conditions.values()) {
+      // A mutation and the frame callback can observe the same geometry in one
+      // frame. Readiness hints must not mistake those checks for elapsed frames.
+      if (condition.animationFramesOnly) continue;
       condition.dirty = true;
       if (!condition.running) dirtyConditions.add(condition);
     }
@@ -313,7 +321,8 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   function invalidateFallback(coalescePendingChecks = false) {
     const now = performance.now();
     for (const condition of conditions.values()) {
-      if (!coalescePendingChecks && now - condition.registeredAt >= fastFallbackWindowMilliseconds &&
+      if (condition.animationFramesOnly && coalescePendingChecks) continue;
+      if (!condition.animationFramesOnly && !coalescePendingChecks && now - condition.registeredAt >= fastFallbackWindowMilliseconds &&
           now - condition.lastCheckStartedAt < pendingFallbackIntervalMilliseconds) {
         count('fallbackConditionsDeferred');
         continue;
@@ -360,19 +369,21 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   }
 
   /** Subscribe before checking, without retaining a locator's element or truth value. */
-  function wait({ token, timeoutMilliseconds = null, isNot = false, check, canShareSelectorQueries = false }) {
-    if (typeof token !== 'string' || !token || typeof check !== 'function' || typeof isNot !== 'boolean' || typeof canShareSelectorQueries !== 'boolean') throw new Error('Invalid condition registration');
+  function wait({ token, timeoutMilliseconds = null, isNot = false, check, canShareSelectorQueries = false, animationFramesOnly = false }) {
+    if (typeof token !== 'string' || !token || typeof check !== 'function' || typeof isNot !== 'boolean' || typeof canShareSelectorQueries !== 'boolean' || typeof animationFramesOnly !== 'boolean') throw new Error('Invalid condition registration');
     if (timeoutMilliseconds !== null && (!Number.isFinite(timeoutMilliseconds) || timeoutMilliseconds < 0)) throw new Error('Invalid condition timeout');
+    if (animationFramesOnly && timeoutMilliseconds === null) throw new Error('Frame-only conditions require a finite timeout');
     if (conditions.has(token)) throw new Error('Condition token is already registered');
     if (conditions.size >= maximumConditions) return Promise.resolve({ status: 'limit', message: 'Document condition limit exceeded' });
     const registeredAt = performance.now();
     const deadline = timeoutMilliseconds === null ? Infinity : registeredAt + timeoutMilliseconds;
     if (!conditions.size) begin();
     return new Promise(resolve => {
-      const condition = { token, deadline, registeredAt, lastCheckStartedAt: registeredAt, isNot, check, canShareSelectorQueries, resolve, observation: null, dirty: true, running: false };
+      const condition = { token, deadline, registeredAt, lastCheckStartedAt: registeredAt, isNot, check, canShareSelectorQueries, animationFramesOnly, resolve, observation: null, dirty: !animationFramesOnly, running: false };
       conditions.set(token, condition);
       scheduleDeadline();
-      void evaluate(condition);
+      if (animationFramesOnly) queueFallbackScheduling();
+      else void evaluate(condition);
     });
   }
 
@@ -392,6 +403,11 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   function documentReplaced() {
     if (!conditions.size) return;
     stop();
+    // stop() retires queued checks. Frame-only registrations resume on a fresh
+    // frame, so their removed queue entries must not keep scheduling blocked.
+    for (const condition of conditions.values()) {
+      if (condition.animationFramesOnly) condition.dirty = false;
+    }
     begin();
     scheduleDeadline();
     invalidate();
