@@ -363,7 +363,7 @@ impl Engine {
             operation,
         )
         .await;
-        dispatch_input(
+        let result = dispatch_input(
             &page,
             &browser,
             "Input.insertText",
@@ -372,8 +372,16 @@ impl Engine {
             method,
         )
         .await
-        .result?;
-        Ok(Value::Null)
+        .result;
+        self.capture_snapshot_phase(
+            identifier(&parameters, "page", method)?,
+            &page,
+            recording::SnapshotPhase::After,
+            None,
+            operation,
+        )
+        .await;
+        result.map(|_| Value::Null)
     }
 
     /// Page typing holds native input ownership for the whole sequence without changing focus.
@@ -407,8 +415,17 @@ impl Engine {
         .await;
         // Optional capture can outlive cancellation even when there are no keys to dispatch.
         operation.check()?;
-        type_text(&text, delay, &page, &browser, operation, method).await?;
-        Ok(Value::Null)
+        let result = type_text(&text, delay, &page, &browser, operation, method).await;
+        // Host completion runs after this lock is released and can race queued input.
+        self.capture_snapshot_phase(
+            identifier(&parameters, "page", method)?,
+            &page,
+            recording::SnapshotPhase::After,
+            None,
+            operation,
+        )
+        .await;
+        result.map(|_| Value::Null)
     }
 
     /// Page keyboard input uses the existing focus and has no locator or navigation waiting phase.
@@ -447,8 +464,16 @@ impl Engine {
             operation,
         )
         .await;
-        press_chord(&keys, delay, &page, &browser, operation, method).await?;
-        Ok(Value::Null)
+        let result = press_chord(&keys, delay, &page, &browser, operation, method).await;
+        self.capture_snapshot_phase(
+            identifier(&parameters, "page", method)?,
+            &page,
+            recording::SnapshotPhase::After,
+            None,
+            operation,
+        )
+        .await;
+        result.map(|_| Value::Null)
     }
 
     pub(crate) async fn run_locator_keyboard(

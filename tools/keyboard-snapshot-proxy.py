@@ -37,13 +37,14 @@ class Recorder(relay.proxy.Recorder):
         if direction == 'send':
             capture = envelope.get('method') == 'Runtime.callFunctionOn' and 'return this.capture({token:' in parameters.get('functionDeclaration', '')
             key_up = envelope.get('method') == 'Input.dispatchKeyEvent' and parameters.get('type') == 'keyUp' and parameters.get('key') == 'x'
+            insert = envelope.get('method') == 'Input.insertText'
             if capture:
                 self.write({'kind': 'snapshotSent', 'id': envelope['id']})
             control = directory / 'control.json'
             if control.exists():
                 selected = json.loads(control.read_text())
                 label = selected['label']
-                if label not in self.selected and ((selected['mode'] == 'capture' and capture) or (selected['mode'] == 'key' and key_up)):
+                if label not in self.selected and ((selected['mode'] == 'capture' and capture) or (selected['mode'] == 'key' and key_up) or (selected['mode'] == 'insert' and insert)):
                     self.selected.add(label)
                     self.pending[envelope['id']] = label
         elif 'id' in envelope:

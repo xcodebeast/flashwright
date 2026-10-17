@@ -45,41 +45,58 @@ instrumentTraceMethods(NativeCall.prototype, 'NativeKeyboardControl', owner => o
 let browser;
 try {
   browser = await chromium.launch({ executablePath: resolve('tools/keyboard-snapshot-proxy.py') });
-  {
+  for (const kind of ['type', 'press', 'insertText']) {
     const context = await browser.newContext(); const page = await context.newPage();
     await page.goto('data:text/html,' + encodeURIComponent('<input id="input"><p id="state">state:</p><script>input.oninput=()=>document.querySelector("#state").textContent="state:"+input.value;</script>'));
     await page.locator('#input').focus();
     await context.tracing.start({ snapshots: true });
-    await control('key', 'key');
+    const label = `key-${kind}`;
+    await control(label, kind === 'insertText' ? 'insert' : 'key');
+    // Delay host completion captures until both native actions have replied. The first
+    // after phase must already belong to its input lock, independent of host scheduling.
+    const request = page.client.request.bind(page.client);
+    let nativeReplies = 0, completionRequests = 0;
+    page.client.request = async (method, ...args) => {
+      if (method === 'context.trace.snapshot.after') {
+        completionRequests++;
+        await until(() => nativeReplies === 2, 'Both native inputs must finish before host completion capture');
+      }
+      const result = await request(method, ...args);
+      if (['keyboard.type', 'keyboard.press', 'keyboard.insertText'].includes(method)) nativeReplies++;
+      return result;
+    };
     let typingDone = false, pressDone = false;
-    const typing = page.keyboard.type('xy').finally(() => { typingDone = true; }); void typing.catch(() => {});
-    const nativeHeld = await held('key');
+    const text = kind === 'press' ? 'x' : 'xy';
+    const typing = page.keyboard[kind](text).finally(() => { typingDone = true; }); void typing.catch(() => {});
+    const nativeHeld = await held(label);
     const press = page.keyboard.press('Backspace').finally(() => { pressDone = true; }); void press.catch(() => {});
-    await until(() => [...page.client.pending.values()].some(request => request.method === 'keyboard.press' && request.dispatched), 'Queued press was not dispatched to the original driver');
+    await until(() => [...page.client.pending.values()].filter(request => request.method === 'keyboard.press' && request.dispatched).length === (kind === 'press' ? 2 : 1), 'Queued press was not dispatched to the original driver');
     await pause(100);
     assert.equal(typingDone, false, 'Genuine key acknowledgement still owns typing');
     assert.equal(pressDone, false, 'Second input waits for the original lock');
-    await release('key'); await Promise.all([typing, press]);
-    const path = join(output, 'queued.zip'); await context.tracing.stop({ path });
+    await release(label); await Promise.all([typing, press]);
+    page.client.request = request;
+    assert.equal(nativeReplies, 2); assert.equal(completionRequests, 2);
+    const path = join(output, `queued-${kind}.zip`); await context.tracing.stop({ path });
     const archive = new utils.ZipFile(path);
     try {
       const events = (await archive.read('trace.trace')).toString().trim().split('\n').map(JSON.parse);
-      const calls = events.filter(event => event.type === 'before' && ['keyboardType', 'keyboardPress'].includes(event.method));
-      assert.deepEqual(calls.map(call => call.method), ['keyboardType', 'keyboardPress']);
+      const calls = events.filter(event => event.type === 'before' && ['keyboardType', 'keyboardPress', 'keyboardInsertText'].includes(event.method));
+      assert.deepEqual(calls.map(call => call.method), [{ type: 'keyboardType', press: 'keyboardPress', insertText: 'keyboardInsertText' }[kind], 'keyboardPress']);
       assert.ok(calls.every(call => !call.beforeSnapshot));
       const storage = new iso.SnapshotStorage(); const states = new Map();
       for (const { snapshot } of events.filter(event => event.type === 'frame-snapshot')) {
         assert.ok(!states.has(snapshot.snapshotName), 'No duplicate phase');
         states.set(snapshot.snapshotName, storage.addFrameSnapshot('context', snapshot, []).render().html.match(/<p\b[^>]*\bid="state"[^>]*>([^<]*)<\/p>/i)?.[1]);
       }
-      for (const [index, before, after] of [[0, '', 'xy'], [1, 'xy', 'x']]) {
+      for (const [index, before, after] of [[0, '', text], [1, text, text.slice(0, -1)]]) {
         assert.equal(states.get(`input@${calls[index].callId}`), `state:${before}`);
         assert.equal(states.get(`after@${calls[index].callId}`), `state:${after}`);
       }
       assert.equal(states.size, 4);
     } finally { archive.close(); }
-    assert.equal(await page.locator('#input').inputValue(), 'x');
-    report.checks.push({ name: 'genuine key acknowledgement holds lock before queued input capture', nativeHeld, archiveSha256: hash(await readFile(path)) });
+    assert.equal(await page.locator('#input').inputValue(), text.slice(0, -1));
+    report.checks.push({ name: `${kind} retains input/after phases before queued input despite delayed host completion`, nativeHeld, nativeReplies, completionRequests, archiveSha256: hash(await readFile(path)) });
     await context.close();
   }
   {
@@ -125,7 +142,8 @@ try {
   report.status = 'passed';
 } catch (error) { report.status = 'failed'; report.error = error.stack; process.exitCode = 1; }
 finally {
-  await release('key'); await release('capture'); await browser?.close();
+  for (const label of ['key-type', 'key-press', 'key-insertText', 'capture']) await release(label);
+  await browser?.close();
   await writeFile(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
   console.log(JSON.stringify(report));
 }
