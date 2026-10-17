@@ -462,7 +462,7 @@ impl Engine {
     async fn locator_attempt(
         &self,
         page: &Page,
-        browser: &Chromium,
+        browser: &Arc<Chromium>,
         realm: &LocatorRealm,
         request: &[u16],
         action: &str,
@@ -470,16 +470,22 @@ impl Engine {
         method: &str,
     ) -> Result<Value, ErrorRecord> {
         operation.check()?;
-        if ["fill", "selectOption", "focus", "blur"].contains(&action) {
+        let admission = if ["fill", "selectOption", "focus", "blur"].contains(&action) {
+            let admission = self
+                .locator_mutation_admission(page, realm, operation)
+                .await?;
             page.trace_before_input(operation);
-        }
+            Some(admission)
+        } else {
+            None
+        };
         let mut command = browser.connection.start_command("Runtime.callFunctionOn", json!({
             "uniqueContextId": realm.context.unique_identifier, "functionDeclaration": "function(request, deadline) { return globalThis.__flashwrightLocatorRuntime.run(request, deadline); }",
             "arguments": [{ "value": request }, { "value": operation.renderer_deadline() }], "returnByValue": true, "awaitPromise": true,
             "userGesture": true,
         }), Some(&realm.context.session_identifier))?;
-        let result = if ["fill", "selectOption", "focus", "blur"].contains(&action) {
-            self.locator_mutation_response(page, browser, realm, operation, command)
+        let result = if let Some(admission) = admission {
+            self.locator_mutation_response(page, browser, realm, operation, command, admission)
                 .await
         } else if supports_remote_locator(method) {
             operation
@@ -504,33 +510,45 @@ impl Engine {
             .ok_or_else(|| invalid(method, "Chromium omitted locator result"))
     }
 
-    pub(crate) async fn locator_mutation_response(
+    pub(crate) async fn locator_mutation_admission(
         &self,
         page: &Page,
-        browser: &Chromium,
         realm: &LocatorRealm,
         operation: &Operation,
-        command: flashwright_browser::connection::Command,
-    ) -> Result<Value, ErrorRecord> {
-        match mutation::wait(
-            &browser.connection,
+    ) -> Result<tokio::sync::OwnedSemaphorePermit, ErrorRecord> {
+        mutation::admit(
+            &self.mutation_cleanup_slots,
             page,
             &realm.context,
             operation,
-            command,
         )
         .await
-        {
+    }
+
+    pub(crate) async fn locator_mutation_response(
+        &self,
+        page: &Page,
+        browser: &Arc<Chromium>,
+        realm: &LocatorRealm,
+        operation: &Operation,
+        command: flashwright_browser::connection::Command,
+        admission: tokio::sync::OwnedSemaphorePermit,
+    ) -> Result<Value, ErrorRecord> {
+        match mutation::wait(page, &realm.context, operation, command, admission).await {
             Ok(value) => Ok(value),
-            Err(mut failure) => {
-                if failure.dispose_page {
-                    failure.error.cleanup = Some(
-                        page.state
-                            .disposal
-                            .dispose(browser, &page.target_identifier)
-                            .await
-                            .into(),
-                    );
+            Err(failure) => {
+                if let Some(mut pending) = failure.pending {
+                    let page = page.clone();
+                    let browser = browser.clone();
+                    tokio::spawn(async move {
+                        if pending.requires_disposal().await {
+                            page.state
+                                .disposal
+                                .dispose(browser.as_ref(), &page.target_identifier)
+                                .await;
+                        }
+                        pending.finish().await;
+                    });
                 }
                 Err(failure.error)
             }
