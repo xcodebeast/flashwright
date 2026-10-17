@@ -1,5 +1,6 @@
 //! Page lifecycle and network state, updated in Chromium event order before notifying waiters.
 
+use crate::network_request::request_key;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex, Weak};
@@ -299,7 +300,13 @@ impl DocumentState {
     /// Navigation and body metadata share one occurrence record rather than retaining duplicate payloads.
     pub(crate) fn response_for_loader(&self, loader: &str) -> Option<&Value> {
         self.requests
-            .get(loader)
+            .get(&request_key(
+                self.main_frame
+                    .as_ref()
+                    .and_then(|id| self.frames.get(id))
+                    .map_or("", |frame| frame.session_identifier.as_ref()),
+                loader,
+            ))
             .and_then(|request| request.response.as_ref())
     }
     /// A reused CDP request identifier cannot transfer body ownership to a successor.
@@ -310,14 +317,19 @@ impl DocumentState {
         method: &str,
     ) -> Result<&RequestState, ErrorRecord> {
         self.check(method)?;
-        let request = self.requests.get(request_identifier).ok_or_else(|| {
-            ErrorRecord::new(
-                ErrorCode::ResourceLimit,
-                method,
-                "response is outside the bounded retained request history",
-            )
-        })?;
-        if request.identity() != occurrence_identity {
+        let request = self
+            .requests
+            .occurrence(occurrence_identity)
+            .ok_or_else(|| {
+                ErrorRecord::new(
+                    ErrorCode::ResourceLimit,
+                    method,
+                    "response is outside the bounded retained request history",
+                )
+            })?;
+        if request.original_metadata()["identifier"] != request_identifier
+            || !self.requests.owns_response(request)
+        {
             return Err(ErrorRecord::new(
                 ErrorCode::Protocol,
                 method,
@@ -736,8 +748,16 @@ impl DocumentState {
                 }
                 let current_frame = frame.identifier.clone();
                 let current_loader = frame.loader.clone();
+                if let Err(error) = self.requests.committed_navigation(
+                    &current_frame,
+                    &current_loader,
+                    session_identifier,
+                ) {
+                    self.failure = Some(error);
+                    return events;
+                }
                 self.active_requests.retain(|identifier| {
-                    self.requests.get(identifier).is_some_and(|request| {
+                    self.requests.occurrence(identifier).is_some_and(|request| {
                         request.metadata()["frame"] != current_frame
                             || request.metadata()["loader"] == current_loader
                     })
@@ -748,7 +768,7 @@ impl DocumentState {
                 if self.main_frame.as_deref() == Some(&current_frame) {
                     let has_network_request = self
                         .requests
-                        .get(&current_loader)
+                        .get(&request_key(session_identifier, &current_loader))
                         .is_some_and(|request| request.metadata()["navigation"] == true);
                     let navigation_event = self.record_navigation(
                         current_frame.clone(),
@@ -852,7 +872,7 @@ impl DocumentState {
                 }
             }
             "Network.requestWillBeSent" => {
-                let identifier = text(parameters, "requestId");
+                let identifier = request_key(session_identifier, &text(parameters, "requestId"));
                 let predecessor = parameters
                     .get("redirectResponse")
                     .and_then(|_| self.requests.get(&identifier))
@@ -913,7 +933,7 @@ impl DocumentState {
                         sequence: self.sequence,
                         loader: None,
                     });
-                    navigation.loader = Some(identifier.clone());
+                    navigation.loader = Some(text(parameters, "loaderId"));
                 }
                 if let Err(error) =
                     self.requests
@@ -929,15 +949,24 @@ impl DocumentState {
                 {
                     self.failure = Some(error);
                 }
-                self.active_requests.insert(identifier);
+                if let Some(request) = self.requests.get(&identifier) {
+                    self.active_requests.insert(request.identity().to_owned());
+                }
                 self.idle_since = None;
             }
             "Fetch.requestPaused" => {
-                let ignored = parameters["networkId"]
+                let mut routed_parameters = parameters.clone();
+                if let Some(identifier) =
+                    parameters["networkId"].as_str().filter(|id| !id.is_empty())
+                {
+                    routed_parameters["networkId"] =
+                        json!(request_key(session_identifier, identifier));
+                }
+                let ignored = routed_parameters["networkId"]
                     .as_str()
                     .is_some_and(|identifier| self.ignored_requests.contains(identifier));
                 if let Err(error) = self.interception.paused(
-                    parameters,
+                    &routed_parameters,
                     &mut self.requests,
                     &mut observation,
                     ignored,
@@ -946,7 +975,9 @@ impl DocumentState {
                 }
             }
             "Network.responseReceived" => {
-                let identifier = text(parameters, "requestId");
+                let identifier = self
+                    .requests
+                    .event_key(session_identifier, &text(parameters, "requestId"));
                 if let Some(request) = self.requests.get(&identifier) {
                     let response = response_metadata(&identifier, request, &parameters["response"]);
                     if let Err(error) = self.requests.respond(
@@ -961,11 +992,16 @@ impl DocumentState {
                     }
                 }
             }
-            "Network.requestServedFromCache" => self
-                .requests
-                .served_from_cache(&text(parameters, "requestId"), &mut observation),
+            "Network.requestServedFromCache" => self.requests.served_from_cache(
+                &self
+                    .requests
+                    .event_key(session_identifier, &text(parameters, "requestId")),
+                &mut observation,
+            ),
             "Network.requestWillBeSentExtraInfo" | "Network.responseReceivedExtraInfo" => {
-                let identifier = text(parameters, "requestId");
+                let identifier = self
+                    .requests
+                    .event_key(session_identifier, &text(parameters, "requestId"));
                 if !self.ignored_requests.contains(&identifier) {
                     let kind = if method == "Network.requestWillBeSentExtraInfo" {
                         HeaderKind::Request
@@ -982,8 +1018,56 @@ impl DocumentState {
                     }
                 }
             }
+            "Flashwright.rendererDetached" => {
+                let prefix = request_key(session_identifier, "");
+                let ignored: Vec<_> = self
+                    .ignored_requests
+                    .iter()
+                    .filter(|key| key.starts_with(&prefix))
+                    .cloned()
+                    .collect();
+                for key in ignored {
+                    self.ignored_requests.remove(&key);
+                    self.interception.finished(&key);
+                }
+                let frames = &self.frames;
+                if let Err(error) = self.requests.renderer_detached(
+                    session_identifier,
+                    &mut observation,
+                    |request| {
+                        frames
+                            .get(&text(request.metadata(), "frame"))
+                            .is_some_and(|frame| {
+                                frame
+                                    .pending_navigation
+                                    .as_ref()
+                                    .and_then(|pending| pending.loader.as_deref())
+                                    == Some(request.source().identifier.as_str())
+                            })
+                    },
+                ) {
+                    self.failure = Some(error);
+                }
+                self.active_requests.retain(|identity| {
+                    self.requests
+                        .occurrence(identity)
+                        .is_some_and(|request| !request.finished)
+                });
+                if self.active_requests.is_empty() {
+                    self.idle_since = Some(Instant::now());
+                }
+                for frame in self
+                    .frames
+                    .values_mut()
+                    .filter(|frame| frame.session_identifier.as_ref() == session_identifier)
+                {
+                    frame.loader.clear();
+                }
+            }
             "Network.loadingFinished" | "Network.loadingFailed" => {
-                let identifier = text(parameters, "requestId");
+                let identifier = self
+                    .requests
+                    .event_key(session_identifier, &text(parameters, "requestId"));
                 self.interception.finished(&identifier);
                 if self.ignored_requests.remove(&identifier) {
                     self.requests.forget_headers(&identifier, &mut observation);
@@ -1000,7 +1084,7 @@ impl DocumentState {
                         pending
                             .loader
                             .as_deref()
-                            .is_none_or(|loader| loader == identifier)
+                            .is_none_or(|loader| loader == request.source().identifier)
                     })
                 {
                     frame.pending_navigation = None;
@@ -1011,6 +1095,10 @@ impl DocumentState {
                         ));
                     }
                 }
+                let active_identity = self
+                    .requests
+                    .get(&identifier)
+                    .map(|request| request.identity().to_owned());
                 if let Err(error) = self.requests.finish(
                     &identifier,
                     (method == "Network.loadingFailed").then(|| text(parameters, "errorText")),
@@ -1025,17 +1113,51 @@ impl DocumentState {
                     let navigation_event = self.record_navigation(frame, outcome);
                     events.insert(public_failure_index, ("navigation", navigation_event));
                 }
-                let was_active = self.active_requests.remove(&identifier);
+                let was_active =
+                    active_identity.is_some_and(|identity| self.active_requests.remove(&identity));
                 if was_active && self.active_requests.is_empty() {
                     self.idle_since = Some(Instant::now());
                 }
             }
             _ => {}
         }
+        if matches!(
+            method,
+            "Page.frameNavigated"
+                | "Page.frameDetached"
+                | "Page.frameRequestedNavigation"
+                | "Network.requestWillBeSent"
+        ) {
+            let frames = &self.frames;
+            if let Err(error) =
+                self.requests
+                    .retire_orphaned_transfers(&mut observation, |request| {
+                        frames
+                            .get(&text(request.metadata(), "frame"))
+                            .is_some_and(|frame| {
+                                frame
+                                    .pending_navigation
+                                    .as_ref()
+                                    .and_then(|pending| pending.loader.as_deref())
+                                    == Some(request.source().identifier.as_str())
+                            })
+                    })
+            {
+                self.failure = Some(error);
+            }
+            self.active_requests.retain(|identity| {
+                self.requests
+                    .occurrence(identity)
+                    .is_some_and(|request| !request.finished)
+            });
+        }
         if matches!(method, "Page.frameNavigated" | "Page.frameDetached")
-            && let Err(error) = self
-                .requests
-                .retain_live_loaders(self.frames.values().map(|frame| frame.loader.clone()))
+            && let Err(error) = self.requests.retain_live_loaders(
+                self.frames
+                    .values()
+                    .filter(|frame| !frame.loader.is_empty())
+                    .map(|frame| request_key(&frame.session_identifier, &frame.loader)),
+            )
         {
             self.failure = Some(error);
         }
@@ -1105,7 +1227,7 @@ impl DocumentState {
         self.execution_contexts
             .retain(|_, context| !depths.contains_key(&context.frame_identifier));
         self.active_requests.retain(|identifier| {
-            self.requests.get(identifier).is_some_and(|request| {
+            self.requests.occurrence(identifier).is_some_and(|request| {
                 !depths.contains_key(request.metadata()["frame"].as_str().unwrap_or(""))
             })
         });
@@ -1356,7 +1478,7 @@ mod tests {
                 .err()
                 .unwrap()
                 .code,
-            ErrorCode::ResourceLimit
+            ErrorCode::Protocol
         );
     }
 

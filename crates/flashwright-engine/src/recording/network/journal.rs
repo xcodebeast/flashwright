@@ -137,6 +137,7 @@ pub(super) enum BodyUnavailable {
     RequestFailed,
     OriginalRequestReplaced,
     OriginalPageClosed,
+    OriginalRendererClosed,
     BrowserResourceMissing,
 }
 

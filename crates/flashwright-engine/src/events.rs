@@ -215,7 +215,21 @@ impl Engine {
                         .get(&page.context_identifier)
                         .is_some_and(|context| context.browser_identifier == browser_identifier)
                         && match event.method.as_str() {
-                            "Target.targetDestroyed" | "Target.targetCrashed" => {
+                            "Target.targetDestroyed" => {
+                                parameters["targetId"].as_str() == Some(&page.target_identifier)
+                                    || page
+                                        .state
+                                        .renderer_sessions
+                                        .lock()
+                                        .unwrap()
+                                        .originals()
+                                        .iter()
+                                        .any(|owner| {
+                                            parameters["targetId"].as_str()
+                                                == Some(&owner.target_identifier)
+                                        })
+                            }
+                            "Target.targetCrashed" => {
                                 parameters["targetId"].as_str() == Some(&page.target_identifier)
                             }
                             "Target.detachedFromTarget" => {
@@ -246,7 +260,25 @@ impl Engine {
                         }
                 })
                 .map(|(identifier, page)| {
-                    if event.method == "Target.targetDestroyed"
+                    // Registration shares this registry lock. Publish exact child terminal proof
+                    // before a dispatcher can enroll after the terminal event was already consumed.
+                    if matches!(
+                        event.method.as_str(),
+                        "Target.detachedFromTarget" | "Target.targetDestroyed"
+                    ) {
+                        for owner in page.state.renderer_sessions.lock().unwrap().originals() {
+                            let matches = if event.method == "Target.detachedFromTarget" {
+                                parameters["sessionId"].as_str() == Some(&owner.session_identifier)
+                            } else {
+                                parameters["targetId"].as_str() == Some(&owner.target_identifier)
+                            };
+                            if matches {
+                                owner.mark_destroyed();
+                            }
+                        }
+                    }
+                    if (event.method == "Target.targetDestroyed"
+                        && parameters["targetId"].as_str() == Some(&page.target_identifier))
                         || (event.method == "Target.detachedFromTarget"
                             && parameters["sessionId"].as_str() == Some(&page.session_identifier))
                     {
@@ -263,13 +295,40 @@ impl Engine {
                 .session_identifier
                 .as_deref()
                 .unwrap_or(&page.session_identifier);
+            if event.method == "Target.targetDestroyed"
+                && parameters["targetId"].as_str() != Some(&page.target_identifier)
+            {
+                let originals = page.state.renderer_sessions.lock().unwrap().originals();
+                for owner in originals.into_iter().filter(|owner| {
+                    parameters["targetId"].as_str() == Some(&owner.target_identifier)
+                }) {
+                    self.detach_renderer(
+                        &identifier,
+                        &page,
+                        &owner.session_identifier,
+                        Some(crate::network_observer::NetworkIngress {
+                            sequence: event.sequence,
+                            received_at: event.received_at,
+                        }),
+                    );
+                }
+                continue;
+            }
             if event.method == "Target.attachedToTarget" {
                 self.attach_renderer(&identifier, &page, source_session, &parameters)?;
                 continue;
             }
             if event.method == "Target.detachedFromTarget" {
                 if let Some(session) = parameters["sessionId"].as_str() {
-                    self.detach_renderer(&page, session);
+                    self.detach_renderer(
+                        &identifier,
+                        &page,
+                        session,
+                        Some(crate::network_observer::NetworkIngress {
+                            sequence: event.sequence,
+                            received_at: event.received_at,
+                        }),
+                    );
                     if session == page.session_identifier {
                         self.finish_detached_root(&identifier, &page);
                     }
@@ -277,7 +336,16 @@ impl Engine {
                 continue;
             }
             if event.method == "Inspector.detached" && source_session != page.session_identifier {
-                self.detach_renderer(&page, source_session);
+                self.retire_renderer(
+                    &identifier,
+                    &page,
+                    source_session,
+                    Some(crate::network_observer::NetworkIngress {
+                        sequence: event.sequence,
+                        received_at: event.received_at,
+                    }),
+                    false,
+                );
                 continue;
             }
             match event.method.as_str() {
@@ -643,6 +711,101 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn child_terminal_ingress_closes_diagnostic_admission_before_semantic_retirement() {
+        for method in ["Target.detachedFromTarget", "Target.targetDestroyed"] {
+            let (outgoing, _messages) = mpsc::channel(16);
+            let (fatal, _failure) = watch::channel(false);
+            let engine = Arc::new(Engine::new(
+                None,
+                outgoing,
+                fatal,
+                ResourceLimits::default(),
+            ));
+            let page = Page {
+                context_identifier: "context".into(),
+                target_identifier: "root".into(),
+                session_identifier: "root-session".into(),
+                state: Arc::new(PageState::default()),
+            };
+            let (root, child) = {
+                let mut sessions = page.state.renderer_sessions.lock().unwrap();
+                let root = sessions.register_root("root", "root-session").unwrap();
+                let child = sessions
+                    .register_child(&root, "child", "child-session")
+                    .unwrap();
+                (root, child)
+            };
+            engine.registry.lock().unwrap().contexts.insert(
+                "context".into(),
+                Context {
+                    browser_identifier: "browser".into(),
+                    protocol_identifier: "native-context".into(),
+                    viewport: None,
+                    devices: crate::devices::DeviceOptions::default(),
+                    settings: crate::context_settings::ContextSettings::parse(&json!({})).unwrap(),
+                    state: Arc::new(context_state::ContextState::default()),
+                    published: true,
+                },
+            );
+            engine
+                .registry
+                .lock()
+                .unwrap()
+                .pages
+                .insert("page".into(), page.clone());
+            let original = engine
+                .network_diagnostic_session_for_renderer("page", &page, "child-session")
+                .unwrap();
+            // Stop the handler after registry ingress but before its page-state retirement lock.
+            let state = page.state.state.lock().unwrap();
+            let worker = engine.clone();
+            let task = std::thread::spawn(move || {
+                worker.handle_event(
+                    "browser",
+                    Event {
+                        sequence: 1,
+                        received_at: std::time::Instant::now(),
+                        method: method.into(),
+                        session_identifier: Some("root-session".into()),
+                        parameters: Some(
+                            serde_json::value::to_raw_value(
+                                &json!({"sessionId":"child-session","targetId":"child"}),
+                            )
+                            .unwrap(),
+                        ),
+                    },
+                )
+            });
+            let deadline = std::time::Instant::now() + Duration::from_secs(2);
+            while !child.is_destroyed() && std::time::Instant::now() < deadline {
+                std::thread::yield_now();
+            }
+            let destroyed = child.is_destroyed();
+            if !destroyed {
+                drop(state);
+                task.join().unwrap().unwrap();
+                panic!("terminal ingress was not published before the blocked retirement");
+            }
+            assert!(*original.destruction().borrow());
+            assert!(
+                engine
+                    .network_diagnostic_session_for_renderer("page", &page, "child-session")
+                    .is_err()
+            );
+            assert!(!root.is_destroyed());
+            drop(state);
+            task.join().unwrap().unwrap();
+            assert!(!root.is_retired());
+            assert!(engine.page("page", "test").is_ok());
+            assert!(
+                engine
+                    .network_diagnostic_session_for_renderer("page", &page, "root-session")
+                    .is_ok()
+            );
+        }
+    }
 
     #[test]
     fn remote_configuration_guard_ignores_a_swap_from_the_previous_renderer() {

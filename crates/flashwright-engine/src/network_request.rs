@@ -3,7 +3,24 @@
 use crate::network_observer::{NetworkEvent, NetworkIngress};
 use serde_json::{Value, json};
 
+/// Protocol request identifiers are scoped to their original renderer session.
+#[derive(Clone)]
+pub(crate) struct RequestSource {
+    pub session: String,
+    pub identifier: String,
+}
+
+pub(crate) fn request_key(session: &str, identifier: &str) -> String {
+    // Empty sessions occur only in isolated state-machine fixtures.
+    if session.is_empty() {
+        identifier.into()
+    } else {
+        format!("{}:{session}{identifier}", session.len())
+    }
+}
+
 struct RequestOccurrence {
+    source: RequestSource,
     identity: String,
     metadata: Value,
     predecessor: Option<String>,
@@ -14,6 +31,8 @@ struct RequestOccurrence {
 
 pub(crate) struct RequestState {
     occurrence: RequestOccurrence,
+    pub(crate) response_session: String,
+    pub(crate) awaiting_response_renderer: bool,
     pub effective_metadata: Option<Value>,
     pub(crate) awaiting_interception: bool,
     pub(crate) publicly_ready: bool,
@@ -79,12 +98,21 @@ impl RequestState {
             "loader": parameters["loaderId"],
             "navigation": parameters["type"] == "Document" && parameters["requestId"] == parameters["loaderId"],
         });
-        let retained_bytes = crate::network_state::encoded_bytes(&metadata)
+        let source = RequestSource {
+            session: event.session_identifier.into(),
+            identifier: parameters["requestId"].as_str().unwrap_or_default().into(),
+        };
+        let retained_bytes = source.session.len() * 2
+            + source.identifier.len()
+            + crate::network_state::encoded_bytes(&metadata)
             + predecessor
                 .as_ref()
                 .map_or(0, crate::network_state::encoded_bytes);
         Self {
+            response_session: source.session.clone(),
+            awaiting_response_renderer: false,
             occurrence: RequestOccurrence {
+                source,
                 identity,
                 metadata,
                 predecessor,
@@ -112,6 +140,17 @@ impl RequestState {
     /// The owner never changes when public metadata reflects continuation overrides.
     pub(crate) fn identity(&self) -> &str {
         &self.occurrence.identity
+    }
+
+    pub(crate) fn source(&self) -> &RequestSource {
+        &self.occurrence.source
+    }
+
+    pub(crate) fn response_source(&self) -> RequestSource {
+        RequestSource {
+            session: self.response_session.clone(),
+            identifier: self.source().identifier.clone(),
+        }
     }
 
     /// Later lifecycle messages reference the already published occurrence without copying its body.

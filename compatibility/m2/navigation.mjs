@@ -192,9 +192,9 @@ async function run(name, chromium) {
 try {
   outcomes.reference = await run('reference', referenceChromium);
   outcomes.flashwright = await run('flashwright', flashwrightChromium);
-  await mkdir('compatibility/evidence', { recursive: true });
+  await mkdir(process.env.FLASHWRIGHT_ARTIFACT_DIR ?? 'compatibility/evidence', { recursive: true });
   const evidence = { fixture: 'compatibility/m2/navigation.mjs', fixtureSha256: createHash('sha256').update(await readFile('compatibility/m2/navigation.mjs')).digest('hex'), reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch, outcomes };
-  const destination = 'compatibility/evidence/navigation-' + process.platform + '-' + process.arch + '-' + runtimeArtifactLabel + '.json';
+  const destination = (process.env.FLASHWRIGHT_ARTIFACT_DIR ?? 'compatibility/evidence') + '/navigation-' + process.platform + '-' + process.arch + '-' + runtimeArtifactLabel + '.json';
   await writeFile(destination, JSON.stringify(evidence, null, 2) + '\n');
   assert.deepEqual(outcomes.flashwright, outcomes.reference);
   console.log('Navigation differential passed: ' + destination);

@@ -120,10 +120,16 @@ impl NetworkRecording {
         state: &mut DocumentState,
         event: NetworkEvent<'_>,
     ) -> (Vec<(&'static str, Value)>, Vec<BodyJob>) {
+        if event.method == "Flashwright.rendererDetached" {
+            self.owners.renderer_closed(page, event.session_identifier);
+        }
         if event.method == "Network.requestWillBeSent"
             && let Some(identifier) = event.parameters["requestId"].as_str()
         {
-            self.owners.request_started(page, identifier);
+            self.owners.request_started(
+                page,
+                &crate::network_request::request_key(event.session_identifier, identifier),
+            );
         }
         if *self.closed.borrow() {
             return (state.observe_event(event, None), Vec::new());

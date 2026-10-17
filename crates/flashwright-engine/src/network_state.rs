@@ -42,6 +42,7 @@ struct HeaderChain {
 pub(crate) struct NetworkRequests {
     occurrences: HashMap<String, RequestState>,
     latest: HashMap<String, String>,
+    navigation_aliases: HashMap<String, String>,
     completed: VecDeque<String>,
     live_loaders: HashSet<String>,
     unfinished: usize,
@@ -63,6 +64,7 @@ impl NetworkRequests {
         Self {
             occurrences: HashMap::new(),
             latest: HashMap::new(),
+            navigation_aliases: HashMap::new(),
             completed: VecDeque::new(),
             live_loaders: HashSet::new(),
             unfinished: 0,
@@ -78,6 +80,115 @@ impl NetworkRequests {
         self.latest
             .get(identifier)
             .and_then(|identity| self.occurrences.get(identity))
+    }
+
+    pub(crate) fn occurrence(&self, identity: &str) -> Option<&RequestState> {
+        self.occurrences.get(identity)
+    }
+
+    pub(crate) fn owns_response(&self, request: &RequestState) -> bool {
+        self.latest
+            .get(&crate::network_request::request_key(
+                &request.response_session,
+                &request.source().identifier,
+            ))
+            .is_some_and(|identity| identity == request.identity())
+    }
+
+    /// Explicit aliases never become valid again after response ownership is replaced.
+    pub(crate) fn event_key(&self, session: &str, identifier: &str) -> String {
+        let key = crate::network_request::request_key(session, identifier);
+        if self.latest.contains_key(&key) {
+            return key;
+        }
+        if let Some(request) = self
+            .navigation_aliases
+            .get(&key)
+            .and_then(|identity| self.occurrences.get(identity))
+            && self.owns_response(request)
+        {
+            return crate::network_request::request_key(
+                &request.response_session,
+                &request.source().identifier,
+            );
+        }
+        key
+    }
+
+    fn remove_alias(&mut self, key: &str) {
+        if let Some(identity) = self.navigation_aliases.remove(key) {
+            let bytes = key.len() + identity.len();
+            if let Some(request) = self.occurrences.get_mut(&identity) {
+                request.retained_bytes -= bytes;
+                self.release(bytes);
+            }
+        }
+    }
+
+    fn header_key(&self, identifier: &str) -> String {
+        self.get(identifier).map_or_else(
+            || identifier.into(),
+            |request| {
+                crate::network_request::request_key(
+                    &request.source().session,
+                    &request.source().identifier,
+                )
+            },
+        )
+    }
+
+    /// Only the commit of the unique original logical navigation transfers custody.
+    pub(crate) fn committed_navigation(
+        &mut self,
+        frame: &str,
+        loader: &str,
+        session: &str,
+    ) -> Result<(), ErrorRecord> {
+        let candidates: Vec<_> = self
+            .latest
+            .iter()
+            .filter(|(_, identity)| {
+                let request = &self.occurrences[*identity];
+                !request.finished
+                    && request.metadata()["navigation"] == true
+                    && request.metadata()["frame"] == frame
+                    && request.metadata()["loader"] == loader
+                    && request.source().identifier == loader
+            })
+            .map(|(key, identity)| (key.clone(), identity.clone()))
+            .collect();
+        let [(old_key, identity)] = candidates.as_slice() else {
+            return Ok(());
+        };
+        let new_key = crate::network_request::request_key(session, loader);
+        if old_key == &new_key {
+            return Ok(());
+        }
+        if self.latest.contains_key(&new_key) {
+            return Err(ErrorRecord::new(
+                ErrorCode::Protocol,
+                METHOD,
+                "navigation response renderer already owns this request identifier",
+            ));
+        }
+        if self.navigation_aliases.len() >= MAXIMUM_COMPLETED_REQUESTS {
+            return Err(limited("page exceeds 1024 navigation session aliases"));
+        }
+        self.remove_alias(old_key);
+        let old = self.occurrences[identity].response_session.len();
+        let alias_bytes = old_key.len() + identity.len();
+        let added = session.len().saturating_sub(old) + alias_bytes;
+        self.reserve(added, Some(identity))?;
+        let request = self.occurrences.get_mut(identity).unwrap();
+        request.response_session = session.into();
+        request.awaiting_response_renderer = false;
+        request.retained_bytes = request.retained_bytes + added - old.saturating_sub(session.len());
+        self.release(old.saturating_sub(session.len()));
+        self.latest.remove(old_key);
+        self.latest.insert(new_key, identity.clone());
+        self.navigation_aliases
+            .insert(old_key.clone(), identity.clone());
+        Ok(())
     }
 
     /// Live documents retain their navigation response through completion of large resource loads.
@@ -117,6 +228,7 @@ impl NetworkRequests {
                 "request occurrence was published twice",
             ));
         }
+        self.remove_alias(&identifier);
         // A reused protocol identifier retires its previous owner even if its terminal event was lost.
         if self
             .get(&identifier)
@@ -241,14 +353,15 @@ impl NetworkRequests {
             .occurrences
             .get(&identity)
             .expect("latest occurrence is retained");
+        let header_key = self.header_key(identifier);
         let first_response = request.response.is_none();
         let needs_headers = first_response && has_extra_info && !request.served_from_cache;
         if needs_headers {
-            let chain = self.header_chains.get(identifier);
+            let chain = self.header_chains.get(&header_key);
             let paired = chain.map_or(0, |chain| {
                 usize::from(!chain.requests.is_empty()) + usize::from(!chain.responses.is_empty())
             });
-            self.admit_headers(identifier, 2, paired)?;
+            self.admit_headers(&header_key, 2, paired)?;
         }
         let bytes = encoded_bytes(&response);
         self.reserve(bytes, Some(&identity))?;
@@ -265,11 +378,11 @@ impl NetworkRequests {
         }
         self.release(previous_bytes);
         if needs_headers {
-            let chain = self.header_chains.entry(identifier.to_owned()).or_default();
+            let chain = self.header_chains.entry(header_key.clone()).or_default();
             chain.request_targets.push_back(identity.clone());
             chain.response_targets.push_back(identity.clone());
             self.header_records += 2;
-            self.pair_headers(identifier, observation);
+            self.pair_headers(&header_key, observation);
             self.check_header_limit()?;
         }
         observation.emit(NetworkTransition::Responded(
@@ -299,6 +412,7 @@ impl NetworkRequests {
         retired: bool,
         observation: &mut NetworkObservation<'_, '_>,
     ) -> Result<(), ErrorRecord> {
+        let header_key = self.header_key(identifier);
         if !retired {
             self.publish_request(identifier, None, observation)?;
         }
@@ -311,6 +425,7 @@ impl NetworkRequests {
                 .expect("latest occurrence is retained");
             if !request.finished {
                 request.finished = true;
+                request.awaiting_response_renderer = false;
                 self.unfinished -= 1;
                 self.completed.push_back(identity.clone());
             }
@@ -324,9 +439,9 @@ impl NetworkRequests {
             }
             self.release(previous_bytes);
         }
-        if terminal && let Some(chain) = self.header_chains.get_mut(identifier) {
+        if terminal && let Some(chain) = self.header_chains.get_mut(&header_key) {
             chain.finished = true;
-            self.pair_headers(identifier, observation);
+            self.pair_headers(&header_key, observation);
         }
         if let Some(request) = self.get(identifier) {
             observation.emit(if retired {
@@ -347,23 +462,24 @@ impl NetworkRequests {
         kind: HeaderKind,
         observation: &mut NetworkObservation<'_, '_>,
     ) -> Result<(), ErrorRecord> {
-        if !self.header_chains.contains_key(identifier)
+        let header_key = self.header_key(identifier);
+        if !self.header_chains.contains_key(&header_key)
             && self.get(identifier).is_some_and(|request| request.finished)
         {
             return Ok(());
         }
         let paired = self
             .header_chains
-            .get(identifier)
+            .get(&header_key)
             .is_some_and(|chain| match kind {
                 HeaderKind::Request => !chain.request_targets.is_empty(),
                 HeaderKind::Response => !chain.response_targets.is_empty(),
             });
-        self.admit_headers(identifier, 1, usize::from(paired))?;
+        self.admit_headers(&header_key, 1, usize::from(paired))?;
         let bytes = encoded_bytes(&headers);
         self.reserve(bytes, None)?;
         observation.emit(NetworkTransition::ExtraInfo { identifier, kind });
-        let chain = self.header_chains.entry(identifier.to_owned()).or_default();
+        let chain = self.header_chains.entry(header_key.clone()).or_default();
         let records = match kind {
             HeaderKind::Request => &mut chain.requests,
             HeaderKind::Response => &mut chain.responses,
@@ -374,7 +490,7 @@ impl NetworkRequests {
             bytes,
         });
         self.header_records += 1;
-        self.pair_headers(identifier, observation);
+        self.pair_headers(&header_key, observation);
         self.check_header_limit()
     }
 
@@ -407,6 +523,102 @@ impl NetworkRequests {
             ),
         };
         Ok(ready.then(|| header_array(raw.unwrap_or(provisional))))
+    }
+
+    /// Retirement settles semantic waits; it is not a synthetic browser response.
+    pub(crate) fn renderer_detached(
+        &mut self,
+        session: &str,
+        observation: &mut NetworkObservation<'_, '_>,
+        can_transfer: impl Fn(&RequestState) -> bool,
+    ) -> Result<(), ErrorRecord> {
+        let prefix = crate::network_request::request_key(session, "");
+        let keys: Vec<_> = self
+            .header_chains
+            .keys()
+            .filter(|key| {
+                key.starts_with(&prefix)
+                    || self.header_chains[*key]
+                        .request_targets
+                        .iter()
+                        .chain(&self.header_chains[*key].response_targets)
+                        .any(|identity| {
+                            self.occurrences
+                                .get(identity)
+                                .is_some_and(|request| request.response_session == session)
+                        })
+            })
+            .cloned()
+            .collect();
+        for key in keys {
+            let identities: HashSet<_> = self.header_chains[&key]
+                .request_targets
+                .iter()
+                .chain(&self.header_chains[&key].response_targets)
+                .cloned()
+                .collect();
+            for identity in identities {
+                if let Some(request) = self.occurrences.get_mut(&identity) {
+                    request.request_headers_ready = true;
+                    request.response_headers_ready = true;
+                }
+                observation.emit(NetworkTransition::HeadersUnavailable(&identity));
+            }
+            self.forget_headers(&key, observation);
+        }
+        let pending: Vec<_> = self
+            .latest
+            .iter()
+            .filter(|(_, identity)| {
+                let request = &self.occurrences[*identity];
+                request.response_session == session && !request.finished
+            })
+            .map(|(key, identity)| (self.occurrences[identity].ingress().sequence, key.clone()))
+            .collect();
+        let mut pending = pending;
+        pending.sort_by_key(|(sequence, _)| *sequence);
+        self.live_loaders.retain(|key| !key.starts_with(&prefix));
+        for (_, key) in pending {
+            let identity = self.latest[&key].clone();
+            let request = self.occurrences.get_mut(&identity).unwrap();
+            if request.metadata()["navigation"] == true && can_transfer(request) {
+                request.awaiting_response_renderer = true;
+                continue;
+            }
+            self.finish(
+                &key,
+                Some("original request renderer detached".into()),
+                true,
+                observation,
+            )?;
+        }
+        Ok(())
+    }
+
+    /// A transfer wait belongs to one pending logical navigation, never a later frame incarnation.
+    pub(crate) fn retire_orphaned_transfers(
+        &mut self,
+        observation: &mut NetworkObservation<'_, '_>,
+        still_pending: impl Fn(&RequestState) -> bool,
+    ) -> Result<(), ErrorRecord> {
+        let orphaned: Vec<_> = self
+            .latest
+            .iter()
+            .filter(|(_, identity)| {
+                let request = &self.occurrences[*identity];
+                request.awaiting_response_renderer && !still_pending(request)
+            })
+            .map(|(key, _)| key.clone())
+            .collect();
+        for key in orphaned {
+            self.finish(
+                &key,
+                Some("original navigation frame retired before renderer commit".into()),
+                true,
+                observation,
+            )?;
+        }
+        Ok(())
     }
 
     /// Ignore excluded requests without keeping orphan extra-info records alive until page teardown.
@@ -594,24 +806,29 @@ impl NetworkRequests {
             Some(identity.as_str()) != protected_identity
                 && !self.occurrences.get(identity).is_some_and(|request| {
                     request.metadata()["navigation"] == true
-                        && request.metadata()["identifier"]
-                            .as_str()
-                            .is_some_and(|identifier| self.latest.get(identifier) == Some(identity))
-                        && request.metadata()["loader"]
-                            .as_str()
-                            .is_some_and(|loader| self.live_loaders.contains(loader))
+                        && self.owns_response(request)
+                        && request.metadata()["loader"].as_str().is_some_and(|loader| {
+                            self.live_loaders
+                                .contains(&crate::network_request::request_key(
+                                    &request.response_session,
+                                    loader,
+                                ))
+                        })
                 })
         }) else {
             return false;
         };
         let identity = self.completed.remove(index).unwrap();
         if let Some(request) = self.occurrences.remove(&identity) {
-            let identifier = request.metadata()["identifier"]
-                .as_str()
-                .unwrap_or_default();
-            if self.latest.get(identifier) == Some(&identity) {
-                self.latest.remove(identifier);
+            let identifier = crate::network_request::request_key(
+                &request.response_session,
+                &request.source().identifier,
+            );
+            if self.latest.get(&identifier) == Some(&identity) {
+                self.latest.remove(&identifier);
             }
+            self.navigation_aliases
+                .retain(|_, owner| owner != &identity);
             self.release(request.retained_bytes);
         }
         true
@@ -675,6 +892,216 @@ mod tests {
 
     fn value(requests: &NetworkRequests, identity: &str, kind: HeaderKind) -> Value {
         requests.headers(identity, kind).unwrap().unwrap()
+    }
+
+    fn scoped_request(
+        session: &str,
+        native: &str,
+        sequence: u64,
+        navigation: bool,
+    ) -> RequestState {
+        let parameters = json!({"requestId":native,"loaderId":native,"frameId":"child-frame",
+            "type":if navigation {"Document"} else {"Fetch"},
+            "request":{"url":"https://example.test/", "method":"GET","headers":{}}});
+        RequestState::from_event(
+            &crate::network_request::request_key(session, native),
+            sequence,
+            &crate::network_observer::NetworkEvent {
+                session_identifier: session,
+                method: "Network.requestWillBeSent",
+                parameters: &parameters,
+                ingress: crate::network_observer::NetworkIngress {
+                    sequence,
+                    received_at: std::time::Instant::now(),
+                },
+            },
+            None,
+        )
+    }
+
+    #[test]
+    fn detached_navigation_waits_for_exact_commit_or_logical_frame_retirement() {
+        for commit in [true, false] {
+            let mut requests = NetworkRequests::default();
+            requests
+                .insert(
+                    "5:childNAV".into(),
+                    scoped_request("child", "NAV", 1, true),
+                    &mut NetworkObservation::ignored(),
+                )
+                .unwrap();
+            requests
+                .renderer_detached("child", &mut NetworkObservation::ignored(), |_| true)
+                .unwrap();
+            assert!(
+                requests
+                    .get("5:childNAV")
+                    .unwrap()
+                    .awaiting_response_renderer
+            );
+            assert_eq!(requests.unfinished, 1);
+            if commit {
+                requests
+                    .committed_navigation("child-frame", "NAV", "parent")
+                    .unwrap();
+                let request = requests.get("6:parentNAV").unwrap();
+                assert!(!request.awaiting_response_renderer);
+                assert!(!request.finished);
+                assert_eq!(request.source().session, "child");
+            } else {
+                requests
+                    .retire_orphaned_transfers(&mut NetworkObservation::ignored(), |_| false)
+                    .unwrap();
+                let request = requests.get("5:childNAV").unwrap();
+                assert!(!request.awaiting_response_renderer);
+                assert!(request.finished && request.failure.is_some());
+                assert_eq!(requests.unfinished, 0);
+            }
+        }
+    }
+
+    #[test]
+    fn renderer_request_ids_and_header_queues_are_independent() {
+        let mut requests = NetworkRequests::default();
+        for (index, session) in ["parent", "child"].into_iter().enumerate() {
+            let key = crate::network_request::request_key(session, "7.1");
+            requests
+                .extra_headers(
+                    &key,
+                    json!({"Owner":session}),
+                    HeaderKind::Response,
+                    &mut NetworkObservation::ignored(),
+                )
+                .unwrap();
+            requests
+                .insert(
+                    key.clone(),
+                    scoped_request(session, "7.1", index as u64, false),
+                    &mut NetworkObservation::ignored(),
+                )
+                .unwrap();
+            requests
+                .respond(&key, response(), true, &mut NetworkObservation::ignored())
+                .unwrap();
+        }
+        requests
+            .renderer_detached("child", &mut NetworkObservation::ignored(), |_| false)
+            .unwrap();
+        let parent = requests.get("6:parent7.1").unwrap();
+        assert!(!parent.finished);
+        assert_eq!(
+            parent.raw_response_headers.as_ref().unwrap()["Owner"],
+            "parent"
+        );
+        let child = requests.get("5:child7.1").unwrap();
+        assert!(child.finished && child.failure.is_some());
+        assert!(child.request_headers_ready && child.response_headers_ready);
+        assert_eq!(
+            child.raw_response_headers.as_ref().unwrap()["Owner"],
+            "child"
+        );
+        assert_eq!(requests.unfinished, 1);
+        assert_eq!(requests.header_records, 1);
+        requests
+            .renderer_detached("parent", &mut NetworkObservation::ignored(), |_| false)
+            .unwrap();
+        assert_eq!(requests.unfinished, 0);
+        assert_eq!(requests.header_records, 0);
+    }
+
+    #[test]
+    fn navigation_transfer_preserves_original_identity_and_parent_header_source() {
+        let mut requests = NetworkRequests::default();
+        let request = scoped_request("parent", "NAV", 1, true);
+        let identity = request.identity().to_owned();
+        requests
+            .insert(
+                "6:parentNAV".into(),
+                request,
+                &mut NetworkObservation::ignored(),
+            )
+            .unwrap();
+        requests
+            .respond(
+                "6:parentNAV",
+                response(),
+                true,
+                &mut NetworkObservation::ignored(),
+            )
+            .unwrap();
+        requests
+            .committed_navigation("wrong-frame", "NAV", "child")
+            .unwrap();
+        assert!(requests.get("5:childNAV").is_none());
+        requests
+            .committed_navigation("child-frame", "NAV", "child")
+            .unwrap();
+        assert_eq!(requests.event_key("parent", "NAV"), "5:childNAV");
+        let request = requests.get("5:childNAV").unwrap();
+        assert_eq!(request.identity(), identity);
+        assert_eq!(request.source().session, "parent");
+        assert_eq!(request.response_source().session, "child");
+        requests
+            .extra_headers(
+                "5:childNAV",
+                json!({"Late":"original-parent"}),
+                HeaderKind::Response,
+                &mut NetworkObservation::ignored(),
+            )
+            .unwrap();
+        assert_eq!(
+            requests
+                .get("5:childNAV")
+                .unwrap()
+                .raw_response_headers
+                .as_ref()
+                .unwrap()["Late"],
+            "original-parent"
+        );
+        requests
+            .renderer_detached("parent", &mut NetworkObservation::ignored(), |_| false)
+            .unwrap();
+        assert!(!requests.get("5:childNAV").unwrap().finished);
+        assert_eq!(requests.header_records, 0);
+        requests
+            .renderer_detached("child", &mut NetworkObservation::ignored(), |_| false)
+            .unwrap();
+        assert_eq!(requests.unfinished, 0);
+        assert!(requests.get("5:childNAV").unwrap().failure.is_some());
+    }
+
+    #[test]
+    fn renderer_churn_reclaims_unfinished_requests_and_orphan_headers() {
+        let mut requests = NetworkRequests::default();
+        for index in 0..4200 {
+            let session = format!("child-{index}");
+            let key = crate::network_request::request_key(&session, "7.1");
+            requests
+                .insert(
+                    key.clone(),
+                    scoped_request(&session, "7.1", index, false),
+                    &mut NetworkObservation::ignored(),
+                )
+                .unwrap();
+            requests
+                .respond(&key, response(), true, &mut NetworkObservation::ignored())
+                .unwrap();
+            requests
+                .extra_headers(
+                    &crate::network_request::request_key(&session, "orphan"),
+                    json!({"Orphan":"x"}),
+                    HeaderKind::Request,
+                    &mut NetworkObservation::ignored(),
+                )
+                .unwrap();
+            requests
+                .renderer_detached(&session, &mut NetworkObservation::ignored(), |_| false)
+                .unwrap();
+            assert_eq!(requests.unfinished, 0);
+            assert_eq!(requests.header_records, 0);
+            assert!(requests.header_chains.is_empty());
+        }
+        assert!(requests.occurrences.len() <= MAXIMUM_COMPLETED_REQUESTS);
     }
 
     #[test]
@@ -1062,7 +1489,10 @@ mod tests {
                 )
                 .unwrap();
             let state = requests.get("request").unwrap();
-            let expected = encoded_bytes(state.metadata())
+            let expected = state.source().session.len()
+                + state.response_session.len()
+                + state.source().identifier.len()
+                + encoded_bytes(state.metadata())
                 + encoded_bytes(state.response.as_ref().unwrap())
                 + encoded_bytes(state.raw_request_headers.as_ref().unwrap())
                 + encoded_bytes(state.raw_response_headers.as_ref().unwrap())

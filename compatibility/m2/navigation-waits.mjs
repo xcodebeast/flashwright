@@ -10,7 +10,7 @@ import { sourceManifest } from '../../tools/source-manifest.mjs';
 import { identifyBrowser } from '../../tools/browser-identity.mjs';
 import { runtimeMetadata, runtimeArtifactLabel } from '../../tools/javascript-runtime.mjs';
 
-const destination = `compatibility/evidence/navigation-waits-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
+const destination = `${process.env.FLASHWRIGHT_ARTIFACT_DIR ?? 'compatibility/evidence'}/navigation-waits-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`;
 await mkdir(destination, { recursive: true });
 const hash = value => createHash('sha256').update(value).digest('hex');
 const report = { status: 'running', schemaVersion: 1, reference: '1.60.0', ...runtimeMetadata, sources: await sourceManifest(), browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH ?? referenceChromium.executablePath()), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, candidateChecks: [], scope: 'Page navigation waiters, host URL matchers, invocation order, immutable URL/response attribution and owned-page lifecycle. No performance claim.' };

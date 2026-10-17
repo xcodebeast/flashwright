@@ -448,7 +448,7 @@ mod tests {
         let (engine, mut messages) = engine();
         let state = insert_page(&engine);
         let page = engine.page("page", "test").unwrap();
-        engine.detach_renderer(&page, "session");
+        engine.detach_renderer("page", &page, "session", None);
         assert!(state.state.lock().unwrap().failure.is_none());
         let mut result = json!({"identifier":"page"});
         let error = engine
@@ -476,7 +476,7 @@ mod tests {
                 "original failure",
             ));
             let page = engine.page("page", "test").unwrap();
-            engine.detach_renderer(&page, "session");
+            engine.detach_renderer("page", &page, "session", None);
             if context_closed {
                 engine
                     .context("context", "test")

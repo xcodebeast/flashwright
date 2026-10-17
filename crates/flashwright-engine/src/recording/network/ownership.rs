@@ -7,6 +7,7 @@ use tokio::sync::watch;
 
 struct GuardState {
     occurrence: Occurrence,
+    session: String,
     current: watch::Sender<Option<BodyUnavailable>>,
 }
 
@@ -50,6 +51,7 @@ impl BodyOwners {
         &mut self,
         occurrence: &Occurrence,
         identifier: &str,
+        session: &str,
     ) -> Result<BodyGuard, JournalError> {
         self.requests
             .retain(|_, original| original.strong_count() != 0);
@@ -66,6 +68,7 @@ impl BodyOwners {
         }
         let state = Arc::new(GuardState {
             occurrence: occurrence.clone(),
+            session: session.into(),
             current: watch::channel(None).0,
         });
         self.requests.insert(key, Arc::downgrade(&state));
@@ -84,6 +87,22 @@ impl BodyOwners {
                     .send_replace(Some(BodyUnavailable::OriginalPageClosed));
             }
             false
+        });
+    }
+
+    pub(super) fn renderer_closed(&mut self, page: &str, session: &str) {
+        self.requests.retain(|(owner, _), original| {
+            let Some(original) = original.upgrade() else {
+                return false;
+            };
+            if owner == page && original.session == session {
+                original
+                    .current
+                    .send_replace(Some(BodyUnavailable::OriginalRendererClosed));
+                false
+            } else {
+                true
+            }
         });
     }
 
@@ -115,10 +134,10 @@ mod tests {
     fn reused_browser_identifiers_invalidate_only_their_original_page_owner() {
         let mut owners = BodyOwners::default();
         let first = owners
-            .admit(&occurrence("first-page", "shared:1"), "shared")
+            .admit(&occurrence("first-page", "shared:1"), "shared", "session")
             .unwrap();
         let other_page = owners
-            .admit(&occurrence("second-page", "shared:1"), "shared")
+            .admit(&occurrence("second-page", "shared:1"), "shared", "session")
             .unwrap();
         let mut changed = first.changes();
         owners.request_started("first-page", "shared");
@@ -130,7 +149,7 @@ mod tests {
         );
         assert!(other_page.current());
         let successor = owners
-            .admit(&occurrence("first-page", "shared:2"), "shared")
+            .admit(&occurrence("first-page", "shared:2"), "shared", "session")
             .unwrap();
         owners.settled("shared", &first);
         assert!(successor.current());
@@ -141,7 +160,7 @@ mod tests {
     fn metadata_and_registry_teardown_cannot_rebind_an_owned_body() {
         let mut owners = BodyOwners::default();
         let original = occurrence("page", "request:1");
-        let guard = owners.admit(&original, "request").unwrap();
+        let guard = owners.admit(&original, "request", "session").unwrap();
         drop(original);
         assert!(guard.current());
         owners.page_closed("other-page");
@@ -160,22 +179,24 @@ mod tests {
             let identifier = format!("request-{index}");
             guards.push(
                 owners
-                    .admit(&occurrence("page", &identifier), &identifier)
+                    .admit(&occurrence("page", &identifier), &identifier, "session")
                     .unwrap(),
             );
         }
         assert!(matches!(
-            owners.admit(&occurrence("page", "overflow"), "overflow"),
+            owners.admit(&occurrence("page", "overflow"), "overflow", "session"),
             Err(JournalError::ResourceLimit(_))
         ));
         owners.settled("request-0", &guards[0]);
         let replacement = owners
-            .admit(&occurrence("page", "replacement"), "replacement")
+            .admit(&occurrence("page", "replacement"), "replacement", "session")
             .unwrap();
         assert_eq!(owners.requests.len(), 1024);
         drop(guards);
         drop(replacement);
-        let final_owner = owners.admit(&occurrence("page", "final"), "final").unwrap();
+        let final_owner = owners
+            .admit(&occurrence("page", "final"), "final", "session")
+            .unwrap();
         assert_eq!(owners.requests.len(), 1);
         assert!(final_owner.current());
     }

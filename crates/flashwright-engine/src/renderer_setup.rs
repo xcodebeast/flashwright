@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::renderer_sessions::RendererSession;
+use std::time::Instant;
 
 const METHOD: &str = "frame.attach";
 const INITIALIZATION_BUDGET: Duration = Duration::from_secs(10);
@@ -74,6 +75,7 @@ impl Engine {
         else {
             return Ok(());
         };
+        let mut replaced = None;
         let (owner, accepted) = {
             let mut state = page.state.state.lock().unwrap();
             let mut sessions = page.state.renderer_sessions.lock().unwrap();
@@ -108,6 +110,7 @@ impl Engine {
                         ));
                     }
                     sessions.retire(&previous);
+                    replaced = Some(previous);
                 }
                 let owner = sessions.register_child(&parent, &target, &session)?;
                 let events =
@@ -161,6 +164,15 @@ impl Engine {
             (owner, accepted)
         };
         drop(registry);
+        if let Some(previous) = replaced {
+            self.retire_renderer(
+                page_identifier,
+                page,
+                &previous.session_identifier,
+                None,
+                false,
+            );
+        }
         let engine = self.clone();
         let page = page.clone();
         let page_identifier = page_identifier.to_owned();
@@ -189,7 +201,12 @@ impl Engine {
                         page.state.changed.send_replace(state.sequence);
                     }
                     Err(_) if owner.is_destroyed() => {
-                        engine.detach_renderer(&page, &owner.session_identifier);
+                        engine.detach_renderer(
+                            &page_identifier,
+                            &page,
+                            &owner.session_identifier,
+                            None,
+                        );
                     }
                     Err(error) if !owner.is_retired() => {
                         let mut state = page.state.state.lock().unwrap();
@@ -232,6 +249,7 @@ impl Engine {
         let mut commands = vec![
             ("Page.enable", json!({})),
             ("Page.setLifecycleEventsEnabled", json!({"enabled":true})),
+            ("Network.enable", json!({})),
             ("Runtime.enable", json!({})),
             ("Log.enable", json!({})),
             (
@@ -360,27 +378,108 @@ impl Engine {
     }
 
     /// Terminal session identity retires only its original renderer subtree.
-    pub(crate) fn detach_renderer(&self, page: &Page, session_identifier: &str) {
+    pub(crate) fn detach_renderer(
+        &self,
+        page_identifier: &str,
+        page: &Page,
+        session_identifier: &str,
+        ingress: Option<crate::network_observer::NetworkIngress>,
+    ) {
+        self.retire_renderer(page_identifier, page, session_identifier, ingress, true);
+    }
+
+    /// Logical replacement cancels semantic work without claiming native destruction.
+    pub(crate) fn retire_renderer(
+        &self,
+        page_identifier: &str,
+        page: &Page,
+        session_identifier: &str,
+        ingress: Option<crate::network_observer::NetworkIngress>,
+        destroyed: bool,
+    ) {
+        let context = self
+            .registry
+            .lock()
+            .unwrap()
+            .contexts
+            .get(&page.context_identifier)
+            .cloned();
         let mut state = page.state.state.lock().unwrap();
-        let mut sessions = page.state.renderer_sessions.lock().unwrap();
-        if let Some(owner) = sessions.original(session_identifier) {
-            owner.mark_destroyed();
+        let retired = {
+            let mut sessions = page.state.renderer_sessions.lock().unwrap();
+            let Some(owner) = sessions.original(session_identifier) else {
+                return;
+            };
+            let originals = sessions.originals();
+            if destroyed {
+                owner.mark_destroyed();
+            }
             sessions.retire(&owner);
-            state.observe_in_session(
-                session_identifier,
-                "Runtime.executionContextsCleared",
-                &json!({}),
-            );
-            page.state
-                .evaluation_runtimes
-                .lock()
-                .unwrap()
-                .retain(|_, runtime| state.context_is_alive(&runtime.context));
-            page.state.handles.lock().unwrap().retain(|_, handle| {
-                handle.primitive.is_some() || state.context_is_alive(&handle.context)
-            });
-            page.state.changed.send_replace(state.sequence);
+            originals
+                .into_iter()
+                .filter(|owner| owner.is_retired())
+                .collect::<Vec<_>>()
+        };
+        let mut recording_state = context
+            .as_ref()
+            .filter(|context| {
+                page.state.purpose == PagePurpose::Public
+                    && context.state.recording_enabled.load(Ordering::Acquire)
+            })
+            .map(|context| context.state.recording.lock().unwrap());
+        for owner in retired {
+            let session = &owner.session_identifier;
+            if owner.is_destroyed() {
+                state.observe_in_session(session, "Runtime.executionContextsCleared", &json!({}));
+            } else {
+                state
+                    .main_worlds
+                    .retain(|_, context| context.session_identifier.as_ref() != session);
+                state
+                    .execution_contexts
+                    .retain(|_, context| context.session_identifier.as_ref() != session);
+            }
+            let event = crate::network_observer::NetworkEvent {
+                session_identifier: session,
+                method: "Flashwright.rendererDetached",
+                parameters: &Value::Null,
+                // Host-side setup failure has no native ingress or sequence to invent.
+                ingress: ingress.unwrap_or(crate::network_observer::NetworkIngress {
+                    sequence: 0,
+                    received_at: Instant::now(),
+                }),
+            };
+            let events = if let Some(recording) = recording_state
+                .as_mut()
+                .and_then(|state| state.active_mut())
+            {
+                let (events, jobs) =
+                    recording.observe_page_event(page_identifier, &mut state, event);
+                debug_assert!(
+                    jobs.is_empty(),
+                    "renderer retirement cannot start a body read"
+                );
+                events
+            } else {
+                state.observe_event(event, None)
+            };
+            for (name, parameters) in events {
+                if state.published {
+                    self.emit(page_identifier, name, parameters);
+                } else if let Err(error) = state.buffer_initial_event(name, parameters) {
+                    state.failure = Some(error);
+                }
+            }
         }
+        page.state
+            .evaluation_runtimes
+            .lock()
+            .unwrap()
+            .retain(|_, runtime| state.context_is_alive(&runtime.context));
+        page.state.handles.lock().unwrap().retain(|_, handle| {
+            handle.primitive.is_some() || state.context_is_alive(&handle.context)
+        });
+        page.state.changed.send_replace(state.sequence);
     }
 }
 
@@ -406,6 +505,47 @@ mod tests {
     use super::*;
     use crate::renderer_sessions::RendererSessions;
     use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+
+    #[test]
+    fn logical_renderer_replacement_does_not_fabricate_context_destruction() {
+        let (outgoing, _messages) = mpsc::channel(16);
+        let (fatal, _failure) = watch::channel(false);
+        let engine = Engine::new(None, outgoing, fatal, ResourceLimits::default());
+        let page = Page {
+            context_identifier: "context".into(),
+            target_identifier: "root".into(),
+            session_identifier: "root-session".into(),
+            state: Arc::new(PageState::default()),
+        };
+        let child = {
+            let mut sessions = page.state.renderer_sessions.lock().unwrap();
+            let root = sessions.register_root("root", "root-session").unwrap();
+            sessions
+                .register_child(&root, "child", "child-session")
+                .unwrap()
+        };
+        let context = crate::page_state::ExecutionContext {
+            session_identifier: "child-session".into(),
+            identifier: 7,
+            unique_identifier: "original".into(),
+            frame_identifier: "child".into(),
+        };
+        let destruction = {
+            let mut state = page.state.state.lock().unwrap();
+            state
+                .execution_contexts
+                .insert(context.key(), context.clone());
+            state.main_worlds.insert("child".into(), context.clone());
+            state.watch_context_destruction(&context).unwrap()
+        };
+        engine.retire_renderer("page", &page, "child-session", None, false);
+        assert!(child.is_retired());
+        assert!(!child.is_destroyed());
+        assert!(!page.state.state.lock().unwrap().context_is_alive(&context));
+        assert!(!*destruction.destroyed.borrow());
+        engine.detach_renderer("page", &page, "child-session", None);
+        assert!(*destruction.destroyed.borrow());
+    }
 
     #[test]
     fn late_attachment_after_context_closure_is_owned_by_context_disposal() {

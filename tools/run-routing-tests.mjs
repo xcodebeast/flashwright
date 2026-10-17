@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { runtimeMetadata, runtimeArtifactLabel } from './javascript-runtime.mjs';
 
-const directory = resolve(`compatibility/evidence/routing-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
+const directory = resolve(`${process.env.FLASHWRIGHT_ARTIFACT_DIR ?? 'compatibility/evidence'}/routing-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}`);
 await mkdir(directory, { recursive: true });
 const browser = process.env.FLASHWRIGHT_BROWSER_PATH ?? chromium.executablePath();
 const hash = value => createHash('sha256').update(value).digest('hex');
