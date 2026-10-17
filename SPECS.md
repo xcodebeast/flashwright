@@ -43,6 +43,8 @@ The [integrated remote-screenshot checkpoint](compatibility/evidence/integrated-
 
 The [backend trace checkpoint](compatibility/evidence/backend-trace-linux-checkpoint-2026-10-17.json) verifies 248 passing native Linux full-Chrome/Bun tests and their trace archives across both engines at workers 1 and 4. Twenty-eight selected offline post-fill states replay original values, styles, captured images and embedded test source after fresh application services stop. This is development-alias functionality with tracing on for every passing attempt; packed backend tracing, final retry policy, complete resource accounting, release and the representative 2× performance objective remain open.
 
+The [integrated frame-hint checkpoint](compatibility/evidence/integrated-frame-hints-linux-checkpoint-2026-10-17.json) passes all 220 native Linux full-Chrome/Bun development checks at 5d3f2d7c, including 536 Rust tests and one ignored. All 1285 source bindings and original command logs verified with clean supervisor teardown. The preceding pre-compilation failure is retained: generated provenance still referenced old resident-runtime hashes. This complete run follows the corrected shared registry and refreshed references; it does not change the negative optional-hint performance result or establish screenshot reliability, release or the representative 2× objective.
+
 ## S2 Selected decisions and rationale
 
 Earlier exploration informed these choices, but its removed artifacts aren't reproducible evidence for the main build. Establish new baselines in M0 using S6; don't quote retired pilot numbers as verified product performance
