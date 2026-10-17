@@ -1048,9 +1048,16 @@ mod tests {
                 .unwrap()
                 .pages
                 .insert("page".into(), page.clone());
+            page.state
+                .renderer_sessions
+                .lock()
+                .unwrap()
+                .register_root("target", "session")
+                .unwrap()
+                .mark_ready();
             page.state.state.lock().unwrap().published = false;
             assert!(matches!(
-                engine.diagnostic_session("page", &page),
+                engine.snapshot_diagnostic_session("page", &page, "session"),
                 Err(crate::diagnostic_sessions::SessionFailure::Unavailable)
             ));
             let initial_body = engine.network_diagnostic_session("page", &page).unwrap();
@@ -1071,7 +1078,11 @@ mod tests {
             let lease = if terminal_first {
                 None
             } else {
-                Some(engine.diagnostic_session("page", &page).unwrap())
+                Some(
+                    engine
+                        .snapshot_diagnostic_session("page", &page, "session")
+                        .unwrap(),
+                )
             };
             engine.handle_event("browser", terminal()).unwrap();
             // Root detachment withdraws public ownership, while retained diagnostic
@@ -1094,7 +1105,7 @@ mod tests {
                     .load(Ordering::Acquire)
             );
             assert!(matches!(
-                engine.diagnostic_session("page", &page),
+                engine.snapshot_diagnostic_session("page", &page, "session"),
                 Err(crate::diagnostic_sessions::SessionFailure::Unavailable)
             ));
             assert!(*initial_body.destruction().borrow());

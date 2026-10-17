@@ -441,7 +441,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Supported graph values/identity/cycles, nested handle arguments, UTF-16 properties, property ownership, original-context evaluation, DOM detachment, disposal/async disposal, allocation rollback and packed declarations.",
-      "limitations": "Additional by-value classes remain unsupported; Map/functions/symbols can be retained/evaluated as handles but cannot generally serialize by value. Objects remain in original unique execution contexts; cross-context element adoption remains outside this slice. A separate renderer-ownership checkpoint verifies remote Frame and selected locator evaluation/handle ownership; it does not extend every handle method or value class to remote frames. 4096 retained/pending handles per page, bounded replies/serialization and recovery. Primitive BigInt behavior intentionally differs from pinned 1.60.0 (S4.l). The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "limitations": "Additional by-value classes remain unsupported; Map/functions/symbols can be retained/evaluated as handles but cannot generally serialize by value. Objects remain in original unique execution contexts; cross-context element adoption remains outside this slice. A separate renderer-ownership checkpoint verifies remote Frame and selected locator evaluation/handle ownership; it does not extend every handle method or value class to remote frames. 4096 retained/pending handles per page, bounded replies/serialization and recovery. Primitive BigInt behavior intentionally differs from pinned 1.60.0 (S4.l). The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [
         "Primitive BigInt handles preserve the actual JavaScript value; pinned 1.60.0 converts it to undefined (S4.l)."
@@ -453,11 +453,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/events.rs",
-          "sha256": "58bbcc6690d0bbc3ac1e85943479af9a82549b82457f399e62d9b87aa2892bfc"
+          "sha256": "173626a00286589b108f5d725d1c68b9a4e885457aff200156a87e730eb8de76"
         },
         {
           "path": "crates/flashwright-engine/src/publication.rs",
-          "sha256": "0f1f03afb8d4b1a0b12e235305f4ab6b1f16ce0d17c265550d1fd4ecda9802df"
+          "sha256": "5cffefe2df1c9053bd55f00fe78674bd00c5c2038aa653552e237e1c70402d91"
         },
         {
           "path": "crates/flashwright-engine/src/renderer_sessions.rs",
@@ -465,7 +465,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
-          "sha256": "f58e985cc425ef32418f809483bb108a97b366716dec542ec48326c468e34f60"
+          "sha256": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7"
         }
       ],
       "evidence": [
@@ -807,11 +807,12 @@
       "title": "Tracing",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies. Public standalone API manual chunks and canonical owner identity now have independent action/network/resource ZIP checks and runner coexistence checks. The snapshot encoding checkpoint adds native Linux full-Chrome Unicode wire accounting, exact renderer byte boundaries, public Bun/Node22/Node24 replay and fresh packed ESM/CommonJS artifact checks.",
-      "limitations": "Live traces, video, group/groupEnd and HAR recording remain unsupported. DOM snapshots cover supported states and same-process frames; unsupported custom-element/out-of-process states fail export explicitly. API traces retain request actions and wire resources without DOM/filmstrip work; snapshots:false suppresses API network capture. Manual defaults remain independent of runner defaults. Focused development evidence includes native Linux full Chrome for snapshot encoding; full current release-core, the broader platform matrix and representative performance acceptance remain open.",
+      "scope": "Public manual start/chunk/stop archives, snapshots/screenshots/sources/phase names, exact ownership and actual pinned offline viewer plus packed combined consumers; latest runner follow-up verifies automatic browser-context tracing and public retention policies. Public standalone API manual chunks and canonical owner identity now have independent action/network/resource ZIP checks and runner coexistence checks. The snapshot encoding checkpoint adds native Linux full-Chrome Unicode wire accounting, exact renderer byte boundaries, public Bun/Node22/Node24 replay and fresh packed ESM/CommonJS artifact checks. The remote snapshot checkpoint adds Bun and Node 22 public archives with nested remote frames, renderer return and removal, original-session cleanup tests, and 16 actual offline-viewer replays with recorded network resources.",
+      "limitations": "Live traces, video, group/groupEnd and HAR recording remain unsupported. DOM snapshots cover supported states in same-process and remote frames. Unsupported custom-element states still fail export explicitly; remote screenshot preparation remains separately gated. API traces retain request actions and wire resources without DOM/filmstrip work; snapshots:false suppresses API network capture. Manual defaults remain independent of runner defaults. Focused development evidence includes native Linux full Chrome for snapshot encoding; full current release-core, the broader platform matrix and representative performance acceptance remain open.",
       "defaults": "Manual screenshots, snapshots and sources default to false. Omitting a stop path discards the archive. Runner policy defaults are separate.",
       "differences": [
-        "The retained concurrent manual stop/dispose case produced a valid native archive; pinned Playwright stop rejected ENOENT and left an invalid partial ZIP while disposal fulfilled. This is a cleanup difference, not equal-outcome timing evidence."
+        "The retained concurrent manual stop/dispose case produced a valid native archive; pinned Playwright stop rejected ENOENT and left an invalid partial ZIP while disposal fulfilled. This is a cleanup difference, not equal-outcome timing evidence.",
+        "A retained pinned-reference archive intermittently omitted the parent iframe link for an archived nested document during renderer return. The fixture records that linked replay as unavailable; Flashwright must retain the link. Final Bun/Node 22 runs replayed all selected nested states for both engines. This is a diagnostic difference, not a performance comparison."
       ],
       "implementation": [
         {
@@ -825,6 +826,18 @@
         {
           "path": "packages/resident-runtime/snapshot-runtime.js",
           "sha256": "c086946d30f9250671cb53cc49b1953ace7d5efe9d47899e294ff5da39efb044"
+        },
+        {
+          "path": "crates/flashwright-engine/src/snapshots/document.rs",
+          "sha256": "fc0dd77060fcaa3229f36e7fe608547901bbe70335471d094bb1b1ba7d36ce0c"
+        },
+        {
+          "path": "crates/flashwright-engine/src/recording/documents.rs",
+          "sha256": "5919d8d8f98ff060ba120da729628c283a0733e64db171c2ae5c643aa5f1cad9"
+        },
+        {
+          "path": "crates/flashwright-engine/src/recording/phases.rs",
+          "sha256": "5646fdb4496eabcd666aae058343d6bc218c9097366b2619af52d888e139732b"
         }
       ],
       "evidence": [
@@ -856,6 +869,11 @@
         {
           "path": "compatibility/evidence/snapshot-incremental-checkpoint-2026-10-17.json",
           "sha256": "a943b2ae16a679c5b5eddbbe32ef948d3eb3faf39ea1d2644249b8e03689df1e",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-snapshot-checkpoint-2026-10-17.json",
+          "sha256": "fafdadc0c2959440b6a21a5af1cf1dc86492f6595a6dab85b82c04f83097807d",
           "kind": "conformance"
         }
       ],
@@ -1770,7 +1788,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "toHaveClass, toContainClass, toHaveCSS, toHaveId, toHaveValues, toHaveRole and accessible name/description/error-message assertions have focused differential, negation, timeout, runner and packed-consumer evidence. Selected remote class/CSS/ID/value/role/accessibility predicates pass the native Linux full-Chrome Bun/Node 22 differential; this does not promote additional argument or option combinations. The remote-input checkpoint refreshes the shared-source binding only for this group; it is not a new broad assertion or ARIA snapshot conformance claim.",
-      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. The combined artifact integration passes all 179 macOS core groups. Rendered child-frame fallback composition and release acceptance remain open. Native Linux coverage is limited to the separately recorded selected remote predicates and existing assertion regression.",
+      "limitations": "The focused matcher checkpoint retained incomplete full-core attempts; the later dialog checkpoint records a 126-group full-core pass. Neither is release acceptance. Descendant option combinations remain separately unverified. Matcher target/body diagnostic text now has a separate 12-case gate across three runtimes and a host-polled control; default failure documents and single-main-document fallback now pass a separate14-case source and packed gate across all three runtimes. The combined artifact integration passes all 179 macOS core groups. Rendered child-frame fallback composition and release acceptance remain open. Native Linux coverage is limited to the separately recorded selected remote predicates and existing assertion regression. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Recorded cases include configured/per-call timeouts and pinned predicate defaults; this review does not promote every declaration default.",
       "differences": [
         "Retained matcher accessibility diagnostics truncate explicitly after16384 UTF-16 units; complete predicate inputs remain unchanged."
@@ -1790,7 +1808,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/page_state.rs",
-          "sha256": "544e3906935e19db958214d45bda3751acbddd6c708236650fb01d83db33dbf3"
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
         }
       ],
       "evidence": [
@@ -1880,7 +1898,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Creation, enumeration, identity, close state and same-process frame ownership exercised by the library, lifecycle and navigation fixtures. The renderer-ownership checkpoint adds original-session retirement, root-detachment publication/closure and child-only detach controls. The owner-close checkpoint verifies sibling, subscription and registry retirement after throwing or removed close listeners, preserving the first thrown value and healthy event order. The engine-shutdown checkpoint verifies that final engine release drains terminal replies, unfinished input streams and queued writes without replacing original operation failures. Selected remote locator operations now have native Linux Bun/Node 22 replacement and detachment coverage. A blocked child renderer cannot prevent independent parent locator initialization, and context closure retires the original unbounded read. The remote-input checkpoint adds 18 shared behavior groups per engine on native Linux x64/full Chrome with Bun 1.4.2 and Node 22/24, trusted pointer/keyboard input, nested geometry, renderer return, navigation, tracing without remote snapshots and original-session failure ownership. Fresh Bun packed ESM/CommonJS consumers exercise remote click, fill and sequential typing.",
-      "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation and selected locator read/assertion slices are verified; remote networking/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote snapshot export and routing retain explicit gaps. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
+      "limitations": "Only Chromium is implemented. Only the separately recorded remote evaluation and selected locator read/assertion slices are verified; remote networking/artifact APIs, persistent contexts and remote connections remain outside the verified slice. Page.close runBeforeUnload:true rejects; false/default closure is implemented. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote DOM snapshot export has separate focused Linux evidence; remote routing remains unsupported. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -1894,11 +1912,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/events.rs",
-          "sha256": "58bbcc6690d0bbc3ac1e85943479af9a82549b82457f399e62d9b87aa2892bfc"
+          "sha256": "173626a00286589b108f5d725d1c68b9a4e885457aff200156a87e730eb8de76"
         },
         {
           "path": "crates/flashwright-engine/src/publication.rs",
-          "sha256": "0f1f03afb8d4b1a0b12e235305f4ab6b1f16ce0d17c265550d1fd4ecda9802df"
+          "sha256": "5cffefe2df1c9053bd55f00fe78674bd00c5c2038aa653552e237e1c70402d91"
         },
         {
           "path": "crates/flashwright-engine/src/renderer_sessions.rs",
@@ -1906,7 +1924,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
-          "sha256": "f58e985cc425ef32418f809483bb108a97b366716dec542ec48326c468e34f60"
+          "sha256": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7"
         },
         {
           "path": "packages/flashwright-core/src/client.ts",
@@ -1922,7 +1940,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/page_state.rs",
-          "sha256": "544e3906935e19db958214d45bda3751acbddd6c708236650fb01d83db33dbf3"
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
         }
       ],
       "evidence": [
@@ -1953,7 +1971,7 @@
         },
         {
           "path": "compatibility/m2/navigation.mjs",
-          "sha256": "71ff3fb1ad9d0382a99579d93363d6b7e58e3215bc47a93141e6c8a109173b53",
+          "sha256": "d111bc2bc79c5cc92abaa46a6d98060fca95c825e52d2cad0131a0c1cb2da5ee",
           "kind": "source-review"
         },
         {
@@ -1973,7 +1991,7 @@
         },
         {
           "path": "compatibility/m2/navigation-waits.mjs",
-          "sha256": "cdf43813278af9ec4d4f7feca9f15b169c6ec4e3fc7cc6633d70c6c87947e425",
+          "sha256": "32949bf01e018c00f3a3d8929a5c61a2e2458206f4e463f58a132feaaf127ce7",
           "kind": "source-review"
         },
         {
@@ -2120,7 +2138,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Document and same-document navigation, history/reload, response observation and host URL matchers preserve invocation boundaries, selected responses, deadlines and close/crash cleanup.",
-      "limitations": "This is Page navigation. Frame navigation convenience methods, popup ownership and general cross-process frames are not established. The method review does not promote every option or URL matcher type.",
+      "limitations": "This is Page navigation. Frame navigation convenience methods, popup ownership and general cross-process frames are not established. The method review does not promote every option or URL matcher type. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -2137,7 +2155,7 @@
         },
         {
           "path": "compatibility/m2/navigation.mjs",
-          "sha256": "71ff3fb1ad9d0382a99579d93363d6b7e58e3215bc47a93141e6c8a109173b53",
+          "sha256": "d111bc2bc79c5cc92abaa46a6d98060fca95c825e52d2cad0131a0c1cb2da5ee",
           "kind": "source-review"
         },
         {
@@ -2147,7 +2165,7 @@
         },
         {
           "path": "compatibility/m2/navigation-waits.mjs",
-          "sha256": "cdf43813278af9ec4d4f7feca9f15b169c6ec4e3fc7cc6633d70c6c87947e425",
+          "sha256": "32949bf01e018c00f3a3d8929a5c61a2e2458206f4e463f58a132feaaf127ce7",
           "kind": "source-review"
         }
       ],
@@ -2200,7 +2218,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "CSS/text/role/label/test-ID and other listed Page builders, chaining/filtering/composition, live reads, state checks, selector waits and original-element handle resolution have shared fixture coverage. Selected remote read/state queries and selector waits now pass the native Linux full-Chrome differential on Bun and Node 22, plus fresh Bun packed ESM/CommonJS consumers. The remote-input checkpoint adds 18 shared behavior groups per engine on native Linux x64/full Chrome with Bun 1.4.2 and Node 22/24, trusted pointer/keyboard input, nested geometry, renderer return, navigation, tracing without remote snapshots and original-session failure ownership. Fresh Bun packed ESM/CommonJS consumers exercise remote click, fill and sequential typing.",
-      "limitations": "Open shadow DOM, tested same-process child frames and the separately recorded remote read/wait subset are covered. Closed shadow DOM, unlisted remote input/artifact behavior and unlisted options remain outside this subset. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote snapshot export and routing retain explicit gaps. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
+      "limitations": "Open shadow DOM, tested same-process child frames and the separately recorded remote read/wait subset are covered. Closed shadow DOM, unlisted remote input/artifact behavior and unlisted options remain outside this subset. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote DOM snapshot export has separate focused Linux evidence; remote routing remains unsupported. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -2226,7 +2244,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/page_state.rs",
-          "sha256": "544e3906935e19db958214d45bda3751acbddd6c708236650fb01d83db33dbf3"
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
         }
       ],
       "evidence": [
@@ -2574,7 +2592,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Eleven Page/Frame action methods share the native Locator path. The retained 137-check differential covers duplicate matches, strictness, first-match readiness/replacement, native input, selection results, typing focus changes/cancellation, navigation, child-frame ownership, closure and traced calls. Packed library consumers exercise selector forms and declarations. The remote-input checkpoint adds 18 shared behavior groups per engine on native Linux x64/full Chrome with Bun 1.4.2 and Node 22/24, trusted pointer/keyboard input, nested geometry, renderer return, navigation, tracing without remote snapshots and original-session failure ownership. Fresh Bun packed ESM/CommonJS consumers exercise remote click, fill and sequential typing.",
-      "limitations": "Native macOS arm64 development coverage with Bun1.4.2 and Chromium148; controlled capture checks also run on Node22/24. Context strictSelectors, pointer steps, hover noWaitAfter, selectOption ElementHandle values, FrameLocator and broader cross-process frame coverage remain outside this slice. No performance, native Linux or release acceptance. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote snapshot export and routing retain explicit gaps. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
+      "limitations": "Native macOS arm64 development coverage with Bun1.4.2 and Chromium148; controlled capture checks also run on Node22/24. Context strictSelectors, pointer steps, hover noWaitAfter, selectOption ElementHandle values, FrameLocator and broader cross-process frame coverage remain outside this slice. No performance, native Linux or release acceptance. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote DOM snapshot export has separate focused Linux evidence; remote routing remains unsupported. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
       "defaults": "Page/Frame selectors use the first match when strict is omitted or false; explicit true rejects multiple matches. Locator remains strict. Ordinary inherited action timeouts and existing method-specific input/navigation behavior remain in force.",
       "differences": [],
       "implementation": [
@@ -2837,7 +2855,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Page/Frame/Locator frameLocator, Locator.contentFrame and all FrameLocator descriptor methods. The retained 212-check differential exercises strictness, absence, nesting, same-frame composite normalization, native input/upload, child main-world evaluation, captured targets, whole-path retries, closure and traced forms. Packed consumers exercise runtime exports and declarations. A separate full-Chrome renderer-ownership checkpoint exercises selected remote selector-to-handle and element evaluation paths, renderer return and no callback replay. The remote locator checkpoint adds selected remote reads, waits and assertions, nested local/remote paths, renderer return and replacement on native Linux x64 with full Chrome, Bun and Node 22. The existing 212-check differential and trace checks also pass on Linux. The remote-input checkpoint adds 18 shared behavior groups per engine on native Linux x64/full Chrome with Bun 1.4.2 and Node 22/24, trusted pointer/keyboard input, nested geometry, renderer return, navigation, tracing without remote snapshots and original-session failure ownership. Fresh Bun packed ESM/CommonJS consumers exercise remote click, fill and sequential typing.",
-      "limitations": "The broad 212-check slice covers same-process frames on native macOS arm64/Bun 1.4.2/Chromium 148. Selected remote evaluation paths pass Bun and Node 22/24 checks on full Chrome; stock headless shell did not place that fixture in a remote renderer. Unlisted remote input, network delivery and artifacts, exhaustive getBy option/value combinations and release acceptance remain open. Native Linux now has the separately recorded read/assertion and 212-check development coverage; other runtime/platform combinations retain their original evidence scope. Method coverage is an experimental subset; only separately listed options are promoted. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote snapshot export and routing retain explicit gaps. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
+      "limitations": "The broad 212-check slice covers same-process frames on native macOS arm64/Bun 1.4.2/Chromium 148. Selected remote evaluation paths pass Bun and Node 22/24 checks on full Chrome; stock headless shell did not place that fixture in a remote renderer. Unlisted remote input, network delivery and artifacts, exhaustive getBy option/value combinations and release acceptance remain open. Native Linux now has the separately recorded read/assertion and 212-check development coverage; other runtime/platform combinations retain their original evidence scope. Method coverage is an experimental subset; only separately listed options are promoted. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote DOM snapshot export has separate focused Linux evidence; remote routing remains unsupported. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Descriptors are lazy and retain their original root Frame. Actions/assertions resolve iframe components strictly; count/list reads use the pinned first iframe match. Page/Frame selector calls retain per-call strictness. Missing iframe behavior is method-specific. Each eligible retry re-resolves the whole path; captured callbacks and uncertain input are never replayed.",
       "differences": [
         "Frame-path assertions use an immediate snapshot followed by bounded child observation leases and full ancestor revalidation; their performance evidence remains in the separate frame-assertion checkpoint."
@@ -2889,19 +2907,19 @@
         },
         {
           "path": "crates/flashwright-engine/src/recording/phases.rs",
-          "sha256": "e9bd63d3cadecaacc14f262126e014a35336f869eae57ef5b585c24b0a2eaaf8"
+          "sha256": "5646fdb4496eabcd666aae058343d6bc218c9097366b2619af52d888e139732b"
         },
         {
           "path": "crates/flashwright-engine/src/recording.rs",
-          "sha256": "8d49df114ae5be3264b55b3f6c13e3bf6553043aec36de526e2ce3865d061c67"
+          "sha256": "d4f3f9c266ac7e201cb3d2fe954af215ad5c0a0cd0c02c7ec2d408a1a262cafc"
         },
         {
           "path": "crates/flashwright-engine/src/events.rs",
-          "sha256": "58bbcc6690d0bbc3ac1e85943479af9a82549b82457f399e62d9b87aa2892bfc"
+          "sha256": "173626a00286589b108f5d725d1c68b9a4e885457aff200156a87e730eb8de76"
         },
         {
           "path": "crates/flashwright-engine/src/publication.rs",
-          "sha256": "0f1f03afb8d4b1a0b12e235305f4ab6b1f16ce0d17c265550d1fd4ecda9802df"
+          "sha256": "5cffefe2df1c9053bd55f00fe78674bd00c5c2038aa653552e237e1c70402d91"
         },
         {
           "path": "crates/flashwright-engine/src/renderer_sessions.rs",
@@ -2909,11 +2927,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
-          "sha256": "f58e985cc425ef32418f809483bb108a97b366716dec542ec48326c468e34f60"
+          "sha256": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7"
         },
         {
           "path": "crates/flashwright-engine/src/page_state.rs",
-          "sha256": "544e3906935e19db958214d45bda3751acbddd6c708236650fb01d83db33dbf3"
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
         }
       ],
       "evidence": [
@@ -3048,7 +3066,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "All nine Download methods, Page download on/once/waitForEvent and normal-context/runner acceptDownloads policy. Four pinned plain/traced runs pass 52 shared checks and 4 separately asserted stream-close differences. Packed library/runner consumers exercise runtime exports, declarations, bytes and fixture policy precedence. Native blocking-file and guardian tests cover cancellation, context closure, browser crash and driver death.",
-      "limitations": "Local Chromium on native macOS arm64/Bun 1.4.2; controlled stream host checks also pass Node 22/24. Out-of-process frames, popup fallback, remote browsers, persistent contexts, hard disk quotas, full publication-race combinations, native Linux, fresh performance and release acceptance remain open. Ordinary saved copies are not atomic. Trace metadata is additional coverage; pinned reference traces omit Download calls. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "limitations": "Local Chromium on native macOS arm64/Bun 1.4.2; controlled stream host checks also pass Node 22/24. Out-of-process frames, popup fallback, remote browsers, persistent contexts, hard disk quotas, full publication-race combinations, native Linux, fresh performance and release acceptance remain open. Ordinary saved copies are not atomic. Trace metadata is additional coverage; pinned reference traces omit Download calls. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Normal contexts accept downloads by default. Explicit denial still publishes metadata. A Download retains its original Page and context-owned GUID; Page closure preserves the artifact, context closure removes temporary files, and saved copies survive. Already-admitted waits retain confirmed cancellation outcomes. Top-level runner acceptDownloads overrides contextOptions; nested policy applies when no explicit top-level override exists.",
       "differences": [
         "Context closure or successful deletion destroys active streams with an observable TargetClosedError. The pinned 1.60.0 stream can instead reject asynchronously inside _read and leave consumption pending after context closure. This difference is excluded from equal-outcome and speed claims."
@@ -3088,11 +3106,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/events.rs",
-          "sha256": "58bbcc6690d0bbc3ac1e85943479af9a82549b82457f399e62d9b87aa2892bfc"
+          "sha256": "173626a00286589b108f5d725d1c68b9a4e885457aff200156a87e730eb8de76"
         },
         {
           "path": "crates/flashwright-engine/src/publication.rs",
-          "sha256": "0f1f03afb8d4b1a0b12e235305f4ab6b1f16ce0d17c265550d1fd4ecda9802df"
+          "sha256": "5cffefe2df1c9053bd55f00fe78674bd00c5c2038aa653552e237e1c70402d91"
         },
         {
           "path": "crates/flashwright-engine/src/operation.rs",
@@ -3379,7 +3397,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Viewport reporting and page/context default action/navigation timeout setters are exercised by the library and navigation/selector fixtures.",
-      "limitations": "This review does not promote every launch/context/device option. Platform-specific device and browser-profile combinations retain their own development evidence and release gates.",
+      "limitations": "This review does not promote every launch/context/device option. Platform-specific device and browser-profile combinations retain their own development evidence and release gates. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -3406,7 +3424,7 @@
         },
         {
           "path": "compatibility/m2/navigation.mjs",
-          "sha256": "71ff3fb1ad9d0382a99579d93363d6b7e58e3215bc47a93141e6c8a109173b53",
+          "sha256": "d111bc2bc79c5cc92abaa46a6d98060fca95c825e52d2cad0131a0c1cb2da5ee",
           "kind": "source-review"
         },
         {
@@ -3416,7 +3434,7 @@
         },
         {
           "path": "compatibility/m2/navigation-waits.mjs",
-          "sha256": "cdf43813278af9ec4d4f7feca9f15b169c6ec4e3fc7cc6633d70c6c87947e425",
+          "sha256": "32949bf01e018c00f3a3d8929a5c61a2e2458206f4e463f58a132feaaf127ce7",
           "kind": "source-review"
         },
         {
@@ -3459,7 +3477,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Function/JSON arguments, strings and content/path sources register scripts with disposable ownership in original root and child renderer sessions, including actual cross-process frames.",
-      "limitations": "Registration does not retroactively execute in existing documents. Native Linux x64/full-Chrome conformance covers Bun 1.4.2 and Node 22.22.0/24.15.0, lifecycle races and Bun packed ESM/CommonJS consumers. Popups and workers, macOS/headless-shell refresh, full-current-core, release and performance gates remain outside this slice.",
+      "limitations": "Registration does not retroactively execute in existing documents. Native Linux x64/full-Chrome conformance covers Bun 1.4.2 and Node 22.22.0/24.15.0, lifecycle races and Bun packed ESM/CommonJS consumers. Popups and workers, macOS/headless-shell refresh, full-current-core, release and performance gates remain outside this slice. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -3473,7 +3491,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
-          "sha256": "f58e985cc425ef32418f809483bb108a97b366716dec542ec48326c468e34f60"
+          "sha256": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7"
         },
         {
           "path": "crates/flashwright-engine/src/renderer_sessions.rs",
@@ -3697,7 +3715,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Text/count/value/attribute assertions, visible/hidden/enabled/disabled/editable/attached/empty/focused/checked states, page title and URL assertions have retry, negation, timeout and native-runner fixture evidence. Selected remote locator predicates, negation, delayed conditions, original timeout observations and detachment pass the native Linux full-Chrome Bun/Node 22 differential and fresh Bun packed consumers. Page title/URL coverage is unchanged. The remote-input checkpoint refreshes the shared-source binding only for this group; it is not a new broad assertion or ARIA snapshot conformance claim.",
-      "limitations": "toHaveURL supports strings/regular expressions; its callback form rejects. Unlisted argument/default combinations and inherited generic matcher behavior remain unverified.",
+      "limitations": "toHaveURL supports strings/regular expressions; its callback form rejects. Unlisted argument/default combinations and inherited generic matcher behavior remain unverified. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [],
       "implementation": [
@@ -3715,7 +3733,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/page_state.rs",
-          "sha256": "544e3906935e19db958214d45bda3751acbddd6c708236650fb01d83db33dbf3"
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
         }
       ],
       "evidence": [
@@ -3822,7 +3840,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Page and Locator inline/file ARIA assertions retain role-tree predicates, same-process frame scoping, negation, retries, configured child matching, soft failures and tested baseline policies. Three runtime gates each pass 25 conformance checks. Actual pinned and native runner tests additionally verify remote inline ARIA predicates, negation, delayed retry and original mismatch on native Linux full Chrome with Bun and Node 22. The remote-input checkpoint refreshes the shared-source binding only for this group; it is not a new broad assertion or ARIA snapshot conformance claim.",
-      "limitations": "Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Child-frame failure-context composition and public remote ariaSnapshot composition remain unsupported. Remote inline ARIA matching has the separate Linux checkpoint; it does not newly admit remote file-baseline/update options. Public default ariaSnapshot and merged artifact acceptance have separate evidence. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope.",
+      "limitations": "Bun inline generation/update policies reject explicitly because the pinned runner generates an empty patch from its call-site columns. Node inline proposals and named file baselines are covered. Child-frame failure-context composition and public remote ariaSnapshot composition remain unsupported. Remote inline ARIA matching has the separate Linux checkpoint; it does not newly admit remote file-baseline/update options. Public default ariaSnapshot and merged artifact acceptance have separate evidence. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Pinned template parsing and runner snapshot naming/update configuration; original assertion timeout and a 100000 UTF-16-unit limit per template or generated snapshot string. Ordinary mismatch diagnostics remain bounded.",
       "differences": [
         "Bun inline generation/update policies fail with UnsupportedFeatureError before browser dispatch instead of producing the pinned reference header-only patch.",
@@ -3863,7 +3881,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/page_state.rs",
-          "sha256": "544e3906935e19db958214d45bda3751acbddd6c708236650fb01d83db33dbf3"
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
         }
       ],
       "evidence": [
@@ -4073,7 +4091,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Twelve shared behavior groups pass against Playwright 1.60.0 on pinned Chromium revision 1223 full Chrome and headless shell in main and same-process child worlds. Eight native fault cases pass per distribution. Three-call trace archives and four pinned viewer archives retain successful/timeout outcomes, snapshots and embedded caller source. Fresh typed ESM/CommonJS packed consumers pass five outcomes per format on Bun 1.4.2 and Node 22.22.0/24.15.0 using Bun installs and a private driver override.",
-      "limitations": "Remote renderer Frame polling and cleanup, native Linux, canonical integrated core/release packaging and performance remain unverified. This functional checkpoint does not establish a 2x speedup or default adoption readiness. Application code queued behind a blocked renderer can execute before cancellation reaches that renderer; no stronger suppression guarantee is made. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The later shared client shutdown correction has separate focused evidence; the earlier polling checkpoint is not a new run of the complete polling matrix.",
+      "limitations": "Remote renderer Frame polling and cleanup, native Linux, canonical integrated core/release packaging and performance remain unverified. This functional checkpoint does not establish a 2x speedup or default adoption readiness. Application code queued behind a blocked renderer can execute before cancellation reaches that renderer; no stronger suppression guarantee is made. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The later shared client shutdown correction has separate focused evidence; the earlier polling checkpoint is not a new run of the complete polling matrix. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Immediate first predicate attempt, then cached animation-frame polling; finite positive numeric polling uses its exact interval. Timeout inherits Page/Context action defaults, and explicit 0 is unbounded. One original host deadline covers document retries. Promise truthiness is tested before one-shot assimilation, including a resolved falsy JSHandle. String expressions returning functions retain them without invoking them.",
       "differences": [
         "Predicate source and normalized source are bounded to 100,000 UTF-16 units; oversized input fails with ResourceLimitError before predicate dispatch.",
@@ -4099,11 +4117,11 @@
         },
         {
           "path": "crates/flashwright-engine/src/publication.rs",
-          "sha256": "0f1f03afb8d4b1a0b12e235305f4ab6b1f16ce0d17c265550d1fd4ecda9802df"
+          "sha256": "5cffefe2df1c9053bd55f00fe78674bd00c5c2038aa653552e237e1c70402d91"
         },
         {
           "path": "crates/flashwright-engine/src/recording/phases.rs",
-          "sha256": "e9bd63d3cadecaacc14f262126e014a35336f869eae57ef5b585c24b0a2eaaf8"
+          "sha256": "5646fdb4496eabcd666aae058343d6bc218c9097366b2619af52d888e139732b"
         },
         {
           "path": "packages/resident-runtime/function-wait.cjs",
@@ -4139,7 +4157,7 @@
         },
         {
           "path": "compatibility/upstream/function-wait-provenance.json",
-          "sha256": "bdddfcf726042794804cfda175fd046e44f4f5e7453cebda1b0693d01d59c785",
+          "sha256": "d39503d003def503557f76850f72b4a13dd29af75bebf034e2944067ff6e4808",
           "kind": "source-review"
         },
         {
@@ -4238,7 +4256,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "One complete native Input.insertText command, including empty text, preserves browser focus/selection, beforeinput cancellation and application focus changes. Shared real-browser outcomes match pinned Playwright 1.60 on macOS arm64 Chromium1223 full Chrome and shell. Original Input+After trace phases, viewer source/snapshot replay, native timeout/no-replay controls and fresh packed typed ESM/CommonJS consumers are verified. The remote-input checkpoint adds 18 shared behavior groups per engine on native Linux x64/full Chrome with Bun 1.4.2 and Node 22/24, trusted pointer/keyboard input, nested geometry, renderer return, navigation, tracing without remote snapshots and original-session failure ownership. Fresh Bun packed ESM/CommonJS consumers exercise remote click, fill and sequential typing.",
-      "limitations": "Text is bounded to 100000 UTF-16 units, with unpaired surrogates rejected before trace/native admission; negotiated wire limits may be tighter. Same-process child focus is included. Persistent modifiers/down/up, unlisted remote renderer input, Windows, canonical integrated release and performance remain unverified. Node22.22/24.15 packed consumers cover full Chrome; Bun1.4.2 covers both browser distributions. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote snapshot export and routing retain explicit gaps. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
+      "limitations": "Text is bounded to 100000 UTF-16 units, with unpaired surrogates rejected before trace/native admission; negotiated wire limits may be tighter. Same-process child focus is included. Persistent modifiers/down/up, unlisted remote renderer input, Windows, canonical integrated release and performance remain unverified. Node22.22/24.15 packed consumers cover full Chrome; Bun1.4.2 covers both browser distributions. The page-disposal correction has separate focused ownership and cancellation evidence; a fresh complete core gate remains pending. Earlier conformance and package checkpoints retain their original tested scope. The selected remote input subset and existing 137/212-check regressions now have focused Linux evidence; this does not establish full-current-core, macOS refresh, release or performance acceptance. Remote DOM snapshot export has separate focused Linux evidence; remote routing remains unsupported. Remote init scripts have a separate focused conformance checkpoint. A still-live unsettled mutation can require page disposal after bounded cleanup; confirmed original child destruction preserves its healthy parent.",
       "defaults": "String-only Promise<void>, no per-call options, current focus and selection, no implicit focus/navigation barrier/key events. Public keyboard timeout is unbounded under the existing parent cancellation contract.",
       "differences": [
         "Unpaired UTF-16 surrogate text explicitly rejects; the declared 100000 UTF-16 unit resource bound applies."
@@ -4360,7 +4378,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Original-world document replacement, exact UTF-16 content, navigation timeouts and lifecycle waits, child retirement, resident assertions, private console boundary and original-call trace snapshots; Bun and Node 22/24 differential plus packed Bun ESM/CommonJS consumers.",
-      "limitations": "Page only; Frame.setContent remains unimplemented. Maximum 1000000 UTF-16 code units and 128 pending replacement markers per page. Existing cross-process networkidle and artifact bounds apply. Current full-core, native Linux, release and E2E performance gates remain open.",
+      "limitations": "Page only; Frame.setContent remains unimplemented. Maximum 1000000 UTF-16 code units and 128 pending replacement markers per page. Existing cross-process networkidle and artifact bounds apply. Current full-core, native Linux, release and E2E performance gates remain open. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "waitUntil=load; navigation timeout hierarchy; timeout=0 removes the public timeout. Original URL, origin and surviving main-frame handles are preserved.",
       "differences": [
         "A cancelled queued write whose browser completion cannot be proven retires its original page to prevent a late mutation. A timeout waiting for resources after a completed write leaves the page usable."
@@ -4368,7 +4386,7 @@
       "implementation": [
         {
           "path": "crates/flashwright-engine/src/content.rs",
-          "sha256": "c1a280d424e9f4732665a03e0fcbc036536db487caf11a6e303dda730ad23ce1"
+          "sha256": "b35baa9c60006b861bf832a37e9d0acd6d114a4c6994a35db76db23b5f5ace0a"
         },
         {
           "path": "packages/flashwright-core/src/index.ts",
@@ -4380,7 +4398,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/recording/phases.rs",
-          "sha256": "e9bd63d3cadecaacc14f262126e014a35336f869eae57ef5b585c24b0a2eaaf8"
+          "sha256": "5646fdb4496eabcd666aae058343d6bc218c9097366b2619af52d888e139732b"
         }
       ],
       "evidence": [
@@ -4396,7 +4414,7 @@
         },
         {
           "path": "compatibility/upstream/page-content-provenance.json",
-          "sha256": "46120c8a7a7b6086747fdf8cad207f15005e681400c381b8ff6b5ace4c28ec6d",
+          "sha256": "51760ff6c1a8d45061f7da40a170786f49fd1e5c229ae536f5135e724552e928",
           "kind": "source-review"
         }
       ],
@@ -4429,7 +4447,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "String/glob/RegExp and sync/async Request predicates, baseURL, original request identity and redirects, pre-response observation, deadlines, callback errors and page/context closure; native Linux x64/Bun 1.4.2 differential and packed ESM/CommonJS runtime/types.",
-      "limitations": "Existing network event delivery limits apply. No new worker or remote-frame coverage. Focused slice only; Node 22/24, macOS, current full-core, release and performance gates remain open.",
+      "limitations": "Existing network event delivery limits apply. No new worker or remote-frame coverage. Focused slice only; Node 22/24, macOS, current full-core, release and performance gates remain open. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Existing page/context general timeout hierarchy; explicit timeout wins and timeout=0 is unbounded. Listeners arm at invocation and the returned object is the original Request.",
       "differences": [
         "S4.p: a wait started after page closure rejects immediately with TargetClosedError; pinned Playwright 1.60.0 waits for its finite timeout. This is not an equivalent-work speed claim."
@@ -4457,7 +4475,7 @@
         },
         {
           "path": "compatibility/upstream/navigation-waits-provenance.json",
-          "sha256": "51dd38c434549ab0b54ecc9e5d1f26d70d457b8b5902f0db91cded5ac8456729",
+          "sha256": "445e8e484678ebf32749e2a2ce28b1e403d83d47e68f133ce38dd90e6e31b397",
           "kind": "source-review"
         }
       ],
@@ -4490,7 +4508,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "Immutable colorScheme, reducedMotion, forcedColors and contrast in ordinary newContext/newPage, plus runner contextOptions and individual colorScheme. Shared initial-script, application-script, navigation, CSS, child-frame, isolation, null/undefined and malformed-value cases pass on Linux. Full Chrome exercises actual out-of-process children; packed ESM/CommonJS consumers verify declarations and runtime values.",
-      "limitations": "Native Linux x64 development coverage. Headless shell children remained in-process. Node 22 has focused library differential coverage; the complete headless-shell core and packed gates use Bun 1.4.2. Current full-Chrome media and runner cases passed. The latest complete full-Chrome attempt failed at separate-browser reference touch inheritance, so that complete gate remains open. Native macOS, page-level emulateMedia, persistent contexts, release and comparative performance acceptance remain separate.",
+      "limitations": "Native Linux x64 development coverage. Headless shell children remained in-process. Node 22 has focused library differential coverage; the complete headless-shell core and packed gates use Bun 1.4.2. Current full-Chrome media and runner cases passed. The latest complete full-Chrome attempt failed at separate-browser reference touch inheritance, so that complete gate remains open. Native macOS, page-level emulateMedia, persistent contexts, release and comparative performance acceptance remain separate. Shared source bindings now include the renderer network/snapshot ownership changes; this refresh does not establish new coverage for the rest of this group.",
       "defaults": "Omitted preferences select light, no-preference, none and no-preference respectively. Null removes a feature override and inherits the browser environment. Chromium colorScheme no-preference can also follow the environment. Explicit undefined on manual runner contexts suppresses inherited values. Individual runner colorScheme overrides contextOptions; the other three preferences use contextOptions.",
       "differences": [],
       "implementation": [
@@ -4520,7 +4538,7 @@
         },
         {
           "path": "crates/flashwright-engine/src/renderer_setup.rs",
-          "sha256": "f58e985cc425ef32418f809483bb108a97b366716dec542ec48326c468e34f60"
+          "sha256": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7"
         }
       ],
       "evidence": [
