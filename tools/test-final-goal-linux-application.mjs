@@ -10,12 +10,13 @@ import { test } from 'node:test';
 import { applicationCorpusDirectory, loadApplicationCorpus, applicationGeneratedSources, applicationTestIdentities } from '../benchmarks/application-corpus.mjs';
 import { applicationConfiguration } from '../benchmarks/application-suite-contract.mjs';
 import { reconstructFinalGoalLinuxApplication, decodeLinuxApplicationJson, linuxApplicationEvidenceLimits } from './final-goal-linux-application.mjs';
+import { syntheticDispatch } from './fixtures/linux-application-dispatch.mjs';
 const fixture = JSON.parse(await readFile(new URL('../compatibility/evidence/fixtures/linux-cgroup-originals-synthetic.json', import.meta.url)));
 const corpus = await loadApplicationCorpus(applicationCorpusDirectory('todomvc'));
 const hash = value => createHash('sha256').update(value).digest('hex');
 const encode = value => Buffer.from(JSON.stringify(value));
 
-function bundle({ failed = false, change = () => {} } = {}) {
+function bundle({ failed = false, dispatch = false, change = () => {}, changeDispatch = () => {} } = {}) {
   const originals = Object.fromEntries(Object.entries(fixture.originals).map(([name, raw]) => [name, JSON.parse(raw)]));
   const directory = '/synthetic/missing/application', project = directory + '/project';
   const browser = { executablePath:'/synthetic/chrome',sha256:'a'.repeat(64) };
@@ -55,7 +56,15 @@ function bundle({ failed = false, change = () => {} } = {}) {
   originals.native.originalWait.exitCode=failed?1:0;originals.native.originalWait.status=failed?256:0;
   originals.capture.native.originalWrapperWait=structuredClone(originals.native.originalWait);
   originals.capture.workloadClock={schemaVersion:1,type:'monotonic',implementation:'clock_gettime(CLOCK_MONOTONIC)',identity:originals.capture.captureIdentity,originNanoseconds:'200',resolutionSeconds:1e-9};
-  const outputs=[['owner-report.json',encode(owner)],['project/report.json',encode(reporter)],['runner-stdout.txt',Buffer.from('retained output')],['runner-stderr.txt',Buffer.alloc(0)],['dispatch-report.json',Buffer.from('{}')]]
+  let dispatchReport = {};
+  if (dispatch) {
+    for (const [index, event] of owner.events.entries()) event.nanoseconds = String(index < 3 ? 230 + index * 10 : 600 + (index - 3) * 10);
+    dispatchReport = syntheticDispatch({ prepared, preparedSha256: preparedReceipt.sha256, owner, reporter, before: originals.before,
+      resources: { captureIdentity: originals.capture.captureIdentity } });
+    originals.after.inputs = structuredClone(originals.before.inputs);
+    changeDispatch(dispatchReport);
+  }
+  const outputs=[['owner-report.json',encode(owner)],['project/report.json',encode(reporter)],['runner-stdout.txt',Buffer.from('retained output')],['runner-stderr.txt',Buffer.alloc(0)],['dispatch-report.json',encode(dispatchReport)]]
     .map(([name,bytes],index)=>retain('outputs/'+index,directory+'/'+name,bytes));
   originals.capture.requestedOutputs=outputs.map(r=>r.originalPath);
   originals.capture.capturedOutputs=outputs.map(({originalPath,bytes,sha256})=>({path:originalPath,resolvedPath:originalPath,bytes,sha256}));
@@ -67,7 +76,8 @@ function bundle({ failed = false, change = () => {} } = {}) {
   }
   const raw=encode(originals.capture);resourceManifest.files.capture={path:'originals/capture.json',bytes:raw.length,sha256:hash(raw)};files.set('originals/capture.json',raw);
   const outputManifest={schemaVersion:1,accountingClass:fixture.header.accountingClass,captureSha256:hash(raw),outputs};
-  const manifest={schemaVersion:1,accountingClass:fixture.header.accountingClass,captureSha256:hash(raw),prepared:preparedReceipt,generated:generatedReceipts};
+  const manifest={schemaVersion:1,accountingClass:fixture.header.accountingClass,captureSha256:hash(raw),prepared:preparedReceipt,generated:generatedReceipts,
+    ...(dispatch ? { dispatch: { observerOriginalPath: '/synthetic/observer.cjs' } } : {})};
   const reads=[];
   const args={resourceManifest,outputManifest,manifest,corpus,application:'todomvc',engine:'flashwright',workers:1,readBytes:async (receipt,limits)=>{
     assert(!receipt.path.startsWith('/'),'Historical paths must remain inert');reads.push(receipt.path);
@@ -86,6 +96,23 @@ test('a fully reported failed workload retains its failed outcome and original d
  const result=await reconstructFinalGoalLinuxApplication(bundle({failed:true}).args);
  assert.equal(result.passed,false);assert.equal(result.tests[0].attempts[0].errors[0].message,'original failure');
  assert.equal(result.performanceAccepted,false);
+});
+test('optional retained dispatch joins all application attempts without claiming native ownership', async () => {
+ const result = await reconstructFinalGoalLinuxApplication(bundle({ dispatch: true }).args);
+ assert.equal(result.dispatch.tests, 24); assert.equal(result.dispatch.dispatchJournalVerified, true);
+ assert.equal(result.dispatch.freshFixtureJsContexts, 24); assert.equal(result.dispatch.nativeContextOwnershipVerified, false);
+ assert.equal(result.callbackDispatchVerified, false); assert.equal(result.performanceAccepted, false);
+});
+test('failed application outcomes cannot opt into passing-only dispatch verification', async () => {
+ await assert.rejects(() => reconstructFinalGoalLinuxApplication(bundle({ dispatch: true, failed: true }).args), /passing corpora only/);
+});
+test('captured but incomplete dispatch journal cannot pass application integration', async () => {
+ const b = bundle({ dispatch: true, changeDispatch: raw => { raw.journals[0].text = raw.journals[0].text.split('\n').slice(0, -2).join('\n') + '\n'; } });
+ await assert.rejects(() => reconstructFinalGoalLinuxApplication(b.args));
+});
+test('oversized dispatch declaration rejects before any retained reads', async () => {
+ const b = bundle({ dispatch: true }); b.args.outputManifest.outputs[4].bytes = 4 * 1024 ** 2 + 1;
+ await assert.rejects(() => reconstructFinalGoalLinuxApplication(b.args), /Dispatch report byte limit/); assert.deepEqual(b.reads, []);
 });
 for(const [name,change] of [
  ['wrong engine',d=>d.prepared.engine='playwright'],['wrong workers',d=>d.prepared.workers=4],
@@ -133,7 +160,7 @@ test('strict application JSON preserves strings, arrays and separate object name
 
 
 test('draft campaign integrates captured application outcomes without opening final admission', async () => {
-  const b = bundle();
+  const b = bundle({ dispatch: true });
   const configuration = JSON.parse(await readFile(new URL('../benchmarks/configurations/final-goal-linux.json', import.meta.url)));
   const temporaryRoot = fileURLToPath(new URL('../workbench/final-goal-linux-application-tests/', import.meta.url));
   await mkdir(temporaryRoot, { recursive: true });
@@ -168,6 +195,7 @@ test('draft campaign integrates captured application outcomes without opening fi
     assert.equal(result.linuxApplicationOutcomes.length, 1);
     assert.equal(result.linuxApplicationOutcomes[0].tests.length, 24);
     assert.equal(result.linuxApplicationOutcomes[0].callbackDispatchVerified, false);
+    assert.equal(result.linuxApplicationOutcomes[0].dispatch.dispatchJournalVerified, true);
     await writeFile(join(directory, b.args.manifest.generated[0].path), Buffer.from('substituted input'));
     await assert.rejects(() => verifyFinalGoalEvidence(directory));
   } finally { await rm(directory, { recursive: true, force: true }); }
