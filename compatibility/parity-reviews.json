@@ -3630,7 +3630,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "PNG/JPEG bytes and atomic path output, image geometry, fonts/animations/styles and cancellation cleanup are covered by shared screenshot fixtures. The remote-preparation checkpoint adds native Linux full-Chrome Bun and Node 22 parity for cross-process and nested caret/style/animation restoration, child replacement/removal, and original native reply ownership. Runner screenshot, binary transfer and manual trace/viewer regressions also pass.",
-      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work. Intermittent first-capture failure on Linux full Chrome remains unresolved; the native startup diagnostic establishes a failure mechanism in both engines, not a production fix. The remote-preparation change still needs a fresh combined core and other-platform refresh; it makes no performance claim.",
+      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work. Intermittent first-capture failure on Linux full Chrome remains unresolved; the native startup diagnostic establishes a failure mechanism in both engines, not a production fix. The remote-preparation change passes the subsequent 220-check integrated native Linux full-Chrome development gate. Other-platform refresh, release and performance acceptance remain open.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [
         "A screenshot that expires while queued never prepares or captures the page later; pinned 1.60.0 can apply temporary style after expiration and leave it behind (S4.k)."
@@ -3688,6 +3688,11 @@
           "path": "tools/run-screenshot-lifetime-tests.mjs",
           "sha256": "c3c45bbd6eb067a6c6091740207614927043871a1c6808e4d8eea43b716aeb81",
           "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/integrated-remote-screenshot-linux-checkpoint-2026-10-17.json",
+          "sha256": "1fa4c07098bd2aa29af919518e3788493cd54bcac8826290dfa00a002ac5ab8a",
+          "kind": "conformance"
         }
       ],
       "entries": [
