@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -109,6 +109,22 @@ build executable: link first.o second$ variant.o
   assert.notDeepEqual(readFileSync(objects[0]), readFileSync(objects[1]));
   assert.equal(existsSync(resolve(output, 'executable')), false);
   const modified = objects.map(path => statSync(path, { bigint: true }).mtimeNs);
+  const buildLog = resolve(output, '.ninja_log');
+  const logBefore = readFileSync(buildLog);
+  const logTimeBefore = statSync(buildLog, { bigint: true }).mtimeNs;
+  for (const [label, version, status] of [['wrong-version', '1.13.2', 0], ['failed-version', '1.12.1', 1]]) {
+    const override = resolve(compileFixture, `${label}-ninja`);
+    const calls = resolve(compileFixture, `${label}-calls`);
+    write(override, `#!/bin/sh\nprintf '%s\\n' "$*" >> ${shellQuote(calls)}\nif [ "$#" = 1 ] && [ "$1" = --version ]; then\n  printf '%s\\n' '${version}'\n  exit ${status}\nfi\nrm -f ${shellQuote(buildLog)}\nexit 1\n`);
+    chmodSync(override, 0o755);
+    const rejected = invoke(`compile-${label}`, 'compile-chromium-sources.mjs',
+      [`--single-pass-ninja=${override}`, compileFixture, 'out/development', 'shared input.cc'], false);
+    assert.match(rejected, /refusing to open build metadata/);
+    assert.equal(readFileSync(calls, 'utf8'), '--version\n');
+    assert.deepEqual(readFileSync(buildLog), logBefore);
+    assert.equal(statSync(buildLog, { bigint: true }).mtimeNs, logTimeBefore);
+    assert.deepEqual(objects.map(path => statSync(path, { bigint: true }).mtimeNs), modified);
+  }
   compile('compile-unchanged', ['shared input.cc', 'shared input.cc']);
   assert.deepEqual(objects.map(path => statSync(path, { bigint: true }).mtimeNs), modified);
   write(resolve(compileFixture, 'value.h'), '#define HEADER_VALUE 2\n');
@@ -240,6 +256,7 @@ write(resolve(run, 'result.json'), JSON.stringify({
   status: 'passed', platform: process.platform, helperHashes,
   singlePassNinjaSha256: singlePassNinja && createHash('sha256').update(readFileSync(singlePassNinja)).digest('hex'),
   checks: ['regeneration-before-query', 'multiple-source-variants', 'paths-with-spaces', 'no-link',
+    'incompatible-override-rejected-before-metadata-access', 'failed-version-query-rejected-before-metadata-access',
     'unchanged-object-reuse', 'independent-errors', 'unselected-and-outside-source-rejection',
     'discovered-header-dependencies', 'variant-added-after-warm-build', 'removed-variant-not-selected',
     'regeneration-failure-before-compilation', 'regeneration-recovery',
