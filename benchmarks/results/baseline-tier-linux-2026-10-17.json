@@ -1,0 +1,1102 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "native-linux-whole-application-compiler-tier-engineering-screen",
+  "status": "passed-functional-screen-analyzed",
+  "sourceCommit": "342fd3b5aeb2df91458709565ee5796d9ced6a27",
+  "performanceAdmission": false,
+  "goalAchieved": false,
+  "decision": "Reject baseline-only compiler policy as a broad whole-suite optimization; preserve ordinary optimizing tiers",
+  "hypothesis": "Short-lived contexts may spend enough work in optimizing compilation that retaining Sparkplug baseline code improves complete suites without omitting browser capabilities.",
+  "referenceVersion": "1.60.0",
+  "platform": {
+    "os": "linux",
+    "architecture": "x86_64",
+    "runtime": "Bun 1.4.2"
+  },
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "driverSha256": "42fab5c26ce5d25c70f989db305c9c18c61785c262cf84f8223dc500805c9a1a",
+  "profiles": {
+    "normal": [],
+    "baseline": [
+      "--js-flags=--max-opt=1"
+    ]
+  },
+  "policy": {
+    "testBodies": "unchanged original 24 TodoMVC and 6 SVGOMG tests",
+    "trace": "off",
+    "video": "off",
+    "screenshot": "off",
+    "viewport": [
+      1280,
+      720
+    ],
+    "retries": 0,
+    "browser": "identical full Chrome 148 in all arms; compiler tier is sole profile change",
+    "clock": "original complete owner includes fresh application server, runner and cleanup",
+    "preparation": "source verification and wrapper materialization outside owner clock, both profiles; no prepared application state"
+  },
+  "predeclaredAdvancement": {
+    "requiresAllOutcomesAndCleanTeardown": true,
+    "screenOnly": true,
+    "requireWholeSuiteReductionBothBlocks": 0.2,
+    "requireAtLeastApplicationWorkerCells": 3,
+    "goalStillRequires": "At least 2x in majority of predeclared representative final matrix, with all declared controls and resources",
+    "doNotPoolProfiles": "Same-profile comparisons separate from cross-profile custom policy comparisons"
+  },
+  "controls": {
+    "status": "passed",
+    "webSemantics": {
+      "stableValues": 1,
+      "answer": 704982704,
+      "wasm": true,
+      "bigint": "18446744073709551615",
+      "typed": 1,
+      "regexp": "42",
+      "asyncResult": 42,
+      "randomNonzero": true,
+      "layoutWidth": 71
+    },
+    "optimizationStatusDiagnostic": [
+      {
+        "profile": "normal",
+        "args": [
+          "--js-flags=--allow-natives-syntax"
+        ],
+        "state": {
+          "answer": 704982704,
+          "globalStatus": 0,
+          "functionStatus": 41
+        }
+      },
+      {
+        "profile": "baseline",
+        "args": [
+          "--js-flags=--allow-natives-syntax --max-opt=1"
+        ],
+        "state": {
+          "answer": 704982704,
+          "globalStatus": 2,
+          "functionStatus": 16387
+        }
+      }
+    ],
+    "diagnosticScope": "Diagnostic-only allow-natives-syntax controls; neither this flag nor intrinsics are present in application measurements",
+    "rawCompilerControl": {
+      "sha256": "c7c6f44f556898c1215f8b076f0e0ac4d10fb76101b87a9b5bd01da6b44b86f6",
+      "bytes": 632
+    },
+    "rawNormalWebControl": {
+      "sha256": "d52d551965d91fbe0a4e7ec5f55d4785996a51604b5296b287e727358d37fc19",
+      "bytes": 278
+    },
+    "rawBaselineWebControl": {
+      "sha256": "fc28ccafd7d5ace1f7b83409240bfe886181e684ebe98d5f269080e444f0bb5f",
+      "bytes": 280
+    },
+    "traceOptLimitation": "An earlier trace-opt logging probe produced no renderer compiler stdout; no inference was drawn from absent logs. The separate diagnostic-only native status probe verifies the actual optimizing-tier difference."
+  },
+  "testsPassed": 480,
+  "completeLaunches": 32,
+  "advancesDeclaredWallScreen": false,
+  "records": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 4283.521391000249,
+      "runnerMilliseconds": 3850.353,
+      "sampledCpuSeconds": 5.16,
+      "maximumSampledConcurrentRssBytes": 1408966656,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 4381.8790830009675,
+      "runnerMilliseconds": 3878.815,
+      "sampledCpuSeconds": 4.77,
+      "maximumSampledConcurrentRssBytes": 1431224320,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 4271.7079399990325,
+      "runnerMilliseconds": 3826.326,
+      "sampledCpuSeconds": 4.79,
+      "maximumSampledConcurrentRssBytes": 1390223360,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 4401.255680000759,
+      "runnerMilliseconds": 3961.148,
+      "sampledCpuSeconds": 5.26,
+      "maximumSampledConcurrentRssBytes": 1390538752,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2950.1521109996247,
+      "runnerMilliseconds": 2571.723,
+      "sampledCpuSeconds": 8.51,
+      "maximumSampledConcurrentRssBytes": 4862840832,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2977.040374000353,
+      "runnerMilliseconds": 2546.029,
+      "sampledCpuSeconds": 8.37,
+      "maximumSampledConcurrentRssBytes": 4954095616,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2865.9221710004203,
+      "runnerMilliseconds": 2505.5609999999997,
+      "sampledCpuSeconds": 8.27,
+      "maximumSampledConcurrentRssBytes": 4935307264,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2979.3104939999466,
+      "runnerMilliseconds": 2563.79,
+      "sampledCpuSeconds": 8.58,
+      "maximumSampledConcurrentRssBytes": 4846538752,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2132.3707410010684,
+      "runnerMilliseconds": 1751.798,
+      "sampledCpuSeconds": 2.5,
+      "maximumSampledConcurrentRssBytes": 1534316544,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2241.349330997764,
+      "runnerMilliseconds": 1772.417,
+      "sampledCpuSeconds": 2.52,
+      "maximumSampledConcurrentRssBytes": 1576370176,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2131.652883002971,
+      "runnerMilliseconds": 1748.555,
+      "sampledCpuSeconds": 2.39,
+      "maximumSampledConcurrentRssBytes": 1550938112,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2142.7576819987735,
+      "runnerMilliseconds": 1765.046,
+      "sampledCpuSeconds": 2.49,
+      "maximumSampledConcurrentRssBytes": 1538600960,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2295.9123979999276,
+      "runnerMilliseconds": 1982.1419999999998,
+      "sampledCpuSeconds": 5.39,
+      "maximumSampledConcurrentRssBytes": 4796936192,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2484.4640449991857,
+      "runnerMilliseconds": 2029.201,
+      "sampledCpuSeconds": 5.52,
+      "maximumSampledConcurrentRssBytes": 4915871744,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2378.9203300002555,
+      "runnerMilliseconds": 2018.615,
+      "sampledCpuSeconds": 5.34,
+      "maximumSampledConcurrentRssBytes": 4904402944,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 2408.8763799991284,
+      "runnerMilliseconds": 1946.301,
+      "sampledCpuSeconds": 5.33,
+      "maximumSampledConcurrentRssBytes": 4799864832,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2301.97081499864,
+      "runnerMilliseconds": 1934.1799999999998,
+      "sampledCpuSeconds": 5.38,
+      "maximumSampledConcurrentRssBytes": 4774699008,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2414.4366979999177,
+      "runnerMilliseconds": 1951.1259999999997,
+      "sampledCpuSeconds": 5.48,
+      "maximumSampledConcurrentRssBytes": 4928438272,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2388.9231139983167,
+      "runnerMilliseconds": 2016.0480000000002,
+      "sampledCpuSeconds": 5.28,
+      "maximumSampledConcurrentRssBytes": 4905181184,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2416.972408998845,
+      "runnerMilliseconds": 2039.388,
+      "sampledCpuSeconds": 5.53,
+      "maximumSampledConcurrentRssBytes": 4789035008,
+      "browserLaunches": 4
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2131.969254998694,
+      "runnerMilliseconds": 1725.8509999999999,
+      "sampledCpuSeconds": 2.29,
+      "maximumSampledConcurrentRssBytes": 1529499648,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2250.583328997891,
+      "runnerMilliseconds": 1753.135,
+      "sampledCpuSeconds": 2.47,
+      "maximumSampledConcurrentRssBytes": 1559916544,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2243.016099997476,
+      "runnerMilliseconds": 1801.078,
+      "sampledCpuSeconds": 2.37,
+      "maximumSampledConcurrentRssBytes": 1562460160,
+      "browserLaunches": 1
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 2134.744994000357,
+      "runnerMilliseconds": 1746.2240000000002,
+      "sampledCpuSeconds": 2.55,
+      "maximumSampledConcurrentRssBytes": 1557352448,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 2981.43285200058,
+      "runnerMilliseconds": 2575.4829999999997,
+      "sampledCpuSeconds": 8.56,
+      "maximumSampledConcurrentRssBytes": 4853661696,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 3118.5849430003145,
+      "runnerMilliseconds": 2562.773,
+      "sampledCpuSeconds": 8.43,
+      "maximumSampledConcurrentRssBytes": 4962684928,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 2877.3167389990704,
+      "runnerMilliseconds": 2520.2149999999997,
+      "sampledCpuSeconds": 8.1,
+      "maximumSampledConcurrentRssBytes": 4935966720,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 2985.2568009991955,
+      "runnerMilliseconds": 2528.848,
+      "sampledCpuSeconds": 8.67,
+      "maximumSampledConcurrentRssBytes": 4878143488,
+      "browserLaunches": 4
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 4405.835003002721,
+      "runnerMilliseconds": 4051.226,
+      "sampledCpuSeconds": 5.44,
+      "maximumSampledConcurrentRssBytes": 1397215232,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "baseline",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 4385.092076998262,
+      "runnerMilliseconds": 3872.912,
+      "sampledCpuSeconds": 5.04,
+      "maximumSampledConcurrentRssBytes": 1413017600,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "flashwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 4290.007793002587,
+      "runnerMilliseconds": 3929.239,
+      "sampledCpuSeconds": 4.99,
+      "maximumSampledConcurrentRssBytes": 1403817984,
+      "browserLaunches": 1
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "normal",
+      "engine": "playwright",
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 4388.805320999381,
+      "runnerMilliseconds": 3930.5589999999997,
+      "sampledCpuSeconds": 5.3,
+      "maximumSampledConcurrentRssBytes": 1407819776,
+      "browserLaunches": 1
+    }
+  ],
+  "comparisons": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "pairs": [
+        {
+          "block": 0,
+          "candidateBaselineOverNormal": 0.9748575574736117,
+          "sameNormalPolicyPlaywrightOverFlashwright": 0.9775535357919194,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 1.0303269188393427,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0027655099943982,
+          "referenceBaselineOverNormal": 1.0274853977028973,
+          "candidateSampledCpuRatio": 1.0041928721174005,
+          "candidateSampledRssRatio": 0.9713525270448171
+        },
+        {
+          "block": 1,
+          "candidateBaselineOverNormal": 1.022164128501297,
+          "sameNormalPolicyPlaywrightOverFlashwright": 1.0230296849711886,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 1.0047303284948712,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0008467881485539,
+          "referenceBaselineOverNormal": 1.003880254592715,
+          "candidateSampledCpuRatio": 1.0100200400801602,
+          "candidateSampledRssRatio": 1.0065532826227135
+        }
+      ],
+      "advancesDeclaredWallScreen": false
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "pairs": [
+        {
+          "block": 0,
+          "candidateBaselineOverNormal": 0.9626749425468425,
+          "sameNormalPolicyPlaywrightOverFlashwright": 0.9909681228257587,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 1.0395643413302968,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0293901700651564,
+          "referenceBaselineOverNormal": 1.0098836879941224,
+          "candidateSampledCpuRatio": 0.9880525686977301,
+          "candidateSampledRssRatio": 0.9962075112278173
+        },
+        {
+          "block": 1,
+          "candidateBaselineOverNormal": 1.0838518056531983,
+          "sameNormalPolicyPlaywrightOverFlashwright": 1.0375141396625225,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 0.9560210500895372,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 0.9572472308954179,
+          "referenceBaselineOverNormal": 0.9987190552593882,
+          "candidateSampledCpuRatio": 1.0407407407407407,
+          "candidateSampledRssRatio": 1.0054129635622826
+        }
+      ],
+      "advancesDeclaredWallScreen": false
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "pairs": [
+        {
+          "block": 0,
+          "candidateBaselineOverNormal": 0.9510578531968686,
+          "sameNormalPolicyPlaywrightOverFlashwright": 0.9513781325875773,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 1.0052094780929617,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0003367612071465,
+          "referenceBaselineOverNormal": 1.004871076496214,
+          "candidateSampledCpuRatio": 0.9484126984126985,
+          "candidateSampledRssRatio": 0.9838666929968611
+        },
+        {
+          "block": 1,
+          "candidateBaselineOverNormal": 1.0033736846563088,
+          "sameNormalPolicyPlaywrightOverFlashwright": 0.9517296795162368,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 0.9472962975994265,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 0.9485296396249799,
+          "referenceBaselineOverNormal": 0.9986997327505326,
+          "candidateSampledCpuRatio": 1.0421940928270041,
+          "candidateSampledRssRatio": 0.9983720442510355
+        }
+      ],
+      "advancesDeclaredWallScreen": false
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "pairs": [
+        {
+          "block": 0,
+          "candidateBaselineOverNormal": 0.9575185178423603,
+          "sameNormalPolicyPlaywrightOverFlashwright": 0.9241077175663777,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 1.0125922880312976,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 0.9651068886361911,
+          "referenceBaselineOverNormal": 1.049202217862323,
+          "candidateSampledCpuRatio": 0.9673913043478262,
+          "candidateSampledRssRatio": 0.9976669855119801
+        },
+        {
+          "block": 1,
+          "candidateBaselineOverNormal": 1.0106799519214744,
+          "sameNormalPolicyPlaywrightOverFlashwright": 1.0117413971325273,
+          "sameBaselinePolicyPlaywrightOverFlashwright": 0.953419411204923,
+          "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0010502288177725,
+          "referenceBaselineOverNormal": 0.9524191531636719,
+          "candidateSampledCpuRatio": 1.0378787878787878,
+          "candidateSampledRssRatio": 1.0047413310798512
+        }
+      ],
+      "advancesDeclaredWallScreen": false
+    }
+  ],
+  "inputManifest": {
+    "entries": 2792,
+    "sha256": "1cff92e65960b302196377a14bcd98327fab64354446391c25760531eac2c7dd",
+    "bytes": 449405,
+    "unchangedBeforeAfter": true,
+    "integrityReceipt": {
+      "sha256": "8b50d77be33db0d836253d18a07d5d6efb9cf3c3e655e6cdd1207fc85b9a0a0b",
+      "bytes": 150
+    }
+  },
+  "rawAnalysis": {
+    "sha256": "385c362f1e547a7179bc16055342d1ba5eded2fd93bac0f2f7d2d4fd7e558cdc",
+    "bytes": 46059
+  },
+  "rawPlan": {
+    "sha256": "20c419a16ecd035892ca3ea670dd5b58d83c61ee1f4c83f16e9ba3d64475658c",
+    "bytes": 9384
+  },
+  "rawController": {
+    "sha256": "de1eb43a33b04d9a7082397967097a18f915ec0203671aa78de52e4124de5e71",
+    "bytes": 5640581
+  },
+  "nativeSourceBindings": {
+    "chrome/browser/headless/headless_mode_util.cc": "e38c5e5958dbeaac8a849cc63a515eebcd28376b8dd64e1046a6ef143f26c2db",
+    "v8/src/flags/flag-definitions.h": "75ecff7a8973091130b21cd12d9e56ae81ea4f4fe3f38e9f853d3c39772b5038",
+    "v8/src/runtime/runtime-test.cc": "5535fc87eaf860fa33946bc252dd733bdb83c3f58e90df6429ffc9ba64f0054a",
+    "v8/src/runtime/runtime.h": "c71843b1e7479d0103edae87cef0656acf232d4df15ca45925a2ed0fb26b25ef"
+  },
+  "rawMeasurementReceiptHashes": {
+    "00-todomvc-1-normal-playwright/resources.json": "63ce022668940040265ca2d2f614315f9c59fc1623e8ce356a668fcd33c80726",
+    "00-todomvc-1-normal-playwright/functional-verification.json": "a705c37e2888425ab321a82903ff35f502babba666f132a7984f6578f1730098",
+    "00-todomvc-1-normal-playwright/owner-report.json": "220457bfc701bff0bc17f19842e4a2e525b8310611d8d7a273bf9414ed17d752",
+    "00-todomvc-1-normal-playwright/browser-observations.json": "d47b4ab3bf1445684e0d0e938bf59a31e6d1941a7f22a4b5087ff08c9b6445a7",
+    "00-todomvc-1-normal-playwright/original-terminal.json": "4366347aaba4e7772ae0e6fbbf5fcdb3553af24f4fb4b0a331c502c727884cce",
+    "00-todomvc-1-normal-playwright/prepared.json": "94ac1e3e1f8cb9111432e9fab15683dbaf6c4b841c56112b443ac9eb65744968",
+    "00-todomvc-1-normal-playwright/project/report.json": "de7056e467eae1c0e11fd8f8e59b59c96afa5ce4f1bfbc39c2a1cdb497df4e00",
+    "01-todomvc-1-normal-flashwright/resources.json": "640f8e5d95054c18674af1f0e37d99c0b2827fc963b3aeb09735e6204b34da41",
+    "01-todomvc-1-normal-flashwright/functional-verification.json": "83cb2dd5fb7ec24c620d84d7b94be47eebd99fb2c869e028dbb82ac424955018",
+    "01-todomvc-1-normal-flashwright/owner-report.json": "b4cbf64e927318fc68805d38479377b02519093dc199a109cd795ad856e9ea8d",
+    "01-todomvc-1-normal-flashwright/browser-observations.json": "8f60886bc1ede230b32556e57a1a6950c0b6da923b8428703d82e08beddeb44c",
+    "01-todomvc-1-normal-flashwright/original-terminal.json": "65cc4e8bae2f55c3b5e6c303ce3d7d53582fc93e78b3fd65a952fa693bb9d76a",
+    "01-todomvc-1-normal-flashwright/prepared.json": "7b871faa824520946188dceb4a76b4a676220db60505ffb4fe601ab788e1f1b9",
+    "01-todomvc-1-normal-flashwright/project/report.json": "3e616d7b8ad5c96b5742e1ce88aeed59be640a336ddb33a952dd3b733a4c1b67",
+    "02-todomvc-1-baseline-flashwright/resources.json": "49e047bae3ed22d8bcf9c3a518d33d65d3b6e2167bc84b9afe0974cd78a77f8c",
+    "02-todomvc-1-baseline-flashwright/functional-verification.json": "2669c75251c362ad9a611c30f293132432d79abc4e2b46c8a122b50892ca34f4",
+    "02-todomvc-1-baseline-flashwright/owner-report.json": "e5f6903badd74becb761d4ffeb814a1f2042eb022a672ec718a231afb00b7836",
+    "02-todomvc-1-baseline-flashwright/browser-observations.json": "277adea16361938e2216f42282f3797420afcafa1c1cd76eb83f79bad26a29ff",
+    "02-todomvc-1-baseline-flashwright/original-terminal.json": "90fce314df9fdbd429b9a6732f75b3cd5bb0310faebbae39e190d7a58f790b98",
+    "02-todomvc-1-baseline-flashwright/prepared.json": "555bb6123c75333be9c018b67b7a2993e7b85683d6686fe1c280f68ae8eaa966",
+    "02-todomvc-1-baseline-flashwright/project/report.json": "e5bc9888231bac6e63e297be7d962502356153f3c02011a9a6b3e69f4c410057",
+    "03-todomvc-1-baseline-playwright/resources.json": "ad072883a1786b25b87b61ffd16dd00c694fe34363c9beb0990d75db46e8f6c9",
+    "03-todomvc-1-baseline-playwright/functional-verification.json": "4f19957b510c24773e9d12fd1cee8d5facb232f638c492fe6a6d05be88020f1a",
+    "03-todomvc-1-baseline-playwright/owner-report.json": "de269891b5c3701a0abf7066b3fc473f7ced53b8c41b7ecf6a9cadfec24e0927",
+    "03-todomvc-1-baseline-playwright/browser-observations.json": "454dad842f92596585076326e6a91df12eddfbda602ae8e49773d2f9169dbae0",
+    "03-todomvc-1-baseline-playwright/original-terminal.json": "c8590e21000f8cdd8df2b21e27e1ed4b72a36074a70d53339bce147271ca6c72",
+    "03-todomvc-1-baseline-playwright/prepared.json": "6e185340decbdd2ba84713e9b3c54d820653b058d5d454f25bace2d96ec3e7c6",
+    "03-todomvc-1-baseline-playwright/project/report.json": "83c94d72ee0d495e50c02b2526ffdbeebdb7512360b2a761f6e7a172b5ae8e66",
+    "04-todomvc-4-normal-playwright/resources.json": "99b88e7e3096626832654295dc04afa221fac55f1cece7c9ffde1c78a01d1190",
+    "04-todomvc-4-normal-playwright/functional-verification.json": "73d51e600d0425d43ba217ad3d2a02bb34d609466292f15294daa912963694fa",
+    "04-todomvc-4-normal-playwright/owner-report.json": "c4ac67685b0aa72afaf97b507b4d404eae1e00952598f8ef8dfb64edf9c10d98",
+    "04-todomvc-4-normal-playwright/browser-observations.json": "9a4a50fbedfb4e35ff023380f77162dc40fd0b3e6fd951de7d6080ce4a19b4ab",
+    "04-todomvc-4-normal-playwright/original-terminal.json": "2dad76590eed4439c4ac41f54d3616819124a7342d448e58b27c3b7fb7214260",
+    "04-todomvc-4-normal-playwright/prepared.json": "cfec6c701e9987129e8a65f571dbd7b3d247427b36749ccd9974455a99066e0a",
+    "04-todomvc-4-normal-playwright/project/report.json": "a06c742a8a1b42f50648cdd6f6d09d2277a5908b5280c399a44eb54ab623b02e",
+    "05-todomvc-4-normal-flashwright/resources.json": "5ccf592f461e2fc6e05cdf34b355814ca210db3df550bfdfcb7faefeb66a8c31",
+    "05-todomvc-4-normal-flashwright/functional-verification.json": "c4836e48a615eb445730a3a5ee70a31c98021c0b87089c504227af79914a8d37",
+    "05-todomvc-4-normal-flashwright/owner-report.json": "5fe8b52be3f2b730cd55db4d1176c87edc699b822c099df44e9d09ca0e4953c4",
+    "05-todomvc-4-normal-flashwright/browser-observations.json": "bc6e65d4985a9a44027801548e2fc985ee60ed30e807064086c937dfda7f9adb",
+    "05-todomvc-4-normal-flashwright/original-terminal.json": "f0d6aa24ac430217b92807037aac9d8a1c5ea311fe1ed549c67361edf36f08e5",
+    "05-todomvc-4-normal-flashwright/prepared.json": "d276c897e96c5a00197ae7ad7b42984a4edd422595cb3572ee139392bd6a038b",
+    "05-todomvc-4-normal-flashwright/project/report.json": "b37522d18b0a5da0a3d988263a1f14a99d40ed71ec386dea539ed6a6e0b26ba1",
+    "06-todomvc-4-baseline-flashwright/resources.json": "cadfad0ee5cdfdb4422bc272be2d29ef18ffbd8c224afcfe6804978bf0aa3b25",
+    "06-todomvc-4-baseline-flashwright/functional-verification.json": "1e5c04fa23f8f50a4cb34018d15ff5f94595c39221cb9d74a227e41d5483ee9c",
+    "06-todomvc-4-baseline-flashwright/owner-report.json": "fd3ed06c5bdbdc38875d895c7264e18550e06e88bfeebeb252718d52235f657e",
+    "06-todomvc-4-baseline-flashwright/browser-observations.json": "df84c34f2e3f0c42b7de96c0d7addc03d40d976787c6b4a1c827f197caa2ecee",
+    "06-todomvc-4-baseline-flashwright/original-terminal.json": "0fc169b704df8a2f6d2fa4fdd74adee417a95ea495e2cff1669f5c3515cdd5f4",
+    "06-todomvc-4-baseline-flashwright/prepared.json": "efc03814f17f06c02943a5ba9bec712a668ea337f3fbda220706720109cf407c",
+    "06-todomvc-4-baseline-flashwright/project/report.json": "a4b3b24d9617d82da10f92346635ac6a05d7fe050efb4ccae3e2d39976f0dfb3",
+    "07-todomvc-4-baseline-playwright/resources.json": "e042966c1595f6207d2c6c9cde02a99ad58e7a5d83950fd2adbfba3cc465817a",
+    "07-todomvc-4-baseline-playwright/functional-verification.json": "7105371a5295e9fb24871c7a33943295f9d55cb770905094b655b929d361d70c",
+    "07-todomvc-4-baseline-playwright/owner-report.json": "b35826d1e0f73d79ba643097a16c2113faacb4f85f2408996b9208b82de7b992",
+    "07-todomvc-4-baseline-playwright/browser-observations.json": "c4d1d90c2dfe59ed78ec20520005b7b82d20e525029029571eb22898570f9ceb",
+    "07-todomvc-4-baseline-playwright/original-terminal.json": "bd4b2953499f84a569c4c2fc99b28bd78e6d1714e9671cd85fc03ea7b401c510",
+    "07-todomvc-4-baseline-playwright/prepared.json": "84fa14b7a65d137cda890b1a0ab65fb938755cad407908d314607e41bd74b985",
+    "07-todomvc-4-baseline-playwright/project/report.json": "bfe928f3d43673a9b44b9f12fd969474725dd090d4c4c668228d9877deae16e6",
+    "08-svgomg-1-normal-playwright/resources.json": "49c1fb3571e000c2bb2693def142011c6fc7d9b986397f1b4be46f602a3bbb57",
+    "08-svgomg-1-normal-playwright/functional-verification.json": "11a89cd795dba354366c0b58403aa52df048204ec721657be2a8bb98c37d896e",
+    "08-svgomg-1-normal-playwright/owner-report.json": "298fa458e566a964a905460cab1be9b64c5b7a8f3c616df44d1b4253a7b323ec",
+    "08-svgomg-1-normal-playwright/browser-observations.json": "0964a16c86ac982c4b5ec8b065c751a532a82634d05d60d216d65b14cbf1bb6b",
+    "08-svgomg-1-normal-playwright/original-terminal.json": "d13b1f0da6ed65cc91a8b3e9b612c58b8c403a7c29a8a61a9b295f52ffa75fda",
+    "08-svgomg-1-normal-playwright/prepared.json": "3b2d42d247d83ff3cb5f6e9ef4c0b7655961a7d3382796955bb1535d75594f33",
+    "08-svgomg-1-normal-playwright/project/report.json": "30634fe62c0f15dac670ed92c372129eca01e7992cbb1d763de787a4b29886f9",
+    "09-svgomg-1-normal-flashwright/resources.json": "51805f68b2f145230e1a3ca247ec2833f188345413c3b1a56ff9dd2e4276ee68",
+    "09-svgomg-1-normal-flashwright/functional-verification.json": "29d36683d3418de372ee0e1dcdb8f1af72e842079e4e40f369073a225de07933",
+    "09-svgomg-1-normal-flashwright/owner-report.json": "efd604715c0fe70993e377247b6f6420033abb33e582c52aba422e433af53125",
+    "09-svgomg-1-normal-flashwright/browser-observations.json": "e3c47c2fba21b0fe86941542db07e17dcfc5d325babc590237e88eb67ca1bec2",
+    "09-svgomg-1-normal-flashwright/original-terminal.json": "ed380eb21b8731b0d8a21dd02582d8ccb9cc9f74a5ca28436a222f84e1f20405",
+    "09-svgomg-1-normal-flashwright/prepared.json": "ee0647d2777d3c8f530fb8fbbeb9ee0d558c7f60952bdf9f76375e7de61be6ba",
+    "09-svgomg-1-normal-flashwright/project/report.json": "b3dc4add07c6d80adf67e3e13a2cb4c94ca760e45bdea48e1d43243d78137332",
+    "10-svgomg-1-baseline-flashwright/resources.json": "83e149ed2751d20ec6a2e9dcd4692f9cc510a41f0b59dbb750c1dd187c62daa5",
+    "10-svgomg-1-baseline-flashwright/functional-verification.json": "9e969b7f310beb9ab63e4e44ce5abc8786eb30f2bd65cae920bb8739ee5c8132",
+    "10-svgomg-1-baseline-flashwright/owner-report.json": "a4adec4a07acb28b6206b26fa06ac7a8249db62e59620a0d3b7a3b1907543e6d",
+    "10-svgomg-1-baseline-flashwright/browser-observations.json": "8ce361953ebdce7a5856fd50f633d400ab4bd12584729fc41990af87d38d70e7",
+    "10-svgomg-1-baseline-flashwright/original-terminal.json": "122b2183281c4d79341cf0eb629ccf86a21aabaacc748ff4292a9f4e8a011eab",
+    "10-svgomg-1-baseline-flashwright/prepared.json": "be4f3edd27e599ef828285ddbcce7ce676ef19b7536525411b0e577087f3f0eb",
+    "10-svgomg-1-baseline-flashwright/project/report.json": "b15238eec4efe7d5e84712b836b25f6859259c25cd315eb6165d62fce64e89f0",
+    "11-svgomg-1-baseline-playwright/resources.json": "68f663cb8b9ecae11a74b36c7b6d091eda634b8514a84c7a9d88836bf037d597",
+    "11-svgomg-1-baseline-playwright/functional-verification.json": "5e7e6eb9ce87fb0f2c94347cf048b7501916bf4994d3cbc69fac2b756f6875bb",
+    "11-svgomg-1-baseline-playwright/owner-report.json": "a69e536bef4ac8deb0a0beb506e26b5be169e19d16c930f3c8a4ce0bcc5541b7",
+    "11-svgomg-1-baseline-playwright/browser-observations.json": "38f943cea68e81a558f9629b6f64c1c527a643f935e5d550b1c80bf6d329851b",
+    "11-svgomg-1-baseline-playwright/original-terminal.json": "176e0c4d5ab29a842d197897a930f8a8f41ce094bfabc310c7549842ca2d4d89",
+    "11-svgomg-1-baseline-playwright/prepared.json": "c8445c839eb246d226293c508d5b5bdcf6f810c9b4640503f539c0e175a12283",
+    "11-svgomg-1-baseline-playwright/project/report.json": "2d8004fbe13826836bb72182ec97633dff558e4ef47f92d2e77d3f7f91427e37",
+    "12-svgomg-4-normal-playwright/resources.json": "96c859df63ab4fa3adeed12494e4c877ce05280819c3307b4731c0e32b36485f",
+    "12-svgomg-4-normal-playwright/functional-verification.json": "dac3da3d826193ee884190ca80a4fbb362c80ba83b220974f11074a7167fb874",
+    "12-svgomg-4-normal-playwright/owner-report.json": "0140ad1fed5ddda14984f8bf084e53e31e70239834389b6f5386c268ab08bcdc",
+    "12-svgomg-4-normal-playwright/browser-observations.json": "a3d05667909b3ebf17a2c6ed67225c64b3904d8aa1b90b0a6b324541ad71c552",
+    "12-svgomg-4-normal-playwright/original-terminal.json": "c68a3c34edafc099238220d0e20b8103b660828a78f55dc7f4471cb76bfccfc4",
+    "12-svgomg-4-normal-playwright/prepared.json": "6d1f8b87b63c69a47173c5fa33f8199f6b6601c6d932c2243a361346594e940f",
+    "12-svgomg-4-normal-playwright/project/report.json": "caa77fe313842c2e11213a2d0e27c1e741553b1bfd2cd1bc65f346c37cc08563",
+    "13-svgomg-4-normal-flashwright/resources.json": "47a1683239c7d23e2262f0f4aa0277e7fb540744ed03976223ed772744254add",
+    "13-svgomg-4-normal-flashwright/functional-verification.json": "5c99e457b1fbf6d0a523d866aa4616378a476aeaeb351d86839d6e153729ca2d",
+    "13-svgomg-4-normal-flashwright/owner-report.json": "c0c2146f8111f571b9d025f1eebe2e930f69dd5261835b850a08079999849652",
+    "13-svgomg-4-normal-flashwright/browser-observations.json": "55395d706a782c495689221da2ecf30a9ca977728ae5fb84663fe01315686192",
+    "13-svgomg-4-normal-flashwright/original-terminal.json": "1c00603365ee89dd741158745201adbd93eb6820fd2f54a1bdcacdc8e99d8e60",
+    "13-svgomg-4-normal-flashwright/prepared.json": "88040e601ba4fd7e43f11553dfc08a1cd05d540ff426cfd1d3dce17c7ba2602e",
+    "13-svgomg-4-normal-flashwright/project/report.json": "ac978b416a2ceade3437aa04c0df3201954ede0a8ee80c4cc3f28977bfc3a935",
+    "14-svgomg-4-baseline-flashwright/resources.json": "8938444156ca316ca1b7734dfd7b02545d812485df2ca54576bc141a2b6b9309",
+    "14-svgomg-4-baseline-flashwright/functional-verification.json": "8787d8787323a4d85c79c9150dc6d8d98c96cd118f7146ac403d0910a43d14c2",
+    "14-svgomg-4-baseline-flashwright/owner-report.json": "2da694f5d5ea5dde7d6c9a53495f286b0d86be4fa7a4e9040f682f02660269be",
+    "14-svgomg-4-baseline-flashwright/browser-observations.json": "7eda326150f89bec82b4eefc1a593be9ab0af7889a6b1dcda745d7378b5363ed",
+    "14-svgomg-4-baseline-flashwright/original-terminal.json": "c74cc2100803ef6ffa6a66ea9b69511c86c2016e80ced488ff7237e2f1d5920c",
+    "14-svgomg-4-baseline-flashwright/prepared.json": "84a574a1e839311fca7fa2549cb0addd2c21d17fe8560d222893ad0e81c6e7c0",
+    "14-svgomg-4-baseline-flashwright/project/report.json": "7c04e1608b720129c3d7bf4157bf03e4446053ad3ccb19de0da1d399d04f4a1e",
+    "15-svgomg-4-baseline-playwright/resources.json": "6180c975658719d481c64744a7723d83eaad6eb40eb1c356a026eb15f4331793",
+    "15-svgomg-4-baseline-playwright/functional-verification.json": "825aa3a2c41345271fa69b19536049d6a5a69755e78b71063f57a51220d764f1",
+    "15-svgomg-4-baseline-playwright/owner-report.json": "3c2eb990cf2bd3d46c651ab52c3e3bb414001b7216cec659ccf09987aab8fc6c",
+    "15-svgomg-4-baseline-playwright/browser-observations.json": "f0246ab2995806ac3a845b8979116f5db95bed6c7ba8ec603b4f01b50552927a",
+    "15-svgomg-4-baseline-playwright/original-terminal.json": "81acaf81e6943e74442abdc306b32aab1e7e58399c4ec1f2985b4695f435ea14",
+    "15-svgomg-4-baseline-playwright/prepared.json": "fd16a3722258c5b5b3cd38def08980c72c075c456a76427a71c6c5022432cf31",
+    "15-svgomg-4-baseline-playwright/project/report.json": "3e3acf1ad6bf91bc7446b279687054db7d65c3c6dbd6dd501cae45a3c5e4f246",
+    "16-svgomg-4-baseline-playwright/resources.json": "fbff18925b509ed3a2f88eda1490c944745533e298718ba8fea39bd928fae482",
+    "16-svgomg-4-baseline-playwright/functional-verification.json": "847dcf743eee293bbe2bddf72f39a526f0e950be530a143f13539f3c5a0f839b",
+    "16-svgomg-4-baseline-playwright/owner-report.json": "268d4c2398aba415be347ff9ae192af3ee9e2812128ec39dccf21ddceb958e30",
+    "16-svgomg-4-baseline-playwright/browser-observations.json": "b732b2356e17551f4cd24901468d888f730047e76b25241960cf76e47e05cfa5",
+    "16-svgomg-4-baseline-playwright/original-terminal.json": "e20a651ffa047f2d22a7a90c0d2f87bc4fc926055c1e77e06484440cc5c5579a",
+    "16-svgomg-4-baseline-playwright/prepared.json": "5aa77587dfe9abe32552b073cc8105a96b820a1c4de09717822cb120b88155f3",
+    "16-svgomg-4-baseline-playwright/project/report.json": "1f844dd8df54e5df090e37cbdb61a8355f64162e92c1499834c25b58fee959d3",
+    "17-svgomg-4-baseline-flashwright/resources.json": "71c65f5ab220c9f76fa2aa0d07d235d81c32d55e92bafe249acd2449c9f84779",
+    "17-svgomg-4-baseline-flashwright/functional-verification.json": "14dbf87bbf197e77cc166d7c235d8e46bfbf407c2b279964c4e20b49b777b9e7",
+    "17-svgomg-4-baseline-flashwright/owner-report.json": "ffc72879c96dcd89548ed627a7554e4db89b41d03c4240ebcc7c94fcc44a0114",
+    "17-svgomg-4-baseline-flashwright/browser-observations.json": "cea8e15095a0f4ce69c3795a3a71385fe744a9ddcededb641cd117f7294ac947",
+    "17-svgomg-4-baseline-flashwright/original-terminal.json": "ab25388ec1592ee2211a4b9381bfbe767f95f1825689f9c5dcd68f6021e01e6e",
+    "17-svgomg-4-baseline-flashwright/prepared.json": "7a1c36b8be2053ee5eb8d354c9d7879816fa615bd4d95f7671538f04540ad9e3",
+    "17-svgomg-4-baseline-flashwright/project/report.json": "a6bf6d0c6e1079066fb961cab4382595eceb670535c28b5d5aff9ec03f21c267",
+    "18-svgomg-4-normal-flashwright/resources.json": "db09a0a7f7b57c9cdf2ec27f22b0faf46e140b8b25ade4ea602cc145108b72ef",
+    "18-svgomg-4-normal-flashwright/functional-verification.json": "8f64f313d18bdec957c1d7db97761e5cf83f0febdb6b879cdb6f886bc010f2e8",
+    "18-svgomg-4-normal-flashwright/owner-report.json": "eab9701627fa879b917a9905f476215f5dfaf1ece2d8e7ac954e569eb2ddd70f",
+    "18-svgomg-4-normal-flashwright/browser-observations.json": "77163ccf12ca1ba39a41700ebb5511a2c31bd4627d816d51e7ed542baa0abf2c",
+    "18-svgomg-4-normal-flashwright/original-terminal.json": "0e0e048632996c4399bf400f1d757fc6f7ffbdcf31319f04ecc3dbde1c1fbe89",
+    "18-svgomg-4-normal-flashwright/prepared.json": "cac9e5188b622a7d70e9b7394e6d49bae621fea07c1827d5fe0d62aac55fa851",
+    "18-svgomg-4-normal-flashwright/project/report.json": "c67182ea81a651ed14a650b0692a5414030bd63c94542ec4724d49d304074aad",
+    "19-svgomg-4-normal-playwright/resources.json": "6803f26bbd23162933c9706f14f17959e9c393dcb3f456b2e9e23330d7d92148",
+    "19-svgomg-4-normal-playwright/functional-verification.json": "e0afb0c1380f4ba07e5d6a33afd0b5012699fdf39784431a23f3809dff6819c5",
+    "19-svgomg-4-normal-playwright/owner-report.json": "93e3b02788d524e1ee1b39a41856366e0f51e6606783223539f41b114b8f2581",
+    "19-svgomg-4-normal-playwright/browser-observations.json": "9a5765c24104225815864c953e0d29e07cc21087a35b0dfb2d1cd0a63f4933b9",
+    "19-svgomg-4-normal-playwright/original-terminal.json": "054cde81e57a41af61f824f66fee9e304102cdb7166481c96e2dcf49392bd431",
+    "19-svgomg-4-normal-playwright/prepared.json": "69f5b6bcc15313c32e1ab498af013b0fe246bd9c7510decc2be419ad4a80539d",
+    "19-svgomg-4-normal-playwright/project/report.json": "144f6cb3bd2a3cafc978085207900f84d731c4950086198787176c4381102959",
+    "20-svgomg-1-baseline-playwright/resources.json": "dd590030e0456d7ff09a51447288023dbda7e163d43b8f21066d89ac6376295f",
+    "20-svgomg-1-baseline-playwright/functional-verification.json": "7bebf85039e514d9f3485dc7348ce7c8bdb8e5caaac0e4a2d8606189b76e0c26",
+    "20-svgomg-1-baseline-playwright/owner-report.json": "e3954262783e8c8cba0d4111c6330ff7540b218f462e7d674cd7f2ca993c4471",
+    "20-svgomg-1-baseline-playwright/browser-observations.json": "5e6aa751a63b0a9a13e56465674a19df4b305db2d1802c0f70622e0057834d80",
+    "20-svgomg-1-baseline-playwright/original-terminal.json": "1d6906c7cc839d2626a8acaad2804423b2f122ea7575d99392fe3468e6a83024",
+    "20-svgomg-1-baseline-playwright/prepared.json": "afc10c145d3502db58332ef675694a4278842b2a3ac91cbce3468fec66d00d5e",
+    "20-svgomg-1-baseline-playwright/project/report.json": "8d3c093d4a5c0f4c90e85fc83ced0a6363d47e4ea3ece8b7e2e2dbf8cda87d53",
+    "21-svgomg-1-baseline-flashwright/resources.json": "1a9e9956449b437c969d08a610cfc9464823e722dfe5bd54f206a435773e8320",
+    "21-svgomg-1-baseline-flashwright/functional-verification.json": "fcaa83a78269ca5b5ff83d5f5d7730a2db30a16cbc1b2c62a6277c06a250b0b4",
+    "21-svgomg-1-baseline-flashwright/owner-report.json": "97b6d384be5ddcad1d4b346d8a16c026045e9889bbe95571335b81a525edcdeb",
+    "21-svgomg-1-baseline-flashwright/browser-observations.json": "a7a3dc9087d4bad8e532c1b62bb7ac30b8da0353b5aabe4d3651208642dec54f",
+    "21-svgomg-1-baseline-flashwright/original-terminal.json": "e05ad731b9f8d64d8b55a7b244bb68a990fceb501f6a1322505248b76e93808e",
+    "21-svgomg-1-baseline-flashwright/prepared.json": "be1fdef1f56728da792ccd977647f26ab6e45fe9c7c7181965577920aec87bd2",
+    "21-svgomg-1-baseline-flashwright/project/report.json": "6f1633c39e78ba3a169fb9558363ab069005870995728b7d89620d84d08ae65f",
+    "22-svgomg-1-normal-flashwright/resources.json": "2cbbecfc04dadd67da180cfb30e15dba923e8b5d92b4d637ff2f84312321de8e",
+    "22-svgomg-1-normal-flashwright/functional-verification.json": "47b170b330a8f845c77e5cc6eafe3b99ae5fb50ccdbb2f60b0a62688b2de2fb2",
+    "22-svgomg-1-normal-flashwright/owner-report.json": "3125fd1aa416234a4b2ab6fef9f1e58be1193419b76e9e4a6a054951dba894ba",
+    "22-svgomg-1-normal-flashwright/browser-observations.json": "d2915c9dfbe00ea68043f7a7447801294998b9604097f723807cf213211fcf50",
+    "22-svgomg-1-normal-flashwright/original-terminal.json": "a26839c4a593ffbce03c93a82d1a20e439c100684bc7550ea50379bbc943ce33",
+    "22-svgomg-1-normal-flashwright/prepared.json": "698ada21e9952bab0484d7914d72f1afc3b04ebe76b5ad1a23cc28360d3a9fdc",
+    "22-svgomg-1-normal-flashwright/project/report.json": "7e6ca36f82c261b69e2cf48556451855e6dd5959f495652c8659fb51f5b31223",
+    "23-svgomg-1-normal-playwright/resources.json": "48345c1fb8dbe3a4fd69311ff28bf2748d79f5e98115a80f4ce02a067f0fad82",
+    "23-svgomg-1-normal-playwright/functional-verification.json": "5fc2f5d4dfda959b4d644149ede86792da361e3d2f803b014e8946d3d76363b2",
+    "23-svgomg-1-normal-playwright/owner-report.json": "2e1ffc52c761c087b1725b67b06174c46ad015c69424e5f341c6945f272b5094",
+    "23-svgomg-1-normal-playwright/browser-observations.json": "6fe25e21f18d1dba741d18008bdd94f2a352042d6401444489dc26fafbf17989",
+    "23-svgomg-1-normal-playwright/original-terminal.json": "349325c21ab1593d99a8b5f34b8259d42f1ad298f6d92cb3916864318f70053e",
+    "23-svgomg-1-normal-playwright/prepared.json": "4bc7ad6487e3bc3b9cd87a97f281a30b20718266b1f9e6b8f5ab82b4d6c228cb",
+    "23-svgomg-1-normal-playwright/project/report.json": "5adcd3cebbc913d74283ca705269c37803412c521b67d359306befee5b2993d9",
+    "24-todomvc-4-baseline-playwright/resources.json": "ff88348839ea8c8ddc35d5a5ca1410d31ed08be16dc661ad69072a52816b0c1d",
+    "24-todomvc-4-baseline-playwright/functional-verification.json": "68dfc922b62f3737fdb29b26dda25df33b3996888331febb8e191006177d6963",
+    "24-todomvc-4-baseline-playwright/owner-report.json": "e34d2ee5e0444997e8a01e225536b64aef6dd2936e972a7e52bf8d0f4d431f3d",
+    "24-todomvc-4-baseline-playwright/browser-observations.json": "3c87e7c399121bd115dc05b17d3099b4cac480d8ee23ff6db09dbb4887187e76",
+    "24-todomvc-4-baseline-playwright/original-terminal.json": "6b67d6687fd32beafc88cb4995a9b76590575d49323cc360a8d2f3d53b45b52d",
+    "24-todomvc-4-baseline-playwright/prepared.json": "6cfaa60f2cb585532bd3f917a7505da8989f5ea25b74ea378270424d5b6b5946",
+    "24-todomvc-4-baseline-playwright/project/report.json": "046b4214aff441f3e12d292a7436dfcafeaffa17ca141a55da34d34469e027d3",
+    "25-todomvc-4-baseline-flashwright/resources.json": "2bcc84365a11fc73a4872db94e4ec34b77dabd7a7ccf25d30bb9b3573951d9cb",
+    "25-todomvc-4-baseline-flashwright/functional-verification.json": "82088da92417fa5d09e466fa813b0b965d237cf3370503c1fade69cb0696150f",
+    "25-todomvc-4-baseline-flashwright/owner-report.json": "16131263a4c9ca637eb81b185abdbf08e18455b71cf942536149ee98c1752053",
+    "25-todomvc-4-baseline-flashwright/browser-observations.json": "a4a6e152a1117e51946652bc0c4043c825fe9d44f1907df8304cf91250516219",
+    "25-todomvc-4-baseline-flashwright/original-terminal.json": "11cf11f8fd7ebbeacc9a093d47c1a752b5c33fa3ff45dc749080f5675a7dddd8",
+    "25-todomvc-4-baseline-flashwright/prepared.json": "5a998da83d6a08c9390f84a7ae45c789571afa40cdd5472f536bfc251e78d31f",
+    "25-todomvc-4-baseline-flashwright/project/report.json": "407ced73a097eb39116353a4119cbe6a9aaeebc2d9b84aff964b08a1a8c5da21",
+    "26-todomvc-4-normal-flashwright/resources.json": "12af8c042c51af84f86c9e1d205e930d0c75716239da059c23623c7d78cad7e4",
+    "26-todomvc-4-normal-flashwright/functional-verification.json": "ebeec48e9f69e6dca81d97714085f8420c9f4cb850746ca0dc3416068bab1f27",
+    "26-todomvc-4-normal-flashwright/owner-report.json": "59eccd6673f17fb154ece29852f50c97558dc30c6e02b038522089ae7d30cc00",
+    "26-todomvc-4-normal-flashwright/browser-observations.json": "bcda65d2eb14ff69757ee1c2ac274935993f01b012b8a39b22c68c4e4f6562f2",
+    "26-todomvc-4-normal-flashwright/original-terminal.json": "06941a0365a14782451826f4ae15f24a38a4a76d2722b1f891b148d5a9e27e34",
+    "26-todomvc-4-normal-flashwright/prepared.json": "8fcff4fd911cd5b9ad3db6718886c2c467d638201bc3d88505ffa98887b7f2eb",
+    "26-todomvc-4-normal-flashwright/project/report.json": "6a08d63ca7179a0a8e6066f04e948bb93339ea069f5ffb64d5ec9334a9253916",
+    "27-todomvc-4-normal-playwright/resources.json": "3fe18827a8366c5061ca887e46a272eaa8d575106aa2c62f53d002d5bb0be7ad",
+    "27-todomvc-4-normal-playwright/functional-verification.json": "0d623774dc7dc67701e4c99bb718515f6aa9b8441a9de3932aa7e9b522b44981",
+    "27-todomvc-4-normal-playwright/owner-report.json": "82595e37c9174e12cf4737f4d12b2d194b00dded7e473efca53db7018f582b69",
+    "27-todomvc-4-normal-playwright/browser-observations.json": "9b49e0a206e25354b70144855eb0e83aad5bfe89b8f2e46fd4b47960d137ae58",
+    "27-todomvc-4-normal-playwright/original-terminal.json": "b9ab3ce7dffb513066863cf1a021bb4c9b55e0b76e7e12bf3afdffba1bc6c969",
+    "27-todomvc-4-normal-playwright/prepared.json": "a5bdc9707a458db955dd31e9378ab8f6e09e5425d31b45414b6d82feee012f8b",
+    "27-todomvc-4-normal-playwright/project/report.json": "43cc39614b249e02789bb1b54fa1d2c2a5e1c0f664265be60bcbae41374f6e2f",
+    "28-todomvc-1-baseline-playwright/resources.json": "14c55ae5ec8ba7ea4151bebaf7f28e164553e2e2d2b2740b83bf9174b57c21b6",
+    "28-todomvc-1-baseline-playwright/functional-verification.json": "18266b6d6a717cb233fce5fb60e3ec251510e8a0e981d8f58ee16b9f731358d9",
+    "28-todomvc-1-baseline-playwright/owner-report.json": "e432cd04de731054e9bb9ea99cdedb8628fc6bdb4e59233386cbf55a97a71a61",
+    "28-todomvc-1-baseline-playwright/browser-observations.json": "900745ab28628dcb0db06e988fd7839915c0f9c0ebfa7cab33e7fc41143c09c3",
+    "28-todomvc-1-baseline-playwright/original-terminal.json": "a3a18497a08bf9f005efd399c450593cb959ee6c0d3f3c629339fadc231b0ef8",
+    "28-todomvc-1-baseline-playwright/prepared.json": "a953c0162d5b71c8928f9e5d3184d5b72b4d17b2618431d560ba44f17dbefe5c",
+    "28-todomvc-1-baseline-playwright/project/report.json": "bd3ee4f6e6c04983c63d949706965690d4804ad0580dc30b19f8a2ae46a63c18",
+    "29-todomvc-1-baseline-flashwright/resources.json": "6ed8c210f4cb9850c1069185fca2c25ee6b2a011ac51cee3707451dd376cabc2",
+    "29-todomvc-1-baseline-flashwright/functional-verification.json": "6d11043dd4fd10e1883b82940f5d62a851e156b3a4ecac789dc06ed8883395c9",
+    "29-todomvc-1-baseline-flashwright/owner-report.json": "58adc39a963c036286881e90a5ae0619d44fd066a1125ab48ebf04f0898835d9",
+    "29-todomvc-1-baseline-flashwright/browser-observations.json": "327b9fc852fa89fcb3b805e129df8b797d455ad7043f00d7ae42521c22da6939",
+    "29-todomvc-1-baseline-flashwright/original-terminal.json": "8945d380ef53cc00cc85593fd693e25ed6f2a8723638272d2a653ee1e1f81a8d",
+    "29-todomvc-1-baseline-flashwright/prepared.json": "6378876774fed9ea7f15c0c74a97135b30f4f37a0e3db52d240d5dbbd75d76d3",
+    "29-todomvc-1-baseline-flashwright/project/report.json": "b500cf968a98a3f575a5704364df9ed10cbd7109b762fded38a7874a58033005",
+    "30-todomvc-1-normal-flashwright/resources.json": "bf6309b9aa4a705db75b8db1374bc37f8b5b77bcff86e6603b29033843b1071a",
+    "30-todomvc-1-normal-flashwright/functional-verification.json": "c859272faaaa6b0dfd7050a395d97d5c6bb1458380eff8aea552e2c1b8496007",
+    "30-todomvc-1-normal-flashwright/owner-report.json": "ba9425fdbe71875d75074f9cd983a15a0b73781218f5994541736943ff28ae56",
+    "30-todomvc-1-normal-flashwright/browser-observations.json": "302515c50a24362aedc2fc7c15862a6b910a4d4e97dc164f2110bf7ec23a959b",
+    "30-todomvc-1-normal-flashwright/original-terminal.json": "d154d1933fa709a86593028a892380ba9792b599e7abb9ad48d6f371ee455898",
+    "30-todomvc-1-normal-flashwright/prepared.json": "622382631bbc279ca1036272081c5ce90e95e37fc615f21aa7bdae44a8c4ad6c",
+    "30-todomvc-1-normal-flashwright/project/report.json": "02c7c6d3d96be1b6226eb61bd282e2d7c87ea5826fc2b8859aaa07aea07a2e8d",
+    "31-todomvc-1-normal-playwright/resources.json": "7f2eb63f39133f4ccc63cf89e9690c0c4687dfa6a1c25e74db661f291d2b0b04",
+    "31-todomvc-1-normal-playwright/functional-verification.json": "e46983119645d8444c6b7a7a77c7692af45751b52040767c9489599ef7526593",
+    "31-todomvc-1-normal-playwright/owner-report.json": "0b365ff35d6b5e63119f3d2b10584ed8856c8629cbdeaeda754cbaf8ede2ce7f",
+    "31-todomvc-1-normal-playwright/browser-observations.json": "42bb51875a8a2d0d9e7391395e654d7ec3814e8e1f5609a338bb5c740bc21b88",
+    "31-todomvc-1-normal-playwright/original-terminal.json": "0f5e6fcc1e53f5eeeba6511846228495bdc2212b8d8e12cfd4239b7c5d3788fa",
+    "31-todomvc-1-normal-playwright/prepared.json": "d75126e72c6c3a7b75a071c8f91f59f174f9828c5978324769dc94fe41fd39cc",
+    "31-todomvc-1-normal-playwright/project/report.json": "43c2f3b72d5e5209406a005b4cf8a9a0c264b9c7284a2d5727b7beb968650718"
+  },
+  "earlierIncompleteMatrices": [
+    {
+      "attempt": "linux-baseline-tier-screen-001",
+      "scope": "Retained incomplete matrix; no pooling with completed screen",
+      "cells": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 4277.764291000494,
+          "rawOwnerReceipt": {
+            "sha256": "1f7f2e30f4e305ed28cf89ea86246ee3217a6401fa8fa52e4e319061e572c4ce",
+            "bytes": 133426
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "4fe27aca840662a695c39edca421825953d9657d4e69cb649f9de67cde0fdc3d",
+            "bytes": 626
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "status": "failed",
+          "tests": 24,
+          "completeMilliseconds": 4478.695199002686,
+          "rawOwnerReceipt": {
+            "sha256": "92a9a97254a0870e678ef72f00f7e66ad1c2e1a30279e0feabcc05439907197a",
+            "bytes": 152305
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "9659c8514decd283c79899ed218c516ca18ec8f32c5eaa8aa05d7e129f330964",
+            "bytes": 627
+          }
+        }
+      ],
+      "reason": "Stopped after two passing normal-policy suites: process verifier rejected Chromium headless bootstrap title additions. No baseline-policy application runs. Do not pool timings.",
+      "rawControllerReceipt": {
+        "sha256": "d7964fee134341fe5d26d4d9a1d72cd73c57789d36bc9cd6897d59f400abac9b",
+        "bytes": 324456
+      }
+    },
+    {
+      "attempt": "linux-baseline-tier-screen-002",
+      "scope": "Retained incomplete matrix; no pooling with completed screen",
+      "cells": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 4401.723471000878,
+          "rawOwnerReceipt": {
+            "sha256": "a300b1215f03ad29deb846df8a8b052e6d3505a73d12262666ffcb4827586fd4",
+            "bytes": 137464
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "98001cf56544e4b2f5f82566e18f95dee55b8ce0ce2f57b5f97219ed70a24c52",
+            "bytes": 626
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 4266.7470410015085,
+          "rawOwnerReceipt": {
+            "sha256": "9052d17d7ca2e18e6d0b0ba41f65aa307386275c86e0ec45d4424fcb719f6f0b",
+            "bytes": 150629
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "a7d59641929e0fdea30b984389493122ff91eebd8d10c459530fcf2ed8d23075",
+            "bytes": 628
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "baseline",
+          "engine": "flashwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 4276.494591998926,
+          "rawOwnerReceipt": {
+            "sha256": "4dbda5db05b0ac4221608af139b4f10c75a77ff0e7e9cbba88c7561bcbcbcfdc",
+            "bytes": 150599
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "e5f904f7751d0a4b873728c3fb22e83a78d93c3c005db5bc0afed54c1da96008",
+            "bytes": 627
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "baseline",
+          "engine": "playwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 4375.331922998157,
+          "rawOwnerReceipt": {
+            "sha256": "732b1d3430a57caa22def77771ad81721498a3fcdb124457c2e19d0256dc5e67",
+            "bytes": 137294
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "8fc4ef65155d8e856a62396fc3ca3a1d54eb4b6103d7213018c5a69421873e64",
+            "bytes": 626
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 2942.3400980012957,
+          "rawOwnerReceipt": {
+            "sha256": "b92b29ae74062b6148b8dfd894de595352b3978594181d28b0205119a646bb38",
+            "bytes": 248333
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "f348edb787e262522f0f4bf2cc6ac83f763c1188470848176169e8916c70c782",
+            "bytes": 627
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 2976.9175379988155,
+          "rawOwnerReceipt": {
+            "sha256": "8e5e8262cd6b45d5ea76f512c045b1133432d0de28a7006e0f4067fd475b5262",
+            "bytes": 276844
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "87c0a35f42819b930dcb87c46715c55ec96c91a8975157af7bbbd685b0b5020c",
+            "bytes": 628
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "baseline",
+          "engine": "flashwright",
+          "block": 0,
+          "status": "passed-original-application-screen",
+          "tests": 24,
+          "completeMilliseconds": 2866.832046001946,
+          "rawOwnerReceipt": {
+            "sha256": "2a150adc515689189a9568fd1d4daa55dabcf0f9a9f3cdd1a3da00b49d82fe6b",
+            "bytes": 279785
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "e562abe8a1a698bc12fa04f08efcea20f6afdb82cc8638abca803ee369fe0db2",
+            "bytes": 627
+          }
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "baseline",
+          "engine": "playwright",
+          "block": 0,
+          "status": "failed",
+          "tests": 24,
+          "completeMilliseconds": 2848.861910002597,
+          "rawOwnerReceipt": {
+            "sha256": "eab61e9558f089ea771d6185f5091619a4f06a0f3227bc1197044f97ec3fdad9",
+            "bytes": 241040
+          },
+          "rawFunctionalReceipt": {
+            "sha256": "adb437e29121639ea9d1865b1e68f7c7d961f419961b5bc6a8c66b938b33cadc",
+            "bytes": 626
+          }
+        }
+      ],
+      "reason": "All eight executed TodoMVC suites passed; screen stopped on a transient empty /proc command line wrongly retained as final launch evidence. No pooling. Empty samples now retained as unavailable while waiting for a complete original-identity observation.",
+      "rawControllerReceipt": {
+        "sha256": "ede468885700e106c456f75e867d78d12175e6a8f75f29a9f946756680f9dc05",
+        "bytes": 1725577
+      }
+    }
+  ],
+  "limitations": [
+    "Only two opposite-order pairs; no final uncertainty interval",
+    "Sampled process CPU/RSS diagnostic only, not complete resource admission",
+    "Selected immutable inputs do not attest loaded memory or complete native libraries",
+    "The diagnostic native-syntax flag is present only in compiler controls, never in application runs.",
+    "No backend corpus, final majority matrix, packed release, other platform or broad JavaScript capability admission.",
+    "Selected source/dependency hashes and actual post-exec process observations do not attest loaded memory or transient changes between observations.",
+    "Chromium can expose a single space-joined title with its documented headless bootstrap additions; this is not proof of preserved kernel argument boundaries. Empty observations remain unavailable and are never accepted as launch proof.",
+    "All tests and HTTP contracts pass; normal optimizing compiler behavior remains the product default."
+  ]
+}
