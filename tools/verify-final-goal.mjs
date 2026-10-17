@@ -5,6 +5,7 @@ import { lstat, open } from 'node:fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidence.mjs';
+import { finalGoalAccountingClasses } from '../benchmarks/final-goal-resource-policy.mjs';
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
 
@@ -151,6 +152,17 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
             assert.deepEqual(await jsonEvidence(files[0]), run[kind], `Inline ${kind} differs from original raw file`);
           }
           for (const test of run.report.tests) for (const receipt of test.diagnostics?.evidence ?? []) await evidence(receipt);
+          const linuxOriginals = run.evidence.filter(receipt => receipt.kind === 'linux-cgroup-originals');
+          if (linuxOriginals.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
+            && run.resources.status === 'verified-local-observations') {
+            assert.equal(configuration.accountingClass, finalGoalAccountingClasses.linux, 'Linux originals require the Linux campaign class');
+            assert.equal(linuxOriginals.length, 1, 'Missing unique raw Linux cgroup originals');
+            const manifest = await jsonEvidence(linuxOriginals[0]);
+            assert.equal(manifest.accountingClass, finalGoalAccountingClasses.linux);
+            const derived = await reconstructFinalGoalResourceEvidence(manifest, {},
+              (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
+            assert.deepEqual(derived, run.resources, 'Linux observations differ from retained original reconstruction');
+          }
         }
       }
     }

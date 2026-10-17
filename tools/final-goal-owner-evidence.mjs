@@ -2,9 +2,15 @@ import assert from 'node:assert/strict';
 import { posix } from 'node:path';
 import { hashBytes, ownerTreeEvidenceLimits } from './final-goal-owner-records.mjs';
 import { adaptFinalGoalResources } from './final-goal-original-resources.mjs';
+import { finalGoalAccountingClasses } from '../benchmarks/final-goal-resource-policy.mjs';
+import { reconstructFinalGoalLinuxResourceEvidence } from './final-goal-linux-evidence.mjs';
 
 /** Shared campaign path: read originals, reconstruct custody and project resources before comparing summaries. */
 export async function reconstructFinalGoalResourceEvidence(manifest, options, readBytes) {
+  if (manifest?.accountingClass === finalGoalAccountingClasses.linux) {
+    assert.deepEqual(options, {}, 'Linux observation reconstruction cannot accept macOS owner adaptation options');
+    return reconstructFinalGoalLinuxResourceEvidence(manifest, readBytes);
+  }
   const ownerTreeEvidence = await loadFinalGoalOwnerEvidence(manifest, readBytes);
   return adaptFinalGoalResources({ ...options, ownerTreeEvidence });
 }
