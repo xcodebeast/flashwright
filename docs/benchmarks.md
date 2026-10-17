@@ -258,3 +258,7 @@ The [portable manifest](../benchmarks/results/runner-matrix-2026-10-10/manifest.
 bun tools/verify-runner-matrix-snapshot.mjs benchmarks/results/runner-matrix-2026-10-10
 bun test ./tools/test-runner-matrix-contract.mjs ./tools/test-runner-matrix-snapshot.mjs
 ```
+
+The opt-in `--natural-drain` flag on the Linux coordinator lets descendants finish within the original command timeout after the wrapper exits. Its schema 2 native receipt retains the absolute deadline, every terminal wait and the original strict cleanup flag. The resource reader includes this interval and accepts naturally drained membership while still rejecting timeout, killing and cleanup errors. The default policy and historical receipts retain their interpretation.
+
+The [natural-drain checkpoint](../compatibility/evidence/linux-natural-drain-checkpoint-2026-10-17.json) passes 35 parser/join checks, 29 native controls and six capture integration controls. Four new Bun.WebView lifecycle probes drain without collector intervention; native closeAll still kills Chrome itself, and its two cases require about 0.3 seconds of post-wrapper drain. This is measurement infrastructure, with no new comparative performance or context-isolation claim.

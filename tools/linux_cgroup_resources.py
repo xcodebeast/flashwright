@@ -105,10 +105,14 @@ def derive_observations(report, before, after, native):
     require(int(native['after']['finishedNanoseconds']) <= int(collector_wait['finishedNanoseconds'])
             <= int(after['startedNanoseconds']) and int(collector_wait['startedNanoseconds'])
             <= int(collector_wait['finishedNanoseconds']), 'Original collector wait/capture intervals differ')
-    expected_invocation = [before['tools']['collector']['path'], before['policy']['leaf'],
+    natural_drain = native['schemaVersion'] == 2
+    expected_invocation = [before['tools']['collector']['path'], *(['--natural-drain'] if natural_drain else []), before['policy']['leaf'],
                            report['nativeReceipt']['path'], report['captureIdentity'],
                            str(report['timeoutMilliseconds']), *report['wrapperCommand']]
     require(report['collectorCommand'] == expected_invocation, 'Collector invocation differs from original boundaries')
+    if natural_drain:
+        require(int(native['commandDeadlineNanoseconds']) == int(native['cloneStartedNanoseconds'])
+                + report['timeoutMilliseconds'] * 1000000, 'Natural-drain deadline differs from original timeout')
 
     cpu = {key: int(value) for key, value in (line.split(' ') for line in native['after']['cpuStat'].splitlines())}
     events = {key: int(value) for key, value in (line.split(' ') for line in native['after']['events'].splitlines())}
@@ -118,7 +122,8 @@ def derive_observations(report, before, after, native):
         (native['timedOut'], 'Native command timed out'),
         (native['interruptedSignal'] != 0, 'Native collector was interrupted'),
         (native['groupKilled'], 'Collector killed cgroup processes'),
-        (native['survivorsAfterOwner'] != 0, 'Membership remained after the original wrapper exited'),
+        (native['survivorsAfterOwner'] not in ((0, 1) if natural_drain else (0,)),
+         'Membership remained after the original wrapper exited'),
         (not native['noRemainingChildren'] or native['cleanupError'], 'Native child drain failed'),
         (not native['finalLeaf'] or events['populated'] != 0 or native['after']['processes'] != '', 'Final leaf was not empty'),
         (native['adoptedChildren'] != len(native['adoptedWaits']), 'Adopted terminal-wait inventory is truncated'),
@@ -152,6 +157,7 @@ def derive_observations(report, before, after, native):
         'observedDrainedMembership': not reasons, 'drainRejectionReasons': reasons,
         'nativeCleanObservedTeardown': native['cleanObservedTeardown'],
         'adoptedChildren': native['adoptedChildren'], 'adoptedWaits': native['adoptedWaits'],
+        'teardownPolicy': native.get('teardownPolicy', 'immediate-cleanup-after-owner-v1'),
         'originalWrapperWait': native['originalWait'], 'originalCollectorWait': collector_wait,
         'wrapperExitCode': native['originalWait']['exitCode'],
         'limitations': [

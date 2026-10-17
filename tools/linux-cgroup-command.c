@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 /* Experimental Linux capture primitive; see SPECS.md S6 for admission limits.
  * Build: cc -std=c11 -O2 -Wall -Wextra -Werror -o <output> this-file.c
- * Usage: <output> <fresh-cgroup> <exclusive-report> <32-hex-id> <timeout-ms>
+ * Usage: <output> [--natural-drain] <fresh-cgroup> <exclusive-report> <32-hex-id> <timeout-ms>
  *                 <absolute-command> [arguments...]
  * The caller owns delegation, policy admission and an outer cleanup deadline.
  */
@@ -185,6 +185,8 @@ static long long micros(struct timeval value) {
   return (long long)value.tv_sec * 1000000 + value.tv_usec;
 }
 int main(int argc, char **argv) {
+  bool natural_drain = argc > 1 && !strcmp(argv[1], "--natural-drain");
+  if (natural_drain) { argc--; argv++; }
   if (argc < 6 || strlen(argv[3]) != 32 || argv[5][0] != '/') return 2;
   for (size_t i = 0; i < 32; i++) if (!strchr("0123456789abcdef", argv[3][i])) return 2;
   uint64_t duration; const char *end;
@@ -241,12 +243,18 @@ int main(int argc, char **argv) {
       pause_poll();
     }
     survivors = population(group);
-    if (survivors != 0) {
+    if (survivors != 0 && !natural_drain) {
       if (kill_group(group)) cleanup_error = 1;
       killed = true;
     }
-    uint64_t drain_deadline = now_ns() + UINT64_C(2000000000);
-    while (now_ns() < drain_deadline) {
+    uint64_t drain_deadline = natural_drain && !killed ? deadline : now_ns() + UINT64_C(2000000000);
+    for (;;) {
+      if (natural_drain && !killed && (interrupted || now_ns() >= drain_deadline)) {
+        timed_out = !interrupted;
+        if (kill_group(group)) cleanup_error = 1;
+        killed = true;
+        drain_deadline = now_ns() + UINT64_C(2000000000);
+      } else if (now_ns() >= drain_deadline) { cleanup_error = 1; break; }
       int status; struct rusage child_usage;
       uint64_t started = now_ns();
       pid_t reaped = wait4(-1, &status, WNOHANG, &child_usage);
@@ -262,8 +270,10 @@ int main(int argc, char **argv) {
         else cleanup_error = 1;
         adopted++; continue;
       }
-      if (reaped < 0 && errno == ECHILD) { no_children = true; break; }
-      if (reaped < 0 && errno != EINTR) { cleanup_error = 1; break; }
+      if (reaped < 0 && errno == ECHILD) {
+        no_children = true;
+        if (!natural_drain || population(group) == 0) break;
+      } else if (reaped < 0 && errno != EINTR) { cleanup_error = 1; break; }
       pause_poll();
     }
     if (!no_children) cleanup_error = 1;
@@ -286,7 +296,7 @@ int main(int argc, char **argv) {
       after.user >= before.user && after.system >= before.system && after.peak >= before.peak;
   FILE *file = fdopen(output, "w");
   if (!file) return 8;
-  fprintf(file, "{\"schemaVersion\":1,\"captureClass\":\"experimental-linux-cgroup-command\",\"resourceAdmission\":false,\"identity\":\"%s\",\"clock\":\"clock_gettime(CLOCK_MONOTONIC)\",\"collectorProcess\":%d,\"ownerProcess\":%d,\"cgroupDevice\":\"%ju\",\"cgroupInode\":\"%ju\",\"identityUnchanged\":%s,\"commandBytes\":[", argv[3], getpid(), pid, (uintmax_t)initial_identity.st_dev, (uintmax_t)initial_identity.st_ino, identity_valid ? "true" : "false");
+  fprintf(file, "{\"schemaVersion\":%d,\"captureClass\":\"experimental-linux-cgroup-command\",\"resourceAdmission\":false,\"identity\":\"%s\",\"clock\":\"clock_gettime(CLOCK_MONOTONIC)\",\"collectorProcess\":%d,\"ownerProcess\":%d,\"cgroupDevice\":\"%ju\",\"cgroupInode\":\"%ju\",\"identityUnchanged\":%s,\"commandBytes\":[", natural_drain ? 2 : 1, argv[3], getpid(), pid, (uintmax_t)initial_identity.st_dev, (uintmax_t)initial_identity.st_ino, identity_valid ? "true" : "false");
   for (int i = 5; i < argc; i++) { if (i != 5) fputc(',', file); json_text(file, argv[i]); }
   fprintf(file, "],\"cloneStartedNanoseconds\":\"%"PRIu64"\",\"cloneFinishedNanoseconds\":\"%"PRIu64"\",\"launchErrno\":%d,\"originalWait\":", clone_started, clone_finished, launch_error);
   if (observed) fprintf(file, "{\"method\":\"atomic-wait4-original-owner\",\"process\":%d,\"status\":%d,\"exitCode\":%d,\"startedNanoseconds\":\"%"PRIu64"\",\"finishedNanoseconds\":\"%"PRIu64"\",\"userMicroseconds\":%lld,\"systemMicroseconds\":%lld,\"inclusiveMaximumRssKiB\":%ld}", pid, wait_status, WIFEXITED(wait_status) ? WEXITSTATUS(wait_status) : -WTERMSIG(wait_status), wait_started, wait_finished, micros(usage.ru_utime), micros(usage.ru_stime), usage.ru_maxrss);
@@ -302,6 +312,7 @@ int main(int argc, char **argv) {
     fprintf(file, "{\"process\":%d,\"status\":%d,\"startedNanoseconds\":\"%"PRIu64"\",\"finishedNanoseconds\":\"%"PRIu64"\",\"userMicroseconds\":%lld,\"systemMicroseconds\":%lld}", item->process, item->status, item->started, item->finished, micros(item->usage.ru_utime), micros(item->usage.ru_stime));
   }
   fprintf(file, "],\"finalLeaf\":%s,\"commandEncoding\":\"Each original argv byte is represented by its equal-valued Unicode codepoint\"", final_leaf ? "true" : "false");
+  if (natural_drain) fprintf(file, ",\"teardownPolicy\":\"natural-drain-within-command-deadline-v1\",\"commandDeadlineNanoseconds\":\"%"PRIu64"\"", clone_started + duration * UINT64_C(1000000));
   fputs(",\"scope\":\"Kernel charges follow cgroup membership. Exclusive membership, migration prevention, resource policies, host/input identity and full resource admission remain external. Memory peak is charged memory, not concurrent RSS. Original wait4 excludes unreaped descendant usage. Adopted waits are never added to that original receipt.\"}\n", file);
   int publish_error = finish_report(file);
   close(group);

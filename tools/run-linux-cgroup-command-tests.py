@@ -23,6 +23,7 @@ SCRIPT = Path(__file__).resolve()
 WAIT_FIXTURE = ROOT / 'tools/linux-cgroup-wait-fixture.c'
 WAIT_MODES = ['wait-' + mode for mode in ['reaped', 'ignored', 'nocldwait',
               'subreaper-reaped', 'subreaper-ignored', 'subreaper-nocldwait']]
+NATURAL_MODES = ['natural-finish', 'natural-timeout', 'natural-interrupt', 'natural-owner-budget', 'natural-success']
 
 
 def save(path, value):
@@ -40,6 +41,22 @@ def cpu_for(seconds):
 def worker(mode, directory, group, destination):
     directory = Path(directory)
     (directory / 'executed').write_text(str(os.getpid()))
+    if mode in NATURAL_MODES:
+        if mode == 'natural-success':
+            return 0
+        child = os.fork()
+        if child == 0:
+            os.setsid()
+            if mode == 'natural-finish':
+                cpu_for(.08)
+                time.sleep(.1)
+                os._exit(23)
+            time.sleep(20)
+            os._exit(0)
+        (directory / 'child').write_text(str(child))
+        if mode == 'natural-owner-budget':
+            time.sleep(.15)
+        return 7
     if mode == 'tree':
         cpu_for(.06)
         for _ in range(12):
@@ -119,7 +136,7 @@ def delegated(directory):
              'live-orphan', 'dead-orphan', 'replace-path', 'escape', 'remove-counter', 'ignored-sigchld', 'denied-clone', 'occupied-report',
              'used-group', 'nested-group', 'symlink-group', 'ordinary-directory']
     rejected_before_launch = set(modes[13:])
-    modes += WAIT_MODES
+    modes += WAIT_MODES + NATURAL_MODES
     try:
         for mode in modes:
             out = directory / mode
@@ -150,25 +167,31 @@ def delegated(directory):
                     effective_group.symlink_to(group)
                 elif mode == 'ordinary-directory':
                     effective_group = out
-                command = [sys.executable, str(SCRIPT), '--worker', mode if mode in modes[:12] else 'success',
+                command = [sys.executable, str(SCRIPT), '--worker', mode if mode in modes[:12] + NATURAL_MODES else 'success',
                            str(out), str(effective_group), str(parent)]
                 if mode == 'missing-executable':
                     command = [str(out / 'missing')]
                 elif mode in WAIT_MODES:
                     command = [str(directory / 'wait-fixture'), mode.removeprefix('wait-')]
-                duration = '150' if mode == 'timeout' else '5000'
-                invocation = [str(collector), str(effective_group), str(output), uuid.uuid4().hex, duration, *command]
+                duration = '150' if mode == 'timeout' else ('350' if mode in ['natural-timeout', 'natural-owner-budget'] else '5000')
+                invocation = [str(collector), *(['--natural-drain'] if mode in NATURAL_MODES else []),
+                              str(effective_group), str(output), uuid.uuid4().hex, duration, *command]
                 row['command'] = invocation
                 save(out / 'preflight.json', {name: (group / name).read_text() for name in ['cpu.stat', 'memory.peak', 'cgroup.events', 'cgroup.type', 'cgroup.procs']})
                 with (out / 'stdout.txt').open('xb') as stdout, (out / 'stderr.txt').open('xb') as stderr:
                     preexec = deny_clone3 if mode == 'denied-clone' else ((lambda: signal.signal(signal.SIGCHLD, signal.SIG_IGN)) if mode == 'ignored-sigchld' else None)
                     process = subprocess.Popen(invocation, stdout=stdout, stderr=stderr, preexec_fn=preexec)
                     row['collectorProcess'] = process.pid
-                    if mode == 'interrupt':
+                    if mode in ['interrupt', 'natural-interrupt']:
                         until = time.monotonic() + 3
                         while not (out / 'child').exists():
                             assert process.poll() is None and time.monotonic() < until
                             time.sleep(.002)
+                        if mode == 'natural-interrupt':
+                            owner = int((out / 'executed').read_text())
+                            while Path('/proc', str(owner)).exists():
+                                assert process.poll() is None and time.monotonic() < until
+                                time.sleep(.002)
                         process.send_signal(signal.SIGTERM)
                     row['exitCode'] = process.wait(timeout=10)
                     row['originalCollectorWait'] = True
@@ -203,6 +226,8 @@ def delegated(directory):
                     original_code = receipt['originalWait']['exitCode']
                     expected_code = {'exit-seven': 7, 'signal-exit': -15, 'missing-executable': 127,
                                      'timeout': -9, 'interrupt': -9}.get(mode, 0)
+                    if mode in NATURAL_MODES and mode != 'natural-success':
+                        expected_code = 7
                     assert original_code == expected_code, (mode, original_code)
                     assert receipt['noRemainingChildren'] and not receipt['cleanupError']
                     assert receipt['after']['processes'] == ''
@@ -213,7 +238,25 @@ def delegated(directory):
                     assert int(receipt['cloneStartedNanoseconds']) <= int(receipt['originalWait']['startedNanoseconds'])
                     assert int(receipt['originalWait']['finishedNanoseconds']) <= int(receipt['after']['startedNanoseconds'])
                     assert receipt['adoptedChildren'] == len(receipt['adoptedWaits'])
-                    if mode in ['timeout', 'interrupt', 'live-orphan', 'dead-orphan']:
+                    if mode in NATURAL_MODES:
+                        assert receipt['schemaVersion'] == 2
+                        assert receipt['teardownPolicy'] == 'natural-drain-within-command-deadline-v1'
+                        assert int(receipt['commandDeadlineNanoseconds']) == int(receipt['cloneStartedNanoseconds']) + int(duration) * 1000000
+                        ordinary = mode == 'natural-success'
+                        assert receipt['adoptedChildren'] == (0 if ordinary else 1)
+                        assert receipt['cleanObservedTeardown'] == ordinary and row['exitCode'] == (0 if ordinary else 1)
+                        forced = mode not in ['natural-finish', 'natural-success']
+                        assert receipt['groupKilled'] == forced
+                        assert receipt['timedOut'] == (mode in ['natural-timeout', 'natural-owner-budget'])
+                        assert receipt['interruptedSignal'] == (15 if mode == 'natural-interrupt' else 0)
+                        if not ordinary:
+                            assert receipt['survivorsAfterOwner'] == 1
+                            assert receipt['adoptedWaits'][0]['process'] == int((out / 'child').read_text())
+                            assert os.waitstatus_to_exitcode(receipt['adoptedWaits'][0]['status']) == (-9 if forced else 23)
+                        if mode == 'natural-finish':
+                            assert int(receipt['after']['finishedNanoseconds']) - int(receipt['originalWait']['finishedNanoseconds']) >= 100000000
+                            assert counters(receipt['after']['cpuStat'])['usage_usec'] >= 80000
+                    elif mode in ['timeout', 'interrupt', 'live-orphan', 'dead-orphan']:
                         assert receipt['adoptedChildren'] == 1
                         assert receipt['adoptedWaits'][0]['process'] == int((out / 'child').read_text())
                         assert not receipt['cleanObservedTeardown'] and row['exitCode'] == 1
@@ -313,7 +356,7 @@ def main():
         (directory / 'unit-log.txt').write_text(journal.stdout + journal.stderr)
         assert 'Result=success\n' in state and 'ExecMainStatus=0\n' in state, state
         results = json.loads((directory / 'native-results.json').read_text())
-        assert len(results['rows']) == results['expectedCases'] == 18 + len(WAIT_MODES)
+        assert len(results['rows']) == results['expectedCases'] == 18 + len(WAIT_MODES) + len(NATURAL_MODES)
         assert all(row['status'] == 'passed' and row['groupsRemoved'] for row in results['rows'])
         report['status'] = 'passed-native-controls'
     finally:
@@ -326,7 +369,7 @@ def main():
                              for p in [SCRIPT, ROOT / 'tools/linux-cgroup-command.c', WAIT_FIXTURE]}
         save(directory / 'controller.json', report)
     assert report['status'] == 'passed-native-controls', report
-    print(f'{18 + len(WAIT_MODES)} native controls passed; final resource admission remains separate.')
+    print(f'{18 + len(WAIT_MODES) + len(NATURAL_MODES)} native controls passed; final resource admission remains separate.')
     return 0
 
 

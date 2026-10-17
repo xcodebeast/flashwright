@@ -1,0 +1,836 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "diagnostic-linux-natural-descendant-drain",
+  "status": "passed-selected-controls",
+  "baseCommit": "ed050f389202fbb0ead8361b39903f7a160cf8cc",
+  "resourceAdmission": false,
+  "performanceAccepted": false,
+  "equivalentWorkAdmission": false,
+  "implementation": {
+    "tools/linux-cgroup-command.c": {
+      "bytes": 15811,
+      "sha256": "2ce7039acf7a6aedc892c956022558709c842a964d3b1a5b2ee983b347d46978"
+    },
+    "tools/linux_cgroup_capture.py": {
+      "bytes": 21953,
+      "sha256": "d575e313269419b692d89eee70c271989211ef3de995d1c309e841073d8aaad9"
+    },
+    "tools/linux_cgroup_resources.py": {
+      "bytes": 13134,
+      "sha256": "08375cd91b542f65a4d37c355adec225c6b8dcffa30d8973998fd2fe3fea5c62"
+    },
+    "tools/run-linux-cgroup-command-tests.py": {
+      "bytes": 21648,
+      "sha256": "f93dbb0156040ee386f31bb61694e076366f956fedf1bd9a4a99daaa20655cc4"
+    },
+    "tools/test_linux_cgroup_command.py": {
+      "bytes": 3276,
+      "sha256": "b0548b48e3c552592ba612eba7cb8cf53c20946448f9632cbbd3c3019c839e84"
+    },
+    "tools/test_linux_cgroup_capture.py": {
+      "bytes": 12632,
+      "sha256": "7b9837a5fc6cf189c75085503174439fec1ea315a521d156cdb398be3e7d2799"
+    },
+    "tools/test_linux_cgroup_resources.py": {
+      "bytes": 12834,
+      "sha256": "8781b375cd50641989c0a330ae61ac905207e01b5f4472675f3367fd188477ac"
+    }
+  },
+  "collectorBinary": {
+    "bytes": 26808,
+    "sha256": "cd589adc5b75ccca150b711c4b3562cf2badb36a1a291cdbcf1f0db0e13434a1"
+  },
+  "policy": "natural-drain-within-command-deadline-v1",
+  "unitChecks": {
+    "command": "python3 -B -m unittest tools.test_linux_cgroup_command tools.test_linux_cgroup_capture tools.test_linux_cgroup_resources",
+    "passed": 35,
+    "exitCode": 0,
+    "provenance": "Original tool execution terminal output; no separate test log retained."
+  },
+  "nativeControls": [
+    {
+      "case": "tree",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2676,
+        "sha256": "20aeb5bd7fd4d6745ea3201f9629a81ab986df3daffdba4c2fb765f26f49e11f"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "exit-seven",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2691,
+        "sha256": "16514978f8aa4b60d2a3cbcc7b7a647aff2246e08aa69953e0cb1b8e0b6f06da"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 7
+    },
+    {
+      "case": "signal-exit",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2694,
+        "sha256": "f33600b434144cd2ba0a1807f435889ef431122a947d097c708f6bbb42e255fe"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": -15
+    },
+    {
+      "case": "missing-executable",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2268,
+        "sha256": "71e9ea07a5e82395eaa37664dd1b457da9e5aab9e8b42688e38bcbd7feb424fa"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 127
+    },
+    {
+      "case": "timeout",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2833,
+        "sha256": "d5ad36fe391cd628e9403ba98777d25a274cce1b89f7dcf6b91adbf83ced7d37"
+      },
+      "schemaVersion": 1,
+      "groupKilled": true,
+      "timedOut": true,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": -9
+    },
+    {
+      "case": "interrupt",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2842,
+        "sha256": "dc13af40081ee959f9e5a50b47f83dc39695775072029e86df5fc4392a64534b"
+      },
+      "schemaVersion": 1,
+      "groupKilled": true,
+      "timedOut": false,
+      "interruptedSignal": 15,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": -9
+    },
+    {
+      "case": "live-orphan",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2849,
+        "sha256": "95d2b34b67b0e0dec93c7c2f7213ce82ce161a9cd49a4045901dc923120f1cdc"
+      },
+      "schemaVersion": 1,
+      "groupKilled": true,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "dead-orphan",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2853,
+        "sha256": "cd68df774b2948e58ddcd2ca7a67393f9fbbad60d4c06d5131eb32c22ec768a5"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "replace-path",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2665,
+        "sha256": "d1763cee08217a20880870f9d2f15aa759449899410988458756e41b67724a21"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "escape",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2677,
+        "sha256": "c93daad16495b3c3e1908ace5f9320bccd58721878c61f7c95c7c9cab97c9e1c"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "remove-counter",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2633,
+        "sha256": "a88b6f690ad80bceaef35beccb26123e10cc98cd0ac1f611a5962e890579c041"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "ignored-sigchld",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2703,
+        "sha256": "809d8348d1a9497a2ecdd4f1d9e2c30bf79329e9a7b2d9c5dd94a3e1ab64bda7"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "denied-clone",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2433,
+        "sha256": "8490a72eeec2ed825432d81a10707de0a9fce25eccac59e3f068e715e9331b4f"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": -1,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": null
+    },
+    {
+      "case": "occupied-report",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 4
+    },
+    {
+      "case": "used-group",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 3
+    },
+    {
+      "case": "nested-group",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 3
+    },
+    {
+      "case": "symlink-group",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 3
+    },
+    {
+      "case": "ordinary-directory",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 3
+    },
+    {
+      "case": "wait-reaped",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2275,
+        "sha256": "449424b33f2f3c822d736956634cb9e966a22ce3542dc2b8cd5104698f7e6448"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "wait-ignored",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2270,
+        "sha256": "f768498419edcee01595c1f8a61164dd754f5fc29f9a52a2930e40ff34d396dd"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "wait-nocldwait",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2272,
+        "sha256": "bf2dc9e5e65026885fcfe372008fa5cf3cd1541a935a9135a0c6e1afb195cb9b"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "wait-subreaper-reaped",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2286,
+        "sha256": "0c459de74e583f034d65dbd915a62a4dacecde6e39d430e9d4dfb6e11db95b8d"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "wait-subreaper-ignored",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2283,
+        "sha256": "c4f38313740d5d709a243d46f9e65739bb9465e8ded5244ba97e90bf40c81b94"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "wait-subreaper-nocldwait",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2285,
+        "sha256": "a3c4c0f8561d31861748c1f5b25386a0dacb6d01749acd38694bc81fbe725db5"
+      },
+      "schemaVersion": 1,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0
+    },
+    {
+      "case": "natural-finish",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2975,
+        "sha256": "8c6f5d4736bbb0789b47b1584a51597e88297d78e5897d41c0905272eda28fec"
+      },
+      "schemaVersion": 2,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 7,
+      "postOwnerDrainNanoseconds": "176901128",
+      "commandElapsedNanoseconds": "204417010"
+    },
+    {
+      "case": "natural-timeout",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2965,
+        "sha256": "219f5c2082de76e0586656fd4535787c68001f3398bdb1731543d21eb18438ce"
+      },
+      "schemaVersion": 2,
+      "groupKilled": true,
+      "timedOut": true,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 7,
+      "postOwnerDrainNanoseconds": "325315883",
+      "commandElapsedNanoseconds": "351798684"
+    },
+    {
+      "case": "natural-interrupt",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2973,
+        "sha256": "f9f41dccd59a44159639984e397913db5b3f4bf551bdb86db408982e189a905e"
+      },
+      "schemaVersion": 2,
+      "groupKilled": true,
+      "timedOut": false,
+      "interruptedSignal": 15,
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 7,
+      "postOwnerDrainNanoseconds": "1293164",
+      "commandElapsedNanoseconds": "27764213"
+    },
+    {
+      "case": "natural-owner-budget",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 1,
+      "nativeReceipt": {
+        "bytes": 2981,
+        "sha256": "57477ef54dcb2ddde8ec2770e0804c6d836bfbec826da29a4905c9516be23e1b"
+      },
+      "schemaVersion": 2,
+      "groupKilled": true,
+      "timedOut": true,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 1,
+      "cleanObservedTeardown": false,
+      "originalOwnerExitCode": 7,
+      "postOwnerDrainNanoseconds": "174999500",
+      "commandElapsedNanoseconds": "351995669"
+    },
+    {
+      "case": "natural-success",
+      "status": "passed",
+      "groupsRemoved": true,
+      "collectorExitCode": 0,
+      "nativeReceipt": {
+        "bytes": 2809,
+        "sha256": "75bac4e185e1a72c9762f14861e2565f143e9d9f68fd3135d492be23ab0b9b48"
+      },
+      "schemaVersion": 2,
+      "groupKilled": false,
+      "timedOut": false,
+      "interruptedSignal": 0,
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 0,
+      "cleanObservedTeardown": true,
+      "originalOwnerExitCode": 0,
+      "postOwnerDrainNanoseconds": "56247",
+      "commandElapsedNanoseconds": "25448228"
+    }
+  ],
+  "captureIntegration": [
+    {
+      "case": "success",
+      "status": "passed",
+      "captureStatus": "captured",
+      "wrapperExitCode": 0,
+      "nativeCleanObservedTeardown": true,
+      "adoptedChildren": 0,
+      "groupRemoved": true,
+      "captureReceipt": {
+        "bytes": 4759,
+        "sha256": "143f458a35120dfcd115fc258c1d7199a73cac0ee44659b1f31ccc05d2f78402"
+      },
+      "observedDrainedMembership": true,
+      "accountingClass": "linux-cgroup-v2-charged-scope-v1",
+      "teardownPolicy": "natural-drain-within-command-deadline-v1"
+    },
+    {
+      "case": "exit-seven",
+      "status": "passed",
+      "captureStatus": "captured",
+      "wrapperExitCode": 7,
+      "nativeCleanObservedTeardown": true,
+      "adoptedChildren": 0,
+      "groupRemoved": true,
+      "captureReceipt": {
+        "bytes": 4772,
+        "sha256": "7811499fcc014237a1d3b3dbdb7cd1fb33b3c2059cb0b5ccb519c930eef37b15"
+      },
+      "observedDrainedMembership": true,
+      "accountingClass": "linux-cgroup-v2-charged-scope-v1",
+      "teardownPolicy": "natural-drain-within-command-deadline-v1"
+    },
+    {
+      "case": "timeout",
+      "status": "passed",
+      "captureStatus": "captured",
+      "wrapperExitCode": -9,
+      "nativeCleanObservedTeardown": false,
+      "adoptedChildren": 1,
+      "groupRemoved": true,
+      "captureReceipt": {
+        "bytes": 4725,
+        "sha256": "17a22a9b7d08c3846def03dcd6c47c2a48b6305c173c8a51edf6d38e0e4947cf"
+      },
+      "observedDrainedMembership": false,
+      "accountingClass": "linux-cgroup-v2-charged-scope-v1",
+      "teardownPolicy": "natural-drain-within-command-deadline-v1"
+    },
+    {
+      "case": "mutate-input",
+      "status": "passed",
+      "captureStatus": "rejected",
+      "wrapperExitCode": 0,
+      "nativeCleanObservedTeardown": true,
+      "adoptedChildren": 0,
+      "groupRemoved": true,
+      "captureReceipt": {
+        "bytes": 4856,
+        "sha256": "832780c05fa77edfbda3b2be46bb4c7cb2080c06f3fc89040d8e22d418b727ed"
+      }
+    },
+    {
+      "case": "occupy-after",
+      "status": "passed",
+      "captureStatus": "rejected",
+      "wrapperExitCode": 0,
+      "nativeCleanObservedTeardown": true,
+      "adoptedChildren": 0,
+      "groupRemoved": true,
+      "captureReceipt": {
+        "bytes": 3728,
+        "sha256": "3903151758b1681c57953b628d287882e6acf970530b7ef08aee61c7290adbb2"
+      }
+    },
+    {
+      "case": "browser",
+      "status": "passed",
+      "captureStatus": "captured",
+      "wrapperExitCode": 0,
+      "nativeCleanObservedTeardown": false,
+      "adoptedChildren": 13,
+      "groupRemoved": true,
+      "captureReceipt": {
+        "bytes": 4307,
+        "sha256": "f2eb4c78153305a5d2df944fe46ee627186c5233059a07ddb3403a371eb62ff9"
+      },
+      "observedDrainedMembership": true,
+      "accountingClass": "linux-cgroup-v2-charged-scope-v1",
+      "teardownPolicy": "natural-drain-within-command-deadline-v1"
+    }
+  ],
+  "bunWebView": [
+    {
+      "case": "native",
+      "operations": [
+        {
+          "name": "closeAll",
+          "status": "returned"
+        },
+        {
+          "name": "evaluate-after-close",
+          "status": "rejected"
+        }
+      ],
+      "wrapperExitCode": 0,
+      "collectorExitCode": 1,
+      "allSourceInputsUnchanged": true,
+      "groupsRemoved": true,
+      "postOwnerDrainNanoseconds": "332923819",
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 4,
+      "groupKilled": false,
+      "timedOut": false,
+      "cleanObservedTeardown": false,
+      "noRemainingChildren": true,
+      "receipts": {
+        "probe.json": {
+          "bytes": 2767,
+          "sha256": "a87c01c7652aae39e60f0a360ed1e284d60decdcafe4e99f0ad1888970c1deb7"
+        },
+        "native.json": {
+          "bytes": 3491,
+          "sha256": "69aefa935c7a738a94bfc2e6e0963e2c663731bdb7b88169666cd75a72a69c20"
+        },
+        "result.json": {
+          "bytes": 1743,
+          "sha256": "2ab668c6f68bac1e422900c9c2c51b9bad07cbd738ef9fc5ec7b37305167933e"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "43b11ad2d5a0639fa82d003c043e0330b4d5cdf9b449bef94770b879ab5b34bc"
+        },
+        "before.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        },
+        "after.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        }
+      }
+    },
+    {
+      "case": "cdp",
+      "operations": [
+        {
+          "name": "Browser.close",
+          "status": "resolved"
+        },
+        {
+          "name": "evaluate-after-close",
+          "status": "rejected"
+        }
+      ],
+      "wrapperExitCode": 0,
+      "collectorExitCode": 1,
+      "allSourceInputsUnchanged": true,
+      "groupsRemoved": true,
+      "postOwnerDrainNanoseconds": "115098",
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 3,
+      "groupKilled": false,
+      "timedOut": false,
+      "cleanObservedTeardown": false,
+      "noRemainingChildren": true,
+      "receipts": {
+        "probe.json": {
+          "bytes": 2884,
+          "sha256": "022b6ea3018e036a5c61ba53819577c819bf257cd7494b937f92522d3baf78f3"
+        },
+        "native.json": {
+          "bytes": 3323,
+          "sha256": "a29b3bfb9d5a0e74cd77df62b36082988c1a3c127fd8888764c0b67f42744829"
+        },
+        "result.json": {
+          "bytes": 1742,
+          "sha256": "62f29843a068dd553ec4a28c5d08cba8a08fec9ede385252169e2be7605b7d36"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "fa9344f8e3aed3b00c2f465ca1ab7025656229639790501007aa8655faa434b7"
+        },
+        "before.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        },
+        "after.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        }
+      }
+    },
+    {
+      "case": "native-pending",
+      "operations": [
+        {
+          "name": "closeAll",
+          "status": "returned"
+        },
+        {
+          "name": "pending-evaluate",
+          "status": "rejected"
+        },
+        {
+          "name": "evaluate-after-close",
+          "status": "rejected"
+        }
+      ],
+      "wrapperExitCode": 0,
+      "collectorExitCode": 1,
+      "allSourceInputsUnchanged": true,
+      "groupsRemoved": true,
+      "postOwnerDrainNanoseconds": "273067971",
+      "survivorsAfterOwner": 1,
+      "adoptedChildren": 4,
+      "groupKilled": false,
+      "timedOut": false,
+      "cleanObservedTeardown": false,
+      "noRemainingChildren": true,
+      "receipts": {
+        "probe.json": {
+          "bytes": 3136,
+          "sha256": "95d81d722ff2cff3e0bd0a1d4109f903645fb938bc33bdf6fbe4a3921a791b97"
+        },
+        "native.json": {
+          "bytes": 3515,
+          "sha256": "aa4bbb16aba8a5299b77ce6d671ef793b32dd5c426c8a985a5f65cda18c4760b"
+        },
+        "result.json": {
+          "bytes": 1786,
+          "sha256": "a29f4cd6349f427c3c8262bee8f3896af3160d189bbde63f70ce199b6c3f0d79"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "28c6fd08296a034bde44bbd88cd47702a52e2b69ff076c322ae11283ed3d9589"
+        },
+        "before.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        },
+        "after.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        }
+      }
+    },
+    {
+      "case": "cdp-pending",
+      "operations": [
+        {
+          "name": "Browser.close",
+          "status": "resolved"
+        },
+        {
+          "name": "pending-evaluate",
+          "status": "rejected"
+        },
+        {
+          "name": "evaluate-after-close",
+          "status": "rejected"
+        }
+      ],
+      "wrapperExitCode": 0,
+      "collectorExitCode": 1,
+      "allSourceInputsUnchanged": true,
+      "groupsRemoved": true,
+      "postOwnerDrainNanoseconds": "140006",
+      "survivorsAfterOwner": 0,
+      "adoptedChildren": 3,
+      "groupKilled": false,
+      "timedOut": false,
+      "cleanObservedTeardown": false,
+      "noRemainingChildren": true,
+      "receipts": {
+        "probe.json": {
+          "bytes": 3252,
+          "sha256": "d713fecf71b38e8046202f9bb4fd1b7d52456b4085e2d485a41798ac1e6cbf02"
+        },
+        "native.json": {
+          "bytes": 3347,
+          "sha256": "be09ee1814938090cc16dd4c9dfb18cfece2576679563ec1492b36773bac11ac"
+        },
+        "result.json": {
+          "bytes": 1774,
+          "sha256": "98fcb9880d773f45cff430de61449b6f788e13921465db9628fe827594af5e34"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "478bf68014eeb362bdbc13287f79b86d27b45ac3aafcd4041c29336cc761a0f2"
+        },
+        "before.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        },
+        "after.json": {
+          "bytes": 2965,
+          "sha256": "90fbbc91842c3f82ab4c8e7a078dcca0f44d47dc6ced7261e6de27adc1892c73"
+        }
+      }
+    }
+  ],
+  "interpretation": [
+    "Opt-in native schema 2 retains the original absolute deadline and charges natural descendant completion to the full command interval.",
+    "Historical schema 1 receipts and the strict native clean-teardown flag keep their interpretation. The original wrapper wait is separate from adopted waits and cgroup CPU.",
+    "All four new Bun.WebView controls drain without collector killing; native closeAll cases retain about 0.3 seconds of post-wrapper cleanup. The unchanged original H100 receipts still retain nine collector kills.",
+    "Bun.WebView native closeAll itself kills Chrome; absence of collector killing is not a graceful browser-shutdown claim.",
+    "The four Bun controls use a separate private-tmp wrapper and selected input bindings, not the full prospective resource adapter. They do not establish final resource admission or equivalent browser contexts.",
+    "Six coordinator controls exercise actual before/after input/policy binding and resource reconstruction, including changed-input failures and timeout rejection.",
+    "No final performance comparison, runtime policy change, new E2E coverage, or representative 2x claim is made."
+  ]
+}

@@ -92,6 +92,54 @@ class ResourceObservationTests(unittest.TestCase):
         self.assertTrue(observed['observedDrainedMembership'])
         self.assertEqual(observed['wrapperExitCode'], 7)
 
+    def natural_drain(self):
+        self.adopt()
+        self.native.update(schemaVersion=2, teardownPolicy='natural-drain-within-command-deadline-v1',
+                           commandDeadlineNanoseconds=str(int(self.native['cloneStartedNanoseconds']) + 1000000000),
+                           survivorsAfterOwner=1)
+        self.report['collectorCommand'].insert(1, '--natural-drain')
+        self.refresh_native_summary()
+
+    def test_natural_drain_retains_original_wait_and_full_interval(self):
+        self.natural_drain()
+        observed = self.observe()
+        self.assertTrue(observed['observedDrainedMembership'])
+        self.assertFalse(observed['nativeCleanObservedTeardown'])
+        self.assertEqual(observed['originalWrapperWait'], self.native['originalWait'])
+        self.assertEqual(observed['commandInterval']['finishedNanoseconds'], self.native['after']['finishedNanoseconds'])
+        self.assertEqual(observed['teardownPolicy'], 'natural-drain-within-command-deadline-v1')
+
+    def test_natural_drain_cannot_hide_killing_or_timeout(self):
+        self.natural_drain()
+        self.native.update(timedOut=True, groupKilled=True)
+        self.refresh_native_summary()
+        self.assertFalse(self.observe()['observedDrainedMembership'])
+
+    def test_natural_drain_requires_original_opt_in_invocation(self):
+        self.natural_drain()
+        self.report['collectorCommand'].remove('--natural-drain')
+        with self.assertRaisesRegex(ValueError, 'invocation'):
+            self.observe()
+
+    def test_natural_drain_cannot_extend_original_deadline(self):
+        self.natural_drain()
+        self.native['commandDeadlineNanoseconds'] = str(int(self.native['commandDeadlineNanoseconds']) + 1)
+        self.refresh_native_summary()
+        with self.assertRaisesRegex(ValueError, 'deadline'):
+            self.observe()
+
+    def test_natural_drain_policy_cannot_be_attached_to_legacy_receipts(self):
+        self.natural_drain()
+        self.native['schemaVersion'] = 1
+        with self.assertRaisesRegex(ValueError, 'Legacy'):
+            self.refresh_native_summary()
+
+    def test_unknown_natural_drain_policy_is_rejected(self):
+        self.natural_drain()
+        self.native['teardownPolicy'] = 'unbounded'
+        with self.assertRaisesRegex(ValueError, 'policy'):
+            self.refresh_native_summary()
+
     def test_timeout_live_survivor_and_forced_cleanup_cannot_pass_drain(self):
         for change, phrase in [({'timedOut': True, 'groupKilled': True}, 'timed out'),
                                ({'survivorsAfterOwner': 1, 'groupKilled': True}, 'Membership remained'),

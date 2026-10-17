@@ -129,7 +129,7 @@ def boundary(context, leaf, collector, destination, before=None):
 
 def native_summary(native, identity, command, leaf_identity, before, after, collector_process):
     """Join original native bytes; preserve rejected cleanup instead of admitting it."""
-    require(type(native.get('schemaVersion')) is int and native['schemaVersion'] == 1
+    require(type(native.get('schemaVersion')) is int and native['schemaVersion'] in (1, 2)
             and native.get('captureClass') == 'experimental-linux-cgroup-command'
             and native.get('resourceAdmission') is False, 'Wrong native capture class')
     require(native['identity'] == identity and native['clock'] == 'clock_gettime(CLOCK_MONOTONIC)',
@@ -152,6 +152,12 @@ def native_summary(native, identity, command, leaf_identity, before, after, coll
         return int(value)
 
     start = timestamp(native['cloneStartedNanoseconds'])
+    if native['schemaVersion'] == 2:
+        require(native.get('teardownPolicy') == 'natural-drain-within-command-deadline-v1'
+                and timestamp(native.get('commandDeadlineNanoseconds')) > start, 'Invalid natural-drain policy')
+    else:
+        require('teardownPolicy' not in native and 'commandDeadlineNanoseconds' not in native,
+                'Legacy capture cannot declare a new drain policy')
     finish = timestamp(native['cloneFinishedNanoseconds'])
     require(int(before['finishedNanoseconds']) <= start <= finish <= int(after['startedNanoseconds']),
             'Boundary snapshots do not bracket native launch')
@@ -224,7 +230,7 @@ def native_summary(native, identity, command, leaf_identity, before, after, coll
             'resourceAdmission': False}
 
 
-def capture(leaf, collector, request, directory, timeout_ms, command, output_paths=()):
+def capture(leaf, collector, request, directory, timeout_ms, command, output_paths=(), natural_drain=False):
     require(sys.platform == 'linux' and platform.machine() == 'x86_64', 'Capture requires Linux x64')
     require(type(timeout_ms) is int and 50 <= timeout_ms <= 3600000, 'Timeout must be 50..3600000 milliseconds')
     require(1 <= len(command) <= 4096 and os.path.isabs(command[0])
@@ -245,7 +251,8 @@ def capture(leaf, collector, request, directory, timeout_ms, command, output_pat
     identity = uuid.uuid4().hex
     wrapper_command = [str(WRAPPER), *WRAPPER_FLAGS, *command]
     native_path = directory / 'native.json'
-    invocation = [str(collector), leaf, str(native_path), identity, str(timeout_ms), *wrapper_command]
+    invocation = [str(collector), *(['--natural-drain'] if natural_drain else []),
+                  leaf, str(native_path), identity, str(timeout_ms), *wrapper_command]
     context = inputs.CaptureContext(request, identity, command)
     report = {'schemaVersion': 1, 'status': 'rejected', 'captureClass': 'diagnostic-linux-cgroup-capture',
               'captureIdentity': identity, 'resourceAdmission': False, 'performanceAccepted': False,
@@ -328,10 +335,12 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--timeout-ms', type=int, required=True)
     parser.add_argument('--retain-output', action='append', default=[])
+    parser.add_argument('--natural-drain', action='store_true')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
-    report = capture(args.leaf, args.collector, args.inputs, args.output, args.timeout_ms, command, args.retain_output)
+    report = capture(args.leaf, args.collector, args.inputs, args.output, args.timeout_ms, command,
+                     args.retain_output, args.natural_drain)
     print(inputs.encode({'status': report['status'], 'resourceAdmission': False,
                         'report': str(Path(args.output).absolute() / 'capture.json')}).decode())
     return 0 if report['status'] == 'captured' else 1
