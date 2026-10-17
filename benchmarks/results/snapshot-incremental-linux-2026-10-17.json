@@ -1,0 +1,3728 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "native-linux-integrated-snapshot-engineering-comparison",
+  "performanceAdmission": false,
+  "engineeringGatePassed": true,
+  "referenceVersion": "1.60.0",
+  "runtime": {
+    "name": "Bun",
+    "version": "1.4.2",
+    "sha256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c"
+  },
+  "hostObservedAtAnalysis": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "cpuModel": "AMD Ryzen 9 7900X3D 12-Core Processor",
+    "boundToEveryLaunch": false
+  },
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "drivers": {
+    "baseline": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+    "candidate": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969"
+  },
+  "baselineCommit": "46df91782d18c3f10a3b42116a5ee093120f0330",
+  "workload": {
+    "path": "benchmarks/snapshot-capture.mjs",
+    "sha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+    "order": [
+      [
+        "large-ascii",
+        0,
+        "baseline"
+      ],
+      [
+        "large-ascii",
+        0,
+        "candidate"
+      ],
+      [
+        "small-ascii",
+        0,
+        "baseline"
+      ],
+      [
+        "small-ascii",
+        0,
+        "candidate"
+      ],
+      [
+        "large-unicode",
+        0,
+        "baseline"
+      ],
+      [
+        "large-unicode",
+        0,
+        "candidate"
+      ],
+      [
+        "forms-shadow",
+        0,
+        "baseline"
+      ],
+      [
+        "forms-shadow",
+        0,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        0,
+        "baseline"
+      ],
+      [
+        "large-churn",
+        0,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        1,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        1,
+        "baseline"
+      ],
+      [
+        "forms-shadow",
+        1,
+        "candidate"
+      ],
+      [
+        "forms-shadow",
+        1,
+        "baseline"
+      ],
+      [
+        "large-unicode",
+        1,
+        "candidate"
+      ],
+      [
+        "large-unicode",
+        1,
+        "baseline"
+      ],
+      [
+        "small-ascii",
+        1,
+        "candidate"
+      ],
+      [
+        "small-ascii",
+        1,
+        "baseline"
+      ],
+      [
+        "large-ascii",
+        1,
+        "candidate"
+      ],
+      [
+        "large-ascii",
+        1,
+        "baseline"
+      ],
+      [
+        "large-ascii",
+        2,
+        "baseline"
+      ],
+      [
+        "large-ascii",
+        2,
+        "candidate"
+      ],
+      [
+        "small-ascii",
+        2,
+        "baseline"
+      ],
+      [
+        "small-ascii",
+        2,
+        "candidate"
+      ],
+      [
+        "large-unicode",
+        2,
+        "baseline"
+      ],
+      [
+        "large-unicode",
+        2,
+        "candidate"
+      ],
+      [
+        "forms-shadow",
+        2,
+        "baseline"
+      ],
+      [
+        "forms-shadow",
+        2,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        2,
+        "baseline"
+      ],
+      [
+        "large-churn",
+        2,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        3,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        3,
+        "baseline"
+      ],
+      [
+        "forms-shadow",
+        3,
+        "candidate"
+      ],
+      [
+        "forms-shadow",
+        3,
+        "baseline"
+      ],
+      [
+        "large-unicode",
+        3,
+        "candidate"
+      ],
+      [
+        "large-unicode",
+        3,
+        "baseline"
+      ],
+      [
+        "small-ascii",
+        3,
+        "candidate"
+      ],
+      [
+        "small-ascii",
+        3,
+        "baseline"
+      ],
+      [
+        "large-ascii",
+        3,
+        "candidate"
+      ],
+      [
+        "large-ascii",
+        3,
+        "baseline"
+      ]
+    ],
+    "controlsExcludedFromTiming": [
+      [
+        "forms-shadow",
+        -1,
+        "baseline"
+      ],
+      [
+        "forms-shadow",
+        -1,
+        "candidate"
+      ],
+      [
+        "large-churn",
+        -1,
+        "baseline"
+      ],
+      [
+        "large-churn",
+        -1,
+        "candidate"
+      ]
+    ],
+    "pairsPerCase": 4,
+    "trustedClicksPerLaunch": 12,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "tracing": {
+      "snapshots": true,
+      "screenshots": false,
+      "sources": false
+    },
+    "advancement": {
+      "bootstrap": "20000 paired log-ratio resamples, seed 20261017; one-sided 95 percent upper geometric-mean ratio",
+      "largeAsciiAndUnicodeBrowserFlow": 0.8,
+      "largeAsciiAndUnicodeWholeOwner": 0.9,
+      "otherBrowserFlowAndWholeOwner": 1.1,
+      "allFunctionalOutputsRequired": true,
+      "resources": "Retain original wait4 inclusive owner CPU and sampled concurrent RSS as diagnostics. No final complete tree-resource admission."
+    }
+  },
+  "acceptance": {
+    "large-ascii": true,
+    "small-ascii": true,
+    "large-unicode": true,
+    "forms-shadow": true,
+    "large-churn": true
+  },
+  "analysis": {
+    "large-ascii": {
+      "browserFlowMilliseconds": {
+        "ratios": [
+          0.6323870287191832,
+          0.6509676893781827,
+          0.6674867344021508,
+          0.6321441195081507
+        ],
+        "geometricMeanRatio": 0.6455803186448292,
+        "upper95": 0.658533264763728,
+        "baselineMedian": 2180.019432,
+        "candidateMedian": 1418.1986475,
+        "baselineMaximum": 2259.166694,
+        "candidateMaximum": 1456.670556
+      },
+      "wholeOwnerMilliseconds": {
+        "ratios": [
+          0.7017119036575655,
+          0.7306397901613735,
+          0.7321846194285444,
+          0.6928701686351433
+        ],
+        "geometricMeanRatio": 0.7141404899738328,
+        "upper95": 0.7310256916385535,
+        "baselineMedian": 2777.2434099997554,
+        "candidateMedian": 2029.433113000323,
+        "baselineMaximum": 2892.959120999876,
+        "candidateMaximum": 2032.7276910002183
+      },
+      "collectionMilliseconds": {
+        "ratios": [
+          0.33320931616797206,
+          0.3525460793514591,
+          0.3600157109182694,
+          0.34064656174507707
+        ],
+        "geometricMeanRatio": 0.34644924720456133,
+        "upper95": 0.3550725447264652,
+        "baselineMedian": 1285.1499999966472,
+        "candidateMedian": 449.5999999991618,
+        "baselineMaximum": 1343.9000000022352,
+        "candidateMaximum": 458.2999999979511
+      },
+      "originalOwnerInclusiveCpuSeconds": {
+        "ratios": [
+          0.9487958684811921,
+          0.9804692232375332,
+          0.9781386115689866,
+          0.974220552496131
+        ],
+        "geometricMeanRatio": 0.9703225183763625,
+        "upper95": 0.9789033081419077,
+        "baselineMedian": 1.5158325000000001,
+        "candidateMedian": 1.476717,
+        "baselineMaximum": 1.545969,
+        "candidateMaximum": 1.48707
+      },
+      "sampledCpuSeconds": {
+        "ratios": [
+          0.6693548387096775,
+          0.6931506849315069,
+          0.6702702702702702,
+          0.6833333333333333
+        ],
+        "geometricMeanRatio": 0.6789560409327026,
+        "upper95": 0.6873583799165196,
+        "baselineMedian": 3.6750000000000003,
+        "candidateMedian": 2.4850000000000003,
+        "baselineMaximum": 3.72,
+        "candidateMaximum": 2.5300000000000002
+      },
+      "sampledConcurrentRssBytes": {
+        "ratios": [
+          1.0129528333974562,
+          1.006601652082916,
+          0.979841666875807,
+          0.9839397045125446
+        ],
+        "geometricMeanRatio": 0.9957327992334293,
+        "upper95": 1.0081857043394598,
+        "baselineMedian": 1470443520.0,
+        "candidateMedian": 1474093056.0,
+        "baselineMaximum": 1490702336,
+        "candidateMaximum": 1488207872
+      }
+    },
+    "small-ascii": {
+      "browserFlowMilliseconds": {
+        "ratios": [
+          1.0183222422804297,
+          1.0143736874813685,
+          0.9895154108369494,
+          1.034220678083537
+        ],
+        "geometricMeanRatio": 1.0139808336991964,
+        "upper95": 1.0262406734868843,
+        "baselineMedian": 856.0933225,
+        "candidateMedian": 869.565441,
+        "baselineMaximum": 865.4200960000001,
+        "candidateMaximum": 877.8593739999999
+      },
+      "wholeOwnerMilliseconds": {
+        "ratios": [
+          0.9985788203419179,
+          1.0022649783508366,
+          0.9998327431191351,
+          1.001139486545519
+        ],
+        "geometricMeanRatio": 1.0004530510005976,
+        "upper95": 1.001656365408336,
+        "baselineMedian": 1338.0989854999825,
+        "candidateMedian": 1339.1511149998223,
+        "baselineMaximum": 1341.0436809999737,
+        "candidateMaximum": 1339.4083020002654
+      },
+      "collectionMilliseconds": {
+        "ratios": [
+          0.7335526314596297,
+          0.5544871793552459,
+          0.6583629890027912,
+          0.5635738831134507
+        ],
+        "geometricMeanRatio": 0.6232822569016033,
+        "upper95": 0.6867697763271586,
+        "baselineMedian": 29.75000000372529,
+        "candidateMedian": 17.899999995715916,
+        "baselineMaximum": 31.20000000204891,
+        "candidateMaximum": 22.300000000745058
+      },
+      "originalOwnerInclusiveCpuSeconds": {
+        "ratios": [
+          1.0027471623447688,
+          0.9916121866074261,
+          1.0063069458105602,
+          0.9949138527195556
+        ],
+        "geometricMeanRatio": 0.9988776855770676,
+        "upper95": 1.0036359259079222,
+        "baselineMedian": 0.9438765,
+        "candidateMedian": 0.9427734999999999,
+        "baselineMaximum": 0.9457059999999999,
+        "candidateMaximum": 0.9483969999999999
+      },
+      "sampledCpuSeconds": {
+        "ratios": [
+          0.9629629629629631,
+          0.9776119402985076,
+          0.9851851851851852,
+          0.9632352941176472
+        ],
+        "geometricMeanRatio": 0.972202168008161,
+        "upper95": 0.9796512595065723,
+        "baselineMedian": 1.3499999999999999,
+        "candidateMedian": 1.31,
+        "baselineMaximum": 1.3599999999999999,
+        "candidateMaximum": 1.3299999999999998
+      },
+      "sampledConcurrentRssBytes": {
+        "ratios": [
+          0.9957322043458992,
+          1.0019978551977065,
+          0.9871495182615364,
+          0.9987676433429459
+        ],
+        "geometricMeanRatio": 0.9958964559901983,
+        "upper95": 1.000381445484921,
+        "baselineMedian": 1320542208.0,
+        "candidateMedian": 1314312192.0,
+        "baselineMaximum": 1324695552,
+        "candidateMaximum": 1317888000
+      }
+    },
+    "large-unicode": {
+      "browserFlowMilliseconds": {
+        "ratios": [
+          0.5710758718206088,
+          0.5737301782746281,
+          0.5630324404228689,
+          0.5734254560484853
+        ],
+        "geometricMeanRatio": 0.5702994769125772,
+        "upper95": 0.5735016214286486,
+        "baselineMedian": 2473.8634909999996,
+        "candidateMedian": 1418.9527914999999,
+        "baselineMaximum": 2532.541679,
+        "candidateMaximum": 1425.903122
+      },
+      "wholeOwnerMilliseconds": {
+        "ratios": [
+          0.6569871883750167,
+          0.6548195092872564,
+          0.6333251847883303,
+          0.6555572510495684
+        ],
+        "geometricMeanRatio": 0.6500982151148001,
+        "upper95": 0.6562718302547436,
+        "baselineMedian": 3099.097556000288,
+        "candidateMedian": 2033.0175999997664,
+        "baselineMaximum": 3215.813273999629,
+        "candidateMaximum": 2036.6555360005805
+      },
+      "collectionMilliseconds": {
+        "ratios": [
+          0.28297078931166375,
+          0.27625162047273405,
+          0.28065019194053586,
+          0.2703249540160152
+        ],
+        "geometricMeanRatio": 0.2775073437459539,
+        "upper95": 0.28127582891573444,
+        "baselineMedian": 1625.450000002049,
+        "candidateMedian": 451.4000000031665,
+        "baselineMaximum": 1667.2000000029802,
+        "candidateMaximum": 467.9000000040978
+      },
+      "originalOwnerInclusiveCpuSeconds": {
+        "ratios": [
+          0.9539684701899633,
+          0.9718418179228712,
+          0.9372283855309955,
+          0.9506634713864661
+        ],
+        "geometricMeanRatio": 0.9533458073505064,
+        "upper95": 0.9628636727546191,
+        "baselineMedian": 1.591515,
+        "candidateMedian": 1.5192649999999999,
+        "baselineMaximum": 1.621784,
+        "candidateMaximum": 1.53534
+      },
+      "sampledCpuSeconds": {
+        "ratios": [
+          0.6534653465346535,
+          0.6323529411764706,
+          0.6286407766990292,
+          0.6210268948655256
+        ],
+        "geometricMeanRatio": 0.6337584535423237,
+        "upper95": 0.6452002447656292,
+        "baselineMedian": 4.085,
+        "candidateMedian": 2.585,
+        "baselineMaximum": 4.12,
+        "candidateMaximum": 2.64
+      },
+      "sampledConcurrentRssBytes": {
+        "ratios": [
+          0.9806223560193776,
+          1.0173021179209343,
+          0.9838875374749118,
+          0.98825700857126
+        ],
+        "geometricMeanRatio": 0.9924114704944192,
+        "upper95": 1.002674397733257,
+        "baselineMedian": 1460625408.0,
+        "candidateMedian": 1459605504.0,
+        "baselineMaximum": 1507545088,
+        "candidateMaximum": 1482067968
+      }
+    },
+    "forms-shadow": {
+      "browserFlowMilliseconds": {
+        "ratios": [
+          0.8944123425727434,
+          0.9476438907757628,
+          0.9321531468319789,
+          0.928881700635319
+        ],
+        "geometricMeanRatio": 0.9255665632227018,
+        "upper95": 0.9398666048236459,
+        "baselineMedian": 1149.3559340000002,
+        "candidateMedian": 1067.940631,
+        "baselineMaximum": 1182.484876,
+        "candidateMaximum": 1073.764989
+      },
+      "wholeOwnerMilliseconds": {
+        "ratios": [
+          0.9365281897528503,
+          0.9700544458578736,
+          0.964590229892958,
+          0.9315094465446969
+        ],
+        "geometricMeanRatio": 0.9505211214609564,
+        "upper95": 0.9659533915250057,
+        "baselineMedian": 1635.6477244999041,
+        "candidateMedian": 1553.2242385002064,
+        "baselineMaximum": 1667.741231999571,
+        "candidateMaximum": 1556.710775999818
+      },
+      "collectionMilliseconds": {
+        "ratios": [
+          0.4035953471830231,
+          0.4211670895141056,
+          0.40997130557634137,
+          0.39776415434976414
+        ],
+        "geometricMeanRatio": 0.40803265437691616,
+        "upper95": 0.4155314928544956,
+        "baselineMedian": 278.0499999988824,
+        "candidateMedian": 114.39999999525025,
+        "baselineMaximum": 283.7000000011176,
+        "candidateMaximum": 116.19999999552965
+      },
+      "originalOwnerInclusiveCpuSeconds": {
+        "ratios": [
+          0.9782593309005813,
+          0.990371418845072,
+          0.9882456240745641,
+          0.9813029738647373
+        ],
+        "geometricMeanRatio": 0.9845324344844193,
+        "upper95": 0.9887766446087036,
+        "baselineMedian": 1.117326,
+        "candidateMedian": 1.1016365000000001,
+        "baselineMaximum": 1.118948,
+        "candidateMaximum": 1.105512
+      },
+      "sampledCpuSeconds": {
+        "ratios": [
+          0.8707865168539326,
+          0.8707865168539326,
+          0.8920454545454546,
+          0.8659217877094972
+        ],
+        "geometricMeanRatio": 0.8748271663212727,
+        "upper95": 0.8854415653582007,
+        "baselineMedian": 1.78,
+        "candidateMedian": 1.55,
+        "baselineMaximum": 1.79,
+        "candidateMaximum": 1.57
+      },
+      "sampledConcurrentRssBytes": {
+        "ratios": [
+          0.9848064081403977,
+          0.9918849623878286,
+          0.9893933475556624,
+          0.9899306945292916
+        ],
+        "geometricMeanRatio": 0.9890004452574722,
+        "upper95": 0.9909073466826974,
+        "baselineMedian": 1357907968.0,
+        "candidateMedian": 1345558528.0,
+        "baselineMaximum": 1363189760,
+        "candidateMaximum": 1348730880
+      }
+    },
+    "large-churn": {
+      "browserFlowMilliseconds": {
+        "ratios": [
+          0.8047749917872046,
+          0.8150402841502864,
+          0.7976455584501985,
+          0.7977866052405777
+        ],
+        "geometricMeanRatio": 0.8037806735748786,
+        "upper95": 0.8098913741874818,
+        "baselineMedian": 2624.7310525000003,
+        "candidateMedian": 2116.5309454999997,
+        "baselineMaximum": 2668.919394,
+        "candidateMaximum": 2129.228143
+      },
+      "wholeOwnerMilliseconds": {
+        "ratios": [
+          0.8368255552092426,
+          0.8683022024905307,
+          0.8349327449911823,
+          0.8389477016316693
+        ],
+        "geometricMeanRatio": 0.8446427426371496,
+        "upper95": 0.8534987622141856,
+        "baselineMedian": 3258.502253000188,
+        "candidateMedian": 2776.9315434998134,
+        "baselineMaximum": 3315.4940449994683,
+        "candidateMaximum": 2782.107089999954
+      },
+      "collectionMilliseconds": {
+        "ratios": [
+          0.5267252781473528,
+          0.5274699547407379,
+          0.5316179337263424,
+          0.5167507340159646
+        ],
+        "geometricMeanRatio": 0.5256124616830385,
+        "upper95": 0.5295398827680484,
+        "baselineMedian": 1283.9000000013039,
+        "candidateMedian": 679.4000000040978,
+        "baselineMaximum": 1328.3000000044703,
+        "candidateMaximum": 686.3999999957159
+      },
+      "originalOwnerInclusiveCpuSeconds": {
+        "ratios": [
+          0.9759420068317175,
+          0.9713732323470318,
+          0.971916495957248,
+          0.969910544434447
+        ],
+        "geometricMeanRatio": 0.9722830043963804,
+        "upper95": 0.974430634020338,
+        "baselineMedian": 1.870558,
+        "candidateMedian": 1.8217919999999999,
+        "baselineMaximum": 1.8971429999999998,
+        "candidateMaximum": 1.840059
+      },
+      "sampledCpuSeconds": {
+        "ratios": [
+          0.8162790697674418,
+          0.8167053364269142,
+          0.7938388625592417,
+          0.8125
+        ],
+        "geometricMeanRatio": 0.8097760818614811,
+        "upper95": 0.816385615569967,
+        "baselineMedian": 4.305,
+        "candidateMedian": 3.51,
+        "baselineMaximum": 4.32,
+        "candidateMaximum": 3.52
+      },
+      "sampledConcurrentRssBytes": {
+        "ratios": [
+          0.9748500230733733,
+          0.9807928994724486,
+          0.9869587021048779,
+          0.9739620154893994
+        ],
+        "geometricMeanRatio": 0.9791270073764893,
+        "upper95": 0.9838709707563325,
+        "baselineMedian": 1510971392.0,
+        "candidateMedian": 1486608384.0,
+        "baselineMaximum": 1535332352,
+        "candidateMaximum": 1495355392
+      }
+    }
+  },
+  "measurements": [
+    {
+      "name": "04-large-ascii-0-baseline",
+      "workload": "large-ascii",
+      "block": 0,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2259.166694,
+      "wholeOwnerMilliseconds": 2892.959120999876,
+      "collectionMilliseconds": 1343.9000000022352,
+      "originalOwnerInclusiveCpuSeconds": 1.545969,
+      "sampledCpuSeconds": 3.72,
+      "sampledConcurrentRssBytes": 1469177856,
+      "reportSha256": "bb0d8dac71ecfcaea3def1793151e7e7e48d0abb71e97528ef8dce357640e1d8",
+      "resourceSha256": "b924f7ff4e2a93b32c6ba6973c1922b2fe176ef557bdc4febd02747f364524d9"
+    },
+    {
+      "name": "05-large-ascii-0-candidate",
+      "workload": "large-ascii",
+      "block": 0,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1428.667713,
+      "wholeOwnerMilliseconds": 2030.0238520003404,
+      "collectionMilliseconds": 447.7999999988824,
+      "originalOwnerInclusiveCpuSeconds": 1.466809,
+      "sampledCpuSeconds": 2.49,
+      "sampledConcurrentRssBytes": 1488207872,
+      "reportSha256": "aff2cf36604e65f7f6eb00ab34b45e7de7656fe693972094d35e01a28a2a5f96",
+      "resourceSha256": "74bd631680e74e96023c0cb9c32168cfaf8ae0b919f65fdc5b55762090a72912"
+    },
+    {
+      "name": "06-small-ascii-0-baseline",
+      "workload": "small-ascii",
+      "block": 0,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 849.273291,
+      "wholeOwnerMilliseconds": 1341.0436809999737,
+      "collectionMilliseconds": 30.400000005960464,
+      "originalOwnerInclusiveCpuSeconds": 0.942063,
+      "sampledCpuSeconds": 1.3499999999999999,
+      "sampledConcurrentRssBytes": 1321570304,
+      "reportSha256": "b270edf239c2911d8545d4f8fe5f850d5537bd0958bc85aec6454fd6a27c76f5",
+      "resourceSha256": "2c253419e122c5da8f6ec30375dd8849410d732e3c837a94ce11c4c7fe04c2ee"
+    },
+    {
+      "name": "07-small-ascii-0-candidate",
+      "workload": "small-ascii",
+      "block": 0,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 864.8338819999999,
+      "wholeOwnerMilliseconds": 1339.137816999937,
+      "collectionMilliseconds": 22.300000000745058,
+      "originalOwnerInclusiveCpuSeconds": 0.9446509999999999,
+      "sampledCpuSeconds": 1.3,
+      "sampledConcurrentRssBytes": 1315930112,
+      "reportSha256": "e8c637d675683439fbc8f6852c21e268e318851f5e8739c07a1e05d975ddc2b8",
+      "resourceSha256": "47af1db740b023c415204a63de07bbb8525e837a9618256038de1b28936dc56e"
+    },
+    {
+      "name": "08-large-unicode-0-baseline",
+      "workload": "large-unicode",
+      "block": 0,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2431.4515260000003,
+      "wholeOwnerMilliseconds": 3098.4560080005394,
+      "collectionMilliseconds": 1608.999999997206,
+      "originalOwnerInclusiveCpuSeconds": 1.585674,
+      "sampledCpuSeconds": 4.04,
+      "sampledConcurrentRssBytes": 1507545088,
+      "reportSha256": "6aa028b33a747413543270b207a352cf4202db4e057160fa1568df276af71853",
+      "resourceSha256": "f44c4b214455859b5e923e7a1aa340dfdc1b98d907b474363cdf7c6621158558"
+    },
+    {
+      "name": "09-large-unicode-0-candidate",
+      "workload": "large-unicode",
+      "block": 0,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1388.5432999999998,
+      "wholeOwnerMilliseconds": 2035.6459009999526,
+      "collectionMilliseconds": 455.3000000016764,
+      "originalOwnerInclusiveCpuSeconds": 1.512683,
+      "sampledCpuSeconds": 2.64,
+      "sampledConcurrentRssBytes": 1478332416,
+      "reportSha256": "9cff03e5a88a733fc935aa2cdf1467160c1a42af1cffa5d88ab2e7a5fa0b78dc",
+      "resourceSha256": "dae4132a00f0be59f7707dd0332172b67cfa0422916935ef82ee84a45a05eb31"
+    },
+    {
+      "name": "10-forms-shadow-0-baseline",
+      "workload": "forms-shadow",
+      "block": 0,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 1182.484876,
+      "wholeOwnerMilliseconds": 1662.214541999674,
+      "collectionMilliseconds": 283.7000000011176,
+      "originalOwnerInclusiveCpuSeconds": 1.1161569999999998,
+      "sampledCpuSeconds": 1.78,
+      "sampledConcurrentRssBytes": 1352519680,
+      "reportSha256": "46b749186f0eb9d618792cc6e767e35d0a6034a389ca3aec3373c39a7c17a29f",
+      "resourceSha256": "30fa559f6dcb0059a1af6f3b87015d6fdd5d2cd59c44e63d0859e63e4da09d02"
+    },
+    {
+      "name": "11-forms-shadow-0-candidate",
+      "workload": "forms-shadow",
+      "block": 0,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1057.629068,
+      "wholeOwnerMilliseconds": 1556.710775999818,
+      "collectionMilliseconds": 114.49999999627471,
+      "originalOwnerInclusiveCpuSeconds": 1.091891,
+      "sampledCpuSeconds": 1.55,
+      "sampledConcurrentRssBytes": 1331970048,
+      "reportSha256": "307034ed3a05c3cef20e666b9bc89be2472f3953bae1f110e0bfd8705c50bd1b",
+      "resourceSha256": "5b280cb86a56cb7127a5270568469c38a5630f8d89127fab8a11be16140c9631"
+    },
+    {
+      "name": "12-large-churn-0-baseline",
+      "workload": "large-churn",
+      "block": 0,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2635.8443660000003,
+      "wholeOwnerMilliseconds": 3315.4940449994683,
+      "collectionMilliseconds": 1285.300000003539,
+      "originalOwnerInclusiveCpuSeconds": 1.870979,
+      "sampledCpuSeconds": 4.3,
+      "sampledConcurrentRssBytes": 1508925440,
+      "reportSha256": "f5c879f6cb6978c19f95d02839019eab8d454cce6ad0b89a75e86cfab8a5eb0a",
+      "resourceSha256": "7dac4fe2207caa6bb66c5704bcb1d97e4d1e1694bcd1af50c10b6792ec992925"
+    },
+    {
+      "name": "13-large-churn-0-candidate",
+      "workload": "large-churn",
+      "block": 0,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 2121.2616279999997,
+      "wholeOwnerMilliseconds": 2774.4901449996178,
+      "collectionMilliseconds": 677.0000000046566,
+      "originalOwnerInclusiveCpuSeconds": 1.825967,
+      "sampledCpuSeconds": 3.51,
+      "sampledConcurrentRssBytes": 1470976000,
+      "reportSha256": "c64bf0559ccc190717e20b385ee31a2abe44f7c6bdcdfa0565f363437b68d8c4",
+      "resourceSha256": "add4cef519dc4b0ba1ab84a1d67a9266700aa226fc503827d490476a3ad97809"
+    },
+    {
+      "name": "14-large-churn-1-candidate",
+      "workload": "large-churn",
+      "block": 1,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 2111.800263,
+      "wholeOwnerMilliseconds": 2782.107089999954,
+      "collectionMilliseconds": 675.9000000059605,
+      "originalOwnerInclusiveCpuSeconds": 1.8139889999999999,
+      "sampledCpuSeconds": 3.52,
+      "sampledConcurrentRssBytes": 1481887744,
+      "reportSha256": "c7564d57a4418d6e8e568088d12f4542bdb2c77a0d64e87c05ce7a641c927dd1",
+      "resourceSha256": "4f3f935b9a2913ebf030ccbbf8831f27120fae6e2c0946a76f5aac9942ab317c"
+    },
+    {
+      "name": "15-large-churn-1-baseline",
+      "workload": "large-churn",
+      "block": 1,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2591.037896,
+      "wholeOwnerMilliseconds": 3204.0769699997327,
+      "collectionMilliseconds": 1281.4000000022352,
+      "originalOwnerInclusiveCpuSeconds": 1.867448,
+      "sampledCpuSeconds": 4.31,
+      "sampledConcurrentRssBytes": 1510907904,
+      "reportSha256": "8ab9249f4b1e4840008e3e586ba407efa949fc7b550bfeb65db06105f4cbf418",
+      "resourceSha256": "4fdea3e5fd57ee91b0eef3645a7f27d50c36515f943f03a4d233e53e7a8ebed0"
+    },
+    {
+      "name": "16-forms-shadow-1-candidate",
+      "workload": "forms-shadow",
+      "block": 1,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1070.676463,
+      "wholeOwnerMilliseconds": 1552.9317650007215,
+      "collectionMilliseconds": 116.19999999552965,
+      "originalOwnerInclusiveCpuSeconds": 1.105512,
+      "sampledCpuSeconds": 1.55,
+      "sampledConcurrentRssBytes": 1343733760,
+      "reportSha256": "7a9ae50d06f6a60749d2000e6b5e8b1390bb3bcc13cc628f57d7d779ae0f412d",
+      "resourceSha256": "5799f396926f8d9b4e6d5e03746b493326ae3077f34b3c2bb57e6e5ee5f07c85"
+    },
+    {
+      "name": "17-forms-shadow-1-baseline",
+      "workload": "forms-shadow",
+      "block": 1,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 1129.829964,
+      "wholeOwnerMilliseconds": 1600.8707260007213,
+      "collectionMilliseconds": 275.89999999664724,
+      "originalOwnerInclusiveCpuSeconds": 1.11626,
+      "sampledCpuSeconds": 1.78,
+      "sampledConcurrentRssBytes": 1354727424,
+      "reportSha256": "19baeec5a1b9717cbd43a7751c9b982093d1a0c3d4bbb0582a2bf9c3e9f2ae18",
+      "resourceSha256": "b88ee6cd7678729561e71f07dd10bbd937622f7bfec5840b4b2df3fa18a5cb20"
+    },
+    {
+      "name": "18-large-unicode-1-candidate",
+      "workload": "large-unicode",
+      "block": 1,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1417.712354,
+      "wholeOwnerMilliseconds": 2029.7696389998237,
+      "collectionMilliseconds": 447.5000000046566,
+      "originalOwnerInclusiveCpuSeconds": 1.53534,
+      "sampledCpuSeconds": 2.58,
+      "sampledConcurrentRssBytes": 1482067968,
+      "reportSha256": "c2e28d8161fd0328e63896d47f0461da6b8183f4e5ce485771cdc6d562cdce7b",
+      "resourceSha256": "61aa1be1994474f1fa3fa148281f2ae704cf13a23b035c2f3529be26fc8fce65"
+    },
+    {
+      "name": "19-large-unicode-1-baseline",
+      "workload": "large-unicode",
+      "block": 1,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2471.0437199999997,
+      "wholeOwnerMilliseconds": 3099.7391040000366,
+      "collectionMilliseconds": 1619.9000000031665,
+      "originalOwnerInclusiveCpuSeconds": 1.579825,
+      "sampledCpuSeconds": 4.08,
+      "sampledConcurrentRssBytes": 1456861184,
+      "reportSha256": "0a30b2ab026dde99fce7fd10074a80bca0b872cbe108321a2bb31eab971ce732",
+      "resourceSha256": "892ed5ab3a6ee51ac25f9a022e95e5d47419f33acb3980626f686b2fdb71d281"
+    },
+    {
+      "name": "20-small-ascii-1-candidate",
+      "workload": "small-ascii",
+      "block": 1,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 877.8593739999999,
+      "wholeOwnerMilliseconds": 1339.4083020002654,
+      "collectionMilliseconds": 17.299999997019768,
+      "originalOwnerInclusiveCpuSeconds": 0.937371,
+      "sampledCpuSeconds": 1.31,
+      "sampledConcurrentRssBytes": 1312694272,
+      "reportSha256": "b2a319ba0ef53d96e985a607b04a2828e60c3d33f115cfcbe319e869d6509782",
+      "resourceSha256": "b1cbdf66ee40e73a61ce01e1506b2adf5a1416063b6126cf452c3f3d4524efd7"
+    },
+    {
+      "name": "21-small-ascii-1-baseline",
+      "workload": "small-ascii",
+      "block": 1,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 865.4200960000001,
+      "wholeOwnerMilliseconds": 1336.381426999651,
+      "collectionMilliseconds": 31.20000000204891,
+      "originalOwnerInclusiveCpuSeconds": 0.9453,
+      "sampledCpuSeconds": 1.3399999999999999,
+      "sampledConcurrentRssBytes": 1310076928,
+      "reportSha256": "aa35854e0b0b05ae85264d9bb2dc311f610720ce0c9beb1536123f558a7e03de",
+      "resourceSha256": "0b66c674b42c17d4070489bbb699d7c6e51e3b82ba03e8c33ec49b69636bf958"
+    },
+    {
+      "name": "22-large-ascii-1-candidate",
+      "workload": "large-ascii",
+      "block": 1,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1407.7295820000002,
+      "wholeOwnerMilliseconds": 2028.8423740003054,
+      "collectionMilliseconds": 451.3999999994412,
+      "originalOwnerInclusiveCpuSeconds": 1.4810370000000002,
+      "sampledCpuSeconds": 2.5300000000000002,
+      "sampledConcurrentRssBytes": 1481424896,
+      "reportSha256": "040f9f6ff15ac9f606169c1221e44336e32f9284373a994dbb6c3cd6c2c35fa4",
+      "resourceSha256": "2e710e4f8bc7a9e199fd3cc53c0155e9f54949e3859dad10494b10f41af546b1"
+    },
+    {
+      "name": "23-large-ascii-1-baseline",
+      "workload": "large-ascii",
+      "block": 1,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2162.518363,
+      "wholeOwnerMilliseconds": 2776.802469999893,
+      "collectionMilliseconds": 1280.3999999938533,
+      "originalOwnerInclusiveCpuSeconds": 1.510539,
+      "sampledCpuSeconds": 3.6500000000000004,
+      "sampledConcurrentRssBytes": 1471709184,
+      "reportSha256": "dc3771d2f6b2a2b33e6e1a697d686c57b5393e2c5f56c41e60c68c6e6fc7a281",
+      "resourceSha256": "144fa0882b074d4d789d9c0c1f692ad37663ecb26947c722bb0ae1f220731209"
+    },
+    {
+      "name": "24-large-ascii-2-baseline",
+      "workload": "large-ascii",
+      "block": 2,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2182.321357,
+      "wholeOwnerMilliseconds": 2776.2501930001235,
+      "collectionMilliseconds": 1272.999999997206,
+      "originalOwnerInclusiveCpuSeconds": 1.5203060000000002,
+      "sampledCpuSeconds": 3.7,
+      "sampledConcurrentRssBytes": 1468870656,
+      "reportSha256": "cc9c15583cbda0a8c064a6e4dcabad0ece373be7598744c217bf988d7349a5d2",
+      "resourceSha256": "dda9ba1e44163201b1a5715a3ac53ff00f5e3df5f5d143ef25d12c6b0c49bf6c"
+    },
+    {
+      "name": "25-large-ascii-2-candidate",
+      "workload": "large-ascii",
+      "block": 2,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1456.670556,
+      "wholeOwnerMilliseconds": 2032.7276910002183,
+      "collectionMilliseconds": 458.2999999979511,
+      "originalOwnerInclusiveCpuSeconds": 1.48707,
+      "sampledCpuSeconds": 2.48,
+      "sampledConcurrentRssBytes": 1439260672,
+      "reportSha256": "122be92295f3374a3b5aa2038730fc7c76e3fb2c10cc1afc017901d7f2819ecb",
+      "resourceSha256": "2b8e3a3634521ca2f13ff6bcc3458208180ff5f1dfbaef025267016763856907"
+    },
+    {
+      "name": "26-small-ascii-2-baseline",
+      "workload": "small-ascii",
+      "block": 2,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 862.913354,
+      "wholeOwnerMilliseconds": 1338.5577809995084,
+      "collectionMilliseconds": 28.100000005215406,
+      "originalOwnerInclusiveCpuSeconds": 0.942453,
+      "sampledCpuSeconds": 1.3499999999999999,
+      "sampledConcurrentRssBytes": 1324695552,
+      "reportSha256": "3281061f5f779b60e9ad625a46d328599d128784a83579b99acce18769b757e8",
+      "resourceSha256": "488f5d05e8af828c12fae91ce198a2d1410c8afa5cca8af00068ebd0f1682675"
+    },
+    {
+      "name": "27-small-ascii-2-candidate",
+      "workload": "small-ascii",
+      "block": 2,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 853.8660619999999,
+      "wholeOwnerMilliseconds": 1338.3338980002009,
+      "collectionMilliseconds": 18.499999994412065,
+      "originalOwnerInclusiveCpuSeconds": 0.9483969999999999,
+      "sampledCpuSeconds": 1.3299999999999998,
+      "sampledConcurrentRssBytes": 1307672576,
+      "reportSha256": "660171145f7446df646ce700640fd3d442e2a3146d3929a6c9dc6a1fa018cd54",
+      "resourceSha256": "83f513ffe04fe211090ad11e56b76ddc41878c28e0816128dd07d7215acb986f"
+    },
+    {
+      "name": "28-large-unicode-2-baseline",
+      "workload": "large-unicode",
+      "block": 2,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2532.541679,
+      "wholeOwnerMilliseconds": 3215.813273999629,
+      "collectionMilliseconds": 1667.2000000029802,
+      "originalOwnerInclusiveCpuSeconds": 1.621784,
+      "sampledCpuSeconds": 4.12,
+      "sampledConcurrentRssBytes": 1463250944,
+      "reportSha256": "3af81f8a3a809dab4f5a285f148dcafd04f3edc0a9d1def87f21d1e00d0f5fbd",
+      "resourceSha256": "584ed39d5a555bba1d12ae1f5d17421d7699fd47c01e6c90796dfc2213421fc2"
+    },
+    {
+      "name": "29-large-unicode-2-candidate",
+      "workload": "large-unicode",
+      "block": 2,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1425.903122,
+      "wholeOwnerMilliseconds": 2036.6555360005805,
+      "collectionMilliseconds": 467.9000000040978,
+      "originalOwnerInclusiveCpuSeconds": 1.519982,
+      "sampledCpuSeconds": 2.5900000000000003,
+      "sampledConcurrentRssBytes": 1439674368,
+      "reportSha256": "1e0358fd2cc253de2eaaca65c216bdc0f3932c14d6d4bcbfb446d2101d406df4",
+      "resourceSha256": "f1a02710e9ea3a0113771d328b9756e2b4854229109d3968192079723c446b62"
+    },
+    {
+      "name": "30-forms-shadow-2-baseline",
+      "workload": "forms-shadow",
+      "block": 2,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 1142.735829,
+      "wholeOwnerMilliseconds": 1609.0809070001342,
+      "collectionMilliseconds": 278.7999999988824,
+      "originalOwnerInclusiveCpuSeconds": 1.118392,
+      "sampledCpuSeconds": 1.76,
+      "sampledConcurrentRssBytes": 1363189760,
+      "reportSha256": "a5e585a6311c45960c66a4d4e9823bae9c2190086d55f1fff908f6f7bf3b3d23",
+      "resourceSha256": "e201d7965dee2a2c5b7ff3505a263b51a03c605f85ced81578876b0d7a975ab3"
+    },
+    {
+      "name": "31-forms-shadow-2-candidate",
+      "workload": "forms-shadow",
+      "block": 2,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1065.204799,
+      "wholeOwnerMilliseconds": 1552.1037219996288,
+      "collectionMilliseconds": 114.2999999942258,
+      "originalOwnerInclusiveCpuSeconds": 1.105246,
+      "sampledCpuSeconds": 1.57,
+      "sampledConcurrentRssBytes": 1348730880,
+      "reportSha256": "bbfd38f3fecbc7dfe339bd01bbcf9914a4d3ba48d781b840d23c017accae4bc3",
+      "resourceSha256": "b5dbdfaba80e176189d561a8765f5e2ae41fe066266a475611b2c0b50cfb192a"
+    },
+    {
+      "name": "32-large-churn-2-baseline",
+      "workload": "large-churn",
+      "block": 2,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2613.617739,
+      "wholeOwnerMilliseconds": 3203.193170999839,
+      "collectionMilliseconds": 1282.4999999990687,
+      "originalOwnerInclusiveCpuSeconds": 1.870137,
+      "sampledCpuSeconds": 4.22,
+      "sampledConcurrentRssBytes": 1511034880,
+      "reportSha256": "47dcf00b48c217b076f78794b5081e32bc6c94878d5b8b344f9e683752447641",
+      "resourceSha256": "473d28f0b0b90e9d0b86092e07d53ae1378208a1ea052608b978909011ef1af5"
+    },
+    {
+      "name": "33-large-churn-2-candidate",
+      "workload": "large-churn",
+      "block": 2,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 2084.740581,
+      "wholeOwnerMilliseconds": 2674.450866999905,
+      "collectionMilliseconds": 681.800000003539,
+      "originalOwnerInclusiveCpuSeconds": 1.817617,
+      "sampledCpuSeconds": 3.35,
+      "sampledConcurrentRssBytes": 1491329024,
+      "reportSha256": "9f31a74fc49d7a510cd112a391877bade323fbb2e70f75a73e935dbd61c6cc86",
+      "resourceSha256": "7068ac05bfa61ae941449176377d09c9a05580c90198a732f65dc2d0c959d401"
+    },
+    {
+      "name": "34-large-churn-3-candidate",
+      "workload": "large-churn",
+      "block": 3,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 2129.228143,
+      "wholeOwnerMilliseconds": 2779.372942000009,
+      "collectionMilliseconds": 686.3999999957159,
+      "originalOwnerInclusiveCpuSeconds": 1.840059,
+      "sampledCpuSeconds": 3.5100000000000002,
+      "sampledConcurrentRssBytes": 1495355392,
+      "reportSha256": "335289eaf631c7180921b8b3aff7dc28201cf7e1712b798aa97fba29d414c680",
+      "resourceSha256": "49c471b73dc591ae15ec2e0c8e1970687eef2618e5e92643b4882916aceca530"
+    },
+    {
+      "name": "35-large-churn-3-baseline",
+      "workload": "large-churn",
+      "block": 3,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2668.919394,
+      "wholeOwnerMilliseconds": 3312.927536000643,
+      "collectionMilliseconds": 1328.3000000044703,
+      "originalOwnerInclusiveCpuSeconds": 1.8971429999999998,
+      "sampledCpuSeconds": 4.32,
+      "sampledConcurrentRssBytes": 1535332352,
+      "reportSha256": "a4c34d373125489425aff9aa576c515b1b25938487f26ae3c3deffc24feba08a",
+      "resourceSha256": "39dcf36448672693794137f340f3d6e43fede778f8c13356930e0b9ee5060468"
+    },
+    {
+      "name": "36-forms-shadow-3-candidate",
+      "workload": "forms-shadow",
+      "block": 3,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1073.764989,
+      "wholeOwnerMilliseconds": 1553.5167119996913,
+      "collectionMilliseconds": 110.30000000074506,
+      "originalOwnerInclusiveCpuSeconds": 1.098027,
+      "sampledCpuSeconds": 1.55,
+      "sampledConcurrentRssBytes": 1347383296,
+      "reportSha256": "4abe823dc2e977901de79bd226022273df4695fcc74852545d1de657afdb93ea",
+      "resourceSha256": "047e1780350c55232dcc2a23fd0fb1e0cdba7ed2b09159bcc18fd255e701131b"
+    },
+    {
+      "name": "37-forms-shadow-3-baseline",
+      "workload": "forms-shadow",
+      "block": 3,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 1155.9760390000001,
+      "wholeOwnerMilliseconds": 1667.741231999571,
+      "collectionMilliseconds": 277.2999999988824,
+      "originalOwnerInclusiveCpuSeconds": 1.118948,
+      "sampledCpuSeconds": 1.79,
+      "sampledConcurrentRssBytes": 1361088512,
+      "reportSha256": "75d422127d2e5fd621a64aca62792b98bff88f248271e5fa2bda8d5d5e6602ec",
+      "resourceSha256": "c5ca27e245093e8f961a19f1410030e0b4c2d3eeab0e9fd43ade0ffa7a3909e4"
+    },
+    {
+      "name": "38-large-unicode-3-candidate",
+      "workload": "large-unicode",
+      "block": 3,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1420.193229,
+      "wholeOwnerMilliseconds": 2030.3892989995802,
+      "collectionMilliseconds": 440.90000000037253,
+      "originalOwnerInclusiveCpuSeconds": 1.518548,
+      "sampledCpuSeconds": 2.54,
+      "sampledConcurrentRssBytes": 1440878592,
+      "reportSha256": "a1a19bcd8eb27e6ce19dd5e699f6150cc8497208825c3020f19b2f26f9da64cb",
+      "resourceSha256": "d8137496f33fe6c5fa47b8b2dddf7ef2dea950429a3d984264e5df3be6b6f5c2"
+    },
+    {
+      "name": "39-large-unicode-3-baseline",
+      "workload": "large-unicode",
+      "block": 3,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2476.6832619999996,
+      "wholeOwnerMilliseconds": 3097.1960050001144,
+      "collectionMilliseconds": 1631.0000000009313,
+      "originalOwnerInclusiveCpuSeconds": 1.597356,
+      "sampledCpuSeconds": 4.09,
+      "sampledConcurrentRssBytes": 1457999872,
+      "reportSha256": "7abb57b6041562ec4555c8c59cc4c2951cec034557aa2b115f85e5b0522e52e0",
+      "resourceSha256": "94b7b0058318c3f4de7ee5ca35b8e71b11c263ea0498a8fa5b7942e9bae0775c"
+    },
+    {
+      "name": "40-small-ascii-3-candidate",
+      "workload": "small-ascii",
+      "block": 3,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 874.2969999999999,
+      "wholeOwnerMilliseconds": 1339.1644129997076,
+      "collectionMilliseconds": 16.399999999441206,
+      "originalOwnerInclusiveCpuSeconds": 0.940896,
+      "sampledCpuSeconds": 1.31,
+      "sampledConcurrentRssBytes": 1317888000,
+      "reportSha256": "62351fdadf61741eff1a8469faa30e42eb804becde795ad5818c56314d6d3a38",
+      "resourceSha256": "ba628affa90b5d1466cb8579e85affbde11d60f856933db4c0c7fd42d3b5f3de"
+    },
+    {
+      "name": "41-small-ascii-3-baseline",
+      "workload": "small-ascii",
+      "block": 3,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 845.3679359999999,
+      "wholeOwnerMilliseconds": 1337.6401900004566,
+      "collectionMilliseconds": 29.100000001490116,
+      "originalOwnerInclusiveCpuSeconds": 0.9457059999999999,
+      "sampledCpuSeconds": 1.3599999999999999,
+      "sampledConcurrentRssBytes": 1319514112,
+      "reportSha256": "e7673149c1c58f02fb02da421c7b685780e98badcbeeb54b1d608b107d0f1f08",
+      "resourceSha256": "43a52f1c4626b92e51819d0dffce6fbd934419e230a6022fc429f0411cbcc391"
+    },
+    {
+      "name": "42-large-ascii-3-candidate",
+      "workload": "large-ascii",
+      "block": 3,
+      "variant": "candidate",
+      "browserFlowMilliseconds": 1376.631316,
+      "wholeOwnerMilliseconds": 1924.5746239994332,
+      "collectionMilliseconds": 439.3999999947846,
+      "originalOwnerInclusiveCpuSeconds": 1.472397,
+      "sampledCpuSeconds": 2.46,
+      "sampledConcurrentRssBytes": 1466761216,
+      "reportSha256": "a1de838f28d1838dc448ab579b5f88dc6393f986fe2f1cd44b35f63221220e89",
+      "resourceSha256": "e46f505466d8f3edd609395a9729e73be4ffe3c3f55ca8f8cd6d8a4cab34b369"
+    },
+    {
+      "name": "43-large-ascii-3-baseline",
+      "workload": "large-ascii",
+      "block": 3,
+      "variant": "baseline",
+      "browserFlowMilliseconds": 2177.717507,
+      "wholeOwnerMilliseconds": 2777.6843499996176,
+      "collectionMilliseconds": 1289.8999999994412,
+      "originalOwnerInclusiveCpuSeconds": 1.511359,
+      "sampledCpuSeconds": 3.6,
+      "sampledConcurrentRssBytes": 1490702336,
+      "reportSha256": "02e4243f9113a61de2838a93dc84a6e67bb4c750090b9cab91d37cd8d47cc7d0",
+      "resourceSha256": "8ef0036287bb5229a413f3cf554fb7a164c367e8d4c34dfd770051fbeee64fda"
+    }
+  ],
+  "rawLaunches": [
+    {
+      "workload": "forms-shadow",
+      "pair": -1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": false,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 938.0952380000001,
+        "exportMilliseconds": 18.635266,
+        "completeMilliseconds": 1145.4759020000001,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 276.2999999979511,
+          "maximumCollectionMilliseconds": 9.700000000186265,
+          "bytes": 362613
+        }
+      },
+      "originalReportSha256": "fc6cccbcb22e0b47471244ac14c37528d206d6e3e86477b7bd983aac5cb2541c",
+      "originalResourceSha256": "3d81d0231fbd3a8b8a39b2a52d58bd8246b13a421191bfc1efd0ef5afa81ebbf",
+      "supervisedElapsedSeconds": 1.6601546930005497,
+      "originalOwnerInclusiveCpuSeconds": 1.1374749999999998,
+      "sampledConcurrentRssBytes": 1348255744,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "bdc572f0f5bbdffce78c3568d103478037893e3bbc8d3d99cde926ea48ad5cab"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": -1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": false,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 849.3679310000001,
+        "exportMilliseconds": 18.299240999999938,
+        "completeMilliseconds": 1060.9352840000001,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 113.29999999701977,
+          "maximumCollectionMilliseconds": 11.299999999813735,
+          "bytes": 337092
+        }
+      },
+      "originalReportSha256": "61a7dfbd1983f1dfa04887048d3b35cf88322bf95ea33b2edaf25da616b295e0",
+      "originalResourceSha256": "3ac236c04d1189b4311b8ae2e07613e068b4a315471a6617edb70689a9f7d6bc",
+      "supervisedElapsedSeconds": 1.554061179999735,
+      "originalOwnerInclusiveCpuSeconds": 1.09344,
+      "sampledConcurrentRssBytes": 1347211264,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "f88a797f04534486e875c39a6a215c8176c7aeea614bfcf5481c036aea202ce9"
+    },
+    {
+      "workload": "large-churn",
+      "pair": -1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": false,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 2335.784669,
+        "exportMilliseconds": 48.48033499999974,
+        "completeMilliseconds": 2608.54979,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1305.4999999962747,
+          "maximumCollectionMilliseconds": 20.200000000186265,
+          "bytes": 2745663
+        }
+      },
+      "originalReportSha256": "8bebfe76f53e8df314ce0ac107b96232b648bb03a09dc3355f4afb4b0346b636",
+      "originalResourceSha256": "cff64338689b4d5285c1658b522413fd455dce5bb1b482549377e562f6fb9884",
+      "supervisedElapsedSeconds": 3.205147958999987,
+      "originalOwnerInclusiveCpuSeconds": 1.865719,
+      "sampledConcurrentRssBytes": 1489268736,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "9baecd44a7ee08a288ffdc0b11fc8e703a9fe02e6ba7eafefb5cc58704c5753b"
+    },
+    {
+      "workload": "large-churn",
+      "pair": -1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": false,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 1813.5435269999998,
+        "exportMilliseconds": 50.044672999999875,
+        "completeMilliseconds": 2089.744115,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 676.7999999998137,
+          "maximumCollectionMilliseconds": 26.399999999441206,
+          "bytes": 2720514
+        }
+      },
+      "originalReportSha256": "d288ca532e9ff0d4c71ed6b8c4903659213104be2c023f13d03b8521f7283602",
+      "originalResourceSha256": "884974fff906fa3485a54e4686f4d813c7e8baf4176f8ba0d26a715ed104b1d3",
+      "supervisedElapsedSeconds": 2.672037098999681,
+      "originalOwnerInclusiveCpuSeconds": 1.820715,
+      "sampledConcurrentRssBytes": 1470918656,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "a8d86ebdceb5f9ab6395c06bf87bce202732a26a7f0a7170614eb5deaa3468e5"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 0,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 2002.748361,
+        "exportMilliseconds": 32.25818200000003,
+        "completeMilliseconds": 2259.166694,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1343.9000000022352,
+          "maximumCollectionMilliseconds": 25.600000000558794,
+          "bytes": 1249415
+        }
+      },
+      "originalReportSha256": "bb0d8dac71ecfcaea3def1793151e7e7e48d0abb71e97528ef8dce357640e1d8",
+      "originalResourceSha256": "b924f7ff4e2a93b32c6ba6973c1922b2fe176ef557bdc4febd02747f364524d9",
+      "supervisedElapsedSeconds": 2.892959120999876,
+      "originalOwnerInclusiveCpuSeconds": 1.545969,
+      "sampledConcurrentRssBytes": 1469177856,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "78f2445c1d94086d42c7cc654802f63371063fa460d878596e0bf71c88d6822f"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 0,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1158.849025,
+        "exportMilliseconds": 31.740252000000055,
+        "completeMilliseconds": 1428.667713,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 447.7999999988824,
+          "maximumCollectionMilliseconds": 31.299999999813735,
+          "bytes": 1224312
+        }
+      },
+      "originalReportSha256": "aff2cf36604e65f7f6eb00ab34b45e7de7656fe693972094d35e01a28a2a5f96",
+      "originalResourceSha256": "74bd631680e74e96023c0cb9c32168cfaf8ae0b919f65fdc5b55762090a72912",
+      "supervisedElapsedSeconds": 2.0300238520003404,
+      "originalOwnerInclusiveCpuSeconds": 1.466809,
+      "sampledConcurrentRssBytes": 1488207872,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "1ab0c9202100b2974aeaf18ed588158970a67a2b7f85b38eb5da3754dde39fff"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 0,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 657.585198,
+        "exportMilliseconds": 14.906063000000131,
+        "completeMilliseconds": 849.273291,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 30.400000005960464,
+          "maximumCollectionMilliseconds": 4.5,
+          "bytes": 151244
+        }
+      },
+      "originalReportSha256": "b270edf239c2911d8545d4f8fe5f850d5537bd0958bc85aec6454fd6a27c76f5",
+      "originalResourceSha256": "2c253419e122c5da8f6ec30375dd8849410d732e3c837a94ce11c4c7fe04c2ee",
+      "supervisedElapsedSeconds": 1.3410436809999737,
+      "originalOwnerInclusiveCpuSeconds": 0.942063,
+      "sampledConcurrentRssBytes": 1321570304,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "335081a4c0cd9f1ae4620d37ea84940a2861e2744d6d23756660113df045eae2"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 0,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 681.734865,
+        "exportMilliseconds": 13.004506999999876,
+        "completeMilliseconds": 864.8338819999999,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 22.300000000745058,
+          "maximumCollectionMilliseconds": 3.7999999998137355,
+          "bytes": 126117
+        }
+      },
+      "originalReportSha256": "e8c637d675683439fbc8f6852c21e268e318851f5e8739c07a1e05d975ddc2b8",
+      "originalResourceSha256": "47af1db740b023c415204a63de07bbb8525e837a9618256038de1b28936dc56e",
+      "supervisedElapsedSeconds": 1.339137816999937,
+      "originalOwnerInclusiveCpuSeconds": 0.9446509999999999,
+      "sampledConcurrentRssBytes": 1315930112,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "dfdaaea4ad0e128aedde6d2e8632751ab1cc53ed90ce62e74f0d55dd7a285308"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 0,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 2132.3123729999998,
+        "exportMilliseconds": 35.673272,
+        "completeMilliseconds": 2431.4515260000003,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1608.999999997206,
+          "maximumCollectionMilliseconds": 21.299999999813735,
+          "bytes": 1394178
+        }
+      },
+      "originalReportSha256": "6aa028b33a747413543270b207a352cf4202db4e057160fa1568df276af71853",
+      "originalResourceSha256": "f44c4b214455859b5e923e7a1aa340dfdc1b98d907b474363cdf7c6621158558",
+      "supervisedElapsedSeconds": 3.0984560080005394,
+      "originalOwnerInclusiveCpuSeconds": 1.585674,
+      "sampledConcurrentRssBytes": 1507545088,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "af86c668ff26e61750a7af122ca86883b5ff93ce3e20c7dbfa9841605afd0704"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 0,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 1084.592326,
+        "exportMilliseconds": 33.24329500000022,
+        "completeMilliseconds": 1388.5432999999998,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 455.3000000016764,
+          "maximumCollectionMilliseconds": 29.5,
+          "bytes": 1368742
+        }
+      },
+      "originalReportSha256": "9cff03e5a88a733fc935aa2cdf1467160c1a42af1cffa5d88ab2e7a5fa0b78dc",
+      "originalResourceSha256": "dae4132a00f0be59f7707dd0332172b67cfa0422916935ef82ee84a45a05eb31",
+      "supervisedElapsedSeconds": 2.0356459009999526,
+      "originalOwnerInclusiveCpuSeconds": 1.512683,
+      "sampledConcurrentRssBytes": 1478332416,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "abe84ba7735365d75d7d23acf74a290cbeb8fdd71c81e0379d2420a104115baf"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 0,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 975.049219,
+        "exportMilliseconds": 17.462537999999995,
+        "completeMilliseconds": 1182.484876,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 283.7000000011176,
+          "maximumCollectionMilliseconds": 9.200000000186265,
+          "bytes": 362461
+        }
+      },
+      "originalReportSha256": "46b749186f0eb9d618792cc6e767e35d0a6034a389ca3aec3373c39a7c17a29f",
+      "originalResourceSha256": "30fa559f6dcb0059a1af6f3b87015d6fdd5d2cd59c44e63d0859e63e4da09d02",
+      "supervisedElapsedSeconds": 1.6622145419996741,
+      "originalOwnerInclusiveCpuSeconds": 1.1161569999999998,
+      "sampledConcurrentRssBytes": 1352519680,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "30038b55445dff2b159d382e99b1057f57555e3911a01fe745d530a2cb4abd9b"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 0,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 847.0001510000001,
+        "exportMilliseconds": 24.61490600000002,
+        "completeMilliseconds": 1057.629068,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 114.49999999627471,
+          "maximumCollectionMilliseconds": 11.900000000372529,
+          "bytes": 337325
+        }
+      },
+      "originalReportSha256": "307034ed3a05c3cef20e666b9bc89be2472f3953bae1f110e0bfd8705c50bd1b",
+      "originalResourceSha256": "5b280cb86a56cb7127a5270568469c38a5630f8d89127fab8a11be16140c9631",
+      "supervisedElapsedSeconds": 1.556710775999818,
+      "originalOwnerInclusiveCpuSeconds": 1.091891,
+      "sampledConcurrentRssBytes": 1331970048,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "2dbd9c07a0b9f2c72fa1d3b8eaed65d6f050cb482a3894c2e75582486d45458c"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 0,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 2358.795033,
+        "exportMilliseconds": 48.50205500000038,
+        "completeMilliseconds": 2635.8443660000003,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1285.300000003539,
+          "maximumCollectionMilliseconds": 17.90000000037253,
+          "bytes": 2745620
+        }
+      },
+      "originalReportSha256": "f5c879f6cb6978c19f95d02839019eab8d454cce6ad0b89a75e86cfab8a5eb0a",
+      "originalResourceSha256": "7dac4fe2207caa6bb66c5704bcb1d97e4d1e1694bcd1af50c10b6792ec992925",
+      "supervisedElapsedSeconds": 3.3154940449994683,
+      "originalOwnerInclusiveCpuSeconds": 1.870979,
+      "sampledConcurrentRssBytes": 1508925440,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "86136b914fdb4f91bdb4b15d00fb1eb996886f76ec08110838a87549d01a45f8"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 0,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 1837.302698,
+        "exportMilliseconds": 50.41788900000029,
+        "completeMilliseconds": 2121.2616279999997,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 677.0000000046566,
+          "maximumCollectionMilliseconds": 27.09999999962747,
+          "bytes": 2720519
+        }
+      },
+      "originalReportSha256": "c64bf0559ccc190717e20b385ee31a2abe44f7c6bdcdfa0565f363437b68d8c4",
+      "originalResourceSha256": "add4cef519dc4b0ba1ab84a1d67a9266700aa226fc503827d490476a3ad97809",
+      "supervisedElapsedSeconds": 2.7744901449996178,
+      "originalOwnerInclusiveCpuSeconds": 1.825967,
+      "sampledConcurrentRssBytes": 1470976000,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "9bff05da6b0e0206432f785695a72068afad2cacae24c900d3e6470370bf0d73"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 1827.7797149999997,
+        "exportMilliseconds": 47.663728999999876,
+        "completeMilliseconds": 2111.800263,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 675.9000000059605,
+          "maximumCollectionMilliseconds": 28.399999999441206,
+          "bytes": 2720408
+        }
+      },
+      "originalReportSha256": "c7564d57a4418d6e8e568088d12f4542bdb2c77a0d64e87c05ce7a641c927dd1",
+      "originalResourceSha256": "4f3f935b9a2913ebf030ccbbf8831f27120fae6e2c0946a76f5aac9942ab317c",
+      "supervisedElapsedSeconds": 2.782107089999954,
+      "originalOwnerInclusiveCpuSeconds": 1.8139889999999999,
+      "sampledConcurrentRssBytes": 1481887744,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "80278abcac056212c8958d3578a3b0725e63aa582aea3607388ff14ee9ebf6eb"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 2304.735744,
+        "exportMilliseconds": 58.07395899999983,
+        "completeMilliseconds": 2591.037896,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1281.4000000022352,
+          "maximumCollectionMilliseconds": 17.199999999254942,
+          "bytes": 2745536
+        }
+      },
+      "originalReportSha256": "8ab9249f4b1e4840008e3e586ba407efa949fc7b550bfeb65db06105f4cbf418",
+      "originalResourceSha256": "4fdea3e5fd57ee91b0eef3645a7f27d50c36515f943f03a4d233e53e7a8ebed0",
+      "supervisedElapsedSeconds": 3.2040769699997327,
+      "originalOwnerInclusiveCpuSeconds": 1.867448,
+      "sampledConcurrentRssBytes": 1510907904,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "ec946233bd2be5a6d39bfa902c1235d4ddf64e6cb79a39de5e8542d563dc0c0e"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 863.300048,
+        "exportMilliseconds": 16.50040899999999,
+        "completeMilliseconds": 1070.676463,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 116.19999999552965,
+          "maximumCollectionMilliseconds": 12.400000000372529,
+          "bytes": 337051
+        }
+      },
+      "originalReportSha256": "7a9ae50d06f6a60749d2000e6b5e8b1390bb3bcc13cc628f57d7d779ae0f412d",
+      "originalResourceSha256": "5799f396926f8d9b4e6d5e03746b493326ae3077f34b3c2bb57e6e5ee5f07c85",
+      "supervisedElapsedSeconds": 1.5529317650007215,
+      "originalOwnerInclusiveCpuSeconds": 1.105512,
+      "sampledConcurrentRssBytes": 1343733760,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "4452a99b7a364dd286c1733caede7e85879d66176fc718f6a18c29700cea1da1"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 932.25675,
+        "exportMilliseconds": 16.560511000000133,
+        "completeMilliseconds": 1129.829964,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 275.89999999664724,
+          "maximumCollectionMilliseconds": 6.599999999627471,
+          "bytes": 362522
+        }
+      },
+      "originalReportSha256": "19baeec5a1b9717cbd43a7751c9b982093d1a0c3d4bbb0582a2bf9c3e9f2ae18",
+      "originalResourceSha256": "b88ee6cd7678729561e71f07dd10bbd937622f7bfec5840b4b2df3fa18a5cb20",
+      "supervisedElapsedSeconds": 1.6008707260007213,
+      "originalOwnerInclusiveCpuSeconds": 1.11626,
+      "sampledConcurrentRssBytes": 1354727424,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "cf9f07d0464e99769477930d73557a43c70c09c2c2f6cbf6973de365289c088d"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 1107.4610659999998,
+        "exportMilliseconds": 32.49370799999997,
+        "completeMilliseconds": 1417.712354,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 447.5000000046566,
+          "maximumCollectionMilliseconds": 32.200000000186265,
+          "bytes": 1368964
+        }
+      },
+      "originalReportSha256": "c2e28d8161fd0328e63896d47f0461da6b8183f4e5ce485771cdc6d562cdce7b",
+      "originalResourceSha256": "61aa1be1994474f1fa3fa148281f2ae704cf13a23b035c2f3529be26fc8fce65",
+      "supervisedElapsedSeconds": 2.0297696389998237,
+      "originalOwnerInclusiveCpuSeconds": 1.53534,
+      "sampledConcurrentRssBytes": 1482067968,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "6a31bcf85f54781d9108da09fc98ce3ab96d1fc5cd466418759e432409b5cb59"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 2171.0550120000003,
+        "exportMilliseconds": 36.472401999999875,
+        "completeMilliseconds": 2471.0437199999997,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1619.9000000031665,
+          "maximumCollectionMilliseconds": 24.799999999813735,
+          "bytes": 1394209
+        }
+      },
+      "originalReportSha256": "0a30b2ab026dde99fce7fd10074a80bca0b872cbe108321a2bb31eab971ce732",
+      "originalResourceSha256": "892ed5ab3a6ee51ac25f9a022e95e5d47419f33acb3980626f686b2fdb71d281",
+      "supervisedElapsedSeconds": 3.0997391040000366,
+      "originalOwnerInclusiveCpuSeconds": 1.579825,
+      "sampledConcurrentRssBytes": 1456861184,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "52d3285a8e9cbfe8d5dc5de975345b200e0cc1da4b29b6a5759d22016e69e298"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 684.7565259999999,
+        "exportMilliseconds": 21.355350999999928,
+        "completeMilliseconds": 877.8593739999999,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 17.299999997019768,
+          "maximumCollectionMilliseconds": 1.5,
+          "bytes": 125854
+        }
+      },
+      "originalReportSha256": "b2a319ba0ef53d96e985a607b04a2828e60c3d33f115cfcbe319e869d6509782",
+      "originalResourceSha256": "b1cbdf66ee40e73a61ce01e1506b2adf5a1416063b6126cf452c3f3d4524efd7",
+      "supervisedElapsedSeconds": 1.3394083020002654,
+      "originalOwnerInclusiveCpuSeconds": 0.937371,
+      "sampledConcurrentRssBytes": 1312694272,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "a1b6bcf0c13acfab8d164b5c5d4c1da01ee2fb40fd7c0bbc7ea932533bdba24e"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 672.131617,
+        "exportMilliseconds": 12.765895,
+        "completeMilliseconds": 865.4200960000001,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 31.20000000204891,
+          "maximumCollectionMilliseconds": 1.6000000005587935,
+          "bytes": 151381
+        }
+      },
+      "originalReportSha256": "aa35854e0b0b05ae85264d9bb2dc311f610720ce0c9beb1536123f558a7e03de",
+      "originalResourceSha256": "0b66c674b42c17d4070489bbb699d7c6e51e3b82ba03e8c33ec49b69636bf958",
+      "supervisedElapsedSeconds": 1.336381426999651,
+      "originalOwnerInclusiveCpuSeconds": 0.9453,
+      "sampledConcurrentRssBytes": 1310076928,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "4ae479b378e973f085f04e5316f6fbb74ce20ab065832e9a4b22dfe552fe887c"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 1,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1141.158969,
+        "exportMilliseconds": 31.75584200000003,
+        "completeMilliseconds": 1407.7295820000002,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 451.3999999994412,
+          "maximumCollectionMilliseconds": 26.300000000745058,
+          "bytes": 1224127
+        }
+      },
+      "originalReportSha256": "040f9f6ff15ac9f606169c1221e44336e32f9284373a994dbb6c3cd6c2c35fa4",
+      "originalResourceSha256": "2e710e4f8bc7a9e199fd3cc53c0155e9f54949e3859dad10494b10f41af546b1",
+      "supervisedElapsedSeconds": 2.0288423740003054,
+      "originalOwnerInclusiveCpuSeconds": 1.4810370000000002,
+      "sampledConcurrentRssBytes": 1481424896,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "e66bbb10143d386ab54bd5ed576127162d45f9a932294f1a55e9fc3c2846fd5b"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 1,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1902.7486729999998,
+        "exportMilliseconds": 33.90421500000002,
+        "completeMilliseconds": 2162.518363,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1280.3999999938533,
+          "maximumCollectionMilliseconds": 20.90000000037253,
+          "bytes": 1249583
+        }
+      },
+      "originalReportSha256": "dc3771d2f6b2a2b33e6e1a697d686c57b5393e2c5f56c41e60c68c6e6fc7a281",
+      "originalResourceSha256": "144fa0882b074d4d789d9c0c1f692ad37663ecb26947c722bb0ae1f220731209",
+      "supervisedElapsedSeconds": 2.776802469999893,
+      "originalOwnerInclusiveCpuSeconds": 1.510539,
+      "sampledConcurrentRssBytes": 1471709184,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "38753651fb2c64ac4383ea017720732a6513ddf8bb9f8432534a4456ffd025cd"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 2,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1923.0353129999999,
+        "exportMilliseconds": 32.28031400000009,
+        "completeMilliseconds": 2182.321357,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1272.999999997206,
+          "maximumCollectionMilliseconds": 18.700000000186265,
+          "bytes": 1249485
+        }
+      },
+      "originalReportSha256": "cc9c15583cbda0a8c064a6e4dcabad0ece373be7598744c217bf988d7349a5d2",
+      "originalResourceSha256": "dda9ba1e44163201b1a5715a3ac53ff00f5e3df5f5d143ef25d12c6b0c49bf6c",
+      "supervisedElapsedSeconds": 2.7762501930001235,
+      "originalOwnerInclusiveCpuSeconds": 1.5203060000000002,
+      "sampledConcurrentRssBytes": 1468870656,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "4f2e68b21bcf8c82218477615491a497bf58d362b37ed46059dbb6a1d74bca98"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 2,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1185.106801,
+        "exportMilliseconds": 33.36493499999983,
+        "completeMilliseconds": 1456.670556,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 458.2999999979511,
+          "maximumCollectionMilliseconds": 25.90000000037253,
+          "bytes": 1224272
+        }
+      },
+      "originalReportSha256": "122be92295f3374a3b5aa2038730fc7c76e3fb2c10cc1afc017901d7f2819ecb",
+      "originalResourceSha256": "2b8e3a3634521ca2f13ff6bcc3458208180ff5f1dfbaef025267016763856907",
+      "supervisedElapsedSeconds": 2.0327276910002183,
+      "originalOwnerInclusiveCpuSeconds": 1.48707,
+      "sampledConcurrentRssBytes": 1439260672,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "c310ad1aa96b0bff8c3093b50e4d786fee0b9758d98dd9b3503d51fdef4ed928"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 2,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 674.5128,
+        "exportMilliseconds": 14.04661699999997,
+        "completeMilliseconds": 862.913354,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 28.100000005215406,
+          "maximumCollectionMilliseconds": 1.099999999627471,
+          "bytes": 151177
+        }
+      },
+      "originalReportSha256": "3281061f5f779b60e9ad625a46d328599d128784a83579b99acce18769b757e8",
+      "originalResourceSha256": "488f5d05e8af828c12fae91ce198a2d1410c8afa5cca8af00068ebd0f1682675",
+      "supervisedElapsedSeconds": 1.3385577809995084,
+      "originalOwnerInclusiveCpuSeconds": 0.942453,
+      "sampledConcurrentRssBytes": 1324695552,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "0e2eb618b6bc87f792cb7b45059829acad44617be617fa11773322b26e7b9f18"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 2,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 659.7301699999999,
+        "exportMilliseconds": 14.280418999999938,
+        "completeMilliseconds": 853.8660619999999,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 18.499999994412065,
+          "maximumCollectionMilliseconds": 1.900000000372529,
+          "bytes": 126001
+        }
+      },
+      "originalReportSha256": "660171145f7446df646ce700640fd3d442e2a3146d3929a6c9dc6a1fa018cd54",
+      "originalResourceSha256": "83f513ffe04fe211090ad11e56b76ddc41878c28e0816128dd07d7215acb986f",
+      "supervisedElapsedSeconds": 1.3383338980002009,
+      "originalOwnerInclusiveCpuSeconds": 0.9483969999999999,
+      "sampledConcurrentRssBytes": 1307672576,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "e9cfbb68e3a13000909c7b31794beffe69c96129850ac4f342cbeb05e1ea41d8"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 2,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 2231.996809,
+        "exportMilliseconds": 33.93892099999994,
+        "completeMilliseconds": 2532.541679,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1667.2000000029802,
+          "maximumCollectionMilliseconds": 31.600000000558794,
+          "bytes": 1394082
+        }
+      },
+      "originalReportSha256": "3af81f8a3a809dab4f5a285f148dcafd04f3edc0a9d1def87f21d1e00d0f5fbd",
+      "originalResourceSha256": "584ed39d5a555bba1d12ae1f5d17421d7699fd47c01e6c90796dfc2213421fc2",
+      "supervisedElapsedSeconds": 3.215813273999629,
+      "originalOwnerInclusiveCpuSeconds": 1.621784,
+      "sampledConcurrentRssBytes": 1463250944,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "89c2c894c42b56ccf6737797cdf89ee24327e53f510e7ac6592ea250a5f17b28"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 2,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 1121.0380910000001,
+        "exportMilliseconds": 33.50277600000004,
+        "completeMilliseconds": 1425.903122,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 467.9000000040978,
+          "maximumCollectionMilliseconds": 34,
+          "bytes": 1369010
+        }
+      },
+      "originalReportSha256": "1e0358fd2cc253de2eaaca65c216bdc0f3932c14d6d4bcbfb446d2101d406df4",
+      "originalResourceSha256": "f1a02710e9ea3a0113771d328b9756e2b4854229109d3968192079723c446b62",
+      "supervisedElapsedSeconds": 2.0366555360005805,
+      "originalOwnerInclusiveCpuSeconds": 1.519982,
+      "sampledConcurrentRssBytes": 1439674368,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "7fff287527b4a977038252e036dfbbe3d8c6de127b8b736c0cc448387ee7e5a1"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 2,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 935.867336,
+        "exportMilliseconds": 16.02753400000006,
+        "completeMilliseconds": 1142.735829,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 278.7999999988824,
+          "maximumCollectionMilliseconds": 9.599999999627471,
+          "bytes": 362498
+        }
+      },
+      "originalReportSha256": "a5e585a6311c45960c66a4d4e9823bae9c2190086d55f1fff908f6f7bf3b3d23",
+      "originalResourceSha256": "e201d7965dee2a2c5b7ff3505a263b51a03c605f85ced81578876b0d7a975ab3",
+      "supervisedElapsedSeconds": 1.6090809070001342,
+      "originalOwnerInclusiveCpuSeconds": 1.118392,
+      "sampledConcurrentRssBytes": 1363189760,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "5a13a57f27a2f935920dda95cc5a74515ece8d907b56e2529b66a2c81d76059e"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 2,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 854.23076,
+        "exportMilliseconds": 18.338314999999966,
+        "completeMilliseconds": 1065.204799,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 114.2999999942258,
+          "maximumCollectionMilliseconds": 12.700000000186265,
+          "bytes": 337199
+        }
+      },
+      "originalReportSha256": "bbfd38f3fecbc7dfe339bd01bbcf9914a4d3ba48d781b840d23c017accae4bc3",
+      "originalResourceSha256": "b5dbdfaba80e176189d561a8765f5e2ae41fe066266a475611b2c0b50cfb192a",
+      "supervisedElapsedSeconds": 1.5521037219996288,
+      "originalOwnerInclusiveCpuSeconds": 1.105246,
+      "sampledConcurrentRssBytes": 1348730880,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "947d284a0be2120e4bb050d1f22b86da81ff7ae80fbf10a2c201bac56dae1cdd"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 2,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 2326.919701,
+        "exportMilliseconds": 57.507036999999855,
+        "completeMilliseconds": 2613.617739,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1282.4999999990687,
+          "maximumCollectionMilliseconds": 21.299999999813735,
+          "bytes": 2745782
+        }
+      },
+      "originalReportSha256": "47dcf00b48c217b076f78794b5081e32bc6c94878d5b8b344f9e683752447641",
+      "originalResourceSha256": "473d28f0b0b90e9d0b86092e07d53ae1378208a1ea052608b978909011ef1af5",
+      "supervisedElapsedSeconds": 3.203193170999839,
+      "originalOwnerInclusiveCpuSeconds": 1.870137,
+      "sampledConcurrentRssBytes": 1511034880,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "df8e494a6967b7dcc6935a67a0497d08fd90d4d28df7300a6934709cbedd1ec1"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 2,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 1793.676553,
+        "exportMilliseconds": 57.50046400000019,
+        "completeMilliseconds": 2084.740581,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 681.800000003539,
+          "maximumCollectionMilliseconds": 27.100000000558794,
+          "bytes": 2720513
+        }
+      },
+      "originalReportSha256": "9f31a74fc49d7a510cd112a391877bade323fbb2e70f75a73e935dbd61c6cc86",
+      "originalResourceSha256": "7068ac05bfa61ae941449176377d09c9a05580c90198a732f65dc2d0c959d401",
+      "supervisedElapsedSeconds": 2.674450866999905,
+      "originalOwnerInclusiveCpuSeconds": 1.817617,
+      "sampledConcurrentRssBytes": 1491329024,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "1e2f19718cb1ff225aacf1800380c05e5150a4a7425d341becac4e3570562ce0"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 3,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 1848.865876,
+        "exportMilliseconds": 48.88236500000039,
+        "completeMilliseconds": 2129.228143,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 686.3999999957159,
+          "maximumCollectionMilliseconds": 27.59999999962747,
+          "bytes": 2720580
+        }
+      },
+      "originalReportSha256": "335289eaf631c7180921b8b3aff7dc28201cf7e1712b798aa97fba29d414c680",
+      "originalResourceSha256": "49c471b73dc591ae15ec2e0c8e1970687eef2618e5e92643b4882916aceca530",
+      "supervisedElapsedSeconds": 2.779372942000009,
+      "originalOwnerInclusiveCpuSeconds": 1.840059,
+      "sampledConcurrentRssBytes": 1495355392,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "40a609612404606ca9d0b7e1c01f5041f524e21312e20384768426a7d5c81fd8"
+    },
+    {
+      "workload": "large-churn",
+      "pair": 3,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-churn",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "8a15f371ef8805df439a51642c625a31c2f65c876f952b0dc0ed8e35591f56a9",
+        "final": {
+          "trusted": 12,
+          "title": "churn 12 row 0"
+        },
+        "actionsMilliseconds": 2392.514231,
+        "exportMilliseconds": 48.779319000000214,
+        "completeMilliseconds": 2668.919394,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1328.3000000044703,
+          "maximumCollectionMilliseconds": 25.59999999962747,
+          "bytes": 2745656
+        }
+      },
+      "originalReportSha256": "a4c34d373125489425aff9aa576c515b1b25938487f26ae3c3deffc24feba08a",
+      "originalResourceSha256": "39dcf36448672693794137f340f3d6e43fede778f8c13356930e0b9ee5060468",
+      "supervisedElapsedSeconds": 3.312927536000643,
+      "originalOwnerInclusiveCpuSeconds": 1.8971429999999998,
+      "sampledConcurrentRssBytes": 1535332352,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "835bf4fdec2ee53689ff883e1df21eedfd8404af5886a212a49aeb45f7202834"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 3,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 874.0968340000001,
+        "exportMilliseconds": 17.76555099999996,
+        "completeMilliseconds": 1073.764989,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 110.30000000074506,
+          "maximumCollectionMilliseconds": 9.099999999627471,
+          "bytes": 337249
+        }
+      },
+      "originalReportSha256": "4abe823dc2e977901de79bd226022273df4695fcc74852545d1de657afdb93ea",
+      "originalResourceSha256": "047e1780350c55232dcc2a23fd0fb1e0cdba7ed2b09159bcc18fd255e701131b",
+      "supervisedElapsedSeconds": 1.5535167119996913,
+      "originalOwnerInclusiveCpuSeconds": 1.098027,
+      "sampledConcurrentRssBytes": 1347383296,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "e4d0b1491df0d26cad028ca62d65635aa1ae73f84d63fa834d74f15d18708060"
+    },
+    {
+      "workload": "forms-shadow",
+      "pair": 3,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "forms-shadow",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "58db45273e98a3cd74459351b5c08cf802755b930774f40fe7a330943e4c4052",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "dynamic": {
+          "value": "live 12",
+          "checked": true,
+          "selected": true,
+          "css": "rgb(4, 5, 6)"
+        },
+        "actionsMilliseconds": 948.57058,
+        "exportMilliseconds": 16.69733999999994,
+        "completeMilliseconds": 1155.9760390000001,
+        "snapshots": {
+          "count": 126,
+          "rendered": 126,
+          "collectionMilliseconds": 277.2999999988824,
+          "maximumCollectionMilliseconds": 7,
+          "bytes": 362588
+        }
+      },
+      "originalReportSha256": "75d422127d2e5fd621a64aca62792b98bff88f248271e5fa2bda8d5d5e6602ec",
+      "originalResourceSha256": "c5ca27e245093e8f961a19f1410030e0b4c2d3eeab0e9fd43ade0ffa7a3909e4",
+      "supervisedElapsedSeconds": 1.667741231999571,
+      "originalOwnerInclusiveCpuSeconds": 1.118948,
+      "sampledConcurrentRssBytes": 1361088512,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "9c86ba66b27e91e8b71915b64e1196833f78f83265acecfc88c896360ce79d7d"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 3,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 1110.074703,
+        "exportMilliseconds": 33.73175900000001,
+        "completeMilliseconds": 1420.193229,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 440.90000000037253,
+          "maximumCollectionMilliseconds": 31.299999999813735,
+          "bytes": 1369002
+        }
+      },
+      "originalReportSha256": "a1a19bcd8eb27e6ce19dd5e699f6150cc8497208825c3020f19b2f26f9da64cb",
+      "originalResourceSha256": "d8137496f33fe6c5fa47b8b2dddf7ef2dea950429a3d984264e5df3be6b6f5c2",
+      "supervisedElapsedSeconds": 2.03038929899958,
+      "originalOwnerInclusiveCpuSeconds": 1.518548,
+      "sampledConcurrentRssBytes": 1440878592,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "a88a70d4d42dd9ea939a428daac3b84612553fca0de1f9a809170f4c3f5f06de"
+    },
+    {
+      "workload": "large-unicode",
+      "pair": 3,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-unicode",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "c0c023f1ac3d5383e906c62080bfa8a625a5dcdcab58fa2d1dc3251aa48170d4",
+        "final": {
+          "trusted": 12,
+          "title": "m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 m\u00e9tadonn\u00e9es \u0394 \ud83d\ude00 "
+        },
+        "actionsMilliseconds": 2168.292003,
+        "exportMilliseconds": 43.605143000000226,
+        "completeMilliseconds": 2476.6832619999996,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1631.0000000009313,
+          "maximumCollectionMilliseconds": 24,
+          "bytes": 1393974
+        }
+      },
+      "originalReportSha256": "7abb57b6041562ec4555c8c59cc4c2951cec034557aa2b115f85e5b0522e52e0",
+      "originalResourceSha256": "94b7b0058318c3f4de7ee5ca35b8e71b11c263ea0498a8fa5b7942e9bae0775c",
+      "supervisedElapsedSeconds": 3.0971960050001144,
+      "originalOwnerInclusiveCpuSeconds": 1.597356,
+      "sampledConcurrentRssBytes": 1457999872,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "2070f30cc1b7e2c33a07ddbe82f6a898d133b3ac5c8ba6b1ac353672b788ce0f"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 3,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 687.597434,
+        "exportMilliseconds": 14.280959999999823,
+        "completeMilliseconds": 874.2969999999999,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 16.399999999441206,
+          "maximumCollectionMilliseconds": 1.3999999994412065,
+          "bytes": 125796
+        }
+      },
+      "originalReportSha256": "62351fdadf61741eff1a8469faa30e42eb804becde795ad5818c56314d6d3a38",
+      "originalResourceSha256": "ba628affa90b5d1466cb8579e85affbde11d60f856933db4c0c7fd42d3b5f3de",
+      "supervisedElapsedSeconds": 1.3391644129997076,
+      "originalOwnerInclusiveCpuSeconds": 0.940896,
+      "sampledConcurrentRssBytes": 1317888000,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "c1d9ea790808571adbafe76bd8b995cb01febee6bb0802bf5b8a5e4b4138ba82"
+    },
+    {
+      "workload": "small-ascii",
+      "pair": 3,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "small-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "a9fe31f7de1a024a02a2ef68f2697ede82e4a14777152eab4250e89fd77e42ae",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 660.6677809999999,
+        "exportMilliseconds": 14.066084000000046,
+        "completeMilliseconds": 845.3679359999999,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 29.100000001490116,
+          "maximumCollectionMilliseconds": 1.099999999627471,
+          "bytes": 151336
+        }
+      },
+      "originalReportSha256": "e7673149c1c58f02fb02da421c7b685780e98badcbeeb54b1d608b107d0f1f08",
+      "originalResourceSha256": "43a52f1c4626b92e51819d0dffce6fbd934419e230a6022fc429f0411cbcc391",
+      "supervisedElapsedSeconds": 1.3376401900004566,
+      "originalOwnerInclusiveCpuSeconds": 0.9457059999999999,
+      "sampledConcurrentRssBytes": 1319514112,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "74c324f3ee0b70800822e7b9871af972a873dbc20c8934d5ff24b50037edd03c"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 3,
+      "variant": "candidate",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "90616120ff327961ed6911f16c34fa2d41ab2b9bd5dd2bcd62b6ccee56128969",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1104.175374,
+        "exportMilliseconds": 32.17421300000001,
+        "completeMilliseconds": 1376.631316,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 439.3999999947846,
+          "maximumCollectionMilliseconds": 27.600000000558794,
+          "bytes": 1224186
+        }
+      },
+      "originalReportSha256": "a1de838f28d1838dc448ab579b5f88dc6393f986fe2f1cd44b35f63221220e89",
+      "originalResourceSha256": "e46f505466d8f3edd609395a9729e73be4ffe3c3f55ca8f8cd6d8a4cab34b369",
+      "supervisedElapsedSeconds": 1.9245746239994332,
+      "originalOwnerInclusiveCpuSeconds": 1.472397,
+      "sampledConcurrentRssBytes": 1466761216,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "941d2b837330d7184db388914e6db6835c3ec5cab7078d6b26ae1508865a96ed"
+    },
+    {
+      "workload": "large-ascii",
+      "pair": 3,
+      "variant": "baseline",
+      "includedInPairedAnalysis": true,
+      "report": {
+        "status": "passed",
+        "engine": "candidate",
+        "workload": "large-ascii",
+        "scope": "Synthetic complete browser trace flow; ordinary snapshots, no screenshots or source embedding. No representative-suite or final resource acceptance.",
+        "driverSha256": "f0f9d711b212456e881401d9832fa1393652452a43522205058ea64bd91ee9b4",
+        "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+        "sourceSha256": "e668504a90af802b37773c81b6fd5f83ad0f9acf8732283b1c1e16d1967bf2ec",
+        "outcomes": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "fixtureSha256": "5fd106274e73a05404a6f0b6713790057aafd9a8dbadc467d73cf910e11fbf49",
+        "final": {
+          "trusted": 12,
+          "title": "repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata repeated metadata "
+        },
+        "actionsMilliseconds": 1921.6404739999998,
+        "exportMilliseconds": 31.900444999999763,
+        "completeMilliseconds": 2177.717507,
+        "snapshots": {
+          "count": 124,
+          "rendered": 124,
+          "collectionMilliseconds": 1289.8999999994412,
+          "maximumCollectionMilliseconds": 22.199999999254942,
+          "bytes": 1249448
+        }
+      },
+      "originalReportSha256": "02e4243f9113a61de2838a93dc84a6e67bb4c750090b9cab91d37cd8d47cc7d0",
+      "originalResourceSha256": "8ef0036287bb5229a413f3cf554fb7a164c367e8d4c34dfd770051fbeee64fda",
+      "supervisedElapsedSeconds": 2.7776843499996176,
+      "originalOwnerInclusiveCpuSeconds": 1.511359,
+      "sampledConcurrentRssBytes": 1490702336,
+      "exitCode": 0,
+      "timedOut": false,
+      "forcedCleanup": false,
+      "remainingObservedProcesses": 0,
+      "archiveSha256": "092d5210adadcd054d00112487b1f2717caf878dc377f015ee1208140ca76457"
+    }
+  ],
+  "limits": [
+    "Both arms are Flashwright release drivers. No Playwright leadership or representative majority-scenario 2x claim.",
+    "Four balanced launch pairs per workload do not establish tail behavior; maxima are observed maxima. No unfavorable valid samples were removed.",
+    "Browser flow includes launch, context/page creation, navigation, trusted actions, export and teardown. Supervised whole-command time additionally includes fixture preparation and independent archive replay verification.",
+    "Original-owner inclusive wait4 CPU and sampled concurrent RSS are retained diagnostics. Complete process-tree custody and final matched-resource admission remain unverified.",
+    "Browser argv, kernel boot identity and resource policy were not bound at every performance boundary. Fixed owned launch policy is unchanged; host metadata below was observed at analysis, not authenticated for every launch.",
+    "Current full-core integration, refreshed macOS, native CI, release acceptance and representative application performance remain separate open gates."
+  ],
+  "retainedAttempts": [
+    "Earlier 44-launch comparison passed on the pre-guard binary. It is retained separately and not pooled with this final binary campaign.",
+    "Final guard bounds removed-node iteration when the cache admits no entries. The negative control visited all 5000 supplied removals before the fix; the corrected control stays within 4096 combined visits.",
+    "Initial analysis expected 124 snapshots for every workload. Dynamic forms execute an additional verification evaluation and correctly record 126; all original samples and timings remain included."
+  ]
+}

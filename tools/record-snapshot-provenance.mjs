@@ -57,7 +57,7 @@ const implementationPaths = [
   'crates/flashwright-engine/src/recording/phases.rs', 'crates/flashwright-engine/src/snapshots/archive.rs',
   'crates/flashwright-engine/src/snapshots/budget.rs', 'crates/flashwright-engine/src/snapshots/document.rs',
   'crates/flashwright-engine/src/snapshots/mod.rs', 'crates/flashwright-engine/src/snapshots/outcome.rs',
-  'crates/flashwright-engine/src/diagnostic_sessions.rs',
+  'crates/flashwright-engine/src/diagnostic_sessions.rs', 'crates/flashwright-engine/src/page_state.rs',
 ];
 const implementation = Object.fromEntries(await Promise.all(implementationPaths.map(async path => [path, hash(await readFile(path))])));
 const licensePath = 'compatibility/upstream/LICENSE.playwright';
@@ -78,7 +78,8 @@ const provenance = {
   relationship: 'Snapshot serialization conventions and the viewer wire format are adapted from the pinned Playwright reference. The resident collector, bounded cache, native worker, transport decoder and streamed host archive owner are independent implementations. Playwright is used by conformance tools as the reference browser driver and viewer, never as the candidate browser-command backend.',
   changes: [
     'Preserve the node/reference grammar, reconstruction attributes for forms, scroll, shadow DOM and frames, target markers, and snapshot phase names used by the pinned viewer.',
-    'Replace upstream DOM-node expandos, prototype instrumentation and retained mutation state with two bounded WeakMap cache generations and explicit capture/commit/discard/reset/retire ownership.',
+    'Replace upstream DOM-node expandos and prototype instrumentation with two bounded WeakMap cache generations, weak node/subtree metadata, bounded mutation invalidation and explicit capture/commit/discard/reset/retire ownership. Reuse only unchanged simple subtrees after live-state checks; retain full dynamic collection.',
+    'Start observation lazily; disconnect the exact original factory before releasing its object group, or retain scoped original native context/session destruction evidence. Navigation context clears are accepted only under the fixed owned-session, no-BFCache policy.',
     'Read admitted CSSOM rules during capture, including inline and adopted stylesheets; bound work, DATA, cache and override representations. Conflicting contents for one external stylesheet URL fail explicitly.',
     'Native workers retain original document, session, call, phase and allocation identities across cancellation and late replies. An archive owns immutable DATA before browser-cache commit; transfer credits survive until host ingestion acknowledgement.',
     'Stream frozen snapshot JSON through bounded UTF-8 encoding buffers; use SHA-256 resource aliases accepted by the viewer instead of the reference SHA-1 digest implementation.',

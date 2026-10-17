@@ -344,8 +344,20 @@ impl Fixture {
         self.reply(&command, json!({})).await;
     }
 
+    async fn retire_factory(&mut self) {
+        let command = self.command("Runtime.callFunctionOn").await;
+        assert_eq!(command["params"]["objectId"], "factory");
+        assert_eq!(
+            command["params"]["functionDeclaration"],
+            "function() { return this.retire(); }"
+        );
+        self.reply(&command, json!({"result":{"type":"boolean","value":true}}))
+            .await;
+    }
+
     async fn finish(&mut self) {
         self.document.close();
+        self.retire_factory().await;
         self.release("__flashwright_snapshot_test-owner").await;
         timeout(Duration::from_secs(1), self.document.wait_finished())
             .await
@@ -641,6 +653,7 @@ async fn reused_numeric_adoption_context_does_not_release_unknown_alias_ownershi
         )
         .await;
     fixture.release("_attempt_").await;
+    fixture.retire_factory().await;
     fixture.release("__flashwright_snapshot_test-owner").await;
     timeout(Duration::from_secs(1), fixture.document.wait_finished())
         .await
@@ -713,6 +726,7 @@ async fn unknown_commit_cannot_release_factory_grants_or_change_the_public_page_
         )
         .await;
     fixture.release("_decision_").await;
+    fixture.retire_factory().await;
     fixture.release("__flashwright_snapshot_test-owner").await;
     timeout(Duration::from_secs(1), fixture.document.wait_finished())
         .await
@@ -924,6 +938,7 @@ async fn close_during_discard_release_recovers_the_reply_before_releasing_the_fa
     fixture.assert_no_command().await;
     fixture.reply(&first_release, json!({})).await;
     fixture.release("_decision_").await;
+    fixture.retire_factory().await;
     fixture.release("__flashwright_snapshot_test-owner").await;
     timeout(Duration::from_secs(1), fixture.document.wait_finished())
         .await
@@ -1170,6 +1185,7 @@ async fn a_dialog_retired_worker_releases_its_claim_before_payload_ingestion() {
         &json!({}),
     );
     fixture.page.state.changed.send_replace(1);
+    fixture.retire_factory().await;
     let release = fixture.command("Runtime.releaseObjectGroup").await;
     assert!(
         fixture
@@ -1506,6 +1522,7 @@ async fn child_context_replacement_during_frame_owner_lookup_prevents_adoption()
         ))
     ));
     fixture.release("_attempt_").await;
+    fixture.retire_factory().await;
     fixture.release("__flashwright_snapshot_test-owner").await;
     fixture.document.wait_finished().await;
     fixture.assert_no_command().await;
@@ -1530,7 +1547,199 @@ async fn changed_child_backend_is_rejected_before_capture_and_aliases_are_releas
         matches!(capture.await.unwrap(), Err(SnapshotFailure::Failed(error)) if error.code == ErrorCode::Protocol)
     );
     fixture.release("_attempt_").await;
+    fixture.retire_factory().await;
     fixture.release("__flashwright_snapshot_test-owner").await;
     fixture.document.wait_finished().await;
     fixture.assert_no_command().await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn observer_retirement_requires_acknowledgement_or_exact_native_destruction() {
+    for response in [
+        "held",
+        "false",
+        "exception",
+        "object-error",
+        "context-error",
+    ] {
+        let mut fixture = Fixture::new();
+        let capture = fixture.capture(false);
+        fixture.install().await;
+        fixture.captured(1).await;
+        let prepared = capture.await.unwrap().unwrap();
+        let discard = tokio::spawn(prepared.decision.discard());
+        let command = fixture.command("Runtime.callFunctionOn").await;
+        fixture
+            .reply(&command, json!({"result":{"value":true}}))
+            .await;
+        fixture.release("_decision_").await;
+        discard.await.unwrap().unwrap();
+        drop(prepared.reservation);
+        fixture.document.close();
+        let retirement = fixture.command("Runtime.callFunctionOn").await;
+        assert_eq!(retirement["params"]["objectId"], "factory");
+        assert!(
+            retirement["params"]["functionDeclaration"]
+                .as_str()
+                .unwrap()
+                .contains("this.retire()")
+        );
+        match response {
+            "false" => {
+                fixture
+                    .reply(&retirement, json!({"result":{"value":false}}))
+                    .await
+            }
+            "exception" => {
+                fixture
+                    .reply(
+                        &retirement,
+                        json!({"result":{"value":true},"exceptionDetails":{}}),
+                    )
+                    .await
+            }
+            "object-error" | "context-error" => {
+                let message = if response == "object-error" {
+                    "Could not find object with given id"
+                } else {
+                    "Cannot find context with specified id"
+                };
+                let reply = json!({"id":retirement["id"],"sessionId":"session","error":{"code":-32000,"message":message}});
+                fixture
+                    .writer
+                    .write_all(reply.to_string().as_bytes())
+                    .await
+                    .unwrap();
+                fixture.writer.write_all(&[0]).await.unwrap();
+            }
+            _ => {}
+        }
+        fixture.page.state.state.lock().unwrap().observe_in_session(
+            "other-session",
+            "Runtime.executionContextsCleared",
+            &json!({}),
+        );
+        fixture.page.state.changed.send_replace(1);
+        for (session, parameters) in [
+            (
+                "other-session",
+                json!({"executionContextId":2,"executionContextUniqueId":"isolated-original"}),
+            ),
+            (
+                "session",
+                json!({"executionContextId":2,"executionContextUniqueId":"isolated-successor"}),
+            ),
+            ("session", json!({"executionContextId":2})),
+        ] {
+            fixture.page.state.state.lock().unwrap().observe_in_session(
+                session,
+                "Runtime.executionContextDestroyed",
+                &parameters,
+            );
+        }
+        fixture.assert_no_command().await;
+        assert!(
+            fixture
+                .budget
+                .owns_document("context", "session", "main-original")
+        );
+        fixture.page.state.state.lock().unwrap().observe_in_session(
+            "session",
+            "Runtime.executionContextDestroyed",
+            &json!({"executionContextId":2,"executionContextUniqueId":"isolated-original"}),
+        );
+        fixture.release("__flashwright_snapshot_test-owner").await;
+        timeout(Duration::from_secs(1), fixture.document.wait_finished())
+            .await
+            .unwrap();
+        assert!(
+            !fixture
+                .budget
+                .owns_document("context", "session", "main-original")
+        );
+        assert!(!*fixture.destruction.borrow());
+        assert!(fixture.page.state.state.lock().unwrap().failure.is_none());
+    }
+}
+
+#[tokio::test]
+async fn owned_session_clear_retires_original_watches_without_destroyed_events() {
+    let fixture = Fixture::new();
+    {
+        let mut state = fixture.page.state.state.lock().unwrap();
+        let original = state
+            .watch_context_destruction(&fixture.realm.context)
+            .unwrap();
+        state.observe_in_session(
+            "other-session",
+            "Runtime.executionContextsCleared",
+            &json!({}),
+        );
+        assert!(!*original.destroyed.borrow());
+        state.observe_in_session("session", "Runtime.executionContextsCleared", &json!({}));
+        assert!(*original.destroyed.borrow());
+        assert!(!state.context_is_alive(&fixture.realm.context));
+        // A later context with a reused numeric identity does not inherit the signal.
+        let successor = ExecutionContext {
+            unique_identifier: "successor-world".into(),
+            ..fixture.realm.context.clone()
+        };
+        state
+            .execution_contexts
+            .insert(successor.key(), successor.clone());
+        let successor_watch = state.watch_context_destruction(&successor).unwrap();
+        assert!(!*successor_watch.destroyed.borrow());
+    }
+    fixture.document.close();
+    fixture.document.wait_finished().await;
+}
+
+#[tokio::test]
+async fn original_context_watches_are_bounded_and_survive_registry_replacement() {
+    let fixture = Fixture::new();
+    {
+        let mut state = fixture.page.state.state.lock().unwrap();
+        let mut owners = Vec::new();
+        for _ in 0..128 {
+            owners.push(
+                state
+                    .watch_context_destruction(&fixture.realm.context)
+                    .unwrap(),
+            );
+        }
+        assert_eq!(
+            state
+                .watch_context_destruction(&fixture.realm.context)
+                .err()
+                .unwrap()
+                .code,
+            ErrorCode::ResourceLimit
+        );
+        owners.pop();
+        owners.push(
+            state
+                .watch_context_destruction(&fixture.realm.context)
+                .unwrap(),
+        );
+        state.execution_contexts.insert(
+            fixture.realm.context.key(),
+            ExecutionContext {
+                unique_identifier: "new-world".into(),
+                ..fixture.realm.context.clone()
+            },
+        );
+        assert!(owners.iter().all(|owner| !*owner.destroyed.borrow()));
+        state.observe_in_session(
+            "session",
+            "Runtime.executionContextDestroyed",
+            &json!({"executionContextId":2,"executionContextUniqueId":"isolated-original"}),
+        );
+        assert!(owners.iter().all(|owner| *owner.destroyed.borrow()));
+        assert_eq!(
+            state.execution_contexts[&fixture.realm.context.key()].unique_identifier,
+            "new-world"
+        );
+    }
+    fixture.document.close();
+    fixture.document.wait_finished().await;
 }

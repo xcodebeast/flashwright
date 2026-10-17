@@ -13,7 +13,7 @@ use tokio::time::{Duration, Instant, sleep_until};
 
 use crate::Page;
 use crate::locators::{LOCATOR_WORLD_NAME, LocatorRealm};
-use crate::page_state::{ExecutionContext, PagePurpose};
+use crate::page_state::{ExecutionContext, ExecutionContextDestruction, PagePurpose};
 
 use super::budget::{
     AdmissionError, CacheGrant, CaptureReservation, DocumentReservation, PayloadReservation,
@@ -139,6 +139,7 @@ struct DocumentWorker {
     owner_group: String,
     attempt_group: Option<String>,
     factory: Option<String>,
+    factory_context: Option<Arc<ExecutionContextDestruction>>,
     pending: Option<PendingCommand>,
     generation_grant: CacheGrant,
     committed: CacheGrant,
@@ -321,6 +322,7 @@ impl SnapshotDocument {
             owner_group: format!("__flashwright_snapshot_{owner_identifier}"),
             attempt_group: None,
             factory: None,
+            factory_context: None,
             pending: None,
             generation_grant,
             committed: CacheGrant::default(),
@@ -1059,6 +1061,14 @@ impl DocumentWorker {
             return Ok(());
         }
         self.select_utility_world(request).await?;
+        self.factory_context = Some(
+            self.page
+                .state
+                .state
+                .lock()
+                .unwrap()
+                .watch_context_destruction(self.capture_context()?)?,
+        );
         let grant = self.generation_grant;
         let configuration = json!({
             "maximumCacheBytes": grant.bytes,
@@ -1215,12 +1225,59 @@ impl DocumentWorker {
         if let Some(group) = self.attempt_group.take() {
             self.release_group_or_wait_for_session(&group).await;
         }
+        self.retire_factory().await;
         if self.attempt_number != 0 {
             self.release_group_or_wait_for_session(&self.owner_group.clone())
                 .await;
             self.attempt_number = 0;
         }
         self.factory = None;
+        self.factory_context = None;
+    }
+
+    async fn retire_factory(&mut self) {
+        let Some(factory) = self.factory.as_ref() else {
+            // Installation alone never starts observation. A late installation reply
+            // can therefore be reclaimed by its original object group.
+            return;
+        };
+        let mut context_destroyed = self
+            .factory_context
+            .as_ref()
+            .expect("installed snapshot factory has an original context watch")
+            .destroyed
+            .subscribe();
+        if *context_destroyed.borrow() || *self.session_destroyed.borrow() {
+            return;
+        }
+        if let Ok(mut command) = self.connection.start_command(
+            "Runtime.callFunctionOn",
+            json!({
+                "objectId": factory,
+                "functionDeclaration": "function() { return this.retire(); }",
+                "returnByValue": true,
+            }),
+            Some(&self.page.session_identifier),
+        ) {
+            let result = tokio::select! {
+                biased;
+                _ = confirmed_session_destruction(&mut self.session_destroyed) => return,
+                _ = confirmed_session_destruction(&mut context_destroyed) => return,
+                result = command.response() => result,
+            };
+            if result.is_ok_and(|value| {
+                value.get("exceptionDetails").is_none() && value["result"]["value"] == true
+            }) {
+                return;
+            }
+        }
+        // A context-error string can also mean that the session now addresses a
+        // different renderer. Only original native destruction settles uncertainty.
+        tokio::select! {
+            biased;
+            _ = confirmed_session_destruction(&mut self.session_destroyed) => {},
+            _ = confirmed_session_destruction(&mut context_destroyed) => {},
+        }
     }
 
     async fn release_group_or_wait_for_session(&mut self, group: &str) {
