@@ -131,6 +131,17 @@ test('unsealed retained campaign reconstructs declared originals without admitti
     assert.equal(verified.analysis.evidenceComplete, false);
     assert.equal(verified.analysis.declaredScenarioCount, 9);
     assert.equal(verified.checkedFiles['originals/native.json'], fixture.header.files.native.sha256);
+    assert.equal(verified.linuxResourceObservations.length, 1);
+    const observation = verified.linuxResourceObservations[0];
+    assert.equal(observation.scenarioId, 'runner-interaction');
+    assert.equal(observation.engine, 'playwright');
+    assert.equal(observation.attemptIndex, 0);
+    assert.deepEqual(observation.metrics, { cgroupCpuUsageMicroseconds: 12, cgroupChargedPeakBytes: Number(fixture.expected.cgroupChargedPeakBytes) });
+    assert.equal(observation.wrapperExitCode, 7);
+    assert.equal(observation.resourceAdmission, false);
+    assert.equal(observation.performanceAccepted, false);
+    assert.equal(observation.nativeCleanObservedTeardown, false);
+    assert.deepEqual(observation.commandInterval, fixture.expected.commandInterval);
     await writeFile(join(directory, 'originals/native.json'), '{}');
     await assert.rejects(() => verifyFinalGoalEvidence(directory), /size differs before read/);
   } finally { await rm(directory, { recursive: true, force: true }); }
