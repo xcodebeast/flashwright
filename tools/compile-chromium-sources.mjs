@@ -45,6 +45,17 @@ if (!isInside(sourceDirectory, outputDirectory) || !existsSync(resolve(outputDir
 }
 const ninja = singlePassNinja ?? resolve(sourceDirectory, 'third_party/ninja', process.platform === 'win32' ? 'ninja.exe' : 'ninja');
 if (!existsSync(ninja)) throw new Error('The checkout must provide its pinned Ninja executable.');
+if (singlePassNinja) {
+  // Check outside the output directory: even a dry run with an incompatible
+  // Ninja can discard the existing build log before compiling anything.
+  const version = spawnSync(ninja, ['--version'], {
+    cwd: sourceDirectory, encoding: 'utf8', timeout: 5000, maxBuffer: 4096,
+  });
+  if (version.error) throw version.error;
+  if (version.status !== 0 || version.stdout.trim() !== '1.12.1') {
+    throw new Error('--single-pass-ninja requires patched Ninja 1.12.1; refusing to open build metadata with this executable.');
+  }
+}
 const sources = [...new Set(argumentsList.slice(2).map(name => {
   const path = realpathSync(resolve(sourceDirectory, name));
   if (!isInside(sourceDirectory, path) || isInside(outputDirectory, path) ||
