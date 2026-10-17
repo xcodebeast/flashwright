@@ -6,6 +6,8 @@ import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidence.mjs';
 import { reconstructFinalGoalLinuxCapturedOutputs } from './final-goal-linux-evidence.mjs';
+import { reconstructFinalGoalLinuxApplication } from './final-goal-linux-application.mjs';
+import { applicationCorpusDirectory, loadApplicationCorpus } from '../benchmarks/application-corpus.mjs';
 import { finalGoalAccountingClasses, finalGoalResourceMetrics } from '../benchmarks/final-goal-resource-policy.mjs';
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
@@ -137,6 +139,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
   const scenarioResults = [];
   const linuxResourceObservations = [];
   const linuxCapturedOutputs = [];
+  const linuxApplicationOutcomes = [];
   const scenarios = new Map(configuration.scenarios.map(scenario => [scenario.id, scenario]));
   for (const entry of campaign.scenarios) {
     const result = await jsonEvidence(entry);
@@ -157,7 +160,8 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
           for (const test of run.report.tests) for (const receipt of test.diagnostics?.evidence ?? []) await evidence(receipt);
           const linuxOriginals = run.evidence.filter(receipt => receipt.kind === 'linux-cgroup-originals');
           const outputManifests = run.evidence.filter(receipt => receipt.kind === 'linux-captured-outputs');
-          if (linuxOriginals.length || outputManifests.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
+          const applicationManifests = run.evidence.filter(receipt => receipt.kind === 'linux-application-workload');
+          if (linuxOriginals.length || outputManifests.length || applicationManifests.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
             && run.resources.status === 'verified-local-observations') {
             assert.equal(configuration.accountingClass, finalGoalAccountingClasses.linux, 'Linux originals require the Linux campaign class');
             assert.equal(linuxOriginals.length, 1, 'Missing unique raw Linux cgroup originals');
@@ -179,6 +183,20 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
                 (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
               assert.equal(outputs.captureIdentity, derived.captureIdentity, 'Output capture identity differs from resources');
               linuxCapturedOutputs.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine, ...outputs });
+            }
+            if (applicationManifests.length) {
+              assert.equal(applicationManifests.length, 1, 'Missing unique Linux application manifest');
+              assert.equal(outputManifests.length, 1, 'Application outcomes require captured outputs');
+              assert(['application-todomvc', 'application-svgomg'].includes(result.id), 'Unsupported Linux application scenario');
+              const application = result.id.slice('application-'.length);
+              const workload = await reconstructFinalGoalLinuxApplication({ resourceManifest: manifest,
+                outputManifest: await jsonEvidence(outputManifests[0]), manifest: await jsonEvidence(applicationManifests[0]),
+                readBytes: (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits),
+                corpus: await loadApplicationCorpus(applicationCorpusDirectory(application)), application, engine,
+                workers: configuration.cells.find(declared => declared.id === cell.id).workers });
+              assert.equal(workload.captureIdentity, derived.captureIdentity);
+              assert.equal(workload.tests.length, scenarios.get(result.id).expectedTestCount);
+              linuxApplicationOutcomes.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine, ...workload });
             }
           }
         }
@@ -226,7 +244,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     }
   }
 
-  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations, linuxCapturedOutputs,
+  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations, linuxCapturedOutputs, linuxApplicationOutcomes,
     inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
       scope: 'Cumulative structured and retained payload read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
     scope: 'Retained file integrity and pure final-goal policy validation. Original behavior, source and collector algorithm admission remain separately required; a draft never proves final acceptance.' };
