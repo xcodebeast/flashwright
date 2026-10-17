@@ -241,7 +241,7 @@ async function run(name, chromium) {
       if (name === 'flashwright') report.candidateChecks.push('same-process cross-origin preparation matches reference and restores original pixels');
     } else if (name === 'flashwright') {
       const child = page.frames().find(frame => frame !== page.mainFrame());
-      await assert.rejects(child.locator('body').count(), error => error.name === 'UnsupportedFeatureError');
+      assert.equal(await child.locator('body').count(), 1);
       await page.evaluate(() => { globalThis.preparationMutations = 0; new MutationObserver(records => preparationMutations += records.length).observe(document.documentElement, { subtree:true, attributes:true, childList:true }); });
       await assert.rejects(page.screenshot(), error => error.name === 'UnsupportedFeatureError');
       assert.equal(await page.evaluate(() => preparationMutations), 0);
