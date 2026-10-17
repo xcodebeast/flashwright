@@ -2,6 +2,9 @@
 
 use super::*;
 use crate::locators::{check_exception, context_was_destroyed};
+use crate::page_state::{ExecutionContext, ExecutionContextDestruction};
+use crate::renderer_sessions::RendererSession;
+use flashwright_browser::connection::Command;
 use flashwright_protocol::BinaryPayload;
 
 const METHOD: &str = "page.screenshot";
@@ -117,21 +120,35 @@ impl ScreenshotOptions {
 
 struct PreparedDocument {
     object_identifier: String,
+    world: ScreenshotWorld,
 }
 
-#[derive(Clone, Copy)]
-enum PreparationKind {
-    Document,
-    RemoteSession,
+#[derive(Clone)]
+struct ScreenshotWorld {
+    context: ExecutionContext,
+    destruction: Arc<ExecutionContextDestruction>,
+    renderer: Arc<RendererSession>,
+}
+
+struct PendingCommand {
+    command: Command,
+    _world: Option<ScreenshotWorld>,
+}
+
+impl ScreenshotWorld {
+    fn destroyed(&self) -> bool {
+        *self.destruction.destroyed.borrow() || *self.renderer.destruction().borrow()
+    }
 }
 
 struct Capture<'owner> {
+    engine: &'owner Engine,
     page: &'owner Page,
     browser: &'owner Chromium,
     options: &'owner ScreenshotOptions,
     operation: &'owner Operation,
     prepared: Vec<PreparedDocument>,
-    remote_sessions: Vec<String>,
+    pending: Vec<PendingCommand>,
     uncertain_preparation: bool,
     background_may_be_changed: bool,
 }
@@ -176,33 +193,19 @@ impl Engine {
                     .while_alive(METHOD, browser.connection.synchronize_events()),
             )
             .await?;
-        let (main_frame, frames, remote_frames) = {
+        let (main_frame, frames) = {
             let state = page.state.state.lock().unwrap();
             state.check(METHOD)?;
-            if options.modifies_documents() && state.frames.values().any(|frame| frame.remote) {
-                return Err(ErrorRecord::new(
-                    ErrorCode::UnsupportedFeature,
-                    METHOD,
-                    "screenshot preparation in out-of-process frames is not implemented; use caret: 'initial', animations: 'allow' and no style for an unmodified capture",
-                ));
-            }
             let main = state.main_frame.clone().ok_or_else(|| closed(METHOD))?;
             let mut frames: Vec<_> = state
                 .frames
                 .values()
-                .filter(|frame| !frame.remote && frame.identifier != main)
+                .filter(|frame| frame.identifier != main)
                 .map(|frame| frame.identifier.clone())
                 .collect();
             frames.sort();
             frames.insert(0, main.clone());
-            let mut remote_frames: Vec<_> = state
-                .frames
-                .values()
-                .filter(|frame| frame.remote)
-                .map(|frame| frame.identifier.clone())
-                .collect();
-            remote_frames.sort();
-            (main, frames, remote_frames)
+            (main, frames)
         };
         let reservation = operation
             .wait(page.state.while_alive(METHOD, async {
@@ -213,13 +216,23 @@ impl Engine {
                     .map_err(|_| closed(METHOD))
             }))
             .await?;
+        let cleanup_admission = operation
+            .wait(page.state.while_alive(METHOD, async {
+                self.mutation_cleanup_slots
+                    .clone()
+                    .acquire_owned()
+                    .await
+                    .map_err(|_| closed(METHOD))
+            }))
+            .await?;
         let mut capture = Capture {
+            engine: self,
             page: &page,
             browser: &browser,
             options: &options,
             operation,
             prepared: Vec::new(),
-            remote_sessions: Vec::new(),
+            pending: Vec::new(),
             uncertain_preparation: false,
             background_may_be_changed: false,
         };
@@ -227,7 +240,6 @@ impl Engine {
             .run(
                 &main_frame,
                 &frames,
-                &remote_frames,
                 context.viewport.as_ref(),
                 context.devices.device_scale_factor,
                 self.maximum_attachment_bytes,
@@ -246,6 +258,17 @@ impl Engine {
                 .dispose(browser.as_ref(), &page.target_identifier)
                 .await
         };
+        if !capture.pending.is_empty() {
+            let pending = std::mem::take(&mut capture.pending);
+            let page = page.clone();
+            let browser = browser.clone();
+            tokio::spawn(async move {
+                let _owners = (page, browser, cleanup_admission);
+                for mut pending in pending {
+                    let _ = pending.command.response().await;
+                }
+            });
+        }
         let payload = match result {
             Err(mut error) => {
                 error.method = METHOD.into();
@@ -285,94 +308,147 @@ impl Capture<'_> {
             .await
     }
 
-    /// Keep an in-flight preparation reply alive after cancellation so its cleanup object is recoverable.
-    async fn prepare(&mut self, frame: &str) -> Result<(), ErrorRecord> {
-        let created = self
-            .call(
-                "Page.createIsolatedWorld",
-                json!({ "frameId": frame, "worldName": "__flashwright_screenshot_world__" }),
+    async fn select_world(&self, frame: &str) -> Result<ScreenshotWorld, ErrorRecord> {
+        let main = self
+            .engine
+            .evaluation_context(
+                self.page,
+                self.browser,
+                Some(frame),
+                self.operation,
+                METHOD,
+                true,
             )
             .await?;
-        let context = created["executionContextId"]
+        let created = self
+            .operation
+            .wait(self.page.state.while_execution_context(
+                &main,
+                self.browser.connection.call(
+                    "Page.createIsolatedWorld",
+                    json!({
+                        "frameId": frame, "worldName": "__flashwright_screenshot_world__",
+                    }),
+                    Some(&main.session_identifier),
+                ),
+            ))
+            .await?;
+        let identifier = created["executionContextId"]
             .as_u64()
             .ok_or_else(|| invalid(METHOD, "Chromium omitted screenshot context identity"))?;
-        let settings = json!({ "styleUnits": self.options.style_units, "hideCaret": self.options.caret == Caret::Hide, "disableAnimations": self.options.animations == Animations::Disabled, "deadline": self.operation.renderer_deadline() });
-        let expression = format!(
-            "(() => {{ {PREPARATION}\n {RUNTIME}\n return createScreenshotCapture({settings}); }})()"
-        );
-        self.prepare_command(
-            "Runtime.evaluate",
-            json!({ "expression": expression, "contextId": context, "returnByValue": false }),
-            PreparationKind::Document,
-        )
-        .await
-        .map(|_| ())
+        let mut state = self.page.state.state.lock().unwrap();
+        if !state.context_is_alive(&main) {
+            return Err(evaluation::context_destroyed());
+        }
+        let context = state
+            .execution_contexts
+            .get(&(main.session_identifier.clone(), identifier))
+            .filter(|context| {
+                context.frame_identifier == frame
+                    && context.unique_identifier != main.unique_identifier
+            })
+            .cloned()
+            .ok_or_else(evaluation::context_destroyed)?;
+        let renderer = self
+            .page
+            .state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .get(&context.session_identifier)
+            .filter(|renderer| renderer.is_ready())
+            .ok_or_else(evaluation::context_destroyed)?;
+        let destruction = state.watch_context_destruction(&context)?;
+        Ok(ScreenshotWorld {
+            context,
+            destruction,
+            renderer,
+        })
     }
 
-    /// A child renderer round trip is required even when preparation makes no DOM changes.
-    async fn synchronize_remote_frame(&mut self, frame: &str) -> Result<(), ErrorRecord> {
-        let session = self
-            .prepare_command(
-                "Target.attachToTarget",
-                json!({ "targetId": frame, "flatten": true }),
-                PreparationKind::RemoteSession,
-            )
-            .await?;
+    /// A read-only capture still depends on each participating renderer responding.
+    async fn synchronize_world(&self, world: &ScreenshotWorld) -> Result<(), ErrorRecord> {
         let result = self
             .operation
-            .wait(self.page.state.while_alive(
-                METHOD,
+            .wait(self.page.state.while_execution_context(
+                &world.context,
                 self.browser.connection.call(
                     "Runtime.evaluate",
-                    json!({ "expression": "void 0", "returnByValue": true }),
-                    Some(&session),
+                    json!({
+                        "expression": "void 0", "uniqueContextId": world.context.unique_identifier,
+                        "returnByValue": true,
+                    }),
+                    Some(&world.context.session_identifier),
                 ),
             ))
             .await?;
         check_exception(&result, METHOD)
     }
 
-    /// Preserve ownership of both opaque cleanup objects and late successful target attachments.
-    async fn prepare_command(
-        &mut self,
-        method: &str,
-        parameters: Value,
-        kind: PreparationKind,
-    ) -> Result<String, ErrorRecord> {
+    /// Retain original command and realm ownership when cancellation wins the public wait.
+    async fn prepare(&mut self, world: ScreenshotWorld) -> Result<(), ErrorRecord> {
+        let settings = json!({ "styleUnits": self.options.style_units, "hideCaret": self.options.caret == Caret::Hide, "disableAnimations": self.options.animations == Animations::Disabled, "deadline": self.operation.renderer_deadline() });
+        let expression = format!(
+            "(() => {{ {PREPARATION}\n {RUNTIME}\n return createScreenshotCapture({settings}); }})()"
+        );
         self.operation.check()?;
-        let session = match kind {
-            PreparationKind::Document => Some(self.page.session_identifier.as_str()),
-            PreparationKind::RemoteSession => None,
-        };
-        let mut command = self
-            .browser
-            .connection
-            .start_command(method, parameters, session)?;
+        let command = self.browser.connection.start_command(
+            "Runtime.evaluate",
+            json!({
+                "expression": expression, "uniqueContextId": world.context.unique_identifier,
+                "returnByValue": false,
+            }),
+            Some(&world.context.session_identifier),
+        )?;
+        self.pending.push(PendingCommand {
+            command,
+            _world: Some(world.clone()),
+        });
         let mut replied = false;
-        let result = self
-            .operation
-            .wait(self.page.state.while_alive(METHOD, async {
-                let result = command.response().await;
-                replied = true;
-                result
-            }))
-            .await;
+        let result = {
+            let command = &mut self.pending.last_mut().unwrap().command;
+            self.operation
+                .wait(
+                    self.page
+                        .state
+                        .while_execution_context(&world.context, async {
+                            let result = command.response().await;
+                            replied = true;
+                            result
+                        }),
+                )
+                .await
+        };
+        if replied {
+            self.pending.pop();
+        }
         match result {
-            Ok(result) => self.retain_preparation(result, kind),
+            Ok(result) => self.retain_preparation(result, world),
             Err(error) => {
                 if replied {
-                    self.uncertain_preparation = !context_was_destroyed(&error);
+                    self.uncertain_preparation |= !world.destroyed();
                     return Err(error);
                 }
-                if !command.prevent_dispatch() {
-                    match timeout(CLEANUP_BUDGET, command.response()).await {
+                if self.pending.last().unwrap().command.prevent_dispatch() {
+                    self.pending.pop();
+                } else {
+                    match timeout(
+                        CLEANUP_BUDGET,
+                        self.pending.last_mut().unwrap().command.response(),
+                    )
+                    .await
+                    {
                         Ok(Ok(result)) => {
-                            if self.retain_preparation(result, kind).is_err() {
-                                self.uncertain_preparation = true;
+                            self.pending.pop();
+                            if self.retain_preparation(result, world.clone()).is_err() {
+                                self.uncertain_preparation |= !world.destroyed();
                             }
                         }
-                        Ok(Err(rejection)) if context_was_destroyed(&rejection) => {}
-                        _ => self.uncertain_preparation = true,
+                        Ok(Err(_)) => {
+                            self.pending.pop();
+                            self.uncertain_preparation |= !world.destroyed();
+                        }
+                        Err(_) => self.uncertain_preparation |= !world.destroyed(),
                     }
                 }
                 Err(error)
@@ -383,37 +459,53 @@ impl Capture<'_> {
     fn retain_preparation(
         &mut self,
         result: Value,
-        kind: PreparationKind,
-    ) -> Result<String, ErrorRecord> {
+        world: ScreenshotWorld,
+    ) -> Result<(), ErrorRecord> {
         if let Err(error) = check_exception(&result, METHOD) {
-            self.uncertain_preparation = true;
+            self.uncertain_preparation |= !world.destroyed();
             return Err(error);
         }
-        let identifier = match kind {
-            PreparationKind::Document => result["result"]["objectId"].as_str(),
-            PreparationKind::RemoteSession => result["sessionId"].as_str(),
-        };
-        let Some(identifier) = identifier else {
-            self.uncertain_preparation = true;
+        let Some(identifier) = result["result"]["objectId"].as_str() else {
+            self.uncertain_preparation |= !world.destroyed();
             return Err(invalid(
                 METHOD,
                 "Chromium omitted screenshot restoration identity",
             ));
         };
-        match kind {
-            PreparationKind::Document => self.prepared.push(PreparedDocument {
-                object_identifier: identifier.to_owned(),
-            }),
-            PreparationKind::RemoteSession => self.remote_sessions.push(identifier.to_owned()),
-        }
-        Ok(identifier.to_owned())
+        self.prepared.push(PreparedDocument {
+            object_identifier: identifier.to_owned(),
+            world,
+        });
+        Ok(())
+    }
+
+    /// A dropped bounded cleanup future leaves its original command in the capture owner.
+    async fn cleanup_call(
+        &mut self,
+        method: &str,
+        parameters: Value,
+        world: Option<&ScreenshotWorld>,
+    ) -> Result<Value, ErrorRecord> {
+        let session = world
+            .map(|world| world.context.session_identifier.as_ref())
+            .unwrap_or(&self.page.session_identifier);
+        let command = self
+            .browser
+            .connection
+            .start_command(method, parameters, Some(session))?;
+        self.pending.push(PendingCommand {
+            command,
+            _world: world.cloned(),
+        });
+        let result = self.pending.last_mut().unwrap().command.response().await;
+        self.pending.pop();
+        result
     }
 
     async fn run(
         &mut self,
         main_frame: &str,
         frames: &[String],
-        remote_frames: &[String],
         viewport: Option<&Viewport>,
         configured_device_scale: f64,
         maximum_bytes: usize,
@@ -422,25 +514,52 @@ impl Capture<'_> {
             Some(viewport) => (f64::from(viewport.width), f64::from(viewport.height)),
             None => self.document_size(main_frame, false).await?,
         };
+        let mut worlds = Vec::with_capacity(frames.len());
+        // Resolve and admit every original owner before any document mutation.
         for frame in frames {
-            if let Err(error) = self.prepare(frame).await {
-                if frame != main_frame
-                    && context_was_destroyed(&error)
-                    && !self.uncertain_preparation
-                {
+            match self.select_world(frame).await {
+                Ok(world) => worlds.push(world),
+                Err(error) if frame != main_frame && context_was_destroyed(&error) => {}
+                Err(error) => return Err(error),
+            }
+        }
+        for world in worlds {
+            let is_main = world.context.frame_identifier == main_frame;
+            let result = if !is_main && !self.options.modifies_documents() {
+                self.synchronize_world(&world).await
+            } else {
+                self.prepare(world).await
+            };
+            if let Err(error) = result {
+                if !is_main && context_was_destroyed(&error) && !self.uncertain_preparation {
                     continue;
                 }
                 return Err(error);
             }
         }
-        for frame in remote_frames {
-            self.synchronize_remote_frame(frame).await?;
-        }
-        let main_document = &self.prepared[0].object_identifier;
-        match self.call("Runtime.callFunctionOn", json!({ "objectId": main_document, "functionDeclaration": "function() { return this.waitForFonts(); }", "awaitPromise": true, "returnByValue": true })).await {
+        let main_document = self
+            .prepared
+            .first()
+            .ok_or_else(|| invalid(METHOD, "main screenshot document was not prepared"))?;
+        match self
+            .operation
+            .wait(self.page.state.while_execution_context(
+                &main_document.world.context,
+                self.browser.connection.call(
+                    "Runtime.callFunctionOn",
+                    json!({
+                        "objectId": main_document.object_identifier,
+                        "functionDeclaration": "function() { return this.waitForFonts(); }",
+                        "awaitPromise": true, "returnByValue": true,
+                    }),
+                    Some(&main_document.world.context.session_identifier),
+                ),
+            ))
+            .await
+        {
             Ok(result) => check_exception(&result, METHOD)?,
-            // The reference continues capture when navigation ends the old document's font wait.
-            Err(error) if context_was_destroyed(&error) => {},
+            // Navigation can finish the old document's font wait without replaying preparation.
+            Err(error) if context_was_destroyed(&error) => {}
             Err(error) => return Err(error),
         }
         let dimensions = if self.options.full_page {
@@ -541,55 +660,43 @@ impl Capture<'_> {
         }
     }
 
-    /// Object identities bind cleanup to the prepared realms, never a successor document's numeric context.
+    /// Cleanup addresses the original renderer and object, even after logical retirement.
     async fn restore(&mut self) -> Result<(), ErrorRecord> {
         let mut restored = !self.uncertain_preparation;
-        for document in self.prepared.drain(..).rev() {
-            let result = self.browser.connection.call("Runtime.callFunctionOn", json!({ "objectId":document.object_identifier, "functionDeclaration":"function() { this.restore(); }", "returnByValue":true }), Some(&self.page.session_identifier)).await;
-            match result {
-                Ok(result) => restored &= check_exception(&result, METHOD).is_ok(),
-                Err(error) => restored &= context_was_destroyed(&error),
+        while let Some(document) = self.prepared.pop() {
+            if document.world.destroyed() {
+                continue;
             }
-            let _ = self
-                .browser
-                .connection
-                .call(
-                    "Runtime.releaseObject",
-                    json!({ "objectId":document.object_identifier }),
-                    Some(&self.page.session_identifier),
-                )
-                .await;
+            let result = self.cleanup_call("Runtime.callFunctionOn", json!({
+                "objectId": document.object_identifier,
+                "functionDeclaration": "function() { this.restore(); }", "returnByValue": true,
+            }), Some(&document.world)).await;
+            restored &= match result {
+                Ok(result) => check_exception(&result, METHOD).is_ok(),
+                Err(_) => document.world.destroyed(),
+            };
+            if !document.world.destroyed() {
+                let result = self
+                    .cleanup_call(
+                        "Runtime.releaseObject",
+                        json!({
+                            "objectId": document.object_identifier,
+                        }),
+                        Some(&document.world),
+                    )
+                    .await;
+                restored &= result.is_ok() || document.world.destroyed();
+            }
         }
         if self.background_may_be_changed {
             restored &= self
-                .browser
-                .connection
-                .call(
+                .cleanup_call(
                     "Emulation.setDefaultBackgroundColorOverride",
                     json!({}),
-                    Some(&self.page.session_identifier),
+                    None,
                 )
                 .await
                 .is_ok();
-        }
-        for session in self.remote_sessions.drain(..) {
-            let result = self
-                .browser
-                .connection
-                .call(
-                    "Target.detachFromTarget",
-                    json!({ "sessionId": session }),
-                    None,
-                )
-                .await;
-            restored &= match result {
-                Ok(_) => true,
-                Err(error) => {
-                    error.browser_error_code.is_some()
-                        && (error.message.contains("Session with given id not found")
-                            || error.message.contains("No session with given id"))
-                }
-            };
         }
         if restored {
             Ok(())
