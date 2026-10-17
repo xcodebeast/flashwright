@@ -20,6 +20,7 @@ export const finalGoalResourceVerifierPaths = Object.freeze([
   'tools/final-goal-owner-native.mjs', 'tools/final-goal-clock-projection.mjs', 'tools/watchdog.py',
   'tools/final-goal-linux-evidence.mjs', 'tools/final_goal_linux_evidence.py',
   'tools/final-goal-linux-application.mjs', 'benchmarks/application-corpus.mjs', 'benchmarks/application-suite-contract.mjs',
+  'tools/final-goal-linux-dispatch.mjs', 'tools/final-goal-linux-json.mjs', 'tools/linux-application-dispatch-observer.cjs',
   'tools/linux_cgroup_resources.py', 'tools/linux_cgroup_capture.py', 'tools/linux_cgroup_policy.py',
   'tools/final_goal_capture_context.py',
 ]);

@@ -5,6 +5,9 @@ import { applicationGeneratedSources } from '../benchmarks/application-corpus.mj
 import { applicationResults, verifyApplicationOutcomes } from '../benchmarks/application-suite-contract.mjs';
 import { finalGoalAccountingClasses } from '../benchmarks/final-goal-resource-policy.mjs';
 import { linuxCapturedOutputLimits, reconstructFinalGoalLinuxCapturedOutputs, reconstructFinalGoalLinuxResourceEvidence } from './final-goal-linux-evidence.mjs';
+import { decodeLinuxApplicationJson } from './final-goal-linux-json.mjs';
+import { verifyLinuxApplicationDispatch } from './final-goal-linux-dispatch.mjs';
+export { decodeLinuxApplicationJson } from './final-goal-linux-json.mjs';
 
 export const linuxApplicationEvidenceLimits = Object.freeze({ maximumFiles: 64,
   maximumFileBytes: 4 * 1024 ** 2, maximumAggregateBytes: 16 * 1024 ** 2 });
@@ -15,34 +18,13 @@ const relative = path => typeof path === 'string' && path.length > 0 && path.len
   && !path.includes('\0') && !path.includes('\\') && !posix.isAbsolute(path) && posix.normalize(path) === path
   && !path.split('/').some(part => ['', '.', '..'].includes(part));
 
-// JSON.parse validates grammar; the token walk additionally rejects duplicate
-// decoded property names, excessive nesting and nonfinite numeric values.
-export function decodeLinuxApplicationJson(bytes) {
-  assert(Buffer.isBuffer(bytes) && bytes.length <= linuxApplicationEvidenceLimits.maximumFileBytes, 'Application JSON byte limit exceeded');
-  const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-  const value = JSON.parse(text, (key, item) => {
-    assert(typeof item !== 'number' || Number.isFinite(item), 'Nonfinite application JSON number');
-    return item;
-  });
-  const stack = [];
-  for (const match of text.matchAll(/"(?:[^"\\]|\\.)*"|[{}\[\],:]|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null/g)) {
-    const token = match[0], parent = stack.at(-1);
-    if (token === '{' || token === '[') {
-      stack.push({ object: token === '{', keys: new Set(), key: token === '{' });
-      assert(stack.length <= 128, 'Application JSON nesting limit exceeded');
-    } else if (token === '}' || token === ']') stack.pop();
-    else if (token === ',' && parent?.object) parent.key = true;
-    else if (token.startsWith('"') && parent?.object && parent.key) {
-      const key = JSON.parse(token);
-      assert(!parent.keys.has(key), 'Duplicate application JSON property');
-      parent.keys.add(key); parent.key = false;
-    }
-  }
-  return value;
-}
-
 function validateManifest(manifest, resourceManifest, outputManifest) {
-  assert.deepEqual(Object.keys(manifest ?? {}).sort(), ['accountingClass', 'captureSha256', 'generated', 'prepared', 'schemaVersion']);
+  assert.deepEqual(Object.keys(manifest ?? {}).sort(), ['accountingClass', 'captureSha256',
+    ...(Object.hasOwn(manifest ?? {}, 'dispatch') ? ['dispatch'] : []), 'generated', 'prepared', 'schemaVersion']);
+  if (Object.hasOwn(manifest, 'dispatch')) {
+    assert.deepEqual(Object.keys(manifest.dispatch ?? {}), ['observerOriginalPath']);
+    assert(absolute(manifest.dispatch.observerOriginalPath), 'Invalid original dispatch observer path');
+  }
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.accountingClass, finalGoalAccountingClasses.linux);
   assert.equal(manifest.captureSha256, resourceManifest.files?.capture?.sha256, 'Application manifest borrows another capture');
@@ -52,6 +34,8 @@ function validateManifest(manifest, resourceManifest, outputManifest) {
   assert.deepEqual(Object.keys(resourceManifest.files ?? {}).sort(), ['after', 'before', 'capture', 'native']);
   assert(Array.isArray(outputManifest.outputs) && outputManifest.outputs.length > 0
     && outputManifest.outputs.length <= linuxCapturedOutputLimits.maximumFiles, 'Captured output inventory limit exceeded');
+  if (manifest.dispatch) assert(Number.isSafeInteger(outputManifest.outputs[4]?.bytes) && outputManifest.outputs[4].bytes > 0
+    && outputManifest.outputs[4].bytes <= linuxApplicationEvidenceLimits.maximumFileBytes, 'Dispatch report byte limit exceeded');
   const paths = new Set([...Object.values(resourceManifest.files), ...outputManifest.outputs].map(r => r.path));
   const originals = new Set(); let total = 0;
   for (const receipt of [manifest.prepared, ...manifest.generated]) {
@@ -79,7 +63,8 @@ export async function reconstructFinalGoalLinuxApplication({ resourceManifest, o
   validateManifest(manifest, resourceManifest, outputManifest);
   const retained = new Map();
   const needed = new Set([resourceManifest.files.capture.path, resourceManifest.files.before.path,
-    ...outputManifest.outputs.slice(0, 2).map(r => r.path)]);
+    ...outputManifest.outputs.slice(0, 2).map(r => r.path),
+    ...(manifest.dispatch ? outputManifest.outputs.slice(4, 5).map(r => r.path) : [])]);
   const reader = async (receipt, limits) => {
     const bytes = await readBytes(receipt, limits);
     if (needed.has(receipt.path)) retained.set(receipt.path, bytes);
@@ -179,11 +164,19 @@ export async function reconstructFinalGoalLinuxApplication({ resourceManifest, o
     browser: prepared.browser, command: prepared.runnerCommand, workers });
   assert.equal(resources.wrapperExitCode, owner.runnerExit.code, 'Original terminal outcome differs from reported workload');
   assert.equal(owner.failures.length === 0, outcome.passed, 'Owner failure diagnostics disagree with workload outcome');
+  let dispatch;
+  if (manifest.dispatch) {
+    assert(outcome.passed, 'Dispatch journal admission currently supports passing corpora only');
+    dispatch = verifyLinuxApplicationDispatch({ bytes: retained.get(outputManifest.outputs[4].path), prepared,
+      preparedSha256: manifest.prepared.sha256, owner, reporter: runner, before, resources,
+      observerOriginalPath: manifest.dispatch.observerOriginalPath });
+  }
   return { schemaVersion: 1, status: 'verified-retained-linux-application-outcomes', accountingClass: finalGoalAccountingClasses.linux,
     captureIdentity: resources.captureIdentity, captureSha256: manifest.captureSha256, application, engine, workers,
     tests: outcome.tests, completeCorpusExecuted: outcome.completeCorpusExecuted, passed: outcome.passed,
     generatedSourceCount: generated.length, corpusManifestSha256: corpus.manifestSha256,
     observedDrainedMembership: resources.observedDrainedMembership, nativeCleanObservedTeardown: resources.nativeCleanObservedTeardown,
     resourceAdmission: false, performanceAccepted: false, callbackDispatchVerified: false,
+    ...(dispatch ? { dispatch } : {}),
     scope: 'Captured input/output integrity, exact generated upstream test/fixture sources, reported outcomes, fixture requests and owner timeline. Adapter/config/owner/runner source admission, actual callback dispatch, native context/process custody and final policy admission remain separate.' };
 }
