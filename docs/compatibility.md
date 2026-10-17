@@ -335,7 +335,7 @@ Assessment: experimental / verified-subset.
 
 Implementation: [packages/flashwright-core/src/keyboard.ts](../packages/flashwright-core/src/keyboard.ts), [packages/flashwright-core/src/index.ts](../packages/flashwright-core/src/index.ts).
 
-Evidence: [compatibility/evidence/keyboard-migration-checkpoint-2026-10-07.json](../compatibility/evidence/keyboard-migration-checkpoint-2026-10-07.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance).
+Evidence: [compatibility/evidence/keyboard-migration-checkpoint-2026-10-07.json](../compatibility/evidence/keyboard-migration-checkpoint-2026-10-07.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/raw-keyboard-snapshot-checkpoint-2026-10-17.json](../compatibility/evidence/raw-keyboard-snapshot-checkpoint-2026-10-17.json) (conformance).
 
 <a id="keyboard-explicit-rejection"></a>
 

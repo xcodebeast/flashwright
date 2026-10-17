@@ -717,7 +717,7 @@ export class Tracing {
       if (runnerAction) call.runnerAction = runnerAction;
       if (this.includeSources) chunk.writer.referenceSources(stack);
       chunk.writer.append({ type: 'before', callId: call.identifier, stepId: call.runnerAction?.stepId, startTime: performance.now(), class: className, method, title: call.runnerAction?.title ?? title, params: preview, pageId: owner.pageId === undefined ? undefined : this.pageIdentity(owner.pageId), stack,
-        ...(call.nativeTrace?.recording && method !== 'keyboardInsertText' ? { beforeSnapshot: `before@${call.identifier}` } : {}) });
+        ...(call.nativeTrace?.recording && !['keyboardPress', 'keyboardType', 'keyboardInsertText'].includes(method) ? { beforeSnapshot: `before@${call.identifier}` } : {}) });
     } catch (error) { chunk.writer.fail(error); }
     return call;
   }

@@ -1,0 +1,765 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "native-linux-raw-keyboard-snapshot-correctness",
+  "status": "passed",
+  "performanceAdmission": false,
+  "referenceVersion": "1.60.0",
+  "baseCommit": "420d0aeebf77b847fd3bc8414f922aed3dd03382",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "platform": "linux",
+    "architecture": "x86_64",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "driverSha256": "9db7208f4469defc768f0431d6de45fb322059dacbf493bb06695da2c6f15c14",
+  "sourceHashes": {
+    "crates/flashwright-engine/src/keyboard.rs": "0adaaa2d9c67fc57c6f980d70edfcdc44c6582842099c0530ac917800a4bdf92",
+    "crates/flashwright-engine/src/recording/phases.rs": "e9bd63d3cadecaacc14f262126e014a35336f869eae57ef5b585c24b0a2eaaf8",
+    "packages/flashwright-core/src/tracing.ts": "309756db03233490ac48478f2748d61b2cb308a2aac1fe230eb9f5195279a461",
+    "tools/test-keyboard-snapshot-phases.mjs": "bc99e7f84612dd9d06f811ad7191904715ee50cb083c64257d1a3363b6b83cc9",
+    "tools/test-keyboard-snapshot-lifetime.mjs": "65fa5d1141811921e1d5ece05915b7c79bd5bf91d7ea76f1fa45d0096a72c952",
+    "tools/keyboard-snapshot-proxy.py": "22ca18a83081b7dbfb01289f089d6e12d91708cc923983e56360b1842ffeb339",
+    "tools/page-initialization-detach-proxy.py": "ecfbb2ed520284b5837de07779ba328013aa41283d771f147e73b9582b1f7532",
+    "benchmarks/protocol-proxy.py": "c2d8ce1fd1187615c0d0d9d6f6ef61f27cc9dde7cd63494bca9a743108c5bce1",
+    "tools/verify-core.mjs": "e09e5d968202457785be9c0a1e2d5dbea591d0b025ee706210da457d998fe67f",
+    "node_modules/playwright-core/lib/coreBundle.js": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+  },
+  "contract": [
+    "Raw keyboard.press/type/insertText capture input and after, with no before phase.",
+    "Input capture is inside the original native sequence lock and precedes dispatch.",
+    "Empty typing rechecks original cancellation/deadline after optional capture.",
+    "Locator keyboard before/input/after and snapshots-disabled behavior remain intact."
+  ],
+  "publicRuntimeComparisons": [
+    {
+      "status": "passed",
+      "runtime": {
+        "name": "bun",
+        "version": "1.4.2"
+      },
+      "node": null,
+      "nodeCompatibility": "v26.3.0",
+      "scope": "Raw keyboard snapshot phases and original input-lock timing, with pinned viewer replay. No performance claim.",
+      "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+      "driverSha256": "9db7208f4469defc768f0431d6de45fb322059dacbf493bb06695da2c6f15c14",
+      "sourceSha256": "bc99e7f84612dd9d06f811ad7191904715ee50cb083c64257d1a3363b6b83cc9",
+      "engines": [
+        {
+          "name": "reference",
+          "status": "passed",
+          "checks": [
+            {
+              "name": "ordinary, empty typing, modifier and locator phases",
+              "archiveSha256": "fc482582d6c0cc8c068d67a38cf4b99a928289ee14cc0c8e4a10a6e748e629e2",
+              "calls": [
+                {
+                  "method": "keyboardType",
+                  "before": "",
+                  "after": "ab",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "ab",
+                  "after": "a",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardInsertText",
+                  "before": "a",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardType",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "press",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "before",
+                    "input",
+                    "after"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "disabled snapshots retain keyboard actions without DOM phases",
+              "archiveSha256": "692bf97f6d7c35d112cd0087cf89b4eec303e909b0ad74b72b1563f24e83920c"
+            }
+          ]
+        },
+        {
+          "name": "candidate",
+          "status": "passed",
+          "checks": [
+            {
+              "name": "ordinary, empty typing, modifier and locator phases",
+              "archiveSha256": "f205fa4f57a72b7820b83d821056a861f12a868a43be1f70e2f717a04d33afcf",
+              "calls": [
+                {
+                  "method": "keyboardType",
+                  "before": "",
+                  "after": "ab",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "ab",
+                  "after": "a",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardInsertText",
+                  "before": "a",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardType",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "press",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "before",
+                    "input",
+                    "after"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "disabled snapshots retain keyboard actions without DOM phases",
+              "archiveSha256": "bd204c9c0a357a65f6e5403362d1fa490a88dd1b60d32ed49bc5ba8b0927589d"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "status": "passed",
+      "runtime": {
+        "name": "node",
+        "version": "22.22.0"
+      },
+      "node": "v22.22.0",
+      "scope": "Raw keyboard snapshot phases and original input-lock timing, with pinned viewer replay. No performance claim.",
+      "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+      "driverSha256": "9db7208f4469defc768f0431d6de45fb322059dacbf493bb06695da2c6f15c14",
+      "sourceSha256": "bc99e7f84612dd9d06f811ad7191904715ee50cb083c64257d1a3363b6b83cc9",
+      "engines": [
+        {
+          "name": "reference",
+          "status": "passed",
+          "checks": [
+            {
+              "name": "ordinary, empty typing, modifier and locator phases",
+              "archiveSha256": "d7f88f424c788cedf128a772fd94982abc0237ce9982444f750bb37c06eb8ed0",
+              "calls": [
+                {
+                  "method": "keyboardType",
+                  "before": "",
+                  "after": "ab",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "ab",
+                  "after": "a",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardInsertText",
+                  "before": "a",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardType",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "press",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "before",
+                    "input",
+                    "after"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "disabled snapshots retain keyboard actions without DOM phases",
+              "archiveSha256": "e41fa2a24fb34572c31185851e77428d2cc2c732a5e9ee411e98ab64b5e816f4"
+            }
+          ]
+        },
+        {
+          "name": "candidate",
+          "status": "passed",
+          "checks": [
+            {
+              "name": "ordinary, empty typing, modifier and locator phases",
+              "archiveSha256": "d4ab7afa4af758c98f13cc52d0ec99a706c646b30b6e445b2c97bb13b193d8a1",
+              "calls": [
+                {
+                  "method": "keyboardType",
+                  "before": "",
+                  "after": "ab",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "ab",
+                  "after": "a",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardInsertText",
+                  "before": "a",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardType",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "press",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "before",
+                    "input",
+                    "after"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "disabled snapshots retain keyboard actions without DOM phases",
+              "archiveSha256": "8a02d61a533f4ef4fb3bd2fa13e8f038668175da086c0d389b69887d4c09cfb7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "status": "passed",
+      "runtime": {
+        "name": "node",
+        "version": "24.15.0"
+      },
+      "node": "v24.15.0",
+      "scope": "Raw keyboard snapshot phases and original input-lock timing, with pinned viewer replay. No performance claim.",
+      "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+      "driverSha256": "9db7208f4469defc768f0431d6de45fb322059dacbf493bb06695da2c6f15c14",
+      "sourceSha256": "bc99e7f84612dd9d06f811ad7191904715ee50cb083c64257d1a3363b6b83cc9",
+      "engines": [
+        {
+          "name": "reference",
+          "status": "passed",
+          "checks": [
+            {
+              "name": "ordinary, empty typing, modifier and locator phases",
+              "archiveSha256": "5dc21f3b11b7026a8b6e5e8eb435e811cf9bdac97404bf5c54fc8b062cab9794",
+              "calls": [
+                {
+                  "method": "keyboardType",
+                  "before": "",
+                  "after": "ab",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "ab",
+                  "after": "a",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardInsertText",
+                  "before": "a",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardType",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "press",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "before",
+                    "input",
+                    "after"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "disabled snapshots retain keyboard actions without DOM phases",
+              "archiveSha256": "f985d618a48d440913101f50554516072f080f575675c8307042b182583f0527"
+            }
+          ]
+        },
+        {
+          "name": "candidate",
+          "status": "passed",
+          "checks": [
+            {
+              "name": "ordinary, empty typing, modifier and locator phases",
+              "archiveSha256": "7ff64a2119d7df8d3778960febf11fb077a4ab796cdb50121f04202fbcbf36de",
+              "calls": [
+                {
+                  "method": "keyboardType",
+                  "before": "",
+                  "after": "ab",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "ab",
+                  "after": "a",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardInsertText",
+                  "before": "a",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardType",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "keyboardPress",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "input",
+                    "after"
+                  ]
+                },
+                {
+                  "method": "press",
+                  "before": "aΩ",
+                  "after": "aΩ",
+                  "phases": [
+                    "before",
+                    "input",
+                    "after"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "disabled snapshots retain keyboard actions without DOM phases",
+              "archiveSha256": "baf26278bc1fef1192f306c80a8dd43745726c8d4371bb02fa24d60d13a5e3df"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "nativeLifetime": {
+    "status": "passed",
+    "scope": "Candidate-only genuine browser reply gates and native terminal outcomes; no performance or reference scheduling claim.",
+    "checks": [
+      {
+        "name": "genuine key acknowledgement holds lock before queued input capture",
+        "nativeHeld": {
+          "kind": "nativeReplyHeld",
+          "label": "key",
+          "id": 30
+        },
+        "archiveSha256": "09832721dc0a5e1eae3af7b30d8e21e741041f833bcf1b36cdc4933261ce493e"
+      },
+      {
+        "name": "empty typing preserves original native cancellation during input capture",
+        "nativeHeld": {
+          "kind": "nativeReplyHeld",
+          "label": "capture",
+          "id": 70
+        },
+        "outcome": {
+          "status": "rejected",
+          "name": "TimeoutError"
+        },
+        "nativeReplies": [
+          {
+            "kind": "error",
+            "requestId": 58,
+            "error": {
+              "code": "TimeoutError",
+              "method": "keyboard.type",
+              "message": "operation deadline exceeded",
+              "referenceVersion": "1.60.0",
+              "browser": "chromium",
+              "inputDelivery": "notDispatched"
+            }
+          }
+        ]
+      }
+    ],
+    "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+    "driverSha256": "9db7208f4469defc768f0431d6de45fb322059dacbf493bb06695da2c6f15c14",
+    "sourceSha256": "65fa5d1141811921e1d5ece05915b7c79bd5bf91d7ea76f1fa45d0096a72c952",
+    "proxySha256": "22ca18a83081b7dbfb01289f089d6e12d91708cc923983e56360b1842ffeb339"
+  },
+  "verification": [
+    {
+      "name": "checks/lifetime",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "1cf59739d6d3ef57f744b02b355b3b084e99f0829adc2de7ba1d12b3bc14a3cb",
+      "logSha256": "6d9bddf9e94ece5c4ddb8fa9264c527a77daf74190bbbee940a2d250f55c4aa8"
+    },
+    {
+      "name": "checks/phases-bun",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "97784e9633357fd40eb1e3eaca7894a8d07a5e81a0b160687fa35a3d9a08be4a",
+      "logSha256": "835c4ef4c01478f8929eed4d810435576d3d7bc7da5467d35a4827b6bc7fcc89"
+    },
+    {
+      "name": "checks/phases-node22",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "08fc995d4f049d2b418c5cdce4a6bed8a0e1086ccafb31726c0c6d39f90ff813",
+      "logSha256": "60f3597861f5f7a1b6f6ffbc3c214d1cf3cad2cf8275c457099f8bc8f3f63a3a"
+    },
+    {
+      "name": "checks/phases-node24",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "53b76e2c97c692176c503ae9a6ebffc4522485501e98809d1c7591fb24a328a4",
+      "logSha256": "3b27831e65e1ed5c1b7151934d81883852a26877e175c27e9e0502330035f297"
+    },
+    {
+      "name": "checks/keyboard",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "75d38aa8ca40635d8b99f790d1fbf0e3ab86c7237733b292e8ae677f28a15d92",
+      "logSha256": "8ea9f8890e2a5710d7d45a4d6aad1e1a230a79acac3161e41411b951b95260c3"
+    },
+    {
+      "name": "checks/public-snapshots",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "0aff78215f8df44f93f51d027ea85e2a9200650ad55fd16cc0c7cc23f82ca795",
+      "logSha256": "c2d45baf5b1f20802321e7abb34f42aafecf19fea41f626f7eabbe39fd7d743d"
+    },
+    {
+      "name": "checks/upload-retry",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "f5b8134a443f3618a03eff64c24f674d4cec899a0cb76c1d0ddb536a68efe133",
+      "logSha256": "767a9cd8c0bfff6b1c49f6a256ac21a0d39ede6cec050e24749f8995eade8ec6"
+    },
+    {
+      "name": "checks/host-snapshots",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "c78cd89d90a569fbc48e8a418746d66c247e6b9649f46f30c094bd21e30a2538",
+      "logSha256": "a3a4b7fef628648797bb9510d40b22da23506f686f497ff9f6c10355eba93ec2"
+    },
+    {
+      "name": "checks/host-recording",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "38063f6a24920c5588739553e4d0df05cb0b18cdc4919003dd935079ea7f7449",
+      "logSha256": "9ee3e7c6a1d395fdd79c2758ca464fc70a2948d794588dd6842cc5fe1cd44f94"
+    },
+    {
+      "name": "checks/rust-recording",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "04687d27adaaa3681244d0099c94df26394945cad17a471189537d726bba3ab9",
+      "logSha256": "13de95344931c68f59ea189ca752d2cdceb1d3048df345a3a7b052931bfb919f"
+    },
+    {
+      "name": "checks/rust-operation",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "ec9ccdb152671e80535494c171272d8ed5063d244d05d71218943f4e6a6235ac",
+      "logSha256": "90495b3c4a1abb9d87ead575de4aa65f19373765b97e0178f0b25da9bb97b990"
+    },
+    {
+      "name": "checks/fmt",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "d971d04d681e073dff90248b4c82ad1aa5a3c0d0b4dd8e5a7a0bc8e8cc887ef3",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "checks/clippy",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "098053cec5f04d56cd766f8f3c4d95fc361dd388ce430b09b158572650153dbb",
+      "logSha256": "2d70726d02429879418a953691748c9bdab065b6a9f1e5933c296306ee6224ab"
+    },
+    {
+      "name": "checks-final/lifetime",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "b0a7ff44b5ff38c69895c1fef7359c3caa461fe96b08e2f63fb9bd45235bfc58",
+      "logSha256": "8c1294890e2c2beae1eb873fc3df956ba4168f679d569ee4a277c5936aa645f0"
+    },
+    {
+      "name": "checks-final/phases-bun",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "52d0cff7122456966edf7a0d4e9d8315bd91d00fe58c20d7f08cfdb1adcf959c",
+      "logSha256": "bb7e3a229e06fb0ebddaa100f4da8a6d37dd32c79541906967bf99c2227ad36d"
+    },
+    {
+      "name": "checks-final/phases-node22",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "1aa80b4c51a0a29b9cdabee6bf6d8531147c7b532f04ece2992a3a1c87b74da7",
+      "logSha256": "fa6b682421f04aaf71babdd65cfec553dc72c23aa39b629fbccb32ca8ff8b485"
+    },
+    {
+      "name": "checks-final/phases-node24",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": [],
+      "resourceReceiptSha256": "7ca5ada47bb5b751dd1c6abddf85898aa92e6b0468fe7c872b944367dea53146",
+      "logSha256": "03393e69e917146dd09a6d78f1197f212dd54e5e909daf9d50bb53bdb03586db"
+    }
+  ],
+  "focusedRustTests": {
+    "recording": 39,
+    "operation": 12
+  },
+  "regressionControls": [
+    {
+      "name": "Prior phase policy",
+      "status": "expected-failure",
+      "reportSha256": "cddb5a7e5c2999f112cacb66e0fa40be324ba23b9f82f0a56fbe1f80d8187b71",
+      "detail": "Pinned reference passes; prior candidate has no keyboardType input phase."
+    },
+    {
+      "name": "Missing post-capture empty-type cancellation check",
+      "status": "expected-failure",
+      "reportSha256": "860e415159fb3cd5df8a7e86b49bdc6747c3bc4dde83aca8270442a71c4b1f06",
+      "nativeReply": {
+        "kind": "result",
+        "requestId": 58,
+        "value": null,
+        "inputDelivery": "notDispatched"
+      },
+      "detail": "A host TimeoutError can hide a native result/null; the test requires the original native error."
+    }
+  ],
+  "earlierAttempts": [
+    {
+      "name": "Initial fixture replay assertion",
+      "reportSha256": "8dbc2b02ce7c83c40e11f42a0195192177310cfa78a0c5c249a6d2ae5d0292e5",
+      "detail": "Reference renderer emits uppercase HTML tags. Case-insensitive tag matching corrected the fixture before the phase regression control."
+    },
+    {
+      "name": "First empty-type cancellation control",
+      "reportSha256": "afef39e07bee7436fc6a36b5978fd0c0316cc2670764d30d1cf0f10ebae422ff",
+      "detail": "Native success also resolved at the host before its timer; retained as a failing control, not excluded from history."
+    }
+  ],
+  "limits": [
+    "Focused correctness evidence, not a complete core or release acceptance run.",
+    "Native Linux full Chrome only; macOS, headless-shell and fresh packed consumers were not rerun for this correction.",
+    "Other trace phase-policy differences remain outside this change, including title/configuration/handle extras and missing before snapshots for some waiters.",
+    "No speed claim; representative majority-scenario 2x goal remains unverified."
+  ]
+}

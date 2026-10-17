@@ -127,6 +127,8 @@ const commands = [
   [process.execPath, 'tools/probe-snapshot-trace-integration.mjs', join(destination, 'snapshot-public')],
   [process.execPath, 'tools/test-snapshot-incremental.mjs', join(destination, 'snapshot-incremental')],
   [process.execPath, 'tools/test-snapshot-retirement.mjs', join(destination, 'snapshot-retirement')],
+  [process.execPath, 'tools/test-keyboard-snapshot-phases.mjs', join(destination, 'keyboard-snapshot-phases')],
+  [process.execPath, 'tools/test-keyboard-snapshot-lifetime.mjs', join(destination, 'keyboard-snapshot-lifetime')],
   [process.execPath, 'tools/test-traced-locator-mutation.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-pointer-completion.mjs'],
   ['python3', 'tools/watchdog.py', '--timeout', '90', '--report-directory', join(destination, 'pointer-cleanup-resources'), '--', process.execPath, 'tools/test-pointer-cleanup.mjs', join(destination, 'pointer-cleanup')],
