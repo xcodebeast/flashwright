@@ -3,8 +3,9 @@ import { join } from 'node:path';
 import { applicationTestIdentities } from './application-corpus.mjs';
 export { applicationTestIdentities } from './application-corpus.mjs';
 
-export function applicationConfiguration(project, browser) {
-  return { testDir: './tests', workers: 1, retries: 0, repeatEach: 1, fullyParallel: false, forbidOnly: true, maxFailures: 0,
+export function applicationConfiguration(project, browser, workers = 1) {
+  assert([1, 4].includes(workers), 'Application policy requires one or four workers');
+  return { testDir: './tests', workers, retries: 0, repeatEach: 1, fullyParallel: false, forbidOnly: true, maxFailures: 0,
     timeout: 30000, expect: { timeout: 5000 }, reporter: [['json', { outputFile: join(project, 'report.json') }]], outputDir: join(project, 'results'),
     use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', launchOptions: { executablePath: browser.executablePath } } };
 }
@@ -22,15 +23,15 @@ export function applicationResults(report) {
 }
 
 /** A completed failing test is useful gap evidence; a skipped or interrupted corpus is incomplete. */
-export function verifyApplicationOutcomes({ run, report, corpus, project, browser, command }) {
+export function verifyApplicationOutcomes({ run, report, corpus, project, browser, command, workers = 1 }) {
   assert.deepEqual(run.command, command);
-  assert.deepEqual(run.configuration, applicationConfiguration(project, browser));
+  assert.deepEqual(run.configuration, applicationConfiguration(project, browser, workers));
   assert.deepEqual(report.errors, []);
   const configuration = report.config;
   assert.equal(configuration.version, corpus.manifest.tests.reference);
   assert.equal(configuration.configFile, join(project, 'runner.config.mjs'));
   assert.equal(configuration.rootDir, join(project, 'tests'));
-  assert.equal(configuration.workers, 1);
+  assert.equal(configuration.workers, workers);
   assert.equal(configuration.forbidOnly, true);
   assert.equal(configuration.fullyParallel, false);
   assert.equal(configuration.maxFailures, 0);
@@ -53,6 +54,7 @@ export function verifyApplicationOutcomes({ run, report, corpus, project, browse
   const actual = specifications.map(({ file, title, line }) => ({ file, title, line })).sort(compareIdentity);
   assert.deepEqual(actual, expected, 'Reported tests differ from pinned upstream declarations');
   let passed = 0;
+  const workerSlots = new Map();
   for (const specification of specifications) {
     assert.equal(specification.tests.length, 1);
     const test = specification.tests[0];
@@ -61,8 +63,12 @@ export function verifyApplicationOutcomes({ run, report, corpus, project, browse
     const result = test.results[0];
     assert.ok(['passed', 'failed', 'timedOut'].includes(result.status), 'Skipped/interrupted attempts do not execute the complete corpus');
     assert.equal(result.retry, 0);
-    assert.equal(result.parallelIndex, 0);
+    assert.ok(Number.isInteger(result.parallelIndex) && result.parallelIndex >= 0 && result.parallelIndex < workers,
+      'Attempt parallel slot escapes declared worker policy');
     assert.ok(Number.isInteger(result.workerIndex) && result.workerIndex >= 0);
+    if (workerSlots.has(result.workerIndex)) assert.equal(workerSlots.get(result.workerIndex), result.parallelIndex,
+      'Original worker changed parallel slot');
+    workerSlots.set(result.workerIndex, result.parallelIndex);
     assert.ok(Number.isFinite(result.duration) && result.duration >= 0);
     const succeeded = result.status === 'passed';
     assert.equal(specification.ok, succeeded);

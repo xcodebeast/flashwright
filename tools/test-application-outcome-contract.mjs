@@ -141,3 +141,64 @@ for (const [name, mutate] of [
   assert.equal(verifyApplicationOutcomes(fixture).passed, true);
   assert.throws(() => verifyApplicationRun(fixture));
 });
+
+function fourWorkerFixture() {
+  const fixture = syntheticFixture();
+  fixture.workers = 4;
+  fixture.run.configuration = applicationConfiguration(fixture.project, fixture.browser, 4);
+  fixture.report.config.workers = 4;
+  const attempt = fixture.report.suites[0].specs[1].tests[0].results[0];
+  attempt.workerIndex = 7;
+  attempt.parallelIndex = 3;
+  return fixture;
+}
+
+test('explicit one-worker policy preserves the original configuration and outcomes', () => {
+  const fixture = syntheticFixture();
+  assert.deepEqual(applicationConfiguration(fixture.project, fixture.browser, 1), fixture.run.configuration);
+  assert.deepEqual(verifyApplicationOutcomes({ ...fixture, workers: 1 }), verifyApplicationOutcomes(fixture));
+});
+
+test('four-worker outcomes preserve scheduling and allow worker replacement indices beyond the slot count', () => {
+  const fixture = fourWorkerFixture();
+  assert.equal(fixture.run.configuration.fullyParallel, false);
+  assert.equal(verifyApplicationOutcomes(fixture).passed, true);
+  assert.throws(() => verifyApplicationRun(fixture));
+  const { workers: _workers, ...legacy } = fixture;
+  assert.throws(() => verifyApplicationOutcomes(legacy));
+});
+
+test('distinct replacement workers may share one parallel slot', () => {
+  const fixture = fourWorkerFixture();
+  fixture.report.suites[0].specs[1].tests[0].results[0].parallelIndex = 0;
+  assert.equal(verifyApplicationOutcomes(fixture).passed, true);
+});
+
+test('one worker index cannot move between parallel slots', () => {
+  const fixture = fourWorkerFixture();
+  fixture.report.suites[0].specs[1].tests[0].results[0].workerIndex = 0;
+  assert.throws(() => verifyApplicationOutcomes(fixture), /worker changed parallel slot/);
+});
+
+for (const workers of [0, 2, -1, 1.5, '4', null, false, NaN]) test(`reject unsupported worker policy ${String(workers)}`, () => {
+  const fixture = fourWorkerFixture();
+  assert.throws(() => applicationConfiguration(fixture.project, fixture.browser, workers));
+  assert.throws(() => verifyApplicationOutcomes({ ...fixture, workers }));
+});
+
+for (const slot of [4, -1, 0.5, '0', undefined, NaN]) test(`reject invalid four-worker parallel slot ${String(slot)}`, () => {
+  const fixture = fourWorkerFixture();
+  firstAttempt(fixture).parallelIndex = slot;
+  assert.throws(() => verifyApplicationOutcomes(fixture), /parallel slot escapes/);
+});
+
+for (const [name, mutate] of [
+  ['configured count', fixture => { fixture.run.configuration.workers = 1; }],
+  ['reported count', fixture => { fixture.report.config.workers = 1; }],
+  ['configured scheduling', fixture => { fixture.run.configuration.fullyParallel = true; }],
+  ['reported scheduling', fixture => { fixture.report.config.fullyParallel = true; }],
+]) test(`four-worker outcomes reject mismatched ${name}`, () => {
+  const fixture = fourWorkerFixture();
+  mutate(fixture);
+  assert.throws(() => verifyApplicationOutcomes(fixture));
+});

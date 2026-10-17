@@ -17,7 +17,7 @@ const preparedPath = join(directory, 'prepared.json');
 const prepared = await read(preparedPath);
 assert(['todomvc', 'svgomg'].includes(prepared.application));
 assert(['playwright', 'flashwright'].includes(prepared.engine));
-assert.equal(prepared.workers, 1);
+assert([1, 4].includes(prepared.workers), 'Application policy requires one or four workers');
 assert.equal(prepared.workspaceDirectory, resolve('.'));
 assert.equal(prepared.directory, directory);
 assert.equal(prepared.project, join(directory, 'project'));
@@ -62,7 +62,7 @@ const runner = await read(expectedOutputs[1]);
 assert.equal(owner.status, 'completed-owner');
 assert.equal(owner.application, prepared.application);
 assert.equal(owner.engine, prepared.engine);
-assert.equal(owner.workers, 1);
+assert.equal(owner.workers, prepared.workers);
 assert.deepEqual(owner.failures, []);
 assert.equal(owner.serviceClosed, true);
 assert.deepEqual(owner.runnerCommand, prepared.runnerCommand);
@@ -89,7 +89,7 @@ assert.deepEqual(prepared.generatedSources, generated.map(source => source.recor
 const guard = prepared.engine === 'flashwright' ? `import { forbidUpstreamBrowserBackend } from ${JSON.stringify(pathToFileURL(resolve('benchmarks/native-backend-guard.mjs')).href)}; forbidUpstreamBrowserBackend();\n` : '';
 const expectedFiles = {
   'adapter.mjs': `${guard}export {test,expect,defineConfig} from ${JSON.stringify(import.meta.resolve(prepared.engine === 'flashwright' ? '@flashwright/test' : '@playwright/test'))};\n`,
-  'runner.config.mjs': `import {defineConfig} from './adapter.mjs';export default defineConfig(${JSON.stringify(applicationConfiguration(prepared.project, prepared.browser))});\n`,
+  'runner.config.mjs': `import {defineConfig} from './adapter.mjs';export default defineConfig(${JSON.stringify(applicationConfiguration(prepared.project, prepared.browser, prepared.workers))});\n`,
   ...Object.fromEntries(generated.map(source => [source.record.path, source.contents])),
 };
 assert.deepEqual(prepared.generatedHashes, Object.fromEntries(Object.entries(expectedFiles).map(([name, contents]) => [name, hash(contents)])));
@@ -101,10 +101,10 @@ for (const [name, contents] of Object.entries(expectedFiles)) {
 const run = { command: prepared.runnerCommand, exit: owner.runnerExit, configuration: prepared.configuration,
   requests: owner.requests, generatedSources: prepared.generatedSources, tests: applicationResults(runner), errors: runner.errors };
 const outcome = verifyApplicationOutcomes({ run, report: runner, corpus, project: prepared.project,
-  browser: prepared.browser, command: prepared.runnerCommand });
+  browser: prepared.browser, command: prepared.runnerCommand, workers: prepared.workers });
 assert.equal(outcome.passed, true);
 const result = { schemaVersion: 1, status: 'verified-linux-application-capture', application: prepared.application,
-  engine: prepared.engine, workers: 1, tests: outcome.tests.length, completeCorpusExecuted: outcome.completeCorpusExecuted,
+  engine: prepared.engine, workers: prepared.workers, tests: outcome.tests.length, completeCorpusExecuted: outcome.completeCorpusExecuted,
   observedDrainedMembership: resources.observedDrainedMembership, nativeCleanObservedTeardown: resources.nativeCleanObservedTeardown,
   adoptedChildren: resources.adoptedChildren, cgroupCpu: resources.cgroupCpu,
   cgroupChargedPeakBytes: resources.cgroupChargedPeakBytes, commandInterval: resources.commandInterval,
