@@ -17,6 +17,9 @@ export const finalGoalResourceVerifierPaths = Object.freeze([
   'tools/verify-final-goal.mjs', 'tools/final-goal-original-resources.mjs', 'tools/final-goal-owner-evidence.mjs',
   'tools/final-goal-owner-tree.mjs', 'tools/final-goal-owner-records.mjs', 'tools/final-goal-owner-javascript.mjs',
   'tools/final-goal-owner-native.mjs', 'tools/final-goal-clock-projection.mjs', 'tools/watchdog.py',
+  'tools/final-goal-linux-evidence.mjs', 'tools/final_goal_linux_evidence.py',
+  'tools/linux_cgroup_resources.py', 'tools/linux_cgroup_capture.py', 'tools/linux_cgroup_policy.py',
+  'tools/final_goal_capture_context.py',
 ]);
 
 /** Hash structured declarations independently of property insertion order. */
