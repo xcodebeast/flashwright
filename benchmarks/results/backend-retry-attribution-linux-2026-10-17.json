@@ -1,0 +1,3452 @@
+{
+  "schema": 1,
+  "status": "application-retry-wait-confirmed",
+  "platform": {
+    "os": "Linux",
+    "architecture": "x86_64"
+  },
+  "scope": "Selected original invalid-token test body executed outside the test runner, using fresh stock Chrome contexts and fresh real PostgreSQL, Mailpit and API services for each launch. Passive host request/response observation; application, test body, timers and retry policy unchanged. This is attribution, not a comparative benchmark or release admission.",
+  "test": {
+    "path": "frontend/tests/login.spec.ts",
+    "title": "Redirects to /login when token is wrong",
+    "bodySha256": "c35465d581b8b6f19292e72a58851a022bc792a8c610e123cf186cae86bf6771"
+  },
+  "policy": {
+    "launchOrder": [
+      "reference",
+      "candidate",
+      "candidate",
+      "reference"
+    ],
+    "expectedAuthRequests": 4,
+    "expectedAuthStatus": 403,
+    "nominalRetryDelaysMilliseconds": [
+      1000,
+      2000,
+      4000
+    ],
+    "artifacts": "off",
+    "clock": "Bun performance.now; host event delivery times, not in-browser timer firing times"
+  },
+  "versions": {
+    "bun": "1.4.2",
+    "playwright": "1.60.0",
+    "tanstackQueryCore": "5.104.0"
+  },
+  "identities": {
+    "runtime": {
+      "sha256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c"
+    },
+    "browser": {
+      "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+    },
+    "driver": {
+      "sha256": "9db7208f4469defc768f0431d6de45fb322059dacbf493bb06695da2c6f15c14"
+    }
+  },
+  "runs": [
+    {
+      "index": 0,
+      "engine": "reference",
+      "testBodyMilliseconds": 7253.299013,
+      "responseToNextRequestMilliseconds": [
+        1001.787956,
+        2001.5398519999999,
+        4001.4848250000005
+      ],
+      "events": [
+        {
+          "kind": "test-start",
+          "milliseconds": 119.792058
+        },
+        {
+          "kind": "request",
+          "milliseconds": 122.91767599999997,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 139.92251399999998,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.90659799999997,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.933039,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.977033,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.99665,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 147.010065,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 147.02283,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 147.045593,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 147.072815,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 147.08412699999997,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 147.094737,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 149.864126,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 150.536538,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 150.56389000000001,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 155.668161,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 160.515913,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 170.614033,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 171.21414699999997,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 188.32199099999997,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 190.18134600000002,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 190.601677,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.662437,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.68437899999998,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.69885599999998,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.70995799999997,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.720798,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.73233,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.747139,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.56606999999997,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.578053,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 225.94054599999998,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.537645,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.11778099999998,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.23040500000002,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.52329400000002,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 228.377813,
+          "path": "/assets/password-input-hUb_Z6pd.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 228.92008599999997,
+          "path": "/assets/login-BAko3nYM.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 228.925477,
+          "path": "/assets/dist-D8i789DE.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 228.92943400000001,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 228.93299100000002,
+          "path": "/assets/dist-CWJ376NH.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 228.93609700000002,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 231.45919700000002,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 231.47770200000002,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 231.49792100000002,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 231.5081,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.044573,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.05636599999997,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.07028200000002,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.08191399999998,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.09268500000002,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.10132099999998,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.112282,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.126038,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.13895300000001,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.15303,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.165053,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.175202,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.187385,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.197725,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.209628,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.218274,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.227552,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 234.54837600000002,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.53076399999998,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.56614100000002,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 242.58376499999997,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.616176,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.64831800000002,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.659038,
+          "path": "/assets/settings-24TrnFZp.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.66689300000002,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.682212,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 242.695969,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.71383300000002,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.721718,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.38683500000002,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.40657199999998,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.429436,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.44437399999998,
+          "path": "/assets/settings-24TrnFZp.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.71806600000002,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 247.73821099999998,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 282.436819,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 298.647763,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 298.657562,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 299.017699,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 299.061242,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 299.075689,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 299.387634,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 300.736355,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "response",
+          "milliseconds": 301.169581,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 1302.957537,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 1304.849193,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 3306.389045,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 3307.827136,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7309.311961,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7310.904376,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7312.673289,
+          "path": "/login",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7314.30045,
+          "path": "/login",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7354.255455,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7354.622846,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7354.641511,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7354.654957,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7354.680055,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7354.692699,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7354.704982,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7354.715733,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7354.743666,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.043808,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.060781,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.076901,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.094114,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.113271,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.126476,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.13911,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.150862,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.161022,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.172243,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.184266,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.202471,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.212119,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.226607,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.237688,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.248118,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.259239,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.269939,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.284507,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.295758,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.306158,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.3157870000005,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.326888,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.336576,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.347387,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.403945,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "test-finish",
+          "milliseconds": 7373.091071
+        },
+        {
+          "kind": "browser-closed",
+          "milliseconds": 7402.733497
+        }
+      ],
+      "tokenRemoved": true,
+      "cleanup": {
+        "browserWatchdogExitCode": 0,
+        "browserWatchdogCleanupSignals": [],
+        "remainingObservedBrowserProcesses": [],
+        "servicesCleaned": true,
+        "serviceContainersAbsent": true
+      },
+      "privateOriginalSha256": {
+        "probe.json": "260c0648a6ced48bd0a39c28d4b691a8488445ec6ec514dd049907660f6c3963",
+        "resources.json": "40cb51c06b809bbb16e1a7ce59c9752cd8290831f8b93298dc2b3d53cf92301e",
+        "control.json": "06d053aadc5dd2efcfda56bb1c8f99434bdc2b91846e80a12765f755523f4ca7",
+        "stdout.log": "13a945da170c7a7f30652a5b48a44e862c2342dc892ec1cad475ce9b3bcd8c35",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 1,
+      "engine": "candidate",
+      "testBodyMilliseconds": 7253.706113,
+      "responseToNextRequestMilliseconds": [
+        1002.0006959999998,
+        2001.417884,
+        4001.4017299999996
+      ],
+      "events": [
+        {
+          "kind": "test-start",
+          "milliseconds": 123.660212
+        },
+        {
+          "kind": "request",
+          "milliseconds": 125.33239000000003,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 142.15281300000004,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 145.961363,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.17924800000003,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.18485900000002,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.189819,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.198625,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.20306399999998,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.20639,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.209927,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.25174700000002,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.25561400000004,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 153.66083000000003,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 153.68227100000001,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 153.69236999999998,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 153.701818,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 154.655596,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 157.72436600000003,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 162.93610999999999,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 171.611467,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 192.80442600000003,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 193.182587,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 221.96669500000002,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 221.976454,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 221.986803,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.04616700000003,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.175563,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.242481,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.24729000000002,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.25057600000002,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 222.25390300000004,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.84252100000003,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 228.28532,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 228.30235199999998,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.236132,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.76773500000002,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.77561000000003,
+          "path": "/assets/login-BAko3nYM.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.77871600000003,
+          "path": "/assets/dist-CWJ376NH.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.783275,
+          "path": "/assets/Logo-DUNzPCkt.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.78581000000003,
+          "path": "/assets/dist-D8i789DE.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.787934,
+          "path": "/assets/loading-button-aCVeR6iV.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.792713,
+          "path": "/assets/password-input-hUb_Z6pd.js"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.510039,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.52977700000002,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.56025499999998,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.565244,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.57140600000002,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.57552400000003,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.580854,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.58475200000004,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.590683,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.599159,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.606273,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.609689,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.61641200000003,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.61937799999998,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.624778,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.627563,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.632142,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.634887,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.66611699999999,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 233.669493,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 233.67468300000002,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 237.367322,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.300656,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.84946200000002,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.925136,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.954031,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.96529300000003,
+          "path": "/assets/settings-24TrnFZp.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 243.00021900000002,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 243.003065,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 243.00739300000004,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 243.01084000000003,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 244.30736100000001,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.057277,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 247.136284,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 248.045677,
+          "path": "/assets/settings-24TrnFZp.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 248.983515,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 249.08665100000002,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 249.11127800000003,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 249.59481,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 250.87577199999998,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "response",
+          "milliseconds": 282.855382,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 285.578222,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 302.844265,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 302.92062,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 303.03075,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 303.175135,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 303.251331,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 303.75813700000003,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 1305.7588329999999,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 1307.707167,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 3309.125051,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 3310.5966660000004,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7311.998396,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7313.610679,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7315.502936,
+          "path": "/login",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7317.292968,
+          "path": "/login",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7357.626288,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7357.676213,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7357.702243,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7357.794839,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7357.83736,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7357.861326,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7357.982527,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7357.986915,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.027713,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.031971,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.062499000001,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.0853130000005,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.100372,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.127573,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.315762,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.320742,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.325561000001,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.3280460000005,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.333987,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.335891000001,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.8200560000005,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.825527,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7365.830436,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.835666,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7365.838532,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.841928,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7365.844463,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.847328,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7365.851947,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.857408,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7365.860493,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.8639,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7365.868108000001,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7365.878097,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7367.3972730000005,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "test-finish",
+          "milliseconds": 7377.366325
+        },
+        {
+          "kind": "browser-closed",
+          "milliseconds": 7409.853669
+        }
+      ],
+      "tokenRemoved": true,
+      "cleanup": {
+        "browserWatchdogExitCode": 0,
+        "browserWatchdogCleanupSignals": [],
+        "remainingObservedBrowserProcesses": [],
+        "servicesCleaned": true,
+        "serviceContainersAbsent": true
+      },
+      "privateOriginalSha256": {
+        "probe.json": "a6df317a223195569363d0370164ed48c8a76d266d376b752763eebfeafd42ff",
+        "resources.json": "6da67b6e245559afab8d777301de298e22f600cb6b40c20867aac8cf31e2e1d8",
+        "control.json": "73a602563e3c367b997db3e1acb67122fef94215b83e61873f8ea0d00faba6e1",
+        "stdout.log": "67f80447867fe43772f5588db042441914ce14b138814d3a4e8cf8c7b2032e23",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 2,
+      "engine": "candidate",
+      "testBodyMilliseconds": 7254.258108,
+      "responseToNextRequestMilliseconds": [
+        1001.675657,
+        2001.815662,
+        4001.425507
+      ],
+      "events": [
+        {
+          "kind": "test-start",
+          "milliseconds": 124.37527500000002
+        },
+        {
+          "kind": "request",
+          "milliseconds": 126.00272700000002,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 143.182082,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.440012,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.448538,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.454199,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.460541,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.46532,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.47044000000002,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.47529900000004,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.479978,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.48464700000002,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 146.489336,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 148.324664,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 152.271267,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 152.28248800000003,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 152.676319,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 157.55441600000003,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 169.316365,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 194.072081,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 194.40021600000003,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 194.409484,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 194.457165,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.26647699999998,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.27586499999998,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.325429,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.333535,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.35764100000003,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.401985,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.40517100000002,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.51457000000002,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 223.53195300000002,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.38774600000002,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.895504,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.547447,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.59793299999998,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.83222000000004,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.93722,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 228.328115,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.289978,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.31261100000003,
+          "path": "/assets/password-input-hUb_Z6pd.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.398916,
+          "path": "/assets/loading-button-aCVeR6iV.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.40402500000002,
+          "path": "/assets/dist-CWJ376NH.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.445034,
+          "path": "/assets/login-BAko3nYM.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 229.45371000000003,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 231.97030700000002,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.08490500000002,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.236685,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.341064,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.524483,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.623392,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.651485,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.674048,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.71913400000003,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.735696,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.76035299999998,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.80063900000002,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.838582,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.84199800000002,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.943452,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.94677800000002,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.95192799999998,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.95467299999999,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.959142,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 232.980242,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 232.98478000000003,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 235.44742399999998,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "request",
+          "milliseconds": 241.705994,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 241.754536,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 241.82484000000002,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 241.883752,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 241.91494200000002,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 241.99245,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.022817,
+          "path": "/assets/settings-24TrnFZp.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.04831600000003,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.065529,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.08837200000002,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 242.105114,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 245.199422,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.15561499999998,
+          "path": "/assets/settings-24TrnFZp.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 246.26911099999998,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 247.18425500000004,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 247.23403,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 247.298353,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 283.31149600000003,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 302.59969,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 302.66920300000004,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 302.67234900000005,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 302.67680700000005,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 302.82229400000006,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 303.46106199999997,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 304.22944600000005,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "response",
+          "milliseconds": 304.868875,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "request",
+          "milliseconds": 1305.905103,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 1307.483682,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 3309.299344,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 3310.7635250000003,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7312.189032,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7313.742784,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7315.640611,
+          "path": "/login",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7317.315343,
+          "path": "/login",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.100839000001,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.150874,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.185671,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.2048270000005,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.220597,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.23272,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.265834,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.343572,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.38472,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.489750000001,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.559193,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.598137,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.6079150000005,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.661057,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.687567,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.6913540000005,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.719408,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.742863,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7358.759925,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7358.7797630000005,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7367.124678,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7367.155657,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7367.21518,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7367.274033000001,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7367.303268000001,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7367.330370000001,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7367.344617000001,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7368.569862,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7368.575643,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7368.5865140000005,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7368.591945,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7368.597124,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7368.59994,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7368.608306,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7369.380578,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "test-finish",
+          "milliseconds": 7378.633383
+        },
+        {
+          "kind": "browser-closed",
+          "milliseconds": 7404.998213
+        }
+      ],
+      "tokenRemoved": true,
+      "cleanup": {
+        "browserWatchdogExitCode": 0,
+        "browserWatchdogCleanupSignals": [],
+        "remainingObservedBrowserProcesses": [],
+        "servicesCleaned": true,
+        "serviceContainersAbsent": true
+      },
+      "privateOriginalSha256": {
+        "probe.json": "d3200eb2a07e8a3a5c419b7b5499ff2e486a9749815871d98bcec4810873bdea",
+        "resources.json": "fba1adccb14579a84e151eec9d4e0d4df00eccb4193a826a84ee2bf1dcc4f53e",
+        "control.json": "d545dde946a5d11a472de19a23793c77cae934270572180cc407bbfd212b6334",
+        "stdout.log": "917ad28b13c72cfcc8ec6182a417aa766d7c0e30a481664c121c96f80bfd1669",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 3,
+      "engine": "reference",
+      "testBodyMilliseconds": 7259.797677,
+      "responseToNextRequestMilliseconds": [
+        1001.7478679999999,
+        2001.5084970000003,
+        4001.8821659999994
+      ],
+      "events": [
+        {
+          "kind": "test-start",
+          "milliseconds": 113.62274300000001
+        },
+        {
+          "kind": "request",
+          "milliseconds": 115.712355,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 133.27594,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 136.77761299999997,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.220257,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.26023299999997,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.275803,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.289068,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.30226299999998,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.31494800000002,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.334635,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.34892200000002,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 137.36841900000002,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 141.009188,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 141.037783,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 142.52306399999998,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 142.68706600000002,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 149.682028,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 160.563697,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 184.18352399999998,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 184.39657999999997,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 185.66055899999998,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 185.99127900000002,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 216.917301,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 216.93897299999998,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 216.95227799999998,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 216.966114,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 216.977376,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 216.99215399999997,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 217.002143,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 217.99705899999998,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 218.93307299999998,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 219.21200499999998,
+          "path": "/settings",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 222.213726,
+          "path": "/settings",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 222.849427,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 222.880286,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.431937,
+          "path": "/assets/password-input-hUb_Z6pd.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.72501599999998,
+          "path": "/assets/login-BAko3nYM.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.73353199999997,
+          "path": "/assets/loading-button-aCVeR6iV.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.7376,
+          "path": "/assets/dist-CWJ376NH.js"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.741197,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.75282900000002,
+          "path": "/assets/images/favicon.png"
+        },
+        {
+          "kind": "requestfailed",
+          "milliseconds": 223.75791900000002,
+          "path": "/assets/dist-D8i789DE.js"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.15311400000002,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.18687799999998,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.83023400000002,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.84455200000002,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.858428,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.86919899999998,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.88576999999998,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.894928,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.90880399999998,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.91871299999997,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.935184,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.944482,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.95566300000002,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.963909,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 226.984829,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 226.99330500000002,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 227.00275299999998,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.01208100000002,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 227.02425399999998,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 227.034894,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 227.046496,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 230.73001699999998,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.44719700000002,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.48019,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 235.818194,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.84344199999998,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.887516,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.903707,
+          "path": "/assets/settings-24TrnFZp.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.913726,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.921892,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.94444499999997,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 235.955216,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 240.405688,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 240.67468000000002,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 241.513218,
+          "path": "/assets/settings-24TrnFZp.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 241.63941899999998,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 241.698692,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 241.96972799999998,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 278.668252,
+          "path": "/assets/_layout-Ru6qNGD8.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 282.372592,
+          "path": "/vite.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 283.230658,
+          "path": "/assets/dialog-DbrRawfO.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 299.034207,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 299.044377,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 299.191307,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 299.226083,
+          "path": "/assets/images/fastapi-logo-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 299.44486,
+          "path": "/assets/images/fastapi-icon-light.svg",
+          "status": 200
+        },
+        {
+          "kind": "response",
+          "milliseconds": 299.459368,
+          "path": "/vite.svg",
+          "status": 404
+        },
+        {
+          "kind": "response",
+          "milliseconds": 300.745719,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 1302.493587,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 1304.2501149999998,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 3305.758612,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 3307.252308,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7309.1344739999995,
+          "path": "/api/v1/users/me",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7310.802212,
+          "path": "/api/v1/users/me",
+          "status": 403
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7312.759913,
+          "path": "/login",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7314.482796,
+          "path": "/login",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.069927,
+          "path": "/assets/index-CRrEdmdv.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.4384199999995,
+          "path": "/assets/index-CRrEdmdv.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.457556,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.473657,
+          "path": "/assets/useCustomToast-DlE96Z23.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.487744,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.503273,
+          "path": "/assets/useBaseQuery-BPNabUaI.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.516609,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.529353,
+          "path": "/assets/useRouter-Bz65gscf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.545424,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.8692009999995,
+          "path": "/assets/useAuth-BAJxF-xC.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.887896,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.906602,
+          "path": "/assets/useSelector-CXKw9sPE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.927241,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.938402,
+          "path": "/assets/theme-provider-Btgn0din.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.950866,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.962398,
+          "path": "/assets/useMatch-AibYL3wm.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7355.975914,
+          "path": "/assets/button-UM2DsvLD.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7355.9917239999995,
+          "path": "/assets/button-UM2DsvLD.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7356.006532,
+          "path": "/assets/index-KejARnPh.css",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7356.016331,
+          "path": "/assets/index-KejARnPh.css",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.22508,
+          "path": "/assets/login-BAko3nYM.js",
+          "method": "GET"
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.238345,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.259555,
+          "path": "/assets/password-input-hUb_Z6pd.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.277019,
+          "path": "/assets/dist-D8i789DE.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.288621,
+          "path": "/assets/dist-D8i789DE.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.303269,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.312055,
+          "path": "/assets/loading-button-aCVeR6iV.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.327234,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.338075,
+          "path": "/assets/AuthLayout-DzhkpsXf.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.348425,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.3571409999995,
+          "path": "/assets/Logo-DUNzPCkt.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.36695,
+          "path": "/assets/dist-CWJ376NH.js",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.383161,
+          "path": "/assets/dist-CWJ376NH.js",
+          "status": 200
+        },
+        {
+          "kind": "request",
+          "milliseconds": 7363.395825,
+          "path": "/assets/images/favicon.png",
+          "method": "GET"
+        },
+        {
+          "kind": "response",
+          "milliseconds": 7363.452824,
+          "path": "/assets/images/favicon.png",
+          "status": 200
+        },
+        {
+          "kind": "test-finish",
+          "milliseconds": 7373.4204199999995
+        },
+        {
+          "kind": "browser-closed",
+          "milliseconds": 7397.415349
+        }
+      ],
+      "tokenRemoved": true,
+      "cleanup": {
+        "browserWatchdogExitCode": 0,
+        "browserWatchdogCleanupSignals": [],
+        "remainingObservedBrowserProcesses": [],
+        "servicesCleaned": true,
+        "serviceContainersAbsent": true
+      },
+      "privateOriginalSha256": {
+        "probe.json": "c0d9d07f96260d2cb0dbc57c6aeaa58465f78c4e933fac519b623cfb3a2159c4",
+        "resources.json": "6d1c6039daef9491b50590c14e535892d6baf44dc6f1abecfaa1a5185d1b317e",
+        "control.json": "db6ecb8c999a331833c431f96fa207eee2b098f278ba00d770b7937fc19e06de",
+        "stdout.log": "5430b4839e9694c6a3471c8c835bff4ac01745eff1dd1ce621a807a4f2f21b72",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "sourceBindings": {
+    "frontend/tests/login.spec.ts": "829cbe94ba6eb3e5a35aca84c0893ab7275fdbd614072daa3c0189b0f8b1f0c5",
+    "frontend/src/main.tsx": "c7ac72a19b2e1184fafb305adc7762ee5eba766e577dcd3d9fabea0831369dad",
+    "frontend/src/hooks/useAuth.ts": "cf950406bc0173186a65b6a123a0932cb363d39ff2805fe7815a46216a7fd7c3",
+    "node_modules/@tanstack/query-core/src/retryer.ts": "515458bf4b4a717a56f93b3556ec2896ad93df48b357e69a351b6f21a3f92a5a",
+    "node_modules/@tanstack/query-core/src/query.ts": "155d7b5d4105d33f45a8379059fb6888da96379c6978f43c7d831236e1d472ca",
+    "node_modules/@tanstack/query-core/package.json": "e56ff7497c2172a3f00a25c95999f3c29a7ddbddae316ba6eda6a92fb60d8e01",
+    "backend/app/frontend/assets/AuthLayout-DzhkpsXf.js": "71633018795a2d5c4d494d1691861ec1e6a43567451303791cdda9432135a1e6",
+    "backend/app/frontend/assets/DataTable-CRp7vwUP.js": "692e0c96bd15526ed46dd86c0a736feea6ea78393dbd4404b4a4f304b502209b",
+    "backend/app/frontend/assets/Logo-DUNzPCkt.js": "e45931b166277c79cffc4fcdab9f96a2efd861f7eed25b0cefebeb24e4709da5",
+    "backend/app/frontend/assets/_layout-Ru6qNGD8.js": "3ec19636d134b884a8ea28d1e1e163bf21e9d0982c4bbad03fd9653061871610",
+    "backend/app/frontend/assets/_layout-ugPF04ZS.js": "8fde7b90f35bd54a891d4ca66c1a22c191c3666ab22117efaa8195caf8ed5b07",
+    "backend/app/frontend/assets/admin-CO5pHnUV.js": "0b78dc606cf55e692c7ee8d4a276ac36549d90874b28ba5afc7224620f6d5103",
+    "backend/app/frontend/assets/button-UM2DsvLD.js": "e8e7d7f3e740354af919d8ff9ac126521b6319a247297c2f332192b6e2ffcefd",
+    "backend/app/frontend/assets/dialog-DbrRawfO.js": "f8a50dc8021ede99baabb76ef07d47bde8fc2d0cdfb9f9ad190a06442773ce46",
+    "backend/app/frontend/assets/dist-CWJ376NH.js": "8335e6228eb7214b9bd13dd1c49d395182357135378bd08baf9deb288e4dd0b9",
+    "backend/app/frontend/assets/dist-D8i789DE.js": "845f3d19363ad406c709adec43b7f37a4994df7f7c10f10cd4cf44cc5dacc47d",
+    "backend/app/frontend/assets/images/fastapi-icon-light.svg": "55625dea14977c96b3eba98f0937aeab147aee3e6dd6faabf8fed0928d25bad8",
+    "backend/app/frontend/assets/images/fastapi-icon.svg": "3da686511baca6148e047922df3e72d562d9543b029b634aefd0df13611560e9",
+    "backend/app/frontend/assets/images/fastapi-logo-light.svg": "ab07cd45dbb11a4bbf866dbf4244065cbad9f9f146de0f7f275a64fd30c3e788",
+    "backend/app/frontend/assets/images/fastapi-logo.svg": "0b3bc6f5e600e7b3d7d6957012b4453e6a9f69a99bbf63bae8044d075442cdfd",
+    "backend/app/frontend/assets/images/favicon.png": "d16f72cf5a2773eba499cc7f3db1923c6f5f73de990f739e3a05806aafec15b7",
+    "backend/app/frontend/assets/index-CRrEdmdv.js": "48eb728a2bccbb5e6c01e073cd577b189d95b32cf40dc20d8fa9133102ea634f",
+    "backend/app/frontend/assets/index-KejARnPh.css": "fbbe35470dc0675686930b4fb5e55987b108da1feffa0fc8336099dcf4a3c9a4",
+    "backend/app/frontend/assets/items-91t82d5E.js": "0db6dd1de7edb6651f73ea6aa3322a682383a1727e0ef36f350ed33d6c810736",
+    "backend/app/frontend/assets/loading-button-aCVeR6iV.js": "15344b4cc00718af8b208e7cce6c3e21cfb502a41dd05f02769b3ecbb6558322",
+    "backend/app/frontend/assets/login-BAko3nYM.js": "7f3533cf5ab21cd960e1aed645af3822409aa2debea9057553184ad0e88d01d8",
+    "backend/app/frontend/assets/password-input-hUb_Z6pd.js": "3fc4b1e0d93207b792d4afafd19e420bc2dae3353fcd7dd132b4b1faaa0b2ef4",
+    "backend/app/frontend/assets/recover-password-DComfNrX.js": "dcc24c45b30a846d7115bb86e3223a5a1a38559b0690301e01d5de50e2ef651f",
+    "backend/app/frontend/assets/reset-password-DpErPavg.js": "1f1f6d2245b904079ed316b36899f6d3fe3fc58f4b5200f5c142aeb3183f841c",
+    "backend/app/frontend/assets/settings-24TrnFZp.js": "ccf5290434279ec4b7cde8e0864989d44a1d6840e7a4c863df431fb55300d543",
+    "backend/app/frontend/assets/signup-Blk3aXAU.js": "3d6f3f401932165c1f5f1a7b70ece7ae1751dcf311a53ac88ed5414456e9c4cb",
+    "backend/app/frontend/assets/theme-provider-Btgn0din.js": "737697aa701a46acdca47b4a97fcc8ef0a4f7f2189448bfb738c3df7b8bab20c",
+    "backend/app/frontend/assets/useAuth-BAJxF-xC.js": "a050e66837618c837c95a419363fab6cd13eaa4dbe7c584c079cfaed8b2f678f",
+    "backend/app/frontend/assets/useBaseQuery-BPNabUaI.js": "67bbee50bdc45b340fad2ee3e05efc9562250455ca0b23b91b197bda976cce92",
+    "backend/app/frontend/assets/useCustomToast-DlE96Z23.js": "dd4d413b5a635149adcd1c1bb33aaf06fb1993233933b9ffb2b5f2f06a1ac37b",
+    "backend/app/frontend/assets/useMatch-AibYL3wm.js": "847a175d1f95d3448d7e4eebe42bfa52c7937beac3484131be10f303868ddbb4",
+    "backend/app/frontend/assets/useRouter-Bz65gscf.js": "72a550263c001532c5da2aa827bdfe29246ca97202e9d57ef9116d8ca97b5dcc",
+    "backend/app/frontend/assets/useSelector-CXKw9sPE.js": "efa67afc2f45efcc066a87224bcc5f451094fcbb841c321b5c5196faa941e299",
+    "backend/app/frontend/index.html": "0f65ea4da641253ee115cc5a55f034849db0e29256eb343ff74194ac0ca87f19"
+  },
+  "invalidAttempts": [
+    {
+      "reason": "Probe imported both isolated test runners in one process; duplicate Playwright Test initialization rejected before browser launch. Corrected probe imports only the selected engine matcher. No timing observation admitted.",
+      "watchdogExitCode": 1,
+      "servicesCleaned": true,
+      "originalControlSha256": "458a15a838b5e32e5050fe5dfc0824b7aa45d44b33a13730896ce1e6d0a2a48b",
+      "originalStderrSha256": "cee9ebbf0f3d15fbebe0fe9b706fd289f325ea2582f6de57fffdc7550202d9aa"
+    }
+  ],
+  "conclusions": [
+    "The application makes four failed current-user requests before redirecting, separated by the three configured-library default backoffs. Both engines preserve this behavior.",
+    "The nominal seven-second serial application retry budget cannot be removed by faster locator polling or transport while preserving ordinary real-time execution.",
+    "Do not alter this corpus retry policy, remove the test, or count explicit clock control as an ordinary engine speedup. Continue measuring complete suites with this application wait included."
+  ],
+  "limits": [
+    "Two diagnostic launches per engine; no confidence interval, tail estimate or speed comparison.",
+    "This is a single test body outside the runner, not all 62 original backend tests or a complete-owner performance gate.",
+    "Docker service CPU and memory are outside the browser watchdog tree; no resource-admission claim.",
+    "Host response-to-next-request intervals include event delivery and other work; they are not exact timer execution or idle CPU measurements.",
+    "This does not prove a bound on the final preparation-inclusive suite metric or prevent gains elsewhere in the suite."
+  ],
+  "performanceAdmission": false,
+  "privateCaptureSha256": {
+    "plan.json": "38bec17d82c24ee5d0ac6b2c7de5e54e1155c5ed002549bf86b03ba6040d0fd5",
+    "result.json": "278a53a003c58fcc19398f4f8583656baef2244ac7cf08637889aac367410619",
+    "probe.mjs": "1e4bf8471e6ae325f441b34b830bb98968219d350e0ba6422d7610b5776f45ba",
+    "run.py": "50589440fe4125128481d513a8592f03ceef7fabdc37d4583570de491b5a3fe8",
+    "export.py": "4d14d830e37a0985c10e55139c227019e9c8473f78eda51e8936cb5e2a4f610e"
+  }
+}
