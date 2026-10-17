@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { comparePaired, quantile } from './statistics.mjs';
 import { finalGoalClockProjection } from '../tools/final-goal-clock-projection.mjs';
-import { finalGoalAccountingClass, finalGoalAccountingClasses, finalGoalPlatformScope, verifyFinalGoalResourcePolicy } from './final-goal-resource-policy.mjs';
+import { finalGoalAccountingClass, finalGoalAccountingClasses, finalGoalPlatformScope, finalGoalResourceRegressionRatios,
+  verifyFinalGoalResourcePolicy } from './final-goal-resource-policy.mjs';
 
 export const finalGoalScenarioIds = ['runner-interaction', 'runner-assertion', 'runner-navigation', 'runner-setup',
   'runner-backend', 'runner-failure', 'application-todomvc', 'application-svgomg', 'application-backend-corpus'];
@@ -456,8 +457,8 @@ function analyzeCell(result, scenario, cell, configuration, declaration, campaig
   const regressionRatios = {
     completeMedian: ratio(run => run.report.completeMilliseconds, median),
     completeObservedMaximum: ratio(run => run.report.completeMilliseconds, maximum),
-    sampledConcurrentMemoryMaximum: ratio(run => run.resources.sampledConcurrentBytes, maximum),
-    originalOwnerInclusiveCpuMedian: ratio(run => run.resources.originalOwnerInclusiveCpuSeconds, median),
+    ...finalGoalResourceRegressionRatios(configuration, Object.fromEntries(engines.map(engine =>
+      [engine, runs[engine].map(run => run.resources)]))),
   };
   const regressions = Object.keys(regressionRatios).filter(metric => regressionRatios[metric] > configuration.maximumRegressionRatios[metric]);
   const pointEstimateWin = complete.medianPairedSpeedup >= configuration.minimumSpeedup;

@@ -5,7 +5,7 @@ import { lstat, open } from 'node:fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidence.mjs';
-import { finalGoalAccountingClasses } from '../benchmarks/final-goal-resource-policy.mjs';
+import { finalGoalAccountingClasses, finalGoalResourceMetrics } from '../benchmarks/final-goal-resource-policy.mjs';
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
 
@@ -134,6 +134,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
   verifyFinalGoalConfiguration(configuration);
   const declaration = await jsonEvidence(campaign.declaration);
   const scenarioResults = [];
+  const linuxResourceObservations = [];
   const scenarios = new Map(configuration.scenarios.map(scenario => [scenario.id, scenario]));
   for (const entry of campaign.scenarios) {
     const result = await jsonEvidence(entry);
@@ -142,9 +143,9 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     scenarioResults.push(result);
     for (const cell of result.cells) {
       for (const receipt of cell.evidence ?? []) await evidence(receipt);
-      for (const attempt of cell.attempts) {
+      for (const [attemptIndex, attempt] of cell.attempts.entries()) {
         for (const receipt of attempt.evidence ?? []) await evidence(receipt);
-        for (const run of Object.values(attempt.runs ?? {})) {
+        for (const [engine, run] of Object.entries(attempt.runs ?? {})) {
           for (const receipt of run.evidence) await evidence(receipt);
           for (const kind of ['report', 'resources']) {
             const files = run.evidence.filter(receipt => receipt.kind === kind);
@@ -162,6 +163,13 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
             const derived = await reconstructFinalGoalResourceEvidence(manifest, {},
               (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
             assert.deepEqual(derived, run.resources, 'Linux observations differ from retained original reconstruction');
+            linuxResourceObservations.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine,
+              originals: linuxOriginals[0], captureIdentity: derived.captureIdentity,
+              metrics: finalGoalResourceMetrics(configuration, derived), commandInterval: derived.commandInterval,
+              wrapperExitCode: derived.wrapperExitCode, observedDrainedMembership: derived.observedDrainedMembership,
+              drainRejectionReasons: derived.drainRejectionReasons,
+              nativeCleanObservedTeardown: derived.nativeCleanObservedTeardown, adoptedChildren: derived.adoptedChildren,
+              resourceAdmission: false, performanceAccepted: false });
           }
         }
       }
@@ -208,7 +216,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     }
   }
 
-  return { analysis, checkedFiles: Object.fromEntries(checked),
+  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations,
     inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
       scope: 'Cumulative JSON read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
     scope: 'Retained file integrity and pure final-goal policy validation. Original behavior, source and collector algorithm admission remain separately required; a draft never proves final acceptance.' };

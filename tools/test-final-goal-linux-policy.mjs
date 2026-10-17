@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { analyzeFinalGoal, finalGoalHash, verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
-import { finalGoalAccountingClass, finalGoalAccountingClasses } from '../benchmarks/final-goal-resource-policy.mjs';
+import { finalGoalAccountingClass, finalGoalAccountingClasses, finalGoalResourceMetrics,
+  finalGoalResourceRegressionRatios } from '../benchmarks/final-goal-resource-policy.mjs';
 import { verifyFinalGoalEvidence } from './verify-final-goal.mjs';
 
 const linux = JSON.parse(await readFile(new URL('../benchmarks/configurations/final-goal-linux.json', import.meta.url), 'utf8'));
@@ -15,6 +16,83 @@ await mkdir(temporaryRoot, { recursive: true });
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const analyze = (configuration, status = 'draft') => analyzeFinalGoal({ configuration,
   declaration: { status, configurationSha256: finalGoalHash(configuration) }, scenarioResults: [] });
+
+// Synthetic observations exercise arithmetic only, never original-resource admission.
+function linuxResources(cpu = '12', memory = '32') {
+  return { schemaVersion: 1, accountingClass: finalGoalAccountingClasses.linux, status: 'verified-local-observations',
+    resourceAdmission: false, performanceAccepted: false, cgroupCpu: { usageMicroseconds: cpu,
+      userMicroseconds: '6', systemMicroseconds: '5' }, cgroupChargedPeakBytes: memory,
+    wrapperExitCode: 0, observedDrainedMembership: true, drainRejectionReasons: [],
+    nativeCleanObservedTeardown: false, adoptedChildren: 1,
+    originalCollectorWait: { userSeconds: 500, systemSeconds: 700 },
+    originalWrapperWait: { userSeconds: 60, systemSeconds: 80 } };
+}
+
+test('Linux projects the kernel total without adding inclusive waits or replacing it with user+system', () => {
+  const resources = linuxResources();
+  const original = structuredClone(resources);
+  assert.deepEqual(finalGoalResourceMetrics(linux, resources), { cgroupCpuUsageMicroseconds: 12, cgroupChargedPeakBytes: 32 });
+  assert.deepEqual(resources, original);
+  resources.wrapperExitCode = 7;
+  assert.equal(finalGoalResourceMetrics(linux, resources).cgroupCpuUsageMicroseconds, 12, 'Failed observations remain visible');
+  assert.throws(() => finalGoalResourceRegressionRatios(linux, { playwright: [original], flashwright: [resources] }), /Failed Linux/);
+});
+
+test('resource aggregation uses ratio of CPU medians and memory maxima with Linux names', () => {
+  const observations = { playwright: [linuxResources('10', '100'), linuxResources('100', '200'), linuxResources('1000', '400')],
+    flashwright: [linuxResources('20', '50'), linuxResources('200', '800'), linuxResources('100', '20')] };
+  // Median paired CPU ratios would be 2; ratio of CPU medians is 1.
+  assert.deepEqual(finalGoalResourceRegressionRatios(linux, observations), { cgroupChargedMemoryMaximum: 2, cgroupCpuUsageMedian: 1 });
+  observations.flashwright[2].cgroupCpu.usageMicroseconds = '300';
+  assert.equal(finalGoalResourceRegressionRatios(linux, observations).cgroupCpuUsageMedian, 2);
+});
+
+test('Linux ratio arithmetic allows observed zero candidate work but never a zero reference denominator', () => {
+  const reference = linuxResources('2', '4'), zero = linuxResources('0', '0');
+  assert.deepEqual(finalGoalResourceRegressionRatios(linux, { playwright: [reference], flashwright: [zero] }),
+    { cgroupChargedMemoryMaximum: 0, cgroupCpuUsageMedian: 0 });
+  for (const [cpu, memory] of [['0', '4'], ['2', '0']])
+    assert.throws(() => finalGoalResourceRegressionRatios(linux, { playwright: [linuxResources(cpu, memory)], flashwright: [reference] }), /No positive reference/);
+});
+
+test('historical macOS resource aggregation retains its original units and values', () => {
+  const row = (cpu, memory) => ({ schemaVersion: 2, cpuAccounting: 'atomic-wait4-original-owner',
+    originalOwnerInclusiveCpuSeconds: cpu, sampledConcurrentBytes: memory });
+  const resources = { playwright: [row(0.5, 100), row(1.5, 400)], flashwright: [row(0.25, 200), row(0.75, 800)] };
+  assert.deepEqual(finalGoalResourceRegressionRatios(mac, resources),
+    { sampledConcurrentMemoryMaximum: 2, originalOwnerInclusiveCpuMedian: 0.5 });
+  assert.throws(() => finalGoalResourceMetrics(linux, resources.playwright[0]), /accounting class/);
+  assert.throws(() => finalGoalResourceMetrics(mac, linuxResources()), /accounting class/);
+});
+
+for (const value of [null, undefined, 12, true, '-1', '1.5', '01', '1e3', 'NaN', 'Infinity', '9007199254740992', '18446744073709551616']) {
+  test(`Linux rejects malformed or inexact metric ${String(value)}`, () => {
+    const cpu = linuxResources(); cpu.cgroupCpu.usageMicroseconds = value;
+    assert.throws(() => finalGoalResourceMetrics(linux, cpu));
+    const resources = linuxResources(); resources.cgroupChargedPeakBytes = value;
+    assert.throws(() => finalGoalResourceMetrics(linux, resources));
+  });
+}
+
+test('largest exact counter survives projection without rounding', () => {
+  const value = String(Number.MAX_SAFE_INTEGER);
+  assert.deepEqual(finalGoalResourceMetrics(linux, linuxResources(value, value)),
+    { cgroupCpuUsageMicroseconds: Number.MAX_SAFE_INTEGER, cgroupChargedPeakBytes: Number.MAX_SAFE_INTEGER });
+});
+
+test('missing runs, drain failures and mixed accounting never fabricate ratios', () => {
+  const row = linuxResources();
+  for (const resources of [{ playwright: [], flashwright: [] }, { playwright: [row], flashwright: [] },
+    { playwright: [row], flashwright: [row], ignored: [row] }])
+    assert.throws(() => finalGoalResourceRegressionRatios(linux, resources));
+  for (const change of [r => { r.observedDrainedMembership = false; }, r => { r.drainRejectionReasons = ['forced cleanup']; },
+    r => { r.sampledConcurrentBytes = 32; }, r => { r.originalOwnerInclusiveCpuSeconds = 12; },
+    r => { r.cpuAccounting = 'atomic-wait4-original-owner'; }, r => { delete r.cgroupCpu; },
+    r => { r.resourceAdmission = true; }, r => { r.performanceAccepted = true; }]) {
+    const changed = structuredClone(row); change(changed);
+    assert.throws(() => finalGoalResourceRegressionRatios(linux, { playwright: [row], flashwright: [changed] }));
+  }
+});
 
 test('Linux preserves the complete matrix, scheduling, artifacts and acceptance threshold', () => {
   verifyFinalGoalConfiguration(linux);
