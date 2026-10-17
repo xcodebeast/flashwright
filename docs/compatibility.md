@@ -662,7 +662,7 @@ Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](..
 
 PNG/JPEG bytes and atomic path output, image geometry, fonts/animations/styles and cancellation cleanup are covered by shared screenshot fixtures.
 
-Limits: Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work.
+Limits: Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work. Intermittent first-capture failure on Linux full Chrome remains unresolved; the native startup diagnostic establishes a failure mechanism in both engines, not a production fix.
 
 Runtime defaults: Only the stated subset is reviewed; other defaults remain unverified.
 
@@ -670,7 +670,7 @@ Assessment: experimental / verified-subset.
 
 Implementation: [packages/flashwright-core/src/index.ts](../packages/flashwright-core/src/index.ts).
 
-Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/m2/screenshots.mjs](../compatibility/m2/screenshots.mjs) (source-review).
+Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/m2/screenshots.mjs](../compatibility/m2/screenshots.mjs) (source-review), [compatibility/evidence/native-screenshot-startup-checkpoint-2026-10-17.json](../compatibility/evidence/native-screenshot-startup-checkpoint-2026-10-17.json) (source-review).
 
 Intentional differences:
 
