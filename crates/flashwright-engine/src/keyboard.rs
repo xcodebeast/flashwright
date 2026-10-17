@@ -572,7 +572,11 @@ impl Engine {
                 )
                 .await
             } else {
+                async {
                 operation.check()?;
+                let admission = self
+                    .locator_mutation_admission(&page, &realm, operation)
+                    .await?;
                 page.trace_before_input(operation);
                 let command = browser.connection.start_command("Runtime.callFunctionOn", json!({
                     "uniqueContextId": realm.context.unique_identifier,
@@ -581,7 +585,9 @@ impl Engine {
                     "returnByValue": true, "awaitPromise": true, "userGesture": true,
                 }), Some(&realm.context.session_identifier))?;
                 match self
-                    .locator_mutation_response(&page, &browser, &realm, operation, command)
+                    .locator_mutation_response(
+                        &page, &browser, &realm, operation, command, admission,
+                    )
                     .await
                 {
                     Ok(result) => {
@@ -590,6 +596,7 @@ impl Engine {
                     }
                     Err(error) => Err(error),
                 }
+                }.await
             };
             let result = match preparation {
                 Ok(result) => result,

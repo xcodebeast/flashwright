@@ -171,6 +171,7 @@ pub struct Engine {
     resident_assertions: bool,
     frame_assertion_leases: bool,
     condition_instrumentation: bool,
+    mutation_cleanup_slots: Arc<tokio::sync::Semaphore>,
     attachment_slots: Arc<tokio::sync::Semaphore>,
     file_chooser_slots: Arc<tokio::sync::Semaphore>,
     network_budget: Arc<tokio::sync::Semaphore>,
@@ -253,6 +254,9 @@ impl Engine {
         limits: ResourceLimits,
     ) -> Self {
         Self {
+            mutation_cleanup_slots: Arc::new(tokio::sync::Semaphore::new(
+                limits.pending_operations,
+            )),
             file_chooser_slots: Arc::new(tokio::sync::Semaphore::new(
                 file_chooser::MAXIMUM_CHOOSERS,
             )),
