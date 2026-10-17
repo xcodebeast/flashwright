@@ -41,6 +41,8 @@ The [remote screenshot checkpoint](compatibility/evidence/remote-screenshot-chec
 
 The [integrated remote-screenshot checkpoint](compatibility/evidence/integrated-remote-screenshot-linux-checkpoint-2026-10-17.json) passes all 220 native Linux full-Chrome/Bun development checks at 15a91eff, including 536 Rust tests and one ignored. All 1281 source bindings, executable hashes and command logs were verified with clean original-supervisor teardown. This closes the combined development gate after remote screenshot preparation; intermittent native screenshot and stock focus reliability, other-platform refresh, release and the representative 2× performance objective remain open.
 
+The [backend trace checkpoint](compatibility/evidence/backend-trace-linux-checkpoint-2026-10-17.json) verifies 248 passing native Linux full-Chrome/Bun tests and their trace archives across both engines at workers 1 and 4. Twenty-eight selected offline post-fill states replay original values, styles, captured images and embedded test source after fresh application services stop. This is development-alias functionality with tracing on for every passing attempt; packed backend tracing, final retry policy, complete resource accounting, release and the representative 2× performance objective remain open.
+
 ## S2 Selected decisions and rationale
 
 Earlier exploration informed these choices, but its removed artifacts aren't reproducible evidence for the main build. Establish new baselines in M0 using S6; don't quote retired pilot numbers as verified product performance
