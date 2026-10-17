@@ -3629,8 +3629,8 @@
       "title": "Page screenshots",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "PNG/JPEG bytes and atomic path output, image geometry, fonts/animations/styles and cancellation cleanup are covered by shared screenshot fixtures.",
-      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work. Intermittent first-capture failure on Linux full Chrome remains unresolved; the native startup diagnostic establishes a failure mechanism in both engines, not a production fix.",
+      "scope": "PNG/JPEG bytes and atomic path output, image geometry, fonts/animations/styles and cancellation cleanup are covered by shared screenshot fixtures. The remote-preparation checkpoint adds native Linux full-Chrome Bun and Node 22 parity for cross-process and nested caret/style/animation restoration, child replacement/removal, and original native reply ownership. Runner screenshot, binary transfer and manual trace/viewer regressions also pass.",
+      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work. Intermittent first-capture failure on Linux full Chrome remains unresolved; the native startup diagnostic establishes a failure mechanism in both engines, not a production fix. The remote-preparation change still needs a fresh combined core and other-platform refresh; it makes no performance claim.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [
         "A screenshot that expires while queued never prepares or captures the page later; pinned 1.60.0 can apply temporary style after expiration and leave it behind (S4.k)."
@@ -3639,6 +3639,18 @@
         {
           "path": "packages/flashwright-core/src/index.ts",
           "sha256": "3ee552ea2ea8d948e6c3ba54f9c7f5c404ed6a0f8f81375e7c909a08b239f3a0"
+        },
+        {
+          "path": "crates/flashwright-engine/src/screenshots.rs",
+          "sha256": "7437d629d6079ed345a7c634a837a25b6bcd550e9a75b028ab01e069ecd0c93c"
+        },
+        {
+          "path": "crates/flashwright-engine/src/page_state.rs",
+          "sha256": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_sessions.rs",
+          "sha256": "9b7850ad06996a613f6a9ba85500ee13822412ac72bf2f644f87cb7b2a433d7e"
         }
       ],
       "evidence": [
@@ -3649,12 +3661,32 @@
         },
         {
           "path": "compatibility/m2/screenshots.mjs",
-          "sha256": "b3143e71ddc0a76d496bdbaf8b4aba43a5223b81f0f4fc0b3b9f0dfee555a87e",
+          "sha256": "10e960cfa2b8f07b8bafdf1728e95e598066a449b8a1bed414526acb92943de6",
           "kind": "source-review"
         },
         {
           "path": "compatibility/evidence/native-screenshot-startup-checkpoint-2026-10-17.json",
           "sha256": "9c946dcf20c68058627e9d49ab3fa772df7aa628027c1dfd395604523f666c13",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/remote-screenshot-checkpoint-2026-10-17.json",
+          "sha256": "bd7e0ae2cbd988664fcb89cba0f67e26499940ca918e0baa56a5872bfc230281",
+          "kind": "conformance"
+        },
+        {
+          "path": "tools/test-screenshot-lifetime.mjs",
+          "sha256": "33d32f18816ffbf1154afcecb86ea708ea43b2d52ecf1f4f2dee436e3ec93a62",
+          "kind": "source-review"
+        },
+        {
+          "path": "tools/screenshot-lifetime-proxy.py",
+          "sha256": "15b125825abef8b9cbf857a12406fb3922b2a640da3251a98c62b71e5d97f409",
+          "kind": "source-review"
+        },
+        {
+          "path": "tools/run-screenshot-lifetime-tests.mjs",
+          "sha256": "c3c45bbd6eb067a6c6091740207614927043871a1c6808e4d8eea43b716aeb81",
           "kind": "source-review"
         }
       ],

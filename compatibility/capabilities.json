@@ -17433,12 +17433,19 @@
       "status": "experimental",
       "milestone": "M4",
       "implementation": [
-        "packages/flashwright-core/src/index.ts"
+        "packages/flashwright-core/src/index.ts",
+        "crates/flashwright-engine/src/screenshots.rs",
+        "crates/flashwright-engine/src/page_state.rs",
+        "crates/flashwright-engine/src/renderer_sessions.rs"
       ],
       "evidence": [
         "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
         "compatibility/m2/screenshots.mjs",
-        "compatibility/evidence/native-screenshot-startup-checkpoint-2026-10-17.json"
+        "compatibility/evidence/native-screenshot-startup-checkpoint-2026-10-17.json",
+        "compatibility/evidence/remote-screenshot-checkpoint-2026-10-17.json",
+        "tools/test-screenshot-lifetime.mjs",
+        "tools/screenshot-lifetime-proxy.py",
+        "tools/run-screenshot-lifetime-tests.mjs"
       ],
       "source": "playwright-core/types/types.d.ts",
       "line": 4159,

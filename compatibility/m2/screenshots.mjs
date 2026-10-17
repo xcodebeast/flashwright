@@ -232,20 +232,66 @@ async function run(name, chromium) {
       report.crossOriginFramePlacement = targetInfos.some(target => target.type === 'iframe' && target.url.endsWith('/remote')) ? 'out-of-process' : 'same-process';
       await inspection.detach();
     }
-    if (report.crossOriginFramePlacement === 'same-process') {
-      const child = page.frames().find(frame => frame !== page.mainFrame());
-      assert.equal(await child.locator('body').count(), 1);
-      result.images.crossOriginPreparation = imageRecord(await page.screenshot({ style: 'body { background: rgb(1, 2, 3) !important }' }));
-      assert.notEqual(result.images.crossOriginPreparation.pixelsSha256, result.images.remoteUnmodified.pixelsSha256);
-      assert.deepEqual(imageRecord(await page.screenshot()), result.images.remoteUnmodified);
-      if (name === 'flashwright') report.candidateChecks.push('same-process cross-origin preparation matches reference and restores original pixels');
-    } else if (name === 'flashwright') {
-      const child = page.frames().find(frame => frame !== page.mainFrame());
-      assert.equal(await child.locator('body').count(), 1);
-      await page.evaluate(() => { globalThis.preparationMutations = 0; new MutationObserver(records => preparationMutations += records.length).observe(document.documentElement, { subtree:true, attributes:true, childList:true }); });
-      await assert.rejects(page.screenshot(), error => error.name === 'UnsupportedFeatureError');
-      assert.equal(await page.evaluate(() => preparationMutations), 0);
-      report.candidateChecks.push('cross-process preparation rejects before document changes while unmodified capture succeeds');
+    const child = page.frames().find(frame => frame !== page.mainFrame());
+    assert.equal(await child.locator('body').count(), 1);
+    result.images.crossOriginPreparation = imageRecord(await page.screenshot({ style: 'body { background: rgb(1, 2, 3) !important }' }));
+    assert.notEqual(result.images.crossOriginPreparation.pixelsSha256, result.images.remoteUnmodified.pixelsSha256);
+    assert.deepEqual(imageRecord(await page.screenshot()), result.images.remoteUnmodified);
+    result.lifecycle.crossOriginPreparationRestored = true;
+    // Hold main-document fonts after preparation so remote and nested state is observable.
+    for (const disposition of ['restore', 'replace', 'remove']) {
+      const preparedPage = await browser.newPage({ viewport: { width: 320, height: 240 } });
+      await preparedPage.goto(origin);
+      const heldFont = await startFont(preparedPage, `${name}-remote-${disposition}`);
+      await preparedPage.evaluate(async remote => {
+        const frame = document.createElement('iframe'); frame.id = 'remote-prepared';
+        const loaded = new Promise(resolve => frame.onload = resolve);
+        frame.src = remote; document.body.append(frame); await loaded;
+      }, origin.replace('127.0.0.1', 'localhost') + '/remote');
+      const preparedChild = preparedPage.frames().find(frame => frame !== preparedPage.mainFrame());
+      await preparedChild.evaluate(async () => {
+        document.body.innerHTML = '<input id="caret" style="caret-color:rgb(1, 2, 3)!important"><div id="shadow"></div><div id="finite"></div><div id="infinite"></div><iframe id="nested"></iframe>';
+        document.querySelector('#shadow').attachShadow({ mode: 'open' }).innerHTML = '<textarea style="caret-color:rgb(4, 5, 6)"></textarea>';
+        document.head.insertAdjacentHTML('beforeend', '<style>@keyframes move {from{transform:translateX(0)}to{transform:translateX(100px)}}#finite{animation:move 100s linear forwards}#infinite{animation:move 100s linear infinite}</style>');
+        globalThis.animationEnds = 0;
+        document.querySelector('#finite').addEventListener('animationend', () => animationEnds++);
+        const nested = document.querySelector('#nested');
+        const loaded = new Promise(resolve => nested.onload = resolve);
+        nested.srcdoc = '<input id="nested-caret" style="caret-color:rgb(7, 8, 9)!important">';
+        await loaded;
+      });
+      const nestedChild = preparedPage.frames().find(frame => frame.parentFrame() === preparedChild);
+      assert.ok(nestedChild);
+      const before = await caretState(preparedChild);
+      const capture = preparedPage.screenshot({ timeout: 10000, animations: 'disabled', style: 'input, textarea { background: rgb(31, 41, 59) !important }' });
+      void capture.catch(() => {});
+      await waitUntil(async () => (await nestedChild.evaluate(() => document.querySelector('input').style.caretColor)) === 'transparent', 'nested remote preparation');
+      assert.deepEqual(await caretState(preparedChild), [['transparent', 'important'], ['transparent', 'important']]);
+      assert.equal(await preparedChild.evaluate(() => getComputedStyle(document.querySelector('#shadow').shadowRoot.querySelector('textarea')).backgroundColor), 'rgb(31, 41, 59)');
+      assert.equal(await nestedChild.evaluate(() => getComputedStyle(document.querySelector('input')).backgroundColor), 'rgb(31, 41, 59)');
+      await waitUntil(() => preparedChild.evaluate(() => animationEnds === 1), 'remote finite animation completion');
+      if (disposition === 'replace') {
+        await preparedPage.evaluate(async url => {
+          const frame = document.querySelector('#remote-prepared');
+          const loaded = new Promise(resolve => frame.onload = resolve);
+          frame.src = url; await loaded;
+        }, origin.replace('127.0.0.1', 'localhost') + '/successor');
+      } else if (disposition === 'remove') {
+        await preparedPage.evaluate(() => document.querySelector('#remote-prepared').remove());
+      }
+      finishFont(heldFont);
+      assert.equal(imageRecord(await capture).format, 'png');
+      if (disposition === 'restore') {
+        assert.deepEqual(await caretState(preparedChild), before);
+        assert.notEqual(await preparedChild.evaluate(() => getComputedStyle(document.querySelector('#shadow').shadowRoot.querySelector('textarea')).backgroundColor), 'rgb(31, 41, 59)');
+        assert.equal(await preparedChild.evaluate(() => document.querySelector('#infinite').getAnimations()[0].playState), 'running');
+        assert.equal(await nestedChild.evaluate(() => document.querySelector('input').style.caretColor), 'rgb(7, 8, 9)');
+      } else if (disposition === 'replace') {
+        assert.deepEqual(await preparedChild.evaluate(() => [document.querySelector('#successor').style.caretColor, document.querySelectorAll('style').length]), ['rgb(44, 55, 66)', 0]);
+      }
+      assert.equal(await preparedPage.evaluate(() => 42), 42);
+      result.lifecycle[`remotePreparation-${disposition}`] = true;
+      await preparedPage.close();
     }
     if (report.crossOriginFramePlacement === 'out-of-process') {
       const blockedChildPage = await browser.newPage(); await blockedChildPage.goto(origin);

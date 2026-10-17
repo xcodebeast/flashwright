@@ -231,6 +231,7 @@ const commands = [
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-storage-request-observations.mjs'],
   [process.execPath, 'tools/run-storage-tests.mjs'],
   [process.execPath, 'tools/run-screenshot-tests.mjs'],
+  [process.execPath, 'tools/run-screenshot-lifetime-tests.mjs', join(destination, 'screenshot-lifetime')],
   [process.execPath, 'tools/run-device-tests.mjs'],
   ['python3', 'tools/watchdog.py', '--timeout', '180', '--report-directory', join(destination, 'context-media-resources'), '--', process.execPath, 'tools/run-context-media-tests.mjs', join(destination, 'context-media')],
   [process.execPath, 'tools/run-context-settings-tests.mjs'],
