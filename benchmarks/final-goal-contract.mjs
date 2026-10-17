@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { comparePaired, quantile } from './statistics.mjs';
 import { finalGoalClockProjection } from '../tools/final-goal-clock-projection.mjs';
+import { finalGoalAccountingClass, finalGoalAccountingClasses, finalGoalPlatformScope, verifyFinalGoalResourcePolicy } from './final-goal-resource-policy.mjs';
 
 export const finalGoalScenarioIds = ['runner-interaction', 'runner-assertion', 'runner-navigation', 'runner-setup',
   'runner-backend', 'runner-failure', 'application-todomvc', 'application-svgomg', 'application-backend-corpus'];
@@ -12,7 +13,7 @@ const nonwinningStatuses = ['unsupported', 'failed', 'noncomparable', 'unmeasure
 const hashPattern = /^[a-f0-9]{64}$/;
 
 export const finalGoalResourceVerifierPaths = Object.freeze([
-  'benchmarks/final-goal-contract.mjs', 'benchmarks/statistics.mjs',
+  'benchmarks/final-goal-contract.mjs', 'benchmarks/final-goal-resource-policy.mjs', 'benchmarks/statistics.mjs',
   'tools/verify-final-goal.mjs', 'tools/final-goal-original-resources.mjs', 'tools/final-goal-owner-evidence.mjs',
   'tools/final-goal-owner-tree.mjs', 'tools/final-goal-owner-records.mjs', 'tools/final-goal-owner-javascript.mjs',
   'tools/final-goal-owner-native.mjs', 'tools/final-goal-clock-projection.mjs', 'tools/watchdog.py',
@@ -84,15 +85,10 @@ export function verifyFinalGoalConfiguration(configuration) {
   assert.ok(Number.isSafeInteger(configuration.statistics.seed));
   assert.deepEqual(configuration.cells.map(cell => ({ id: cell.id, workers: cell.workers })),
     [{ id: cellIds[0], workers: 1 }, { id: cellIds[1], workers: 4 }]);
-  assert.equal(configuration.platform, 'darwin');
-  assert.equal(configuration.architecture, 'arm64');
+  verifyFinalGoalResourcePolicy(configuration);
   assert.deepEqual(configuration.runtime, { name: 'bun', version: '1.4.2' });
   assert.equal(configuration.referenceVersion, '1.60.0');
   assert.equal(configuration.browserVersion, '148.0.7778.96');
-  assert.deepEqual(configuration.resourcePolicy, { logicalCpuCount: 11, physicalMemoryBytes: 36 * 1024 ** 3,
-    maximumSampledConcurrentBytes: 8 * 1024 ** 3, operatingSystemEnforcedLimits: false });
-  assert.deepEqual(configuration.maximumRegressionRatios, { completeMedian: 1.05, completeObservedMaximum: 1.15,
-    sampledConcurrentMemoryMaximum: 1.10, originalOwnerInclusiveCpuMedian: 1.10 });
   for (const scenario of configuration.scenarios) {
     assert.ok(typeof scenario.countingGroup === 'string' && scenario.countingGroup);
     assert.ok(Number.isSafeInteger(scenario.expectedTestCount) && scenario.expectedTestCount > 0);
@@ -120,6 +116,10 @@ function verifyDeclaration(configuration, declaration) {
   assert.ok(declaration && ['draft', 'sealed'].includes(declaration.status));
   assert.equal(declaration.configurationSha256, finalGoalHash(configuration), 'Final configuration changed after declaration');
   if (declaration.status !== 'sealed' || configuration.status !== 'sealed') return false;
+  // Linux diagnostics cannot flow through the existing owner-wait/RSS adapter.
+  // Remove this guard only with original Linux reconstruction and admission.
+  assert.notEqual(finalGoalAccountingClass(configuration), finalGoalAccountingClasses.linux,
+    'Linux original-resource reconstruction and campaign admission are not integrated; sealing is unavailable');
   requireManifest(declaration.sourceManifest, 'Missing campaign source manifest');
   for (const path of finalGoalResourceVerifierPaths)
     requireHash(declaration.sourceManifest[path], `Missing resource verifier source: ${path}`);
@@ -516,7 +516,7 @@ export function analyzeFinalGoal({ configuration, declaration, scenarioResults }
   return structuredClone({ schemaVersion: 1, sealed, configurationSha256: declaration.configurationSha256,
     declaredScenarioCount: configuration.scenarios.length, requiredMajority, confirmedWins, pointEstimateWins, applicationWins,
     evidenceComplete, regressions, supportedRegressions, goalAccepted, competitorLeadershipEstablished: false, scenarios, campaignIntervals,
-    scope: 'Native macOS arm64; matched Bun 1.4.2 and pinned Chrome; one/four observed workers. Eight independent pairs per cell; observed maxima, not percentile tails. Per-cell 95% intervals do not establish simultaneous 95% majority confidence. Native Linux remains unverified and separately open.' });
+    scope: finalGoalPlatformScope(configuration) });
 }
 
 /** Keep every declared scenario and resource cell visible without exposing raw private evidence paths. */
