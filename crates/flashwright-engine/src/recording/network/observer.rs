@@ -8,6 +8,7 @@ use crate::network_state::HeaderKind;
 struct Terminal {
     occurrence: Occurrence,
     identifier: String,
+    source: crate::network_request::RequestSource,
     unavailable: Option<BodyUnavailable>,
 }
 
@@ -161,13 +162,15 @@ impl<'recording> RecordingObserver<'recording> {
                         BodyOutcome::Unavailable { reason },
                     )?;
                 } else {
-                    let guard = observer
-                        .recording
-                        .owners
-                        .admit(&terminal.occurrence, &terminal.identifier)?;
+                    let guard = observer.recording.owners.admit(
+                        &terminal.occurrence,
+                        &terminal.identifier,
+                        &terminal.source.session,
+                    )?;
                     jobs.push(BodyJob {
                         occurrence: terminal.occurrence,
                         identifier: terminal.identifier,
+                        source: terminal.source,
                         work,
                         guard,
                     });
@@ -189,7 +192,9 @@ impl<'recording> RecordingObserver<'recording> {
             return Ok(());
         }
         self.readiness(request)?;
-        let kind = if retired {
+        let kind = if event.method == "Flashwright.rendererDetached" {
+            "rendererDetached"
+        } else if retired {
             "retired"
         } else if request.failure.is_some() {
             "failed"
@@ -214,7 +219,9 @@ impl<'recording> RecordingObserver<'recording> {
         self.update(request.identity(), |metadata| {
             metadata["terminal"] = terminal
         })?;
-        let unavailable = if retired {
+        let unavailable = if event.method == "Flashwright.rendererDetached" {
+            Some(BodyUnavailable::OriginalRendererClosed)
+        } else if retired {
             Some(BodyUnavailable::OriginalRequestReplaced)
         } else if request.failure.is_some() {
             Some(BodyUnavailable::RequestFailed)
@@ -231,11 +238,12 @@ impl<'recording> RecordingObserver<'recording> {
             None
         };
         self.terminals.push(Terminal {
+            source: request.response_source(),
             occurrence,
-            identifier: request.original_metadata()["identifier"]
-                .as_str()
-                .unwrap_or_default()
-                .into(),
+            identifier: crate::network_request::request_key(
+                &request.response_session,
+                &request.source().identifier,
+            ),
             unavailable,
         });
         Ok(())
@@ -331,6 +339,16 @@ impl NetworkObserver for RecordingObserver<'_> {
         self.run(|observer| {
             observer.update(request.identity(), |metadata| {
                 metadata["servedFromCache"] = json!(true)
+            })
+        });
+    }
+
+    fn headers_unavailable(&mut self, _event: &NetworkEvent<'_>, identity: &str) {
+        self.run(|observer| {
+            observer.update(identity, |metadata| {
+                metadata["requestHeadersReady"] = json!(true);
+                metadata["responseHeadersReady"] = json!(true);
+                metadata["headersUnavailable"] = json!("originalRendererClosed");
             })
         });
     }
@@ -443,6 +461,41 @@ mod tests {
 
     fn request(url: &str) -> Value {
         json!({"requestId":"shared","frameId":"frame","type":"Document","timestamp":2.0,"wallTime":3.0,"request":{"url":url,"method":"GET","headers":{"X-Original":" first\nsecond "}}})
+    }
+
+    #[test]
+    fn renderer_retirement_releases_recording_pending_capacity_without_body_jobs() {
+        let mut network = NetworkRecording::new(Instant::now(), Arc::new(NetworkBudget::default()));
+        let mut state = DocumentState::default();
+        for index in 0..1100 {
+            let session = format!("child-{index}");
+            for (method, parameters) in [
+                (
+                    "Network.requestWillBeSent",
+                    request("https://example.test/pending"),
+                ),
+                (
+                    "Network.responseReceived",
+                    json!({"requestId":"shared","hasExtraInfo":true,"response":{"status":200,"headers":{}}}),
+                ),
+                ("Flashwright.rendererDetached", Value::Null),
+            ] {
+                let mut event = event(method, &parameters, index * 3 + 1);
+                event.session_identifier = &session;
+                let (_, jobs) = network.observe_group("page", &mut state, event);
+                assert!(jobs.is_empty());
+                assert!(network.journal.failure().is_none());
+            }
+        }
+        assert!(!network.pending());
+        let sealed = network.seal().unwrap();
+        let entry = sealed.entry(0).unwrap();
+        assert_eq!(entry["metadata"]["terminal"]["kind"], "rendererDetached");
+        assert_eq!(
+            entry["metadata"]["headersUnavailable"],
+            "originalRendererClosed"
+        );
+        assert_eq!(entry["body"]["reason"], "originalRendererClosed");
     }
 
     #[test]

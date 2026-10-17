@@ -176,7 +176,7 @@ impl crate::Engine {
         identifier: &str,
         page: &crate::Page,
     ) -> Result<SessionLifetime, SessionFailure> {
-        self.diagnostic_session_for_page(identifier, page, true)
+        self.diagnostic_session_for_page(identifier, page, true, None)
     }
 
     /// Initial popup responses may finish before publication, while their registered public page is alive.
@@ -185,7 +185,19 @@ impl crate::Engine {
         identifier: &str,
         page: &crate::Page,
     ) -> Result<SessionLifetime, SessionFailure> {
-        self.diagnostic_session_for_page(identifier, page, false)
+        self.diagnostic_session_for_page(identifier, page, false, None)
+    }
+
+    pub(crate) fn network_diagnostic_session_for_renderer(
+        &self,
+        identifier: &str,
+        page: &crate::Page,
+        session: &str,
+    ) -> Result<SessionLifetime, SessionFailure> {
+        if session == page.session_identifier {
+            return self.network_diagnostic_session(identifier, page);
+        }
+        self.diagnostic_session_for_page(identifier, page, false, Some(session))
     }
 
     fn diagnostic_session_for_page(
@@ -193,6 +205,7 @@ impl crate::Engine {
         identifier: &str,
         page: &crate::Page,
         require_published: bool,
+        renderer_session: Option<&str>,
     ) -> Result<SessionLifetime, SessionFailure> {
         let unavailable = || SessionFailure::Unavailable;
         if page.state.purpose != crate::page_state::PagePurpose::Public {
@@ -223,10 +236,28 @@ impl crate::Engine {
         {
             return Err(unavailable());
         }
+        let renderer = renderer_session
+            .map(|session| {
+                current
+                    .state
+                    .renderer_sessions
+                    .lock()
+                    .unwrap()
+                    .get(session)
+                    .filter(|renderer| !renderer.is_retired() && !renderer.is_destroyed())
+                    .ok_or_else(unavailable)
+            })
+            .transpose()?;
         Ok(self.diagnostic_sessions.register(
             &context.browser_identifier,
-            &current.target_identifier,
-            &current.session_identifier,
+            renderer
+                .as_ref()
+                .map_or(&current.target_identifier, |owner| &owner.target_identifier),
+            renderer
+                .as_ref()
+                .map_or(&current.session_identifier, |owner| {
+                    &owner.session_identifier
+                }),
         )?)
     }
 }

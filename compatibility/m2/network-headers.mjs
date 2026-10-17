@@ -168,8 +168,8 @@ try {
   outcomes.reference = await run('reference', referenceChromium);
   outcomes.flashwright = await run('flashwright', flashwrightChromium);
   assert.deepEqual(outcomes.flashwright, outcomes.reference);
-  const destination = `compatibility/evidence/network-headers-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}.json`;
-  await mkdir('compatibility/evidence', { recursive: true });
+  const destination = `${process.env.FLASHWRIGHT_ARTIFACT_DIR ?? 'compatibility/evidence'}/network-headers-${process.platform}-${process.arch}-${runtimeArtifactLabel}-${new Date().toISOString().replaceAll(':', '-')}.json`;
+  await mkdir(process.env.FLASHWRIGHT_ARTIFACT_DIR ?? 'compatibility/evidence', { recursive: true });
   await writeFile(destination, JSON.stringify({ fixture: 'compatibility/m2/network-headers.mjs', fixtureSha256: createHash('sha256').update(await readFile(import.meta.filename)).digest('hex'), reference: '1.60.0', ...runtimeMetadata, platform: process.platform, architecture: process.arch, outcomes }, null, 2) + '\n');
   console.log('Network headers differential passed: ' + destination);
 } finally { for (const socket of sockets) socket.destroy(); server.close(); }

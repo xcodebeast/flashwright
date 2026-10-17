@@ -44,6 +44,7 @@ pub(crate) async fn read_body_for_occurrence(
     let mut changes = page.state.changed.subscribe();
     loop {
         {
+            check_original_source(page, request_identifier, occurrence_identity)?;
             let state = page.state.state.lock().unwrap();
             let request =
                 state.request_for_occurrence(request_identifier, occurrence_identity, method)?;
@@ -72,19 +73,15 @@ pub(crate) async fn read_body_for_occurrence(
             },
         ))
         .await?;
-    page.state.state.lock().unwrap().request_for_occurrence(
-        request_identifier,
-        occurrence_identity,
-        method,
-    )?;
+    let source = check_original_source(page, request_identifier, occurrence_identity)?;
     let payload = operation
         .wait(while_original_request(
             page,
             request_identifier,
             occurrence_identity,
             connection.response_body(
-                request_identifier,
-                &page.session_identifier,
+                &source.identifier,
+                &source.session,
                 maximum_attachment_bytes,
             ),
         ))
@@ -94,12 +91,36 @@ pub(crate) async fn read_body_for_occurrence(
             error
         })?;
     operation.check()?;
-    page.state.state.lock().unwrap().request_for_occurrence(
-        request_identifier,
-        occurrence_identity,
-        method,
-    )?;
+    check_original_source(page, request_identifier, occurrence_identity)?;
     Ok(BinaryAttachment::from_payload(payload, reservation))
+}
+
+fn check_original_source(
+    page: &Page,
+    identifier: &str,
+    identity: &str,
+) -> Result<crate::network_request::RequestSource, ErrorRecord> {
+    let state = page.state.state.lock().unwrap();
+    let request = state.request_for_occurrence(identifier, identity, "response.body")?;
+    let source = request.response_source();
+    if !state.requests.owns_response(request) {
+        return Err(invalid(
+            "response.body",
+            "original response identifier was replaced in its renderer",
+        ));
+    }
+    if !request.awaiting_response_renderer
+        && !page
+            .state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .get(&source.session)
+            .is_some_and(|renderer| !renderer.is_retired() && !renderer.is_destroyed())
+    {
+        return Err(closed("response.body"));
+    }
+    Ok(source)
 }
 
 /// Retiring an occurrence ends queued or dispatched reads without waiting for unrelated capacity.
@@ -113,14 +134,10 @@ async fn while_original_request<T>(
     let mut changes = page.state.changed.subscribe();
     tokio::pin!(future);
     loop {
-        page.state.state.lock().unwrap().request_for_occurrence(
-            request_identifier,
-            occurrence_identity,
-            method,
-        )?;
+        check_original_source(page, request_identifier, occurrence_identity)?;
         tokio::select! {
             result = &mut future => {
-                page.state.state.lock().unwrap().request_for_occurrence(request_identifier, occurrence_identity, method)?;
+                check_original_source(page, request_identifier, occurrence_identity)?;
                 return result;
             }
             changed = changes.changed() => changed.map_err(|_| closed(method))?,
@@ -200,6 +217,13 @@ mod tests {
                 session_identifier: "session".into(),
                 state: Arc::new(PageState::default()),
             };
+            page.state
+                .renderer_sessions
+                .lock()
+                .unwrap()
+                .register_root("target", "session")
+                .unwrap()
+                .mark_ready();
             let (cancellation, receiver) = watch::channel(false);
             let mut fixture = Self {
                 page,
@@ -221,7 +245,7 @@ mod tests {
                 .lock()
                 .unwrap()
                 .requests
-                .get("shared")
+                .get("7:sessionshared")
                 .unwrap()
                 .metadata()["identity"]
                 .as_str()
@@ -233,12 +257,154 @@ mod tests {
         /// Reuse the protocol identifier while emitting a distinct native occurrence.
         fn replace_request(&self, finished: bool) {
             let mut state = self.page.state.state.lock().unwrap();
-            state.observe("Network.requestWillBeSent", &json!({"requestId":"shared", "type":"Fetch", "request":{"url":"https://example.test/resource", "method":"GET"}}));
+            state.observe_in_session("session", "Network.requestWillBeSent", &json!({"requestId":"shared", "type":"Fetch", "request":{"url":"https://example.test/resource", "method":"GET"}}));
             if finished {
-                state.observe("Network.loadingFinished", &json!({"requestId":"shared"}));
+                state.observe_in_session(
+                    "session",
+                    "Network.loadingFinished",
+                    &json!({"requestId":"shared"}),
+                );
             }
             self.page.state.changed.send_replace(state.sequence);
         }
+    }
+
+    #[tokio::test]
+    async fn original_child_retirement_cancels_completion_admission_and_held_body_reply() {
+        for stage in 0..3 {
+            let mut fixture = Fixture::new(true);
+            let (root, child) = {
+                let mut sessions = fixture.page.state.renderer_sessions.lock().unwrap();
+                let root = sessions.get("session").unwrap();
+                let child = sessions
+                    .register_child(&root, "child-frame", "child")
+                    .unwrap();
+                child.mark_ready();
+                (root, child)
+            };
+            let identity = {
+                let mut state = fixture.page.state.state.lock().unwrap();
+                state.observe_in_session("child","Network.requestWillBeSent",&json!({"requestId":"remote", "type":"Fetch","request":{"url":"https://remote.test/","method":"GET"}}));
+                if stage > 0 {
+                    state.observe_in_session(
+                        "child",
+                        "Network.loadingFinished",
+                        &json!({"requestId":"remote"}),
+                    );
+                }
+                state
+                    .requests
+                    .get("5:childremote")
+                    .unwrap()
+                    .identity()
+                    .to_owned()
+            };
+            let occupied = if stage == 1 {
+                Some(fixture.slots.clone().acquire_owned().await.unwrap())
+            } else {
+                None
+            };
+            let body = read_body_for_occurrence(
+                &fixture.page,
+                &fixture.connection,
+                "5:childremote",
+                &identity,
+                fixture.slots.clone(),
+                1024,
+                &fixture.operation,
+            );
+            tokio::pin!(body);
+            poll_fn(|context| {
+                assert!(body.as_mut().poll(context).is_pending());
+                Poll::Ready(())
+            })
+            .await;
+            let command = if stage == 2 {
+                let command = fixture.peer.command().await;
+                assert_eq!(command["sessionId"], "child");
+                assert_eq!(command["params"]["requestId"], "remote");
+                Some(command)
+            } else {
+                None
+            };
+            fixture
+                .page
+                .state
+                .renderer_sessions
+                .lock()
+                .unwrap()
+                .retire(&child);
+            fixture.page.state.changed.send_replace(100);
+            assert_eq!(
+                timeout(Duration::from_secs(1), body)
+                    .await
+                    .unwrap()
+                    .err()
+                    .unwrap()
+                    .code,
+                ErrorCode::TargetClosed
+            );
+            assert!(!root.is_retired());
+            drop(occupied);
+            assert_eq!(fixture.slots.available_permits(), 1);
+            if let Some(command) = command {
+                fixture.peer.reply(&command).await;
+            }
+            fixture.peer.assert_no_command().await;
+        }
+    }
+
+    #[tokio::test]
+    async fn transferred_navigation_body_uses_child_session_with_original_public_reference() {
+        let mut fixture = Fixture::new(true);
+        {
+            let mut sessions = fixture.page.state.renderer_sessions.lock().unwrap();
+            let root = sessions.get("session").unwrap();
+            sessions
+                .register_child(&root, "child-frame", "child")
+                .unwrap()
+                .mark_ready();
+        }
+        let identity = {
+            let mut state = fixture.page.state.state.lock().unwrap();
+            state.observe_in_session("session","Network.requestWillBeSent",&json!({"requestId":"NAV","loaderId":"NAV","frameId":"child-frame", "type":"Document","request":{"url":"https://remote.test/","method":"GET"}}));
+            let identity = state
+                .requests
+                .get("7:sessionNAV")
+                .unwrap()
+                .identity()
+                .to_owned();
+            state
+                .requests
+                .committed_navigation("child-frame", "NAV", "child")
+                .unwrap();
+            state.observe_in_session(
+                "child",
+                "Network.loadingFinished",
+                &json!({"requestId":"NAV"}),
+            );
+            identity
+        };
+        let body = read_body_for_occurrence(
+            &fixture.page,
+            &fixture.connection,
+            "7:sessionNAV",
+            &identity,
+            fixture.slots.clone(),
+            1024,
+            &fixture.operation,
+        );
+        tokio::pin!(body);
+        poll_fn(|context| {
+            assert!(body.as_mut().poll(context).is_pending());
+            Poll::Ready(())
+        })
+        .await;
+        let command = fixture.peer.command().await;
+        assert_eq!(command["sessionId"], "child");
+        assert_eq!(command["params"]["requestId"], "NAV");
+        fixture.peer.reply(&command).await;
+        assert_eq!(body.await.unwrap().bytes.as_slice(), b"successor bytes");
     }
 
     #[tokio::test]
@@ -247,7 +413,7 @@ mod tests {
         let body = read_body_for_occurrence(
             &fixture.page,
             &fixture.connection,
-            "shared",
+            "7:sessionshared",
             &fixture.original_identity,
             fixture.slots.clone(),
             1024,
@@ -272,7 +438,7 @@ mod tests {
         let body = read_body_for_occurrence(
             &fixture.page,
             &fixture.connection,
-            "shared",
+            "7:sessionshared",
             &fixture.original_identity,
             fixture.slots.clone(),
             1024,
@@ -305,7 +471,7 @@ mod tests {
         let body = read_body_for_occurrence(
             &fixture.page,
             &fixture.connection,
-            "shared",
+            "7:sessionshared",
             &fixture.original_identity,
             fixture.slots.clone(),
             1024,
@@ -341,7 +507,7 @@ mod tests {
             .lock()
             .unwrap()
             .requests
-            .get("shared")
+            .get("7:sessionshared")
             .unwrap()
             .metadata()["identity"]
             .as_str()
@@ -350,7 +516,7 @@ mod tests {
         let successor = read_body_for_occurrence(
             &fixture.page,
             &fixture.connection,
-            "shared",
+            "7:sessionshared",
             &successor_identity,
             fixture.slots.clone(),
             1024,
@@ -379,7 +545,7 @@ mod tests {
         let body = read_body_for_occurrence(
             &fixture.page,
             &fixture.connection,
-            "shared",
+            "7:sessionshared",
             &fixture.original_identity,
             fixture.slots.clone(),
             1024,

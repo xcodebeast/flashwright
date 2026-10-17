@@ -30,6 +30,7 @@ pub(crate) enum NetworkTransition<'state> {
     Completed(&'state RequestState),
     Retired(&'state RequestState),
     Cached(&'state RequestState),
+    HeadersUnavailable(&'state str),
     ExtraInfo {
         identifier: &'state str,
         kind: HeaderKind,
@@ -65,6 +66,7 @@ pub(crate) trait NetworkObserver {
     fn completed(&mut self, event: &NetworkEvent<'_>, request: &RequestState);
     fn retired(&mut self, event: &NetworkEvent<'_>, request: &RequestState);
     fn cached(&mut self, event: &NetworkEvent<'_>, request: &RequestState);
+    fn headers_unavailable(&mut self, _event: &NetworkEvent<'_>, _identity: &str) {}
     fn extra_info(&mut self, event: &NetworkEvent<'_>, identifier: &str, kind: HeaderKind);
     fn discarded_extra(
         &mut self,
@@ -118,6 +120,9 @@ impl<'observer, 'event> NetworkObservation<'observer, 'event> {
                 NetworkTransition::Completed(request) => observer.completed(&self.event, request),
                 NetworkTransition::Retired(request) => observer.retired(&self.event, request),
                 NetworkTransition::Cached(request) => observer.cached(&self.event, request),
+                NetworkTransition::HeadersUnavailable(identity) => {
+                    observer.headers_unavailable(&self.event, identity)
+                }
                 NetworkTransition::ExtraInfo { identifier, kind } => {
                     observer.extra_info(&self.event, identifier, kind)
                 }
@@ -223,6 +228,11 @@ impl NetworkObserver for PublicNetworkEvents<'_> {
     fn cached(&mut self, event: &NetworkEvent<'_>, request: &RequestState) {
         if let Some(observer) = self.observer.as_mut() {
             observer.cached(event, request);
+        }
+    }
+    fn headers_unavailable(&mut self, event: &NetworkEvent<'_>, identity: &str) {
+        if let Some(observer) = self.observer.as_mut() {
+            observer.headers_unavailable(event, identity);
         }
     }
     fn extra_info(&mut self, event: &NetworkEvent<'_>, identifier: &str, kind: HeaderKind) {

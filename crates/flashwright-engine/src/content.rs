@@ -219,11 +219,14 @@ impl Engine {
             .active_requests
             .iter()
             .filter(|identifier| {
-                state.requests.get(identifier).is_some_and(|request| {
-                    request.metadata()["frame"] != *frame_identifier
-                        || (request.metadata()["navigation"] == true
-                            && request.metadata()["loader"] == loader)
-                })
+                state
+                    .requests
+                    .occurrence(identifier)
+                    .is_some_and(|request| {
+                        request.metadata()["frame"] != *frame_identifier
+                            || (request.metadata()["navigation"] == true
+                                && request.metadata()["loader"] == loader)
+                    })
             })
             .cloned()
             .collect();
@@ -301,6 +304,27 @@ mod tests {
 
     fn event(context: u64) -> String {
         json!({"type":"debug","executionContextId":context,"args":[{"type":"string","value":"__flashwright_content_test"}]}).to_string()
+    }
+
+    #[test]
+    fn content_marker_retains_other_frame_and_current_navigation_occurrences() {
+        let (engine, page, _) = fixture();
+        let identities = {
+            let mut state = page.state.state.lock().unwrap();
+            for (identifier, frame, kind, loader) in [
+                ("other", "child", "Fetch", "child-loader"),
+                ("loader", "main", "Document", "loader"),
+                ("old-resource", "main", "Fetch", "loader"),
+            ] {
+                state.observe_in_session("session","Network.requestWillBeSent",&json!({"requestId":identifier,"frameId":frame,"type":kind,"loaderId":loader,"request":{"url":"https://example.test/","method":"GET"}}));
+            }
+            ["7:sessionother", "7:sessionloader"]
+                .map(|key| state.requests.get(key).unwrap().identity().to_owned())
+        };
+        assert!(engine.content_marker(&page, "session", &event(7)));
+        let state = page.state.state.lock().unwrap();
+        assert_eq!(state.active_requests, identities.into_iter().collect());
+        assert!(state.idle_since.is_none());
     }
 
     #[test]

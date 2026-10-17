@@ -1,0 +1,473 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "native-linux-renderer-network-ownership",
+  "status": "passed",
+  "performanceAdmission": false,
+  "referenceVersion": "1.60.0",
+  "baseCommit": "a2029b4ec2036a1f58ff49d14f9eae355b40fe21",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+    "platform": "linux",
+    "architecture": "x86_64"
+  },
+  "driverSha256": "c38d7b4474d9a9f4c81284306268058dfa5344e4aabae4379a3c3d283e9ce475",
+  "sourceHashes": {
+    "compatibility/m2/navigation-waits.mjs": "32949bf01e018c00f3a3d8929a5c61a2e2458206f4e463f58a132feaaf127ce7",
+    "compatibility/m2/navigation.mjs": "d111bc2bc79c5cc92abaa46a6d98060fca95c825e52d2cad0131a0c1cb2da5ee",
+    "compatibility/m2/network-headers.mjs": "e9081ce00d1242be109539f65affa50eabc82fd859932f066f1604e3f546bac0",
+    "compatibility/m2/remote-network.mjs": "cab9a8017769905af9758197eb74d889e914e87d24976bf15228058130f79d12",
+    "compatibility/upstream/aria-matcher-provenance.json": "c1437d035ea291f95c0163999b140392f03b4e4630fe21e1d54c40ed4d0ac984",
+    "compatibility/upstream/common-matchers-provenance.json": "cc64803c81e131aa7fcfc46e0a7c17b2784e1e6297f9d37069db56654161c6d0",
+    "compatibility/upstream/context-settings-provenance.json": "7c1d3dd335564f41a800616d8435e2ffc86308a6412f21a4816fa9bacfe870b7",
+    "compatibility/upstream/dialog-provenance.json": "952ca836b5336e3127c985bbd0542362e0ed1d1ac386d675dcd8cfef90b5a4ab",
+    "compatibility/upstream/downloads-provenance.json": "e65b0c5d872fef0ec94a4dcdb32955bec0f5040bf2ac8e15ab0c544311f3d378",
+    "compatibility/upstream/element-actions-provenance.json": "d95ecbb56cd94803ea30b6109b4e8159c1a35d174539dcf72af88402debdd943",
+    "compatibility/upstream/element-resolution-provenance.json": "9cf3be4ddbc4da7519b61d9dd72efcdf30c5c244515ddc6c8936b2a5544b6cdd",
+    "compatibility/upstream/failure-context-provenance.json": "e036a94c83040e414d2415ddffdb7578db8789a93082fa7d69993937b88c7682",
+    "compatibility/upstream/file-chooser-provenance.json": "b9581232cf9f6e6ec4bc88bd8a657bac6e515194692d2cf6a34aa984ebcb5afa",
+    "compatibility/upstream/file-inputs-provenance.json": "6eb9ce64edbc1a88e09409a2073916904fc16214995378249a46db5f56a447ed",
+    "compatibility/upstream/filmstrip-provenance.json": "b8642de8235cd7da1ee568087964ab05879454c405ed9ce09543ae986f7f8d4a",
+    "compatibility/upstream/frame-locators-provenance.json": "f951a5a0b8f587c108a0566956a8a6b84edf35297b1001328f84b3d4f21d8b7a",
+    "compatibility/upstream/function-wait-provenance.json": "49567a35387f02c8c5876ceab3244909d895a23264c8063cfd7f9827cd564c3f",
+    "compatibility/upstream/history-navigation-provenance.json": "323dfa563ef2a92bd861af32e8d894c91760021cb55e89c5161fe1f524c73f7e",
+    "compatibility/upstream/manual-tracing-provenance.json": "b7a60e79aade3fcd160ea88e712449c0855500697b4b47f4c8705bd8a69d22c2",
+    "compatibility/upstream/navigation-waits-provenance.json": "445e8e484678ebf32749e2a2ce28b1e403d83d47e68f133ce38dd90e6e31b397",
+    "compatibility/upstream/network-headers-provenance.json": "58d2e2b5fb5ff815428285d6d246c41ac0de27d5577c9a81a8be748cdc1f8aaa",
+    "compatibility/upstream/network-trace-provenance.json": "6a4cc8de914eb8aa49f2963709b450de2fb45a5bcf22bf7986e463a986a442e3",
+    "compatibility/upstream/page-content-provenance.json": "77accdc8d4fbc28528b680a2ef9572c804845f9c513fe8e4501e022096b5e54a",
+    "compatibility/upstream/routing-provenance.json": "c354b01a8dafb9205070a9b05fd19b1dfda1001a16ca0f32b53e09224b4619c8",
+    "compatibility/upstream/snapshot-provenance.json": "b1e669dd21bf5db50ceef1a8a1da503b8432f471e185ab20528584954dab4503",
+    "crates/flashwright-engine/src/content.rs": "b35baa9c60006b861bf832a37e9d0acd6d114a4c6994a35db76db23b5f5ace0a",
+    "crates/flashwright-engine/src/diagnostic_sessions.rs": "27ed286fb2c04b49f5912dc86b5eb001bd5b4d2d0d7eb39532e1d6a72cace977",
+    "crates/flashwright-engine/src/events.rs": "4af89e73ebbedfab266c42f1a17339325ee66b1e6486b31fcb244b3ab6cd5c6f",
+    "crates/flashwright-engine/src/network_observer.rs": "554f0d3255bd637b7bedb74b10382b69071a3349202ac5ab9dff837a24a382c6",
+    "crates/flashwright-engine/src/network_request.rs": "d62bb5b2ed9bbd3af988781ea84b89ab85b9d73bfd2a55d4c51d991e1ee19d37",
+    "crates/flashwright-engine/src/network_state.rs": "cac91f729f245931bc7fdfc9e5099a3c80e3f524306bf5049d208b874e16081b",
+    "crates/flashwright-engine/src/page_state.rs": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8",
+    "crates/flashwright-engine/src/publication.rs": "5cffefe2df1c9053bd55f00fe78674bd00c5c2038aa653552e237e1c70402d91",
+    "crates/flashwright-engine/src/recording/network.rs": "2d9a356af31df9eb7b5aee0ebe8f8f55cbadb8dabf72d0b8a77516a38a91e174",
+    "crates/flashwright-engine/src/recording/network/journal.rs": "df2a5af0eddbcc6b8d3eb1c4054623a95dfb069e41f4196773c0c902506550df",
+    "crates/flashwright-engine/src/recording/network/observer.rs": "aa8fd09b098b156a96183ae75ad50267d7f71f3a7f5b0170855e53ed893f7ca3",
+    "crates/flashwright-engine/src/recording/network/ownership.rs": "e6a406d25a1c0c6503f53bbb295a56bb0f180a71eef2134b39ad1582341c9d7e",
+    "crates/flashwright-engine/src/recording/network/worker.rs": "6902340f067798b47eae835174e731cd19792c0ee287e92a3d92fb9bd1131f99",
+    "crates/flashwright-engine/src/renderer_setup.rs": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7",
+    "crates/flashwright-engine/src/response_body.rs": "cb7dba287b7a12bd429ae6c15fb2745b04bdf4ff304a2fe9a2976d5ff7000e3d",
+    "tools/network-renderer-proxy.py": "fa6e203da55dfc05fed1dc1a5b31f02ef80ec725919d867d921dcfeb1581e8c9",
+    "tools/run-remote-network-tests.mjs": "035b5c337f412441807ad1ba5295d81cad16d57caf20741ea478589b16fd8653",
+    "tools/run-routing-tests.mjs": "6ebf00e9110171e8afd41f78b01e3fc3515f64c46e32ed347970a6e6c8de4206",
+    "tools/verify-core.mjs": "9e916d223e3e03037f0d5add1fbccd3a2103256cac290fc012e0166da42102b9"
+  },
+  "sourceVerification": {
+    "entries": 1266,
+    "unchangedThroughFocusedAndRuntimeChecks": true,
+    "canonicalSortedManifestSha256": "797b3452e7f58aecfcfa3e35139c9833ddcb7d5a9223bae31943c1483c255d00"
+  },
+  "contract": [
+    "Request and header ownership use renderer-scoped native identifiers; public lifecycle retains immutable occurrence identity.",
+    "Confirmed original frame/loader commits transfer response custody across renderer sessions, including detach-before-parent-commit. Replaced or removed pending navigations cannot transfer.",
+    "Remote initialization enables Network; body commands retain native request ID and exact response session.",
+    "Renderer retirement releases unfinished/header/recording capacity; physical worker and response reservations survive logical retirement until native reply or exact destruction.",
+    "Child terminal ingress closes diagnostic admission before semantic retirement; child destruction leaves root diagnostics available.",
+    "Exact missing-session body replies are unavailable outcomes. Content replacement preserves other active occurrences."
+  ],
+  "verification": {
+    "rustPassed": 532,
+    "rustIgnored": 1,
+    "engineTestsPassed": 384,
+    "focusedGroups": [
+      {
+        "name": "fmt",
+        "code": 0,
+        "clean": true,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "resourceSha256": "f3674c50e7f4625906f208c252fb3dd53e0af35e9ce7535d896fac343d06761f"
+      },
+      {
+        "name": "clippy",
+        "code": 0,
+        "clean": true,
+        "logSha256": "a6f74598179704e54db398280ae6ee8f4a6703acc9d6db9a57ef4b7abdabc40d",
+        "resourceSha256": "c540e3681387078cd9fbf1c90333fcde65a539c8f27aa01842d14ec59f0dfc78"
+      },
+      {
+        "name": "rust",
+        "code": 0,
+        "clean": true,
+        "logSha256": "699a0c4c5a3ee82fad3951ea6e2a0783149983202392f5bdbf537cf292dd64bb",
+        "resourceSha256": "afb71695b069c2e00ef81eccac4b41da608aab1dbaa430cd71d10a58ad36e736"
+      },
+      {
+        "name": "release",
+        "code": 0,
+        "clean": true,
+        "logSha256": "83895768484293e26d231fc7c7123f8f6634cba7489816331d71f8687c3d783d",
+        "resourceSha256": "9d0fecfc85be8f4f1c6364322cdd9e97deada3102f1169876edca9469a2ec6ea"
+      },
+      {
+        "name": "binary-paths",
+        "code": 0,
+        "clean": true,
+        "logSha256": "f3727eb950d6ecc95426dd9863e67021ecf6722bf7e5fcd59a42e9e2dac4e076",
+        "resourceSha256": "2248cce4d55366630032044d4f7c209f1e5317b89c9b7f806270d0f12e2cd6e5"
+      },
+      {
+        "name": "remote-network",
+        "code": 0,
+        "clean": true,
+        "logSha256": "c17ca73c4a91e2ad951be7410bf156cd99e2b89de9a5256fad191efc9b3c1a8e",
+        "resourceSha256": "f818c00a32389489afe899ab9a92d30d3cbdd96d654a310070a427fab1635e09"
+      },
+      {
+        "name": "network-headers",
+        "code": 0,
+        "clean": true,
+        "logSha256": "da34bc359b74ea03be0bcd009ef741a1cf3e9017a01fb8d4115a35914cec6d59",
+        "resourceSha256": "6cccb1048b8067a3fb3f70bbc9ba56eafccc0ab77cf932e598f7605ba6c6667d"
+      },
+      {
+        "name": "network-trace",
+        "code": 0,
+        "clean": true,
+        "logSha256": "f4cc434bd2c53541a4e9d0957075f46cde2350ffa702b18dae87a85c508a04e2",
+        "resourceSha256": "eb4fc5cde63370f6f600b754e6ef9cd4e7157f4d20a2516f03bdd56cb341f419"
+      },
+      {
+        "name": "routing",
+        "code": 0,
+        "clean": true,
+        "logSha256": "4358e9f5700d1139dbb1b0f656433c5ba665aecc89966356342503a4be38d815",
+        "resourceSha256": "d3c05473587c1b611d1fabfb18e509b931eec39c29081a061f5fcc6664d816a4"
+      },
+      {
+        "name": "navigation",
+        "code": 0,
+        "clean": true,
+        "logSha256": "d785267336d6061c00651bd94a0964e9fac259f306fff20212132f2c037fc57b",
+        "resourceSha256": "59a6b8082e9adfbd4e162432a3c4c1ea506d9abbec2d5bb2dab239fc86756595"
+      },
+      {
+        "name": "navigation-waits",
+        "code": 0,
+        "clean": true,
+        "logSha256": "4ddca38e47559365ff21dc45d70f10338719fae5fd812d665158966a2a0da372",
+        "resourceSha256": "cf53c3e3fac69a1d163555a76d3465e62e4af7876194924ff8f1b36a775019ca"
+      },
+      {
+        "name": "page-content",
+        "code": 0,
+        "clean": true,
+        "logSha256": "f2cac4b0f7ae40de7f33c73f97d2dc1db8e901705082c85f29045f3b465ecd4a",
+        "resourceSha256": "d32c8029101a684f9a5d74a1fd98db7c6ed5b62c228002e93e35f3fd7ce43791"
+      },
+      {
+        "name": "network-history",
+        "code": 0,
+        "clean": true,
+        "logSha256": "a4a96947e7be89242cc504a237cb20bd709685aa690c017ee95973ebb71781f4",
+        "resourceSha256": "e9f3e0b55df23de31d201445e7c7e9c753401a8f140e0b65b1f8b2153f094566"
+      },
+      {
+        "name": "network-references",
+        "code": 0,
+        "clean": true,
+        "logSha256": "36ed7f7f437a6467519b0cad593e00163124cdf74086c51f744c9157954b46ff",
+        "resourceSha256": "0b7bbf6530a0440f10141f41e16bc4b0ac60b5bbc3bf3a4294f3c127fc35a127"
+      }
+    ],
+    "runtimeMatrices": [
+      {
+        "runtime": "Bun 1.4.2",
+        "status": "passed",
+        "reportSha256": "996b20ca83f4fb55be9fa340932d0325f246fb005cf5fd5867a0c05b474c1087",
+        "cases": [
+          {
+            "engine": "reference",
+            "mode": "public",
+            "status": "passed",
+            "remoteSessions": 4,
+            "remoteBodyCommands": 12,
+            "documentTransfers": 5,
+            "lifecycleCounts": {
+              "request": 23,
+              "response": 23,
+              "requestfinished": 22
+            },
+            "completedBodies": 18,
+            "bodyErrors": 2,
+            "immediateReturningDocumentBodyErrors": 1,
+            "streamingBodyAfterChildRemoval": "pending",
+            "recordedOccurrences": 0,
+            "recordedBodyOutcomes": {},
+            "checks": [
+              "round 1: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 2: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 3: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "child removal settles original work, leaves parent healthy and cleans up"
+            ],
+            "fixtureSha256": "13e558ce4f17259f984f8c4129434a60cfebe4a39a804f525ee075f9039933e1",
+            "resources": {
+              "sha256": "20362bba3a96f009611565a4e83cd076c82c08d642c702aa6fc446ab77257880",
+              "exitCode": 0,
+              "timedOut": false,
+              "interrupted": false,
+              "cleanupSignals": 0,
+              "remainingObservedProcesses": 0
+            }
+          },
+          {
+            "engine": "candidate",
+            "mode": "public",
+            "status": "passed",
+            "remoteSessions": 4,
+            "remoteBodyCommands": 12,
+            "documentTransfers": 5,
+            "lifecycleCounts": {
+              "request": 23,
+              "response": 23,
+              "requestfinished": 22,
+              "requestfailed": 1
+            },
+            "completedBodies": 19,
+            "bodyErrors": 1,
+            "immediateReturningDocumentBodyErrors": 0,
+            "streamingBodyAfterChildRemoval": "settled",
+            "recordedOccurrences": 0,
+            "recordedBodyOutcomes": {},
+            "checks": [
+              "round 1: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 2: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 3: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "child removal settles original work, leaves parent healthy and cleans up"
+            ],
+            "fixtureSha256": "463534dfca14ff76152b34b09687a0bfb69ec6c248a81a710e9983c3ea4f1e74",
+            "resources": {
+              "sha256": "15381559f42fec10676aca30ba4f338d4101a6c9d22f2560778f92f3787dd21d",
+              "exitCode": 0,
+              "timedOut": false,
+              "interrupted": false,
+              "cleanupSignals": 0,
+              "remainingObservedProcesses": 0
+            }
+          },
+          {
+            "engine": "candidate",
+            "mode": "recording",
+            "status": "passed",
+            "remoteSessions": 4,
+            "remoteBodyCommands": 24,
+            "documentTransfers": 5,
+            "lifecycleCounts": {
+              "request": 23,
+              "response": 23,
+              "requestfinished": 22,
+              "requestfailed": 1
+            },
+            "completedBodies": 19,
+            "bodyErrors": 1,
+            "immediateReturningDocumentBodyErrors": 0,
+            "streamingBodyAfterChildRemoval": "settled",
+            "recordedOccurrences": 23,
+            "recordedBodyOutcomes": {
+              "resource": 19,
+              "redirect": 3,
+              "originalRendererClosed": 1
+            },
+            "checks": [
+              "round 1: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 2: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 3: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "all recorded occurrences retain exact original body bytes or explicit redirect/renderer retirement outcomes",
+              "child removal settles original work, leaves parent healthy and cleans up"
+            ],
+            "fixtureSha256": "b5e7348ed24731ca483022ab5a0a3ca39ec4a067d562eaf2cb7ec37c1ce52b14",
+            "resources": {
+              "sha256": "2d69c108a861819db45d2ec4f83657e7abc95ea2384121594264f2c73773f7eb",
+              "exitCode": 0,
+              "timedOut": false,
+              "interrupted": false,
+              "cleanupSignals": 0,
+              "remainingObservedProcesses": 0
+            }
+          }
+        ]
+      },
+      {
+        "runtime": "Node 22.22.0",
+        "status": "passed",
+        "reportSha256": "7e86eb56350a05024deebf3d5ddb2f7fb983923e4c82aca6745ef154a2b3707d",
+        "cases": [
+          {
+            "engine": "reference",
+            "mode": "public",
+            "status": "passed",
+            "remoteSessions": 4,
+            "remoteBodyCommands": 12,
+            "documentTransfers": 5,
+            "lifecycleCounts": {
+              "request": 23,
+              "response": 23,
+              "requestfinished": 22
+            },
+            "completedBodies": 18,
+            "bodyErrors": 2,
+            "immediateReturningDocumentBodyErrors": 1,
+            "streamingBodyAfterChildRemoval": "pending",
+            "recordedOccurrences": 0,
+            "recordedBodyOutcomes": {},
+            "checks": [
+              "round 1: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 2: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 3: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "child removal settles original work, leaves parent healthy and cleans up"
+            ],
+            "fixtureSha256": "56adfbcd832479299e2cbe189458b706521ccff5afa1700ddd9d9207668f7661",
+            "resources": {
+              "sha256": "2e728eedd3361509b46eac70e2e343a645915c613d79d87c699f7404aeb3b3d4",
+              "exitCode": 0,
+              "timedOut": false,
+              "interrupted": false,
+              "cleanupSignals": 0,
+              "remainingObservedProcesses": 0
+            }
+          },
+          {
+            "engine": "candidate",
+            "mode": "public",
+            "status": "passed",
+            "remoteSessions": 4,
+            "remoteBodyCommands": 12,
+            "documentTransfers": 5,
+            "lifecycleCounts": {
+              "request": 23,
+              "response": 23,
+              "requestfinished": 22,
+              "requestfailed": 1
+            },
+            "completedBodies": 19,
+            "bodyErrors": 1,
+            "immediateReturningDocumentBodyErrors": 0,
+            "streamingBodyAfterChildRemoval": "settled",
+            "recordedOccurrences": 0,
+            "recordedBodyOutcomes": {},
+            "checks": [
+              "round 1: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 2: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 3: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "child removal settles original work, leaves parent healthy and cleans up"
+            ],
+            "fixtureSha256": "809565715ecc1e142a7797752b5a4a6298414373c36388d5bfbd4962239a486f",
+            "resources": {
+              "sha256": "6c4170c085b8c53dc63574e2c5c081ae4619f32b735b40d628546a3d799f172d",
+              "exitCode": 0,
+              "timedOut": false,
+              "interrupted": false,
+              "cleanupSignals": 0,
+              "remainingObservedProcesses": 0
+            }
+          },
+          {
+            "engine": "candidate",
+            "mode": "recording",
+            "status": "passed",
+            "remoteSessions": 4,
+            "remoteBodyCommands": 24,
+            "documentTransfers": 5,
+            "lifecycleCounts": {
+              "request": 23,
+              "response": 23,
+              "requestfinished": 22,
+              "requestfailed": 1
+            },
+            "completedBodies": 19,
+            "bodyErrors": 1,
+            "immediateReturningDocumentBodyErrors": 0,
+            "streamingBodyAfterChildRemoval": "settled",
+            "recordedOccurrences": 23,
+            "recordedBodyOutcomes": {
+              "resource": 19,
+              "redirect": 3,
+              "originalRendererClosed": 1
+            },
+            "checks": [
+              "round 1: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 2: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "round 3: document, nested frame, image, stylesheet, redirected fetch and XHR",
+              "all recorded occurrences retain exact original body bytes or explicit redirect/renderer retirement outcomes",
+              "child removal settles original work, leaves parent healthy and cleans up"
+            ],
+            "fixtureSha256": "59131e4d98abc6668845d948cf8e229d3978ae92381d27ec0e8aac2eea09be63",
+            "resources": {
+              "sha256": "4830fec231ea7db16b0fc81fd2dd6378d728bf0ba1953c036a3619492cbf44df",
+              "exitCode": 0,
+              "timedOut": false,
+              "interrupted": false,
+              "cleanupSignals": 0,
+              "remainingObservedProcesses": 0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "referenceDifferences": [
+    "Both final reference runs reject the immediate response.body read for the child document returning to its parent renderer; Flashwright waits for the confirmed commit and returns the original bytes. This is explicitly outside exact error-parity claims.",
+    "At the fixture observation 250 ms after child removal, the pinned reference streaming body remains pending and has no requestfailed event; page closure rejects it. Flashwright rejects at original renderer retirement, emits requestfailed, and retains a usable parent. This is a lifecycle observation, not a performance metric."
+  ],
+  "earlierAttempts": {
+    "retainedPrivateFailureLogs": [
+      {
+        "log": "build-tests.log",
+        "sha256": "f6e21bf3db3ec97d3bb6e05accdf61acf12ca371819094e95779cfd9d450a317"
+      },
+      {
+        "log": "unit-001.log",
+        "sha256": "735a30c656a4d6e10b399c8ffb67cbb41cc4b68e784b95d585f9a022fc95e062"
+      },
+      {
+        "log": "unit-003.log",
+        "sha256": "280ba67715b12534ac8da377792ba97d6f3ec52ca715faa89d6a00f639f9759f"
+      },
+      {
+        "log": "unit-004.log",
+        "sha256": "8ca52f4d0038a351e222e598bf06142edf007bb46498813b33e7dd6f5603b0db"
+      },
+      {
+        "log": "workspace-001.log",
+        "sha256": "ce2eaff93458255f3b0062fad5d4da48df99e2d729920ffb73d68f827b697af4"
+      },
+      {
+        "log": "candidate.log",
+        "sha256": "834f686d2d2d6ecd58d0435c38464e95972eaac6a67ff0bd2442e9f059648e77"
+      },
+      {
+        "log": "expanded-reference.log",
+        "sha256": "4e947dd92c1d7f62cf47ab50293ad6a4c2c84c98773fe14f4c03217fa4462fe9"
+      },
+      {
+        "log": "expanded-002-candidate.log",
+        "sha256": "28864eb275ccebaa05368229f42db8ef10b2b0e928dc261df7957d4c6cbcabc6"
+      },
+      {
+        "log": "expanded-002-reference.log",
+        "sha256": "7963d89cb07f3e30f0e6bdc3b95fbb82727c180853afbc658f2a17a8fcc588ed"
+      }
+    ],
+    "scope": [
+      "Early Rust attempts exposed construction/fixture updates, retained-byte accounting and the revised mismatched-occurrence error expectation.",
+      "An initial candidate launch used unsupported launch.args and failed before browser startup.",
+      "An expanded candidate probe exposed the returning-document body ownership bug, corrected by exact pending-navigation custody.",
+      "Reference probes retained streaming-pending and returning-document body rejection before the shared fixture explicitly classified those differences.",
+      "The initial full Rust rerun used a malformed navigation test fixture whose request ID differed from its loader; the corrected native-shaped fixture passes."
+    ],
+    "admission": "Earlier variants are diagnostic history, not evidence for the final implementation."
+  },
+  "limitations": [
+    "Remote DOM snapshot capture and public complete remote trace export remain guarded and unverified.",
+    "Remote request routing remains unsupported; this checkpoint covers delivery, original body/header ownership and private network resources.",
+    "Full current core, other Chromium distributions/platforms, package-release acceptance and the representative majority-scenario 2x performance objective remain open.",
+    "The forced site-per-process functional relay is not an equivalent-work benchmark or resource-performance collector. Raw fixture/protocol/supervisor artifacts remain private; this sanitized export binds them by hashes."
+  ]
+}

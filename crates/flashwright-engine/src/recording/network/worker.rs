@@ -10,6 +10,7 @@ use resources::{MAXIMUM_RESOURCE_BYTES, ResourceBudget, ResourceReservation};
 pub(crate) struct BodyJob {
     pub(super) occurrence: Occurrence,
     pub(super) identifier: String,
+    pub(super) source: crate::network_request::RequestSource,
     pub(super) work: BodyWork,
     pub(super) guard: BodyGuard,
 }
@@ -17,6 +18,7 @@ pub(crate) struct BodyJob {
 struct OriginalBody {
     connection: Connection,
     session: String,
+    closed_reason: BodyUnavailable,
     lifetime: SessionLifetime,
     resources: ResourceBudget,
     engine: Arc<NetworkBudget>,
@@ -69,7 +71,7 @@ impl OriginalBody {
             biased;
             _ = closed(&mut self.closed) => return Ok(CapturedBody::Unavailable(BodyUnavailable::RecordingStopped)),
             reason = unavailable(&mut identity) => return Ok(CapturedBody::Unavailable(reason)),
-            _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(BodyUnavailable::OriginalPageClosed)),
+            _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(self.closed_reason)),
             permits = async {
                 let worker = self.engine.workers.clone().acquire_owned().await.map_err(|_| JournalError::Protocol("network worker allowance closed"))?;
                 let reservation = self.resources.reserve_response().await?;
@@ -81,16 +83,20 @@ impl OriginalBody {
         }
         let mut command = self
             .connection
-            .start_response_body(&job.identifier, &self.session, MAXIMUM_RESOURCE_BYTES)
+            .start_response_body(
+                &job.source.identifier,
+                &self.session,
+                MAXIMUM_RESOURCE_BYTES,
+            )
             .map_err(|_| JournalError::Protocol("could not admit original body command"))?;
         let reply = tokio::select! {
             biased;
-            _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(BodyUnavailable::OriginalPageClosed)),
+            _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(self.closed_reason)),
             _ = closed(&mut self.closed) => {
                 if command.prevent_dispatch() { return Ok(CapturedBody::Unavailable(BodyUnavailable::RecordingStopped)) }
                 tokio::select! {
                     biased;
-                    _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(BodyUnavailable::OriginalPageClosed)),
+                    _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(self.closed_reason)),
                     reply = command.response() => reply,
                 }
             },
@@ -98,7 +104,7 @@ impl OriginalBody {
                 if command.prevent_dispatch() { return Ok(CapturedBody::Unavailable(reason)) }
                 tokio::select! {
                     biased;
-                    _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(BodyUnavailable::OriginalPageClosed)),
+                    _ = destroyed(&mut session) => return Ok(CapturedBody::Unavailable(self.closed_reason)),
                     reply = command.response() => reply,
                 }
             },
@@ -107,9 +113,7 @@ impl OriginalBody {
         if !command.browser_reply_received() {
             // A transport rejection is not a reply receipt, even when the command future completed.
             destroyed(&mut session).await;
-            return Ok(CapturedBody::Unavailable(
-                BodyUnavailable::OriginalPageClosed,
-            ));
+            return Ok(CapturedBody::Unavailable(self.closed_reason));
         }
         if let Some(reason) = job.guard.unavailable() {
             return Ok(CapturedBody::Unavailable(reason));
@@ -136,6 +140,9 @@ impl OriginalBody {
                     BodyUnavailable::BrowserResourceMissing,
                 ))
             }
+            Err(error) if crate::renderer_setup::session_is_gone(&error) => {
+                Ok(CapturedBody::Unavailable(self.closed_reason))
+            }
             Err(error) if error.code == ErrorCode::ResourceLimit => Err(
                 JournalError::ResourceLimit("original response body exceeds its admitted limit"),
             ),
@@ -155,7 +162,17 @@ impl Engine {
         jobs: Vec<BodyJob>,
     ) {
         for job in jobs {
-            let prepared = self.prepare_original_body(context, page, &job.occurrence.page);
+            let unavailable_reason = if job.source.session == page.session_identifier {
+                BodyUnavailable::OriginalPageClosed
+            } else {
+                BodyUnavailable::OriginalRendererClosed
+            };
+            let prepared = self.prepare_original_body(
+                context,
+                page,
+                &job.occurrence.page,
+                &job.source.session,
+            );
             let state = context.state.clone();
             let recording = {
                 let owner = state.recording.lock().unwrap();
@@ -169,7 +186,7 @@ impl Engine {
                 let outcome = match prepared {
                     Ok(original) => original.capture(&job).await,
                     Err(SessionFailure::Unavailable) => Ok(CapturedBody::Unavailable(
-                        BodyUnavailable::OriginalPageClosed,
+                        job.guard.unavailable().unwrap_or(unavailable_reason),
                     )),
                     Err(SessionFailure::Failed(_)) => Err(JournalError::Protocol(
                         "could not retain original response session",
@@ -216,8 +233,9 @@ impl Engine {
         context: &Context,
         page: &Page,
         identifier: &str,
+        session: &str,
     ) -> Result<OriginalBody, SessionFailure> {
-        let lifetime = self.network_diagnostic_session(identifier, page)?;
+        let lifetime = self.network_diagnostic_session_for_renderer(identifier, page, session)?;
         let connection = self
             .browser(&context.browser_identifier, "tracing.network")?
             .connection
@@ -229,7 +247,12 @@ impl Engine {
             .ok_or(SessionFailure::Unavailable)?;
         Ok(OriginalBody {
             connection,
-            session: page.session_identifier.clone(),
+            session: session.into(),
+            closed_reason: if session == page.session_identifier {
+                BodyUnavailable::OriginalPageClosed
+            } else {
+                BodyUnavailable::OriginalRendererClosed
+            },
             lifetime,
             resources: network.resources.budget(),
             engine: network.engine.clone(),
@@ -269,19 +292,27 @@ mod tests {
             .complete(&occurrence, true)
             .unwrap()
             .unwrap();
-        let guard = network.owners.admit(&occurrence, "original").unwrap();
+        let guard = network
+            .owners
+            .admit(&occurrence, "original", "session")
+            .unwrap();
         let (host, peer) = duplex(4096);
         let (reader, writer) = split(host);
         let destruction = watch::channel(false).0;
         let original = OriginalBody {
             connection: Connection::new(reader, writer),
             session: "session".into(),
+            closed_reason: BodyUnavailable::OriginalPageClosed,
             lifetime: SessionLifetime::controlled("target", "session", destruction.clone()),
             resources: network.resources.budget(),
             engine: budget,
             closed: network.closed.subscribe(),
         };
         let job = BodyJob {
+            source: crate::network_request::RequestSource {
+                session: "session".into(),
+                identifier: "original".into(),
+            },
             occurrence,
             identifier: "original".into(),
             work,
@@ -298,6 +329,50 @@ mod tests {
             .unwrap();
         assert_eq!(bytes.pop(), Some(0));
         serde_json::from_slice(&bytes).unwrap()
+    }
+
+    #[tokio::test]
+    async fn exact_session_gone_reply_settles_child_body_without_failing_recording() {
+        let (network, mut original, job, peer, _destruction) = fixture();
+        original.closed_reason = BodyUnavailable::OriginalRendererClosed;
+        let (reader, mut writer) = split(peer);
+        let mut reader = BufReader::new(reader);
+        let task = tokio::spawn(async move { original.capture(&job).await });
+        let request = command(&mut reader).await;
+        let mut reply=serde_json::to_vec(&json!({"id":request["id"],"error":{"code":-32001,"message":"Session with given id not found."}})).unwrap();
+        reply.push(0);
+        writer.write_all(&reply).await.unwrap();
+        assert!(matches!(
+            task.await.unwrap().unwrap(),
+            CapturedBody::Unavailable(BodyUnavailable::OriginalRendererClosed)
+        ));
+        assert!(!network.pending());
+        assert_eq!(network.engine.workers.available_permits(), 2);
+        assert!(network.journal.failure().is_none());
+    }
+
+    #[tokio::test]
+    async fn logical_renderer_retirement_retains_dispatched_capacity_until_native_reply() {
+        let (mut network, original, job, peer, _destruction) = fixture();
+        let (reader, mut writer) = split(peer);
+        let mut reader = BufReader::new(reader);
+        let mut task = tokio::spawn(async move { original.capture(&job).await });
+        let request = command(&mut reader).await;
+        network.owners.renderer_closed("page", "session");
+        assert!(timeout(Duration::from_millis(10), &mut task).await.is_err());
+        assert_eq!(network.engine.workers.available_permits(), 1);
+        let mut reply = serde_json::to_vec(
+            &json!({"id":request["id"],"result":{"body":"old bytes","base64Encoded":false}}),
+        )
+        .unwrap();
+        reply.push(0);
+        writer.write_all(&reply).await.unwrap();
+        assert!(matches!(
+            task.await.unwrap().unwrap(),
+            CapturedBody::Unavailable(BodyUnavailable::OriginalRendererClosed)
+        ));
+        assert!(!network.pending());
+        assert_eq!(network.engine.workers.available_permits(), 2);
     }
 
     #[tokio::test]
