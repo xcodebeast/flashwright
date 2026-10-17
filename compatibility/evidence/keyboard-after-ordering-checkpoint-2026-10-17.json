@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "native-linux-keyboard-after-snapshot-ordering",
+  "status": "passed-focused",
+  "performanceAdmission": false,
+  "referenceVersion": "1.60.0",
+  "baseCommit": "f01f9d07f75aa05ee6df5e9c595e837b903d1dd1",
+  "browser": {
+    "version": "148.0.7778.96",
+    "distribution": "full-chromium",
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+  },
+  "driverSha256": "e18fece8b31791622f0f03f3eb4f2707c525084a6bed04a27b5abf9bac05dcd5",
+  "sourceHashes": {
+    "crates/flashwright-engine/src/keyboard.rs": "c36f8517e58b374ff1b11c490572134376dc37eac91cc8c6206dcdd1e7c43286",
+    "tools/keyboard-snapshot-proxy.py": "9931856b42d713cd29cdeba335567cbdd4112c7c4e8e5704de026f1bf667edfe",
+    "tools/test-keyboard-snapshot-lifetime.mjs": "9591690c75ddca99b03ede6182daa2ad069faba4a09d34de4e5f787041c78f83"
+  },
+  "sourceVerification": {
+    "entries": 1270,
+    "unchangedThroughFocusedChecks": true,
+    "manifestSha256": "b3fc2881efcf3048cefc1aec978447775438b07e39956a9018f2b6fd728b1591"
+  },
+  "correction": [
+    "Capture raw keyboard after phase before releasing its native input lock, retaining original operation deadline, cancellation and recording identity.",
+    "Optional capture cannot replace the input result; later host completion is deduplicated by the existing recording/call/phase owner.",
+    "Genuine browser reply gates retain queued native ownership; deliberately defer host after-capture requests until both native inputs reply. Verify actual archived pre/post DOM and exactly four phases per paired call."
+  ],
+  "verification": {
+    "rustPassed": 535,
+    "rustIgnored": 1,
+    "focusedGroups": [
+      {
+        "name": "fmt",
+        "code": 0,
+        "clean": true,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "resourceSha256": "d00143fa0a96ba7c01d9955e1af000a01a9d538bda8964e0c668cc587d22b8c9"
+      },
+      {
+        "name": "clippy",
+        "code": 0,
+        "clean": true,
+        "logSha256": "0bb169437204faee2299fb9a71fe33ac6a68d4a54cdf31e9e3f155860a8b0c36",
+        "resourceSha256": "e85e03165a55e065704623c857a61329fd3edc541616d4a21f591c724ab6881b"
+      },
+      {
+        "name": "rust",
+        "code": 0,
+        "clean": true,
+        "logSha256": "5f55ce7d94bc9863c04c108717b38dbf814e2ac695d7396551f11f759494b21f",
+        "resourceSha256": "4ceea8f5918a776328305f5a8b6bae13af6eb58fe573fc2a02da72d1416865e3"
+      },
+      {
+        "name": "binary-paths",
+        "code": 0,
+        "clean": true,
+        "logSha256": "f3727eb950d6ecc95426dd9863e67021ecf6722bf7e5fcd59a42e9e2dac4e076",
+        "resourceSha256": "6ce2d076a3ebb3ce6c49daca3e9b89e7567a762317a1083caa5e18696192ac6a"
+      },
+      {
+        "name": "keyboard-lifetime",
+        "code": 0,
+        "clean": true,
+        "logSha256": "71ca500f97ff23074477ebc038c3396d117c79e828a3cb6a70098ddd2a378778",
+        "resourceSha256": "66f8c6f08343b9ebd9857977668c9509c1cc1a79687cbbf574a08316defe5624"
+      },
+      {
+        "name": "node22-keyboard-lifetime",
+        "code": 0,
+        "clean": true,
+        "logSha256": "5793e57da2870e7e33f841af04fea03dca15e40133fcb31797971d1065a719ce",
+        "resourceSha256": "0e52bfa497e6d515954f3c01d1a2b6471e33fb756a2dc5392382d842d0068ebc"
+      },
+      {
+        "name": "keyboard-phases",
+        "code": 0,
+        "clean": true,
+        "logSha256": "e5577949c8c18892c36ca2681ccde08fce60726a388702633f596f604218b232",
+        "resourceSha256": "522f890057fb3c3199dac70513465a2fc36f3d479d746b09ae561c397ee9e579"
+      },
+      {
+        "name": "node22-keyboard-phases",
+        "code": 0,
+        "clean": true,
+        "logSha256": "bbc15bdc482c722432180ecd5d1a329875284b9713dc81a9ba6aad5d3e13e88e",
+        "resourceSha256": "56d8e5bfa070a26bfa7aeea8b694444a281baaa6f7fdad5b65bf149bf14fda40"
+      },
+      {
+        "name": "keyboard",
+        "code": 0,
+        "clean": true,
+        "logSha256": "6b3455be7651a308b69a4a19ea471e29bb6085d9e4114ae55ca54bfb5d326b5c",
+        "resourceSha256": "82475a90c7cb465e22410edff88791e51b91ecab4237684ff344ac73bbd91214"
+      },
+      {
+        "name": "snapshot-host",
+        "code": 0,
+        "clean": true,
+        "logSha256": "a3a4b7fef628648797bb9510d40b22da23506f686f497ff9f6c10355eba93ec2",
+        "resourceSha256": "9907dfe0356ac224e0877e16e97fbd97982b5b686edfdd761ced30a16caa8787"
+      }
+    ],
+    "nativeLifetimeMatrices": [
+      {
+        "runtime": "Bun 1.4.2",
+        "reportSha256": "e6fcec615acc06f4fa02b152673df3111ef6f7904243cda70a0dc2c5d31ea27d",
+        "checks": [
+          {
+            "name": "type retains input/after phases before queued input despite delayed host completion",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "key-type",
+              "id": 30
+            },
+            "nativeReplies": 2,
+            "completionRequests": 2,
+            "archiveSha256": "4227fa5b75da4dd58f5d2f67efbb84b5697e98369e35a3075205a3d435d875a7"
+          },
+          {
+            "name": "press retains input/after phases before queued input despite delayed host completion",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "key-press",
+              "id": 78
+            },
+            "nativeReplies": 2,
+            "completionRequests": 2,
+            "archiveSha256": "378821544dbdece264343b3d060ce8d7167b631bd6bfe6b61e40b7f834b3a9c9"
+          },
+          {
+            "name": "insertText retains input/after phases before queued input despite delayed host completion",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "key-insertText",
+              "id": 123
+            },
+            "nativeReplies": 2,
+            "completionRequests": 2,
+            "archiveSha256": "817b0873e3c91d549d10091a676eeae56104433416f297f1f0dfc5b082c8f77f"
+          },
+          {
+            "name": "empty typing preserves original native cancellation during input capture",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "capture",
+              "id": 161
+            },
+            "outcome": {
+              "status": "rejected",
+              "name": "TimeoutError"
+            },
+            "nativeReplies": [
+              {
+                "kind": "error",
+                "requestId": 160,
+                "error": {
+                  "code": "TimeoutError",
+                  "method": "keyboard.type",
+                  "message": "operation deadline exceeded",
+                  "referenceVersion": "1.60.0",
+                  "browser": "chromium",
+                  "inputDelivery": "notDispatched"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "runtime": "Node 22.22.0",
+        "reportSha256": "d25e8620af542b1d876b4da6dc9a97fdb0739516435330114f5081aff30eaf31",
+        "checks": [
+          {
+            "name": "type retains input/after phases before queued input despite delayed host completion",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "key-type",
+              "id": 30
+            },
+            "nativeReplies": 2,
+            "completionRequests": 2,
+            "archiveSha256": "88f589b775305d4dce1c67623adee0806009b7cbb5dfaab59dd1f02a3851131e"
+          },
+          {
+            "name": "press retains input/after phases before queued input despite delayed host completion",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "key-press",
+              "id": 78
+            },
+            "nativeReplies": 2,
+            "completionRequests": 2,
+            "archiveSha256": "c23d8097db48430be4980a4ec3f7f092ad6d14772c385802cebc0684ea83649d"
+          },
+          {
+            "name": "insertText retains input/after phases before queued input despite delayed host completion",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "key-insertText",
+              "id": 123
+            },
+            "nativeReplies": 2,
+            "completionRequests": 2,
+            "archiveSha256": "e972aeb33b007b6de86d35a92733252ab25c5f1c85533244f62ebc0bb4c7e911"
+          },
+          {
+            "name": "empty typing preserves original native cancellation during input capture",
+            "nativeHeld": {
+              "kind": "nativeReplyHeld",
+              "label": "capture",
+              "id": 161
+            },
+            "outcome": {
+              "status": "rejected",
+              "name": "TimeoutError"
+            },
+            "nativeReplies": [
+              {
+                "kind": "error",
+                "requestId": 162,
+                "error": {
+                  "code": "CancelledError",
+                  "method": "keyboard.type",
+                  "message": "operation cancelled",
+                  "referenceVersion": "1.60.0",
+                  "browser": "chromium",
+                  "inputDelivery": "notDispatched"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "retainedFailures": [
+    {
+      "kind": "integrated-current-core",
+      "checksStarted": 98,
+      "checksPassed": 97,
+      "failure": "Typing after snapshot contained state:x after queued Backspace instead of state:xy.",
+      "verificationSha256": "54c54b8f5afea357b5b132940e88f654bf90fd0f45b3ee3688a422af9cb23087",
+      "reportSha256": "28853a0b2610f3b2798b412a65193f3489ef891e43ff0297d40b986feb0dd190",
+      "resourcesSha256": "1793d640fb9c5cae968f1dfe9ea8c43217381a413e1aa8cf0799c79d88d773d5",
+      "sourceEntriesVerified": 1270,
+      "originalExitCode": 1,
+      "observedCleanTeardown": true
+    },
+    {
+      "kind": "deterministic-old-driver-negative-control",
+      "driverSha256": "f3b8c7a0020a3ae8202c1af3b37bc78fb6f52fbb80d6a1e51e0f1530d7ad5a19",
+      "reportSha256": "85263ab02b0d5a037444fb87068f649160d5a87d86cfbfe549f6ae1a5bde917c",
+      "fixtureSha256": "9591690c75ddca99b03ede6182daa2ad069faba4a09d34de4e5f787041c78f83",
+      "failure": "The final controlled fixture reproduces state:x instead of state:xy on the old driver.",
+      "resources": {
+        "sha256": "b674084af9b2151c84450a163beb85b2f65527cee0b6c1c2f03d49d4063f4c34",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": 0,
+        "remainingObservedProcesses": 0
+      }
+    }
+  ],
+  "limitations": [
+    "Focused native Linux full-Chrome development coverage; integrated gate refresh remains separate.",
+    "No new macOS, other-browser-distribution, release or performance acceptance.",
+    "Input serialization protects against queued native input; independent application mutations can still occur.",
+    "Private raw artifacts remain retained, including initial expanded-fixture negative and first positive run."
+  ]
+}
