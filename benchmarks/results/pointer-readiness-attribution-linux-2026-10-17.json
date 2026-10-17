@@ -1,0 +1,838 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "status": "completed-instrumented-readiness-attribution",
+  "baseCommit": "0399d7fbc938385bb66d04cb460431bab7412979",
+  "scope": "Native Linux diagnostic attribution only. A byte-preserving Python protocol relay and client timestamps alter scheduling; these timings are not a performance comparison.",
+  "runtime": {
+    "name": "Bun",
+    "version": "1.4.2"
+  },
+  "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+  "driverSha256": "42fab5c26ce5d25c70f989db305c9c18c61785c262cf84f8223dc500805c9a1a",
+  "runtimeSha256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c",
+  "hostObservedAtAnalysis": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "kernel": "7.2.5-3-omarchy",
+    "logicalProcessors": 6,
+    "cpuModel": "AMD Ryzen 9 7900X3D 12-Core Processor"
+  },
+  "resourcePolicy": "Shared systemd group CPUQuota400%, MemoryMax8GiB, swap0, serial launches; original command retained separately. Sampled CPU/RSS not admitted complete resources.",
+  "applicationTestsPassed": 24,
+  "controlledMovingTargetProbesPassed": 2,
+  "originalFailureAndContinuation": "First controller exited 1 because it incorrectly required every enabled application run to invoke a hint. Both executed suites passed; enabled run had no retries. Remaining two planned suites ran once in a separate continuation.",
+  "verification": {
+    "allFrozenInputFilesUnchanged": true,
+    "inputManifests": {
+      "workbench/pointer-readiness-attribution-linux-001": {
+        "manifestSha256": "9cb85924891b8348e397b2b7a5b57b5b106507b41c3abfb419c28d0d55fc5798",
+        "verifiedFiles": 2297
+      },
+      "workbench/pointer-readiness-attribution-linux-002": {
+        "manifestSha256": "19adac84c76fc5266126c96f5dbfa5e51170c8bb03b7049c3e19fe965a8bde26",
+        "verifiedFiles": 2289
+      }
+    },
+    "exactOrderedArgumentsAcrossAllSixLaunchesAfterPrivateProfileNormalization": true,
+    "allPointerCommandsHaveOriginalReplies": true,
+    "allPointerCommandsFallWithinOneClientAction": true,
+    "clock": "Client native CLOCK_MONOTONIC capture identity and origin match each original watchdog. Relay uses Python time.monotonic_ns; same-host Linux domain. This is interval containment, not proof of causal ownership.",
+    "originalSupervisors": "Every browser launch ended with exit0, no cleanup signals, no remaining observed processes. First outer controller exited1 on its harness expectation; continuation and moving controller exited0."
+  },
+  "rows": [
+    {
+      "case": "00-00-svgomg-1-normal-flashwright",
+      "mode": "0",
+      "kind": "original-svgomg-suite",
+      "originalTests": 6,
+      "pointerCounts": {
+        "preparePointer": 13,
+        "pointerElement": 9,
+        "armPointer": 9,
+        "finishPointer": 8,
+        "cleanupPointer": 5,
+        "scrollPointer": 1
+      },
+      "originalHarnessStatus": "passed-instrumented-original-suite",
+      "originalHarnessError": null,
+      "actions": [
+        {
+          "action": "click",
+          "identifier": 10,
+          "elapsedMilliseconds": 306.606177,
+          "pointerProtocolUnionMilliseconds": 289.697923,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 20,
+          "elapsedMilliseconds": 33.846676,
+          "pointerProtocolUnionMilliseconds": 18.576438,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 34,
+          "elapsedMilliseconds": 29.79017,
+          "pointerProtocolUnionMilliseconds": 14.809764,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 35,
+          "elapsedMilliseconds": 78.296855,
+          "pointerProtocolUnionMilliseconds": 61.553433,
+          "counts": {
+            "preparePointer": 2,
+            "pointerElement": 2,
+            "armPointer": 2,
+            "cleanupPointer": 1,
+            "scrollPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 37,
+          "elapsedMilliseconds": 383.695992,
+          "pointerProtocolUnionMilliseconds": 153.8134,
+          "counts": {
+            "preparePointer": 5,
+            "cleanupPointer": 4,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 43,
+          "elapsedMilliseconds": 42.548934,
+          "pointerProtocolUnionMilliseconds": 23.19006,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 45,
+          "elapsedMilliseconds": 32.481055,
+          "pointerProtocolUnionMilliseconds": 29.18296,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 52,
+          "elapsedMilliseconds": 39.151288,
+          "pointerProtocolUnionMilliseconds": 22.604308,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        }
+      ],
+      "receipts": {
+        "protocol-1655294.jsonl": "a2010f5382e0dc25cc4eff6b92a64ecad66c542e9c1aa8b27588efc0553c74e1",
+        "resources.json": "c39a09c38399d9641ee1fae3dcd4d370332a462f3d5fb0a7e1d413efb047dce9",
+        "client-1655259.json": "57812ce27109be338e8897088dcef28278268f524eb2a67cd1666284774aa5a8",
+        "client-1655275.json": "bd85bf1d23d3172c14420e737fcd42ec0f2525018ed40fae6c1c156b92d37b6e",
+        "functional-verification.json": "9a05c1da9d60016d8f9d8cfb4b1e34389efccc94fb157eb787d5688dd6d26fe2",
+        "owner-report.json": "58075e1cc824d1cbba10603482ce733a67f7a9934045e7470f923e2fc3d3c025",
+        "original-terminal.json": "3bc4533733e4bad65fa47b92367b1fac82f525f8c687f9ce6edb1f938899a57d"
+      }
+    },
+    {
+      "case": "01-01-svgomg-1-hint-flashwright",
+      "mode": "1",
+      "kind": "original-svgomg-suite",
+      "originalTests": 6,
+      "pointerCounts": {
+        "preparePointer": 9,
+        "pointerElement": 9,
+        "armPointer": 9,
+        "finishPointer": 8,
+        "cleanupPointer": 1,
+        "scrollPointer": 1
+      },
+      "originalHarnessStatus": "failed",
+      "originalHarnessError": "AssertionError()",
+      "actions": [
+        {
+          "action": "click",
+          "identifier": 10,
+          "elapsedMilliseconds": 284.865505,
+          "pointerProtocolUnionMilliseconds": 266.859609,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 20,
+          "elapsedMilliseconds": 33.237871,
+          "pointerProtocolUnionMilliseconds": 18.234792,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 34,
+          "elapsedMilliseconds": 42.318567,
+          "pointerProtocolUnionMilliseconds": 27.506518,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 35,
+          "elapsedMilliseconds": 75.225208,
+          "pointerProtocolUnionMilliseconds": 65.149847,
+          "counts": {
+            "preparePointer": 2,
+            "pointerElement": 2,
+            "armPointer": 2,
+            "cleanupPointer": 1,
+            "scrollPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 37,
+          "elapsedMilliseconds": 26.329185,
+          "pointerProtocolUnionMilliseconds": 21.406848,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 43,
+          "elapsedMilliseconds": 37.933568,
+          "pointerProtocolUnionMilliseconds": 22.606193,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 45,
+          "elapsedMilliseconds": 32.596795,
+          "pointerProtocolUnionMilliseconds": 29.194039,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 52,
+          "elapsedMilliseconds": 40.879075,
+          "pointerProtocolUnionMilliseconds": 21.605655,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        }
+      ],
+      "receipts": {
+        "protocol-1655816.jsonl": "49f8ea9f6a66e50ad718a24bf70036345aa75e4e644fe14581ce0ee4dff65068",
+        "resources.json": "b83d3043a44219228f08fcee67ae2ca016675bdc66d5e1b67f0c6490ed9cc462",
+        "client-1655760.json": "a0c9f0cbd6645938fe017cbe9fcf77c950ec6d4e09382853ef15e6f3eb7b31d3",
+        "client-1655773.json": "458384ead093194c21064af3a99215462c3320ad677aeb8658cc8a8923fd753a",
+        "functional-verification.json": "2a52956a1117d888b04133165fad279817227b703e116e407894a6da4b4470a4",
+        "owner-report.json": "d42b62eb56f3e105b1397ef2a0b674b1ee2d087bb008c28dbdcadb739b5797e6",
+        "original-terminal.json": "4af41104922e90f01ae642b44a5ce492bb5d484856a490a55334456f13986159"
+      }
+    },
+    {
+      "case": "02-00-svgomg-1-hint-flashwright",
+      "mode": "1",
+      "kind": "original-svgomg-suite",
+      "originalTests": 6,
+      "pointerCounts": {
+        "preparePointer": 15,
+        "pointerElement": 9,
+        "armPointer": 9,
+        "finishPointer": 8,
+        "cleanupPointer": 7,
+        "scrollPointer": 2,
+        "waitForPointerReadiness": 5
+      },
+      "originalHarnessStatus": "passed-instrumented-original-suite",
+      "originalHarnessError": null,
+      "actions": [
+        {
+          "action": "click",
+          "identifier": 10,
+          "elapsedMilliseconds": 280.97738,
+          "pointerProtocolUnionMilliseconds": 265.105362,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 20,
+          "elapsedMilliseconds": 30.279418,
+          "pointerProtocolUnionMilliseconds": 12.268702,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 34,
+          "elapsedMilliseconds": 27.030595,
+          "pointerProtocolUnionMilliseconds": 10.259733,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 35,
+          "elapsedMilliseconds": 81.43575,
+          "pointerProtocolUnionMilliseconds": 63.248301,
+          "counts": {
+            "preparePointer": 2,
+            "pointerElement": 2,
+            "armPointer": 2,
+            "cleanupPointer": 1,
+            "scrollPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 37,
+          "elapsedMilliseconds": 354.278489,
+          "pointerProtocolUnionMilliseconds": 344.319487,
+          "counts": {
+            "preparePointer": 7,
+            "cleanupPointer": 6,
+            "waitForPointerReadiness": 5,
+            "pointerElement": 1,
+            "scrollPointer": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": [
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.189644,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 16.074753,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.864604,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.718136,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 66.057207,
+              "nextPrepareStatus": "ready",
+              "nextPrepareReason": null
+            }
+          ]
+        },
+        {
+          "action": "click",
+          "identifier": 43,
+          "elapsedMilliseconds": 41.985003,
+          "pointerProtocolUnionMilliseconds": 24.356814,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 45,
+          "elapsedMilliseconds": 32.559895,
+          "pointerProtocolUnionMilliseconds": 29.705891,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 52,
+          "elapsedMilliseconds": 40.140605,
+          "pointerProtocolUnionMilliseconds": 22.048345,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        }
+      ],
+      "receipts": {
+        "protocol-1658039.jsonl": "a343337ef217fc9ec5eeafaadba7393db426538a8bcf7c53f9ae31ca573547be",
+        "resources.json": "22eea2d5ed90a8504ff78bca6f56523ba1805ec3d26d289375256b68a6e3a14c",
+        "client-1658006.json": "44ab12faad0a6428a375a29e8d1e3b2e6cb8f09bd7a9cc812f537f370595b618",
+        "client-1658019.json": "3d49a937ce39c4d8786cf511c4fafee4b7561ee9ab19751941d607c228afe1de",
+        "functional-verification.json": "337a25872a945e1e1645c42df215222e702b4874e12154a16813d066ecc5d435",
+        "owner-report.json": "676e7f15202a7b80122bdc70e845702b084d7f60d0cf2ce20f92bc76d99a6384",
+        "original-terminal.json": "c0c610c3bd7ecd08d7fd8ef62a4b8ab0c0b4e5abb09b942efc11656ed035817a"
+      }
+    },
+    {
+      "case": "03-01-svgomg-1-normal-flashwright",
+      "mode": "0",
+      "kind": "original-svgomg-suite",
+      "originalTests": 6,
+      "pointerCounts": {
+        "preparePointer": 13,
+        "pointerElement": 9,
+        "armPointer": 9,
+        "finishPointer": 8,
+        "cleanupPointer": 5,
+        "scrollPointer": 1
+      },
+      "originalHarnessStatus": "passed-instrumented-original-suite",
+      "originalHarnessError": null,
+      "actions": [
+        {
+          "action": "click",
+          "identifier": 10,
+          "elapsedMilliseconds": 300.688953,
+          "pointerProtocolUnionMilliseconds": 282.03685,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 20,
+          "elapsedMilliseconds": 40.026067,
+          "pointerProtocolUnionMilliseconds": 22.270376,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 34,
+          "elapsedMilliseconds": 41.655779,
+          "pointerProtocolUnionMilliseconds": 23.699446,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 35,
+          "elapsedMilliseconds": 76.142518,
+          "pointerProtocolUnionMilliseconds": 61.857279,
+          "counts": {
+            "preparePointer": 2,
+            "pointerElement": 2,
+            "armPointer": 2,
+            "cleanupPointer": 1,
+            "scrollPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 37,
+          "elapsedMilliseconds": 388.952713,
+          "pointerProtocolUnionMilliseconds": 158.822558,
+          "counts": {
+            "preparePointer": 5,
+            "cleanupPointer": 4,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 43,
+          "elapsedMilliseconds": 40.882703,
+          "pointerProtocolUnionMilliseconds": 22.208427,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 45,
+          "elapsedMilliseconds": 31.331174,
+          "pointerProtocolUnionMilliseconds": 28.352582,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        },
+        {
+          "action": "click",
+          "identifier": 52,
+          "elapsedMilliseconds": 39.184871,
+          "pointerProtocolUnionMilliseconds": 23.731466,
+          "counts": {
+            "preparePointer": 1,
+            "pointerElement": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        }
+      ],
+      "receipts": {
+        "protocol-1658529.jsonl": "309582337840dd92e3205d3f871cb08f61fa911d7ab2d1305b30e1969a4fa467",
+        "resources.json": "888ec9cc7a8bbc473bf3b17a7f62a4f8e4b0ec59da7e6f658370690a11919442",
+        "client-1658496.json": "5ae3b5942c4e8a6eeeaf7482a91152a5d5dd03f0bc1a3de18fc487a44d487af7",
+        "client-1658509.json": "537c1a36138fbea25f224e9ba94a8b5d2327b5259936f8b692cf78c37b90a855",
+        "functional-verification.json": "e929c1aa7748d4c2381dea4f4fb65bedd2f1ad83c8866f0d55d4ecc657b49d44",
+        "owner-report.json": "f1d3cf6595c6b951e58c6bb965ecf8d966f47502787b6255de79587614ee809d",
+        "original-terminal.json": "40ee55bcb640fbd8a868dd470f01a06ee9eb259fec6ede405e7ca950f31f995a"
+      }
+    },
+    {
+      "case": "04-moving-0",
+      "mode": "0",
+      "kind": "controlled-moving-target",
+      "originalTests": 0,
+      "pointerCounts": {
+        "preparePointer": 6,
+        "cleanupPointer": 5,
+        "pointerElement": 1,
+        "scrollPointer": 1,
+        "armPointer": 1,
+        "finishPointer": 1
+      },
+      "originalHarnessStatus": "passed-controlled-probe",
+      "originalHarnessError": null,
+      "actions": [
+        {
+          "action": "click",
+          "identifier": 6,
+          "elapsedMilliseconds": 929.054721,
+          "pointerProtocolUnionMilliseconds": 184.763059,
+          "counts": {
+            "preparePointer": 6,
+            "cleanupPointer": 5,
+            "pointerElement": 1,
+            "scrollPointer": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": []
+        }
+      ],
+      "receipts": {
+        "protocol-1660017.jsonl": "872596b9c4951ba7bff8549fe0482013ae76ba4831e2d7daf537541e9903be87",
+        "resources.json": "4da1060f8e1d74a8840e42be35057e8593bfc82155bbe7977bebd8ddbb6cf4ff",
+        "client-1660004.json": "bcf89734dd5211dff04ca9431dc68a24d59079af65250f8443ecb1d9a66de650",
+        "plan.json": "aa4274a07e1d537981fb107227966c9d0fa4e5f106de5d69bf00963a30cdaa08",
+        "original-terminal.json": "62cc194d2d3b06411ebaaf19c8f33eba06798c8f5bc1ff4107a940917d8acf84",
+        "result.json": "78b3f99221b19073ef0b929bab9ab42712dd265bdfb751b9531d9ce13b3377b9"
+      }
+    },
+    {
+      "case": "05-moving-1",
+      "mode": "1",
+      "kind": "controlled-moving-target",
+      "originalTests": 0,
+      "pointerCounts": {
+        "preparePointer": 18,
+        "cleanupPointer": 17,
+        "waitForPointerReadiness": 16,
+        "pointerElement": 1,
+        "scrollPointer": 1,
+        "armPointer": 1,
+        "finishPointer": 1
+      },
+      "originalHarnessStatus": "passed-controlled-probe",
+      "originalHarnessError": null,
+      "actions": [
+        {
+          "action": "click",
+          "identifier": 6,
+          "elapsedMilliseconds": 875.551202,
+          "pointerProtocolUnionMilliseconds": 849.057717,
+          "counts": {
+            "preparePointer": 18,
+            "cleanupPointer": 17,
+            "waitForPointerReadiness": 16,
+            "pointerElement": 1,
+            "scrollPointer": 1,
+            "armPointer": 1,
+            "finishPointer": 1
+          },
+          "hintsAndNextAttempts": [
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 16.518762,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.597083,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.93796,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.948698,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.981512,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 16.118923,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 16.09125,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.936046,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.929603,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 16.185819,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.79101,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.685229,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.58062,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.636417,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.625085,
+              "nextPrepareStatus": "retry",
+              "nextPrepareReason": "error:unstable"
+            },
+            {
+              "hintStatus": "matched",
+              "hintMilliseconds": 15.79586,
+              "nextPrepareStatus": "ready",
+              "nextPrepareReason": null
+            }
+          ]
+        }
+      ],
+      "receipts": {
+        "protocol-1660322.jsonl": "9f8141db335a6bda66f2633ae0c3b7cc0781f8d796d88fd2e98a6adcbedad00e",
+        "resources.json": "1e42ef3b3efba75033e74a25bc01f52c3fb583daa865d92feae730eded475ecb",
+        "client-1660308.json": "5e00ab2b8bcc491c5d94ebbd63648f3501c28a0cd43441f8f7d423ff73078a40",
+        "plan.json": "149597db8cdf79fc050a4c8a308314403049a1e503620d7bc1d1a6ece1400957",
+        "original-terminal.json": "62cc194d2d3b06411ebaaf19c8f33eba06798c8f5bc1ff4107a940917d8acf84",
+        "result.json": "4710cc84796b6545db74798d0cf99c02b7bb99fa486e1bd809d916acdc2d7409"
+      }
+    }
+  ],
+  "evidenceHashes": {
+    "pointer-readiness-attribution-linux-001/plan.json": "441fc7f639351e2b4b754b48e6420d95662b75dca1b411acfa45386c24d71898",
+    "pointer-readiness-attribution-linux-001/preparation.json": "c946b5ad63c9bff65d1a76ac02534771edf6f3a7a1fc6fedcd2880f6e6999405",
+    "pointer-readiness-attribution-linux-001/inputs.json": "9cb85924891b8348e397b2b7a5b57b5b106507b41c3abfb419c28d0d55fc5798",
+    "pointer-readiness-attribution-linux-001/run.py": "02576840e1b0a563895ded50da8b581314dd65eb74404f5ba4bc163832bc82d6",
+    "pointer-readiness-attribution-linux-001/proxy.py": "e813a4c56fa105e062f8a30369f54dec83c3334384e8a7d03968059888014ae6",
+    "pointer-readiness-attribution-linux-001/profile-client.mjs": "456b820a7ed5f5aecfcde7f097564dee80b86bf827ba7457f8ff90e6fd2c11c9",
+    "pointer-readiness-attribution-linux-001/results.json": "ddf1a1cb3f57f31843f2f20b330499e091d22331f75ac28284b9c293ebabd27e",
+    "pointer-readiness-attribution-linux-001/controller-resources.json": "4b1567ac84cfe789c746ba1a488d6a70e9d1417d756aa72ad6a287bc89683f09",
+    "pointer-readiness-attribution-linux-002/plan.json": "71b6a65de0d9912f3adadce46d85f2618ef51f2efa5625eab64f48cdd92953b4",
+    "pointer-readiness-attribution-linux-002/preparation.json": "14ff3d57c0343fdba6317bae46ee016c489300fc507a955eb5a45ae6fed33f46",
+    "pointer-readiness-attribution-linux-002/inputs.json": "19adac84c76fc5266126c96f5dbfa5e51170c8bb03b7049c3e19fe965a8bde26",
+    "pointer-readiness-attribution-linux-002/run.py": "d62ce152f280165214dabdd1862dcc10d1d365a441624534d66a5f76c519d2de",
+    "pointer-readiness-attribution-linux-002/proxy.py": "e813a4c56fa105e062f8a30369f54dec83c3334384e8a7d03968059888014ae6",
+    "pointer-readiness-attribution-linux-002/profile-client.mjs": "456b820a7ed5f5aecfcde7f097564dee80b86bf827ba7457f8ff90e6fd2c11c9",
+    "pointer-readiness-attribution-linux-002/results.json": "e63a41dea9952a6d08639316d4292a797af55e867e159fe4ed760eddac649684",
+    "pointer-readiness-attribution-linux-002/controller-resources.json": "dacda7fa3cea35e5b9a20515b612991dc2aaed7a7335da7b3e301d9ec92e3702",
+    "pointer-readiness-attribution-linux-002/integrity.json": "175774c81a37127b18ae090c4df907c366514c4550a6864d5dea40dda1d8d5de",
+    "pointer-readiness-attribution-linux-002/moving.mjs": "fcb93504109d9bbb18046eab9a44b8095bf6a920b3565cf106edfb865b645b46",
+    "pointer-readiness-attribution-linux-002/run-moving.py": "b1fa832e9e784572406e04069a145c2b104aee515e389e8954c3a60218ae7882",
+    "pointer-readiness-attribution-linux-002/moving-verification.json": "54aa8f077c5140db2d9c2e1acc310e43a43f9ec5c06dec8767ea667e5038b02e",
+    "pointer-readiness-attribution-linux-002/moving-controller-resources.json": "900041ddfe7d2bf0e81f4e493882a33bd1400dd65fbf030beb66f2405e966cf1",
+    "pointer-readiness-attribution-linux-002/analyze.py": "094108e1b1f47f9cdd90142de2f755a9d285c403fcc7679f4cb254c2e33dfd65",
+    "pointer-readiness-attribution-linux-002/analysis.json": "6f9566882d47f80f94ada627167f71334719d9f54b07045f721f87281d4cb6aa"
+  },
+  "findings": [
+    "The first enabled original SVGOMG launch invoked no hint: all nine preparation checks reported ready. Mode selection alone does not establish invocation.",
+    "The second enabled SVGOMG launch made five hints: all reported matched; four were followed by another error:unstable preparation retry and one by ready.",
+    "The enabled controlled moving-target probe made 16 matched hints; 15 were followed by another error:unstable preparation retry. It made 18 preparation calls versus six in the separate ordinary probe. These counts expose repeated work; no elapsed or CPU saving is inferred.",
+    "Both moving-target probes delivered exactly one trusted click after observed motion stopped, at the stopped target geometry. Fresh ordinary preparation still enforces input safety.",
+    "Source inspection shows the hint compares geometry on successive condition checks, while the shared registry can run both mutation/event and frame checks. Those observations need not be distinct animation frames. This is a candidate explanation for early hints, not a captured proof of each wakeup source."
+  ],
+  "decision": "Keep hints opt-in. A frame-paced read-only hint is a possible follow-up, subject to cancellation/fairness/fresh input checks and a new complete-work screen. Do not attribute earlier uninstrumented screen regressions to hint overhead without invocation evidence.",
+  "performanceAdmission": false,
+  "defaultAdopted": false,
+  "goalAchieved": false,
+  "limitations": [
+    "Four instrumented one-worker application launches and two distinct controlled probes; no Playwright comparator in this diagnostic.",
+    "Acknowledgement intervals include transport, relay, browser scheduling and command work. Overlap with a client action does not establish exclusive critical-path cost.",
+    "Controller failure and original zero-hint enabled run retained; only the two remaining original planned suites ran in the continuation.",
+    "Protocol launch intent and clean exit checked; this diagnostic does not independently re-establish all live-parent executable identity or exact resource coverage from the prior screen.",
+    "Sampled resources are not complete CPU/memory admission. No 2x, default-adoption or release claim."
+  ]
+}
