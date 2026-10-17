@@ -15,13 +15,92 @@ function createSnapshotCapture(configuration = {}) {
   const limits = Object.freeze({ ...maximumLimits, ...configuration });
   for (const [name, value] of Object.entries(limits))
     if (!Object.hasOwn(maximumLimits, name) || !Number.isSafeInteger(value) || value < 0 || value > maximumLimits[name]) throw new Error(`Invalid snapshot limit: ${name}`);
-  const createGeneration = () => ({ nodes: new WeakMap(), sheets: new WeakMap(), bytes: 0, nodeCount: 0, attributes: 0, sheetCount: 0 });
+  const createGeneration = () => ({ nodes: new WeakMap(), tracked: [], sheets: new WeakMap(), bytes: 0, nodeCount: 0, attributes: 0, sheetCount: 0 });
   let committed = createGeneration();
   let tentative;
   let lastCommittedSnapshot = 0;
   let pendingToken;
   let pendingSnapshotNumber;
   let retired = false;
+  let observer;
+  let epoch = Symbol();
+  let previousTarget;
+  const simpleElements = new Set(['DIV', 'SPAN', 'P', 'TABLE', 'TBODY', 'THEAD', 'TFOOT', 'TR', 'TD', 'TH', 'UL', 'OL', 'LI', 'SECTION', 'MAIN', 'BUTTON', 'OUTPUT', 'A', 'H1', 'H2']);
+  const maximumMutationRecords = 512;
+  const maximumInvalidationVisits = 4096;
+
+  // Dirty bits belong to exact cache entries, including a pending generation.
+  // No mutation history or strong reference to an application node is retained.
+  function invalidationBatch() { return { seen: new WeakSet(), entries: new WeakSet(), visits: 0, overflow: false }; }
+  function invalidateAll(batch) { epoch = Symbol(); batch.overflow = true; }
+  function visitInvalidation(batch) {
+    if (batch.overflow) return false;
+    if (batch.visits++ === maximumInvalidationVisits) { invalidateAll(batch); return false; }
+    return true;
+  }
+  function invalidate(node, batch) {
+    for (let current = node; current && !batch.overflow; current = current.parentNode || current.host) {
+      if (batch.seen.has(current)) return;
+      if (!visitInvalidation(batch)) return;
+      batch.seen.add(current);
+      const oldEntry = committed.nodes.get(current);
+      const pendingEntry = tentative?.nodes.get(current);
+      if (oldEntry) oldEntry.dirty = true;
+      if (pendingEntry) pendingEntry.dirty = true;
+    }
+  }
+  function invalidateRemovedEntry(entry, batch) {
+    if (!visitInvalidation(batch)) return;
+    // An uncached/dynamic ancestor may still contain cached descendants. Without
+    // a complete cached tree, an epoch change bounds the work and invalidates all.
+    if (!entry?.tree) { invalidateAll(batch); return; }
+    if (batch.entries.has(entry)) return;
+    batch.entries.add(entry);
+    entry.dirty = true;
+    for (const child of entry.tree.children) {
+      invalidateRemovedEntry(child, batch);
+      if (batch.overflow) return;
+    }
+  }
+  function mutations(records) {
+    const batch = invalidationBatch();
+    if (records.length > maximumMutationRecords) { invalidateAll(batch); return; }
+    for (const record of records) {
+      invalidate(record.target, batch);
+      if (batch.overflow) return;
+      // After removal delivery, edits to a detached subtree are unobserved.
+      // Dirty every formerly cached descendant before it can be reinserted.
+      for (const removed of record.removedNodes) {
+        if (!visitInvalidation(batch)) return;
+        if (committed.nodeCount) invalidateRemovedEntry(committed.nodes.get(removed), batch);
+        if (tentative?.nodeCount) invalidateRemovedEntry(tentative.nodes.get(removed), batch);
+        if (batch.overflow) return;
+      }
+    }
+  }
+  function prepareObservation(target) {
+    if (limits.maximumCacheNodes === 0) return;
+    if (!observer) {
+      observer = new MutationObserver(mutations);
+      observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+    }
+    mutations(observer.takeRecords());
+    const batch = invalidationBatch();
+    const oldTarget = previousTarget?.deref();
+    if (oldTarget) invalidate(oldTarget, batch);
+    if (target) invalidate(target, batch); // The same target can have a new call identifier.
+    previousTarget = target ? new WeakRef(target) : undefined;
+    for (const entry of committed.tracked) {
+      if (batch.overflow) break;
+      if (!entry.tree || entry.epoch !== epoch) continue;
+      const node = entry.node.deref();
+      if (node?.nodeType === 1 && (node.scrollTop !== entry.tree.scrollTop || node.scrollLeft !== entry.tree.scrollLeft || node.shadowRoot)) invalidate(node, batch);
+    }
+  }
+  function stopObservation() {
+    observer?.disconnect(); observer = undefined;
+    previousTarget = undefined; epoch = Symbol();
+  }
 
   function failure(message) { return new Error(`SnapshotResourceLimit: ${message}`); }
 
@@ -66,6 +145,7 @@ function createSnapshotCapture(configuration = {}) {
     const started = performance.now();
     const frameIdentifiers = options.frames ?? [];
     if (!Array.isArray(frameIdentifiers) || frameIdentifiers.length > 128) throw new Error('SnapshotProtocol: frame mapping exceeds its limit');
+    prepareObservation(options.target);
     tentative = createGeneration();
     pendingToken = options.token;
     pendingSnapshotNumber = snapshotNumber;
@@ -132,7 +212,19 @@ function createSnapshotCapture(configuration = {}) {
         },
         unequal() { equal = false; },
         equal() { return equal && position === oldEntry.values.length; },
-        retain(map, key, snapshot, index) { if (admitted) map.set(key, { values, snapshot, index }); },
+        retain(map, key, snapshot, index) {
+          if (!admitted) return;
+          const entry = { values, snapshot, index };
+          map.set(key, entry);
+          if (!sheet) {
+            entry.node = oldEntry?.node ?? new WeakRef(key);
+            entry.ownBytes = retainedBytes;
+            entry.ownAttributes = retainedAttributes;
+            entry.epoch = epoch;
+            entry.dirty = false;
+            tentative.tracked.push(entry);
+          }
+        },
       };
     }
     function finishNode(key, output, comparison, oldEntry, startBytes, startIndex) {
@@ -218,7 +310,59 @@ function createSnapshotCapture(configuration = {}) {
       comparison.retain(tentative.sheets, sheet, snapshotNumber, index);
       return { html, equal: false, snapshot: snapshotNumber, index };
     }
+    const visitStack = [];
+    function retainTree(entry) {
+      const node = entry.node.deref();
+      // A live eligible subtree keeps its descendants alive during this synchronous capture.
+      if (!node) throw new Error('SnapshotProtocol: cached subtree lost a live node');
+      tentative.nodeCount++; tentative.bytes += entry.ownBytes; tentative.attributes += entry.ownAttributes;
+      tentative.nodes.set(node, entry); tentative.tracked.push(entry);
+      for (const child of entry.tree.children) retainTree(child);
+    }
     function visit(node, depth = 1, inHead = false, inBody = false) {
+      const oldEntry = committed.nodes.get(node);
+      const parent = visitStack.at(-1);
+      if (oldEntry?.tree && !oldEntry.dirty && oldEntry.epoch === epoch && node.getRootNode() === document) {
+        const tree = oldEntry.tree;
+        if (counters.nodes + tree.nodes > limits.maximumNodes || depth + tree.depth - 1 > limits.maximumDepth || counters.attributes + tree.attributes > limits.maximumAttributes)
+          throw failure('cached subtree exceeds capture limits');
+        if (tentative.nodeCount + tree.nodes <= limits.maximumCacheNodes && tentative.bytes + tree.cacheBytes <= limits.maximumCacheBytes && tentative.attributes + tree.cacheAttributes <= limits.maximumCacheAttributes) {
+          counters.nodes += tree.nodes; counters.attributes += tree.attributes;
+          counters.depth = Math.max(counters.depth, depth + tree.depth - 1);
+          retainTree(oldEntry);
+          if (parent) parent.children.push(oldEntry);
+          return { html: reference(oldEntry.snapshot, oldEntry.index), equal: true, snapshot: oldEntry.snapshot, index: oldEntry.index };
+        }
+      }
+      const beforeNodes = counters.nodes;
+      const beforeAttributes = counters.attributes;
+      const frame = { children: [] };
+      visitStack.push(frame);
+      let result;
+      try { result = visitFull(node, depth, inHead, inBody); }
+      finally { visitStack.pop(); }
+      const entry = tentative.nodes.get(node);
+      if (entry) {
+        const kind = node.nodeType;
+        const simple = (kind === 3 || kind === 1 && simpleElements.has(node.nodeName) && !node.hasAttribute('popover') && !node.hasAttribute('is') && !node.shadowRoot)
+          && node.getRootNode() === document && frame.children.every(child => child?.tree);
+        if (simple) {
+          let childDepth = 0, cacheBytes = entry.ownBytes, cacheAttributes = entry.ownAttributes;
+          for (const child of frame.children) {
+            childDepth = Math.max(childDepth, child.tree.depth);
+            cacheBytes += child.tree.cacheBytes; cacheAttributes += child.tree.cacheAttributes;
+          }
+          entry.tree = {
+            children: frame.children, nodes: counters.nodes - beforeNodes, attributes: counters.attributes - beforeAttributes,
+            depth: childDepth + 1, cacheBytes, cacheAttributes,
+            scrollTop: kind === 1 ? node.scrollTop : 0, scrollLeft: kind === 1 ? node.scrollLeft : 0,
+          };
+        }
+      }
+      if (parent) parent.children.push(entry);
+      return result;
+    }
+    function visitFull(node, depth = 1, inHead = false, inBody = false) {
       if (++counters.nodes > limits.maximumNodes || depth > limits.maximumDepth) throw failure('capture exceeds its DOM traversal limit');
       counters.depth = Math.max(counters.depth, depth);
       const kind = node.nodeType;
@@ -344,7 +488,7 @@ function createSnapshotCapture(configuration = {}) {
       return { snapshotNumber, cache: cacheStats(committed) };
     },
     discard(token) { checkToken(token); tentative = undefined; pendingToken = undefined; pendingSnapshotNumber = undefined; return true; },
-    reset() { committed = createGeneration(); tentative = undefined; pendingToken = undefined; pendingSnapshotNumber = undefined; lastCommittedSnapshot = 0; return true; },
+    reset() { stopObservation(); committed = createGeneration(); tentative = undefined; pendingToken = undefined; pendingSnapshotNumber = undefined; lastCommittedSnapshot = 0; return true; },
     retire() { this.reset(); retired = true; return true; },
     inspect() { return { retired, pendingToken, lastCommittedSnapshot, committed: cacheStats(committed), tentative: tentative ? cacheStats(tentative) : null }; },
   };

@@ -59,6 +59,7 @@ pub(crate) struct DocumentState {
     pub main_frame: Option<String>,
     pub main_worlds: HashMap<String, ExecutionContext>,
     pub execution_contexts: HashMap<(Arc<str>, u64), ExecutionContext>,
+    context_destruction_watches: Vec<Weak<ExecutionContextDestruction>>,
     pub requests: NetworkRequests,
     pub interception: crate::routing_state::RequestInterception,
     pub completed_lifecycle: HashMap<String, HashSet<String>>,
@@ -109,6 +110,12 @@ impl ExecutionContext {
     pub fn key(&self) -> (Arc<str>, u64) {
         (self.session_identifier.clone(), self.identifier)
     }
+}
+
+/// Native destruction of one original world, independent of registry replacement.
+pub(crate) struct ExecutionContextDestruction {
+    context: ExecutionContext,
+    pub destroyed: watch::Sender<bool>,
 }
 
 #[derive(Default)]
@@ -325,6 +332,31 @@ impl DocumentState {
         self.execution_contexts.get(&context.key()) == Some(context)
     }
 
+    pub fn watch_context_destruction(
+        &mut self,
+        context: &ExecutionContext,
+    ) -> Result<Arc<ExecutionContextDestruction>, ErrorRecord> {
+        if !self.context_is_alive(context) {
+            return Err(super::evaluation::context_destroyed());
+        }
+        self.context_destruction_watches
+            .retain(|owner| owner.strong_count() != 0);
+        if self.context_destruction_watches.len() >= 128 {
+            return Err(ErrorRecord::new(
+                ErrorCode::ResourceLimit,
+                "tracing.snapshot",
+                "too many original context destruction watches",
+            ));
+        }
+        let owner = Arc::new(ExecutionContextDestruction {
+            context: context.clone(),
+            destroyed: watch::channel(false).0,
+        });
+        self.context_destruction_watches
+            .push(Arc::downgrade(&owner));
+        Ok(owner)
+    }
+
     /// Keep diagnostics private until the owning page's allocation reply can be published.
     pub fn buffer_initial_event(
         &mut self,
@@ -529,6 +561,20 @@ impl DocumentState {
                 }
             }
             "Runtime.executionContextDestroyed" => {
+                // Missing/reused numeric IDs are not original-context proof.
+                if let Some(unique) = parameters["executionContextUniqueId"].as_str() {
+                    self.context_destruction_watches.retain(|owner| {
+                        let Some(owner) = owner.upgrade() else {
+                            return false;
+                        };
+                        if owner.context.session_identifier.as_ref() == session_identifier
+                            && owner.context.unique_identifier == unique
+                        {
+                            owner.destroyed.send_replace(true);
+                        }
+                        true
+                    });
+                }
                 self.execution_contexts.retain(|_, context| {
                     if context.session_identifier.as_ref() != session_identifier {
                         return true;
@@ -544,6 +590,21 @@ impl DocumentState {
                 });
             }
             "Runtime.executionContextsCleared" => {
+                // Watches are installed only after Runtime.enable in our owned
+                // sessions. Launch disables BFCache; we never disable Runtime,
+                // restore/reattach an existing session, or expose arbitrary CDP.
+                // In that scope this native event retires the original DOM worlds
+                // (normal navigation need not emit individual destroyed events).
+                // This is not a generic CDP guarantee for externally managed sessions.
+                self.context_destruction_watches.retain(|owner| {
+                    let Some(owner) = owner.upgrade() else {
+                        return false;
+                    };
+                    if owner.context.session_identifier.as_ref() == session_identifier {
+                        owner.destroyed.send_replace(true);
+                    }
+                    true
+                });
                 self.main_worlds
                     .retain(|_, context| context.session_identifier.as_ref() != session_identifier);
                 self.execution_contexts
