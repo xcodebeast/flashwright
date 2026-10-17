@@ -318,8 +318,6 @@ impl Engine {
                 | "page.screenshot"
                 | "locator.run"
                 | "assertion.run"
-                | "keyboard.press"
-                | "keyboard.type"
                 | "page.evaluate"
                 | "frame.evaluate"
                 | "handle.evaluate"

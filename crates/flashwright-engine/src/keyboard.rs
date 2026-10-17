@@ -397,6 +397,16 @@ impl Engine {
                     .while_alive(method, async { Ok(page.state.native_input.lock().await) }),
             )
             .await?;
+        self.capture_snapshot_phase(
+            identifier(&parameters, "page", method)?,
+            &page,
+            recording::SnapshotPhase::Input,
+            None,
+            operation,
+        )
+        .await;
+        // Optional capture can outlive cancellation even when there are no keys to dispatch.
+        operation.check()?;
         type_text(&text, delay, &page, &browser, operation, method).await?;
         Ok(Value::Null)
     }
@@ -429,6 +439,14 @@ impl Engine {
                     .while_alive(method, async { Ok(page.state.native_input.lock().await) }),
             )
             .await?;
+        self.capture_snapshot_phase(
+            identifier(&parameters, "page", method)?,
+            &page,
+            recording::SnapshotPhase::Input,
+            None,
+            operation,
+        )
+        .await;
         press_chord(&keys, delay, &page, &browser, operation, method).await?;
         Ok(Value::Null)
     }
