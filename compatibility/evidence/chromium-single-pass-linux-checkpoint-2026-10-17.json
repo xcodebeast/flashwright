@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-development-iteration",
+  "date": "2026-10-17",
+  "sourceCommit": "b256ad815b024372020d248f345d4784632aeb90",
+  "scope": "Linux development compile-helper timings, excluding linking; identical source bytes with timestamp invalidation",
+  "host": {
+    "platform": "Linux",
+    "machine": "x86_64",
+    "kernel": "7.2.5-3-omarchy"
+  },
+  "cpu": "AMD Ryzen 9 7900X3D 12-Core Processor",
+  "resourcePolicy": "serialized within systemd user service CPUQuota400%, MemoryMax8G, swap0, Nice10; desktop shared",
+  "chromiumRevision": "8625e066febc721e015ea99842da12901eb7ed73",
+  "ninjaVersion": "1.12.1",
+  "preparation": {
+    "archiveUrl": "https://github.com/ninja-build/ninja/archive/refs/tags/v1.12.1.tar.gz",
+    "archiveSha256": "821bdff48a3f683bc4bb3b6f0b5fe7b2d647cf65d52aeb63328c91a6c6df285a",
+    "patchSha256": "76367b6aa1647c86f344edb3eb02ac2bb78b4830ff348fa6bcb968cbbf038c6c"
+  },
+  "helperSha256": "a6b40bf963cd39e3389065f2d9c7685ec7eee870fe7721e1c3dcc94f6f9c442f",
+  "customNinjaSha256": "4863ce38ea5b029f3813668507097381e4b2fdb29be0231688bf161b8488def6",
+  "sources": [
+    {
+      "condition": "small",
+      "source": "components/viz/test/first_sink_copy_main.cc",
+      "object": "obj/components/viz/first_sink_copy_unittests/first_sink_copy_main.o",
+      "sourceSha256": "4d4e5e62c234ce6f3e0549e5541eb785b15671f055fdc1875298797f94b3c7f4",
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "condition": "production",
+      "source": "components/viz/service/frame_sinks/frame_sink_manager_impl.cc",
+      "object": "obj/components/viz/service/service/frame_sink_manager_impl.o",
+      "sourceSha256": "65eeb7f507923591d2e3952c6b9cad516d8c59d592949e2d6d7341a6728f80a9",
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    }
+  ],
+  "browserAndUnitSha256": {
+    "headless_shell": "38969730792e8292680fdf38920054bf605ec3488d07e3d764fda2996a69f90d",
+    "first_sink_copy_unittests": "5ae81191a6afbd24c7dc179bc73bffaf2561f8d8870be976cb81facf650d23a1"
+  },
+  "argsSha256": "f769b8aa2a66457cfef13848249ce84a98c61f0a1887233ae09b06b699a3e042",
+  "procedure": {
+    "warmup": "one no-op call per mode, excluded prospectively",
+    "orderPerCondition": [
+      "ordinary",
+      "single",
+      "single",
+      "ordinary",
+      "ordinary",
+      "single",
+      "single",
+      "ordinary"
+    ],
+    "sampling": "4 observations per mode per condition; retain all; medians and individual observations, no tail estimate",
+    "gate": "at least 20% lower median complete helper elapsed for no-op and small source, equal objects/binaries and ordinary reuse; production reported separately regardless of outcome",
+    "ordinary": "bun tools/compile-chromium-sources.mjs --jobs=4 <chromium-source> out/Flashwright <source>",
+    "single": "bun tools/compile-chromium-sources.mjs --jobs=4 --single-pass-ninja=<built-ninja> <chromium-source> out/Flashwright <source>",
+    "invalidation": "Advance only selected source mtime before each compile measurement. Preserve exact bytes; restore original timestamps in finally cleanup.",
+    "finalBuild": "Pinned ordinary Ninja -j4 headless_shell first_sink_copy_unittests; separate from compile-helper timing."
+  },
+  "summary": {
+    "no-op": {
+      "medianSeconds": {
+        "ordinary": 4.945275455499999,
+        "single": 1.6657486505
+      },
+      "ordinaryOverSingle": 2.9688005174223604,
+      "reductionFraction": 0.6631636264775909
+    },
+    "small": {
+      "medianSeconds": {
+        "ordinary": 5.721671435499999,
+        "single": 2.4168236445
+      },
+      "ordinaryOverSingle": 2.367434400321632,
+      "reductionFraction": 0.5776018123821538
+    },
+    "production": {
+      "medianSeconds": {
+        "ordinary": 13.708261918,
+        "single": 10.4776675575
+      },
+      "ordinaryOverSingle": 1.3083314433074862,
+      "reductionFraction": 0.23566768565006635
+    }
+  },
+  "timingGatePassed": true,
+  "observations": [
+    {
+      "name": "no-op-00-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 4920202116,
+      "logSha256": "52a2a7f0701c1def61fb76772d5c9ead7a9a3e728612af967829e306968c2eba",
+      "condition": "no-op",
+      "mode": "ordinary",
+      "index": 0,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-01-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 1665788650,
+      "logSha256": "dc1a662db2e64ddeb14c67d327d592393211dd07176f51d3c856e0a55a341d17",
+      "condition": "no-op",
+      "mode": "single",
+      "index": 1,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-02-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 1615756835,
+      "logSha256": "dc1a662db2e64ddeb14c67d327d592393211dd07176f51d3c856e0a55a341d17",
+      "condition": "no-op",
+      "mode": "single",
+      "index": 2,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-03-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 4970388249,
+      "logSha256": "52a2a7f0701c1def61fb76772d5c9ead7a9a3e728612af967829e306968c2eba",
+      "condition": "no-op",
+      "mode": "ordinary",
+      "index": 3,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-04-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 4970348795,
+      "logSha256": "52a2a7f0701c1def61fb76772d5c9ead7a9a3e728612af967829e306968c2eba",
+      "condition": "no-op",
+      "mode": "ordinary",
+      "index": 4,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-05-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 1665836292,
+      "logSha256": "dc1a662db2e64ddeb14c67d327d592393211dd07176f51d3c856e0a55a341d17",
+      "condition": "no-op",
+      "mode": "single",
+      "index": 5,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-06-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 1665708651,
+      "logSha256": "dc1a662db2e64ddeb14c67d327d592393211dd07176f51d3c856e0a55a341d17",
+      "condition": "no-op",
+      "mode": "single",
+      "index": 6,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "no-op-07-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 4920102688,
+      "logSha256": "52a2a7f0701c1def61fb76772d5c9ead7a9a3e728612af967829e306968c2eba",
+      "condition": "no-op",
+      "mode": "ordinary",
+      "index": 7,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-00-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 5721390527,
+      "logSha256": "663f4beca372086f4d7509c1dcaac378fd645ed274ea669203ddae5a438fa843",
+      "condition": "small",
+      "mode": "ordinary",
+      "index": 0,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-01-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 2416854135,
+      "logSha256": "5cfe48bb3501adc8d163af346308348b51da98d6f84e2e276a92c88b35e9e18d",
+      "condition": "small",
+      "mode": "single",
+      "index": 1,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-02-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 2416878231,
+      "logSha256": "5cfe48bb3501adc8d163af346308348b51da98d6f84e2e276a92c88b35e9e18d",
+      "condition": "small",
+      "mode": "single",
+      "index": 2,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-03-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 5721911732,
+      "logSha256": "663f4beca372086f4d7509c1dcaac378fd645ed274ea669203ddae5a438fa843",
+      "condition": "small",
+      "mode": "ordinary",
+      "index": 3,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-04-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 5771468109,
+      "logSha256": "663f4beca372086f4d7509c1dcaac378fd645ed274ea669203ddae5a438fa843",
+      "condition": "small",
+      "mode": "ordinary",
+      "index": 4,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-05-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 2416732908,
+      "logSha256": "5cfe48bb3501adc8d163af346308348b51da98d6f84e2e276a92c88b35e9e18d",
+      "condition": "small",
+      "mode": "single",
+      "index": 5,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-06-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 2416793154,
+      "logSha256": "5cfe48bb3501adc8d163af346308348b51da98d6f84e2e276a92c88b35e9e18d",
+      "condition": "small",
+      "mode": "single",
+      "index": 6,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "small-07-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 5721431139,
+      "logSha256": "663f4beca372086f4d7509c1dcaac378fd645ed274ea669203ddae5a438fa843",
+      "condition": "small",
+      "mode": "ordinary",
+      "index": 7,
+      "objectSha256": "311f25ece3e9ce2ea6bff395e8df7da8159c6a1f65d9596137fd20bb1ca123c0"
+    },
+    {
+      "name": "production-00-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 13632554745,
+      "logSha256": "376f866aa155b9da0cda02a8086fe8f6bb0ad6387d6ecc8a3c20a943b3338df6",
+      "condition": "production",
+      "mode": "ordinary",
+      "index": 0,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-01-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 10430525598,
+      "logSha256": "dcfab86a509ffbbab232081fa466fcbaa5e6329674d44e9b37713b450a34d4c3",
+      "condition": "production",
+      "mode": "single",
+      "index": 1,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-02-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 10477684686,
+      "logSha256": "dcfab86a509ffbbab232081fa466fcbaa5e6329674d44e9b37713b450a34d4c3",
+      "condition": "production",
+      "mode": "single",
+      "index": 2,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-03-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 13732585656,
+      "logSha256": "376f866aa155b9da0cda02a8086fe8f6bb0ad6387d6ecc8a3c20a943b3338df6",
+      "condition": "production",
+      "mode": "ordinary",
+      "index": 3,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-04-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 13683938180,
+      "logSha256": "376f866aa155b9da0cda02a8086fe8f6bb0ad6387d6ecc8a3c20a943b3338df6",
+      "condition": "production",
+      "mode": "ordinary",
+      "index": 4,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-05-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 10478648745,
+      "logSha256": "dcfab86a509ffbbab232081fa466fcbaa5e6329674d44e9b37713b450a34d4c3",
+      "condition": "production",
+      "mode": "single",
+      "index": 5,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-06-single",
+      "exitCode": 0,
+      "elapsedNanoseconds": 10477650429,
+      "logSha256": "dcfab86a509ffbbab232081fa466fcbaa5e6329674d44e9b37713b450a34d4c3",
+      "condition": "production",
+      "mode": "single",
+      "index": 6,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    },
+    {
+      "name": "production-07-ordinary",
+      "exitCode": 0,
+      "elapsedNanoseconds": 13786263058,
+      "logSha256": "376f866aa155b9da0cda02a8086fe8f6bb0ad6387d6ecc8a3c20a943b3338df6",
+      "condition": "production",
+      "mode": "ordinary",
+      "index": 7,
+      "objectSha256": "135afe96483205a62751081da0c323d16b9a11e0448ff2755ceaf7880cf4ea23"
+    }
+  ],
+  "verification": {
+    "fixtureChecks": [
+      "regeneration-before-query",
+      "multiple-source-variants",
+      "paths-with-spaces",
+      "no-link",
+      "incompatible-override-rejected-before-metadata-access",
+      "failed-version-query-rejected-before-metadata-access",
+      "unchanged-object-reuse",
+      "independent-errors",
+      "unselected-and-outside-source-rejection",
+      "discovered-header-dependencies",
+      "variant-added-after-warm-build",
+      "removed-variant-not-selected",
+      "regeneration-failure-before-compilation",
+      "regeneration-recovery",
+      "successful-objects-survive-partial-failure",
+      "ordinary-ninja-reuses-objects",
+      "ordinary-ninja-discovers-header-change",
+      "generated-prerequisite",
+      "prerequisite-failure-blocks-compilation",
+      "known-source-without-object-rejected",
+      "preserved-args",
+      "stable-configuration",
+      "different-root-rejection",
+      "single-generation-for-unchanged-policy"
+    ],
+    "nativeTests": 14,
+    "objectBytesUnchanged": true,
+    "browserAndUnitBytesUnchanged": true,
+    "sourceTimestampsRestored": true,
+    "ordinaryFinalBuildRecompiledObjects": false,
+    "finalNoOp": true,
+    "originalSupervisorClean": true
+  },
+  "separateFinalBuild": {
+    "name": "final-build",
+    "exitCode": 0,
+    "elapsedNanoseconds": 4782682730,
+    "logSha256": "87d7089448859ecf44266269f6d1eeb9e56140ec74734787cbc04b6b72a0359b"
+  },
+  "evidenceHashes": {
+    "measure.py": "445523e80d2ebae3bc7aaa8f2e2fc21c0082c52cd0d0fb155a7f805a5776d772",
+    "plan.json": "a7e48a3d7d35f212acb91f72f49eb04c0a122892252ede99e03f3a99a7aa3e5d",
+    "observations.json": "ed8c9af14456b0bdb2343905e1916c4a13d40088ea27154e87d08b0249457115",
+    "result.json": "7a66a0ea984dd48902a0ba53ceb58cf759003482aeb71fe95d2d6c1df56d60d3",
+    "restoration.json": "15b857a9b05768c6ab4368d901feeb8d119d6cf9a818aba555548efbf627bb50",
+    "measurement-resources.json": "1656501d53ce405701fff28c936ee407951a39cbd4353a23c05e640e8bbd2c2b",
+    "original-terminal.json": "f03588b6eb2bd0e34b471ec289f562ae4029fa0398abb34a17122d23c9a410d8",
+    "gtest.xml": "c0c9f6234afe302befbabc8f589155b5f5a176fdf14f51d1a193e2de6adc3b57",
+    "build-resources.json": "865fe69a79a6117abd43b3af63d0d117e6e722fcd8d33704fd2c8c2330fe6603",
+    "metadata-backup.json": "d7edf0c04aeaf8a1586b6a01c8b8d9cbbeb4b6652199b414270627c5fed0365d"
+  },
+  "fixtureResultSha256": "1701cdea4bbb94c4cf0349278bd0d5604dd7cdde45cadcd90bb45291adbef4b5",
+  "limitations": [
+    "Warm filesystem caches",
+    "Timestamp-only same-byte source invalidation, not changed program semantics",
+    "Single native Linux host",
+    "No clean-build, linker throughput or E2E claim",
+    "Timestamp changes force recompilation but preserve source bytes; actual semantic edits may change compiler cost.",
+    "Four observations per condition and tool; observed medians do not estimate tails or confidence intervals.",
+    "The standalone and checkout-pinned Ninja builds share version 1.12.1, but are distinct executable builds.",
+    "No additional screenshot rerun: final browser and unit executable hashes exactly match the previously verified first-sink checkpoint.",
+    "No native Linux release or E2E performance acceptance from this build-tool experiment."
+  ]
+}
