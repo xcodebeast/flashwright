@@ -168,6 +168,10 @@ impl Fixture {
     }
 
     fn with_capture_realm(budget: Arc<SnapshotBudget>, context: &str, lazy: bool) -> Self {
+        Self::with_renderer(budget, context, lazy, false)
+    }
+
+    fn with_renderer(budget: Arc<SnapshotBudget>, context: &str, lazy: bool, remote: bool) -> Self {
         let (host, peer) = duplex(65536);
         let (reader, writer) = split(host);
         let connection = Connection::new(reader, writer);
@@ -186,10 +190,23 @@ impl Fixture {
         };
         let page = Page {
             context_identifier: context.into(),
-            target_identifier: "target".into(),
-            session_identifier: "session".into(),
+            target_identifier: if remote { "root-target" } else { "target" }.into(),
+            session_identifier: if remote { "root-session" } else { "session" }.into(),
             state: Arc::new(PageState::default()),
         };
+        {
+            let mut sessions = page.state.renderer_sessions.lock().unwrap();
+            let root = sessions
+                .register_root(&page.target_identifier, &page.session_identifier)
+                .unwrap();
+            root.mark_ready();
+            if remote {
+                sessions
+                    .register_child(&root, "target", "session")
+                    .unwrap()
+                    .mark_ready();
+            }
+        }
         {
             let mut state = page.state.state.lock().unwrap();
             state.main_frame = Some("frame".into());
@@ -199,6 +216,7 @@ impl Fixture {
                     session_identifier: "session".into(),
                     identifier: "frame".into(),
                     loader: "loader".into(),
+                    remote,
                     ..Default::default()
                 },
             );
@@ -410,6 +428,124 @@ async fn retained_payload_backpressure_waits_for_ingestion_before_dispatch() {
     drop(prepared.reservation);
     drop(payloads);
     fixture.finish().await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn remote_document_keeps_its_session_for_world_capture_decision_and_retirement() {
+    let mut fixture =
+        Fixture::with_renderer(Arc::new(SnapshotBudget::default()), "context", true, true);
+    assert!(
+        fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+    assert!(
+        !fixture
+            .budget
+            .owns_document("context", "root-session", "main-original")
+    );
+    let capture = fixture.capture(false);
+    let world = fixture.command("Page.createIsolatedWorld").await;
+    fixture.reply(&world, json!({"executionContextId":2})).await;
+    fixture.install().await;
+    fixture.captured(1).await;
+    let prepared = capture.await.unwrap().unwrap();
+    let commit = tokio::spawn(prepared.decision.commit());
+    let command = fixture.command("Runtime.callFunctionOn").await;
+    fixture
+        .reply(
+            &command,
+            json!({"result":{"value":{"snapshotNumber":1,"cache":{"bytes":0,"nodes":0,"attributes":0,"sheets":0}}}}),
+        )
+        .await;
+    fixture.release("_decision_").await;
+    commit.await.unwrap().unwrap();
+    drop(prepared.reservation);
+    fixture.finish().await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn remote_retirement_invalidates_capture_but_keeps_dispatched_command_custody() {
+    let mut fixture =
+        Fixture::with_renderer(Arc::new(SnapshotBudget::default()), "context", false, true);
+    let capture = fixture.capture(false);
+    let installation = fixture.command("Runtime.evaluate").await;
+    {
+        let mut sessions = fixture.page.state.renderer_sessions.lock().unwrap();
+        let original = sessions.get("session").unwrap();
+        sessions.retire(&original);
+    }
+    fixture.page.state.changed.send_replace(1);
+    assert!(matches!(
+        capture.await.unwrap(),
+        Err(SnapshotFailure::Unavailable(
+            SnapshotUnavailable::OriginalDocumentChanged
+        ))
+    ));
+    fixture.assert_no_command().await;
+    assert!(!fixture.document.finished());
+    assert!(
+        fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+    assert!(!*fixture.destruction.borrow());
+    fixture
+        .reply(&installation, json!({"result":{"objectId":"late-factory"}}))
+        .await;
+    fixture.release("_attempt_").await;
+    fixture.release("__flashwright_snapshot_test-owner").await;
+    fixture.document.wait_finished().await;
+    assert!(fixture.page.state.state.lock().unwrap().failure.is_none());
+    assert!(
+        !fixture
+            .budget
+            .owns_document("context", "session", "main-original")
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn remote_missing_session_reply_omits_capture_before_native_detachment() {
+    for stage in ["world", "installation", "capture"] {
+        let mut fixture = Fixture::with_renderer(
+            Arc::new(SnapshotBudget::default()),
+            "context",
+            stage == "world",
+            true,
+        );
+        let capture = fixture.capture(false);
+        if stage == "capture" {
+            fixture.install().await;
+        }
+        let method = match stage {
+            "world" => "Page.createIsolatedWorld",
+            "installation" => "Runtime.evaluate",
+            _ => "Runtime.callFunctionOn",
+        };
+        let command = fixture.command(method).await;
+        let response = json!({"id":command["id"],"sessionId":"session","error":{"code":-32001,"message":"Session with given id not found."}});
+        fixture
+            .writer
+            .write_all(response.to_string().as_bytes())
+            .await
+            .unwrap();
+        fixture.writer.write_all(&[0]).await.unwrap();
+        assert!(matches!(
+            capture.await.unwrap(),
+            Err(SnapshotFailure::Unavailable(
+                SnapshotUnavailable::OriginalDocumentChanged
+            ))
+        ));
+        assert!(!*fixture.destruction.borrow());
+        assert!(
+            fixture
+                .budget
+                .owns_document("context", "session", "main-original")
+        );
+        fixture.destruction.send_replace(true);
+        fixture.document.wait_finished().await;
+        assert!(fixture.page.state.state.lock().unwrap().failure.is_none());
+    }
 }
 
 #[tokio::test(start_paused = true)]
@@ -1299,8 +1435,24 @@ async fn timed_out_world_selection_retains_command_and_grants_until_late_settlem
 
 impl Fixture {
     fn capture_child_frame(&self) -> JoinHandle<Result<PreparedSnapshot, SnapshotFailure>> {
+        self.capture_child_frame_with_renderer(false)
+    }
+
+    fn capture_child_frame_with_renderer(
+        &self,
+        remote: bool,
+    ) -> JoinHandle<Result<PreparedSnapshot, SnapshotFailure>> {
+        let session = if remote { "child-session" } else { "session" };
+        if remote {
+            let mut sessions = self.page.state.renderer_sessions.lock().unwrap();
+            let parent = sessions.get("session").unwrap();
+            sessions
+                .register_child(&parent, "child-target", session)
+                .unwrap()
+                .mark_ready();
+        }
         let child_context = ExecutionContext {
-            session_identifier: "session".into(),
+            session_identifier: session.into(),
             identifier: 3,
             unique_identifier: "child-original".into(),
             frame_identifier: "child".into(),
@@ -1310,10 +1462,11 @@ impl Fixture {
             state.frames.insert(
                 "child".into(),
                 FrameState {
-                    session_identifier: "session".into(),
+                    session_identifier: session.into(),
                     identifier: "child".into(),
                     parent: Some("frame".into()),
                     loader: "child-loader".into(),
+                    remote,
                     ..Default::default()
                 },
             );
@@ -1408,9 +1561,11 @@ async fn captured_parent_commit_survives_child_replacement_after_serialization()
     use crate::recording::SnapshotPhase;
     use crate::snapshots::{SnapshotArchive, SnapshotMetadata};
 
-    for replacement_phase in ["before decision", "during commit", "during cleanup"] {
+    for (remote, replacement_phase) in [false, true].into_iter().flat_map(|remote| {
+        ["before decision", "during commit", "during cleanup"].map(|phase| (remote, phase))
+    }) {
         let mut fixture = Fixture::new();
-        let capture = fixture.capture_child_frame();
+        let capture = fixture.capture_child_frame_with_renderer(remote);
         fixture.install().await;
         let owner = fixture.command("DOM.getFrameOwner").await;
         fixture.reply(&owner, json!({"backendNodeId": 42})).await;

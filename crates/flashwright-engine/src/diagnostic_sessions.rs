@@ -170,15 +170,6 @@ impl DiagnosticSessions {
 }
 
 impl crate::Engine {
-    /// Registration and terminal-event observation share registry order, including events before page removal.
-    pub(crate) fn diagnostic_session(
-        &self,
-        identifier: &str,
-        page: &crate::Page,
-    ) -> Result<SessionLifetime, SessionFailure> {
-        self.diagnostic_session_for_page(identifier, page, true, None)
-    }
-
     /// Initial popup responses may finish before publication, while their registered public page is alive.
     pub(crate) fn network_diagnostic_session(
         &self,
@@ -198,6 +189,15 @@ impl crate::Engine {
             return self.network_diagnostic_session(identifier, page);
         }
         self.diagnostic_session_for_page(identifier, page, false, Some(session))
+    }
+
+    pub(crate) fn snapshot_diagnostic_session(
+        &self,
+        identifier: &str,
+        page: &crate::Page,
+        session: &str,
+    ) -> Result<SessionLifetime, SessionFailure> {
+        self.diagnostic_session_for_page(identifier, page, true, Some(session))
     }
 
     fn diagnostic_session_for_page(
@@ -244,7 +244,11 @@ impl crate::Engine {
                     .lock()
                     .unwrap()
                     .get(session)
-                    .filter(|renderer| !renderer.is_retired() && !renderer.is_destroyed())
+                    .filter(|renderer| {
+                        !renderer.is_retired()
+                            && !renderer.is_destroyed()
+                            && (!require_published || renderer.is_ready())
+                    })
                     .ok_or_else(unavailable)
             })
             .transpose()?;

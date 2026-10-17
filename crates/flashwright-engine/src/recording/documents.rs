@@ -45,9 +45,14 @@ impl Engine {
         realm: SnapshotRealm,
         allowance: &CaptureAllowance,
     ) -> Result<Arc<SnapshotDocument>, SnapshotFailure> {
-        let session = self.diagnostic_session(&owner.page_identifier, &owner.page)?;
+        let session = self.snapshot_diagnostic_session(
+            &owner.page_identifier,
+            &owner.page,
+            &realm.main_context.session_identifier,
+        )?;
         let document_identity = (
             owner.page_identifier.clone(),
+            realm.main_context.session_identifier.clone(),
             realm.main_context.unique_identifier.clone(),
         );
         let budget = self
@@ -97,7 +102,7 @@ impl Engine {
             }
             if budget.owns_document(
                 &owner.page.context_identifier,
-                &owner.page.session_identifier,
+                &realm.main_context.session_identifier,
                 &realm.main_context.unique_identifier,
             ) {
                 drop(enrollment);
@@ -112,7 +117,11 @@ impl Engine {
                 continue;
             }
             // Revalidate after every possible wait, then start without any recording/registry guard held.
-            self.diagnostic_session(&owner.page_identifier, &owner.page)?;
+            self.snapshot_diagnostic_session(
+                &owner.page_identifier,
+                &owner.page,
+                &realm.main_context.session_identifier,
+            )?;
             let browser = self.browser(&owner.context.browser_identifier, "tracing.snapshot")?;
             let document = Arc::new(SnapshotDocument::start(
                 &self.identifier("snapshot"),

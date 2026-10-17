@@ -126,6 +126,7 @@ const commands = [
   [process.execPath, 'tools/run-remote-network-tests.mjs', join(destination, 'remote-network')],
   [process.execPath, 'tools/run-snapshot-resource-tests.mjs', join(destination, 'snapshot-resources'), '--candidate'],
   [process.execPath, 'tools/probe-snapshot-trace-integration.mjs', join(destination, 'snapshot-public')],
+  [process.execPath, 'tools/run-remote-snapshot-tests.mjs', join(destination, 'remote-snapshots')],
   [process.execPath, 'tools/test-snapshot-incremental.mjs', join(destination, 'snapshot-incremental')],
   [process.execPath, 'tools/test-snapshot-retirement.mjs', join(destination, 'snapshot-retirement')],
   [process.execPath, 'tools/test-keyboard-snapshot-phases.mjs', join(destination, 'keyboard-snapshot-phases')],

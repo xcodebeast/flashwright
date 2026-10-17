@@ -187,7 +187,7 @@ try {
       await inspect(join(output, 'after-unsupported.zip'));
     } finally { await context.close(); }
   });
-  await check('cross-origin frame placement either captures same-process frames or rejects remote export explicitly', async () => {
+  await check('cross-origin frames preserve captured documents across renderer placement', async () => {
     const context = await browser.newContext();
     try {
       const page = await context.newPage(); await page.goto(origin);
@@ -206,14 +206,9 @@ try {
       await startSnapshots(context.tracing);
       await page.locator('#input').fill('frame-action-completed');
       const path = join(output, 'cross-origin.zip'); await writeFile(path, 'original-destination');
-      if (remote) {
-        await assert.rejects(context.tracing.stop({ path }), error => error.name === 'UnsupportedFeatureError' && error.message.includes('out of process'));
-        assert.equal(await readFile(path, 'utf8'), 'original-destination');
-      } else {
-        await context.tracing.stop({ path });
-        const trace = await inspect(path);
-        assert.ok(trace.snapshots.some(snapshot => snapshot.frameUrl.includes('localhost')));
-      }
+      await context.tracing.stop({ path });
+      const trace = await inspect(path);
+      assert.ok(trace.snapshots.some(snapshot => snapshot.frameUrl.includes('localhost')));
       assert.equal(await page.locator('#input').inputValue(), 'frame-action-completed');
     } finally { await context.close(); }
   });

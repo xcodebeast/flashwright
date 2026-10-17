@@ -14,6 +14,7 @@ use tokio::time::{Duration, Instant, sleep_until};
 use crate::Page;
 use crate::locators::{LOCATOR_WORLD_NAME, LocatorRealm};
 use crate::page_state::{ExecutionContext, ExecutionContextDestruction, PagePurpose};
+use crate::renderer_sessions::RendererSession;
 
 use super::budget::{
     AdmissionError, CacheGrant, CaptureReservation, DocumentReservation, PayloadReservation,
@@ -134,6 +135,7 @@ pub(crate) struct SnapshotDocument {
 struct DocumentWorker {
     page: Page,
     realm: SnapshotRealm,
+    renderer: Arc<RendererSession>,
     connection: Connection,
     shared: Arc<Shared>,
     owner_group: String,
@@ -169,6 +171,14 @@ fn context_changed() -> SnapshotFailure {
     SnapshotFailure::Unavailable(SnapshotUnavailable::OriginalDocumentChanged)
 }
 
+fn command_failure(error: ErrorRecord) -> SnapshotFailure {
+    if crate::renderer_setup::session_is_gone(&error) {
+        context_changed()
+    } else {
+        error.into()
+    }
+}
+
 fn check_document(page: &Page, realm: &SnapshotRealm) -> Result<(), SnapshotFailure> {
     if page
         .state
@@ -190,6 +200,7 @@ fn check_document(page: &Page, realm: &SnapshotRealm) -> Result<(), SnapshotFail
         || !state.context_is_alive(&realm.main_context)
         || realm.context.as_ref().is_some_and(|context| {
             context.frame_identifier != realm.main_context.frame_identifier
+                || context.session_identifier != realm.main_context.session_identifier
                 || !state.context_is_alive(context)
         })
     {
@@ -199,14 +210,10 @@ fn check_document(page: &Page, realm: &SnapshotRealm) -> Result<(), SnapshotFail
         .frames
         .get(&realm.main_context.frame_identifier)
         .ok_or_else(context_changed)?;
-    if frame.loader != realm.loader {
+    if frame.loader != realm.loader
+        || frame.session_identifier != realm.main_context.session_identifier
+    {
         return Err(context_changed());
-    }
-    if frame.remote {
-        return Err(failure(
-            ErrorCode::UnsupportedFeature,
-            "snapshot frame is out of process",
-        ));
     }
     if state.dialog_open {
         return Err(SnapshotFailure::Unavailable(
@@ -273,7 +280,15 @@ impl SnapshotDocument {
                 "private pages cannot own snapshot capture",
             ));
         }
-        if !session_lifetime.belongs_to(&page.target_identifier, &page.session_identifier) {
+        let renderer = page
+            .state
+            .renderer_sessions
+            .lock()
+            .unwrap()
+            .get(&realm.main_context.session_identifier)
+            .filter(|renderer| renderer.is_ready() && !renderer.is_destroyed())
+            .ok_or_else(context_changed)?;
+        if !session_lifetime.belongs_to(&renderer.target_identifier, &renderer.session_identifier) {
             return Err(failure(
                 ErrorCode::Protocol,
                 "snapshot lifetime belongs to another session",
@@ -300,7 +315,7 @@ impl SnapshotDocument {
         let reservation = budget
             .reserve_document(
                 &page.context_identifier,
-                &page.session_identifier,
+                &realm.main_context.session_identifier,
                 &realm.main_context.unique_identifier,
             )
             .map_err(admission)?;
@@ -317,6 +332,7 @@ impl SnapshotDocument {
         let worker = DocumentWorker {
             page,
             realm,
+            renderer,
             connection,
             shared: shared.clone(),
             owner_group: format!("__flashwright_snapshot_{owner_identifier}"),
@@ -515,6 +531,7 @@ impl CaptureOptions {
         }
         let node_bytes = |node: &SnapshotNode| {
             node.object_identifier.len()
+                + node.context.session_identifier.len()
                 + node.context.unique_identifier.len()
                 + node.context.frame_identifier.len()
         };
@@ -529,6 +546,7 @@ impl CaptureOptions {
                     std::mem::size_of::<SnapshotFrame>()
                         + frame.identifier.len()
                         + frame.loader.len()
+                        + frame.main_context.session_identifier.len()
                         + frame.main_context.unique_identifier.len()
                         + frame.main_context.frame_identifier.len()
                 })
@@ -635,6 +653,10 @@ impl DocumentWorker {
     }
 
     fn check_frames(&self, options: &CaptureOptions) -> Result<(), SnapshotFailure> {
+        if options.frames.is_empty() {
+            return Ok(());
+        }
+        let renderers = self.page.state.renderer_sessions.lock().unwrap().ready();
         let state = self.page.state.state.lock().unwrap();
         for mapping in &options.frames {
             let frame = state
@@ -643,21 +665,21 @@ impl DocumentWorker {
                 .ok_or_else(context_changed)?;
             if frame.parent.as_deref() != Some(&self.realm.main_context.frame_identifier)
                 || frame.loader != mapping.loader
+                || frame.session_identifier != mapping.main_context.session_identifier
                 || mapping.main_context.frame_identifier != mapping.identifier
                 || state.main_worlds.get(&mapping.identifier) != Some(&mapping.main_context)
                 || !state.context_is_alive(&mapping.main_context)
+                || !renderers.iter().any(|renderer| {
+                    renderer.session_identifier == mapping.main_context.session_identifier.as_ref()
+                        && renderer.is_ready()
+                        && !renderer.is_destroyed()
+                })
             {
                 return Err(context_changed());
             }
             if frame.pending_navigation.is_some() {
                 return Err(SnapshotFailure::Unavailable(
                     SnapshotUnavailable::PendingNavigation,
-                ));
-            }
-            if frame.remote {
-                return Err(failure(
-                    ErrorCode::UnsupportedFeature,
-                    "snapshot frame is out of process",
                 ));
             }
         }
@@ -905,6 +927,9 @@ impl DocumentWorker {
     }
 
     fn check_document(&self) -> Result<(), SnapshotFailure> {
+        if !self.renderer.is_ready() || self.renderer.is_destroyed() {
+            return Err(context_changed());
+        }
         check_document(&self.page, &self.realm)
     }
 
@@ -951,7 +976,7 @@ impl DocumentWorker {
         let mut command = self.connection.start_command(
             method,
             parameters,
-            Some(&self.page.session_identifier),
+            Some(&self.renderer.session_identifier),
         )?;
         let result = tokio::select! {
             biased;
@@ -962,7 +987,8 @@ impl DocumentWorker {
                 return Err(error);
             },
             result = command.response() => result,
-        }?;
+        }
+        .map_err(command_failure)?;
         self.check_request(request)?;
         if result.get("exceptionDetails").is_some() {
             return Err(failure(
@@ -981,7 +1007,7 @@ impl DocumentWorker {
         self.check_request(request)?;
         let mut command = self.connection.start_snapshot_capture(
             parameters,
-            &self.page.session_identifier,
+            &self.renderer.session_identifier,
             SnapshotReplyAdmission::new(MAXIMUM_DATA_BYTES, MAXIMUM_WRAPPER_BYTES)?,
         )?;
         let result = tokio::select! {
@@ -993,7 +1019,8 @@ impl DocumentWorker {
                 return Err(error);
             },
             result = command.response() => result,
-        }?;
+        }
+        .map_err(command_failure)?;
         self.check_request(request)?;
         Ok(result)
     }
@@ -1009,6 +1036,7 @@ impl DocumentWorker {
 
     fn node_context_is_alive(&self, context: &ExecutionContext) -> bool {
         context.frame_identifier == self.realm.main_context.frame_identifier
+            && context.session_identifier.as_ref() == self.renderer.session_identifier
             && self
                 .page
                 .state
@@ -1257,7 +1285,7 @@ impl DocumentWorker {
                 "functionDeclaration": "function() { return this.retire(); }",
                 "returnByValue": true,
             }),
-            Some(&self.page.session_identifier),
+            Some(&self.renderer.session_identifier),
         ) {
             let result = tokio::select! {
                 biased;
@@ -1287,7 +1315,7 @@ impl DocumentWorker {
         if let Ok(mut command) = self.connection.start_command(
             "Runtime.releaseObjectGroup",
             json!({"objectGroup": group}),
-            Some(&self.page.session_identifier),
+            Some(&self.renderer.session_identifier),
         ) {
             tokio::select! {
                 biased;

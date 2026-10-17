@@ -36,7 +36,7 @@ struct TraceChunk {
     network: Option<network::SealedNetwork>,
     calls: HashMap<String, HashMap<SnapshotPhase, PhaseState>>,
     snapshots: SnapshotArchive,
-    documents: HashMap<(String, String), Arc<snapshots::SnapshotDocument>>,
+    documents: HashMap<(String, Arc<str>, String), Arc<snapshots::SnapshotDocument>>,
 }
 
 impl TraceChunk {

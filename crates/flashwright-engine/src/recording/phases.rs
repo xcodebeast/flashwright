@@ -56,6 +56,14 @@ struct FrameCapture {
 
 /// Copy a bounded original frame tree before any browser work; no page lock crosses an await.
 fn original_frames(page: &Page) -> Result<Vec<FrameCapture>, SnapshotFailure> {
+    let renderers = page.state.renderer_sessions.lock().unwrap().ready();
+    let ready = |session: &str| {
+        renderers.iter().any(|renderer| {
+            renderer.session_identifier == session
+                && renderer.is_ready()
+                && !renderer.is_destroyed()
+        })
+    };
     let state = page.state.state.lock().unwrap();
     if state.failure.is_some() {
         return Err(SnapshotFailure::Unavailable(
@@ -96,19 +104,11 @@ fn original_frames(page: &Page) -> Result<Vec<FrameCapture>, SnapshotFailure> {
         let Some(frame) = state.frames.get(&identifier) else {
             continue;
         };
-        if frame.remote {
-            return Err(ErrorRecord::new(
-                ErrorCode::UnsupportedFeature,
-                "tracing.snapshot",
-                "snapshot frame is out of process",
-            )
-            .into());
-        }
-        let Some(context) = state
-            .main_worlds
-            .get(&identifier)
-            .filter(|context| state.context_is_alive(context))
-        else {
+        let Some(context) = state.main_worlds.get(&identifier).filter(|context| {
+            state.context_is_alive(context)
+                && context.session_identifier == frame.session_identifier
+                && ready(&context.session_identifier)
+        }) else {
             continue;
         };
         if frame.pending_navigation.is_some() {
@@ -122,20 +122,11 @@ fn original_frames(page: &Page) -> Result<Vec<FrameCapture>, SnapshotFailure> {
         children.sort_unstable_by(|left, right| left.identifier.cmp(&right.identifier));
         let mut mappings = Vec::new();
         for child in children {
-            // Even an uninitialized remote child is outside the declared capture support.
-            if child.remote {
-                return Err(ErrorRecord::new(
-                    ErrorCode::UnsupportedFeature,
-                    "tracing.snapshot",
-                    "snapshot frame is out of process",
-                )
-                .into());
-            }
-            let Some(context) = state
-                .main_worlds
-                .get(&child.identifier)
-                .filter(|context| state.context_is_alive(context))
-            else {
+            let Some(context) = state.main_worlds.get(&child.identifier).filter(|context| {
+                state.context_is_alive(context)
+                    && context.session_identifier == child.session_identifier
+                    && ready(&context.session_identifier)
+            }) else {
                 continue;
             };
             if child.pending_navigation.is_some() {
@@ -505,6 +496,15 @@ mod tests {
     }
 
     fn add_frame(page: &Page, identifier: &str, number: u64, parent: Option<&str>) {
+        if parent.is_none() {
+            page.state
+                .renderer_sessions
+                .lock()
+                .unwrap()
+                .register_root(&page.target_identifier, &page.session_identifier)
+                .unwrap()
+                .mark_ready();
+        }
         let mut state = page.state.state.lock().unwrap();
         let context = ExecutionContext {
             session_identifier: page.session_identifier.as_str().into(),
@@ -558,17 +558,52 @@ mod tests {
     }
 
     #[test]
-    fn remote_frames_fail_explicitly_even_without_a_main_world() {
+    fn remote_frames_retain_session_identity_and_omit_uninitialized_subtrees() {
         let owner = owner();
         add_frame(&owner.page, "main", 1, None);
         add_frame(&owner.page, "remote", 2, Some("main"));
         {
+            let mut sessions = owner.page.state.renderer_sessions.lock().unwrap();
+            let root = sessions.get("session").unwrap();
+            sessions
+                .register_child(&root, "remote-target", "remote-session")
+                .unwrap()
+                .mark_ready();
             let mut state = owner.page.state.state.lock().unwrap();
-            state.frames.get_mut("remote").unwrap().remote = true;
-            state.main_worlds.remove("remote");
+            let frame = state.frames.get_mut("remote").unwrap();
+            frame.remote = true;
+            frame.session_identifier = "remote-session".into();
+            let mut context = state.main_worlds.remove("remote").unwrap();
+            state.execution_contexts.remove(&context.key());
+            context.session_identifier = "remote-session".into();
+            state
+                .execution_contexts
+                .insert(context.key(), context.clone());
+            state.main_worlds.insert("remote".into(), context);
         }
-        assert!(
-            matches!(original_frames(&owner.page), Err(SnapshotFailure::Failed(error)) if error.code == ErrorCode::UnsupportedFeature)
+        let frames = original_frames(&owner.page).unwrap();
+        assert_eq!(frames.len(), 2);
+        assert_eq!(
+            frames[0].children[0]
+                .main_context
+                .session_identifier
+                .as_ref(),
+            "remote-session"
         );
+        assert_eq!(
+            frames[1].realm.main_context.session_identifier.as_ref(),
+            "remote-session"
+        );
+        owner
+            .page
+            .state
+            .state
+            .lock()
+            .unwrap()
+            .main_worlds
+            .remove("remote");
+        let frames = original_frames(&owner.page).unwrap();
+        assert_eq!(frames.len(), 1);
+        assert!(frames[0].children.is_empty());
     }
 }
