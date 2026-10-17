@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { chromium as reference } from 'playwright';
 import { chromium as candidate } from 'flashwright';
 import { inspectRemoteAriaTarget } from '../../tools/public-aria-remote-target.mjs';
@@ -12,7 +13,8 @@ import { sourceManifest } from '../../tools/source-manifest.mjs';
 const output = resolve(process.argv[2]);
 await mkdir(output, { recursive: false });
 const hash = b => createHash('sha256').update(b).digest('hex');
-const report = { schemaVersion: 1, status: 'running', platform: process.platform, architecture: process.arch, runtime: process.versions.bun ? `bun ${process.versions.bun}` : process.version, browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH), scope: 'Selected remote native input, actual cross-process placement, nested geometry, navigation and failure ownership. A live renderer whose mutation cannot settle may require page disposal under S10; remote snapshots and routing retain their gaps; init scripts have a separate conformance gate. No performance claim.', sources: await sourceManifest(), fixtureSha256: hash(await readFile(import.meta.filename)), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, placement: {} };
+const { iso, utils } = createRequire(import.meta.url)('playwright-core/lib/coreBundle');
+const report = { schemaVersion: 1, status: 'running', platform: process.platform, architecture: process.arch, runtime: process.versions.bun ? `bun ${process.versions.bun}` : process.version, browser: await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH), scope: 'Selected remote native input, actual cross-process placement, nested geometry, navigation, failure ownership and archived remote input snapshots. A live renderer whose mutation cannot settle may require page disposal under S10; routing retains its gap; init scripts and offline viewer replay have separate conformance gates. No performance claim.', sources: await sourceManifest(), fixtureSha256: hash(await readFile(import.meta.filename)), driverSha256: hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), outcomes: {}, placement: {} };
 assert.equal(report.browser.distribution, 'full-chromium');
 let port;
 const focusRecords = new Map();
@@ -46,6 +48,37 @@ server.listen(0);
 await once(server, 'listening');
 port = server.address().port;
 const root = `http://127.0.0.1:${port}/root`, child = `http://localhost:${port}/child`;
+async function inspectTrace(path, snapshots) {
+    const archive = new utils.ZipFile(path);
+    try {
+        const events = (await archive.read('trace.trace')).toString().trim().split('\n').map(JSON.parse);
+        const calls = events.filter(event => event.type === 'before' && ['fill', 'press', 'type', 'selectOption', 'click'].includes(event.method));
+        assert.deepEqual(calls.map(call => call.method), ['fill', 'press', 'type', 'selectOption', 'click']);
+        const frames = events.filter(event => event.type === 'frame-snapshot').map(event => event.snapshot);
+        if (!snapshots) assert.equal(frames.length, 0);
+        const storage = new iso.SnapshotStorage(), rendered = new Map();
+        for (const frame of frames) {
+            const key = `${frame.snapshotName}:${frame.frameId}`;
+            assert.ok(!rendered.has(key), 'No duplicate frame phase');
+            rendered.set(key, storage.addFrameSnapshot('context', frame, []).render().html);
+        }
+        for (const [index, call] of calls.entries()) {
+            const after = events.filter(event => event.type === 'after' && event.callId === call.callId);
+            assert.equal(after.length, 1); assert.ok(!after[0].error);
+            if (!snapshots) continue;
+            const captured = frames.filter(frame => frame.snapshotName === after[0].afterSnapshot);
+            assert.equal(captured.length, 4, 'Root, remote child and both nested documents retain the after phase');
+            assert.equal(new Set(captured.map(frame => frame.frameId)).size, 4);
+            const remote = captured.filter(frame => frame.frameUrl === child);
+            assert.equal(remote.length, 1);
+            const html = rendered.get(`${remote[0].snapshotName}:${remote[0].frameId}`);
+            const input = html.match(/<input\b[^>]*\bid="text"[^>]*>/i)?.[0];
+            assert.ok(input);
+            assert.equal(input.match(/__playwright_value_="([^"]*)"/)?.[1], index < 2 ? 'traced' : 'traced!');
+        }
+        return { actions: calls.length, frameSnapshots: frames.length, verifiedRemoteAfterStates: snapshots ? calls.length : 0 };
+    } finally { archive.close(); }
+}
 async function run(name, chromium) {
     const wire = join(output, name);
     await mkdir(wire);
@@ -229,16 +262,11 @@ async function run(name, chromium) {
             assert.equal(await child.locator('#text').inputValue(), 'traced!');
             assert.equal(await p.frame('child').evaluate(() => events.filter(event => event.type === 'click' && event.id === 'button' && event.trusted).length), 1);
             const path = join(output, `${name}-snapshots-${snapshots}.zip`);
-            if (name === 'candidate' && snapshots) {
-                await assert.rejects(isolated.tracing.stop({ path }), error => error.name === 'UnsupportedFeatureError' && /out of process|out-of-process/.test(error.message));
-                report.remoteSnapshotGap = 'Explicit unsupported export retained after successful remote actions';
-            } else {
-                await isolated.tracing.stop({ path });
-                (report.traces ??= []).push({ engine: name, snapshots, sha256: hash(await readFile(path)) });
-            }
+            await isolated.tracing.stop({ path });
+            (report.traces ??= []).push({ engine: name, snapshots, sha256: hash(await readFile(path)), ...await inspectTrace(path, snapshots) });
             await isolated.close();
         }
-        pass('traced target ownership; remote snapshots retain their explicit capability gap');
+        pass('traced target ownership and remote input snapshot states; disabled snapshots remain absent');
         await browser.close();
     }
     finally {
