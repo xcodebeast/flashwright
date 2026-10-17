@@ -5,6 +5,7 @@ import { lstat, open } from 'node:fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidence.mjs';
+import { reconstructFinalGoalLinuxCapturedOutputs } from './final-goal-linux-evidence.mjs';
 import { finalGoalAccountingClasses, finalGoalResourceMetrics } from '../benchmarks/final-goal-resource-policy.mjs';
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
@@ -135,6 +136,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
   const declaration = await jsonEvidence(campaign.declaration);
   const scenarioResults = [];
   const linuxResourceObservations = [];
+  const linuxCapturedOutputs = [];
   const scenarios = new Map(configuration.scenarios.map(scenario => [scenario.id, scenario]));
   for (const entry of campaign.scenarios) {
     const result = await jsonEvidence(entry);
@@ -154,7 +156,8 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
           }
           for (const test of run.report.tests) for (const receipt of test.diagnostics?.evidence ?? []) await evidence(receipt);
           const linuxOriginals = run.evidence.filter(receipt => receipt.kind === 'linux-cgroup-originals');
-          if (linuxOriginals.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
+          const outputManifests = run.evidence.filter(receipt => receipt.kind === 'linux-captured-outputs');
+          if (linuxOriginals.length || outputManifests.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
             && run.resources.status === 'verified-local-observations') {
             assert.equal(configuration.accountingClass, finalGoalAccountingClasses.linux, 'Linux originals require the Linux campaign class');
             assert.equal(linuxOriginals.length, 1, 'Missing unique raw Linux cgroup originals');
@@ -170,6 +173,13 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               drainRejectionReasons: derived.drainRejectionReasons,
               nativeCleanObservedTeardown: derived.nativeCleanObservedTeardown, adoptedChildren: derived.adoptedChildren,
               resourceAdmission: false, performanceAccepted: false });
+            if (outputManifests.length) {
+              assert.equal(outputManifests.length, 1, 'Missing unique retained Linux output manifest');
+              const outputs = await reconstructFinalGoalLinuxCapturedOutputs(manifest, await jsonEvidence(outputManifests[0]),
+                (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
+              assert.equal(outputs.captureIdentity, derived.captureIdentity, 'Output capture identity differs from resources');
+              linuxCapturedOutputs.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine, ...outputs });
+            }
           }
         }
       }
@@ -216,9 +226,9 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     }
   }
 
-  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations,
+  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations, linuxCapturedOutputs,
     inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
-      scope: 'Cumulative JSON read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
+      scope: 'Cumulative structured and retained payload read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
     scope: 'Retained file integrity and pure final-goal policy validation. Original behavior, source and collector algorithm admission remain separately required; a draft never proves final acceptance.' };
 }
 

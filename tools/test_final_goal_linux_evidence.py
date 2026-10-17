@@ -113,6 +113,50 @@ class RetainedLinuxEvidenceTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 evidence.read_stream(io.BytesIO(invalid))
 
+    def add_outputs(self):
+        outputs = [{'path': '/synthetic/output.json', 'resolvedPath': '/synthetic/output.json',
+                    'bytes': 2, 'sha256': evidence.inputs.digest(b'{}')},
+                   {'path': '/synthetic/empty.log', 'resolvedPath': '/synthetic/empty.log',
+                    'bytes': 0, 'sha256': evidence.inputs.digest(b'')}]
+        self.change('capture', lambda r: r.update(requestedOutputs=[r['path'] for r in outputs], capturedOutputs=outputs))
+
+    def test_output_projection_validates_resource_originals_without_opening_old_paths(self):
+        self.add_outputs()
+        with patch('builtins.open', side_effect=AssertionError('Original paths must not be opened')):
+            result = evidence.read_stream(io.BytesIO(self.stream()), output_inventory=True)
+        self.assertEqual(result['status'], 'verified-local-output-inventory')
+        self.assertEqual(result['captureSha256'], self.header['files']['capture']['sha256'])
+        self.assertEqual(result['outputs'][1], {'originalPath': '/synthetic/empty.log', 'bytes': 0,
+                                              'sha256': evidence.inputs.digest(b'')})
+        self.assertFalse(result['resourceAdmission'])
+        self.assertFalse(result['performanceAccepted'])
+        self.change('capture', lambda r: r['native'].update(adoptedChildren=99))
+        with self.assertRaisesRegex(ValueError, 'summary differs'):
+            evidence.read_stream(io.BytesIO(self.stream()), output_inventory=True)
+
+    def test_output_inventory_missing_reordered_and_aliased_receipts_reject(self):
+        for change in (
+            lambda r: r.pop('requestedOutputs'),
+            lambda r: r['capturedOutputs'].pop(),
+            lambda r: r['capturedOutputs'].reverse(),
+            lambda r: r['capturedOutputs'][1].update(resolvedPath='/synthetic/output.json'),
+            lambda r: r['capturedOutputs'][1].update(bytes=True),
+            lambda r: r['capturedOutputs'][1].update(sha256='invalid'),
+        ):
+            self.add_outputs()
+            self.change('capture', change)
+            with self.assertRaises(ValueError):
+                evidence.read_stream(io.BytesIO(self.stream()), output_inventory=True)
+
+    def test_output_inventory_enforces_count_file_and_aggregate_limits(self):
+        def inventory(count, size):
+            rows = [{'path': f'/synthetic/{i}', 'resolvedPath': f'/synthetic/{i}', 'bytes': size,
+                     'sha256': 'a' * 64} for i in range(count)]
+            return {'requestedOutputs': [r['path'] for r in rows], 'capturedOutputs': rows}
+        for count, size in ((0, 0), (257, 0), (1, 32 * 1024 * 1024 + 1), (5, 32 * 1024 * 1024)):
+            with self.assertRaises(ValueError):
+                evidence.captured_outputs(inventory(count, size))
+
 
 if __name__ == '__main__':
     unittest.main()

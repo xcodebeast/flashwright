@@ -18,6 +18,8 @@ MAXIMUM_HEADER_BYTES = 16 * 1024
 MAXIMUM_AGGREGATE_BYTES = 96 * 1024 * 1024
 FILE_LIMITS = {'capture': inputs.MAXIMUM_SNAPSHOT_BYTES, 'before': inputs.MAXIMUM_SNAPSHOT_BYTES,
                'after': inputs.MAXIMUM_SNAPSHOT_BYTES, 'native': resources.MAXIMUM_NATIVE_BYTES}
+MAXIMUM_OUTPUT_FILES = 256
+MAXIMUM_OUTPUT_BYTES = 128 * 1024 * 1024
 
 
 def verify_header(header):
@@ -38,7 +40,32 @@ def verify_header(header):
     require(total <= MAXIMUM_AGGREGATE_BYTES, 'Retained aggregate byte limit exceeded')
 
 
-def reconstruct(header, originals):
+def captured_outputs(report):
+    requested = report.get('requestedOutputs')
+    captured = report.get('capturedOutputs')
+    require(isinstance(requested, list) and isinstance(captured, list)
+            and 0 < len(requested) == len(captured) <= MAXIMUM_OUTPUT_FILES,
+            'Missing or incomplete original output inventory')
+    paths = set()
+    resolved_paths = set()
+    result = []
+    total = 0
+    for path, receipt in zip(requested, captured):
+        require(isinstance(receipt, dict), 'Invalid original output receipt')
+        inputs.verify_receipt({key: receipt[key] for key in ('path', 'bytes', 'sha256')})
+        require(path == receipt['path'] and path not in paths, 'Original output identity or order differs')
+        paths.add(path)
+        resolved = inputs.absolute_path(receipt['resolvedPath'])
+        require(resolved not in resolved_paths, 'Original output resolved path reused')
+        resolved_paths.add(resolved)
+        require(receipt['bytes'] <= inputs.MAXIMUM_SNAPSHOT_BYTES, 'Original output file byte limit exceeded')
+        total += receipt['bytes']
+        require(total <= MAXIMUM_OUTPUT_BYTES, 'Original output aggregate byte limit exceeded')
+        result.append({'originalPath': path, 'bytes': receipt['bytes'], 'sha256': receipt['sha256']})
+    return result
+
+
+def reconstruct(header, originals, output_inventory=False):
     verify_header(header)
     require(isinstance(originals, dict) and set(originals) == set(FILE_LIMITS), 'Missing or unknown original bytes')
     # Check every supplied size/hash before parsing the first original.
@@ -63,11 +90,16 @@ def reconstruct(header, originals):
         require({key: receipt[key] for key in ('bytes', 'sha256')} == header['files'][name],
                 'Original member receipt differs from retained bytes: ' + name)
     observed = resources.derive_observations(report, records['before'], records['after'], records['native'])
+    if output_inventory:
+        return {'schemaVersion': 1, 'status': 'verified-local-output-inventory',
+                'accountingClass': resources.ACCOUNTING_CLASS, 'captureIdentity': observed['captureIdentity'],
+                'captureSha256': header['files']['capture']['sha256'], 'outputs': captured_outputs(report),
+                'resourceAdmission': False, 'performanceAccepted': False}
     observed['retainedOriginals'] = header['files']
     return observed
 
 
-def read_stream(stream):
+def read_stream(stream, output_inventory=False):
     header_bytes = stream.readline(MAXIMUM_HEADER_BYTES + 1)
     require(header_bytes.endswith(b'\n') and len(header_bytes) <= MAXIMUM_HEADER_BYTES, 'Invalid retained header framing')
     header = inputs.decode(header_bytes)
@@ -78,19 +110,20 @@ def read_stream(stream):
         originals[name] = stream.read(size)
         require(len(originals[name]) == size, 'Truncated retained original: ' + name)
     require(stream.read(1) == b'', 'Trailing retained input')
-    return reconstruct(header, originals)
+    return reconstruct(header, originals, output_inventory)
 
 
 def main():
-    require(sys.argv[1:] == ['--stdin'], 'Usage: final_goal_linux_evidence.py --stdin')
+    require(sys.argv[1:] in (['--stdin'], ['--stdin', '--captured-outputs']),
+            'Usage: final_goal_linux_evidence.py --stdin [--captured-outputs]')
     try:
-        result = read_stream(sys.stdin.buffer)
+        result = read_stream(sys.stdin.buffer, '--captured-outputs' in sys.argv)
     except (ValueError, KeyError, TypeError, StopIteration, RecursionError, OverflowError) as error:
         result = {'status': 'rejected', 'accountingClass': resources.ACCOUNTING_CLASS,
                   'resourceAdmission': False, 'performanceAccepted': False,
                   'error': {'type': type(error).__name__, 'message': str(error)}}
     sys.stdout.buffer.write(inputs.encode(result))
-    return 0 if result['status'] == 'verified-local-observations' else 1
+    return 0 if result['status'] in ('verified-local-observations', 'verified-local-output-inventory') else 1
 
 
 if __name__ == '__main__':
