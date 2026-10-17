@@ -1,0 +1,1980 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "diagnostic-native-linux-complete-backend-cpu-attribution",
+  "status": "372-original-tests-passed-selected-sampling-interpreted",
+  "baseCommit": "5814a00b2c950f21f6fd92d6f84a82d3499b8745",
+  "resourceAdmission": false,
+  "performanceAccepted": false,
+  "optimizationAdopted": false,
+  "runtime": "Bun 1.4.2",
+  "reference": "Playwright 1.60.0",
+  "browser": "Full Chrome for Testing 148.0.7778.96",
+  "policyCheckpoint": "compatibility/evidence/owned-backend-linux-checkpoint-2026-10-17.json",
+  "scope": "Original62test corpus with common corrected signup helper, one worker, fresh native database/mail/API, unified four-core/8GiB/zero-swap group, private loopback and fresh tmpfs. On-first-retry tracing, no retries or skips. Input hashes outside complete clock. All owned work and sampler overhead inside native command clock.",
+  "runs": [
+    {
+      "batch": "001",
+      "case": "owned-00-1-stock-playwright",
+      "engine": "playwright",
+      "workers": 1,
+      "sampling": false,
+      "testsPassed": 62,
+      "completeCommandNanoseconds": "44445686689",
+      "cgroupCpuMicroseconds": 42775712,
+      "cgroupUserMicroseconds": 31544256,
+      "cgroupSystemMicroseconds": 11231455,
+      "nativeCleanObservedTeardown": true,
+      "collectorKilledGroup": false,
+      "groupsRemoved": true,
+      "receipts": {
+        "native.json": {
+          "bytes": 3076,
+          "sha256": "804be00d39108994f5f773b7992838083865e566372f5b8a990259667dd702fb"
+        },
+        "owner-report.json": {
+          "bytes": 18559,
+          "sha256": "9b6330ebeaca051cf7c3cf941d541a1d12dda2a16b5108ec9a1883adc0e397fa"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "60077934e01034c5462417c16ef284db63b9c4c829f6cb78f142e06ec0c1f67a"
+        },
+        "result.json": {
+          "bytes": 2042,
+          "sha256": "5cdbac301a5d2169233f9c585f1cdb698aacf59abf5d8b468df5ecf206a8ac03"
+        },
+        "before.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "after.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "prepared.json": {
+          "bytes": 5047,
+          "sha256": "bbc45446496de383a2ad8a107eb15d6fb6bee60f7a9958db4b1fec1d405f6bdd"
+        },
+        "verification.json": {
+          "bytes": 6145,
+          "sha256": "99cbc0d38a4f27930b349b850a1aa96eec8511f56935254d99b4aaa0c2a7e101"
+        },
+        "runner-report.json": {
+          "bytes": 89137,
+          "sha256": "6761dc30d1b52ebeaeb2cd986d5b6e0903f2c247b7af9aa59a9009d549b614bd"
+        }
+      }
+    },
+    {
+      "batch": "001",
+      "case": "owned-01-1-stock-flashwright",
+      "engine": "flashwright",
+      "workers": 1,
+      "sampling": true,
+      "testsPassed": 62,
+      "completeCommandNanoseconds": "43986498604",
+      "cgroupCpuMicroseconds": 44237969,
+      "cgroupUserMicroseconds": 32175321,
+      "cgroupSystemMicroseconds": 12062647,
+      "nativeCleanObservedTeardown": true,
+      "collectorKilledGroup": false,
+      "groupsRemoved": true,
+      "receipts": {
+        "native.json": {
+          "bytes": 3285,
+          "sha256": "240357faffa35b72dc47d7c34e5edfa6f48f9717d4f96dceb6af25c6bad2fc3d"
+        },
+        "owner-report.json": {
+          "bytes": 22795,
+          "sha256": "4be118281e6098367931f16b8c95557fc052d6a791ab0f1a2b0123fd4ead793d"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "bb22b3fda48fe473eea3bba78c6a65a1dcb8b0638dcc8bb76c307fefb6149e94"
+        },
+        "result.json": {
+          "bytes": 2264,
+          "sha256": "bd257fde629e6c5dbd4e94bd1d9400ef8e9642ca297e22dbe19b178dfaf66bce"
+        },
+        "before.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "after.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "prepared.json": {
+          "bytes": 5040,
+          "sha256": "cf6796148c3dd1e1c1c1e8a30ff2482515db05e54c0559ba67d1db46cf7e96d5"
+        },
+        "verification.json": {
+          "bytes": 6126,
+          "sha256": "84e98ff393fd3b80960b12a0c318069751704483e47d220bc776e1ba937924dd"
+        },
+        "runner-report.json": {
+          "bytes": 93083,
+          "sha256": "53db7ba58474ccc530960118cfd686584c549a1aac7a3961c0359ea818113b1a"
+        },
+        "perf.receipt.json": {
+          "bytes": 575,
+          "sha256": "082901e7721eddaf54e6ea4dd79205fd6924fa61b83d002a1ad7ce3543524c21"
+        }
+      },
+      "periodNanoseconds": 5000000,
+      "samples": 4206,
+      "sampleCountsByFamily": {
+        "workload-owner": 217,
+        "postgres": 47,
+        "other-python": 116,
+        "api": 522,
+        "runner-observer": 326,
+        "runtime": 424,
+        "browser": 2523,
+        "driver": 30,
+        "mailpit": 1
+      },
+      "sampleCountsByModule": [
+        {
+          "family": "browser",
+          "module": "chrome",
+          "samples": 2293
+        },
+        {
+          "family": "api",
+          "module": "libpython3.14.so.1.0",
+          "samples": 460
+        },
+        {
+          "family": "runtime",
+          "module": "bun",
+          "samples": 359
+        },
+        {
+          "family": "runner-observer",
+          "module": "libpython3.14.so.1.0",
+          "samples": 254
+        },
+        {
+          "family": "workload-owner",
+          "module": "libpython3.14.so.1.0",
+          "samples": 189
+        },
+        {
+          "family": "browser",
+          "module": "libc.so.6",
+          "samples": 158
+        },
+        {
+          "family": "other-python",
+          "module": "libpython3.14.so.1.0",
+          "samples": 104
+        },
+        {
+          "family": "runtime",
+          "module": "anonymous",
+          "samples": 58
+        },
+        {
+          "family": "runner-observer",
+          "module": "libc.so.6",
+          "samples": 56
+        },
+        {
+          "family": "browser",
+          "module": "anonymous",
+          "samples": 42
+        },
+        {
+          "family": "postgres",
+          "module": "postgres",
+          "samples": 33
+        },
+        {
+          "family": "api",
+          "module": "libc.so.6",
+          "samples": 25
+        },
+        {
+          "family": "driver",
+          "module": "flashwright-driver",
+          "samples": 25
+        },
+        {
+          "family": "workload-owner",
+          "module": "libc.so.6",
+          "samples": 18
+        },
+        {
+          "family": "browser",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 17
+        },
+        {
+          "family": "api",
+          "module": "_ffi.abi3.so",
+          "samples": 17
+        },
+        {
+          "family": "api",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 13
+        },
+        {
+          "family": "runner-observer",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 13
+        },
+        {
+          "family": "postgres",
+          "module": "libc.so.6",
+          "samples": 12
+        },
+        {
+          "family": "runtime",
+          "module": "libc.so.6",
+          "samples": 7
+        },
+        {
+          "family": "workload-owner",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 7
+        },
+        {
+          "family": "other-python",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 6
+        },
+        {
+          "family": "other-python",
+          "module": "libc.so.6",
+          "samples": 6
+        },
+        {
+          "family": "driver",
+          "module": "libc.so.6",
+          "samples": 5
+        },
+        {
+          "family": "browser",
+          "module": "libglib-2.0.so.0.8800.3",
+          "samples": 4
+        },
+        {
+          "family": "browser",
+          "module": "libm.so.6",
+          "samples": 4
+        },
+        {
+          "family": "runner-observer",
+          "module": "anonymous",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "loop.cpython-314-x86_64-linux-gnu.so",
+          "samples": 3
+        },
+        {
+          "family": "browser",
+          "module": "libLLVM.so.22.1",
+          "samples": 2
+        },
+        {
+          "family": "workload-owner",
+          "module": "anonymous",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "parser.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "postgres",
+          "module": "libicuuc.so.78.3",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "_pydantic_core.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "libz.so.1.3.2",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libvulkan.so.1",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libX11.so.6.4.0",
+          "samples": 1
+        },
+        {
+          "family": "postgres",
+          "module": "libcrypto.so.3",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libudev.so.1.7.14",
+          "samples": 1
+        },
+        {
+          "family": "mailpit",
+          "module": "mailpit",
+          "samples": 1
+        },
+        {
+          "family": "workload-owner",
+          "module": "_json.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        }
+      ],
+      "argonFunctionSamples": [
+        {
+          "family": "api",
+          "function": "fill_block",
+          "samples": 17
+        }
+      ],
+      "threadLifetimeSummary": {
+        "threads": 4009,
+        "belowPeriod": 2319,
+        "withoutSamples": 3777
+      },
+      "nominalSamplePeriodNanoseconds": "21030000000",
+      "rings": [
+        {
+          "cpu": 0,
+          "bytes": 4874928,
+          "records": 144880,
+          "sha256": "f2630bcbc51f8f84e64156ce1fc5492a46083396b28ff71f5116f7ad0f2329a0"
+        },
+        {
+          "cpu": 1,
+          "bytes": 5175680,
+          "records": 155661,
+          "sha256": "e2aed3b8040cb1bf13ab6cba60d5857fd2e60e446d6bfa69da6c1860a9f97d19"
+        },
+        {
+          "cpu": 2,
+          "bytes": 4741856,
+          "records": 130704,
+          "sha256": "f5ac68a6a24e04d9c37626c9f6917f69d82f16e1293be89a25b1c70dedf46fe9"
+        },
+        {
+          "cpu": 3,
+          "bytes": 4398952,
+          "records": 117783,
+          "sha256": "7496762881f9bded3fbda5ac3ddf825e11907ec97bd97b70eaedbe84e9684e49"
+        },
+        {
+          "cpu": 4,
+          "bytes": 5342848,
+          "records": 164877,
+          "sha256": "14b7d79e06b55539f4a6d57eda6bafa55725066191305bb500e0936d84b3a083"
+        },
+        {
+          "cpu": 5,
+          "bytes": 5077152,
+          "records": 155984,
+          "sha256": "7f077b03fd9b5df9d957b2678998ade0eb0b93b06793fce2d0633c88b6fc1ffa"
+        }
+      ],
+      "recordTypes": {
+        "14": 853295,
+        "3": 1917,
+        "10": 1974,
+        "7": 4248,
+        "9": 4206,
+        "4": 4249
+      },
+      "missingSampledThreadExit": []
+    },
+    {
+      "batch": "001",
+      "case": "owned-02-1-stock-flashwright",
+      "engine": "flashwright",
+      "workers": 1,
+      "sampling": false,
+      "testsPassed": 62,
+      "completeCommandNanoseconds": "43536142923",
+      "cgroupCpuMicroseconds": 43243954,
+      "cgroupUserMicroseconds": 31844074,
+      "cgroupSystemMicroseconds": 11399879,
+      "nativeCleanObservedTeardown": true,
+      "collectorKilledGroup": false,
+      "groupsRemoved": true,
+      "receipts": {
+        "native.json": {
+          "bytes": 3079,
+          "sha256": "22cfdf59c788056777e9b1158b86b76ac8f057e0b6af0c8253b945f8994ccdff"
+        },
+        "owner-report.json": {
+          "bytes": 22783,
+          "sha256": "7adbe704195c468d8752ca7571c8ec31e7303ce38bc753e15f17e7754f9ff28e"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "7a1681df0289f5e3d7b78841857fb55b3c2f6a2fc8996791c2aff0b777378599"
+        },
+        "result.json": {
+          "bytes": 2046,
+          "sha256": "86c86552eecee33a32a4acb7a2ae8219d852ae25c08818af69a2a11f17d175c0"
+        },
+        "before.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "after.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "prepared.json": {
+          "bytes": 5041,
+          "sha256": "d9fdc867d097d1e484c8ee542c1f3d157f21890c8557a2952790c11b9c7af462"
+        },
+        "verification.json": {
+          "bytes": 6126,
+          "sha256": "f1659b2966229a31da9919456e200f98ebcd01db88b3c0229803730d0e7ea97c"
+        },
+        "runner-report.json": {
+          "bytes": 93330,
+          "sha256": "181674dcbdd505e71675d11c3cc30ff87d6da3c94c05b8a9e2ee8e83524d803e"
+        }
+      }
+    },
+    {
+      "batch": "001",
+      "case": "owned-03-1-stock-playwright",
+      "engine": "playwright",
+      "workers": 1,
+      "sampling": true,
+      "testsPassed": 62,
+      "completeCommandNanoseconds": "44503701370",
+      "cgroupCpuMicroseconds": 43724697,
+      "cgroupUserMicroseconds": 31676023,
+      "cgroupSystemMicroseconds": 12048673,
+      "nativeCleanObservedTeardown": true,
+      "collectorKilledGroup": false,
+      "groupsRemoved": true,
+      "receipts": {
+        "native.json": {
+          "bytes": 3281,
+          "sha256": "608413707fd852eb8903c8230f3848d62b7dfaafb5488c2186aacfd2c0aec80f"
+        },
+        "owner-report.json": {
+          "bytes": 18596,
+          "sha256": "afdd1025b7aa3f79dd379cf7758046da8b7b632493f4eae6b7d793d12c703810"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "8011b96840f86c9009c235cd4350789d405acfb3a53e824c28394446bd25ecf1"
+        },
+        "result.json": {
+          "bytes": 2261,
+          "sha256": "b8fdf4af8ceed8cc27027dc89c78fd39eac58f8b87ecd6cb2f21ccce3c544843"
+        },
+        "before.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "after.json": {
+          "bytes": 5968110,
+          "sha256": "4083a22f1db1a5e44903e248e91eeac54216577d9039ffa73dc3c24e31cb8a2f"
+        },
+        "prepared.json": {
+          "bytes": 5046,
+          "sha256": "d285782e9f6e7eb3f258673cec3a6d263efa2e2b8d93c28798f0813a06c16836"
+        },
+        "verification.json": {
+          "bytes": 6145,
+          "sha256": "6b9c0f08dc22df6a5140822718e09e173a1a1739661bb306027b538167e34f5c"
+        },
+        "runner-report.json": {
+          "bytes": 89136,
+          "sha256": "73242b2d2874f4bf1aae1527415bb3d664edad2bc2475c2ab197fa625d92b683"
+        },
+        "perf.receipt.json": {
+          "bytes": 575,
+          "sha256": "48f5f15ecf385689512c2fae76997f98e0ac5ee10b1c003fa0cc3aa93f467904"
+        }
+      },
+      "periodNanoseconds": 5000000,
+      "samples": 4119,
+      "sampleCountsByFamily": {
+        "workload-owner": 207,
+        "postgres": 42,
+        "mailpit": 2,
+        "other-python": 120,
+        "api": 534,
+        "runner-observer": 340,
+        "runtime": 335,
+        "browser": 2539
+      },
+      "sampleCountsByModule": [
+        {
+          "family": "browser",
+          "module": "chrome",
+          "samples": 2285
+        },
+        {
+          "family": "api",
+          "module": "libpython3.14.so.1.0",
+          "samples": 473
+        },
+        {
+          "family": "runtime",
+          "module": "bun",
+          "samples": 281
+        },
+        {
+          "family": "runner-observer",
+          "module": "libpython3.14.so.1.0",
+          "samples": 257
+        },
+        {
+          "family": "browser",
+          "module": "libc.so.6",
+          "samples": 178
+        },
+        {
+          "family": "workload-owner",
+          "module": "libpython3.14.so.1.0",
+          "samples": 168
+        },
+        {
+          "family": "other-python",
+          "module": "libpython3.14.so.1.0",
+          "samples": 105
+        },
+        {
+          "family": "runner-observer",
+          "module": "libc.so.6",
+          "samples": 60
+        },
+        {
+          "family": "browser",
+          "module": "anonymous",
+          "samples": 46
+        },
+        {
+          "family": "runtime",
+          "module": "anonymous",
+          "samples": 43
+        },
+        {
+          "family": "workload-owner",
+          "module": "libc.so.6",
+          "samples": 31
+        },
+        {
+          "family": "postgres",
+          "module": "postgres",
+          "samples": 30
+        },
+        {
+          "family": "api",
+          "module": "libc.so.6",
+          "samples": 24
+        },
+        {
+          "family": "runner-observer",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 21
+        },
+        {
+          "family": "api",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 20
+        },
+        {
+          "family": "browser",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 13
+        },
+        {
+          "family": "api",
+          "module": "_ffi.abi3.so",
+          "samples": 11
+        },
+        {
+          "family": "postgres",
+          "module": "libc.so.6",
+          "samples": 10
+        },
+        {
+          "family": "runtime",
+          "module": "libc.so.6",
+          "samples": 10
+        },
+        {
+          "family": "other-python",
+          "module": "libc.so.6",
+          "samples": 7
+        },
+        {
+          "family": "workload-owner",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 7
+        },
+        {
+          "family": "other-python",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 6
+        },
+        {
+          "family": "browser",
+          "module": "libm.so.6",
+          "samples": 6
+        },
+        {
+          "family": "browser",
+          "module": "libglib-2.0.so.0.8800.3",
+          "samples": 5
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-glcore.so.610.57.04",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "loop.cpython-314-x86_64-linux-gnu.so",
+          "samples": 3
+        },
+        {
+          "family": "mailpit",
+          "module": "mailpit",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libLLVM.so.22.1",
+          "samples": 2
+        },
+        {
+          "family": "runner-observer",
+          "module": "anonymous",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "_psycopg.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "postgres",
+          "module": "libcrypto.so.3",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "libcrypto-2d1629ee.so.3",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "_psycopg.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "workload-owner",
+          "module": "libm.so.6",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "libcrypto-2d1629ee.so.3",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libudev.so.1.7.14",
+          "samples": 1
+        },
+        {
+          "family": "postgres",
+          "module": "anonymous",
+          "samples": 1
+        },
+        {
+          "family": "runtime",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 1
+        }
+      ],
+      "argonFunctionSamples": [
+        {
+          "family": "api",
+          "function": "fill_block",
+          "samples": 11
+        }
+      ],
+      "threadLifetimeSummary": {
+        "threads": 3991,
+        "belowPeriod": 2320,
+        "withoutSamples": 3751
+      },
+      "nominalSamplePeriodNanoseconds": "20595000000",
+      "rings": [
+        {
+          "cpu": 0,
+          "bytes": 4755192,
+          "records": 141030,
+          "sha256": "f507d958e5d1e5e9b86c3d742c15f1e865497e5d499822874055a0d8234b3b0c"
+        },
+        {
+          "cpu": 1,
+          "bytes": 5208136,
+          "records": 157370,
+          "sha256": "34c3fcf08bfc2abcbaf5d7121ea7937c6ca8057eb796f365a1c064e84e797987"
+        },
+        {
+          "cpu": 2,
+          "bytes": 4902136,
+          "records": 133042,
+          "sha256": "520d7c5a64dde445d0b9971ab1091f342f72ceb0b8d6b4d72c899a4538984f9d"
+        },
+        {
+          "cpu": 3,
+          "bytes": 4264776,
+          "records": 116435,
+          "sha256": "816ca19cbd3779f6b86b4c6b0e3980e5f8751a9cbcab28671ca7cb2fc44a410c"
+        },
+        {
+          "cpu": 4,
+          "bytes": 5184536,
+          "records": 159778,
+          "sha256": "0c5e97e7e99b77a38b043843fbce55b9637187692e6dbf866695bf009416989b"
+        },
+        {
+          "cpu": 5,
+          "bytes": 5042320,
+          "records": 154726,
+          "sha256": "92c3b2fe84d939427247e8fc5049b3f6690768dd0d93aab4b904d9ad2a9b88e5"
+        }
+      ],
+      "recordTypes": {
+        "14": 845964,
+        "3": 1898,
+        "10": 1949,
+        "7": 4225,
+        "9": 4119,
+        "4": 4226
+      },
+      "missingSampledThreadExit": []
+    },
+    {
+      "batch": "002",
+      "case": "owned-00-1-stock-flashwright",
+      "engine": "flashwright",
+      "workers": 1,
+      "sampling": true,
+      "testsPassed": 62,
+      "completeCommandNanoseconds": "44030600042",
+      "cgroupCpuMicroseconds": 44240389,
+      "cgroupUserMicroseconds": 32305562,
+      "cgroupSystemMicroseconds": 11934826,
+      "nativeCleanObservedTeardown": true,
+      "collectorKilledGroup": false,
+      "groupsRemoved": true,
+      "receipts": {
+        "native.json": {
+          "bytes": 3285,
+          "sha256": "ea527ddfa1be10caff528a20f2cababbef5e75502c9ca6be45824941e6b5c21f"
+        },
+        "owner-report.json": {
+          "bytes": 23338,
+          "sha256": "da05f3d5f31073c27f674fdd17114266b80bc54e887446fd82a766b227e9bef9"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "375338be7d4aac6749b3a197a10c32570f9d7cacc3e27d02d1332350eab03cfa"
+        },
+        "result.json": {
+          "bytes": 2266,
+          "sha256": "9f2eb933c33966f99cbfd3eb50f45a5efcdc962727aa8d4345800d306a5c7584"
+        },
+        "before.json": {
+          "bytes": 5952190,
+          "sha256": "8cf4c88e7ffd5d6c644320e8b7901bb5895d91b78a668f4c1b5d462efcf595af"
+        },
+        "after.json": {
+          "bytes": 5952190,
+          "sha256": "8cf4c88e7ffd5d6c644320e8b7901bb5895d91b78a668f4c1b5d462efcf595af"
+        },
+        "prepared.json": {
+          "bytes": 5040,
+          "sha256": "97e84ae8d4131a8d4be402db62f649a87131351bf542f72cddb45e68d2b3acee"
+        },
+        "verification.json": {
+          "bytes": 6126,
+          "sha256": "a3bd795637f34c8063ded9186812dab3ad777b47b8e45b27ab5d66a7703c7f3b"
+        },
+        "runner-report.json": {
+          "bytes": 92685,
+          "sha256": "d01cafd8bf3d04c64547cf18b9ff26d2c7fab5b67554b3454d13c591ba41922b"
+        },
+        "perf.receipt.json": {
+          "bytes": 575,
+          "sha256": "1ca8ac7a98924ddb54db69a71e5bd9b9c0c8afc6cef16d3605f4734b2d46aebb"
+        }
+      },
+      "periodNanoseconds": 500000,
+      "samples": 63179,
+      "sampleCountsByFamily": {
+        "workload-owner": 2908,
+        "postgres": 521,
+        "mailpit": 36,
+        "other-python": 1308,
+        "api": 11590,
+        "runner-observer": 3695,
+        "runtime": 5715,
+        "driver": 967,
+        "browser": 36439
+      },
+      "sampleCountsByModule": [
+        {
+          "family": "browser",
+          "module": "chrome",
+          "samples": 32465
+        },
+        {
+          "family": "api",
+          "module": "libpython3.14.so.1.0",
+          "samples": 6076
+        },
+        {
+          "family": "runtime",
+          "module": "bun",
+          "samples": 4856
+        },
+        {
+          "family": "api",
+          "module": "_ffi.abi3.so",
+          "samples": 4701
+        },
+        {
+          "family": "browser",
+          "module": "libc.so.6",
+          "samples": 2892
+        },
+        {
+          "family": "runner-observer",
+          "module": "libpython3.14.so.1.0",
+          "samples": 2872
+        },
+        {
+          "family": "workload-owner",
+          "module": "libpython3.14.so.1.0",
+          "samples": 2468
+        },
+        {
+          "family": "other-python",
+          "module": "libpython3.14.so.1.0",
+          "samples": 1085
+        },
+        {
+          "family": "runtime",
+          "module": "anonymous",
+          "samples": 743
+        },
+        {
+          "family": "browser",
+          "module": "anonymous",
+          "samples": 678
+        },
+        {
+          "family": "runner-observer",
+          "module": "libc.so.6",
+          "samples": 663
+        },
+        {
+          "family": "driver",
+          "module": "flashwright-driver",
+          "samples": 662
+        },
+        {
+          "family": "api",
+          "module": "libc.so.6",
+          "samples": 397
+        },
+        {
+          "family": "postgres",
+          "module": "postgres",
+          "samples": 389
+        },
+        {
+          "family": "workload-owner",
+          "module": "libc.so.6",
+          "samples": 329
+        },
+        {
+          "family": "driver",
+          "module": "libc.so.6",
+          "samples": 298
+        },
+        {
+          "family": "api",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 191
+        },
+        {
+          "family": "browser",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 160
+        },
+        {
+          "family": "runner-observer",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 136
+        },
+        {
+          "family": "runtime",
+          "module": "libc.so.6",
+          "samples": 115
+        },
+        {
+          "family": "browser",
+          "module": "libm.so.6",
+          "samples": 113
+        },
+        {
+          "family": "other-python",
+          "module": "_ffi.abi3.so",
+          "samples": 105
+        },
+        {
+          "family": "workload-owner",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 96
+        },
+        {
+          "family": "postgres",
+          "module": "libc.so.6",
+          "samples": 87
+        },
+        {
+          "family": "api",
+          "module": "loop.cpython-314-x86_64-linux-gnu.so",
+          "samples": 81
+        },
+        {
+          "family": "browser",
+          "module": "libglib-2.0.so.0.8800.3",
+          "samples": 61
+        },
+        {
+          "family": "other-python",
+          "module": "libc.so.6",
+          "samples": 59
+        },
+        {
+          "family": "other-python",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 45
+        },
+        {
+          "family": "mailpit",
+          "module": "mailpit",
+          "samples": 36
+        },
+        {
+          "family": "api",
+          "module": "libcrypto-2d1629ee.so.3",
+          "samples": 29
+        },
+        {
+          "family": "api",
+          "module": "_pydantic_core.cpython-314-x86_64-linux-gnu.so",
+          "samples": 24
+        },
+        {
+          "family": "runner-observer",
+          "module": "anonymous",
+          "samples": 24
+        },
+        {
+          "family": "postgres",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 22
+        },
+        {
+          "family": "api",
+          "module": "parser.cpython-314-x86_64-linux-gnu.so",
+          "samples": 21
+        },
+        {
+          "family": "api",
+          "module": "_asyncio.cpython-314-x86_64-linux-gnu.so",
+          "samples": 19
+        },
+        {
+          "family": "postgres",
+          "module": "libicuuc.so.78.3",
+          "samples": 12
+        },
+        {
+          "family": "api",
+          "module": "_psycopg.cpython-314-x86_64-linux-gnu.so",
+          "samples": 12
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-glcore.so.610.57.04",
+          "samples": 11
+        },
+        {
+          "family": "postgres",
+          "module": "libcrypto.so.3",
+          "samples": 10
+        },
+        {
+          "family": "other-python",
+          "module": "libcrypto-2d1629ee.so.3",
+          "samples": 9
+        },
+        {
+          "family": "api",
+          "module": "libcrypto.so.3",
+          "samples": 8
+        },
+        {
+          "family": "browser",
+          "module": "libexpat.so.1.12.4",
+          "samples": 8
+        },
+        {
+          "family": "browser",
+          "module": "libnss_resolve.so.2",
+          "samples": 8
+        },
+        {
+          "family": "workload-owner",
+          "module": "anonymous",
+          "samples": 8
+        },
+        {
+          "family": "workload-owner",
+          "module": "libcrypto.so.3",
+          "samples": 7
+        },
+        {
+          "family": "browser",
+          "module": "libLLVM.so.22.1",
+          "samples": 7
+        },
+        {
+          "family": "browser",
+          "module": "libgobject-2.0.so.0.8800.3",
+          "samples": 6
+        },
+        {
+          "family": "browser",
+          "module": "libGLESv2.so",
+          "samples": 5
+        },
+        {
+          "family": "api",
+          "module": "url_parser.cpython-314-x86_64-linux-gnu.so",
+          "samples": 5
+        },
+        {
+          "family": "api",
+          "module": "_json.cpython-314-x86_64-linux-gnu.so",
+          "samples": 4
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-gpucomp.so.610.57.04",
+          "samples": 4
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-glsi.so.610.57.04",
+          "samples": 4
+        },
+        {
+          "family": "driver",
+          "module": "libm.so.6",
+          "samples": 4
+        },
+        {
+          "family": "browser",
+          "module": "libudev.so.1.7.14",
+          "samples": 4
+        },
+        {
+          "family": "api",
+          "module": "libgcc_s.so.1",
+          "samples": 4
+        },
+        {
+          "family": "browser",
+          "module": "libvulkan.so.1",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "anonymous",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "resultproxy.cpython-314-x86_64-linux-gnu.so",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "libpq-e9b5c9ac.so.5.18",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "_hashlib.cpython-314-x86_64-linux-gnu.so",
+          "samples": 3
+        },
+        {
+          "family": "other-python",
+          "module": "libcrypto.so.3",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libdbus-1.so.3.38.3",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "util.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "driver",
+          "module": "anonymous",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libEGL.so",
+          "samples": 2
+        },
+        {
+          "family": "postgres",
+          "module": "bash",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "anonymous",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "librt.so.1",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "_pydantic_core.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "libz.so.1.3.2",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libgallium-26.2.2-arch1.1.so",
+          "samples": 1
+        },
+        {
+          "family": "driver",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libgio-2.0.so.0.8800.3",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libwidevinecdm.so",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libdrm.so.2.134.0",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libvk_swiftshader.so",
+          "samples": 1
+        },
+        {
+          "family": "runtime",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "immutabledict.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "libm.so.6",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libatk-1.0.so.0.26015.1",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "pq.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        }
+      ],
+      "argonFunctionSamples": [
+        {
+          "family": "api",
+          "function": "fill_block",
+          "samples": 4644
+        },
+        {
+          "family": "other-python",
+          "function": "fill_block",
+          "samples": 104
+        },
+        {
+          "family": "api",
+          "function": "index_alpha",
+          "samples": 34
+        },
+        {
+          "family": "api",
+          "function": "fill_segment",
+          "samples": 20
+        },
+        {
+          "family": "api",
+          "function": "blake2b_compress",
+          "samples": 3
+        },
+        {
+          "family": "other-python",
+          "function": "unresolved-symbol",
+          "samples": 1
+        }
+      ],
+      "threadLifetimeSummary": {
+        "threads": 4015,
+        "belowPeriod": 1,
+        "withoutSamples": 1124
+      },
+      "nominalSamplePeriodNanoseconds": "31589500000",
+      "rings": [
+        {
+          "cpu": 0,
+          "bytes": 7564208,
+          "records": 158986,
+          "sha256": "7a6bd05dfb18a9433c2f8495eb72dcc4c86d9cf97014e6901142dce0ab3841d3"
+        },
+        {
+          "cpu": 1,
+          "bytes": 7271376,
+          "records": 169129,
+          "sha256": "7d7e3ab945920526ab9221c1511bb67a12b1801e472ee1245209b3decd8c2ff9"
+        },
+        {
+          "cpu": 2,
+          "bytes": 11156928,
+          "records": 149464,
+          "sha256": "a8a6675c35a3e189026fe566d144265b9be2a3408d1d09daeec0e919e4fd47a7"
+        },
+        {
+          "cpu": 3,
+          "bytes": 8555976,
+          "records": 118334,
+          "sha256": "f0814ff8d92118328f4a38110b816c5650933c9880b0f5cba83cad52dacc86a1"
+        },
+        {
+          "cpu": 4,
+          "bytes": 6298184,
+          "records": 172003,
+          "sha256": "557fe87ace0f9f166ddc41ea666419638030d280b47d466aff981c855d298ef9"
+        },
+        {
+          "cpu": 5,
+          "bytes": 6334400,
+          "records": 167776,
+          "sha256": "b42fca2492d74d0040181b1bfac6aebfd951b5514b1d3803132e27c52209711d"
+        }
+      ],
+      "recordTypes": {
+        "14": 860107,
+        "3": 1923,
+        "10": 1974,
+        "7": 4254,
+        "9": 63179,
+        "4": 4255
+      },
+      "missingSampledThreadExit": []
+    },
+    {
+      "batch": "002",
+      "case": "owned-01-1-stock-playwright",
+      "engine": "playwright",
+      "workers": 1,
+      "sampling": true,
+      "testsPassed": 62,
+      "completeCommandNanoseconds": "44559054039",
+      "cgroupCpuMicroseconds": 43450991,
+      "cgroupUserMicroseconds": 31776108,
+      "cgroupSystemMicroseconds": 11674883,
+      "nativeCleanObservedTeardown": true,
+      "collectorKilledGroup": false,
+      "groupsRemoved": true,
+      "receipts": {
+        "native.json": {
+          "bytes": 3281,
+          "sha256": "8d7008580a8efb51e3e0c2778de25ac5dc0139ed947290366f345f448288d47b"
+        },
+        "owner-report.json": {
+          "bytes": 18606,
+          "sha256": "d95bc62d14d52a69b9bd35f0ff4b54fbc4caf0550e2c882ad7de40fddd735d0f"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "39ac45ffaddd43390fb1ade8c627e49c0c2683f18da8b4a1b15d516712c2ed67"
+        },
+        "result.json": {
+          "bytes": 2260,
+          "sha256": "1c10197665af0f23559b377b332e1e4b7c98a9285c68aac600bbc145c9396b51"
+        },
+        "before.json": {
+          "bytes": 5952190,
+          "sha256": "bcb8ed34a554a8481739b18fd1f7acf8c3fabefe5b2c4c9985177bca055eb3a9"
+        },
+        "after.json": {
+          "bytes": 5952190,
+          "sha256": "bcb8ed34a554a8481739b18fd1f7acf8c3fabefe5b2c4c9985177bca055eb3a9"
+        },
+        "prepared.json": {
+          "bytes": 5046,
+          "sha256": "099189581c5da4e4a88627047e5d2d63eacb45ebdb8a6a7f2415fcd74529ce30"
+        },
+        "verification.json": {
+          "bytes": 6145,
+          "sha256": "8a4da438fc417ce5ef83ca3aa97e65b936e7cc3424796938f2e76f0e6c20e1a8"
+        },
+        "runner-report.json": {
+          "bytes": 89136,
+          "sha256": "ed127a443b94c75745b8e029152e941622600a4add8e9ab348349e8b27f6898e"
+        },
+        "perf.receipt.json": {
+          "bytes": 575,
+          "sha256": "46e221b33ed64efd9a62e0c8f90ce93440a8e6c0d2132de4e5398048e5f655bf"
+        }
+      },
+      "periodNanoseconds": 500000,
+      "samples": 61702,
+      "sampleCountsByFamily": {
+        "workload-owner": 2793,
+        "postgres": 532,
+        "mailpit": 37,
+        "other-python": 1320,
+        "api": 11540,
+        "runner-observer": 3552,
+        "runtime": 5419,
+        "browser": 36509
+      },
+      "sampleCountsByModule": [
+        {
+          "family": "browser",
+          "module": "chrome",
+          "samples": 32565
+        },
+        {
+          "family": "api",
+          "module": "libpython3.14.so.1.0",
+          "samples": 6010
+        },
+        {
+          "family": "api",
+          "module": "_ffi.abi3.so",
+          "samples": 4704
+        },
+        {
+          "family": "runtime",
+          "module": "bun",
+          "samples": 4512
+        },
+        {
+          "family": "browser",
+          "module": "libc.so.6",
+          "samples": 2856
+        },
+        {
+          "family": "runner-observer",
+          "module": "libpython3.14.so.1.0",
+          "samples": 2699
+        },
+        {
+          "family": "workload-owner",
+          "module": "libpython3.14.so.1.0",
+          "samples": 2415
+        },
+        {
+          "family": "other-python",
+          "module": "libpython3.14.so.1.0",
+          "samples": 1108
+        },
+        {
+          "family": "runtime",
+          "module": "anonymous",
+          "samples": 779
+        },
+        {
+          "family": "runner-observer",
+          "module": "libc.so.6",
+          "samples": 683
+        },
+        {
+          "family": "browser",
+          "module": "anonymous",
+          "samples": 666
+        },
+        {
+          "family": "api",
+          "module": "libc.so.6",
+          "samples": 387
+        },
+        {
+          "family": "postgres",
+          "module": "postgres",
+          "samples": 378
+        },
+        {
+          "family": "workload-owner",
+          "module": "libc.so.6",
+          "samples": 276
+        },
+        {
+          "family": "api",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 200
+        },
+        {
+          "family": "runner-observer",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 157
+        },
+        {
+          "family": "browser",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 152
+        },
+        {
+          "family": "runtime",
+          "module": "libc.so.6",
+          "samples": 126
+        },
+        {
+          "family": "browser",
+          "module": "libm.so.6",
+          "samples": 108
+        },
+        {
+          "family": "postgres",
+          "module": "libc.so.6",
+          "samples": 101
+        },
+        {
+          "family": "other-python",
+          "module": "_ffi.abi3.so",
+          "samples": 101
+        },
+        {
+          "family": "workload-owner",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 94
+        },
+        {
+          "family": "api",
+          "module": "loop.cpython-314-x86_64-linux-gnu.so",
+          "samples": 94
+        },
+        {
+          "family": "browser",
+          "module": "libglib-2.0.so.0.8800.3",
+          "samples": 93
+        },
+        {
+          "family": "other-python",
+          "module": "libc.so.6",
+          "samples": 57
+        },
+        {
+          "family": "other-python",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 40
+        },
+        {
+          "family": "mailpit",
+          "module": "mailpit",
+          "samples": 37
+        },
+        {
+          "family": "api",
+          "module": "_pydantic_core.cpython-314-x86_64-linux-gnu.so",
+          "samples": 32
+        },
+        {
+          "family": "api",
+          "module": "libcrypto-2d1629ee.so.3",
+          "samples": 23
+        },
+        {
+          "family": "postgres",
+          "module": "ld-linux-x86-64.so.2",
+          "samples": 20
+        },
+        {
+          "family": "api",
+          "module": "_asyncio.cpython-314-x86_64-linux-gnu.so",
+          "samples": 18
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-glcore.so.610.57.04",
+          "samples": 17
+        },
+        {
+          "family": "api",
+          "module": "parser.cpython-314-x86_64-linux-gnu.so",
+          "samples": 16
+        },
+        {
+          "family": "postgres",
+          "module": "libcrypto.so.3",
+          "samples": 15
+        },
+        {
+          "family": "api",
+          "module": "libcrypto.so.3",
+          "samples": 13
+        },
+        {
+          "family": "api",
+          "module": "_psycopg.cpython-314-x86_64-linux-gnu.so",
+          "samples": 12
+        },
+        {
+          "family": "postgres",
+          "module": "libicuuc.so.78.3",
+          "samples": 11
+        },
+        {
+          "family": "runner-observer",
+          "module": "anonymous",
+          "samples": 11
+        },
+        {
+          "family": "other-python",
+          "module": "libcrypto-2d1629ee.so.3",
+          "samples": 7
+        },
+        {
+          "family": "browser",
+          "module": "libLLVM.so.22.1",
+          "samples": 7
+        },
+        {
+          "family": "browser",
+          "module": "libnss_resolve.so.2",
+          "samples": 7
+        },
+        {
+          "family": "workload-owner",
+          "module": "anonymous",
+          "samples": 7
+        },
+        {
+          "family": "browser",
+          "module": "libexpat.so.1.12.4",
+          "samples": 6
+        },
+        {
+          "family": "api",
+          "module": "anonymous",
+          "samples": 5
+        },
+        {
+          "family": "api",
+          "module": "libgcc_s.so.1",
+          "samples": 5
+        },
+        {
+          "family": "api",
+          "module": "libpq-e9b5c9ac.so.5.18",
+          "samples": 4
+        },
+        {
+          "family": "browser",
+          "module": "libudev.so.1.7.14",
+          "samples": 4
+        },
+        {
+          "family": "other-python",
+          "module": "libcrypto.so.3",
+          "samples": 3
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-glsi.so.610.57.04",
+          "samples": 3
+        },
+        {
+          "family": "browser",
+          "module": "libvk_swiftshader.so",
+          "samples": 3
+        },
+        {
+          "family": "browser",
+          "module": "libGLESv2.so",
+          "samples": 3
+        },
+        {
+          "family": "api",
+          "module": "url_parser.cpython-314-x86_64-linux-gnu.so",
+          "samples": 3
+        },
+        {
+          "family": "browser",
+          "module": "libgobject-2.0.so.0.8800.3",
+          "samples": 3
+        },
+        {
+          "family": "postgres",
+          "module": "initdb",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libnvidia-gpucomp.so.610.57.04",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libX11.so.6.4.0",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libgallium-26.2.2-arch1.1.so",
+          "samples": 2
+        },
+        {
+          "family": "runtime",
+          "module": "libm.so.6",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libvulkan.so.1",
+          "samples": 2
+        },
+        {
+          "family": "browser",
+          "module": "libEGL.so",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "util.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "postgres",
+          "module": "anonymous",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "_hashlib.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "libm.so.6",
+          "samples": 2
+        },
+        {
+          "family": "api",
+          "module": "_struct.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "runner-observer",
+          "module": "_json.cpython-314-x86_64-linux-gnu.so",
+          "samples": 2
+        },
+        {
+          "family": "postgres",
+          "module": "bash",
+          "samples": 1
+        },
+        {
+          "family": "postgres",
+          "module": "libicui18n.so.78.3",
+          "samples": 1
+        },
+        {
+          "family": "workload-owner",
+          "module": "libcrypto.so.3",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "_pydantic_core.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "immutabledict.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "pq.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "other-python",
+          "module": "libpq-e9b5c9ac.so.5.18",
+          "samples": 1
+        },
+        {
+          "family": "postgres",
+          "module": "libm.so.6",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "libsystemd.so.0.44.0",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "array.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "pq.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libwidevinecdm.so",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "chrome_crashpad_handler",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libgcc_s.so.1",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libdbus-1.so.3.38.3",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "unicodedata.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "_pickle.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "module": "resultproxy.cpython-314-x86_64-linux-gnu.so",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libatk-1.0.so.0.26015.1",
+          "samples": 1
+        },
+        {
+          "family": "browser",
+          "module": "libtasn1.so.6.6.5",
+          "samples": 1
+        }
+      ],
+      "argonFunctionSamples": [
+        {
+          "family": "api",
+          "function": "fill_block",
+          "samples": 4629
+        },
+        {
+          "family": "other-python",
+          "function": "fill_block",
+          "samples": 100
+        },
+        {
+          "family": "api",
+          "function": "index_alpha",
+          "samples": 40
+        },
+        {
+          "family": "api",
+          "function": "fill_segment",
+          "samples": 28
+        },
+        {
+          "family": "api",
+          "function": "blake2b_compress",
+          "samples": 4
+        },
+        {
+          "family": "api",
+          "function": "unresolved-symbol",
+          "samples": 2
+        },
+        {
+          "family": "other-python",
+          "function": "fill_segment",
+          "samples": 1
+        },
+        {
+          "family": "api",
+          "function": "blake2b_init_param",
+          "samples": 1
+        }
+      ],
+      "threadLifetimeSummary": {
+        "threads": 3990,
+        "belowPeriod": 1,
+        "withoutSamples": 1095
+      },
+      "nominalSamplePeriodNanoseconds": "30851000000",
+      "rings": [
+        {
+          "cpu": 0,
+          "bytes": 7176600,
+          "records": 152521,
+          "sha256": "53fa7ae4d523cfa913e1f48b4d325235a16a2ca368ba09a0f9762dee89e0245a"
+        },
+        {
+          "cpu": 1,
+          "bytes": 7109080,
+          "records": 166707,
+          "sha256": "5c344bed76d9320fb09f9758a3263f8a41223dbcbc1d684fada56a1ad8f12eb1"
+        },
+        {
+          "cpu": 2,
+          "bytes": 10008184,
+          "records": 144437,
+          "sha256": "bc2477bb73e5a22a6ae3f7459eec7eeb21ce148f302255f5eade5a6f12f46935"
+        },
+        {
+          "cpu": 3,
+          "bytes": 9969128,
+          "records": 132641,
+          "sha256": "3db9b215781c2f1df1a5468f841e3e67f103e44b9666ca192ba38fda31ebeabe"
+        },
+        {
+          "cpu": 4,
+          "bytes": 5977424,
+          "records": 162379,
+          "sha256": "1c1f5a202b7f4402edeb9c4b81a6a374ef34551e6a6cb7f8f6340226f334a027"
+        },
+        {
+          "cpu": 5,
+          "bytes": 6106432,
+          "records": 159494,
+          "sha256": "df86d36b80421ae0a9835da8d0f8e585b37b18b0d05a9259bd242dc6ade9d48a"
+        }
+      ],
+      "recordTypes": {
+        "14": 844184,
+        "3": 1897,
+        "10": 1949,
+        "7": 4223,
+        "9": 61702,
+        "4": 4224
+      },
+      "missingSampledThreadExit": []
+    }
+  ],
+  "mappingValidation": {
+    "library": "argon2-cffi native binding",
+    "sha256": "a0875c874d8e027c9373df6bc254072a549c59ac78a744d950ae034e53868196",
+    "source": "ELF load segments and exact function symbol ranges, original executable mappings and inherited address-space records; unknown addresses stay unresolved.",
+    "control": {
+      "bytes": 1315,
+      "sha256": "b4d537663045721e740395e9df46a73e92c5f7172c5cc123d5284f5b24a8b050"
+    },
+    "mappingDeviceDiffersFromStatDevice": true,
+    "resolution": "Actual direct-loaded function pointer and /proc/self/maps bind mapping device/inode to the same hashed library bytes. Retain the different stat device; do not assume those fields are interchangeable."
+  },
+  "retainedCorrections": [
+    {
+      "issue": "Initial mapping validator assumed perf device equals stat device.",
+      "resolution": "Preserved failure and used an explicit direct-load mapping control before symbol attribution."
+    },
+    {
+      "issue": "All Python processes initially labelled as backend bootstrap.",
+      "resolution": "Original recorded owner/observer/API process identities now separate supervision from other Python children; generic other-python stays explicit."
+    },
+    {
+      "issue": "Five-millisecond periods miss many short-lived threads.",
+      "resolution": "Retain coarse observations; add one0.5ms profile per engine. No rescaling of missing work into fabricated CPU totals."
+    },
+    {
+      "issue": "First denser candidate verifier selected an empty command line observed during exec.",
+      "resolution": "Retain failure; a later original observation with the same PID/start identity contains the full expected argv. Select that record, preserve all original observations, and verify without rerunning the suite."
+    },
+    {
+      "issue": "Denser derivative analyzer repeatedly reread its immutable boundary file.",
+      "resolution": "Stop only that analyzer, cache each boundary once and reanalyze original records. No workload or raw capture restarted."
+    }
+  ],
+  "decision": {
+    "nextTarget": "Native Chromium function-level attribution on the primary application workloads; existing custom browser retains an ELF symbol table, so first try the retained binary before considering a rebuild.",
+    "rationale": "Denser observations show browser processes dominate user-mode samples; the Rust driver contributes a small fraction. Coarse sampling understated short-thread work, including native Argon2. Driver transport rewriting and backend security changes are not selected from this evidence.",
+    "speedClaim": "None. CPU sample shares are not critical-path wall shares or achievable savings. Most-scenario2x and final release remain open."
+  },
+  "limitations": [
+    "One ordinary control and one5ms sample per framework, followed by one0.5ms sample per framework. No statistical overhead estimate or comparative performance admission.",
+    "Task-clock user-mode samples exclude kernel-mode samples and may miss partial periods or short-lived threads. Nominal period sums are estimates, not measured user CPU.",
+    "Kernel cgroup CPU includes sampler/supervision costs. The sampler observes its child workload, so these scopes differ; closeness of nominal sums to counters is not a calibration proof.",
+    "Roles follow original process identities, executable mappings and fork ancestry. Thread labels alone do not prove semantic roles. Unmapped/JIT addresses and unresolved symbols remain explicit.",
+    "Native Argon2 symbol ranges bind to the unchanged sampled library bytes, but no general loaded-memory/transient-change attestation is claimed.",
+    "Sampling addresses and CPU do not establish causal critical-path work, per-operation browser ownership or an elapsed-time speedup. Original ordinary timers and backend cryptography remain unchanged."
+  ]
+}
