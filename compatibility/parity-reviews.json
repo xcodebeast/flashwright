@@ -3630,7 +3630,7 @@
       "status": "experimental",
       "assessment": "verified-subset",
       "scope": "PNG/JPEG bytes and atomic path output, image geometry, fonts/animations/styles and cancellation cleanup are covered by shared screenshot fixtures.",
-      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work.",
+      "limitations": "Screenshot comparison, video and unlisted option combinations remain unavailable or unverified. Queued expiration suppresses late preparation work. Intermittent first-capture failure on Linux full Chrome remains unresolved; the native startup diagnostic establishes a failure mechanism in both engines, not a production fix.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [
         "A screenshot that expires while queued never prepares or captures the page later; pinned 1.60.0 can apply temporary style after expiration and leave it behind (S4.k)."
@@ -3649,7 +3649,12 @@
         },
         {
           "path": "compatibility/m2/screenshots.mjs",
-          "sha256": "f002f480c7de0e89aacdf1e901e9eebeb1eaea0ac90652dd9177b5d7f90aafbd",
+          "sha256": "b3143e71ddc0a76d496bdbaf8b4aba43a5223b81f0f4fc0b3b9f0dfee555a87e",
+          "kind": "source-review"
+        },
+        {
+          "path": "compatibility/evidence/native-screenshot-startup-checkpoint-2026-10-17.json",
+          "sha256": "9c946dcf20c68058627e9d49ab3fa772df7aa628027c1dfd395604523f666c13",
           "kind": "source-review"
         }
       ],
