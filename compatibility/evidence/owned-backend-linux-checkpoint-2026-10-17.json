@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-17",
+  "classification": "native-linux-owned-backend-functional-accounting-checkpoint",
+  "status": "248-original-tests-passed-with-retained-controller-error",
+  "baseCommit": "909255fb9510b0be12cacb5e6f7eccbe2c417587",
+  "resourceAdmission": false,
+  "performanceAccepted": false,
+  "packedConsumerAdmission": false,
+  "platform": "linux-x64",
+  "runtime": "Bun 1.4.2",
+  "reference": "Playwright 1.60.0",
+  "browser": "Full Chrome for Testing 148.0.7778.96",
+  "policy": {
+    "wholeGroupCpuMax": "400000 100000",
+    "wholeGroupMemoryMaxBytes": 8589934592,
+    "wholeGroupSwapMaxBytes": 0,
+    "freshPrivateLoopbackNetwork": true,
+    "freshServiceDataTmpfsBytes": 268435456,
+    "privateSharedMemoryTmpfsBytes": 134217728,
+    "postgres": "Host-installed PostgreSQL 18.6, freshly initialized C.UTF-8 UTF8 database per cell; different binary build and locale from historical Docker 18.6.",
+    "mailpit": "Same pinned image executable extracted without starting container; native child, persistent db inside fresh tmpfs, version checks explicitly disabled.",
+    "trace": "on-first-retry",
+    "retries": 0,
+    "clock": "Before clone through original wrapper and descendant drain, after-counter acquisition; includes initdb, migration, seeding, service startup, suite and shutdown."
+  },
+  "cells": [
+    {
+      "engine": "playwright",
+      "workers": 1,
+      "originalTestsPassed": 62,
+      "expectedBrowserLaunchesIncludingSetup": 2,
+      "originalWrapperExitCode": 0,
+      "originalCollectorExitCode": 0,
+      "originalControllerExitCode": 1,
+      "controllerPublicationErrorRetained": true,
+      "declaredSourceAndDependencyFilesUnchanged": true,
+      "serviceProcessesObservedInOriginalNamespaceAndGroup": 3,
+      "nativeCleanObservedTeardown": true,
+      "groupKilled": false,
+      "allGroupsRemoved": true,
+      "apiAdoptedTerminalWaits": 1,
+      "nativeServiceExitCodes": {
+        "postgres": 0,
+        "mailpit": 0
+      },
+      "completeCommandElapsedNanoseconds": "44129161401",
+      "serviceStartupElapsedNanoseconds": "1895767202",
+      "cgroupCpuMicroseconds": 42617615,
+      "cgroupChargedPeakBytes": 1141866496,
+      "receipts": {
+        "native.json": {
+          "bytes": 3060,
+          "sha256": "660bef99a19f615cb48685f75d5aa084a43cc574a5c16c74da7f9bfcc3cd87fb"
+        },
+        "owner-report.json": {
+          "bytes": 18562,
+          "sha256": "79463ccf6c50dc0902d77127a3f3b8a7ca751fc70874c35a571da8abe65007cd"
+        },
+        "result.json": {
+          "bytes": 1999,
+          "sha256": "5e02a154e327840aef8f36eef0a64f6ab3541e0c2c41bf39132c626641339f48"
+        },
+        "controller.json": {
+          "bytes": 456,
+          "sha256": "ada56bfc7fbda233d917cb0e21aecc85534eee8786abdf7c7d45d4f8509bbfc4"
+        },
+        "before.json": {
+          "bytes": 5966952,
+          "sha256": "9cd8d509a19a671789cbcb3a5f51b8ede69ec2639749f49c2820e06aebdddcea"
+        },
+        "after.json": {
+          "bytes": 5966952,
+          "sha256": "9cd8d509a19a671789cbcb3a5f51b8ede69ec2639749f49c2820e06aebdddcea"
+        },
+        "policy-before.json": {
+          "bytes": 58729,
+          "sha256": "e26151ec4d83032db6198c97ba55fbbb8db6933b3d996d75627bbb63f9871c0b"
+        },
+        "policy-after.json": {
+          "bytes": 58729,
+          "sha256": "c48414a9d2f2cb7af5690cc269b9b2a0eec87e2c4694c9b29034a4d4e3bfcce6"
+        },
+        "prepared.json": {
+          "bytes": 4998,
+          "sha256": "81001d331345581bcd2ea8e61435757ad8964fb5fd2ab23211fb724421b196d3"
+        },
+        "verification.json": {
+          "bytes": 6145,
+          "sha256": "eea5d24a9157360255790c94ab67ffcaf6f11f953562adbfbacc0d4cccc162dc"
+        },
+        "verification.txt": {
+          "bytes": 82,
+          "sha256": "a43a5d994d36380255fe425c87b47287a519c5f2bea87e4c97f9c7b12392d8d3"
+        },
+        "runner-report.json": {
+          "bytes": 89088,
+          "sha256": "913c2f8abb91558f5cf49c56cdd07aa587c4bb732fd12b68511300175daa4745"
+        },
+        "runner-resources.json": {
+          "bytes": 1241872,
+          "sha256": "d4bbdc8385a143b709b5a6877f1672b8188d6319ab2329bd81de84943d5b1ea5"
+        }
+      }
+    },
+    {
+      "engine": "flashwright",
+      "workers": 1,
+      "originalTestsPassed": 62,
+      "expectedBrowserLaunchesIncludingSetup": 2,
+      "originalWrapperExitCode": 0,
+      "originalCollectorExitCode": 0,
+      "originalControllerExitCode": 0,
+      "controllerPublicationErrorRetained": false,
+      "declaredSourceAndDependencyFilesUnchanged": true,
+      "serviceProcessesObservedInOriginalNamespaceAndGroup": 3,
+      "nativeCleanObservedTeardown": true,
+      "groupKilled": false,
+      "allGroupsRemoved": true,
+      "apiAdoptedTerminalWaits": 1,
+      "nativeServiceExitCodes": {
+        "postgres": 0,
+        "mailpit": 0
+      },
+      "completeCommandElapsedNanoseconds": "43508683350",
+      "serviceStartupElapsedNanoseconds": "1886233201",
+      "cgroupCpuMicroseconds": 43322948,
+      "cgroupChargedPeakBytes": 1202810880,
+      "receipts": {
+        "native.json": {
+          "bytes": 3065,
+          "sha256": "a4d2fbd0459dfa2010d399fcd81f83275b24a2a1eeb4fb9e563eeded2e5699ca"
+        },
+        "owner-report.json": {
+          "bytes": 22726,
+          "sha256": "365d27cb38462377ffa1582c8355336b361d6e3fa1884ed07a43c5b3296cf006"
+        },
+        "result.json": {
+          "bytes": 2004,
+          "sha256": "a3f7d2739e05d36983deeffaff61e6f58e2b3dd9e52c35583819f1d006c29785"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "ddb3efcb8344aea28b9627a577e06cfbdf70e37b07c4168f0e59461241494053"
+        },
+        "before.json": {
+          "bytes": 5966952,
+          "sha256": "8505ecd60c7e3980d648db7ef72172468cfe1d9a80ee1ca72aaba50d0041f768"
+        },
+        "after.json": {
+          "bytes": 5966952,
+          "sha256": "8505ecd60c7e3980d648db7ef72172468cfe1d9a80ee1ca72aaba50d0041f768"
+        },
+        "policy-before.json": {
+          "bytes": 58729,
+          "sha256": "4b39584ededb59483516d8d0e0e630eb85ecd43c7ed73126e250823a1d2880f1"
+        },
+        "policy-after.json": {
+          "bytes": 58729,
+          "sha256": "72bb81d15bc8f0d6f04fe5249cdc82eba54ab0583e0fd96b5d63724fe1c4a799"
+        },
+        "prepared.json": {
+          "bytes": 4992,
+          "sha256": "7b8de929f91c9a68b94aca3213a0c5ebbf0463e31d6336faa514080d936af24d"
+        },
+        "verification.json": {
+          "bytes": 6126,
+          "sha256": "442efc96cdc8d10146b1a3c24244509520685be6bca2aace94406e7ae2cbf53a"
+        },
+        "verification.txt": {
+          "bytes": 82,
+          "sha256": "a43a5d994d36380255fe425c87b47287a519c5f2bea87e4c97f9c7b12392d8d3"
+        },
+        "runner-report.json": {
+          "bytes": 93980,
+          "sha256": "4eb84d47dd38c4ef3ab2147105ecc5bf7366c12be9aee37faffc30c4aaf72b62"
+        },
+        "runner-resources.json": {
+          "bytes": 1391044,
+          "sha256": "ecb546b7dd76c363a114f2e37651006ac3878e7e26582039d5bf524657f35e7b"
+        }
+      }
+    },
+    {
+      "engine": "playwright",
+      "workers": 4,
+      "originalTestsPassed": 62,
+      "expectedBrowserLaunchesIncludingSetup": 5,
+      "originalWrapperExitCode": 0,
+      "originalCollectorExitCode": 0,
+      "originalControllerExitCode": 0,
+      "controllerPublicationErrorRetained": false,
+      "declaredSourceAndDependencyFilesUnchanged": true,
+      "serviceProcessesObservedInOriginalNamespaceAndGroup": 3,
+      "nativeCleanObservedTeardown": true,
+      "groupKilled": false,
+      "allGroupsRemoved": true,
+      "apiAdoptedTerminalWaits": 1,
+      "nativeServiceExitCodes": {
+        "postgres": 0,
+        "mailpit": 0
+      },
+      "completeCommandElapsedNanoseconds": "16950070890",
+      "serviceStartupElapsedNanoseconds": "1876892867",
+      "cgroupCpuMicroseconds": 45905789,
+      "cgroupChargedPeakBytes": 2135470080,
+      "receipts": {
+        "native.json": {
+          "bytes": 3067,
+          "sha256": "487d33b0ff101ba90285e584f8d1dcb8c7ac02bff144eb9307a7d3e744e68b46"
+        },
+        "owner-report.json": {
+          "bytes": 29029,
+          "sha256": "21db619d1add595f15d947ef9ab528049ace79272a579f51fe81b1ccf8b26937"
+        },
+        "result.json": {
+          "bytes": 2000,
+          "sha256": "831afa116548a33b17912a3be3a692d7fad3fff8eda3ec0f659fe110e67edcc6"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "ee6640a7107fcedb42926eebd72c4751524fba2095fb5bb50dcc24deae2b6f6f"
+        },
+        "before.json": {
+          "bytes": 5966952,
+          "sha256": "8505ecd60c7e3980d648db7ef72172468cfe1d9a80ee1ca72aaba50d0041f768"
+        },
+        "after.json": {
+          "bytes": 5966952,
+          "sha256": "8505ecd60c7e3980d648db7ef72172468cfe1d9a80ee1ca72aaba50d0041f768"
+        },
+        "policy-before.json": {
+          "bytes": 58729,
+          "sha256": "15782b8bb66f4f1ddba7c8cc4e0293bedd2ff029d99dfb06d360b8045f98d641"
+        },
+        "policy-after.json": {
+          "bytes": 58729,
+          "sha256": "25fdc26a7093fd1d453653f90babf1ccf891ef7b7f4e86ead22e8be3b1910b65"
+        },
+        "prepared.json": {
+          "bytes": 4998,
+          "sha256": "9011059ba8e73059e3109bd8b4422d43ef6c8231b2493bed19534df0a94a25aa"
+        },
+        "verification.json": {
+          "bytes": 14737,
+          "sha256": "2b1152d1b52bc6af315160d2628a397994ed1cbc35a329cf33d93ade4bdcf08e"
+        },
+        "verification.txt": {
+          "bytes": 82,
+          "sha256": "6a2479db647e97812ecd5c5e07cbda856609117e4e7ca8af26d15db6fc4e63ef"
+        },
+        "runner-report.json": {
+          "bytes": 111189,
+          "sha256": "528a97bb73010cc57ac7ad5223bcfac4f0c55d14ae3d14c6280b3092b4eb54c2"
+        },
+        "runner-resources.json": {
+          "bytes": 1267947,
+          "sha256": "be2d7ba4a8973229890e28da5ef4fec421a36aefcd21d6ad6208a49087836a27"
+        }
+      }
+    },
+    {
+      "engine": "flashwright",
+      "workers": 4,
+      "originalTestsPassed": 62,
+      "expectedBrowserLaunchesIncludingSetup": 5,
+      "originalWrapperExitCode": 0,
+      "originalCollectorExitCode": 0,
+      "originalControllerExitCode": 0,
+      "controllerPublicationErrorRetained": false,
+      "declaredSourceAndDependencyFilesUnchanged": true,
+      "serviceProcessesObservedInOriginalNamespaceAndGroup": 3,
+      "nativeCleanObservedTeardown": true,
+      "groupKilled": false,
+      "allGroupsRemoved": true,
+      "apiAdoptedTerminalWaits": 1,
+      "nativeServiceExitCodes": {
+        "postgres": 0,
+        "mailpit": 0
+      },
+      "completeCommandElapsedNanoseconds": "17485055590",
+      "serviceStartupElapsedNanoseconds": "1884010678",
+      "cgroupCpuMicroseconds": 46310247,
+      "cgroupChargedPeakBytes": 2144948224,
+      "receipts": {
+        "native.json": {
+          "bytes": 3070,
+          "sha256": "636e18da3e57a9e7547c59dda3840f25e5e79d1421d5153ad28b64b9f5f8b790"
+        },
+        "owner-report.json": {
+          "bytes": 39578,
+          "sha256": "68c7963ba3be6366b5a59bbee0580ead4a304755fab198ce2d7d5217eed68af9"
+        },
+        "result.json": {
+          "bytes": 2005,
+          "sha256": "6dcef01f52950a0cadbd44bc7f09f5f598b35f75ee47df2772d36ecdeade0588"
+        },
+        "controller.json": {
+          "bytes": 455,
+          "sha256": "da075138dd438755cfec8e5bef309d8c82cc485b24d76c38abc8441691b6ffa6"
+        },
+        "before.json": {
+          "bytes": 5966952,
+          "sha256": "8505ecd60c7e3980d648db7ef72172468cfe1d9a80ee1ca72aaba50d0041f768"
+        },
+        "after.json": {
+          "bytes": 5966952,
+          "sha256": "8505ecd60c7e3980d648db7ef72172468cfe1d9a80ee1ca72aaba50d0041f768"
+        },
+        "policy-before.json": {
+          "bytes": 58729,
+          "sha256": "367f02918d31e770686a5989ae07a97da82e27503b514ffa5da7fdc1e51c9e17"
+        },
+        "policy-after.json": {
+          "bytes": 58729,
+          "sha256": "622c680926bae2f2b675b1475170b665cb44ea2fdba4f2e932af4ab547d06eea"
+        },
+        "prepared.json": {
+          "bytes": 4992,
+          "sha256": "b508f861483ed0a4d37542f08eedd805e695c9e41f886b643d1d7ffe1a9b30b3"
+        },
+        "verification.json": {
+          "bytes": 14688,
+          "sha256": "c927ef88093ec8bcbaff482afb46a3af31ee0dc26dfbbdaddacf7d41fc4db2e0"
+        },
+        "verification.txt": {
+          "bytes": 82,
+          "sha256": "6a2479db647e97812ecd5c5e07cbda856609117e4e7ca8af26d15db6fc4e63ef"
+        },
+        "runner-report.json": {
+          "bytes": 120260,
+          "sha256": "596acb8e6f0caa41797af9123a6e931532c7e2b8786b0a09f64acf6dccb47a44"
+        },
+        "runner-resources.json": {
+          "bytes": 1424201,
+          "sha256": "e0fa89f8fbaf4262b0f93999e7658097416d6e64cf33b86ae942d81f387747e9"
+        }
+      }
+    }
+  ],
+  "assets": {
+    "mailpit": {
+      "bytes": 25915552,
+      "sha256": "1a4d91713e9868716e6e71ee57496c85aeaff6a3bda5aecbe147664fa737d980"
+    },
+    "postgres": {
+      "bytes": 11711848,
+      "sha256": "c07f259b1f919dfead0d66c34da5fd0eade2a48222d4997ba4ac1fa1804f2666"
+    },
+    "driver": {
+      "bytes": 14704656,
+      "sha256": "42fab5c26ce5d25c70f989db305c9c18c61785c262cf84f8223dc500805c9a1a"
+    },
+    "browser": {
+      "bytes": 276917464,
+      "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+    }
+  },
+  "retainedAttempts": [
+    {
+      "case": "service-smoke-001",
+      "status": "local-API-and-mail-outcomes-passed-service-drain-rejected",
+      "reason": "Exited API resource tracker adopted by outer collector could not be reaped by service manager. No collector kill; original wrapper exit 1.",
+      "receipt": {
+        "bytes": 8069,
+        "sha256": "a8c6735ad40486ebadcba39edc007a162d10c07341e122a8a05a6fb95fcd2f11"
+      }
+    },
+    {
+      "case": "service-smoke-002",
+      "status": "passed",
+      "reason": "Service manager becomes subreaper and retains adopted API wait before requiring an empty group. Native PostgreSQL/Mailpit exit 0.",
+      "receipt": {
+        "bytes": 8071,
+        "sha256": "ff594f5ff67884682c44598db7c36850af89e852a2dbb149bab7060b79eb0ace"
+      }
+    },
+    {
+      "case": "first-complete-suite-controller",
+      "status": "publication-error-retained-original-work-verified",
+      "reason": "An erroneous outer policy read raised NameError after native completion and identical before/after snapshots. The original 62-test run was independently verified without rerun or raw receipt rewriting; three later cells use the corrected controller.",
+      "receipt": {
+        "bytes": 791,
+        "sha256": "f7e5a0ea43cc9a6dcb29b0ca561fdfb541144851708ea7eb0d6810f8792caec0"
+      }
+    }
+  ],
+  "limitations": [
+    "Selected input/dependency and policy snapshots are diagnostic; no loaded-library or transient migration attestation. No final sealed campaign admission.",
+    "All test-owned database, mail, API, runner and browser work is launched under the original measured group. Shared host display/kernel/infrastructure costs outside cgroup charging remain distinct.",
+    "The backend policy differs from historical Docker service runs: same PostgreSQL version but different native build/locale, unified quota, tmpfs layout and private network. Do not pool their timings.",
+    "Mailpit is the exact pinned image executable; Docker only copied this file from a never-started temporary container, removed before tests.",
+    "Each command clock includes fresh initdb, migrations, seeding, server startup, all original tests and service teardown. Input hashing occurs outside and warms caches.",
+    "One diagnostic execution per framework/worker cell is not an admitted performance comparison, statistical sample set or majority-scenario 2x proof.",
+    "Original tests and shared corrected signup helper are retained. Passing on-first-retry runs with zero retries do not exercise retry-time trace creation."
+  ]
+}
