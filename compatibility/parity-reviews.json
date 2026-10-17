@@ -1508,8 +1508,8 @@
       "title": "Automatic runner tracing",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Browser-context traces for all eight pinned policy spellings, retention across retries, public stock/module/worker contexts, attachments, source locations and actual pinned viewer loading. 514 public attempts, 21 boundary cases and six viewer cases are retained. The selected native API fixture/manual enrollment adds retry archive verification, six API coordinator cases and eighteen public/fixture coordinator cases.",
-      "limitations": "Live traces and video remain unavailable. Creation without an original attempt owner retains its explicit incomplete-capture boundary. Capture limits and diagnostic failures preserve the original test outcome. Public API coverage is the selected request slice only. The packed backend runs used tracing off; trace-enabled backend execution and the draft final artifact policy remain unverified. No full current release-core, native Linux, release publication or performance acceptance.",
+      "scope": "Browser-context traces for all eight pinned policy spellings, retention across retries, public stock/module/worker contexts, attachments, source locations and actual pinned viewer loading. 514 public attempts, 21 boundary cases and six viewer cases are retained. The selected native API fixture/manual enrollment adds retry archive verification, six API coordinator cases and eighteen public/fixture coordinator cases. Native Linux development aliases pass all 62 backend tests at workers 1 and 4 with trace on for both engines; 248 archives and 28 selected offline DOM/form/style/image/source states are verified.",
+      "limitations": "Live traces and video remain unavailable. Creation without an original attempt owner retains its explicit incomplete-capture boundary. Capture limits and diagnostic failures preserve the original test outcome. Public API coverage is the selected request slice only. The packed backend runs used tracing off. Linux local-alias trace-on passing attempts are verified separately; packed backend tracing, final retry policy, full release coverage and performance acceptance remain open.",
       "defaults": "Trace defaults to off. Enabled runner policies use pinned screenshots/snapshots/sources/attachments defaults; boolean overrides are covered. Missing object mode follows the pinned off default.",
       "differences": [],
       "implementation": [
@@ -1535,6 +1535,11 @@
         {
           "path": "compatibility/evidence/public-request-checkpoint-2026-10-11.json",
           "sha256": "f6873fc3f1bc502b7260de7c8255bf0c43f5b67a0b9315d3845c53e586d65cdb",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/backend-trace-linux-checkpoint-2026-10-17.json",
+          "sha256": "50bdd4a827734a9265d2f52626dd83e535bba741fafbcc16a0ecbee9ffe7b6c3",
           "kind": "conformance"
         }
       ],
@@ -1570,8 +1575,8 @@
       "title": "Native public requests and request fixture",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Canonical library/runner request identity; fresh native standalone contexts and lazy per-test request fixtures; original hook/retry/timeout ownership; supported runner defaults; numeric query parameters; binary POST data; status, JSON, text and byte responses; canonical manual/runner API tracing. The unchanged typed Mailpit helper passes fresh direct/alias packed consumers on Bun and Node 22/24 against a local HTTP fixture implementing its endpoints; this is separate from real Mailpit/application coverage. Separately, all 62 original backend tests pass at workers 1 and 4 in one fresh packed alias test consumer using its installed release-build driver, unchanged test/helper bodies, the common prebuilt frontend and fresh real PostgreSQL/Mailpit state. Tracing, video and screenshots are off.",
-      "limitations": "Only the listed methods/options and exercised value classes are reviewed. GET query objects use string/number values; the public request checkpoint verifies binary POST data, not every data/form/multipart overload. Storage defaults cover cookie state objects/files, not all descendant fields. Project-level header/credential configuration, proxy/client certificates, page.request, browserContext.request, route.fetch and toBeOK remain outside this admission. The public request checkpoint retains historical release and later development/debug evidence; the packed backend gate uses its separately recorded release-build driver. One fresh test consumer and the common prebuilt frontend do not establish fresh full application install/build, current full-core, native Linux, release publication or performance acceptance. Trace-enabled backend execution, the draft final on-first-retry trace policy and complete owned-resource collector admission remain open.",
+      "scope": "Canonical library/runner request identity; fresh native standalone contexts and lazy per-test request fixtures; original hook/retry/timeout ownership; supported runner defaults; numeric query parameters; binary POST data; status, JSON, text and byte responses; canonical manual/runner API tracing. The unchanged typed Mailpit helper passes fresh direct/alias packed consumers on Bun and Node 22/24 against a local HTTP fixture implementing its endpoints; this is separate from real Mailpit/application coverage. Separately, all 62 original backend tests pass at workers 1 and 4 in one fresh packed alias test consumer using its installed release-build driver, unchanged test/helper bodies, the common prebuilt frontend and fresh real PostgreSQL/Mailpit state. Tracing, video and screenshots are off. Native Linux development aliases pass all 62 backend tests at workers 1 and 4 with trace on for both engines; 248 archives and 28 selected offline DOM/form/style/image/source states are verified.",
+      "limitations": "Only the listed methods/options and exercised value classes are reviewed. GET query objects use string/number values; the public request checkpoint verifies binary POST data, not every data/form/multipart overload. Storage defaults cover cookie state objects/files, not all descendant fields. Project-level header/credential configuration, proxy/client certificates, page.request, browserContext.request, route.fetch and toBeOK remain outside this admission. The public request checkpoint retains historical release and later development/debug evidence; the packed backend gate uses its separately recorded release-build driver. One fresh test consumer and the common prebuilt frontend do not establish fresh full application install/build, current full-core, native Linux, release publication or performance acceptance. Native Linux local-alias backend trace-on execution is verified separately. Packed backend tracing, the final on-first-retry policy and complete owned-resource collector admission remain open.",
       "defaults": "Ordinary library contexts retain their own defaults. Runner fixture/manual factories inherit supported baseURL, storageState, userAgent and actionTimeout; runner actionTimeout 0 stays unlimited. Own undefined clears the first three inherited options, while undefined timeout inherits actionTimeout. Each test fixture owns a fresh jar and disposes it; manually created contexts remain caller-owned. Tracing is lazy and manual screenshots/snapshots/sources default false.",
       "differences": [
         "Native null/string context timeout values reject at construction outside the numeric declaration. Pinned Playwright accepts construction; null uses its default and a string fails on fetch.",
@@ -1617,6 +1622,11 @@
         {
           "path": "compatibility/evidence/backend-corpus-packed-checkpoint-2026-10-11.json",
           "sha256": "de2319d49b821c30cc177843cd7164a841a794bd4344247772f88345114402d8",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/backend-trace-linux-checkpoint-2026-10-17.json",
+          "sha256": "50bdd4a827734a9265d2f52626dd83e535bba741fafbcc16a0ecbee9ffe7b6c3",
           "kind": "conformance"
         }
       ],
