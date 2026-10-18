@@ -124,6 +124,22 @@ build executable: link first.o second$ variant.o
     assert.deepEqual(readFileSync(buildLog), logBefore);
     assert.equal(statSync(buildLog, { bigint: true }).mtimeNs, logTimeBefore);
     assert.deepEqual(objects.map(path => statSync(path, { bigint: true }).mtimeNs), modified);
+    const pinnedPath = resolve(compileFixture, 'third_party/ninja/ninja');
+    rmSync(pinnedPath);
+    link(pinnedPath, override);
+    try {
+      assert.match(invoke(`compile-pinned-${label}`, 'compile-chromium-sources.mjs',
+        [compileFixture, 'out/development', 'shared input.cc'], false), /refusing to open build metadata/);
+      assert.match(invoke(`build-pinned-${label}`, 'build-chromium.mjs',
+        ['--dry-run', compileFixture, 'out/development', 'executable'], false), /refusing to open build metadata/);
+      assert.equal(readFileSync(calls, 'utf8'), '--version\n--version\n--version\n');
+      assert.deepEqual(readFileSync(buildLog), logBefore);
+      assert.equal(statSync(buildLog, { bigint: true }).mtimeNs, logTimeBefore);
+      assert.deepEqual(objects.map(path => statSync(path, { bigint: true }).mtimeNs), modified);
+    } finally {
+      rmSync(pinnedPath);
+      link(pinnedPath, executables.ninja);
+    }
   }
   compile('compile-unchanged', ['shared input.cc', 'shared input.cc']);
   assert.deepEqual(objects.map(path => statSync(path, { bigint: true }).mtimeNs), modified);
@@ -171,6 +187,41 @@ build executable: link first.o second$ variant.o
   const outside = resolve(fixture, 'outside.cc');
   write(outside, 'int outside;\n');
   assert.match(compile('compile-outside', [outside], false), /source inside the checkout/);
+}
+
+function verifyFullBuild() {
+  const source = resolve(fixture, 'full build');
+  const output = resolve(source, 'out/development');
+  link(resolve(source, 'third_party/ninja/ninja'), executables.ninja);
+  link(resolve(source, 'compiler'), executables.compiler);
+  write(resolve(source, 'entry.cc'), 'int main() { return 0; }\n');
+  write(resolve(output, 'build.ninja'), `rule compile
+  command = ../../compiler -c $in -o $out
+rule link
+  command = ../../compiler $in -o $out
+build entry.o: compile ../../entry.cc
+build application: link entry.o
+`);
+  const build = (label, options = [], succeeds = true, targets = ['application']) => invoke(label, 'build-chromium.mjs',
+    [...options, source, 'out/development', ...targets], succeeds);
+  build('build-dry-run', ['--jobs=2', '--dry-run']);
+  assert.equal(existsSync(resolve(output, 'entry.o')), false);
+  assert.equal(existsSync(resolve(output, 'application')), false);
+  build('build-and-link', ['--jobs=2']);
+  invokeCommand('build-executable-runs', resolve(output, 'application'), []);
+  const artifacts = ['entry.o', 'application'].map(name => resolve(output, name));
+  const modified = artifacts.map(path => statSync(path, { bigint: true }).mtimeNs);
+  assert.match(build('build-unchanged'), /no work to do/);
+  assert.deepEqual(artifacts.map(path => statSync(path, { bigint: true }).mtimeNs), modified);
+  write(resolve(source, 'entry.cc'), '#error retained_compilation_failure\n');
+  assert.match(build('build-propagates-failure', [], false), /retained_compilation_failure/);
+  assert.equal(statSync(artifacts[1], { bigint: true }).mtimeNs, modified[1]);
+  const buildLog = resolve(output, '.ninja_log');
+  const logBefore = readFileSync(buildLog);
+  for (const options of [['--jobs=0'], ['--jobs=1', '--jobs=2'], ['--dry-run=true']]) build('build-invalid-' + options.join('_'), options, false);
+  build('build-rejects-option-target', [], false, ['--version']);
+  invoke('build-rejects-outside-output', 'build-chromium.mjs', [source, resolve(compileFixture, 'out/development'), 'application'], false);
+  assert.deepEqual(readFileSync(buildLog), logBefore);
 }
 
 function verifyConfiguration() {
@@ -249,14 +300,18 @@ executable("tests") { deps = [ ":runtime", ":shared" ] }
 }
 
 verifyCompilation();
+verifyFullBuild();
 verifyConfiguration();
-const helperHashes = Object.fromEntries(['compile-chromium-sources.mjs', 'configure-chromium-build.mjs'].map(name =>
+const helperHashes = Object.fromEntries(['build-chromium.mjs', 'chromium-build-common.mjs', 'compile-chromium-sources.mjs', 'configure-chromium-build.mjs'].map(name =>
   [name, createHash('sha256').update(readFileSync(resolve(repository, 'tools', name))).digest('hex')]));
 write(resolve(run, 'result.json'), JSON.stringify({
   status: 'passed', platform: process.platform, helperHashes,
   singlePassNinjaSha256: singlePassNinja && createHash('sha256').update(readFileSync(singlePassNinja)).digest('hex'),
   checks: ['regeneration-before-query', 'multiple-source-variants', 'paths-with-spaces', 'no-link',
     'incompatible-override-rejected-before-metadata-access', 'failed-version-query-rejected-before-metadata-access',
+    'incompatible-pinned-tool-rejected-before-metadata-access', 'failed-pinned-version-rejected-before-metadata-access',
+    'full-build-dry-run-without-compilation', 'full-build-links-runnable-executable', 'full-build-no-op',
+    'full-build-retains-compiler-failure', 'full-build-rejects-invalid-arguments-and-output',
     'unchanged-object-reuse', 'independent-errors', 'unselected-and-outside-source-rejection',
     'discovered-header-dependencies', 'variant-added-after-warm-build', 'removed-variant-not-selected',
     'regeneration-failure-before-compilation', 'regeneration-recovery',
