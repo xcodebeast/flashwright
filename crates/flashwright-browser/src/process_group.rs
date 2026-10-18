@@ -95,10 +95,9 @@ fn has_live_members(group: Pid) -> io::Result<bool> {
         if entry.file_name().to_string_lossy().parse::<u32>().is_err() {
             continue;
         }
-        let information = match std::fs::read_to_string(entry.path().join("stat")) {
-            Ok(information) => information,
-            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
-            Err(error) => return Err(error),
+        let information = match read_member_information(&entry.path().join("stat"))? {
+            Some(information) => information,
+            None => continue,
         };
         let (_, fields) = information
             .rsplit_once(") ")
@@ -114,6 +113,21 @@ fn has_live_members(group: Pid) -> io::Result<bool> {
     Ok(false)
 }
 
+#[cfg(target_os = "linux")]
+fn read_member_information(path: &std::path::Path) -> io::Result<Option<String>> {
+    match std::fs::read_to_string(path) {
+        Ok(information) => Ok(Some(information)),
+        // A proc inode can outlive its task: opening succeeds, but reading returns ESRCH.
+        Err(error)
+            if error.kind() == io::ErrorKind::NotFound
+                || error.raw_os_error() == Some(nix::libc::ESRCH) =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(error),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,6 +135,40 @@ mod tests {
     use std::os::unix::process::CommandExt;
     use std::process::{Command, Stdio};
     use std::time::Instant;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn process_disappearing_after_stat_open_is_not_an_enumeration_failure() {
+        use std::os::fd::AsRawFd;
+
+        let mut child = Command::new("sleep").arg("30").spawn().unwrap();
+        let stat = std::fs::File::open(format!("/proc/{}/stat", child.id())).unwrap();
+        child.kill().unwrap();
+        child.wait().unwrap();
+
+        // Reopen the retained proc inode to exercise the same read path as enumeration.
+        let retained = std::path::PathBuf::from(format!("/proc/self/fd/{}", stat.as_raw_fd()));
+        let error = std::fs::read_to_string(&retained).unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(nix::libc::ESRCH));
+        assert_eq!(read_member_information(&retained).unwrap(), None);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn member_information_preserves_other_read_failures() {
+        let directory = tempfile::tempdir().unwrap();
+        assert!(read_member_information(directory.path()).is_err());
+        assert_eq!(
+            read_member_information(&directory.path().join("missing")).unwrap(),
+            None
+        );
+        let invalid = directory.path().join("invalid");
+        std::fs::write(&invalid, [0xff]).unwrap();
+        assert_eq!(
+            read_member_information(&invalid).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+    }
 
     #[test]
     fn termination_waits_for_members_after_the_leader_exits() {
