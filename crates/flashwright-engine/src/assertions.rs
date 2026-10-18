@@ -15,6 +15,7 @@ const EXPRESSIONS: &[&str] = &[
     "to.contain.text.array",
     "to.have.count",
     "to.be.visible",
+    "to.be.in.viewport",
     "to.be.hidden",
     "to.be.enabled",
     "to.be.disabled",
@@ -139,7 +140,16 @@ impl Engine {
                         is_not: request.is_not,
                         units: Cow::Borrowed(units),
                     };
-                    let wait = if !self.resident_assertions {
+                    let viewport = expression == "to.be.in.viewport";
+                    // Native intersection is asynchronous even for one observation.
+                    // Always own its cancellation, and bound child waits so changing
+                    // ancestor selectors cannot publish a stale child's success.
+                    let wait = if viewport && selector.crosses_frames() && has_frame {
+                        used_frame_lease = true;
+                        AssertionWait::FrameLease([20, 50, 100][attempts.min(2)])
+                    } else if viewport && !selector.crosses_frames() {
+                        AssertionWait::Resident
+                    } else if !self.resident_assertions {
                         AssertionWait::Snapshot
                     } else if !selector.crosses_frames() {
                         AssertionWait::Resident
@@ -159,24 +169,26 @@ impl Engine {
                         }
                         // Keep the ordinary single-observation fast path. Only a
                         // result obtained after waiting needs ancestry revalidation.
-                        let immediate = self
-                            .assertion_attempt(
-                                &page,
-                                &browser,
-                                &realm,
-                                &current,
-                                operation,
-                                AssertionWait::Snapshot,
-                            )
-                            .await?
-                            .value;
-                        let Some(current_observation) = terminal_observation(&immediate) else {
-                            return Ok(immediate);
-                        };
-                        if current_observation["matches"].as_bool() != Some(request.is_not) {
-                            return Ok(immediate);
+                        if !viewport {
+                            let immediate = self
+                                .assertion_attempt(
+                                    &page,
+                                    &browser,
+                                    &realm,
+                                    &current,
+                                    operation,
+                                    AssertionWait::Snapshot,
+                                )
+                                .await?
+                                .value;
+                            let Some(current_observation) = terminal_observation(&immediate) else {
+                                return Ok(immediate);
+                            };
+                            if current_observation["matches"].as_bool() != Some(request.is_not) {
+                                return Ok(immediate);
+                            }
+                            observation = Some(current_observation);
                         }
-                        observation = Some(current_observation);
                     }
                     let attempt = self
                         .assertion_attempt(&page, &browser, &realm, &current, operation, wait)

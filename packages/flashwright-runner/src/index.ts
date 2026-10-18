@@ -4,6 +4,7 @@ import { runnerIntegration } from '@flashwright/core/runner-integration';
 import { chromium, request as requestFactory, failure, type APIRequestContext, type Browser, type BrowserContext, type Page, type LaunchOptions, type BrowserContextOptions, type ViewportSize } from '@flashwright/core';
 import type { PlaywrightTestOptions, PlaywrightWorkerOptions, ExpectMatcherState } from 'flashwright-upstream-runner/test';
 import { matchers } from './matchers.js';
+import { toBeOK } from './response-matcher.js';
 import { toMatchAriaSnapshot } from './aria-matcher.js';
 import { screenshotPolicy } from './screenshot-policy.js';
 import { validateTracePolicy } from './trace-policy.js';
@@ -39,7 +40,7 @@ function unsupportedMatcher(name: string) {
 }
 export const expect = upstream.expect.extend({}).extend({
   ...matchers,
-  toBeInViewport: unsupportedMatcher('toBeInViewport'), toBeOK: unsupportedMatcher('toBeOK'),
+  toBeOK,
   toHaveJSProperty: unsupportedMatcher('toHaveJSProperty'),
   toHaveScreenshot: unsupportedMatcher('toHaveScreenshot'),
   toMatchAriaSnapshot,

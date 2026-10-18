@@ -160,6 +160,8 @@ const commands = [
   ['python3', 'tools/watchdog.py', '--timeout', '120', '--report-directory', join(destination, 'public-aria-viewer-resources'), '--', process.execPath, 'tools/test-public-aria-viewer.mjs', join(destination, 'public-aria/report.json'), join(destination, 'public-aria-viewer')],
   [process.execPath, 'tools/run-application-suite.mjs', join(destination, 'offline-todomvc'), 'todomvc'],
   [process.execPath, 'tools/test-matcher-context-runtime.mjs'],
+  [process.execPath, 'tools/test-viewport-observer-lifetime.mjs'],
+  [process.execPath, 'tools/run-viewport-response-matchers.mjs', join(destination, 'viewport-response-matchers'), '--candidate'],
   [process.execPath, 'tools/test-common-matchers.mjs', join(destination, 'common-matchers-host')],
   [process.execPath, 'node_modules/typescript/bin/tsc', '--noEmit', '--strict', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'compatibility/m2/common-matchers-types.ts'],
   [process.execPath, 'tools/run-common-matcher-tests.mjs', join(destination, 'common-matchers'), '--candidate'],

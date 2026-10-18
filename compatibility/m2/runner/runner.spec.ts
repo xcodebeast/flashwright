@@ -61,5 +61,5 @@ test('runner timeout tears down an unbounded native assertion', async ({ page })
   await expect(page.locator('#never')).toHaveText('never', { timeout: 0 });
 });
 test('unimplemented browser matchers reject explicitly', async ({ page }) => {
-  await assert.rejects(async () => { await expect(page.getByRole('status')).toBeInViewport(); }, error => error instanceof Error && error.name === 'UnsupportedFeatureError' && error.message.includes('expect.toBeInViewport'));
+  await assert.rejects(async () => { await expect(page.getByRole('status')).toHaveJSProperty('unimplemented', true); }, error => error instanceof Error && error.name === 'UnsupportedFeatureError' && error.message.includes('expect.toHaveJSProperty'));
 });

@@ -151,12 +151,17 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     conditions.delete(condition.token);
     dirtyConditions.delete(condition);
     condition.check = undefined;
+    const cleanup = condition.cleanup;
+    condition.cleanup = undefined;
+    try { cleanup?.(); }
+    catch (error) { result = { status: 'error', message: String(error?.stack ?? error).slice(0, 16384) }; }
     condition.resolve(result);
     if (!conditions.size) stop();
     else {
       scheduleDeadline();
       if (condition.animationFramesOnly) queueFallbackScheduling();
     }
+    return result;
   }
 
   function scheduleDeadline() {
@@ -369,17 +374,18 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
   }
 
   /** Subscribe before checking, without retaining a locator's element or truth value. */
-  function wait({ token, timeoutMilliseconds = null, isNot = false, check, canShareSelectorQueries = false, animationFramesOnly = false }) {
+  function wait({ token, timeoutMilliseconds = null, isNot = false, check, cleanup, canShareSelectorQueries = false, animationFramesOnly = false }) {
     if (typeof token !== 'string' || !token || typeof check !== 'function' || typeof isNot !== 'boolean' || typeof canShareSelectorQueries !== 'boolean' || typeof animationFramesOnly !== 'boolean') throw new Error('Invalid condition registration');
     if (timeoutMilliseconds !== null && (!Number.isFinite(timeoutMilliseconds) || timeoutMilliseconds < 0)) throw new Error('Invalid condition timeout');
     if (animationFramesOnly && timeoutMilliseconds === null) throw new Error('Frame-only conditions require a finite timeout');
+    if (cleanup !== undefined && typeof cleanup !== 'function') throw new Error('Invalid condition cleanup');
     if (conditions.has(token)) throw new Error('Condition token is already registered');
     if (conditions.size >= maximumConditions) return Promise.resolve({ status: 'limit', message: 'Document condition limit exceeded' });
     const registeredAt = performance.now();
     const deadline = timeoutMilliseconds === null ? Infinity : registeredAt + timeoutMilliseconds;
     if (!conditions.size) begin();
     return new Promise(resolve => {
-      const condition = { token, deadline, registeredAt, lastCheckStartedAt: registeredAt, isNot, check, canShareSelectorQueries, animationFramesOnly, resolve, observation: null, dirty: !animationFramesOnly, running: false };
+      const condition = { token, deadline, registeredAt, lastCheckStartedAt: registeredAt, isNot, check, cleanup, canShareSelectorQueries, animationFramesOnly, resolve, observation: null, dirty: !animationFramesOnly, running: false };
       conditions.set(token, condition);
       scheduleDeadline();
       if (animationFramesOnly) queueFallbackScheduling();
@@ -391,8 +397,7 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
     const condition = conditions.get(token);
     if (!condition) return null;
     const result = { status: 'cancelled', observation: condition.observation };
-    finish(condition, result);
-    return result;
+    return finish(condition, result);
   }
 
   function dispose() {
@@ -401,6 +406,11 @@ function createConditionRegistry({ instrumentation = false, observeMutations = t
 
   /** document.open removes event listeners without destroying this world or its pending waits. */
   function documentReplaced() {
+    // An asynchronous observation may still retain a node from document.open's
+    // retired tree. Let its host retry against the replacement document.
+    for (const condition of [...conditions.values()]) {
+      if (condition.cleanup) finish(condition, { status: 'cancelled', observation: condition.observation });
+    }
     if (!conditions.size) return;
     stop();
     // stop() retires queued checks. Frame-only registrations resume on a fresh

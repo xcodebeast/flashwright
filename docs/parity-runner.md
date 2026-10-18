@@ -801,7 +801,7 @@
 | playwright/types/test.d.ts.mergeExpects.expects#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.export:export { };#1 | export | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.APIResponseAssertions#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.APIResponseAssertions.toBeOK#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#runner-unavailable-matchers) |
+| playwright/types/test.d.ts.APIResponseAssertions.toBeOK#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#viewport-response-matchers) |
 | playwright/types/test.d.ts.APIResponseAssertions.not#1 | PropertySignature | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions#1 | InterfaceDeclaration | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toBeAttached#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#baseline-matchers) |
@@ -833,10 +833,10 @@
 | playwright/types/test.d.ts.LocatorAssertions.toBeHidden#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#baseline-matchers) |
 | playwright/types/test.d.ts.LocatorAssertions.toBeHidden.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toBeHidden.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport#1 | MethodSignature | unsupported / explicit-rejection | [scope and evidence](compatibility.md#runner-unavailable-matchers) |
-| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport.options#1 | parameter | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport.options.ratio#1 | PropertySignature | planned / unverified | Unreviewed |
-| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |
+| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#viewport-response-matchers) |
+| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport.options#1 | parameter | experimental / verified-subset | [scope and evidence](compatibility.md#viewport-response-matchers) |
+| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport.options.ratio#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#viewport-response-matchers) |
+| playwright/types/test.d.ts.LocatorAssertions.toBeInViewport.options.timeout#1 | PropertySignature | experimental / verified-subset | [scope and evidence](compatibility.md#viewport-response-matchers) |
 | playwright/types/test.d.ts.LocatorAssertions.toBeVisible#1 | MethodSignature | experimental / verified-subset | [scope and evidence](compatibility.md#baseline-matchers) |
 | playwright/types/test.d.ts.LocatorAssertions.toBeVisible.options#1 | parameter | planned / unverified | Unreviewed |
 | playwright/types/test.d.ts.LocatorAssertions.toBeVisible.options.timeout#1 | PropertySignature | planned / unverified | Unreviewed |

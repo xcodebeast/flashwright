@@ -48,7 +48,7 @@ assert.equal(direct.chromium, require('flashwright').chromium);
 assert.equal(aliased.chromium, require('playwright').chromium);
 assert.equal('runnerIntegration' in direct, false);
 assert.equal('runnerIntegration' in aliased, false);
-assert.equal(runnerIntegration.version, 13);
+assert.equal(runnerIntegration.version, 14);
 assert.throws(() => runnerIntegration.beginTraceRecordingWithActions(10, {}, {}, {}), error => error.name === 'ProtocolError');
 assert.throws(() => runnerIntegration.beginTraceRecordingChunk(10, {}, {}, {}), error => error.name === 'ProtocolError');
 assert.throws(() => runnerIntegration.discardTraceChunk(10, {}, {}), error => error.name === 'ProtocolError');
