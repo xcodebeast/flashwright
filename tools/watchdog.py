@@ -11,8 +11,27 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
+
+
+def publish_report(path, report):
+    """Expose a complete report atomically without replacing prior evidence."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                         prefix="." + path.name + ".", delete=False) as handle:
+            temporary = Path(handle.name)
+            json.dump(report, handle, indent=2)
+            handle.write("\n")
+        # A same-directory hard link publishes only after close, and fails if
+        # another writer has already claimed this immutable report path.
+        os.link(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink()
 
 
 class RootProcessCpuAccounting:
@@ -384,10 +403,7 @@ def main():
                 capture_context["error"] = type(error).__name__ + ": " + str(error)
             report["captureContext"] = capture_context
         if arguments.report:
-            arguments.report.parent.mkdir(parents=True, exist_ok=True)
-            with arguments.report.open("x") as report_file:
-                json.dump(report, report_file, indent=2)
-                report_file.write("\n")
+            publish_report(arguments.report, report)
     capture_failed = capture_context is not None and capture_context["status"] != "verified"
     return 124 if timed_out else 130 if interrupted else 125 if remaining or child.returncode is None or capture_failed else child.returncode
 
