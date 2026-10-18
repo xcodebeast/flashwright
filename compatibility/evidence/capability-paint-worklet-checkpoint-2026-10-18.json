@@ -1,0 +1,720 @@
+{
+  "schemaVersion": 1,
+  "status": "passed-private-paint-worklet-boundary-correction",
+  "performanceAdmission": false,
+  "scope": "Native painting exclusion in the private capability-contract prototype. This is not a public test.defineFeatures implementation or complete implicit-dependency enforcement.",
+  "browserSha256": "938aa733d5b38b4e7f16f1ff4a6a54aded5501e3719857be4edd18b6c5ea838c",
+  "priorBrowserSha256": "8416d09b7a1433f5797ae07e52847899f99cd260e5f7eda1804bc47e079ec8fa",
+  "driverSha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c",
+  "finding": "The preceding prototype admitted CSS paint worklet modules and fetched application code in main, same-site child and cross-site child frames despite painting exclusion. The negative control is retained.",
+  "correction": "The native Worklet.addModule boundary consults a paint-specific virtual predicate and rejects before pending task allocation, worklet scope creation or module fetch. API availability probes stay unchanged. Audio worklets and painting-enabled/capture-disabled profiles remain functional. The private host adapter preserves the operation name when reporting an uncaught native violation.",
+  "controls": [
+    {
+      "name": "before-ordinary",
+      "reportSha256": "9215629b50068dbd0340553cfa4406767f8697bd8ab44cac57d0fe16452a04b4",
+      "status": "passed",
+      "resources": {
+        "sha256": "eea6729e6b07ef607cbb0d373230e7e07996d51d1f8227aaafacdd0afe212f52",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "mode": "ordinary",
+      "browserSha256": "8416d09b7a1433f5797ae07e52847899f99cd260e5f7eda1804bc47e079ec8fa",
+      "paintRequests": [
+        "/paint-cross.js",
+        "/paint-main.js",
+        "/paint-same.js"
+      ],
+      "audio": {
+        "length": 128,
+        "first": 0.25,
+        "last": 0.25
+      },
+      "probes": [
+        {
+          "name": "main",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "same",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "cross",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "name": "before-no-paint",
+      "reportSha256": "797649406ca042c73b7aff71d52792b5d4b29244f98afa7d62f6e0d7f848b5d9",
+      "status": "failed",
+      "resources": {
+        "sha256": "7c6d6bff84aa7f6fdb41ad76322dcd548124d2937ae00d86f51285cb3fc08b6b",
+        "exitCode": 1,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "mode": "no-paint",
+      "browserSha256": "8416d09b7a1433f5797ae07e52847899f99cd260e5f7eda1804bc47e079ec8fa",
+      "paintRequests": [
+        "/paint-main.js",
+        "/paint-same.js",
+        "/paint-cross.js"
+      ],
+      "audio": {
+        "length": 128,
+        "first": 0.25,
+        "last": 0.25
+      },
+      "probes": [
+        {
+          "name": "main",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "same",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "cross",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "name": "fixed-ordinary",
+      "reportSha256": "a5398b377b48e9667106cf28f6df243a86aa7b1afda73cf64b59d306b65a6d17",
+      "status": "passed",
+      "resources": {
+        "sha256": "6322031394fdbc4ad5ec35a818aa6db3cc054476186e000f4f1020f7e8cc666b",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "mode": "ordinary",
+      "browserSha256": "938aa733d5b38b4e7f16f1ff4a6a54aded5501e3719857be4edd18b6c5ea838c",
+      "paintRequests": [
+        "/paint-cross.js",
+        "/paint-main.js",
+        "/paint-same.js"
+      ],
+      "audio": {
+        "length": 128,
+        "first": 0.25,
+        "last": 0.25
+      },
+      "probes": [
+        {
+          "name": "main",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "same",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "cross",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "name": "fixed-no-capture",
+      "reportSha256": "9170c9f391366dcc65e6e3e7b68f8f03bca6df970d88a3ecbd543290acdea6a1",
+      "status": "passed",
+      "resources": {
+        "sha256": "6ae2c0029bcb4e5b5901a50c25173d31021a20357a96a1f46c8908575b90782d",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "mode": "no-capture",
+      "browserSha256": "938aa733d5b38b4e7f16f1ff4a6a54aded5501e3719857be4edd18b6c5ea838c",
+      "paintRequests": [
+        "/paint-cross.js",
+        "/paint-main.js",
+        "/paint-same.js"
+      ],
+      "audio": {
+        "length": 128,
+        "first": 0.25,
+        "last": 0.25
+      },
+      "probes": [
+        {
+          "name": "main",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "same",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        },
+        {
+          "name": "cross",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "name": "fixed-no-paint",
+      "reportSha256": "9559dadc256b90156adadc5473434d77341690c83ec88e1d9a50ad976db18a0c",
+      "status": "passed",
+      "resources": {
+        "sha256": "f7f132896882b90b557a69e5b4062a78229ca962bb9228d97e81b5a23a9fb3e8",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "mode": "no-paint",
+      "browserSha256": "938aa733d5b38b4e7f16f1ff4a6a54aded5501e3719857be4edd18b6c5ea838c",
+      "paintRequests": [],
+      "audio": {
+        "length": 128,
+        "first": 0.25,
+        "last": 0.25
+      },
+      "probes": [
+        {
+          "name": "main",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": false,
+          "error": {
+            "name": "NotSupportedError",
+            "message": "Failed to execute 'addModule' on 'Worklet': FlashwrightCapabilityError: painting: CSS.paintWorklet.addModule is excluded by this attempt's frozen contract"
+          }
+        },
+        {
+          "name": "same",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": false,
+          "error": {
+            "name": "NotSupportedError",
+            "message": "Failed to execute 'addModule' on 'Worklet': FlashwrightCapabilityError: painting: CSS.paintWorklet.addModule is excluded by this attempt's frozen contract"
+          }
+        },
+        {
+          "name": "cross",
+          "availability": {
+            "property": true,
+            "addModule": "function",
+            "css": true
+          },
+          "accepted": false,
+          "error": {
+            "name": "NotSupportedError",
+            "message": "Failed to execute 'addModule' on 'Worklet': FlashwrightCapabilityError: painting: CSS.paintWorklet.addModule is excluded by this attempt's frozen contract"
+          }
+        }
+      ]
+    },
+    {
+      "name": "uncaught-pw",
+      "reportSha256": "d05d742a158e3a5375dd0e420cea09f7e926833ff62869f04dc20e7ab6416d14",
+      "status": "passed",
+      "resources": {
+        "sha256": "b6b707a189613f22abd91ad7f6f65dbd63e8a011b99bd94b90bf9f3538e60659",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "engine": "playwright",
+      "healthAndCloseRejected": true,
+      "event": {
+        "name": "NotSupportedError",
+        "message": "Failed to execute 'addModule' on 'Worklet': FlashwrightCapabilityError: painting: CSS.paintWorklet.addModule is excluded by this attempt's frozen contract"
+      }
+    },
+    {
+      "name": "uncaught-fw",
+      "reportSha256": "0d321dbe8f4dae05884600c0e62b9744b2ddae43e647ee5f3c871da8a23b35cf",
+      "status": "passed",
+      "resources": {
+        "sha256": "ab10f88a10b948f9700e304bed1253ffdb3d0fbea7e97f758c58d3ed847554f0",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "engine": "@flashwright/test",
+      "healthAndCloseRejected": true,
+      "event": {
+        "name": "NotSupportedError",
+        "message": "Failed to execute 'addModule' on 'Worklet': FlashwrightCapabilityError: painting: CSS.paintWorklet.addModule is excluded by this attempt's frozen contract"
+      }
+    }
+  ],
+  "applications": [
+    {
+      "application": "todomvc",
+      "mode": "ordinary",
+      "workers": 1,
+      "tests": 24,
+      "verificationSha256": "796be43170fb86519157777c1030e2b8fa3ac9735afc2da68cc8dcf0d8d6c24b",
+      "reportSha256": "c2dd3ebb1c2aba731338b5c269e4b4de4d8f2a8940eedd41978579d5bca80561",
+      "ownerReportSha256": "f9073f0a394b8c6e311dcc5ece7f1c2931d5e4abf08b94d1aab8506481af24c8",
+      "resources": {
+        "sha256": "c9364fc5163509a142323bbe8e16c0c44903a8515c69297c3dc453306b2223d5",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "todomvc",
+      "mode": "no-paint",
+      "workers": 1,
+      "tests": 24,
+      "verificationSha256": "3fa00c6ca52433b3209b45e1321c907c8e5aecc13d75630fdf86371c5dc77197",
+      "reportSha256": "3aa56e1dcc0e708a771131669f5d30e89743e159103425f48c3963ca2a3a1d5b",
+      "ownerReportSha256": "e7f8fd1ff5ebb7f081553dd061488ec22ad91f14e52fa24b11d5cde1b4793c88",
+      "resources": {
+        "sha256": "a62d248705604d09abddf44c1134f252752c02ac75ed34ca61b287aefa964ba7",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "svgomg",
+      "mode": "no-paint",
+      "workers": 1,
+      "tests": 6,
+      "verificationSha256": "51b23e039b0577e3ef950533874a571b144115f6ec5309b3ef354fc5da77167f",
+      "reportSha256": "94aabeb046a99072f9b175d53b52b644fb56398d217308ece4a96fff60866a15",
+      "ownerReportSha256": "fd7fb6894a815c08f37e35eed43b79b60a3db7105f2a536a576d540668d1dd96",
+      "resources": {
+        "sha256": "b9eac8a636250ad077ad4be46916d96c92faa93cd8b78e01d6fe5fd76f309cf5",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "svgomg",
+      "mode": "ordinary",
+      "workers": 1,
+      "tests": 6,
+      "verificationSha256": "a10861248138faa4061fa5dc9ff43b96272b7332bf38c81f2d8d7f6a158d5d5b",
+      "reportSha256": "23ba5c5d9a418d63e94a7191a618317f7a066175ed51c8c78a80f729746aa0bc",
+      "ownerReportSha256": "2c590ea3aede583a30f948d9ebec7d5edc75ae3348b54141bdc524835fbf03ce",
+      "resources": {
+        "sha256": "540e211addf30217f8b7a979ab44f67537ed7b732395e75c3c240cc2c33054d9",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "todomvc",
+      "mode": "no-paint",
+      "workers": 4,
+      "tests": 24,
+      "verificationSha256": "c8a5842ea9f25785a7d68acf050d41034eaa82d09c0efd2e3d59d0d829d0c144",
+      "reportSha256": "33edbb1b2a83ad023563ea3b74f2de0eae72506ec9f334b48526797841cb70f2",
+      "ownerReportSha256": "2a289bf1852b0976013530e9b6cbbf6419b35d826d7e37f18e10e1620d8c99a8",
+      "resources": {
+        "sha256": "f2d0f668e6231c0b4c3e97a12e4af5e5fe543abcac325363e8bf6871136ba8a1",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "todomvc",
+      "mode": "ordinary",
+      "workers": 4,
+      "tests": 24,
+      "verificationSha256": "82bc4d12ccd3fec67e5414f8172cb03f809539b88f94801079b96e15ef39f4e4",
+      "reportSha256": "2c14fb2ac6c53493f7ad5bdf93c6f103cd87a3122ef4aeeae3a8525ec4d4b2f0",
+      "ownerReportSha256": "77eb5d6cc9d6cc91696a109f2458e5cb611493835f4f28d47f04bb7932cfc284",
+      "resources": {
+        "sha256": "9e25f4181c500a30df98a588d3f56047bf89ebd17520edf872447b995a7fb61d",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "svgomg",
+      "mode": "ordinary",
+      "workers": 4,
+      "tests": 6,
+      "verificationSha256": "daa48f6b49f99e8ba995e5ca2e55bf1b8879c3075ae8004a447ffee84b8546f6",
+      "reportSha256": "4e006ecebe5e1abeddcb1aab0ba0549072279170a7a2171736b3a9d1fb1f1e0b",
+      "ownerReportSha256": "02055c2be36a9a23c4c539eeffa44c8b4be641e53bbeb79c49b55fb9954227e8",
+      "resources": {
+        "sha256": "e985faac1e124a554a0874a0aff40e2e1f7f4bfbe32d5dc0394035a2f6b4207a",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    },
+    {
+      "application": "svgomg",
+      "mode": "no-paint",
+      "workers": 4,
+      "tests": 6,
+      "verificationSha256": "19866e49519b709541c80c73629333e94420ad99cf97c62d71da94a4b2eeffce",
+      "reportSha256": "5180e2c1a7aa9d29482144d680413eb75956adc3c9ed521001a29153fb8daad5",
+      "ownerReportSha256": "8a20006b559656c6183f87ad423f094f5e16b35ce4a9b47477ee97746ddbbdca",
+      "resources": {
+        "sha256": "35ee8c644741d1904a6903850e4f6f64bb29bae439a753722053b1c2b0fec3b5",
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    }
+  ],
+  "timing": {
+    "rows": [
+      {
+        "engine": "flashwright",
+        "mode": "no-paint",
+        "block": 0,
+        "count": 4096,
+        "completeWorkMilliseconds": 1754.908641,
+        "observedOwnerMilliseconds": 1804.0692470003705,
+        "resultSha256": "0833838665837af81976dfd323f4d7718fa9ac63449f10b297a5807bb072c6c8",
+        "resources": {
+          "sha256": "0e97ec003bb3af0b8db7e746c9ecb26e4196c3fa8f7d246a0c010910fb6aaeca",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "flashwright",
+        "mode": "ordinary",
+        "block": 0,
+        "count": 4096,
+        "completeWorkMilliseconds": 2223.183463,
+        "observedOwnerMilliseconds": 2240.8425789999455,
+        "resultSha256": "e81e55b01fee07c27c1a08870343be5065fc0edbe4a9f3473d2251d8bb14451f",
+        "resources": {
+          "sha256": "dd1f413a915576ecf2080d95cad9cb388f415115581b41c8c32c0630b4213b86",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "playwright",
+        "mode": "no-paint",
+        "block": 0,
+        "count": 4096,
+        "completeWorkMilliseconds": 1845.327148,
+        "observedOwnerMilliseconds": 1913.8151459992514,
+        "resultSha256": "a309bd039f109151a431af6f87072fefed23cb56734b14f2c67743d431ef0dbc",
+        "resources": {
+          "sha256": "cd610bb8281ea63a99358a36dc18aa910cb253c52841ff2de440d514d25585ca",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "playwright",
+        "mode": "ordinary",
+        "block": 0,
+        "count": 4096,
+        "completeWorkMilliseconds": 2495.767758,
+        "observedOwnerMilliseconds": 2553.6497230004898,
+        "resultSha256": "f71557416b131f2c89401707addac78d619e3b389adc396edc195c022ffb8c3e",
+        "resources": {
+          "sha256": "ce26c370a06417b70164644a38e1ba0191b034aea1b16105180755b68b80b572",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "playwright",
+        "mode": "ordinary",
+        "block": 1,
+        "count": 4096,
+        "completeWorkMilliseconds": 2524.376181,
+        "observedOwnerMilliseconds": 2556.903037000666,
+        "resultSha256": "ce7169b7c4be2fb26bf4a08070c882c3f161958efab417f92267842dc6d53420",
+        "resources": {
+          "sha256": "d6d03b787a0c6159ba7b3a1859de8b9300fecd1c3dca06a9d05e85ed1b261805",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "playwright",
+        "mode": "no-paint",
+        "block": 1,
+        "count": 4096,
+        "completeWorkMilliseconds": 1861.509115,
+        "observedOwnerMilliseconds": 1912.2129200004565,
+        "resultSha256": "703d6ecd5648f24b6b3c1904076d9f2ca5ce2181a53f861d8adc0c2c5571e4b3",
+        "resources": {
+          "sha256": "f12b30948a54b6f8fa695302903547f7d5ff65c53966229ebd2c42aca4abb7ce",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "flashwright",
+        "mode": "ordinary",
+        "block": 1,
+        "count": 4096,
+        "completeWorkMilliseconds": 2366.3749300000004,
+        "observedOwnerMilliseconds": 2446.210006999536,
+        "resultSha256": "fbc13f08e4f5560ff3d36be845a450db8b3e56dd3af239699c17482c5fc071d9",
+        "resources": {
+          "sha256": "db748e713a2d821a4c82e09efc88a57c385fb32a8f411729bb3e6cf2100d5574",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      },
+      {
+        "engine": "flashwright",
+        "mode": "no-paint",
+        "block": 1,
+        "count": 4096,
+        "completeWorkMilliseconds": 1737.8059340000002,
+        "observedOwnerMilliseconds": 1806.3123159990937,
+        "resultSha256": "536620621ee7d219c49d620d15433bf3af62fd03b4529431699b912b95312a2c",
+        "resources": {
+          "sha256": "a946c0a666fcb497018a0c7ac816c55dc304fead336c997593d3634e9f74fb44",
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        }
+      }
+    ],
+    "pairs": [
+      {
+        "engine": "flashwright",
+        "block": 0,
+        "completeWorkMilliseconds": {
+          "ordinary": 2223.183463,
+          "noPaint": 1754.908641,
+          "reductionPercent": 21.063255902781066
+        },
+        "observedOwnerMilliseconds": {
+          "ordinary": 2240.8425789999455,
+          "noPaint": 1804.0692470003705,
+          "reductionPercent": 19.49147771881863
+        }
+      },
+      {
+        "engine": "flashwright",
+        "block": 1,
+        "completeWorkMilliseconds": {
+          "ordinary": 2366.3749300000004,
+          "noPaint": 1737.8059340000002,
+          "reductionPercent": 26.562527688712457
+        },
+        "observedOwnerMilliseconds": {
+          "ordinary": 2446.210006999536,
+          "noPaint": 1806.3123159990937,
+          "reductionPercent": 26.15873899499437
+        }
+      },
+      {
+        "engine": "playwright",
+        "block": 0,
+        "completeWorkMilliseconds": {
+          "ordinary": 2495.767758,
+          "noPaint": 1845.327148,
+          "reductionPercent": 26.061744243432116
+        },
+        "observedOwnerMilliseconds": {
+          "ordinary": 2553.6497230004898,
+          "noPaint": 1913.8151459992514,
+          "reductionPercent": 25.055690733083193
+        }
+      },
+      {
+        "engine": "playwright",
+        "block": 1,
+        "completeWorkMilliseconds": {
+          "ordinary": 2524.376181,
+          "noPaint": 1861.509115,
+          "reductionPercent": 26.258648413384
+        },
+        "observedOwnerMilliseconds": {
+          "ordinary": 2556.903037000666,
+          "noPaint": 1912.2129200004565,
+          "reductionPercent": 25.2137100105467
+        }
+      }
+    ],
+    "launches": 8,
+    "trustedInteractions": 160,
+    "policy": {
+      "CPUQuota": "400%",
+      "MemoryMax": "8G",
+      "MemorySwapMax": "0",
+      "viewport": [
+        1280,
+        960
+      ],
+      "actions": 20,
+      "normalAnimationFramesPerAction": 2,
+      "engineModes": [
+        "ordinary",
+        "no-paint"
+      ],
+      "blocks": 2,
+      "freshBrowserPerCell": true
+    },
+    "scope": "Two reversed dense pairs per engine on the corrected browser; do not pool with the six-pair preceding-build campaign. Complete-work and sampled original-owner timings retain the earlier boundary/100 ms polling limits."
+  },
+  "build": {
+    "resources": {
+      "sha256": "027aa14bc682ae089df968a325121ee4a68e45386eb150d828aa9bd8f0f99b65",
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": []
+    },
+    "seconds": 47.70498273799967,
+    "scope": "Incremental Linux build of 39 tasks after changes to three native files; not a clean build comparison."
+  },
+  "retainedArtifact": {
+    "manifestSha256": "57b34f7554cc02e347add7a37afb8821ce761928a931000e54b3cb0b390ab561",
+    "nativePatchSha256": "d345fbcb26b6e1453bbb920efb0729b0aec12708f3c6ca5ab083e281671f166e",
+    "nativeFiles": [
+      "third_party/blink/renderer/core/workers/worklet.h",
+      "third_party/blink/renderer/core/workers/worklet.cc",
+      "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
+    ],
+    "privateRuntimePreserved": true
+  },
+  "sourceBindings": {
+    "applicationInputsSha256": "69f401553c477c843f81f73de2e8c3d0674ac23be7ec7e8c62bf16f25680b905",
+    "applicationSourceCount": 1109,
+    "prototypeSourceCount": 6,
+    "timingInputsSha256": "901a10b356f509bbc894c681b7636ec04d3ff2fb38a2cb67353e154b0a409d22",
+    "timingInputCount": 16678
+  },
+  "limitations": [
+    "Storage/network subset exclusions and discovery remain unimplemented.",
+    "Painting omission still preserves lifecycle and input-related drawing scopes; canvas and isolated SVG rendering are not excluded by this slice.",
+    "Broader implicit painting dependencies, full browser conformance, packed release and final resource/performance acceptance remain open.",
+    "The representative majority-scenario 2x objective is not met by these synthetic observations."
+  ]
+}
