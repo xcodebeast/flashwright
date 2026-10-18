@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "classification": "native-linux-capability-recorded-backend",
+  "status": "passed-selected-original-backend-matrix",
+  "testedCommit": "4f8856cec33a2b9c455ff4520f9ece383bab29c9",
+  "privatePrototype": true,
+  "publicFeatureDelivered": false,
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "question": "Does the private native capability recorder and immutable per-test contract work across the full real-service backend corpus, including authentication setup and caught implicit dependencies?",
+  "decision": "The selected backend functionality passes with painting and capture excluded and both DOM storage capabilities enabled. Keep the prototype private. SessionStorage cannot be excluded for this application: its router probes the native getter inside try/catch. Discovery identifies that dependency and strict teardown rejects the missing declaration.",
+  "environment": {
+    "os": "Linux",
+    "architecture": "x64",
+    "runtime": "Bun 1.4.2",
+    "reference": "Playwright 1.60.0",
+    "browser": "Private Chromium headless_shell 148.0.7778.96, recorder retirement baseline010",
+    "sandbox": false,
+    "browserSha256": "5c0b01235df9c3b9a0409aaae0a24dc61ceadecd71598dcc4676997905260a3d",
+    "driverSha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c",
+    "runtimeSha256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c",
+    "runtimeFiles": 11,
+    "runtimeManifestSha256": "0abbbd15850bb56e8f868916dca812f4ed846d87dfbf77fa54263f94bbf4cfb1",
+    "cpuQuotaPercent": 400,
+    "memoryLimitBytes": 8589934592,
+    "swapLimitBytes": 0,
+    "artifacts": {
+      "trace": "off",
+      "screenshots": "off",
+      "video": "off"
+    }
+  },
+  "application": {
+    "sourceCommit": "7257e606cb94eada1dca40173e2b7f99dd549bc6",
+    "originalTestsPerRun": 62,
+    "copiedSourceFilesPerConsumer": 28,
+    "testBodiesChanged": false,
+    "helperPolicy": "Existing common corrected signup helper retained unchanged; no new application/test/helper changes.",
+    "services": "Fresh real PostgreSQL, Mailpit and API/frontend per cell, private network namespace and bounded cgroup.",
+    "coveredFlows": [
+      "Authentication and setup storageState",
+      "User and item CRUD and permissions",
+      "Password recovery through real email service",
+      "Validation, user settings and theme persistence"
+    ]
+  },
+  "matrix": {
+    "engines": [
+      "flashwright",
+      "playwright"
+    ],
+    "workers": [
+      1,
+      4
+    ],
+    "modes": [
+      "discovery",
+      "restricted"
+    ],
+    "discovery": "Full backend, native journal records the currently implemented dependency classes.",
+    "restricted": "Painting and capture disabled; localStorage, sessionStorage and other storage enabled.",
+    "perAttempt": "Fresh native browser and immutable native policy/journal; no browser reused between tests.",
+    "testsPassed": 496,
+    "attemptJournals": 496,
+    "rows": [
+      {
+        "engine": "flashwright",
+        "workers": 1,
+        "mode": "discovery",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 1297,
+        "observedCapabilities": [
+          "storage.localStorage",
+          "storage.sessionStorage"
+        ],
+        "unobservedWriterPids": 11,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22919,
+          "historicalFilesVerifiedFromRetainedExactBytes": [
+            "capture.py",
+            "prepare.mjs",
+            "preparation.json",
+            "verify-recordings.py",
+            "plan.json"
+          ]
+        },
+        "digests": {
+          "before.json": "62cf9eb04099393bc291887c11b31a3cde6fbe8d9738fdde0dc06d21131a3f71",
+          "after.json": "62cf9eb04099393bc291887c11b31a3cde6fbe8d9738fdde0dc06d21131a3f71",
+          "prepared.json": "735ffebec55ff436a8aa8beb891b1a0cb56ad6207f43b1854ad005d8fc8a45cb",
+          "owner-report.json": "7e3d1c3845f35b1a5b126aa8b9b12b64942c46085689d9035390f369ef037c67",
+          "runner-report.json": "1f68a020ebcb69ba5335390900b08de4a8afe2b8ef0e22e15ea7fd22c8770802",
+          "runner-resources.json": "de59bb2aa4cf8c5ccb915c51d019df6af17f63324c7a4fe5ad7ee66db04c49a5",
+          "native.json": "d88fdc4ff1bf039f3b316b35734bb56ef5bc614b206c85898e9327cf902f714c",
+          "controller.json": "d231e365f80f042344ffe282a2abf0ea7fcc408fd0e8d12ff57a2106b43c5368",
+          "verification.json": "2584dae6eaf8da2d8948440170d7c15a48ae9188eddfb4dbffb9ac44b52a6d56",
+          "recording-verification.json": "c96ce30d4a1f6787da82bb4e8af24ec3fec0f5076f19540ea3eb813658f207a3"
+        }
+      },
+      {
+        "engine": "flashwright",
+        "workers": 1,
+        "mode": "restricted",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "7181f6f471037a968c063b92e7c6d29a7d0860100036e2acd888f46b05711edc",
+          "owner-report.json": "3434e0e1d778ce11b87722819455778cb106218e3452636a9b405aa82e6319b9",
+          "runner-report.json": "62b99da4a187be15c41c5bba4a7e5af93e7449ba9f4d55ab8d104f0a2985cc2a",
+          "runner-resources.json": "8169560a0ef0b27b6aab663dfaeb29d760effe2a5cad9b32420183db9474052a",
+          "native.json": "101f953ff01e3a53ed6c740c12fa9b5e2c86ed2d869b162c1aeb350cec41a170",
+          "controller.json": "9eb11e3280b8c9569a6269a4d0fc943945547e79c793e52c0efa2c02ad9c5da6",
+          "verification.json": "84c4902984ae3fee8a16426865ce63901dbc108ffc626bc27d5bb0ed71e36239",
+          "recording-verification.json": "435266696ebbd541e17bb38d528db6384c8f3d8874b273bff33c182e7de7c941"
+        }
+      },
+      {
+        "engine": "flashwright",
+        "workers": 4,
+        "mode": "discovery",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 1343,
+        "observedCapabilities": [
+          "storage.localStorage",
+          "storage.sessionStorage"
+        ],
+        "unobservedWriterPids": 4,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "6c6f294ad132aa59977c57c4a336ab64a4e7a1bd588ed754b2184d682eeeb97a",
+          "owner-report.json": "c3ac11a103ea426e176a96718232c27a9bd261c333598e79daf2e8e9585fdc65",
+          "runner-report.json": "3d494591439cfcb10875959d0fc726fa0f82328efa746307fb465b6dfa62acc6",
+          "runner-resources.json": "a0ac28f84d9157adc136b4a0b641b1125c18bd5dbd3c4c094cfdca44c2c49895",
+          "native.json": "d38c5cdfe1eefecb3744fcca1f595228464097286ba6d50fde56c58d1fd66deb",
+          "controller.json": "4a07259172a516425976f3369fab9dc0bd4f89bbd268e770fdd1f6507d2b6e49",
+          "verification.json": "ea73e47180264ef25e4fb730e7329c51bf54d7e07aaad02b5dc6f393e603e391",
+          "recording-verification.json": "0b20f5d82f5b6a79c197fda9da65e4d802572f36bfab497c10bc1bf84e7bdb88"
+        }
+      },
+      {
+        "engine": "flashwright",
+        "workers": 4,
+        "mode": "restricted",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "19303f1a1a362c1ff32ce9c8fa912b1495db39557c92baf0418fa3d415acd46a",
+          "owner-report.json": "9b1cc5325dac2e606c4677c1bbe692007826d01ff072b61eb50ab62cf14c6373",
+          "runner-report.json": "eaad4096659401d83c7af37a6d8f390b961e98e5d8a7686e4740b838d7d47d5e",
+          "runner-resources.json": "efb33b5432b363bf582d4bf13438394145f9155ab4cc4b4090bd5054c6d0a27e",
+          "native.json": "8d5f3fff4318806098fb697c4fb866198d28aca6e9086c90d2414b6c131cb88f",
+          "controller.json": "3aa5982714603fe5f2242ed17ebc5ea39510049d466b3aa28c6d7c59db237f1c",
+          "verification.json": "a26cd0d6ec0d5961bb70f2d365f596f0f5c486fec30c57a755297a12074c2bc3",
+          "recording-verification.json": "82c31c508979a3accf55e201438df639efa020abb7282da2bb29e35481c5bf99"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 1,
+        "mode": "discovery",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 1362,
+        "observedCapabilities": [
+          "storage.localStorage",
+          "storage.sessionStorage"
+        ],
+        "unobservedWriterPids": 14,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "0261b48f985d46d46764b1568f77da5d6050a2dba1a9c517f4f18c4c6acb7dcc",
+          "owner-report.json": "e5353b2dc3b6f11be5fafe02b5cb28df81eb7ffbf0484d199ee9085cb1130e0b",
+          "runner-report.json": "45503401c874f4cbd5f1a383656c2b18348dd9688c79feaed870ed81e992f0c7",
+          "runner-resources.json": "5d4aaba9aa081d01437441431f36e24e3760322549370e2b98dbb1b853a247a5",
+          "native.json": "6f785c031f23d48b81d7a87b58f8d696b47730a6f1462a2db74a4ac9822e81f1",
+          "controller.json": "a87a526a41849002e3232f379e249cde0718a075c172e077195a244266653976",
+          "verification.json": "e24ecc3728199482059339e31f5e065896cb9d57a2d31c7e8197d845a54c3673",
+          "recording-verification.json": "7d94f7e0c86c410ac246dd135aa62e99ab05ab386cb29e6fa762a122a2f2cc8d"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 1,
+        "mode": "restricted",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "f0e1bcebbbaf76cb553f378c25335db57625495f8f7bfd3792b9e16b7a35f937",
+          "owner-report.json": "c70a24a83c97ef814ad6739ae586eb0ddfa6ec4f60fdd769c9b74d75adfb6535",
+          "runner-report.json": "e0428cf0b5fc6c4fe7f411b1ad678d5995bc89ccf53878212b3c7a0885176820",
+          "runner-resources.json": "79a65a386552ef68bbcaa5678d14ce65a18804affa8e8d69110165d2d697a0ba",
+          "native.json": "a2557f22a8624c4c2b031f10fd4a50e32badd7bd87e1590cd697c1c60470ab28",
+          "controller.json": "ac1244b59044d289409e7bc4f959ea6a9fd847340887fe36f341faad411d95b7",
+          "verification.json": "10f8ba4af6e1960a38c85580dc484b4521c8370004ef265e6cb72516a5830185",
+          "recording-verification.json": "586cf0c17fb05e43522f779664efaf81769985280529d3317228f81cce991033"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 4,
+        "mode": "discovery",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 1356,
+        "observedCapabilities": [
+          "storage.localStorage",
+          "storage.sessionStorage"
+        ],
+        "unobservedWriterPids": 9,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "af573af3e4fc23e7ea493f3cf87bbc1bc7abf65e796d0d1bf67bb874bfc32c76",
+          "owner-report.json": "fb15b5c6a3085468e7b339dc5d3207ebe39363bb2a31931f30a4f95a0063ab73",
+          "runner-report.json": "d374a414fa1541d9d5f758116fceeeeab1342303877db529be2099220c606dcf",
+          "runner-resources.json": "f23f5ffc6be1ab3f1c2524c7aec3b3fec72b2c883a77702f3aff72656770385d",
+          "native.json": "3b014e20b5d771038874f7ea7702f99ae788c777c6ab03156af15fd248adab12",
+          "controller.json": "5651325405807ddbde38dfe3e2258dcf6508bdcff52d368145b4ab3e9ed41941",
+          "verification.json": "b3785836df49a349250a0597c868b007a6062483d2241ad8a672dc5f9c06d01d",
+          "recording-verification.json": "026d65d0b16052952b72f6ad6166e7e900fa491b84e7a94d9680af432ecab8e6"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 4,
+        "mode": "restricted",
+        "testsPassed": 62,
+        "attemptJournals": 62,
+        "browserLaunches": 62,
+        "nativeRecords": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "originalOwnerExitCode": 0,
+        "cleanObservedTeardown": true,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "selectedEntries": 22938,
+          "historicalFilesVerifiedFromRetainedExactBytes": []
+        },
+        "digests": {
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "prepared.json": "f367f3b94a027ed93d9458f4ac6e36689af764395834f102ccc9e95139282052",
+          "owner-report.json": "3dea7af4083f8c9d2aa76797a926c598b9b72acb0ee8f432872a0a24a08b18b2",
+          "runner-report.json": "6962f5e6f3af4bb2265761f4efc6a9ccc9d25da79a49695455ecfc6d991025d3",
+          "runner-resources.json": "93e776f98424d5d261e59593f80a4acd69f0fcbe46e3c32bef09781572de21a7",
+          "native.json": "3fc8b9820d7cd09e124821e738178fb17d19736bf65dea2b940a8fb718c3c885",
+          "controller.json": "e89b115e34779ee6207e6f4898d744230898243ee1b31c1d7f40cdde65821a00",
+          "verification.json": "2470cadca1f44a9b237bdbe5281e2abece11315fec0968a93d4b602c9e631636",
+          "recording-verification.json": "bfea4ffbc59caa481aeb2b49856b418bd6df2c71f3d5a2af7efd199c6348438d"
+        }
+      }
+    ]
+  },
+  "retainedFailures": [
+    {
+      "kind": "private-adapter-loading",
+      "testsExecuted": 0,
+      "failure": "CommonJS loading encountered import.meta in the private recorder.",
+      "correction": "Private adapter resolves its retained original runtime root explicitly. Recorder logic and native binary are unchanged.",
+      "runnerStderrSha256": "aafce1cea1df1ff85ee88491ba5750422a099aedcbe72b31e7b0564681b04133",
+      "ownerReportSha256": "d947832034f55b27cfd1ddbc0b44cc609642a598289c065e6bfcfb225fbe2d65"
+    },
+    {
+      "kind": "original-overrestrictive-declaration",
+      "failure": "First Flashwright restricted setup rejected a caught native window.sessionStorage access; 61 dependent tests were skipped.",
+      "correction": "Reviewed discovery evidence, then explicitly enabled sessionStorage in new immutable declarations. Original failed scope and journals were not mutated or retried."
+    }
+  ],
+  "missingStorageRejection": {
+    "scope": "Original failure plus a predeclared Playwright confirmation; excluded from successful test/performance counts.",
+    "runs": [
+      {
+        "engine": "flashwright",
+        "failedSetupTests": 1,
+        "dependentTestsSkipped": 61,
+        "nativeViolation": {
+          "capability": "storage.sessionStorage",
+          "operation": "window.sessionStorage",
+          "scriptPath": "/assets/index-CRrEdmdv.js",
+          "line": 2,
+          "column": 8285
+        },
+        "authStateWrittenBeforeTeardownRejection": true,
+        "caughtViolationRejectedAtTeardown": true,
+        "nativeBrowserOriginalExitCode": 0,
+        "digests": {
+          "prepared.json": "86ec086416ece22200f95679ecd49825ab33db16c35e5e2ae748996529db74ac",
+          "runner-report.json": "5ee54d53bfa0a21d74f43ddc27c1b401b32be399f7d85fb544998ad4227875e2",
+          "native.json": "286ea761a28d58fd856fc355032c6bdcbe565b01ca4e885595fbbcf0b4845a14",
+          "before.json": "62cf9eb04099393bc291887c11b31a3cde6fbe8d9738fdde0dc06d21131a3f71",
+          "after.json": "62cf9eb04099393bc291887c11b31a3cde6fbe8d9738fdde0dc06d21131a3f71"
+        }
+      },
+      {
+        "engine": "playwright",
+        "failedSetupTests": 1,
+        "dependentTestsSkipped": 61,
+        "nativeViolation": {
+          "capability": "storage.sessionStorage",
+          "operation": "window.sessionStorage",
+          "scriptPath": "/assets/index-CRrEdmdv.js",
+          "line": 2,
+          "column": 8285
+        },
+        "authStateWrittenBeforeTeardownRejection": true,
+        "caughtViolationRejectedAtTeardown": true,
+        "nativeBrowserOriginalExitCode": 0,
+        "digests": {
+          "prepared.json": "48dd8851a6921722830fbb1e49f2300f525f81e395e561616d846bf25e016974",
+          "runner-report.json": "c65adae324a7f6f3a4809e6c6e7a97108a10f1657bf749ee079572418aa242af",
+          "native.json": "4507d41aeae507c4748cc0563c0dd9d1a876766a6f7c6c8acbb8f03f948a5634",
+          "before.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe",
+          "after.json": "a2104a70cc72e118a1e6983769e1dd57476d027a75867351d8ecc500420ef5fe"
+        }
+      }
+    ],
+    "nativeSource": "Bundled router getter at assets/index-CRrEdmdv.js line2 column8285; caught access precedes scroll-restoration storage use.",
+    "effect": "Authentication body writes its state, but the journal persists the dependency violation and teardown fails the attempt."
+  },
+  "verification": {
+    "campaignSha256": "ea6e592269df0dcba586094711d93f7672ee789f6570b4eca0eb1307bbb21af0",
+    "recordingsSha256": "7eb1b7b4c247211b83517b161084acb9e9c74527672bd4da5f16d1a9e788b231",
+    "privateSourceSha256": {
+      "attempt-manager.mjs": "cf40339f5dbf7e1e65296f01cb947ad0c05bb4f6ac9b62f4bbbc7321a4aedf2c",
+      "campaign.py": "25a380890243e1c082028d594133071d4aa59ed2b1ab8dd536076e877e90156f",
+      "capture.py": "0ed92f345969a572e6a0f99f349985d3e7dfc11c62d61e630f1504f62e94fe59",
+      "correct-loading.py": "6147c22adf94d7c20ff0a0f991b4a065a0dd315e9ca1950c01429d97ffd53ec4",
+      "correct-profile.py": "367e62ed475a68b77cc3a879c3063d4b5c4958b40c5f0e1e6e2eac3467697c97",
+      "create-harness.py": "5926a4ced09d2e11450e53ff315258c81ff4f43fd92f85cba4efb3713dce50c7",
+      "export.py": "cd13ebea214bb782f1d785c0224b2ac87b16fa2c6d0a25dd18ce598233943988",
+      "negative-confirmation-plan.json": "26a6a163562567778b8035adb61fa455cc02630ab5215dcd03a7dcdfbb7386ef",
+      "owner.py": "1121efa3c524597b5d2a74ca14e75e7dfbc2c78598f5dddb2d412794158da3c8",
+      "plan.json": "78f429a87e2db4435d50fd534bf4c95cb7e01774efa9635b3d67725d34ae251a",
+      "prepare.mjs": "131e57d3b72628d1d85a7a412ea73049baa3a8fb16d4deaa0f9b0fff32b69bdd",
+      "run.py": "3e1c756d26aed5f72a905d4aea6888b4c89ff63be7e2ded32014d3dee31a0418",
+      "runner-fw.mjs": "5609a2bbd3ebeb5cab06626608cfdbbd5e9d3e2b99f822d02eddb01f6471dc14",
+      "runner-pw.mjs": "b8e7f9e90efd6e54bc6d7e0685ae51e98fa1fbbacedf9986cb461ee2f3f026c4",
+      "verify-campaign.py": "9403da3054359d9f906c1a8d49cbb422fd9ef0c6c56d6fdeaf6d4e09aa24df8a",
+      "verify-outcomes.mjs": "165014beed99d0648ea425a37a939f255e762bf7d6603c69dbe30e536f2e8196",
+      "verify-recordings.py": "93bf9d0bef0b6b73ee9975e8cf8c4071cafca741fb093add7d2a2b796b596726"
+    },
+    "sourcePolicy": "Exact pre/post selected input hashes match for every accepted run. First discovery run retained under its original source snapshot; seven fresh runs use the corrected declaration. Each original test identity matches its attempt journal and original browser wait.",
+    "unobservedWriterPids": 38,
+    "resourceScope": "Original service/browser waits and clean observed cgroup drain pass. Short-lived journal writer sampling gaps remain; this is not exhaustive process custody or final resource admission."
+  },
+  "limitations": [
+    "Selected private correctness evidence, not public delivery or a new performance comparison.",
+    "Network subsets, non-DOM storage exclusions, remaining native/realm capability dependencies and complete discovery remain unfinished.",
+    "Private CommonJS adaptation resolves an experiment-local root; portable packaging is unimplemented.",
+    "The fresh-browser-per-attempt recorder is a correctness prototype; old pooled-browser timing does not measure it.",
+    "Other operating systems, renderer exit policies and broader browser distributions are not verified by these runs.",
+    "Representative majority-scenario 2x performance remains unproved."
+  ]
+}
