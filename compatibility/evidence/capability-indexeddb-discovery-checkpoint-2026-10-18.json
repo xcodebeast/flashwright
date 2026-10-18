@@ -1,0 +1,975 @@
+{
+  "schemaVersion": 1,
+  "classification": "native-linux-indexeddb-dependency-discovery",
+  "status": "passed-selected-indexeddb-discovery-controls",
+  "testedCommit": "ea4179878198c90179da0623f530b634d23744d7",
+  "privatePrototype": true,
+  "publicFeatureDelivered": false,
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "mechanism": "Native observation at the global IndexedDB getter, storage-bucket getter, storage-access-handle factory (including prefetch), and typed document.requestStorageAccess initiation. Existing DevTools factory acquisition reaches the same native getters. Recording uses the original attempt journal, native completion counters and retirement guard.",
+  "decision": "Retain selected IndexedDB discovery coverage in the private prototype. Keep IndexedDB within the mandatory other-storage group: explicit IndexedDB exclusions remain rejected. No browser IndexedDB service is omitted by this change.",
+  "environment": {
+    "os": "Linux",
+    "architecture": "x64",
+    "runtime": "Bun 1.4.2",
+    "reference": "Playwright 1.60.0",
+    "browser": "Private Chromium headless_shell 148.0.7778.96",
+    "sandbox": false,
+    "browserSha256": "a4770047e90c7ba057b00cee7a6c884dfe9d58ca630366339e5dad1e0bdd35c8",
+    "baselineBrowserSha256": "5c0b01235df9c3b9a0409aaae0a24dc61ceadecd71598dcc4676997905260a3d",
+    "runtimeFiles": 11,
+    "runtimeManifestSha256": "4ac58b7b6e54cd10540a115f0be681092ef149f783e4aa6226309dca65c1ceb3",
+    "driverSha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c"
+  },
+  "verification": {
+    "selectedPassingControls": 54,
+    "validatedAttemptReceipts": 56,
+    "parserNegativeControls": [
+      {
+        "case": "contradictory-violation",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "unknown-capability",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "wrong-operation",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "worker-with-document",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "worker-as-window-without-document",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "missing-execution-identity",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "missing-source-position",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "wrong-attempt",
+        "rejected": true,
+        "reason": "owner header changed"
+      },
+      {
+        "case": "unknown-realm",
+        "rejected": true,
+        "reason": "owner header changed"
+      }
+    ],
+    "rows": [
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "probe",
+        "discovery": false,
+        "outcome": {
+          "available": true,
+          "constructor": "function"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "ae8bfe75a58bd6efe32b41b2b7bd8968f9c20397a5f808cb4aad460131c22720"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "window",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "3e9139dd01c8f7d8bac7f7d4ce20b9022f8456c9f05a22439ca73f981dbd60ea"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "same-frame",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "f35cda4b570c2b7731d9d57abab51fae5a7213105ea6e8688590d0c204b866ea"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "remote-frame",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "a376075e55dd41c2e6112e6912619b531f7b93a0e40c21778101b89ef33f3a3e"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "dedicated-worker",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "38c12b8e42af8d3501b4271bb8c197b2fe7904c6075d3bf447e75cbfb109426b"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "shared-worker",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "5aa39a512ffd5eab2a748f0f8efa568410f94e9344bfcca22f9a0f89959d722e"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "service-worker",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "705592039d45683e1be9d6b0b343da65ed036cb500f0a18d1cda86f3dacff68d"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v2-fw",
+        "case": "bucket",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "7de6c81bf9475f8bb4c8a638143ccc68b0f2ed038fb11518c84abfd948668a51"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v4-fw",
+        "case": "typed-top",
+        "discovery": false,
+        "outcome": {
+          "kind": "undefined"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "89afe1406448ef8901eea4bf41e02e1ffb0cb855af89982920389c5096c2f3c8"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "typed-access",
+        "discovery": false,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "534b8e8ed758e2172ca36d748cda7088dbd97a2484224de94729a223daa9c795"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "probe",
+        "discovery": true,
+        "outcome": {
+          "available": true,
+          "constructor": "function"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "c3fe4559e3f7f03d15e0879c13b7339f709ef1cd9023685b9c1c21d7a5b1ade4"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "window",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 1,
+        "journalSha256": "090076e277c7dfcf36bfebb10b8fa780d2876aca408a09844ef7909fb4a5295c"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "same-frame",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "9731195f87237080c09f8cf47401ddfede9948fdb6c47d079d47707a1f7b79b5"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "remote-frame",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "27b07f9fd2887e2f53d398ef267c3a1a8cc1b9a0f8da51251e5f078891bd8528"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "dedicated-worker",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "worker"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "4f6d56593cc4d58905915bd82e2853e44cfd6dfaedcd2b9d97fb935996196b1c"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "shared-worker",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "worker"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "607395943a4b24c6981fe651849d55abf2a1ab19fb1300be56f440d1d8663d8c"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "service-worker",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "worker"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "f050ba8d7a5fca9b11145583e7454f9a7a24fb05151fea4b424c958efdbb402e"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "bucket",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "StorageBucket.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 1,
+        "journalSha256": "8a638d553256859d4315a53b7c4a98733f831f98df47f79b3e02240464124338"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "typed-top",
+        "discovery": true,
+        "outcome": {
+          "kind": "undefined"
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "document.requestStorageAccess"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "f2b65dbd2131b870ae019d151b6d3038a0aa32a75ce0b8d580e9c61e453e6271"
+      },
+      {
+        "engine": "flashwright",
+        "input": "controls-v5-fw",
+        "case": "typed-access",
+        "discovery": true,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "document.requestStorageAccess"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "ad047d81b9b2f122f39dba4c9cb2c9524261400cc4a49effd82194bf1023ca71"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "probe",
+        "discovery": false,
+        "outcome": {
+          "available": true,
+          "constructor": "function"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "55292e6ba46556cb2ab06211a8c110934282d7dbfabd95a774afc72379cada2a"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "window",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "3eae7da9436c82bd200993653419dac3fa4ff9ba205ff1c5cb7e342ca4fe4575"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "same-frame",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "45f7a15de3d2260582364b5af20a1a5f8689b7e28fa4dc935c2d2459480cb821"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "remote-frame",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "72bf7794ee18b93e2578f0751fafc32de463064135b22fb1fc5d1d06a9895f23"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "dedicated-worker",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "2ab6f17e300a11b1937ec899b1fe238400a8918d258842a8b58df7b425099fe0"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "shared-worker",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "381aa6ab7ec910fb860753bb32cbdacceeb93bf19c740b03445b19f880659f79"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "service-worker",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "94e476a82ae922ccaa97d7938b62f1a3a8ee6ffda2057fe68fc704fe81b021bd"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "bucket",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "d8c54b889cb8924cc0a3db05cbdc0e1155992046e76fbee44a74fc5c05c5b3ef"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "devtools",
+        "discovery": false,
+        "outcome": {
+          "databaseNames": []
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "0b2bb24436c6ce6735bbd6a2aec3f1610e0b2a1bcee8779d047e4dc161f980b4"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "devtools-bucket",
+        "discovery": false,
+        "outcome": {
+          "databaseNames": []
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "d8d0412180874833273c576c80046ae4dcb3bb79045cee3d9e21789ffb4e9ecd"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "typed-top",
+        "discovery": false,
+        "outcome": {
+          "kind": "undefined"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "730f7f46d03b4ecac6278c37590fbf58da3232c7a0f16731ae47554b5f00dfa5"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "typed-access",
+        "discovery": false,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "e6eba8918adbade24356ec65ac24f54b174faefba0a66227e9cde6de043d046e"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "probe",
+        "discovery": true,
+        "outcome": {
+          "available": true,
+          "constructor": "function"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "0f22767657793efeb5aaa6253cad0d43ad505bb4dc9c40257dc3df35b7bdae27"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "window",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "1582b5adf411f1d11bf7f94d90e10f74274d9cad0adb12145c16df0f50406795"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "same-frame",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "a6a171bc508e6173a7b8a49cf8335cd860d76c4d2f1898311aa8ada9196d0483"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "remote-frame",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "e837e69865315089349cd83db6d3366a43ac9596ae41a2a50e40f4fd67aeb203"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "dedicated-worker",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "worker"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "d2c72531c34d4c7f18864cc787c60821ef69bc7c6a4157e5fa01542a9a351026"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "shared-worker",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "worker"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "a453c21e957ae1b675ea74a0367b4b0b997b9c1c82d7efd8b51f637f16174023"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "service-worker",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "worker"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "46f09f3e5ec23410fb2ad8971d73bcace55206c7e91001a917d338305d69d6fe"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "bucket",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "StorageBucket.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 1,
+        "journalSha256": "50c235b0ec57b0586bab6bc2b391ecddffa594dc3dfeff0edafc4452cf0ae431"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "devtools",
+        "discovery": true,
+        "outcome": {
+          "databaseNames": []
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 1,
+        "journalSha256": "21012397f73d6e6d182a13d4da9aafcd7ebaa4a0858e4f23aa59f17d89a0fe77"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "devtools-bucket",
+        "discovery": true,
+        "outcome": {
+          "databaseNames": []
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "StorageBucket.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "0f00ac2378a45b44beb730153afdd7d24b9148560631d014e8ed3af5ce58b990"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "typed-top",
+        "discovery": true,
+        "outcome": {
+          "kind": "undefined"
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "document.requestStorageAccess"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 1,
+        "journalSha256": "e09850d7f2adb044d5725b069533f64d8f519489886cd94150841f1d3de0da72"
+      },
+      {
+        "engine": "playwright",
+        "input": "controls-v6-pw",
+        "case": "typed-access",
+        "discovery": true,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "document.requestStorageAccess"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "7078a39b394b2531573d7b0fcd505df1736dd62e867b5a6c7fa3edc8d448cbd1"
+      },
+      {
+        "engine": "flashwright",
+        "input": "access-evaluate-fw",
+        "case": "typed-access",
+        "discovery": false,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "868ec5743a208a287f71aae2f9226ad332a81e0f22f006fa7f809522212d6e40"
+      },
+      {
+        "engine": "flashwright",
+        "input": "access-evaluate-fw",
+        "case": "typed-access",
+        "discovery": true,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 1,
+        "operations": [
+          "document.requestStorageAccess"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "8a0ce81865b6730a314aad57cadc479caef402700e9f013a5edd0986c76b331b"
+      },
+      {
+        "engine": "playwright",
+        "input": "access-granted-pw",
+        "case": "typed-access",
+        "discovery": false,
+        "outcome": {
+          "status": "granted",
+          "value": "value"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "0be2a568d4f054a5ac11e7547c39a4b3a37d15c180c80a6a7b8e5adea2093028"
+      },
+      {
+        "engine": "playwright",
+        "input": "access-granted-pw",
+        "case": "typed-access",
+        "discovery": true,
+        "outcome": {
+          "status": "granted",
+          "value": "value"
+        },
+        "nativeRecords": 3,
+        "operations": [
+          "StorageAccessHandle.indexedDB",
+          "document.requestStorageAccess"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "3d4f2c858e5bfc2ba568510e18efb9a0958833dd07b66be5f23b970f23976132"
+      },
+      {
+        "engine": "flashwright",
+        "input": "baseline-fw",
+        "case": "typed-access",
+        "discovery": false,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "42ee61e6a6e3479d803d9617b5d5835ce9ecb27ff1bed56edf3a591bbfa86baf"
+      },
+      {
+        "engine": "playwright",
+        "input": "baseline-pw",
+        "case": "typed-access",
+        "discovery": false,
+        "outcome": {
+          "status": "rejected",
+          "name": "NotAllowedError",
+          "message": "requestStorageAccess not allowed"
+        },
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "5766ddc1a61faf821774a7f9075c0a107cbf495e9cd0970f18e5ee72d74f779a"
+      },
+      {
+        "engine": "flashwright",
+        "input": "source-fw",
+        "case": "window",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "bb715f600182bc5ae6159bae1852d9fef0dd4f8882513ed63a8d9cc37b4faac5"
+      },
+      {
+        "engine": "flashwright",
+        "input": "source-fw",
+        "case": "window",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 1,
+        "journalSha256": "7bedb854a70b786ea91a3d15c618d78b044b77ce33d19eb8fda4525be57d4666"
+      },
+      {
+        "engine": "playwright",
+        "input": "source-pw",
+        "case": "window",
+        "discovery": false,
+        "outcome": "value",
+        "nativeRecords": 0,
+        "operations": [],
+        "realms": [],
+        "unobservedWriterPids": 0,
+        "journalSha256": "510c311b4a988c3143e486d9f61ba11158c93f40bbb8e07bf5cef12cd224940d"
+      },
+      {
+        "engine": "playwright",
+        "input": "source-pw",
+        "case": "window",
+        "discovery": true,
+        "outcome": "value",
+        "nativeRecords": 1,
+        "operations": [
+          "globalThis.indexedDB"
+        ],
+        "realms": [
+          "window"
+        ],
+        "unobservedWriterPids": 0,
+        "journalSha256": "939ef2cca4d6bf77bfd765792224083c48cfc7cb6bc79df4283dc1d30ee36089"
+      }
+    ],
+    "verificationSha256": "84c195f6ad66ee7378c8a3a25f952b91a2e9e19c428fcb8054907b1579148ba0",
+    "nativeSourceSha256": {
+      "third_party/blink/renderer/modules/indexeddb/global_indexed_db.cc": "7ec889decb0b6d2c6fec7e0320627a9d9e50b25bb7d9fb3588c3679715741b4a",
+      "third_party/blink/renderer/modules/buckets/storage_bucket.cc": "ce427e517a2dbd23485f249a116c48ab57a492dfb5e4aca749ebf588aa17c059",
+      "third_party/blink/renderer/modules/storage_access/global_storage_access_handle.cc": "1431e521ed46583bf03f7a07a511f03fb4d82ac0559bc0541ce4f47acc92fa3c",
+      "third_party/blink/renderer/modules/storage_access/document_storage_access.cc": "43872925f9fbe88fb8c3a53a0289cefba4294f01a99fa96e463cd7be3a0fb5a5",
+      "third_party/blink/renderer/core/inspector/flashwright_indexeddb_discovery.h": "326027c943136c1378422db92a478dcc227ca7e389b2b4d21fb089a7cd619567"
+    },
+    "nativePatchSha256": "074229ea0419e748dea8ac18b22a08cbade38d4f9e98bbb6e26b8be084c43f4a",
+    "privateSourceSha256": {
+      "attempt-manager.mjs": "fdd0d6cf3aeecf17f50d057f514d38715ebc0e008daea9db2969e0d06b12aed1",
+      "browser-supervisor.py": "0324c26fb03509a2cb16ecf7f4e3153ddfa188b9e974ed8d6469dc86513af691",
+      "controls-initial.mjs": "5ff99db0236e07212bc2436e853383624f38f4a955857bcff0f7d1f97d1be157",
+      "controls-v3.mjs": "2539ac9a6ac7707d5776d022696f28f74d1fe6f431e12b908dcb0f4a73766c34",
+      "controls-v4.mjs": "ff22c7e0eb27f7d0edc850fbd31b8e04fe5dc39912dc79ee217d7d5ec4e968b1",
+      "controls-v5.mjs": "dc41397096debb546c99ef4f646e1f251af766de65a9f04b1497bba023834344",
+      "controls-v6.mjs": "aa8294eb5a3a61bb8834e1f2fbcc91b8146038ede70bcbc410b93e58cbf1d4d5",
+      "controls.mjs": "6ecf2e3f9ff40832619f75a2f0d4cc3bf8d2c3fba276f2aa694b0421b86c23dd",
+      "export.py": "f3c11433bade9cabe898ee718e0f3093353f717b9145db77f71986689ed715f9",
+      "finish-patch.py": "9198fe136328dd09ecfa9a577f80cd126df39d94382e3172a6193f3546d9c7aa",
+      "ledger.py": "94a7e04820cf7ea41785dbdd709b2e8d4803c32006d74755a988d5893fa3ee58",
+      "native.patch": "074229ea0419e748dea8ac18b22a08cbade38d4f9e98bbb6e26b8be084c43f4a",
+      "patch-native.py": "f16b72bcb92b9f66aa961f3d5ecadb3b52c93e4f8fa137e4e53c15dda1aa7558",
+      "plan.json": "6e90f040dc1b04ceefb85faedb7901f3cbf21291a3c7e3849da6627a32e63a1e",
+      "prepare-initial.py": "024d27be1792f78b01965c9cd4721daf078d250d22dfd02ad8cc5c94e1b77a78",
+      "prepare.py": "322d21ff81f9c38c885951e00e873ce2a869b5c75087a4c511416d0d0b207c82",
+      "run-controls-initial.py": "fac7f46c838b1389e25f32394a4578dbda3ad767a762244cb1987c1f5a3fa374",
+      "run-controls-v6.py": "bdd61fa31710f581bea419f9d5272a02890940142f0ab25ce65c6fe03d58eda1",
+      "run-controls.py": "1a86ed558e8a61baed496a2d46d5dbfbd3606f73fa1c31d39dfa4d78cd8f63c1",
+      "run-source.py": "60d08419dbb4bfff106eed1f45da1789d2aba3f3761a90e7ea12a58e8219ff65",
+      "runtime-manifest.json": "4ac58b7b6e54cd10540a115f0be681092ef149f783e4aa6226309dca65c1ceb3",
+      "seal-attempt.py": "477332d737fe7626c82776ae6a27a646d2acfafa72b1eb063683df009869b798",
+      "source-controls.mjs": "f826d0ead635ab8173d8faba2ebbaa945fe17e5174b30d0d80bb1be86d75a53e",
+      "verify.py": "78f0d64a3335e5f6ec5e3169b6b2ef39ce162d5c093000cbbfd2d28fb0b1aa67"
+    },
+    "incrementalBuilds": [
+      {
+        "receiptSha256": "8b5ef4c89e27d16e708bf6ee0311ead74f168a58449baf09cf8dd06965ed0441",
+        "elapsedSeconds": 13.059068931001093
+      },
+      {
+        "receiptSha256": "06322920525accedc8931e814665edab9e7dfa54135c6aa37a0bc0edb4c074cd",
+        "elapsedSeconds": 10.590083148999838
+      }
+    ],
+    "unobservedWriterPids": 6
+  },
+  "coverage": [
+    "Discovery off preserves create/write/read/delete outcomes in main and child frames, dedicated/shared/service workers and storage buckets.",
+    "Availability-only probes do not acquire a factory or produce use records.",
+    "Discovery records tested window/worker entry points with execution identity and document identity where applicable.",
+    "Playwright DevTools default and named-bucket database enumeration is recorded; Flashwright public CDP sessions remain unsupported.",
+    "Application script source records retain exercise.js line1 column52; worker script locations are retained separately.",
+    "Typed requests are observed before permission handling. An explicitly permission-granted Playwright child-frame control reaches handle factory prefetch and access.",
+    "Same default-permission trusted-click controls deny access in both engines, matching the retained pre-change browser. Permission-granted behavior is a separate policy.",
+    "Every selected original browser exit and journal completion counter validates; malformed capability, operation, realm, source and attempt identities are rejected."
+  ],
+  "retainedFailures": [
+    {
+      "stage": "native-patch-preparation",
+      "detail": "Initial signature selector matched two functions after three files were patched. A build compiled that intermediate state; no workload ran on it. The exact function signature was then used for the typed request entry."
+    },
+    {
+      "stage": "runtime-preparation",
+      "detail": "An empty generated locales directory was incorrectly treated as a file. The first loader invocation failed before browser creation. Runtime assembly now binds the explicit eleven-file set, including the newly generated V8 context snapshot."
+    },
+    {
+      "stage": "protocol-control",
+      "detail": "First Flashwright control batch passed eight cases then reached its unsupported public newCDPSession method. DevTools controls use Playwright explicitly; the failing run remains retained."
+    },
+    {
+      "stage": "typed-top-level-control",
+      "detail": "Fixture expected a handle, but the top-level request resolves undefined. Corrected expectation is retained as its own case, with the original failure preserved."
+    },
+    {
+      "stage": "permission-controls",
+      "detail": "Fixtures initially expected granted storage access without granting permission. Both engines deny under the same default policy; the earlier allowed Playwright evidence used an explicit permission grant. Retain all failed expectations and the separate successful permission-granted control."
+    }
+  ],
+  "limits": [
+    "Discovery only; no IndexedDB exclusion, browser-service omission, public capability API or performance claim.",
+    "Selected API initiation paths, not an exhaustive inventory of all implicit IndexedDB behavior or future use.",
+    "The tested cross-origin iframe uses site-per-process policy, but this checkpoint does not independently assert its physical process placement.",
+    "Six selected native writers escape 100ms process sampling. Original browser waits and counters validate, but exhaustive process custody remains unadmitted.",
+    "Early successful Flashwright observations come from retained partially failed harness runs; complete before/after source manifests cover the later campaigns only. Exact earlier harness versions are retained.",
+    "Full application/core refresh, other platforms, portable packaging, broader capability coverage and representative majority-scenario 2x performance remain open."
+  ]
+}
