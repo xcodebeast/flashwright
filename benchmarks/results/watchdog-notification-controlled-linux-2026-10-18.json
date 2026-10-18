@@ -1,0 +1,2883 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-18",
+  "classification": "native-linux-watchdog-notification-and-controlled-baseline",
+  "status": "verified-engineering-observations",
+  "performanceAdmission": false,
+  "resourceAdmission": false,
+  "baseCommit": "6ed9db22636fdc1fa368cacb9572f0dd21413b24",
+  "implementation": [
+    {
+      "path": "tools/watchdog.py",
+      "sha256": "b85270365add08354fbaba4e1314be42320d1a75f2475b343ef838c46012de13",
+      "bytes": 22733
+    },
+    {
+      "path": "tools/test_watchdog.py",
+      "sha256": "427045d6352a70fd6c0b4ade7d113fe2438808ae38a84b61ce9a3b48d7bc1bd1",
+      "bytes": 34004
+    }
+  ],
+  "change": "Linux pidfd wakeup removes resource-sampling sleep from ordinary original-owner exit observation. Terminal status and inclusive usage still come only from the original wait4. No browser, driver or runner implementation changed.",
+  "verification": {
+    "watchdogTests": 28,
+    "captureTests": 26,
+    "testsLog": {
+      "path": "workbench/watchdog-exit-notification-001/tests-final.log",
+      "sha256": "b96f8d4492900aab68545ef6b21a473fe3867c612a2edf2f27a6dbd5748d5685",
+      "bytes": 9285
+    },
+    "shortProcessLaunches": 24,
+    "shortProcessComparison": {
+      "metric": "Final child monotonic print through original terminal wait4; includes remaining Python exit and scheduling. Not exact kernel exit latency or browser performance.",
+      "summary": {
+        "before": {
+          "count": 12,
+          "medianMilliseconds": 52.631202,
+          "minimumMilliseconds": 14.232484,
+          "maximumMilliseconds": 89.657565
+        },
+        "notification": {
+          "count": 12,
+          "medianMilliseconds": 1.6935175,
+          "minimumMilliseconds": 1.230567,
+          "maximumMilliseconds": 1.858674
+        }
+      },
+      "observations": [
+        {
+          "block": 0,
+          "delaySeconds": 0.01,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 89.657565,
+          "resourceSha256": "5da6388402940cda8a02dc1a09140d9f091bd7d826b5dd7a3a3c6f1da8d217da",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.01,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.368528,
+          "resourceSha256": "9a4b5de03b318fc7c27f29be258fdb11153ee65c427bca0fcc0bca2322966b56",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.025,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.297624,
+          "resourceSha256": "c0a0bd057e8771517272915e2f294e2d69dcf4d35d1d999dee24a1dd8747d155",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.025,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 75.082082,
+          "resourceSha256": "4c9c23d20969b4d9e5a4d8a7feb8e031b3ece3fd9ded4cac15c2d5852abd34e1",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.04,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 59.619852,
+          "resourceSha256": "24308c1ef5d80e16688efeec9ae1ae74aa5ba25ec623182dc4701206e35214b3",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.04,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.811947,
+          "resourceSha256": "a4ab83498fa539e307704badb01645bbd19369b3554c56f1c104b005c0357803",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.055,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.711186,
+          "resourceSha256": "1411dff083d25ea4934cf6e18ee80e9d0ebc5609758bd089fdd09d7d0682708f",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.055,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 45.642552,
+          "resourceSha256": "589879c362911231283dc3e3fe3c50f75a6b2a3a0b53f8efde84a975e5a95ee1",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.07,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 29.621875,
+          "resourceSha256": "8ab17a4dac627e4fb2d31fba35895b73e93069468d45585c3308b29b29f8e0b0",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.07,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.572895,
+          "resourceSha256": "069af11495a7bcd71779430282bd59eb5373ebed32aac2969f58d28d78cf01c4",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.085,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.688613,
+          "resourceSha256": "87a5c8fe0b773240807ff18d7bc5bebc3744dedf9e3e269d3161a2a4bc01c276",
+          "exitCode": 0
+        },
+        {
+          "block": 0,
+          "delaySeconds": 0.085,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 14.232484,
+          "resourceSha256": "2bbe78360cd38bc9246f347bba7636d9e71032d1b01576eeae68de3c61e2b80b",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.01,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.230567,
+          "resourceSha256": "00fa71b24d7cbaed0d917160a28a4c060a6e4b4f8dac818c563d528c66558e42",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.01,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 89.646234,
+          "resourceSha256": "c6e97b035e00f4515aec3b5c02761ff78e0ac4035976fb68860ce8aeb8aac370",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.025,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 74.866605,
+          "resourceSha256": "ca1566d07f85a9baffb1088188053b101094fd647a129c64c3eda8aa25b700dd",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.025,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.380069,
+          "resourceSha256": "20bf74595152e5eb427a5a7478d8a884dd945ef3c26e9f9c8da06d3be3b61bbc",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.04,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.794183,
+          "resourceSha256": "c886c6a06eb06994c3de77585eb756b979e0359fb3f73bdd65673bce0e0fce62",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.04,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 59.729039,
+          "resourceSha256": "1c06cd38b5e0401b4fc7eba2ff52371feb85cadb770d615377472c12b5bb5d2c",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.055,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 44.584791,
+          "resourceSha256": "1d337329ba0ba248ea0b3c13fcd52c2d4af784ef3eb7b4c9d42cf6c99c04f7be",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.055,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.858674,
+          "resourceSha256": "598a3c961babb00dc030fbdfc522255710e9e287c632b470c93a71b7fee4a04a",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.07,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.740251,
+          "resourceSha256": "523094531bb650e44d4e1fa26a8d4fe4e9856f23f534b529ed4fb00dbaabbf75",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.07,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 29.851891,
+          "resourceSha256": "604bfd3848ceb82fe9a867a95ad8457a17b66c6b7ed114593fa2b69db5970ae4",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.085,
+          "policy": "before",
+          "finalEventToWaitMilliseconds": 15.652459,
+          "resourceSha256": "efe84b05abc8474ae03187004f609c661c89d3b65dfcccc7a1c53f54f6c310fd",
+          "exitCode": 0
+        },
+        {
+          "block": 1,
+          "delaySeconds": 0.085,
+          "policy": "notification",
+          "finalEventToWaitMilliseconds": 1.698422,
+          "resourceSha256": "1972449cb541e58125f58542b0e0a7327866b8563daf4896338bdb83231d0a98",
+          "exitCode": 0
+        }
+      ],
+      "rawReceipts": [
+        {
+          "path": "workbench/watchdog-exit-notification-001/comparison.json",
+          "sha256": "4f6a392a76963defd148c114c4c4bc005cfd658a69c24534907f9214f14de6b4",
+          "bytes": 22728
+        },
+        {
+          "path": "workbench/watchdog-exit-notification-001/comparison-plan.json",
+          "sha256": "ed6a6a9195a1e34b9834e54037c1a6a59b4785d4165aae97553e251334788070",
+          "bytes": 994
+        },
+        {
+          "path": "workbench/watchdog-exit-notification-001/compare.py",
+          "sha256": "9fd415f85b693c997f427ac18e3e356db93573819422bd4b18ab80eda7113f63",
+          "bytes": 2790
+        }
+      ]
+    },
+    "postMeasurementTestPortability": {
+      "change": "Native-only pidfd test now skips recognized kernel/policy fallback. Supervisor implementation unchanged after all 54 tests and both measurement matrices.",
+      "focusedTestsPassed": 6,
+      "injectedDeniedPolicyNativeCase": "one expected skip; fallback behavior remains separately tested",
+      "measuredTestSource": {
+        "path": "workbench/watchdog-exit-notification-001/test-watchdog-measured.py",
+        "sha256": "44f1160cab8cc8ae6e28df4024090f436e68af2c640316526e0599de57d944e3",
+        "bytes": 33828
+      },
+      "logs": [
+        {
+          "path": "workbench/watchdog-exit-notification-001/tests-portability.log",
+          "sha256": "47f947b70b475b93eb8d284179483b5158848a5c27c0ad8832c49d67b899186b",
+          "bytes": 1184
+        },
+        {
+          "path": "workbench/watchdog-exit-notification-001/tests-denied-policy.log",
+          "sha256": "f0e758e5c2c506859941dc869c59c31301820ec6e1b2062cccc7329e184b75b4",
+          "bytes": 404
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "platform": "linux",
+    "architecture": "x64",
+    "browser": "Stock full Chrome 148.0.7778.96",
+    "runtime": "Bun 1.4.2",
+    "reference": "Playwright 1.60.0",
+    "workers": [
+      1,
+      4
+    ],
+    "cpuQuota": "400%",
+    "memoryMax": "8G",
+    "memorySwapMax": 0,
+    "artifactPolicy": "Trace/video/screenshots off; default failure diagnostics on; browser launch diagnostics enabled equally.",
+    "order": "One serial matrix per measurement method; two blocks with reversed cell and engine order, 15 original test executions per launch."
+  },
+  "baselines": [
+    {
+      "observationMethod": "periodic-poll",
+      "status": "verified-current-controlled-engineering-baseline",
+      "launches": 48,
+      "testExecutions": 720,
+      "expectedFailedTests": 120,
+      "unexpectedFailures": 0,
+      "sourceEntries": 1313,
+      "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+      "driverSha256": "972978383cd39306aa14dc0f5939967a687fe8e4a92fb38956cc1ef03fa20902",
+      "rows": [
+        {
+          "name": "0-00-interaction-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2236.9178820001707,
+          "runnerMilliseconds": 1937.8790000000001,
+          "receipts": {
+            "owner-report.json": "877cd9e862a84ae24d2ffeba502f8704eb3650b2f110050e00623eca530d3ea9",
+            "resources.json": "a17bfcbab3723ffb524ab5fe35083fe43eac2a9c75e5bf9a781ff58b94f27be6",
+            "runner-report.json": "a6a30ec1c332322ee60d704a9ca82f77bc1f2cfd09203d68c67e54678167d912",
+            "runner-stdout.txt": "abc98f8adb2ccd498522e41efb539eaa5af933132fee2d2ed93fdd3c57b77e92",
+            "runner-stderr.txt": "12a6595bfcf5ab1a6141fcc90cafa29d91dffd4d796d4685bb1283d1ec96bd61"
+          },
+          "operationMedianMilliseconds": 39.821092000000135
+        },
+        {
+          "name": "0-01-interaction-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2661.076385999877,
+          "runnerMilliseconds": 1958.8359999999998,
+          "receipts": {
+            "owner-report.json": "bf7e7cae9d13f17892115b298248253295a83c10873b2fa187cb1482efae751f",
+            "resources.json": "d91e5852c93552bcc96560561f6aeb85d7c0de005b4e5db8238f4b6299db949a",
+            "runner-report.json": "3d96cec7ff4ed4371eb2e3c57b4dbefa1416b111a2e4d39ee7553cbe4100cb0c",
+            "runner-stdout.txt": "66358d62385ac93ffaf30ab768fa04cf9f6877803ebbecde0c224ad735f2648a",
+            "runner-stderr.txt": "66f553b9bff41611df9f6e1f4d3b6f7b8077dbaa1adafa10d3de5582733595f9"
+          },
+          "operationMedianMilliseconds": 39.64799199999993
+        },
+        {
+          "name": "0-02-assertion-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1490.0126,
+          "runnerMilliseconds": 1238.408,
+          "receipts": {
+            "owner-report.json": "d6f85f407fbd841b7e7d8a892d73916739b5dafe65049c4ae159e1235d355f60",
+            "resources.json": "81a43609fc0ac0ac22fd9d9a3b3f79a4cff5b1cc6592c4b032a4a814116a3bdc",
+            "runner-report.json": "aee7fac76837a13d75861a7c61d241bfbdb309b12bd285e4cdab8dd264ef905f",
+            "runner-stdout.txt": "142f46d8d085cd506a35648cd384d180727d25c57c3e525f0f21e1d36873c0d1",
+            "runner-stderr.txt": "2eddec9948ff911ab052311efd082f17f2aaa772c585a46a7192034df525ec00"
+          },
+          "operationMedianMilliseconds": 13.983007000000043
+        },
+        {
+          "name": "0-03-assertion-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1494.1347569999834,
+          "runnerMilliseconds": 1203.267,
+          "receipts": {
+            "owner-report.json": "69d90b2faa4d04744f8c2281a7d227cbbce824c876b59ba8f5e6ae830313b6cc",
+            "resources.json": "01b1a45f3503b588536170aa3a711230cccbfaa5021210bb190fcf05ec63440c",
+            "runner-report.json": "a5d4014e5774d0028a89d6fa60681c7d702e8cc97c5a7b28191a8a65eab08548",
+            "runner-stdout.txt": "c7f8d3c819abfdccc031870eb4d58077bf4acd581427d9578df628050f323d3b",
+            "runner-stderr.txt": "f550ef93852797c74d904b5b8d0f181a9184e23c4901a49b90e25a2c9fd84003"
+          },
+          "operationMedianMilliseconds": 12.682613999999944
+        },
+        {
+          "name": "0-04-navigation-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1604.1891780000697,
+          "runnerMilliseconds": 1305.8609999999999,
+          "receipts": {
+            "owner-report.json": "dcbfe33489fd84aa379e248b34008388cb7e3318e6297f1068da055c38ffa5a7",
+            "resources.json": "aab4b7d43f7d04a07916f8b3da678a19351cd6086dc7a140a31c4e896656d0dd",
+            "runner-report.json": "c8441e53435d317941942927dbe21771c11491d4c56b3a9426fe11b5d9a2f914",
+            "runner-stdout.txt": "854333e83368f7fe923fa3509ddcd41d7e755e4d0628bd3e35ac5df96b1bbcce",
+            "runner-stderr.txt": "b76d664fba228cdc05ddf62be1db31583eb5e80bb10d11374cd95467acb41817"
+          },
+          "operationMedianMilliseconds": 18.792782999999986
+        },
+        {
+          "name": "0-05-navigation-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1709.0210159999515,
+          "runnerMilliseconds": 1320.439,
+          "receipts": {
+            "owner-report.json": "cb5791446eff763aa2611ca949e0c02768af8ff844a90eb3b2d231f86a988ca9",
+            "resources.json": "3fbd022ea221363bd43f0ad9f9e7ec1ec52737b699f0727fcf7749f1bca23f14",
+            "runner-report.json": "a06516ca82f1a51969665b592fbdc9a4a18b2572f8b766f713321ec96893d7e0",
+            "runner-stdout.txt": "f611dadd28cd1cd3b87d3340e921fea8f2deba72a504e43c8ed3d018e724522e",
+            "runner-stderr.txt": "91c41b33343141fc024a66484a4b47d82a0811ce4e3c84fa5989d96d4a8d4f5d"
+          },
+          "operationMedianMilliseconds": 18.495269000000008
+        },
+        {
+          "name": "0-06-setup-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1500.5222459999459,
+          "runnerMilliseconds": 1246.2649999999999,
+          "receipts": {
+            "owner-report.json": "cb38249d8e8df2a72ed7aa3a57c3db5cdd6d73ad50d1deed1232028f5c1f8b98",
+            "resources.json": "042b82844a18c29bab6f56948424b592d4df71e5e06c3914883c72411af21f39",
+            "runner-report.json": "3cf78916e910eb9a133f31f5d784acc94dd02f21e32f8109a074a96bf931140b",
+            "runner-stdout.txt": "be856eab3ab3bc5a2149ca674333d9a5f500d1e0c1500b01b4f673c241272a69",
+            "runner-stderr.txt": "5be152380791738f24220361b368aa2b9c26e566efa9c756a9bc5f575f4b93fa"
+          },
+          "operationMedianMilliseconds": 13.46355200000005
+        },
+        {
+          "name": "0-07-setup-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1498.0795520000356,
+          "runnerMilliseconds": 1202.3500000000001,
+          "receipts": {
+            "owner-report.json": "07b4e93234e79fdcb535be9e0264799db23de7d3baca5d22dd4ec596291be334",
+            "resources.json": "f24655441bd1f8361ef031b4e01da17a8856eb3c00ea61aa3b60e36125f1239e",
+            "runner-report.json": "ad035148413c237185c7464db11b8596391fbe5eeebd6b5b76705e177b1cfd7b",
+            "runner-stdout.txt": "c15291c73ff8acc758604a6b3592a8e2c0919862422a83114de78337aee5dd6f",
+            "runner-stderr.txt": "af6fc7286f3d367f9db29477aabffed43eded0c38064fbf2ec54c87058c1ce8f"
+          },
+          "operationMedianMilliseconds": 12.240175000000022
+        },
+        {
+          "name": "0-08-backend-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2661.2278719999267,
+          "runnerMilliseconds": 2397.445,
+          "receipts": {
+            "owner-report.json": "2dd1e52428341f5e54c921e1b6dd16624ded166b6b1b80a7860841d48f57f51a",
+            "resources.json": "acb4c0dd35d50c6448cec91cb919e60d998511051db6a70c43c9a8d59b155841",
+            "runner-report.json": "be887b8f8f27648db1ff58458f7331dff72a98d169f79157f2551e7f808b6418",
+            "runner-stdout.txt": "d3010613a229fd6f375b25eca08bfffa82e8d2ed64e83228ea39fe6bc08835e5",
+            "runner-stderr.txt": "c91125cd2986dbc53010098b9ca8f39b4fb864b803e2b6277dbabbad4a4d1192"
+          },
+          "operationMedianMilliseconds": 71.61281800000006
+        },
+        {
+          "name": "0-09-backend-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2765.6767050000326,
+          "runnerMilliseconds": 2372.653,
+          "receipts": {
+            "owner-report.json": "87ddf753f397ca58386169e5c1bac737e91fedad9dcdcb121633959b537734d9",
+            "resources.json": "d0aae4293084bd0cc3dc1f5270840079a70bc5f8006cc662856a7ae155744a3f",
+            "runner-report.json": "46c8ffa055efbcd4742f207d0dfd6428b9b421059191a220afd25ec2e221bd4b",
+            "runner-stdout.txt": "757acba1ca120cfce7ecdc0d95a98db240f7757376649945f36b9cb11b252393",
+            "runner-stderr.txt": "9c63e91a6a58491841f77584e8bc04d1be5e534a101c8d8440fc7e6bd48db234"
+          },
+          "operationMedianMilliseconds": 70.4203379999999
+        },
+        {
+          "name": "0-10-failure-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 10114.880039000127,
+          "runnerMilliseconds": 9774.537999999999,
+          "receipts": {
+            "owner-report.json": "afea872e83dd7c5654a9e94d5fbcc5cb6264d7adc04c443450913b06aa589403",
+            "resources.json": "e5ed319a29419ce81ed5a871a4f030b544b56526f0bff79c3c54883ff2c13c3e",
+            "runner-report.json": "f9e0716ca20a59ce8862be0261429739bc0da9a8b06a3312a5def2182f00763f",
+            "runner-stdout.txt": "06a014d5bc5788e1dc78439f5e55071469a0239f695f7d7ab86ccd0e8ecca92f",
+            "runner-stderr.txt": "e9365bcecfecb33e9b65572757c5137e851559b286560ceb53826fae4b22f1a5"
+          },
+          "operationMedianMilliseconds": 254.40288499999997
+        },
+        {
+          "name": "0-11-failure-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 9483.06466400004,
+          "runnerMilliseconds": 9130.016,
+          "receipts": {
+            "owner-report.json": "b1873666515fa4daa065a2e373547930832cf1fda8ee9dea4c6b9c79f7636a22",
+            "resources.json": "ccf967bf6c4704761d9b872da944f65766f1ff552ad6caeead6fbb540b47ab44",
+            "runner-report.json": "f227f916562f79eb7891b317f28c1f314510420c2322c9698ac2a06ee3fb5983",
+            "runner-stdout.txt": "7124e07b7036a028577826a827d9dcaea85263f816255cdb47d8b87a6ba4e636",
+            "runner-stderr.txt": "9100d1fb1ae783e7709f425fb44b6f4f2509e76c091a40831f158a19d60256da"
+          },
+          "operationMedianMilliseconds": 253.42573999999996
+        },
+        {
+          "name": "0-12-interaction-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2112.055016000113,
+          "runnerMilliseconds": 1880.562,
+          "receipts": {
+            "owner-report.json": "f28f493b3e8dffd7b0147788c32d14d2f4aab850e84a861e1fdb850c067409f4",
+            "resources.json": "1a3488b88dd3503a89fe8e1c1b93bddbc203aed4095453e921fa2a04030eb7f7",
+            "runner-report.json": "6e3e0839d27c33368ad971f0eb3c9dae20ba563784bc6b8362e97595d5e381a8",
+            "runner-stdout.txt": "2a57a32be4292670ac164ba4e78ca85d519aeb420904e5c999d7f86f3bcd7059",
+            "runner-stderr.txt": "30a06dc88e6d57adbbbc4ab5010a812e8bdef6dc740aee4e207792acefc2577f"
+          },
+          "operationMedianMilliseconds": 52.68388499999992
+        },
+        {
+          "name": "0-13-interaction-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2293.5093199998846,
+          "runnerMilliseconds": 1928.643,
+          "receipts": {
+            "owner-report.json": "600aaf5f97f1a4303c1bcf7b3efc44515b583bceefb4bc5ea4001c268db7ed79",
+            "resources.json": "a6757e8f356b1656ab1d9e04a47ea27645ac43f00c23187a2ac2313c05ae9400",
+            "runner-report.json": "827ebb5cd5d1c94b92526bf2bb15f24db8f316e78150378ce4bab880ae7884ff",
+            "runner-stdout.txt": "66d1d40fd38b82be27e8a89dd72e4c6dfcfae755194565e08e3980ba01d73eb4",
+            "runner-stderr.txt": "5b452ea85d0524862d146fe4fcc0e1d80b9374bd17e4dfd34cfd85d57f49c449"
+          },
+          "operationMedianMilliseconds": 50.835143000000016
+        },
+        {
+          "name": "0-14-assertion-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1435.7843089999278,
+          "runnerMilliseconds": 1117.7440000000001,
+          "receipts": {
+            "owner-report.json": "7b8b8d8761d02e0059e6944f891bf51d9185831391ff8238072c68ffde636a37",
+            "resources.json": "843f2dc2206dbeb69b6159a6911bd7d50cb298b2719f35c591a4ab0898908f11",
+            "runner-report.json": "bf6974dca4afc64391c0aa1b2965eef5a77aa5ab91be4de76a328033a5ac7b3e",
+            "runner-stdout.txt": "00e3bd3ced41bee84e65b18b16b0dec8f99f8fdd061a706c09161e77f02813a4",
+            "runner-stderr.txt": "cc57f15a67a8f2c952a03902109ff8195499d6ff936b4862694b2ca7d152d57a"
+          },
+          "operationMedianMilliseconds": 19.422056999999995
+        },
+        {
+          "name": "0-15-assertion-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1334.5930089999456,
+          "runnerMilliseconds": 998.8199999999999,
+          "receipts": {
+            "owner-report.json": "47c5517d1188b0850ab487e8313103f1463b803c37d7525f157d9e573ffd2dae",
+            "resources.json": "a208361a59b3a36065486184f84f53897397d16903706d094f886d91345c4f49",
+            "runner-report.json": "a974da8b496a261a7485606f789c99be3d36ee46831c75773589ff6d96c64a69",
+            "runner-stdout.txt": "e874c6d40da9f26e03479683982a0bd2d7125493d536ea7b95396ff70e233be6",
+            "runner-stderr.txt": "5e09072020f5b14d648c04ccdc64c0f7390673c6e27f4869b3c98c155e82a147"
+          },
+          "operationMedianMilliseconds": 18.37005499999998
+        },
+        {
+          "name": "0-16-navigation-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1347.4243309999565,
+          "runnerMilliseconds": 1040.289,
+          "receipts": {
+            "owner-report.json": "2296a1772164e1f221df21858223f0a715656bc64f78c1468c667d8d2c61c7c1",
+            "resources.json": "9797ddd4f41326e0e3da3e4e4d38b40030df961bf4ae49443cb7038acb5df173",
+            "runner-report.json": "2bffacd645bbb405aedb5db730d4a1b6a568e797703cc43ce429661321133044",
+            "runner-stdout.txt": "23326533f5d38cb947aeb84173f05d684aafe8c9b1378d384c47acd325d0d4f4",
+            "runner-stderr.txt": "a690e0f5563e51e1b858ac238b85805f0bb7d9d5127e105af701fb282be51aa7"
+          },
+          "operationMedianMilliseconds": 30.429323000000068
+        },
+        {
+          "name": "0-17-navigation-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1569.8376980001285,
+          "runnerMilliseconds": 1163.4699999999998,
+          "receipts": {
+            "owner-report.json": "bee13fd97410b416da7401286a0014d12630d2fa5971b87b4686aff9762d096f",
+            "resources.json": "cbdd74d3220e0e7178633d0feef5ba85e325097b12d0dedf36f32bd4645a0328",
+            "runner-report.json": "eb5fa38c92bd070c2a3b0731561f93c99f92982b7a4602d28c3aa0eca7c8f216",
+            "runner-stdout.txt": "4de8db91a05c58e2a92228aec6af0e95d8a71691ad4d9943226310f3d43b1d68",
+            "runner-stderr.txt": "21e0262a385d394fd4211162599c835f0676801c0651f3fc412fdce0bd105963"
+          },
+          "operationMedianMilliseconds": 32.106506999999965
+        },
+        {
+          "name": "0-18-setup-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1448.3135030000085,
+          "runnerMilliseconds": 1107.328,
+          "receipts": {
+            "owner-report.json": "7c7e3a2fec3d68e58d5d16c5aa1e197454858f3ca4781b53f311c33f4646b1d4",
+            "resources.json": "9d7887f34293a50d92377c6f687753362ae071fdf4aded4103845440f80e08c8",
+            "runner-report.json": "2671f1009667d7c0c3ed9a27e660d3e60061ef89957d48a7a89a4f0678630f21",
+            "runner-stdout.txt": "217dfa4e387490deaa2b5f271cc996841f6e999b43a6568943d8ea1bcc1f7765",
+            "runner-stderr.txt": "0619cfa142a61281792622eff31032ab3fb62d97e2e150ed0ef7d0fe62c55251"
+          },
+          "operationMedianMilliseconds": 18.263472999999976
+        },
+        {
+          "name": "0-19-setup-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1363.3327140000802,
+          "runnerMilliseconds": 1013.8720000000001,
+          "receipts": {
+            "owner-report.json": "822218b345606e97c0d38a470ef281e0b6176b93b569d9a394f1d091761d33b3",
+            "resources.json": "3d7abe5cac78b9a8e2b32184eed77903f2a1113a92e05b818a36db1563ae43f7",
+            "runner-report.json": "42489795f67bf2ce7dbb4892099dad3fdce481897bf9cae356feadb569953f33",
+            "runner-stdout.txt": "925d421a930536433b16261e0a87bc1f811726271300117e9c058cd58ae95593",
+            "runner-stderr.txt": "e36616715c8ab00b6a275f0c0324409e1086e9eb32795b8c3caa390a76f9f5e4"
+          },
+          "operationMedianMilliseconds": 17.747476000000006
+        },
+        {
+          "name": "0-20-backend-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2282.481204000078,
+          "runnerMilliseconds": 2016.8600000000001,
+          "receipts": {
+            "owner-report.json": "540cd17fe84871152cdd454182d57799b072193bf968e14ba64a179452ed0c7d",
+            "resources.json": "4301ff1f538f1ea7f64178b4d9ed8349c1c7e3cdaa938b2e76d9850a4acc490c",
+            "runner-report.json": "91cf95bfc11e496ef25e307eb41087ce073a07aad3cd770813ab44666c63533b",
+            "runner-stdout.txt": "b9c95352205e82397f5597a709ece19ec712752aba48c80ee38e8634f631c427",
+            "runner-stderr.txt": "0e9067f622b81a14f1ccad5b54f3f56c8961d117941652a9dc07a4b33cd3f18e"
+          },
+          "operationMedianMilliseconds": 79.30416799999989
+        },
+        {
+          "name": "0-21-backend-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2382.158580000123,
+          "runnerMilliseconds": 2020.1099999999997,
+          "receipts": {
+            "owner-report.json": "969fe4d9d93868f47c5e9f6019ee4ad599dfc4fcb9b6cc4da2f777926a5757ba",
+            "resources.json": "68091aff06ebddb47e228da165dcccc3a2445c2dd1986f4f0efb5bcd2bd6dc2e",
+            "runner-report.json": "b846259c3604cb8fc57eacb32d382917bd23994117c7285cf580de6882e98b4e",
+            "runner-stdout.txt": "884a55ed3b1292807db3d5e843d205e9c258ddaf35b873ecd897fb6e44cd9d5c",
+            "runner-stderr.txt": "cbe4f68c08cafe4f12c5b1d4d5a43b8c773a0e961df08ebbd6977fcc54ec5223"
+          },
+          "operationMedianMilliseconds": 82.24865
+        },
+        {
+          "name": "0-22-failure-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3914.243454000143,
+          "runnerMilliseconds": 3630.308,
+          "receipts": {
+            "owner-report.json": "4447080d6949e7f6ffc9b2ecd565cd75fe12ca0ace16538b4c7f5ea95294e6cb",
+            "resources.json": "f6401ac0e817bde159cf5e53057d4efc9ac77bd2f65ae4fe728a02d968521a2a",
+            "runner-report.json": "9a60039371bd050067a08cfa270dc17c55d57565e57bb22a5e82e0e5d126537f",
+            "runner-stdout.txt": "12c7a532256c8c7b9f4524b556d24f1f31e5df933959083928c361fbf0d1dede",
+            "runner-stderr.txt": "14ce35743463a5c43dd5d8d2579cafaaa2be9198a9086345baaac1e06aae9171"
+          },
+          "operationMedianMilliseconds": 255.885306
+        },
+        {
+          "name": "0-23-failure-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3833.003143999804,
+          "runnerMilliseconds": 3470.174,
+          "receipts": {
+            "owner-report.json": "3a475791a47c498e8441e1da7f2e42e741243c632801ffc35d62f50a47287f48",
+            "resources.json": "f0473d9387bb78e2764b6ce20202fa1301e9d93a222fb3fe1c14d7aacffcad49",
+            "runner-report.json": "f88caa5a9c3b372472207c162b89e8cd228761aca54e422806d682a5b2e76599",
+            "runner-stdout.txt": "45c8ea43aa67418e14b97ea9797aff1fb1529a179ca242ed4bbc26fd9fd89feb",
+            "runner-stderr.txt": "4f508b35f0cf3853e808180c50bbf329807607a143cfa53940dd3316a78218d7"
+          },
+          "operationMedianMilliseconds": 254.859871
+        },
+        {
+          "name": "1-00-failure-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3691.3403769999604,
+          "runnerMilliseconds": 3435.2760000000003,
+          "receipts": {
+            "owner-report.json": "edc280cd2ecd18514700bbedabb01d38ff2bb92e6833883fc6ca8fd0021842b9",
+            "resources.json": "24115a24610684b412da7e43eff68df6eefbce7b7b668e5bc7703a1b40c0e53f",
+            "runner-report.json": "840fae15861c0f10df25ae705bc8f744b3f693833deff356adec93fe49468cf2",
+            "runner-stdout.txt": "ac4b63aea1605ba9a2c8f6d1568ec04264e44f384d1e71dfa86632c369dc5faa",
+            "runner-stderr.txt": "605ad08f7fc183633820a3b27a2debc6ee6eebd172e7790188fa239b04185ead"
+          },
+          "operationMedianMilliseconds": 254.94366100000002
+        },
+        {
+          "name": "1-01-failure-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 4097.132620999901,
+          "runnerMilliseconds": 3694.362,
+          "receipts": {
+            "owner-report.json": "952e179f5976d21a6947b822800fc4358eaf532aea3c1aef0d4b3735c1863ee7",
+            "resources.json": "8a5b3755b9dab4668d8b9b3d164fc978c55f81bcfb4e3387b4021dba2596a024",
+            "runner-report.json": "c5799f15e60c24ea0ef4aaf667b22415509560f4d81b7b46164b1222daf7b65c",
+            "runner-stdout.txt": "d5cc48283d290d0ce3717c387890244c1073a97b20af92910261900794bdf719",
+            "runner-stderr.txt": "8ffa64c53750bfc6a5ddde753343ff72efc2fe3b48ca01dafc9d48b54456d5f1"
+          },
+          "operationMedianMilliseconds": 255.151567
+        },
+        {
+          "name": "1-02-backend-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2315.1749179999115,
+          "runnerMilliseconds": 2025.2669999999998,
+          "receipts": {
+            "owner-report.json": "0461d379321ab3954a778ff91831844c09e6df68813c7dca4ef3375c361e6733",
+            "resources.json": "ab87795c1c0eb4971bf13670bea69d486ce39e545f1a916eb0c23eae0a8c031a",
+            "runner-report.json": "6153aad312420fafc1fa9c30af648b30cc1cadeb44f7afa14b723736741ebbe5",
+            "runner-stdout.txt": "020dc446ee35aa321403cf9d538154383a7f7ee5a95ea1c341c6ba450cc10149",
+            "runner-stderr.txt": "a5abac55585318201e0f9e2e0191e1ec512c6ac889170db5c7f81f990d43c214"
+          },
+          "operationMedianMilliseconds": 77.6372980000001
+        },
+        {
+          "name": "1-03-backend-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2301.2960099999873,
+          "runnerMilliseconds": 1989.779,
+          "receipts": {
+            "owner-report.json": "663e575518abb818a3f4b352c57479810b9d014b42c2167bbc4ea9fec49629fa",
+            "resources.json": "d126fa9d303c38165ebd3d6d522c9fba403d6eac49ef705aa0af4bb88981f53d",
+            "runner-report.json": "726dfb1116f0081d497c3670071b2968923dea79248429d4ec12a14174d65625",
+            "runner-stdout.txt": "beb5c33337f9c75d000b059d917ba7fdf06f6eb8ea76e5172bbd27a74c2b96b4",
+            "runner-stderr.txt": "b8ba4dd743b4eda8c30361c9f82d57274e9c8c5510664d0d75fe87de70416bc4"
+          },
+          "operationMedianMilliseconds": 82.60881600000016
+        },
+        {
+          "name": "1-04-setup-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1253.9903839999624,
+          "runnerMilliseconds": 1005.077,
+          "receipts": {
+            "owner-report.json": "cbca1927810a039b7536a8a9522db6c267c51482e1cc42a2ffbb7903cad83617",
+            "resources.json": "c3d4ba688fc58b53f54a33695b905d5a81f4c82f8d59182ef202947cbacbf27a",
+            "runner-report.json": "0f173a0b3cf307012bbf03eb85f13100e31dc9f59b7121a4446f4f43124ecd6f",
+            "runner-stdout.txt": "bec866bec44ea9d8a7d8400ba80cbf033bde3f4feb737f861f1cf83016b81cfc",
+            "runner-stderr.txt": "d82ba06551aae3fcd8bc6fa0e6085fc3d9cec22806e811f59f4fee84ccd59b5a"
+          },
+          "operationMedianMilliseconds": 20.208228000000076
+        },
+        {
+          "name": "1-05-setup-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1454.3557519998558,
+          "runnerMilliseconds": 1119.252,
+          "receipts": {
+            "owner-report.json": "3a414cafc1b4483379806fa6a961c206a643762c82a68056af50d50eb5991411",
+            "resources.json": "321553093b9d88eec293a9054ab264bfc05db179741986346ca821232e458ca8",
+            "runner-report.json": "05120c7e2586ce5d72e73a33e4be8b3b51f968276acf2aa8eb3d5440087ce058",
+            "runner-stdout.txt": "0237706ae5e078c5a97300213bbea4e793c6f0f74fd6398d27d91cc6dae7d910",
+            "runner-stderr.txt": "7bfc97f893d203bfc7aa2f5ee5f234532db89484b17a3147a368b1708513808e"
+          },
+          "operationMedianMilliseconds": 17.315503000000035
+        },
+        {
+          "name": "1-06-navigation-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1478.5124410000208,
+          "runnerMilliseconds": 1154.887,
+          "receipts": {
+            "owner-report.json": "3e72da593466500e9ec4ebe9186df30ce29d91f2bc65465a525f9fe7c35572a5",
+            "resources.json": "d28924b5ece6459bfb87dd47f28e933b82506252ceb6d822f8fadacf1d991417",
+            "runner-report.json": "cece40aa74164e602e84de7eab273531c58c19e160c070d03824b7f5e465eda2",
+            "runner-stdout.txt": "867aa38f148ec190b953108f26901e2d0b9cac7b9fb34f00d052d355f4c1cf9b",
+            "runner-stderr.txt": "04bcc5eec6976fe7ec879ad15374e2e30a575541a745e4313a088092e1528af2"
+          },
+          "operationMedianMilliseconds": 28.78460999999993
+        },
+        {
+          "name": "1-07-navigation-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1371.8913549998888,
+          "runnerMilliseconds": 1060.112,
+          "receipts": {
+            "owner-report.json": "9f8b4c9fc39b4a128f921dbad9cfcd15675b72e7ba94479220403c92e095640b",
+            "resources.json": "b051c5f5e813c89247ac52b1d204597600e0c137dcc2a8ef77ebb04c6ff2855b",
+            "runner-report.json": "3203ab397e5451d9f89a27e11bebd0c9d6d229f96521c855e8ddd858124d9019",
+            "runner-stdout.txt": "ddb13d6d1d1d2aea2c0db60b1756e37c1df19a8298882b55360551aa85eba3d5",
+            "runner-stderr.txt": "5a88383fce3cfa9d7902162fab64d7fa25eb9354dd7c2f37c415d4cb2734ffbd"
+          },
+          "operationMedianMilliseconds": 28.902162999999973
+        },
+        {
+          "name": "1-08-assertion-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1248.719752999932,
+          "runnerMilliseconds": 981.4519999999999,
+          "receipts": {
+            "owner-report.json": "5751496aab7a824b5aabab07af6506901dbcf8642e495d0a99183e0050902f6b",
+            "resources.json": "9d3fae0b2fbaea781c263b77ff12665e8bb12a8074a0c6665490ab0d5c106956",
+            "runner-report.json": "37b0661a3f9da21d7773da365692bc1fff61fd3e2cbaea634a9f3081e2d53043",
+            "runner-stdout.txt": "51607b04149c16bab5922ad69b35a8e6ea34790bb3f0dcefe998fae132428d46",
+            "runner-stderr.txt": "a70db1a18abb9b69bd6a8c84c529abff7afd7da559744e26ac2fc5fcdd5c2341"
+          },
+          "operationMedianMilliseconds": 18.34680400000002
+        },
+        {
+          "name": "1-09-assertion-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1586.9219489998159,
+          "runnerMilliseconds": 1224.1219999999998,
+          "receipts": {
+            "owner-report.json": "8f7116d6825dafe1f1aaadecb83f7383f4a655d46c74cc133b4d91419c54f823",
+            "resources.json": "00fce639671097029484a67b7da93c1b3ed6c67a52d248690d329a0d7380cd47",
+            "runner-report.json": "930252661d37887040da5a7bb8078df82835ee93f3d420cd637d3476bf05bc64",
+            "runner-stdout.txt": "f7a8d1272436637ca73ebc70780aa736fc99a296e1ed4eaee3d9d49f42f0ed9f",
+            "runner-stderr.txt": "e136ee739fce9eba069c0d4c123784b7a048a850740095acd8c3858ad03eee22"
+          },
+          "operationMedianMilliseconds": 22.073546999999962
+        },
+        {
+          "name": "1-10-interaction-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2206.4097490001586,
+          "runnerMilliseconds": 1945.277,
+          "receipts": {
+            "owner-report.json": "bea643bcabd5802b02514350b8f5397daef21e86ae5c1ae067830d55b1f6b08b",
+            "resources.json": "54aa5f411fc14a94b58d258ca66d455c63d59d4019a1cfc345200f20ef14d95f",
+            "runner-report.json": "1886db667ea1aa8aa3228acfb57fb4b42dd52646b2b84b58c9ed6aea9870d59d",
+            "runner-stdout.txt": "bce71d97c657698dc900b2046b2d433c0eec10c5416cce93ef713cededf574cc",
+            "runner-stderr.txt": "649af65e07a58ce99d545eb2b01fb2f44913dcb2e79f499558793a1af058f115"
+          },
+          "operationMedianMilliseconds": 49.99294800000007
+        },
+        {
+          "name": "1-11-interaction-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2203.771955000093,
+          "runnerMilliseconds": 1894.145,
+          "receipts": {
+            "owner-report.json": "c03bb034128b80133db793876d2890fea44db5d199408da30c0d0626ee037def",
+            "resources.json": "13b69a3e7d3d8591996aa0c8a849bdb9c5254c10d6c708ccd5c525051ec32e8a",
+            "runner-report.json": "4b89e61f9ab593a2e55d5d50707e17bf72b38de681bb7353e29ae2489f2d520b",
+            "runner-stdout.txt": "6cb099b54b85c0c47799dff23e483f32f845d6349f5b4e82e1365e29d8d3fcb0",
+            "runner-stderr.txt": "3040d4c43baf2b4c6594544f1f364cf5c8dbf6df97aee9ab3f9ed68b7d26a544"
+          },
+          "operationMedianMilliseconds": 53.26423899999986
+        },
+        {
+          "name": "1-12-failure-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 9504.416425000045,
+          "runnerMilliseconds": 9185.011,
+          "receipts": {
+            "owner-report.json": "92fc609f5b88a30e637ea6c11c940145b122fa5c530c7f636fc33f0c392c225c",
+            "resources.json": "d8fdf770f68414b637784d3ad69ba52f147f83bf09978b41a9874e4f94e83b29",
+            "runner-report.json": "1889b241c032e04afee5835a96fab5cde3cd30c4bd12e89a7ee19cfe77c0efbd",
+            "runner-stdout.txt": "a94c744244e72b5e6cd9d38d1e33a5ad8490dbe6b3a85949d24828167e0406ef",
+            "runner-stderr.txt": "68adc8741b159b162498d7a242a31a72189b9544502e18072319d206f256a27f"
+          },
+          "operationMedianMilliseconds": 253.49336799999998
+        },
+        {
+          "name": "1-13-failure-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 10148.88522199999,
+          "runnerMilliseconds": 9837.229,
+          "receipts": {
+            "owner-report.json": "1da23d5f7423eab8c2c491a0403bc709593dc2a5c33835771e279dfba59b4fc9",
+            "resources.json": "0037b6bb4ec5f43d8fc3441d4b335ab821fcd130e92bbce4c95012022c873ce4",
+            "runner-report.json": "c4ab7ef2f52182427761d50e4d3c54be76ee3f64243c37da20928fa9d81e4a3f",
+            "runner-stdout.txt": "e205af3c680685f4877b7240ce473af312280cff522e4931931acbb1b2e757e4",
+            "runner-stderr.txt": "88e1ceaf773e04d79fdd3c6ee945d2790e3bf444450e6d10f96aabf779f5d3dd"
+          },
+          "operationMedianMilliseconds": 254.44580499999995
+        },
+        {
+          "name": "1-14-backend-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2659.8093079999217,
+          "runnerMilliseconds": 2333.674,
+          "receipts": {
+            "owner-report.json": "eefe156a014f67200018951fdb6d55f203b02a3dd378e0ecc23545767447e3f3",
+            "resources.json": "c94f3de99f9d7849e78ee75f7c028a8494bd0c0fa72f3487cab8e2d64be605c3",
+            "runner-report.json": "8943c66880e4f279855a62f120f122383ca45dd2056778a080470e0564c65b68",
+            "runner-stdout.txt": "a6d552347cbc4c7ce347c4f48b560f338baec4b071132e82e4731aaf408e39bd",
+            "runner-stderr.txt": "0bdc828c5bec4f687d6925b497fe93d4682f984f575b1e04efba9dda73c88a28"
+          },
+          "operationMedianMilliseconds": 69.62262599999985
+        },
+        {
+          "name": "1-15-backend-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2667.0303519999834,
+          "runnerMilliseconds": 2374.2,
+          "receipts": {
+            "owner-report.json": "c276b4a3dd2e08c30a6580cd4de3f301f1f272f86a84db491f795a49607fcc38",
+            "resources.json": "008abfd65108a08c675d4c19d1ab2203590d6e3fbc416b539e09eb3e3f76d8dc",
+            "runner-report.json": "9a8c7227aed8cffb8b5a5119d3d9719f6c5f291f899966d91752c4178dc25b83",
+            "runner-stdout.txt": "dcc5b7169c127a2f0f4e001fc2dcaf5c1274377049516a1aa55318c9632722c9",
+            "runner-stderr.txt": "e7373fa42312b5a295fd240318a56d757fe60d26c700de5fbd97f95ad0023bce"
+          },
+          "operationMedianMilliseconds": 70.612258
+        },
+        {
+          "name": "1-16-setup-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1499.772068000084,
+          "runnerMilliseconds": 1195.361,
+          "receipts": {
+            "owner-report.json": "416a9fc5d6beb79d7714804c08d341654dfa5d8f478f2138c2d4c2e4477bd502",
+            "resources.json": "130507559eac86158f5635d5b2c02c44dcd4615f6937c7e621aac8700063536d",
+            "runner-report.json": "376139ba90827a6958c98f227b2b0b5df4978ec7a43d5032ba5467042c40adf3",
+            "runner-stdout.txt": "d2af1db6f5d252d9369a0ff9c4edbbcbcc91a12c052579367441d1c2a35dbc22",
+            "runner-stderr.txt": "bd7cec6c84f94cc66966ca4a749bfb5f1c9dca47c17ebb787d8e510d8284a715"
+          },
+          "operationMedianMilliseconds": 12.175050000000056
+        },
+        {
+          "name": "1-17-setup-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1604.481652000004,
+          "runnerMilliseconds": 1251.9080000000001,
+          "receipts": {
+            "owner-report.json": "d0a49a55be9cdc74b3e63a254f4abdc99beeb2d474773006e44d224d38f3d3f2",
+            "resources.json": "a37370db1c77d7eb27080a51d59a4c664743a04c907b63d66645c5de91535f5c",
+            "runner-report.json": "908e43ed2ad53166219af88d32033c0c37ce38095918c05d149a597a7f0d8872",
+            "runner-stdout.txt": "59d80ef3c27736e7259c3a023b468f7e61b7a07fe25b36ec30821d4a1744109a",
+            "runner-stderr.txt": "8c9355ba8063ac18584030e72186d4d88d03e1556dbd30e56cb4e1a10d227e57"
+          },
+          "operationMedianMilliseconds": 14.083621999999934
+        },
+        {
+          "name": "1-18-navigation-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1712.8346370000145,
+          "runnerMilliseconds": 1343.2240000000002,
+          "receipts": {
+            "owner-report.json": "5c8b1514dad2d1d381ece2ba00bcdf2338f9a039e22819779e6a74cceaa79ea7",
+            "resources.json": "fb85d3b6390c4ce2f63dd145a99c2b26247fbc847472862d286bea41c9dadc4d",
+            "runner-report.json": "e9298faa67672614621f16900b4b9fa7c6ba67f44c2e2c4475aec5df363e8037",
+            "runner-stdout.txt": "4471789fc526cf1f78fbe5b5e6e1d8646cca781a2c6aad143432d3cc27b22f2c",
+            "runner-stderr.txt": "8fc5f1757901e424984252c71cf7aac57f61ba6adfcdef82c0788d1b68839cf4"
+          },
+          "operationMedianMilliseconds": 19.484572000000014
+        },
+        {
+          "name": "1-19-navigation-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1599.9850229998174,
+          "runnerMilliseconds": 1300.377,
+          "receipts": {
+            "owner-report.json": "c081d593fb32f4d2e636fd7dffeb2818b644023234278cc496e9b0c675cad933",
+            "resources.json": "a367a37f4ae5f13a7b782bf4787c92ac1d2f4c534698bbbede03c1bae19e31ea",
+            "runner-report.json": "74fe16d983027d237a9fac981f8bfd9b0143e050302f0f41abff854a756e0319",
+            "runner-stdout.txt": "9b9e85c6896b64965212f6b3dee2d52792bc887945116d7340103c064b09acd5",
+            "runner-stderr.txt": "99c7bf195f7aa59bb0eb4f3657f596525dda834aac7921bcd3873f5da9d73528"
+          },
+          "operationMedianMilliseconds": 18.184671999999978
+        },
+        {
+          "name": "1-20-assertion-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1491.6585799999211,
+          "runnerMilliseconds": 1205.467,
+          "receipts": {
+            "owner-report.json": "d0e4db822cd7aa56090f416c9c5279ac1a179247393fdd04eaa3fccf1b687501",
+            "resources.json": "0756b0c0870e19c5b819ab97e1ba6606f967d42c994251f3e70e063b25c9206d",
+            "runner-report.json": "83d9ea52423fd92d6582481fc0525c0a2db0bcb00a44219e9949215a8d6d1255",
+            "runner-stdout.txt": "6912668fa508bb0e374ac563c0dbe72d618c405cb7253973da529da4159a3db3",
+            "runner-stderr.txt": "1cfa1ab2003bcbedab560e6a77c69caa330623418efb41a456ca3eb76aeab04f"
+          },
+          "operationMedianMilliseconds": 12.965475999999967
+        },
+        {
+          "name": "1-21-assertion-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1601.821369999925,
+          "runnerMilliseconds": 1262.447,
+          "receipts": {
+            "owner-report.json": "6bfbf95a289b925ff27d8976df93f367bb5b5533e96cb09f9f0afbf884b35e0d",
+            "resources.json": "296ca26d9897b6335d8ea6e958fd27a1801a286243eaf3e315d4b78b7b7209a9",
+            "runner-report.json": "f4c7da83e9541db1e8dc596e7a45024919ca6af22dfb2419be55079a54d675c0",
+            "runner-stdout.txt": "5ca81c034a5a24cb24bb4c2a04f8188b10626337db9b80cc4891b639ab7ca2d0",
+            "runner-stderr.txt": "ba000e8446324367fbd41a8a1bf2f212235615e6a1ce76d86656d55cf12ed2db"
+          },
+          "operationMedianMilliseconds": 14.203057000000172
+        },
+        {
+          "name": "1-22-interaction-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2235.5823830000645,
+          "runnerMilliseconds": 1943.116,
+          "receipts": {
+            "owner-report.json": "015ee29b0fddf5441129e1a261e5c7ecce42f7e771e2cb2c26be54ada6e03ed4",
+            "resources.json": "8cc0d59f329bdd752871a5016456b0cc9de5a9b212ab46335e23ad25f6cda13b",
+            "runner-report.json": "8283130bd42cb2043dc2592d196a8be4c3eabf8f70c34ac891c62b48b37f8a5a",
+            "runner-stdout.txt": "a1056cf497e725d6420ee7ec0e407cd23c3f51e0eb68863c75e8b1c3ee78cdf0",
+            "runner-stderr.txt": "ba97040c575e46b8af9fb5c0426cb5c731354e4fa8e4cd95c3143da96c11f05e"
+          },
+          "operationMedianMilliseconds": 39.253009999999904
+        },
+        {
+          "name": "1-23-interaction-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2238.177336000035,
+          "runnerMilliseconds": 1948.82,
+          "receipts": {
+            "owner-report.json": "0a1dcd6eacb19db2ed8692e6f2e205f5189d1a5a2258dc858856c5af0acacba9",
+            "resources.json": "7a12b1ce27789c122df96b30b8f8f531ca3b91ee5cd7a87bdcc12ac41dc2ef0c",
+            "runner-report.json": "7e37156cdd066d542458556f9f28a8233844e572dcb10c1833be3661bf183048",
+            "runner-stdout.txt": "f91272b50a4fda166096de37dff8cdd84dc9513a6c3c4fd0cbd88f2154ab2539",
+            "runner-stderr.txt": "93601b551ba9deb0a70672495c12a032fe415bf1367872501a7572d9a2ef2411"
+          },
+          "operationMedianMilliseconds": 39.35377900000003
+        }
+      ],
+      "cells": [
+        {
+          "family": "interaction",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2236.9178820001707,
+              "flashwrightMilliseconds": 2661.076385999877,
+              "playwrightOverFlashwright": 0.8406064154222569,
+              "playwrightOperationMedianMilliseconds": 39.821092000000135,
+              "flashwrightOperationMedianMilliseconds": 39.64799199999993
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2238.177336000035,
+              "flashwrightMilliseconds": 2235.5823830000645,
+              "playwrightOverFlashwright": 1.0011607503349924,
+              "playwrightOperationMedianMilliseconds": 39.35377900000003,
+              "flashwrightOperationMedianMilliseconds": 39.253009999999904
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "interaction",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2112.055016000113,
+              "flashwrightMilliseconds": 2293.5093199998846,
+              "playwrightOverFlashwright": 0.9208835549882218,
+              "playwrightOperationMedianMilliseconds": 52.68388499999992,
+              "flashwrightOperationMedianMilliseconds": 50.835143000000016
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2203.771955000093,
+              "flashwrightMilliseconds": 2206.4097490001586,
+              "playwrightOverFlashwright": 0.9988044858842465,
+              "playwrightOperationMedianMilliseconds": 53.26423899999986,
+              "flashwrightOperationMedianMilliseconds": 49.99294800000007
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "assertion",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1494.1347569999834,
+              "flashwrightMilliseconds": 1490.0126,
+              "playwrightOverFlashwright": 1.002766524927362,
+              "playwrightOperationMedianMilliseconds": 12.682613999999944,
+              "flashwrightOperationMedianMilliseconds": 13.983007000000043
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1491.6585799999211,
+              "flashwrightMilliseconds": 1601.821369999925,
+              "playwrightOverFlashwright": 0.9312265449423932,
+              "playwrightOperationMedianMilliseconds": 12.965475999999967,
+              "flashwrightOperationMedianMilliseconds": 14.203057000000172
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "assertion",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1334.5930089999456,
+              "flashwrightMilliseconds": 1435.7843089999278,
+              "playwrightOverFlashwright": 0.9295219348994938,
+              "playwrightOperationMedianMilliseconds": 18.37005499999998,
+              "flashwrightOperationMedianMilliseconds": 19.422056999999995
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1248.719752999932,
+              "flashwrightMilliseconds": 1586.9219489998159,
+              "playwrightOverFlashwright": 0.7868816445490332,
+              "playwrightOperationMedianMilliseconds": 18.34680400000002,
+              "flashwrightOperationMedianMilliseconds": 22.073546999999962
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "navigation",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1604.1891780000697,
+              "flashwrightMilliseconds": 1709.0210159999515,
+              "playwrightOverFlashwright": 0.9386597139424031,
+              "playwrightOperationMedianMilliseconds": 18.792782999999986,
+              "flashwrightOperationMedianMilliseconds": 18.495269000000008
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1599.9850229998174,
+              "flashwrightMilliseconds": 1712.8346370000145,
+              "playwrightOverFlashwright": 0.9341152896126328,
+              "playwrightOperationMedianMilliseconds": 18.184671999999978,
+              "flashwrightOperationMedianMilliseconds": 19.484572000000014
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "navigation",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1347.4243309999565,
+              "flashwrightMilliseconds": 1569.8376980001285,
+              "playwrightOverFlashwright": 0.8583207886499908,
+              "playwrightOperationMedianMilliseconds": 30.429323000000068,
+              "flashwrightOperationMedianMilliseconds": 32.106506999999965
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1371.8913549998888,
+              "flashwrightMilliseconds": 1478.5124410000208,
+              "playwrightOverFlashwright": 0.9278862436030523,
+              "playwrightOperationMedianMilliseconds": 28.902162999999973,
+              "flashwrightOperationMedianMilliseconds": 28.78460999999993
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "setup",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1498.0795520000356,
+              "flashwrightMilliseconds": 1500.5222459999459,
+              "playwrightOverFlashwright": 0.9983721041081384,
+              "playwrightOperationMedianMilliseconds": 12.240175000000022,
+              "flashwrightOperationMedianMilliseconds": 13.46355200000005
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1499.772068000084,
+              "flashwrightMilliseconds": 1604.481652000004,
+              "playwrightOverFlashwright": 0.9347393073212159,
+              "playwrightOperationMedianMilliseconds": 12.175050000000056,
+              "flashwrightOperationMedianMilliseconds": 14.083621999999934
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "setup",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1363.3327140000802,
+              "flashwrightMilliseconds": 1448.3135030000085,
+              "playwrightOverFlashwright": 0.9413243135385393,
+              "playwrightOperationMedianMilliseconds": 17.747476000000006,
+              "flashwrightOperationMedianMilliseconds": 18.263472999999976
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1253.9903839999624,
+              "flashwrightMilliseconds": 1454.3557519998558,
+              "playwrightOverFlashwright": 0.8622308415775336,
+              "playwrightOperationMedianMilliseconds": 20.208228000000076,
+              "flashwrightOperationMedianMilliseconds": 17.315503000000035
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "backend",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2661.2278719999267,
+              "flashwrightMilliseconds": 2765.6767050000326,
+              "playwrightOverFlashwright": 0.9622338963873565,
+              "playwrightOperationMedianMilliseconds": 71.61281800000006,
+              "flashwrightOperationMedianMilliseconds": 70.4203379999999
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2667.0303519999834,
+              "flashwrightMilliseconds": 2659.8093079999217,
+              "playwrightOverFlashwright": 1.0027148728212745,
+              "playwrightOperationMedianMilliseconds": 70.612258,
+              "flashwrightOperationMedianMilliseconds": 69.62262599999985
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "backend",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2282.481204000078,
+              "flashwrightMilliseconds": 2382.158580000123,
+              "playwrightOverFlashwright": 0.9581567000463757,
+              "playwrightOperationMedianMilliseconds": 79.30416799999989,
+              "flashwrightOperationMedianMilliseconds": 82.24865
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2301.2960099999873,
+              "flashwrightMilliseconds": 2315.1749179999115,
+              "playwrightOverFlashwright": 0.9940052443156587,
+              "playwrightOperationMedianMilliseconds": 82.60881600000016,
+              "flashwrightOperationMedianMilliseconds": 77.6372980000001
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "failure",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 9483.06466400004,
+              "flashwrightMilliseconds": 10114.880039000127,
+              "playwrightOverFlashwright": 0.9375360486170884,
+              "playwrightOperationMedianMilliseconds": 253.42573999999996,
+              "flashwrightOperationMedianMilliseconds": 254.40288499999997
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 9504.416425000045,
+              "flashwrightMilliseconds": 10148.88522199999,
+              "playwrightOverFlashwright": 0.9364985628566461,
+              "playwrightOperationMedianMilliseconds": 253.49336799999998,
+              "flashwrightOperationMedianMilliseconds": 254.44580499999995
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "failure",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 3833.003143999804,
+              "flashwrightMilliseconds": 3914.243454000143,
+              "playwrightOverFlashwright": 0.9792449521970035,
+              "playwrightOperationMedianMilliseconds": 254.859871,
+              "flashwrightOperationMedianMilliseconds": 255.885306
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 3691.3403769999604,
+              "flashwrightMilliseconds": 4097.132620999901,
+              "playwrightOverFlashwright": 0.9009570151768953,
+              "playwrightOperationMedianMilliseconds": 254.94366100000002,
+              "flashwrightOperationMedianMilliseconds": 255.151567
+            }
+          ],
+          "observed2xBothPairs": false
+        }
+      ],
+      "receipts": [
+        {
+          "path": "workbench/linux-controlled-baseline-001/plan.json",
+          "sha256": "fa8dbe8f5a7690602a86e78d370abbc45fbb4cf2b874f7e1cdc4020075534588",
+          "bytes": 2134
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-001/controller-plan.json",
+          "sha256": "50b3b6164be8c226c0d340343c1dce11ff0bfc693a89154f627d80ced6139653",
+          "bytes": 2262
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-001/controller.json",
+          "sha256": "77e5d2c7c5c68aa734a36ec64edfc7ea94ca4af60f90868fc4d9e09f86feef2d",
+          "bytes": 2567
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-001/execution-inputs.json",
+          "sha256": "62ec9536bd06a101f2e7d8a5b388b4df7529b626ad24ce4151889e0791f286bd",
+          "bytes": 160731
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-001/execution.json",
+          "sha256": "2b3dabf171b6a0fd21273ab458ddc1f758e4aded747967d0cc3162252ebf755f",
+          "bytes": 184069
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-001/analysis.json",
+          "sha256": "d2c76cf9e752e99309a86f5f0bca8f8ce24306164f49b7070f9fe11610738848",
+          "bytes": 73316
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-001/run.log",
+          "sha256": "e4cf3bf370f3df72c9f88382e870d33f7bdf9a084633c2b62c465d2a0035c8c3",
+          "bytes": 6014
+        }
+      ]
+    },
+    {
+      "observationMethod": "linux-pidfd-poll",
+      "status": "verified-current-controlled-engineering-baseline",
+      "launches": 48,
+      "testExecutions": 720,
+      "expectedFailedTests": 120,
+      "unexpectedFailures": 0,
+      "sourceEntries": 1313,
+      "browserSha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+      "driverSha256": "972978383cd39306aa14dc0f5939967a687fe8e4a92fb38956cc1ef03fa20902",
+      "rows": [
+        {
+          "name": "0-00-interaction-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2152.0476229998167,
+          "runnerMilliseconds": 1933.7889999999998,
+          "receipts": {
+            "owner-report.json": "17587ff5769417ac3aa5a3c7ecf516f4676961a8359632d09c3090b6682bb170",
+            "resources.json": "91de903c903b164c9a3b7c542fa7406ad89f414230c7b57dcf231dbc61191ec0",
+            "runner-report.json": "5b8af695a98bb24d48a2d07bd307907ea86b39c28a0f8a3fcc23d678222a9782",
+            "runner-stdout.txt": "7b8ede6d1f94ed650f873b79003362209bd2f49fbdac844cc1702c129023d784",
+            "runner-stderr.txt": "f0b207069347c0ca9055908ff0492262671a072c614ab6c7a6553ae24bb836aa"
+          },
+          "operationMedianMilliseconds": 38.2280589999998
+        },
+        {
+          "name": "0-01-interaction-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2651.8684759998905,
+          "runnerMilliseconds": 1971.5259999999998,
+          "receipts": {
+            "owner-report.json": "c9fa921d2d6c776012e87926684b83d0c632cfeeb17ee29f53188a8c6cb6e9ef",
+            "resources.json": "1fd33a55d2bcb34e8a62e320f729a371df4df9d1ea997161329d6f2fd0b719b0",
+            "runner-report.json": "816394b29a1540d50553d67e911d287eca0e5eb3300d04c28bb0a0f85ba97c93",
+            "runner-stdout.txt": "a34663fc217d1aaf756c8730328c3944ea16dcc8fed56d585bad990e6fb45cee",
+            "runner-stderr.txt": "e3023a2eeaf37586f373f8732a737fd497710859a4e3b4cfd110eb3ae6194a77"
+          },
+          "operationMedianMilliseconds": 39.67417299999988
+        },
+        {
+          "name": "0-02-assertion-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1476.5540210000836,
+          "runnerMilliseconds": 1234.702,
+          "receipts": {
+            "owner-report.json": "a7abee7f925bcbdb773af4e57a3ca7588822c22454b30cad66c08d712d82f566",
+            "resources.json": "92f5dd083dc014d66cf346bb8f69331105bb40d57739bda397dbb67802418f9a",
+            "runner-report.json": "cd7c969c556f8ca5921fbc171617a75b96db0cd13d8007a51aa4bcc9f12db14f",
+            "runner-stdout.txt": "05d4e195438c829ec4c2f8fe900f1cede6da19b622feec35b8c55ba9f0047db5",
+            "runner-stderr.txt": "fd89f9716e8c0a2d1c1643d4375378591e97f6b324feadaf71d8b5d06e39fffb"
+          },
+          "operationMedianMilliseconds": 13.984894999999995
+        },
+        {
+          "name": "0-03-assertion-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1766.4349940000648,
+          "runnerMilliseconds": 1472.4189999999999,
+          "receipts": {
+            "owner-report.json": "d049a6ab08aac7966b2c939ef305ba08a6d214d18f38fa60f9eda45ddb41fc61",
+            "resources.json": "989da524bc465f2168d75be014a5cc1532bd66a03de29a766333cabfaa2fffc6",
+            "runner-report.json": "42bf27d3c67b7142054c44a06eda1709410e08070aa4cef7d18a08edb3d7d2c8",
+            "runner-stdout.txt": "85060d70f5e06400b62fc85cbc8a29fdb4ff5f3653feb577f8dcba53c3c377f0",
+            "runner-stderr.txt": "21afb3dc94a3f08d07ab04c7e41384e46131cd0c0f594b0c4a9af46f081cce7e"
+          },
+          "operationMedianMilliseconds": 15.114862000000016
+        },
+        {
+          "name": "0-04-navigation-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1643.8830219999545,
+          "runnerMilliseconds": 1426.5079999999998,
+          "receipts": {
+            "owner-report.json": "82d00305f4bd4ea5dd460eb1e23e10702dae3d314091aa1476eaaf5353daaf3f",
+            "resources.json": "ebd6239fce68da515fca41f965f7abb6f6d78e83b3fecdcc0274acb17afc4237",
+            "runner-report.json": "aeaaca2f5b0bc732154435f8b13c67da5e0614d78ded03f78ca6fd4b08c6fa1b",
+            "runner-stdout.txt": "8bd55e5ccdad7554270fae6f70e01a8a645fcf397eae97dedcddb48af393a0b5",
+            "runner-stderr.txt": "37d819fa8d1d1c3eb51897bb8fc4b78e6005d84abce3a4d112224d3eb7f28343"
+          },
+          "operationMedianMilliseconds": 19.212627999999995
+        },
+        {
+          "name": "0-05-navigation-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1689.985622000222,
+          "runnerMilliseconds": 1377.235,
+          "receipts": {
+            "owner-report.json": "3658170ff5c29a0553559adb5c0b3984b9b9240e94796cb6b890159b82930cd9",
+            "resources.json": "3ce4420cf9f138ce5ed99bd578061d21b3d3df933674cb010609e65d44b936ad",
+            "runner-report.json": "9c1203c87350f92f8caff61b6ca21c28380e8edd2bb5d9a9833564c310f2c5b3",
+            "runner-stdout.txt": "0f5c1c0898a2cb3538e345905270ff55d90e95ae2a7298f64ab72f250c1c0937",
+            "runner-stderr.txt": "7e0a434df6e5ebc0c0b119218fa287f9057450386f08dcf99219bf99be765467"
+          },
+          "operationMedianMilliseconds": 18.868763000000058
+        },
+        {
+          "name": "0-06-setup-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1492.5718429999506,
+          "runnerMilliseconds": 1248.156,
+          "receipts": {
+            "owner-report.json": "95ec88fc12ad819c989aa91175b9df96a4e8f5effafb1b307e70a550b81fd3c4",
+            "resources.json": "f0ea8f5c2596eacc306367c015627fe822641497e012ea7d657621ca7bbf0f46",
+            "runner-report.json": "415fc79ff33f7f4239ae1b326ce4b58a7cdfef39c967c86fff4fd9f7bda93799",
+            "runner-stdout.txt": "0dda632316a1d2fc26a346c28a590d3f38b9664e7233a59045111f50950cb209",
+            "runner-stderr.txt": "da041d691e3ecc683b601a7e219122267045411cb13a02175bbddeac3eceaf3e"
+          },
+          "operationMedianMilliseconds": 14.075535000000002
+        },
+        {
+          "name": "0-07-setup-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1499.5290510000814,
+          "runnerMilliseconds": 1214.61,
+          "receipts": {
+            "owner-report.json": "7a894b02c54e5fffe6d4ac77cf3d0cc48a2acf79fb5e3a319649ae8f63fb40e1",
+            "resources.json": "17765a467c83b18688705b2f2611db50339669cf57eb31217df01a0efbd8c8fa",
+            "runner-report.json": "a759e95ed3efb5178d302ac81d2b4b78e738a49d749991ece37deda0b78ee79e",
+            "runner-stdout.txt": "2aaf2430fb4a54187f6f9a9bfb43e421b0a00f411783992bd48b35ba93a383fc",
+            "runner-stderr.txt": "61298c42a47152dbdc74fa1763a861abe4a77bef9927adff91afb963fc9eec12"
+          },
+          "operationMedianMilliseconds": 12.407791999999972
+        },
+        {
+          "name": "0-08-backend-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2623.0262389999552,
+          "runnerMilliseconds": 2400.641,
+          "receipts": {
+            "owner-report.json": "16a85f56b465cd5cb538cc395e6733133b9dcb4eedbc6f941747120b249d402b",
+            "resources.json": "0731cb9fb0dcd99711c73c4528c5999c3ed7b9bd86ea96d56b4716e432df64b8",
+            "runner-report.json": "f000648b6e07e940adebec3c847a851e401e9c6b7de6e3bbb1c8f4e1bceeb0cc",
+            "runner-stdout.txt": "2b8b35b5d8455e98f5d18c8b91a93278c4c1e671f219e083873bfd1dcc8049ef",
+            "runner-stderr.txt": "38a7b5b83043d084e04148631e85320ea003147882b51b68dda1ffbcd252e867"
+          },
+          "operationMedianMilliseconds": 70.496085
+        },
+        {
+          "name": "0-09-backend-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2669.099008000103,
+          "runnerMilliseconds": 2354.0009999999997,
+          "receipts": {
+            "owner-report.json": "510d02a9f5aa318d9710b45f280a479a3aca0998e73d2f6130b0b5bcacc513a5",
+            "resources.json": "dcd547f452edc5d42573f70a24ef7362e5804a2cab9d31ac54de79781ca35ab5",
+            "runner-report.json": "69edf3eaefce8c24ad3d8ba41fc376bc9b5cc12ae8956afe38caef951afb0634",
+            "runner-stdout.txt": "1dcbccdc375e812a7e0175e368a43a1f138fef7e31edc788f0be67f3e1e5828d",
+            "runner-stderr.txt": "cb69f05ad74bc941da6d2848f96d3d700dac1fc590fea8c68483852f78b82cb6"
+          },
+          "operationMedianMilliseconds": 67.81106299999999
+        },
+        {
+          "name": "0-10-failure-1-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 10042.08309500018,
+          "runnerMilliseconds": 9796.266,
+          "receipts": {
+            "owner-report.json": "bf70ea4eab838ca9e3944911ee0eaaf4138208891b45fadef402c0e53f81b6f3",
+            "resources.json": "dda8289a810ff2e161755092686d76e6738bc2295a5dac7311238c3a05f89e5c",
+            "runner-report.json": "94a383b93953e7b1ade43b71ef53379cd42e0e65bf3f70b533ef45595fb86ea6",
+            "runner-stdout.txt": "df51d38ea03efb5141bd4c84aeb3a8187a08ae4f17fe1971f029b6bfb1ab893f",
+            "runner-stderr.txt": "14df10c6076c19847fa5d424cbbe5be77fc35c1e3dccb2185074d38efb4f00c2"
+          },
+          "operationMedianMilliseconds": 254.34496399999995
+        },
+        {
+          "name": "0-11-failure-1-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 9467.4231959998,
+          "runnerMilliseconds": 9184.943,
+          "receipts": {
+            "owner-report.json": "a84a05d81b84b21cd88117469dfe3daed5cc0b4862367c69b7386c234e777a0e",
+            "resources.json": "3694ca877ed20a19c19441422b621745b914077eaa8e4a991f3ffaa6e78816b1",
+            "runner-report.json": "952a98fb2038720e4a64ac73fd382d65e99e5be56f1a9fc7a91d57e68c12f212",
+            "runner-stdout.txt": "5e036a820c752658fe6d7cdc587c60c65a162601f781cf4c1c74cfe65015e206",
+            "runner-stderr.txt": "f10249ddeae0f52b9206872b2c8e33053289545ffb4bc38dba87439f95b81169"
+          },
+          "operationMedianMilliseconds": 253.483426
+        },
+        {
+          "name": "0-12-interaction-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2134.491947999777,
+          "runnerMilliseconds": 1918.3909999999998,
+          "receipts": {
+            "owner-report.json": "963777a27a86a4343a79236a6ea915c8571198ce3396698cdfe3261dff5722aa",
+            "resources.json": "8c872c6e5ba078b223e0fa981c3bb8337ecc7a2ea87566d565ba72e5e81662bb",
+            "runner-report.json": "fc07b66f80cca9c7f44437d6e82652a86f048996999653b7783befd675ebf133",
+            "runner-stdout.txt": "e6953089218ea5b41c46c3c0ccc79442474bcadf4591e0f49ec5cbb3c4a8985a",
+            "runner-stderr.txt": "432ccd780f9d257c5fe76d38ac030486f68b759ca8171d556cbb307c6d67690a"
+          },
+          "operationMedianMilliseconds": 59.330887000000075
+        },
+        {
+          "name": "0-13-interaction-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2212.7199769997787,
+          "runnerMilliseconds": 1904.9939999999997,
+          "receipts": {
+            "owner-report.json": "4aa6b443e874b9633c79b7d6e57544fa5997eaa5f5bf7602f1a2b5fcea9eb0a5",
+            "resources.json": "105abe9fd3d288796f73331a1ad84abb45afab446ae60b5cd83dc92855fddc30",
+            "runner-report.json": "7449930f3f27e699c899edaee73aed70b24ec08bc53a8c54dd1602e8ed4e6dfc",
+            "runner-stdout.txt": "920fbd7f4cd607a53455d6e9953a0b06cf35113a9379a9fda6dd00614fe21010",
+            "runner-stderr.txt": "80182f548ab3e0a69d7a1d817243e1ef2eb865b8c09e79edc0b607480ac4855b"
+          },
+          "operationMedianMilliseconds": 48.75336900000002
+        },
+        {
+          "name": "0-14-assertion-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1369.9697189999824,
+          "runnerMilliseconds": 1124.7379999999998,
+          "receipts": {
+            "owner-report.json": "9badabc132954659d807c337b39e2a826da6a4e4c8633740b13d0924eb1b4e18",
+            "resources.json": "c1082ae4b7ac17c277bf2e3de5e791aacadde21260142fd4a873241e1f859ae4",
+            "runner-report.json": "823f1c8eba719cbfb7041a8e54695df3f2d38aeb7a4e87f31193339b644e2869",
+            "runner-stdout.txt": "77594b2b4f1f7901bb396d1c880ce68373d108adf9681dfe103578f30f81af82",
+            "runner-stderr.txt": "f30642d76ef7d5be5ccc19aab8c93291b60008981968fd87b959019e988cf708"
+          },
+          "operationMedianMilliseconds": 19.45414399999993
+        },
+        {
+          "name": "0-15-assertion-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1294.7804159998668,
+          "runnerMilliseconds": 1012.1600000000001,
+          "receipts": {
+            "owner-report.json": "df242955cfc799feff7507a2b61e36e4b4033ba218d9ec20f6b5107f27a3f1d5",
+            "resources.json": "581c301e8543e66d2e137e85d502c8ef081230a12954d89cee8c04d9c8c9246f",
+            "runner-report.json": "b6f3705bc96f35653aa0c97d7fa431289245096019834d02adfc7fbcea76e8bc",
+            "runner-stdout.txt": "69c2b9c6fc351bdb3490302dcae500e0219128cc2d40e1e71b097b20d7bc460a",
+            "runner-stderr.txt": "7be4e3956cc0dc957066521b1d1e6aa2463e0233dcbe257253628a155becb48a"
+          },
+          "operationMedianMilliseconds": 16.96512000000007
+        },
+        {
+          "name": "0-16-navigation-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1303.9285349996135,
+          "runnerMilliseconds": 1085.895,
+          "receipts": {
+            "owner-report.json": "dc1ba99eb2f5e8fb5f2520753a1b2c96496fb03779781d2cbf82f2ec09041425",
+            "resources.json": "b50885aa78fbac2527ec1f99bd90a3e39a3f4fc6d8128c8fb54f7e892425cc55",
+            "runner-report.json": "3e65e9774922d3a1a76f374bc4eeca80e48ae3d7116a7856d76215e1abeea3c0",
+            "runner-stdout.txt": "69cb9deebea770ce471ffbe9d8665aa6906dbb4df06916ca4faac8d0cf677ece",
+            "runner-stderr.txt": "3f75ea8f12b7083424cd698c3e5db7a124e344428be3755cec42295816067629"
+          },
+          "operationMedianMilliseconds": 29.76692300000002
+        },
+        {
+          "name": "0-17-navigation-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1502.4474509996253,
+          "runnerMilliseconds": 1192.326,
+          "receipts": {
+            "owner-report.json": "425eb2b78a1750fabecd6087905dcb2ac364a6b0f858b3ff17ade4729ffa010a",
+            "resources.json": "ad464b81ae98543a44404c9296744f30dc4032da4d4be227df4a1d2702a9a73e",
+            "runner-report.json": "704986b3618d6b506b8afb8ab691d2f935dc9bc4d8b49b8f5c8701a023a7553c",
+            "runner-stdout.txt": "038a50aed31e1b6eb6ffd1e2202fc0b99fe3aa42d6ed9b2fc3e99ab46a6fcbf8",
+            "runner-stderr.txt": "366cd5c692b5aaa5fc7c4ddbea7a4c44c011c18fe7de087d155ebaae6f0dc020"
+          },
+          "operationMedianMilliseconds": 32.57835699999998
+        },
+        {
+          "name": "0-18-setup-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1392.5851559997682,
+          "runnerMilliseconds": 1144.338,
+          "receipts": {
+            "owner-report.json": "c5212a49f471a8f5b9e55c57b43045175ce0f7aeb3f8bfcf9f3b07e877fb4da3",
+            "resources.json": "2450295e8f74eee9cec97d7c16734430d58945aec008ac16352cc569ccb4442f",
+            "runner-report.json": "65ef0badaa7a0a1f404a4347343ad93aa76790000ba055e21c81a29bf9e8af06",
+            "runner-stdout.txt": "836e084d50486f61986c2a7a3c894275b0b07800900424a125fd6ab87f8003c6",
+            "runner-stderr.txt": "83803d0f048a8883dfa5d0c7476f781e67108074344f87c958ff953904ac66f1"
+          },
+          "operationMedianMilliseconds": 18.993876
+        },
+        {
+          "name": "0-19-setup-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1269.199879000098,
+          "runnerMilliseconds": 987.31,
+          "receipts": {
+            "owner-report.json": "60fa88d907a0dbb67aee079dd83a37a7a8c870abcff5ffc77a650a7f97bdf22d",
+            "resources.json": "213f4b90b82ef617cbe1eebff94a510ce550c06b1c99669ad3d34b238d554372",
+            "runner-report.json": "2362d93ce4085ec199186aa3d9797f20544040bd1e4588aa7b1b9aad8f0c0723",
+            "runner-stdout.txt": "29afb006c9e2b63edfadecdb56ae7e0c939de4d8d0ff3624884ab2d104bfbb6b",
+            "runner-stderr.txt": "1654b02894b488290a1181dc4fff45100f6d1fcf065c6b1e15384380f19f4c7a"
+          },
+          "operationMedianMilliseconds": 20.16119500000002
+        },
+        {
+          "name": "0-20-backend-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2218.7475619998622,
+          "runnerMilliseconds": 2001.489,
+          "receipts": {
+            "owner-report.json": "4fc6f3646274db35c29f85680b7927700d4453a9a36a48c34928d8c1f87d311e",
+            "resources.json": "3f3d496f0ab9fb36d638adf3473893c368c25190e6bd8a4a769cec1b0094ae7d",
+            "runner-report.json": "1874522b88553345717c69b4dd6ee5f9db0d2d569d45b989e4bce5e2e9c826b2",
+            "runner-stdout.txt": "7c84dac59d77591f96f94e2b46888b1b90c90636e2f8778940dafb416196c04c",
+            "runner-stderr.txt": "c643d880bcb31ce58e3eb708ba9179e97b764903b697ff7d451ece4d16499628"
+          },
+          "operationMedianMilliseconds": 80.5423639999999
+        },
+        {
+          "name": "0-21-backend-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2321.8267550000746,
+          "runnerMilliseconds": 2012.996,
+          "receipts": {
+            "owner-report.json": "755645eb81e956c855f224e7c9f282d9d7b28245b4923e502fcfcea1aab96d69",
+            "resources.json": "0fd51f48e0498f244d909a4f72a87d6e76d92fd46185a9ff5924825a1491437a",
+            "runner-report.json": "725074977dacdee57d29871b464df6158330645d76c150ba11c6c2f717d2b57b",
+            "runner-stdout.txt": "1875025dbe479403375209b81201ced2e655470040e9806f2ce5953651089296",
+            "runner-stderr.txt": "0e714600d7a800cce14df80b7ec14bf587539c66f988ad7eeaf59269922e442e"
+          },
+          "operationMedianMilliseconds": 75.34735099999989
+        },
+        {
+          "name": "0-22-failure-4-flashwright",
+          "block": 0,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3905.69451500005,
+          "runnerMilliseconds": 3633.462,
+          "receipts": {
+            "owner-report.json": "2103c5e99900a78ddeb647cd17f5d19f4056708327efa5208b380cfa6069260d",
+            "resources.json": "96b8a2db11045b3467060faf1939c2473f5caac6a00c83b2d5cc0d63a38dcf85",
+            "runner-report.json": "77ea7df0ad8a0c7a87c57c52a73a7ae94413d79e990a234183802d29067f576e",
+            "runner-stdout.txt": "6ab614e13b5ad74d92e247a51776df5bdcc5656c397b196d1e8e62e5f5488496",
+            "runner-stderr.txt": "51e4b10da97f0e823c8a88b68b5d644ac940df311a61dbb101424e2affbd1c58"
+          },
+          "operationMedianMilliseconds": 255.286694
+        },
+        {
+          "name": "0-23-failure-4-playwright",
+          "block": 0,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3814.145425999868,
+          "runnerMilliseconds": 3528.0429999999997,
+          "receipts": {
+            "owner-report.json": "887223f0465107f6d4496909b57daa70d41a84c7b6ef3ec840c8ef5e5cf93695",
+            "resources.json": "7171daec07b2f3a2e2afa4cff20328e0d76b05a4563a9edbebd2edb0d8d0d1f7",
+            "runner-report.json": "6ada9dd299b4cb48f1d0c8f6bfaa1026742fa7c6a780d8e72ad52ac7f28d36b6",
+            "runner-stdout.txt": "4ca2158261e5797eff686bca080ccf697666b7dec54ad0773184949818e38243",
+            "runner-stderr.txt": "6b860bef68886e90e55edabc910cc53606f9806aaf903ba9aefafe9407d836de"
+          },
+          "operationMedianMilliseconds": 255.15585599999997
+        },
+        {
+          "name": "1-00-failure-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3688.7680699996963,
+          "runnerMilliseconds": 3467.219,
+          "receipts": {
+            "owner-report.json": "a9c3c7bff389763e9de77d074bbf3408336902c744c2ebfd02fc1c44cf3c671e",
+            "resources.json": "4665ff68b9a4c25bd4bb20afc35e3e3007207940e11db4044221e2492bb21952",
+            "runner-report.json": "a5369a7c3dfcc2363402da3a05a39ad3ef336b3a661a3d0cf3bc04aaface91e6",
+            "runner-stdout.txt": "fac2912f59a6be1c9e5e3c6707dbd8acda308208fe461345aa3492ba2139c110",
+            "runner-stderr.txt": "eb23ce39168534829d76f2882002e7a1da287986c48e54fbc60e2f47a35526e0"
+          },
+          "operationMedianMilliseconds": 255.115095
+        },
+        {
+          "name": "1-01-failure-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 3921.8523509998704,
+          "runnerMilliseconds": 3613.4219999999996,
+          "receipts": {
+            "owner-report.json": "07aaedd5196e80d33b320df55e18e4bfa47567bd738def8289c0f0ee0c473aff",
+            "resources.json": "e0b66bccb84e7d1542e7d34e6a9f791592ffd7c9ea0e8818b39a770dbb06ac74",
+            "runner-report.json": "a65f8a5d423f26583391f4c6736e33e000fe7e8658d1e61446b7711f78c4e42d",
+            "runner-stdout.txt": "d7f573aa7a88fa835b52607dbfce15ac24d777ac1046a01cd4416d4253674e74",
+            "runner-stderr.txt": "6c924fcf0cd343722d219b8fd3707574534ccd707c55a0a10de4133711c06538"
+          },
+          "operationMedianMilliseconds": 255.486266
+        },
+        {
+          "name": "1-02-backend-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2260.236217000056,
+          "runnerMilliseconds": 2015.2040000000002,
+          "receipts": {
+            "owner-report.json": "29b557a8a84f6c22e5f711953f521367c7c58f646d07b0200774174408e616b9",
+            "resources.json": "0d1eaea75d7d903c83d1abf1dbbeab9e2240c342c4027d46bea3b06867400078",
+            "runner-report.json": "36fe9e27b88f385ffc18b63d75738f855f853be056e7934577d56abc2ed07994",
+            "runner-stdout.txt": "8caa1c86ed7bd314a5c4679f7479afd91a6d7eed5ffdcd7974362182d9bcccbb",
+            "runner-stderr.txt": "72bccc09146a43ac0c3880d0a1e439fae6d5140f8dcdfabf979038a6015ba11c"
+          },
+          "operationMedianMilliseconds": 76.82930400000009
+        },
+        {
+          "name": "1-03-backend-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2264.1923699998188,
+          "runnerMilliseconds": 1981.623,
+          "receipts": {
+            "owner-report.json": "e5fbffc45777fb0ca545a5769fa9cad4c97329f261d980dd986c2d0c696b47e4",
+            "resources.json": "09c9230bb27fa13c499aca10b2ffb7e3d9adce65684f43cd7bc8739168e00bdb",
+            "runner-report.json": "ce75d1c1b31efe261fab01915c7d014be07f683de85a121f4661873e4c214549",
+            "runner-stdout.txt": "373c76342498c6bc965be272c485b391a71a55811c948ae42e0e9d37c5994bc7",
+            "runner-stderr.txt": "65fb38da924ff3782d9811195d90e301f03820ebcfe28e337fae7218fd454f9d"
+          },
+          "operationMedianMilliseconds": 75.75957699999981
+        },
+        {
+          "name": "1-04-setup-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1218.6376180002298,
+          "runnerMilliseconds": 999.8499999999999,
+          "receipts": {
+            "owner-report.json": "5ebb113852ae78ec5347b0b74feca45b0f0df89c1c1e041198f052848019a00f",
+            "resources.json": "71052af556721797039a8f51189d63ab77958bcd05c21666302aa6864ecceda6",
+            "runner-report.json": "6c57379a5b870f0d30c7c2294ddbda587b2400122c35bb741c8ad0e247bf694e",
+            "runner-stdout.txt": "46193773ac06d54dc4f41df28fb343c3aaf63f2e5bb165e9b9234f0933adc5b2",
+            "runner-stderr.txt": "7f27eeaf1c37a30a3ffb5e2a113179d91c7303627400b45d3062edc007355049"
+          },
+          "operationMedianMilliseconds": 20.168329000000085
+        },
+        {
+          "name": "1-05-setup-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1416.6985880001448,
+          "runnerMilliseconds": 1107.7849999999999,
+          "receipts": {
+            "owner-report.json": "fa97b4a40770f2560e9b36fe6663ae9d8341f0682e7aa4fbd869cb3fd60bebc3",
+            "resources.json": "e91a5f4a19b451d8ae5eaf1b5f5cefe3931bd168f891d8f14517427f72cf4f18",
+            "runner-report.json": "2cbba1f8e59ecd29c9d304374da2525dbdb2921a8776375deec9bdc27c0ab43b",
+            "runner-stdout.txt": "f3faa6092e4cfc6c95c5420824faa3e491f3c192a5fcf605f41ea1b27d2605a3",
+            "runner-stderr.txt": "89f85f810ff87525007644094c6ab2d3efa27ad6d11e5572955a87d7e4b8ee41"
+          },
+          "operationMedianMilliseconds": 21.893868999999995
+        },
+        {
+          "name": "1-06-navigation-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1333.1620539997857,
+          "runnerMilliseconds": 1089.3439999999998,
+          "receipts": {
+            "owner-report.json": "86f43a861e24fcbd4c56ca74644aebb67c6cf6a573f5fa12b57922fb6e13a61b",
+            "resources.json": "d104d0a6ca517ae903d9f332a1026987042f798707aa1ed78a05e3287e3c119f",
+            "runner-report.json": "923d49302e4e0d458b86d056220b5619e1ed7e5b2936e22e2984efdc5a0bb0ae",
+            "runner-stdout.txt": "036582c06d638ba4f38a5f3c06009c2918f4d0f8640d3da841265bc903387d7a",
+            "runner-stderr.txt": "397d6af177760b42eed2e7cd0d4573b9e9cf485ab68db684d6af4875743f3f52"
+          },
+          "operationMedianMilliseconds": 34.989692000000105
+        },
+        {
+          "name": "1-07-navigation-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1342.5400169999193,
+          "runnerMilliseconds": 1059.5459999999998,
+          "receipts": {
+            "owner-report.json": "dc6fa5551db1c18aea8d1149ba5b09dad750f89791253a2bb16922e710cfbfa5",
+            "resources.json": "c0ec75d018fc58ccf73a252ba170f5811e378c74508f4eee7aa75dd6e8f21b84",
+            "runner-report.json": "e641758651988f8b9a4530709722462ad93b1cc498cec7ab25098518ca933bb7",
+            "runner-stdout.txt": "e3718240581734b1d35ff32ae839dc5abe522285a87e5bef91576662296f6763",
+            "runner-stderr.txt": "58475bdbeb61f1d1e046ffff37a24e238f87e8f10142ceadce932b822fe378c5"
+          },
+          "operationMedianMilliseconds": 31.952687999999966
+        },
+        {
+          "name": "1-08-assertion-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1210.8401880000201,
+          "runnerMilliseconds": 992.527,
+          "receipts": {
+            "owner-report.json": "ecb303e340b9d2b71c3f4e66d5cb813f0b51414a452ef38d617ed2cf98078488",
+            "resources.json": "9acf1943f9ef89af1de07cac37faeab8753e41101f17f3995eecd998744d3997",
+            "runner-report.json": "e6537c3e8b6424774102e36f53ee353cf0931bbd0abf9693c2ad723d990ed213",
+            "runner-stdout.txt": "200a5b3bc1954b7f055004290772ad95af6ae2f63263a407c657f73037c35132",
+            "runner-stderr.txt": "adc92011d0c8c62ea9dbf6e92082dad8c2da0ae6f0b596faad05c95c5b62ba0a"
+          },
+          "operationMedianMilliseconds": 17.724130999999943
+        },
+        {
+          "name": "1-09-assertion-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 1368.021712999962,
+          "runnerMilliseconds": 1061.809,
+          "receipts": {
+            "owner-report.json": "94282eb89c1ae6a6d9d3816e6629271656f75131be5d5c31bb412cebace992d2",
+            "resources.json": "258d01a88145e5adfcdcda22a4132a573d2651d9a0355b2ac08868ec88ec8f40",
+            "runner-report.json": "5cf814b3b0d666926fe2643eb1339f80e2691840831923bacee5ff4f592963a0",
+            "runner-stdout.txt": "ec2920ae14e83db0fb8e3984dd24d5b06b7f29be39326064ec042aa55e06f09e",
+            "runner-stderr.txt": "8bf8ec295cf475b432908aac066c790a88c1a50569f7ef57d039a35fabeef880"
+          },
+          "operationMedianMilliseconds": 20.36658299999999
+        },
+        {
+          "name": "1-10-interaction-4-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2213.564174000112,
+          "runnerMilliseconds": 1967.3830000000003,
+          "receipts": {
+            "owner-report.json": "76fd33b6b83d2b9169937de8f05cb3d4a0a185d4b74ee9aafcb4fafe97d388cd",
+            "resources.json": "838077fdaa21a1def6e42edd381e854daa6dd4d19267dfb1f5d11ffb2b91002b",
+            "runner-report.json": "92310f116f03eea1167221bd8506fc269b6beea714ddbc238eb4283d1b839a20",
+            "runner-stdout.txt": "6de537708e477439b7c084538864c0bcab48dc574847013551d90c8a063793e3",
+            "runner-stderr.txt": "e620372075418151b43da2f2d6180d63b3aa80fc5c91bf4b94834f92dfb166fb"
+          },
+          "operationMedianMilliseconds": 49.300559999999905
+        },
+        {
+          "name": "1-11-interaction-4-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 4,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 4,
+          "completeMilliseconds": 2202.8662929997154,
+          "runnerMilliseconds": 1916.6629999999998,
+          "receipts": {
+            "owner-report.json": "1099f952a19a93c5a276409937b272d7e3b45aa189bf60d1036608589c99e613",
+            "resources.json": "5058357771a2f5e8bdb879972abb1a75ee28dd70adc6d0d2f699ca007f9230ec",
+            "runner-report.json": "bc42cf71c5912c1b09dae629e17519ff8e1f6c3322ac50f3280284630fdf79fb",
+            "runner-stdout.txt": "1715c6864c0b635833fca1e2b16925bf69c2b6bb3522dcb7f9d5fea6f4689f82",
+            "runner-stderr.txt": "7cf9a2c87f33e5f94763d40451036ebb928bb1b246f4242d5388db4b6d5df1d0"
+          },
+          "operationMedianMilliseconds": 49.852967000000035
+        },
+        {
+          "name": "1-12-failure-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 9377.547917999891,
+          "runnerMilliseconds": 9157.285,
+          "receipts": {
+            "owner-report.json": "f1e9d84896b994cfac8bf5cb0dfae1fcecab7c6cff50061d1bd8f8f1eb317e8b",
+            "resources.json": "29c6b6416528001d953b7a5e578843c4849927b1cd1b7e51b930e6ac17d8710b",
+            "runner-report.json": "f8e7dc7bdbb6504f1fc2d036aa0613675ad2ed6e954085a62b7e392eca3353bf",
+            "runner-stdout.txt": "2078abe591f206f9d4c1eb07de48bdae45039625a6381efde9d33914e6269262",
+            "runner-stderr.txt": "ea7fa75807417a2559d1e2b87cfe622e4be53221e32e3b011f0bf9c84f6b378d"
+          },
+          "operationMedianMilliseconds": 253.47882599999997
+        },
+        {
+          "name": "1-13-failure-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "failure",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 15,
+          "browserLaunches": 15,
+          "completeMilliseconds": 10205.89010599997,
+          "runnerMilliseconds": 9876.906,
+          "receipts": {
+            "owner-report.json": "7fe5ea36f7313fbd822cdc1754dd7f108d425190064bd05e75e5ea4620adfe01",
+            "resources.json": "980dadbb5a178def3eff8767f6f1a0953bb32e7cb30ae34380ed430252d28bf2",
+            "runner-report.json": "7804d1e496445e87d2171e7b0013f696351528f9b348fa7d1448b4b92d905ee5",
+            "runner-stdout.txt": "b787c54b1fecb78c88ea34c0b319fa8a9fb65aaf73f6b3c08f36aba788befb73",
+            "runner-stderr.txt": "c7b8af48752054f2411ed4edd6762a58b41eb9b71f3a4941f8a16679b9e17fab"
+          },
+          "operationMedianMilliseconds": 254.448281
+        },
+        {
+          "name": "1-14-backend-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2638.1963029998587,
+          "runnerMilliseconds": 2393.271,
+          "receipts": {
+            "owner-report.json": "86cad95dc0adb54dc70f92a297dc8cf1beae48f088468dfc27111d813c4ea32d",
+            "resources.json": "85f73ff65f89371ab957876ff9f2337525d14e7672a050d3bb65e52b6507de27",
+            "runner-report.json": "8e52bfe904e7dabdaff36c59863056d6638040916e32d828b377dc2e0dc962ce",
+            "runner-stdout.txt": "6e554505b9c0f1356918bbdce69f733d14beb368a84d85422ee5f5135b1bd2be",
+            "runner-stderr.txt": "440876352a26a9bb9a64a6eb23da160c575d4f0c4f53085c841eee6cbb2f8322"
+          },
+          "operationMedianMilliseconds": 69.00476400000002
+        },
+        {
+          "name": "1-15-backend-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "backend",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2658.836190999864,
+          "runnerMilliseconds": 2377.574,
+          "receipts": {
+            "owner-report.json": "90104b7712deb4565f57527c46bc60194d7c417ffa3ad72ec6513ce3211d07de",
+            "resources.json": "60c00a037509ac64d911ef1091533717b3647d1e4fbc1c916377676b043708ed",
+            "runner-report.json": "62966cacdd47ddee60e274c5f9dc9b564e609e2bfc8a5282d47c9b99c6e81214",
+            "runner-stdout.txt": "d46760e632e725222f6dca779368139b09a08a592f7142d096cd68c76a65c1a6",
+            "runner-stderr.txt": "565a9b62fdfce84d0322fdf97f9468491ba8512af1e57d35e3fbaad8b3fef965"
+          },
+          "operationMedianMilliseconds": 71.10696599999983
+        },
+        {
+          "name": "1-16-setup-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1420.5095980000806,
+          "runnerMilliseconds": 1201.9969999999998,
+          "receipts": {
+            "owner-report.json": "edb686dd225b147ffe48bc1000a3fe5eab12e59b26f87d0f1098cc71efc3e742",
+            "resources.json": "988f49e6bab4959d86685cf6e85247a6e498f786f9045cc3066eb8d61dfd45f7",
+            "runner-report.json": "35eb4f99c7cf8bd1acfcfda811c65fa5ace8c362747995665b1f381c7411fa26",
+            "runner-stdout.txt": "7432224ed12c3eefb07f7e18d2f3988b3844b0dac7ad62a9b68905aabaf6b486",
+            "runner-stderr.txt": "acd664c5579f6c986740d8c8fe9d94da3125a4cfb15368d4144f4d08ddaf9ef4"
+          },
+          "operationMedianMilliseconds": 12.376128999999992
+        },
+        {
+          "name": "1-17-setup-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "setup",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1577.249681000012,
+          "runnerMilliseconds": 1268.3220000000001,
+          "receipts": {
+            "owner-report.json": "30760476d1fe7929341dc6b040248c652b6013c59912252274089d4b0250d93c",
+            "resources.json": "2c3c65c033055cb3cd196cbd3fcc27e82ae68e71babbf97425ac569cda054b07",
+            "runner-report.json": "cbaa322a1c3d666f95137b645732abee2d65372413a3afe0fd9d9e930cdae1c1",
+            "runner-stdout.txt": "997873e978db381be513ebf19b47d604aa84597bfa37bb0b78506b0aa7d43946",
+            "runner-stderr.txt": "736cbf38d458b37ecea8e60ed3b5bc32b6e4143a1773f19682ddd6401635fbc5"
+          },
+          "operationMedianMilliseconds": 13.717807999999991
+        },
+        {
+          "name": "1-18-navigation-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1596.7666910000844,
+          "runnerMilliseconds": 1351.944,
+          "receipts": {
+            "owner-report.json": "47023a1adf0f390801f5ca15f7d4cc3426298bd9c578648e7e0d0af8fa27ff73",
+            "resources.json": "7266c6f9c7fc66656d080965f0385d52e44aec2b9cd291f6718c6b467fb35992",
+            "runner-report.json": "0c5c16f2d7e3ca0c1108fa5f649567674b2a0817e31b1e338e8601391cde2901",
+            "runner-stdout.txt": "1bc3dcc92b0323339d4fe52d6e1f69aec135d512552817810b8c6e2669195421",
+            "runner-stderr.txt": "88c8416e8314d3fa2f1a31712f232d7cc86c362c4b1fc100fdf41d493bf9f26c"
+          },
+          "operationMedianMilliseconds": 18.98930400000006
+        },
+        {
+          "name": "1-19-navigation-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "navigation",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1566.8464320001476,
+          "runnerMilliseconds": 1284.1280000000002,
+          "receipts": {
+            "owner-report.json": "075d3ee0608203ffb23e34d340b2a5149349f7aecc2ee1e3accc9fe5dff043cf",
+            "resources.json": "94b639984c50f3a24d1133d275e4de88702585f80694166ae121c1c519c439ab",
+            "runner-report.json": "94fa4b77b8b84ae2143a4bad7ae74bfa7e45b9a9f6c473f34f20e4afdda01037",
+            "runner-stdout.txt": "1c4cbb0f573e927a898a5df60ef3a0a50d20f7aeb351bfe6379f0dde5e8648a6",
+            "runner-stderr.txt": "2b3d8fe4a7df3819c6ae4fe5645d6290f7d9039e999030876b64d32d0a91019a"
+          },
+          "operationMedianMilliseconds": 18.22346899999991
+        },
+        {
+          "name": "1-20-assertion-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1446.3172369996755,
+          "runnerMilliseconds": 1227.527,
+          "receipts": {
+            "owner-report.json": "ef5f2c689ba57abdfaf2ddc95c49e3950364ddf14ad70c2c501dc03ffaf072cb",
+            "resources.json": "30a0958f9c72297f2216b345e9251038c4727f5cee041eeab4ba9068342acffe",
+            "runner-report.json": "7e035af375c2296c7c30cc81a56b721d76a0ee1513821c007af8d5bb6e23d4b0",
+            "runner-stdout.txt": "f882bd90e3189046d05d1dddc9e2a346265137e2de30d08f8487e2f7e5a792ae",
+            "runner-stderr.txt": "a5c384eb836e4a046a94ffaf12443a4f9f4f61eb8cdfe216a89f004c35993c74"
+          },
+          "operationMedianMilliseconds": 13.072780999999964
+        },
+        {
+          "name": "1-21-assertion-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "assertion",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 1568.2788310000433,
+          "runnerMilliseconds": 1258.71,
+          "receipts": {
+            "owner-report.json": "3183583f23803a8b8144a1a6ab0eeb2dc50070773a040603941f61b5c8054225",
+            "resources.json": "6922f0b51a2202a6752309c8c94009d1c6ec7b6fbc8cf7919e0820c34e8c4693",
+            "runner-report.json": "1f322d19d776bc341822f8e0f0803fa7b9309be4566b652f15bf2944984aeca7",
+            "runner-stdout.txt": "8c2757e3b45c150e46eb05738a2c8f26ef86633a8f81ec0889eed1ba02003396",
+            "runner-stderr.txt": "fb32520167798931c447cd3314402894de50d4de9de74ce8afd1badfc0a9f1b8"
+          },
+          "operationMedianMilliseconds": 14.14031799999998
+        },
+        {
+          "name": "1-22-interaction-1-flashwright",
+          "block": 1,
+          "engine": "flashwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2190.721339999982,
+          "runnerMilliseconds": 1946.2510000000002,
+          "receipts": {
+            "owner-report.json": "f3c80bbb90e394e3124073ed7992b70995b4662b28db00f0a969774a54c7ff89",
+            "resources.json": "16240423380afa56a161ddf3de28d8939dd0d8b61ed8f1aef0b098ee4942e6f3",
+            "runner-report.json": "8b04823b159de18844d6c5fae7f7e404070cbe4dbf5c4f3a2275bedaa6900579",
+            "runner-stdout.txt": "02d2e585cf5d1cdf4e1a1d5160e56077a11f87d964dcbddac3153aa4fc29cc02",
+            "runner-stderr.txt": "5e7d16c4ebeba1fc10361e7aa77e449a4cdb72ff9b1bbda821a3485c3467cf53"
+          },
+          "operationMedianMilliseconds": 38.62790699999982
+        },
+        {
+          "name": "1-23-interaction-1-playwright",
+          "block": 1,
+          "engine": "playwright",
+          "family": "interaction",
+          "workers": 1,
+          "tests": 15,
+          "actualFailures": 0,
+          "browserLaunches": 1,
+          "completeMilliseconds": 2237.75311899999,
+          "runnerMilliseconds": 1949.72,
+          "receipts": {
+            "owner-report.json": "639b9fb2316d61ef9392abb2e7fe1fad9b7ed7ab30e0229f9784a479cf180f49",
+            "resources.json": "368ebfb64854d396735149ff6b1b58c6191aa8d2778602413dd027cf53995dc0",
+            "runner-report.json": "1aed67e282ee487b05c6f551656eb69d1200cc244f56739997c13d2cab827305",
+            "runner-stdout.txt": "800aba0017bc84ca28ee1d4a8f29e9d2bd106a5e10ce3b6b6744f20268b63643",
+            "runner-stderr.txt": "171ead65b1ae99d335470d7ce415e4886c6fe3b592b8328255019230f836edc2"
+          },
+          "operationMedianMilliseconds": 38.554306
+        }
+      ],
+      "cells": [
+        {
+          "family": "interaction",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2152.0476229998167,
+              "flashwrightMilliseconds": 2651.8684759998905,
+              "playwrightOverFlashwright": 0.8115212509505715,
+              "playwrightOperationMedianMilliseconds": 38.2280589999998,
+              "flashwrightOperationMedianMilliseconds": 39.67417299999988
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2237.75311899999,
+              "flashwrightMilliseconds": 2190.721339999982,
+              "playwrightOverFlashwright": 1.0214686268587718,
+              "playwrightOperationMedianMilliseconds": 38.554306,
+              "flashwrightOperationMedianMilliseconds": 38.62790699999982
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "interaction",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2134.491947999777,
+              "flashwrightMilliseconds": 2212.7199769997787,
+              "playwrightOverFlashwright": 0.9646462137942683,
+              "playwrightOperationMedianMilliseconds": 59.330887000000075,
+              "flashwrightOperationMedianMilliseconds": 48.75336900000002
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2202.8662929997154,
+              "flashwrightMilliseconds": 2213.564174000112,
+              "playwrightOverFlashwright": 0.995167124077065,
+              "playwrightOperationMedianMilliseconds": 49.852967000000035,
+              "flashwrightOperationMedianMilliseconds": 49.300559999999905
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "assertion",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1766.4349940000648,
+              "flashwrightMilliseconds": 1476.5540210000836,
+              "playwrightOverFlashwright": 1.1963226328852108,
+              "playwrightOperationMedianMilliseconds": 15.114862000000016,
+              "flashwrightOperationMedianMilliseconds": 13.984894999999995
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1446.3172369996755,
+              "flashwrightMilliseconds": 1568.2788310000433,
+              "playwrightOverFlashwright": 0.9222322003016539,
+              "playwrightOperationMedianMilliseconds": 13.072780999999964,
+              "flashwrightOperationMedianMilliseconds": 14.14031799999998
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "assertion",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1294.7804159998668,
+              "flashwrightMilliseconds": 1369.9697189999824,
+              "playwrightOverFlashwright": 0.9451160839854179,
+              "playwrightOperationMedianMilliseconds": 16.96512000000007,
+              "flashwrightOperationMedianMilliseconds": 19.45414399999993
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1210.8401880000201,
+              "flashwrightMilliseconds": 1368.021712999962,
+              "playwrightOverFlashwright": 0.8851030480684,
+              "playwrightOperationMedianMilliseconds": 17.724130999999943,
+              "flashwrightOperationMedianMilliseconds": 20.36658299999999
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "navigation",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1643.8830219999545,
+              "flashwrightMilliseconds": 1689.985622000222,
+              "playwrightOverFlashwright": 0.9727201229406308,
+              "playwrightOperationMedianMilliseconds": 19.212627999999995,
+              "flashwrightOperationMedianMilliseconds": 18.868763000000058
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1566.8464320001476,
+              "flashwrightMilliseconds": 1596.7666910000844,
+              "playwrightOverFlashwright": 0.9812619719783877,
+              "playwrightOperationMedianMilliseconds": 18.22346899999991,
+              "flashwrightOperationMedianMilliseconds": 18.98930400000006
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "navigation",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1303.9285349996135,
+              "flashwrightMilliseconds": 1502.4474509996253,
+              "playwrightOverFlashwright": 0.8678696443806198,
+              "playwrightOperationMedianMilliseconds": 29.76692300000002,
+              "flashwrightOperationMedianMilliseconds": 32.57835699999998
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1342.5400169999193,
+              "flashwrightMilliseconds": 1333.1620539997857,
+              "playwrightOverFlashwright": 1.00703437588251,
+              "playwrightOperationMedianMilliseconds": 31.952687999999966,
+              "flashwrightOperationMedianMilliseconds": 34.989692000000105
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "setup",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1499.5290510000814,
+              "flashwrightMilliseconds": 1492.5718429999506,
+              "playwrightOverFlashwright": 1.0046612215236135,
+              "playwrightOperationMedianMilliseconds": 12.407791999999972,
+              "flashwrightOperationMedianMilliseconds": 14.075535000000002
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1420.5095980000806,
+              "flashwrightMilliseconds": 1577.249681000012,
+              "playwrightOverFlashwright": 0.900624431953884,
+              "playwrightOperationMedianMilliseconds": 12.376128999999992,
+              "flashwrightOperationMedianMilliseconds": 13.717807999999991
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "setup",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 1269.199879000098,
+              "flashwrightMilliseconds": 1392.5851559997682,
+              "playwrightOverFlashwright": 0.9113983970975986,
+              "playwrightOperationMedianMilliseconds": 20.16119500000002,
+              "flashwrightOperationMedianMilliseconds": 18.993876
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 1218.6376180002298,
+              "flashwrightMilliseconds": 1416.6985880001448,
+              "playwrightOverFlashwright": 0.8601954066464456,
+              "playwrightOperationMedianMilliseconds": 20.168329000000085,
+              "flashwrightOperationMedianMilliseconds": 21.893868999999995
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "backend",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2623.0262389999552,
+              "flashwrightMilliseconds": 2669.099008000103,
+              "playwrightOverFlashwright": 0.9827384563622206,
+              "playwrightOperationMedianMilliseconds": 70.496085,
+              "flashwrightOperationMedianMilliseconds": 67.81106299999999
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2658.836190999864,
+              "flashwrightMilliseconds": 2638.1963029998587,
+              "playwrightOverFlashwright": 1.0078234845437908,
+              "playwrightOperationMedianMilliseconds": 71.10696599999983,
+              "flashwrightOperationMedianMilliseconds": 69.00476400000002
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "backend",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 2218.7475619998622,
+              "flashwrightMilliseconds": 2321.8267550000746,
+              "playwrightOverFlashwright": 0.955604270310767,
+              "playwrightOperationMedianMilliseconds": 80.5423639999999,
+              "flashwrightOperationMedianMilliseconds": 75.34735099999989
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 2264.1923699998188,
+              "flashwrightMilliseconds": 2260.236217000056,
+              "playwrightOverFlashwright": 1.0017503272312898,
+              "playwrightOperationMedianMilliseconds": 75.75957699999981,
+              "flashwrightOperationMedianMilliseconds": 76.82930400000009
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "failure",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 9467.4231959998,
+              "flashwrightMilliseconds": 10042.08309500018,
+              "playwrightOverFlashwright": 0.9427748313209541,
+              "playwrightOperationMedianMilliseconds": 253.483426,
+              "flashwrightOperationMedianMilliseconds": 254.34496399999995
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 9377.547917999891,
+              "flashwrightMilliseconds": 10205.89010599997,
+              "playwrightOverFlashwright": 0.9188368501525308,
+              "playwrightOperationMedianMilliseconds": 253.47882599999997,
+              "flashwrightOperationMedianMilliseconds": 254.448281
+            }
+          ],
+          "observed2xBothPairs": false
+        },
+        {
+          "family": "failure",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "playwrightMilliseconds": 3814.145425999868,
+              "flashwrightMilliseconds": 3905.69451500005,
+              "playwrightOverFlashwright": 0.9765600999646586,
+              "playwrightOperationMedianMilliseconds": 255.15585599999997,
+              "flashwrightOperationMedianMilliseconds": 255.286694
+            },
+            {
+              "block": 1,
+              "playwrightMilliseconds": 3688.7680699996963,
+              "flashwrightMilliseconds": 3921.8523509998704,
+              "playwrightOverFlashwright": 0.940567808234609,
+              "playwrightOperationMedianMilliseconds": 255.115095,
+              "flashwrightOperationMedianMilliseconds": 255.486266
+            }
+          ],
+          "observed2xBothPairs": false
+        }
+      ],
+      "receipts": [
+        {
+          "path": "workbench/linux-controlled-baseline-002/plan.json",
+          "sha256": "2b69394df95420b19d3f078e5c650429d9170ff2420910a22e535cd0900ccb49",
+          "bytes": 2557
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-002/controller-plan.json",
+          "sha256": "5795c5cefbfa7f23b5300552cc5381aec8ef3ccf3ba385e52ff69421459f6649",
+          "bytes": 2262
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-002/controller.json",
+          "sha256": "990d5b9456a239e375dee13ce784036f502d705675c22dc0d9afcdeea6a109d8",
+          "bytes": 2566
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-002/execution-inputs.json",
+          "sha256": "9ed8488d85d2c9404bb388b30543580993671d7f3ca5a41e6af0430e5ab3c47c",
+          "bytes": 160731
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-002/execution.json",
+          "sha256": "a4d4e0df47b8cd5c972ff6fb12a6ac77c872e37a64a85ced760870c7f0d806b3",
+          "bytes": 184086
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-002/analysis.json",
+          "sha256": "4da5e3e2c3ac50fb6ab8148413fec2c9b2647f47230f1a89030e6f2b3c0c0045",
+          "bytes": 73277
+        },
+        {
+          "path": "workbench/linux-controlled-baseline-002/run.log",
+          "sha256": "2106ba5c66cfce7f5b56a864622bbe6fd971e83009c653e6dc7c3ab0358c7e39",
+          "bytes": 6014
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Two pairs per family/worker cell are an engineering screen, not confidence intervals or final performance acceptance.",
+    "Earlier polling observations remain separate and unchanged; no subtraction of estimated exit delay, pooling or cross-run engine speedup claim.",
+    "Native process notification does not provide exact kernel exit timestamps, exhaustive process custody, complete tree CPU or exact concurrent memory.",
+    "Six controlled workload families are not the separate application corpus, final competitor campaign or representative majority-scenario 2x gate.",
+    "Raw observations and scripts remain private under ignored workbench. This export preserves numerical results and original hashes while omitting workstation paths from content."
+  ]
+}

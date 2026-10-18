@@ -1,5 +1,6 @@
 """Exercise a hung job and a detached browser-shaped descendant under the real supervisor."""
 
+import errno
 import json
 import os
 from pathlib import Path
@@ -14,7 +15,7 @@ import time
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
-from tools.watchdog import (RootProcessCpuAccounting, cleanup_owned_processes, main,
+from tools.watchdog import (OwnerExitNotification, RootProcessCpuAccounting, cleanup_owned_processes, main,
                            parse_linux_process_stat, process_snapshot, publish_report, record_cpu_observation)
 
 
@@ -120,6 +121,106 @@ class PollingChild:
 
     def _handle_exitstatus(self, status):
         self.returncode = os.waitstatus_to_exitcode(status)
+
+
+class OwnerExitNotificationTests(unittest.TestCase):
+    def test_unavailable_platform_retains_disclosed_polling(self):
+        notification = OwnerExitNotification(PollingChild())
+        with patch('tools.watchdog.sys.platform', 'darwin'), patch('tools.watchdog.time.sleep') as sleep:
+            notification.wait(0.1)
+            notification.wait(0.05)
+        self.assertEqual([call.args for call in sleep.call_args_list], [(0.1,), (0.05,)])
+        self.assertEqual(notification.receipt, {'method': 'periodic-poll', 'reason': 'platform-unavailable'})
+        notification.close()
+
+    @unittest.skipUnless(hasattr(os, 'pidfd_open'), 'Process descriptor API')
+    def test_denied_or_unavailable_pidfd_falls_back_once_and_discloses_reason(self):
+        for code in (errno.ENOSYS, errno.EINVAL, errno.ENODEV, errno.EPERM, errno.EACCES, errno.ESRCH):
+            with self.subTest(errno=code):
+                notification = OwnerExitNotification(PollingChild())
+                with patch('tools.watchdog.os.pidfd_open', side_effect=OSError(code, 'control')) as opened, \
+                        patch('tools.watchdog.time.sleep') as sleep:
+                    notification.wait(0.1)
+                    notification.wait(0.1)
+                opened.assert_called_once_with(101, 0)
+                self.assertEqual(sleep.call_count, 2)
+                self.assertEqual(notification.receipt, {'method': 'periodic-poll', 'reason': 'pidfd-unavailable', 'errno': code})
+                notification.close()
+
+    @unittest.skipUnless(hasattr(os, 'pidfd_open'), 'Process descriptor API')
+    def test_unexpected_open_failure_is_not_silently_downgraded(self):
+        notification = OwnerExitNotification(PollingChild())
+        with patch('tools.watchdog.os.pidfd_open', side_effect=OSError(errno.EMFILE, 'control')), \
+                patch('tools.watchdog.time.sleep') as sleep:
+            with self.assertRaises(OSError):
+                notification.wait(0.1)
+            sleep.assert_not_called()
+        notification.close()
+
+    def test_already_reaped_owner_does_not_sleep_or_open_notification(self):
+        child = PollingChild()
+        child.returncode = 7
+        notification = OwnerExitNotification(child)
+        with patch('tools.watchdog.time.sleep') as sleep:
+            notification.wait(1)
+            sleep.assert_not_called()
+        self.assertEqual(notification.receipt, {'method': 'not-used'})
+
+    @unittest.skipUnless(hasattr(os, 'pidfd_open'), 'Process descriptor API')
+    def test_poll_failure_closes_descriptor_and_main_still_cleans_owned_processes(self):
+        child = PollingChild()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'report.json'
+            with patch('sys.argv', ['watchdog', '--timeout', '5', '--report', str(path), '--', 'unused']), \
+                    patch('tools.watchdog.subprocess.Popen', return_value=child), \
+                    patch('tools.watchdog.os.wait4', return_value=(0, 0, None)), \
+                    patch('tools.watchdog.process_snapshot', return_value={}), \
+                    patch('tools.watchdog.adopt_orphaned_descendants', return_value=False), \
+                    patch('tools.watchdog.signal.signal'), \
+                    patch('tools.watchdog.os.pidfd_open', return_value=987), \
+                    patch('tools.watchdog.select.poll') as poller, \
+                    patch('tools.watchdog.os.close') as close, \
+                    patch('tools.watchdog.cleanup_owned_processes', return_value=({}, [], {})) as cleanup:
+                poller.return_value.poll.return_value = [(987, select.POLLNVAL)]
+                with self.assertRaises(OSError):
+                    main()
+                close.assert_called_once_with(987)
+                cleanup.assert_called_once()
+            report = json.loads(path.read_text())
+            self.assertEqual(report['ownerExitNotification']['error'], 'invalid-poll-events')
+            self.assertEqual(report['rootPollCpu']['status'], 'not-observed')
+
+    @unittest.skipUnless(sys.platform == 'linux' and hasattr(os, 'pidfd_open'), 'Linux process descriptor API')
+    def test_native_exit_wakes_without_reaping_and_descriptor_closes(self):
+        with subprocess.Popen([sys.executable, '-c', 'import sys; sys.stdin.read(); raise SystemExit(7)'],
+                              stdin=subprocess.PIPE) as child:
+            notification = OwnerExitNotification(child)
+            accounting = RootProcessCpuAccounting(child, time.monotonic())
+            descriptor = None
+            try:
+                notification.wait(0.01)
+                if notification.receipt['method'] == 'periodic-poll':
+                    self.skipTest('Native process descriptor unavailable: ' + repr(notification.receipt))
+                self.assertEqual(notification.receipt, {'method': 'linux-pidfd-poll'})
+                descriptor = notification.descriptor
+                self.assertIsNone(accounting.poll())
+                child.stdin.close()
+                started = time.monotonic()
+                notification.wait(5)
+                self.assertLess(time.monotonic() - started, 2)
+                self.assertIsNone(child.returncode, 'Notification must not reap')
+                self.assertEqual(accounting.poll(), 7)
+                self.assertEqual(accounting.receipt['status'], 'observed')
+                self.assertEqual(accounting.receipt['method'], 'atomic-wait4-original-owner')
+            finally:
+                notification.close()
+                notification.close()
+                if child.returncode is None:
+                    child.kill()
+                    child.wait(timeout=5)
+            with self.assertRaises(OSError) as closed:
+                os.fstat(descriptor)
+            self.assertEqual(closed.exception.errno, errno.EBADF)
 
 
 class RootCpuAccountingTests(unittest.TestCase):
