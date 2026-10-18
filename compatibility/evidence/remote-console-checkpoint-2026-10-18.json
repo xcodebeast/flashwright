@@ -1,0 +1,358 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-18",
+  "classification": "native-linux-remote-console-ownership",
+  "status": "passed",
+  "performanceAdmission": false,
+  "baseCommit": "1eb5b9765bb99b2af5ca096591a44ffb4b7a90c6",
+  "referenceVersion": "1.60.0",
+  "browser": {
+    "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f",
+    "version": "148.0.7778.96",
+    "versionOutput": "Google Chrome for Testing 148.0.7778.96",
+    "distribution": "full-chromium",
+    "platform": "linux",
+    "architecture": "x64",
+    "additionalFlag": "--site-per-process"
+  },
+  "driverSha256": "1357a413b6adf91128ead145648fabbb3afebbea5b8b99fab7416693283b4506",
+  "runtimeImplementationChanged": false,
+  "sourceHashes": {
+    "compatibility/m2/remote-console.mjs": "967b45e3e4b79a6f5716e2475d596861beb989d035fd0d4207190c192489e7ad",
+    "tools/remote-console-proxy.py": "779751d5c0fcf2a9de87302d34f71ab676ac4f23a811e8994c059da0ced2231a",
+    "tools/run-remote-console-tests.mjs": "a5a42c24e9bed2c59390df023c75969f7a4656b150906454956995670355ab92",
+    "tools/verify-remote-console.mjs": "c0519e8057d388c27f0c9aca22fb6bdeb02f6c050031d2b22845072f1e2e4001",
+    "tools/test-remote-console-verifier.mjs": "6967a72f94874386065b71b92376f192f19ad658fbdb441a2902c20722674c2e",
+    "tools/network-renderer-proxy.py": "fa6e203da55dfc05fed1dc1a5b31f02ef80ec725919d867d921dcfeb1581e8c9",
+    "benchmarks/protocol-proxy.py": "c2d8ce1fd1187615c0d0d9d6f6ef61f27cc9dde7cd63494bca9a743108c5bce1",
+    "tools/verify-core.mjs": "3908b493689daa8e271fb7c144c7008d196bcfd7283a9b6edb31093d88ba36fe",
+    "tools/watchdog.py": "f8b742939dbb7002d4ed36077b9a8f8a95033a03c61ffa8be013cb007e5552fe",
+    "crates/flashwright-engine/src/console.rs": "987a58de99e3b536bc4cf28a5fcddd5ed8be70f2e04b690cdf3c758aecc9a485",
+    "crates/flashwright-engine/src/events.rs": "173626a00286589b108f5d725d1c68b9a4e885457aff200156a87e730eb8de76",
+    "crates/flashwright-engine/src/renderer_setup.rs": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7",
+    "crates/flashwright-engine/src/handles.rs": "faeeacf855f27d152b4a1d6850ca56ab6643184de5e32853c24629d342c12af1",
+    "crates/flashwright-engine/src/page_state.rs": "73d409abff610d63522b5226ab0173ac2b9f9ec60d0f89e7ee19a5696b16e8f8",
+    "packages/flashwright-core/src/console.ts": "bc53c9fa38b91a4a6f85994fcf7e9d54f311f964f17a392040c2bb12299e2176",
+    "packages/flashwright-core/src/handles.ts": "6fe50a3999bc307f1ea815e591a0293eecb9829bf8a29cb9286bd1e8f29ea3a7",
+    "packages/flashwright-core/src/subscribed-events.ts": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8"
+  },
+  "sourceVerification": {
+    "entries": 1305,
+    "unchangedAcrossFinalRuntimeMatrix": true,
+    "catalogAndDocumentationUpdatedAfterRuns": true,
+    "canonicalSortedManifestSha256": "ea7cb88130f507b003d1a6b63759ea015d38386f2c0a33d7cb14a991f8b9cad2"
+  },
+  "verification": {
+    "sharedGroupsPerEngineRuntime": 8,
+    "engineRuntimeRuns": 6,
+    "sharedGroupExecutions": 48,
+    "remoteBurstEventsPerRun": 160,
+    "verifierControlTests": 11,
+    "runs": [
+      {
+        "runtime": {
+          "node": "26.3.0",
+          "bun": "1.4.2"
+        },
+        "reportSha256": "2fe21891e05ff4c690a0a1c06f1b53b2a4e52e611eb47b28885adc6300b058cb",
+        "checks": [
+          {
+            "engine": "reference",
+            "exitCode": 0,
+            "fixtureStatus": "passed",
+            "groups": 8,
+            "clean": true,
+            "remoteSessions": 4,
+            "remoteConsoleEvents": 165,
+            "remoteArgumentUses": 17,
+            "remoteBurstEvents": 160,
+            "unobservedRemoteRelease": false,
+            "placement": [
+              {
+                "path": "/root",
+                "remote": false
+              },
+              {
+                "path": "/child",
+                "remote": true
+              },
+              {
+                "path": "/nested",
+                "remote": true
+              },
+              {
+                "path": "/replacement",
+                "remote": false
+              },
+              {
+                "path": "/successor",
+                "remote": true
+              },
+              {
+                "path": "/context-only",
+                "remote": true
+              }
+            ],
+            "resourceSha256": "dc5b1d786762799890747663d4513297fbbfa12af5cc58cb81bda027d7b77e4f",
+            "fixtureSha256": "5b3cfd07b94d3ebf09817e7121076edf0e1e7b553781cbeb797d7881c067e4c6",
+            "protocolSha256": "736e9f7de405a445c4b7df43ac8ba9353948532f1b14f00ff5ddc8a96d82b9f5"
+          },
+          {
+            "engine": "candidate",
+            "exitCode": 0,
+            "fixtureStatus": "passed",
+            "groups": 8,
+            "clean": true,
+            "remoteSessions": 4,
+            "remoteConsoleEvents": 165,
+            "remoteArgumentUses": 12,
+            "remoteBurstEvents": 160,
+            "unobservedRemoteRelease": true,
+            "placement": [
+              {
+                "path": "/root",
+                "remote": false
+              },
+              {
+                "path": "/child",
+                "remote": true
+              },
+              {
+                "path": "/nested",
+                "remote": true
+              },
+              {
+                "path": "/replacement",
+                "remote": false
+              },
+              {
+                "path": "/successor",
+                "remote": true
+              },
+              {
+                "path": "/context-only",
+                "remote": true
+              }
+            ],
+            "resourceSha256": "4b89bc7a795998aea46b12d4f05a411b29d26b0d0523a91ce314e4324c3335eb",
+            "fixtureSha256": "5d361254eceb231e9a9d155cb47c9218e66182630fc54b9603cb7cabdae85400",
+            "protocolSha256": "35130af31ddca31a3400f79102f9d942d30a5ff0d056c8ee2cdc6fa2f0b910cb"
+          }
+        ]
+      },
+      {
+        "runtime": {
+          "node": "22.22.0",
+          "bun": null
+        },
+        "reportSha256": "488894ca9ee18f37d7f97f05fdb9bc9276a4fb6c9b16808033ea8c2a46784375",
+        "checks": [
+          {
+            "engine": "reference",
+            "exitCode": 0,
+            "fixtureStatus": "passed",
+            "groups": 8,
+            "clean": true,
+            "remoteSessions": 4,
+            "remoteConsoleEvents": 165,
+            "remoteArgumentUses": 17,
+            "remoteBurstEvents": 160,
+            "unobservedRemoteRelease": false,
+            "placement": [
+              {
+                "path": "/root",
+                "remote": false
+              },
+              {
+                "path": "/child",
+                "remote": true
+              },
+              {
+                "path": "/nested",
+                "remote": true
+              },
+              {
+                "path": "/replacement",
+                "remote": false
+              },
+              {
+                "path": "/successor",
+                "remote": true
+              },
+              {
+                "path": "/context-only",
+                "remote": true
+              }
+            ],
+            "resourceSha256": "4a070930070900d1d901fed2f72a348c9f04f04a86ce6e3abe9d0a41d9c31e0a",
+            "fixtureSha256": "5b3cfd07b94d3ebf09817e7121076edf0e1e7b553781cbeb797d7881c067e4c6",
+            "protocolSha256": "32f17ed6f2d56673b2cd101764526c97bd258a544a8c84516c206f3beb42b7ae"
+          },
+          {
+            "engine": "candidate",
+            "exitCode": 0,
+            "fixtureStatus": "passed",
+            "groups": 8,
+            "clean": true,
+            "remoteSessions": 4,
+            "remoteConsoleEvents": 165,
+            "remoteArgumentUses": 12,
+            "remoteBurstEvents": 160,
+            "unobservedRemoteRelease": true,
+            "placement": [
+              {
+                "path": "/root",
+                "remote": false
+              },
+              {
+                "path": "/child",
+                "remote": true
+              },
+              {
+                "path": "/nested",
+                "remote": true
+              },
+              {
+                "path": "/replacement",
+                "remote": false
+              },
+              {
+                "path": "/successor",
+                "remote": true
+              },
+              {
+                "path": "/context-only",
+                "remote": true
+              }
+            ],
+            "resourceSha256": "84b33616d489a22d2b096626084b313ccab38d5a719b37a57e92a482162bfa4a",
+            "fixtureSha256": "5d361254eceb231e9a9d155cb47c9218e66182630fc54b9603cb7cabdae85400",
+            "protocolSha256": "579bf8414ecaa4dd9e76b2440d7cce6d458e08e8c9bb30e35d3708698177bca7"
+          }
+        ]
+      },
+      {
+        "runtime": {
+          "node": "24.15.0",
+          "bun": null
+        },
+        "reportSha256": "361fc613f1e4aa6d03509ef7b5a2971507a6b67703ac604875c2a9cd9a2eb532",
+        "checks": [
+          {
+            "engine": "reference",
+            "exitCode": 0,
+            "fixtureStatus": "passed",
+            "groups": 8,
+            "clean": true,
+            "remoteSessions": 4,
+            "remoteConsoleEvents": 165,
+            "remoteArgumentUses": 16,
+            "remoteBurstEvents": 160,
+            "unobservedRemoteRelease": false,
+            "placement": [
+              {
+                "path": "/root",
+                "remote": false
+              },
+              {
+                "path": "/child",
+                "remote": true
+              },
+              {
+                "path": "/nested",
+                "remote": true
+              },
+              {
+                "path": "/replacement",
+                "remote": false
+              },
+              {
+                "path": "/successor",
+                "remote": true
+              },
+              {
+                "path": "/context-only",
+                "remote": true
+              }
+            ],
+            "resourceSha256": "f0ecee1ce8a9df15d9ee27b80cc3f6bc1e51edbf50cde5638d02f2b7b6addcb6",
+            "fixtureSha256": "5b3cfd07b94d3ebf09817e7121076edf0e1e7b553781cbeb797d7881c067e4c6",
+            "protocolSha256": "7b4c51f65b258a7dd9868d39efd2273af142260c5d1160259adc93309f367314"
+          },
+          {
+            "engine": "candidate",
+            "exitCode": 0,
+            "fixtureStatus": "passed",
+            "groups": 8,
+            "clean": true,
+            "remoteSessions": 4,
+            "remoteConsoleEvents": 165,
+            "remoteArgumentUses": 12,
+            "remoteBurstEvents": 160,
+            "unobservedRemoteRelease": true,
+            "placement": [
+              {
+                "path": "/root",
+                "remote": false
+              },
+              {
+                "path": "/child",
+                "remote": true
+              },
+              {
+                "path": "/nested",
+                "remote": true
+              },
+              {
+                "path": "/replacement",
+                "remote": false
+              },
+              {
+                "path": "/successor",
+                "remote": true
+              },
+              {
+                "path": "/context-only",
+                "remote": true
+              }
+            ],
+            "resourceSha256": "c7d11f1b19cf225a0894f7e770770b6d72de8f04cf46158fd035946b2e1fc9e1",
+            "fixtureSha256": "5d361254eceb231e9a9d155cb47c9218e66182630fc54b9603cb7cabdae85400",
+            "protocolSha256": "41cb31675e64f59d1df39fe75cc890de7e75917fe679f268a6b04c3dc8cad6eb"
+          }
+        ]
+      }
+    ]
+  },
+  "admittedScope": [
+    "Early console API messages in child and nested remote main worlds, original object and DOM-node argument handles, source URL, page owner and shared page/context message identity.",
+    "128 remote evaluate messages and 32 remote evaluateHandle messages delivered in page-then-context listener order before their triggering calls resolve.",
+    "Remote-to-local and local-to-remote navigation, nested owner retirement, frame removal, context-only listeners and context closure with a deliberately undisposed remote argument.",
+    "Chronological session/context/object custody, observed frame placement for each document, candidate stale-handle rejection without native argument dispatch after observed retirement.",
+    "Candidate unobserved-object release matched to a successful original-session reply before context destruction or teardown; clean observed original-supervisor process exit."
+  ],
+  "referenceDifferences": [
+    "Pinned Playwright may retain unobserved console arguments for console history. Only Flashwright is required to acknowledge their explicit early release. Reference stale handles may dispatch to their original native context before rejecting; candidate stale commands are forbidden."
+  ],
+  "priorAttempts": [
+    {
+      "classification": "initial-probe-fixture-failure",
+      "detail": "Direct child Frame.goto was unsupported in the candidate and failed with a target-closed error in the reference during renderer return. Shared parent iframe.src navigation replaced this test trigger; no Frame.goto coverage is claimed."
+    },
+    {
+      "classification": "initial-verifier-assumption-failure",
+      "detail": "The reference passed all seven original behavioral groups but did not explicitly release an unobserved object. The verifier now distinguishes reference history retention from candidate cleanup."
+    },
+    {
+      "classification": "superseded-weaker-verification",
+      "detail": "Bun and Node22/24 passed the original seven-group fixture. Review added release acknowledgements, lifetime-scoped ownership, individual placement, typed retirement errors and remote completion ordering. Only the final eight-group runs admit this expanded slice."
+    }
+  ],
+  "remainingGates": [
+    "Worker console events and history remain unsupported.",
+    "Broad remote Log-domain sources, exact remote stack/source diagnostics beyond the selected URL check, other browser distributions and other platforms are unverified.",
+    "The new commands are registered in verify-core; the current combined-core refresh was not run for this test-only change.",
+    "Packed consumers, full release acceptance, final resource accounting and the representative majority-scenario 2x performance objective remain open."
+  ],
+  "rawEvidencePolicy": "Original logs, protocol observations, failed attempts and raw reports remain in ignored workbench. This checkpoint contains selected sanitized facts and cryptographic bindings, not raw workstation paths."
+}
