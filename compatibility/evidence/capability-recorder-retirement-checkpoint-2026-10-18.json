@@ -1,0 +1,2262 @@
+{
+  "schemaVersion": 1,
+  "classification": "native-linux-capability-recorder-retirement",
+  "status": "passed-selected-retirement-and-application-gates",
+  "testedCommit": "8c12c990e7e4252570950031e450cc6bb307e5b8",
+  "privatePrototype": true,
+  "publicFeatureDelivered": false,
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "problem": "Normal context disposal could interrupt an admitted native capability record. A preceding unchanged TodoMVC discovery attempt left active=1 and completed=2 despite browser exit zero, correctly invalidating its recording.",
+  "mechanism": "An opt-in shared lock on the original journal-state file spans native record admission, source capture and commit. Browser-owned child termination takes an exclusive lock and retains it until a pidfd observes that exact process exiting. Renderer IO-disconnect and main-thread immediate-exit paths take the same exclusive lock and retain it until process exit. New writers cannot enter between drain and termination. Existing recording validity checks remain unchanged.",
+  "decision": "Retain the guarded private recorder for this tested multiprocess Linux headless-shell policy. The selected application refresh and repeated four-worker discovery gate pass. Do not treat this as public capability delivery, production IPC or a performance result.",
+  "environment": {
+    "os": "Linux",
+    "architecture": "x64",
+    "runtime": "Bun 1.4.2",
+    "referenceRunner": "Playwright 1.60.0",
+    "browser": "Private Chromium headless_shell 148.0.7778.96",
+    "sandbox": false,
+    "baselineBrowserSha256": "03401573057876edf634fbbc3147f3395c3c332f6499b231a636d5008d5223b4",
+    "firstGuardBrowserSha256": "9b8a73767054dca55256d7193a5c6f9370c2fae7323a5012761971b93f3dce11",
+    "testedBrowserSha256": "5c0b01235df9c3b9a0409aaae0a24dc61ceadecd71598dcc4676997905260a3d",
+    "driverSha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c",
+    "runtimeSha256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c",
+    "guardPolicy": "FLASHWRIGHT_CAPABILITY_RETIREMENT_GUARD=1 with a configured native journal; otherwise inactive",
+    "artifacts": "trace, screenshots and video off",
+    "applicationCpuQuotaPercent": 400,
+    "applicationMemoryLimitBytes": 8589934592,
+    "applicationSwapLimitBytes": 0
+  },
+  "unconfiguredJournalControls": [
+    {
+      "engine": "flashwright",
+      "status": "passed-unconfigured-journal-default",
+      "contexts": 3,
+      "resourceSha256": "f680cb982bac2ed370342a2c026ec00763aa9dcb7d5ae706d975b666607b7537",
+      "reportSha256": "aca7049d51b1e2fade9b4844936781b8c98e9776eaa841f85e650034d956d945"
+    },
+    {
+      "engine": "playwright",
+      "status": "passed-unconfigured-journal-default",
+      "contexts": 3,
+      "resourceSha256": "84a437094bd8c2fdf4a8b8270e4b5255bf806ad0a697fd645089efe9c4e7c9b3",
+      "reportSha256": "c16bb303b4ea439aaac04cabee78483233ffd9c03d9bb208d64dc0173e85bfa9"
+    }
+  ],
+  "heldWriterControls": {
+    "status": "verified-held-native-retirement-boundary",
+    "controls": 12,
+    "rows": [
+      {
+        "engine": "flashwright",
+        "mode": "discovery",
+        "guard": "0",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": false,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "48cc2cd1706bb3cf2f241e2c8a7d1e543eb88f2a0f755746b081d467d31fe045",
+        "reportSha256": "32f7aab7f07830ae3ffbfbb45bfad7fb88025dbcec9ce58c534c960b8803a842",
+        "journalSha256": "f28998b9f40f3596020fd0d5feeaa11ce1ab6b9f15cfc815046cb10c75ffa0b5",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "flashwright",
+        "mode": "discovery",
+        "guard": "1",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": true,
+        "activeCompletedViolations": [
+          0,
+          1,
+          0
+        ],
+        "nativeStatus": "passed-observed-scope",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "608c95d9b23f9c59a1a4a05f701c007627624aaa6c1db7aac2539b2b2c9acdd0",
+        "reportSha256": "a7e04ebf9fb9e5a7d6ce883d15277eccf9e2a928aad11dbf89e80be0c82f8e32",
+        "journalSha256": "a5191af1adae9426799755538b3072f30713a3eb8d8a79c54a59c451307f832c",
+        "stateSha256": "2c367818f4feb7398610384b08421a98b6d8af5f6746b565fbbfbceaf4190e1a"
+      },
+      {
+        "engine": "flashwright",
+        "mode": "discovery",
+        "guard": "1",
+        "kind": "forced",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": false,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "acb52e0b3f8bd2edf5c04a39ba321868a8ff3cdfb9068ab97ac2a4145e1a5273",
+        "reportSha256": "fd55e081667a954014c6a4e47e8b102e560c1f91e02322a5a98ae559d4a19211",
+        "journalSha256": "3339fdda915c0cc3799458456b02a294524e58d3b6fe0eb6667a21d4c3a3fc4e",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "flashwright",
+        "mode": "strict",
+        "guard": "0",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": false,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "9a10c8e70e3ce1b6bbc3fb1698c6a73dd82da019a2b1aea3c3c3d0133fea2cae",
+        "reportSha256": "0ce0c1a1912c84534eddf175f067ba1e28c6fd1c2b7a1fa364456cccf211d8bf",
+        "journalSha256": "1ec3730ac828eddd91147f01eaec491231d24cd0d7f9f280a0506753d4bc7ba9",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "flashwright",
+        "mode": "strict",
+        "guard": "1",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": true,
+        "activeCompletedViolations": [
+          0,
+          1,
+          1
+        ],
+        "nativeStatus": "rejected-capability",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "1cb14bf4f105de1205291601252dfc7245f46978c9a239c4b987c7f416133e64",
+        "reportSha256": "93c948ae7487439056607ed0eefe611bf0918993aa2b4cf365f06de2d7a2bc07",
+        "journalSha256": "67742ee638a55000780e1f6f3ea16a8dcf30375e3bb00681d62339f1c1e1f2db",
+        "stateSha256": "328da700323f47934d40211751d7779393e8cc462735b64ff72c0e928d78517a"
+      },
+      {
+        "engine": "flashwright",
+        "mode": "strict",
+        "guard": "1",
+        "kind": "forced",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": false,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "225836dd6dfb1c3cd3ced5be2e20246bebbc9192182a7e0b26bf3bd8e5a26a13",
+        "reportSha256": "c657c804771e31fb91baf5ade642896aeec2705a568f3b9ac672bc7828523df0",
+        "journalSha256": "1531d7fc1dce1f3a909ef86de189685ac17089990c2830897a8f244561372deb",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "playwright",
+        "mode": "discovery",
+        "guard": "0",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": false,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "8eac418f0dbc41725fc028b29258312bfef813e3a8d8390edcdf3d9355ede165",
+        "reportSha256": "b4c72a7db1cc136e1beb1ee783e8b9ad865193a42aa2e738282d5af5d76153ae",
+        "journalSha256": "11af422a5a174af8c824425bd36f76b26f454d9036b6f4296726135d7248c69f",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "playwright",
+        "mode": "discovery",
+        "guard": "1",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": true,
+        "activeCompletedViolations": [
+          0,
+          1,
+          0
+        ],
+        "nativeStatus": "passed-observed-scope",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "44de37e57b4188f28eabb4a9b0d025df8892354991db92c8bc21aa9802802378",
+        "reportSha256": "db0d439d502297e1feec52afb665554d6ec751e344121ccbae3d1256c8332e0b",
+        "journalSha256": "a1863a24c7fce343fde6a9bfa847b0b24cff5fcf868f524ec9a20fdf837fb5c9",
+        "stateSha256": "2c367818f4feb7398610384b08421a98b6d8af5f6746b565fbbfbceaf4190e1a"
+      },
+      {
+        "engine": "playwright",
+        "mode": "discovery",
+        "guard": "1",
+        "kind": "forced",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "5a53af1b6137ec9fa6653cadf24732d9e8de04ecd37435a11de16581b3aa7258",
+        "reportSha256": "178e5266bdf991f765d8ec00210b6f10594d5d56f09d6a420178a0a890f25c9e",
+        "journalSha256": "0e15f0371168593a8e414b0e498c683b4111c821318b4f3bb0376884ffbe4020",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "playwright",
+        "mode": "strict",
+        "guard": "0",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "0bffcdce850a032578aca1f026cc58ef4b670b418cd8bd865e8812da34c80d7b",
+        "reportSha256": "5cb0d06b1f2982202d1c487ff35365c0695381966a39d6d2fa056bbfe58060ad",
+        "journalSha256": "a921aa7ee717551a4f4e69514a103acf929b07049405a82f94284a14ea3f6b9b",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      },
+      {
+        "engine": "playwright",
+        "mode": "strict",
+        "guard": "1",
+        "kind": "normal",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": true,
+        "activeCompletedViolations": [
+          0,
+          1,
+          1
+        ],
+        "nativeStatus": "rejected-capability",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "21a72e209a89a770b3d5c085ad02cb81271155269d3fa6046289787ec657eec1",
+        "reportSha256": "0e36f1a69625bff15e6ac0b22a6e74a5bfc4fc88e80b5fb7c080e86da2b9ab2e",
+        "journalSha256": "e194c3fde4ab22f0f3e28be3488219df900cd9bc29e37cdcd1bb387eb85f2d66",
+        "stateSha256": "328da700323f47934d40211751d7779393e8cc462735b64ff72c0e928d78517a"
+      },
+      {
+        "engine": "playwright",
+        "mode": "strict",
+        "guard": "1",
+        "kind": "forced",
+        "status": "passed-held-native-retirement-control",
+        "writerObservedBySampler": true,
+        "writerAliveBeforeRelease": false,
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeStatus": "invalid-recording",
+        "nativeBrowserExitCode": 0,
+        "resourceSha256": "d4ebc6ff817961ac595e5af97d52caac228bbeff7293d915bee8a23cb9f83673",
+        "reportSha256": "f0d5322abfcdacc589fe07c830980662d3a5d69e39d5a9405ad42b19782ded18",
+        "journalSha256": "78da82cda52c2d8fdb87cf70678b25f4e03c31f4d364b1eb6c370487182706ef",
+        "stateSha256": "712e782787b9470b161143dde5a590576f28327bfad7dea690ff9a5afb34ea01"
+      }
+    ],
+    "unobservedWriterPids": 5,
+    "writerIdentityScope": "The control resolves the live writer from the original process group and its mapping of the original journal state before close/kill. Standalone stat/map receipts were not saved. The 100ms sampler misses some short-lived writers; no exhaustive custody or resource admission.",
+    "retainedFailures": [
+      "Initial verifier required every writer to appear in the 100ms sampler. It rejected a short-lived writer; omissions are now reported explicitly, not admitted as exhaustive custody.",
+      "First prototype guarded browser-side termination but missed renderer self-exit. Held writer still died and recording was correctly invalidated.",
+      "One revised forced-kill control expected only unfinished-record diagnostics. Existing abnormal-renderer protection instead terminated the browser; recording was still invalid. A separate corrected control accepts either verified failure cause; original failure is retained."
+    ]
+  },
+  "stalledWriterControls": {
+    "status": "verified-stalled-writer-fails-closed",
+    "controls": 4,
+    "rows": [
+      {
+        "engine": "flashwright",
+        "mode": "discovery",
+        "status": "invalid-recording",
+        "diagnostic": "native writer retired with an unfinished record",
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeBrowserExitCode": 0,
+        "writerObservedBySampler": true,
+        "resourceSha256": "76440140ef0081590a3cf42022442cee91cadba953858eee92d9f9fbd1448af2",
+        "reportSha256": "d3d398c37709e90872e78027e5024e4e2a791c3fcb955660d5cb06af482249ea"
+      },
+      {
+        "engine": "flashwright",
+        "mode": "strict",
+        "status": "invalid-recording",
+        "diagnostic": "native writer retired with an unfinished record",
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeBrowserExitCode": 0,
+        "writerObservedBySampler": true,
+        "resourceSha256": "a63cf939052035e3f4039fe54001d58139b211015cbcc33b6bde67bc4f919378",
+        "reportSha256": "332be8a54f405cc24b038ccf2d324ab5016dbfdfe7ed1ece22a5d450a91d186e"
+      },
+      {
+        "engine": "playwright",
+        "mode": "discovery",
+        "status": "invalid-recording",
+        "diagnostic": "native writer retired with an unfinished record",
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeBrowserExitCode": 0,
+        "writerObservedBySampler": true,
+        "resourceSha256": "aa1444b0fbf3dc38109b9d7807e91fbbc0842e5e83dba3a31acb078e1f8ba2ad",
+        "reportSha256": "1f38090105206196127623ba8caaac96151dc44048c02b9b259d26e6a3d4bc0d"
+      },
+      {
+        "engine": "playwright",
+        "mode": "strict",
+        "status": "invalid-recording",
+        "diagnostic": "native writer retired with an unfinished record",
+        "activeCompletedViolations": [
+          1,
+          0,
+          0
+        ],
+        "nativeBrowserExitCode": 0,
+        "writerObservedBySampler": true,
+        "resourceSha256": "f2102055607a6eb386c494ebced2770233fb3d56364a1a336c33616933d05406",
+        "reportSha256": "23fe803a40a433bc47093747d38f453f5d50198ff6cdf4f5d12d23697c1cfe84"
+      }
+    ],
+    "unobservedWriterPids": 0,
+    "scope": "The existing 250ms append-lock deadline expires while shutdown waits; original controls complete without watchdog cleanup. No arbitrary signal-flood or full production timeout admission."
+  },
+  "caughtDependencyControls": {
+    "status": "passed-caught-native-paint-dependency-controls",
+    "tests": 36,
+    "expectedRejected": 10,
+    "parserNegatives": 9,
+    "rows": [
+      {
+        "engine": "fw",
+        "tests": 18,
+        "expectedRejected": 5,
+        "expectedPassed": 13,
+        "unobservedWriterPids": 3,
+        "attempts": [
+          {
+            "title": "ordinary-list",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "646e6592bb15fb961c71c1e9832d7189f575e467628d457e1c4cca659823718b",
+            "planSha256": "e29617c0955a228d3dbdf5fa7f8dccdfc25754b790ce0465be15c3f48dec6793",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-cross-frame",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "0931a2120dc56b72cfeb3289c5f4a2aa94a2c32f6bda071f6c41744f52e99f83",
+            "planSha256": "49f06a3243c7ae263e81f0f88faf0f9cd787e763a0fffd42b98bf56f5a88c3ee",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-observer",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "964c885d33435f37185bef86cfd9b486ffe1748b889146cd6863a5831b18d181",
+            "planSha256": "5561d3b3184e3fa04a3cfbe3ac2cfcb4154e4de9a9e239c5699b8ee98408d627",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-view",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "071c1d15abe02caf09876021086a3e2de772f91305a4c900eef6efaebd05a821",
+            "planSha256": "fe2d0582dc53b4d62594eb4b52698375d66cef731c356c6bfed2dee891e3db45",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-cross-frame",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 2,
+            "observedCapabilities": [],
+            "reportSha256": "2175ccc4537f9d7a993371ceeab8efc34fa0d14c71991c8642cb372c01da5498",
+            "planSha256": "0baaacced3c3ba286a51054b49634b91482a1727d73e71f6afafb992c98e6f9d",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-nonvisual",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "ff1c7afc1bd1eb16103a810685b1820e7d72c5db591875e4f51aac3479afbaf6",
+            "planSha256": "06fe963f36ce2d82686504308db7fd3f01451042ca56c26d3238b54656b80f78",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-view",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "9666be63bc2e577b257e45daa00859194db553a8989aacea2d15e1d5e1d55862",
+            "planSha256": "0b7af5fa5f7b1dac0cf3f7826466dd6a9f1514e94d645aa5d4472e8b316f9d01",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-worker",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "0a06fc270be99a75260dcc4d49b024fdc2554056e4820ef0503058f37a34c408",
+            "planSha256": "b5d9fbf2ff2324d8cfb63830f72284814c0133fd03dfb23167a54d3c4a4f5645",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-worker",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "a4df4d1bfa1a4a173ead264682ac822f11c2f293a44296272615c93f27fd03be",
+            "planSha256": "99d4043f113bbbc100314bdba8fc81f9d4c24cf2e85ba13a1781c69b14f75fb5",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-cross-frame",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 2,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "d5b8d706c29be40001a1aac93561abe1fc09d45b0b620a206bb5506afdf32964",
+            "planSha256": "bdac20bd0b2386e03fa5ba486416cd73e6a73490a242d35d5a26c3b828457759",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-nonvisual",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "6b0558c1e7caa002d2b8462ad02d1b759c4c1e69bc49704a30354f9ba1da2252",
+            "planSha256": "58ed3917ea4df44a0d1c1537c40db511d12e9781f78544245718fdf21ec5e45d",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-observer",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "03997fbb7211900162d8908a6df0addaf75b69fd09ee30c79db13e746420f0ad",
+            "planSha256": "6aab36e169a5694dad5f5e4128872d83c4c9935abe036145a0959393cb9ed4eb",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-view",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "78e3e37f9d846fa143ba3ba629d5638fc07bc37084125726b6661b08773bf362",
+            "planSha256": "26516a140d3aa16851bb83cf7dcaba85eb613b9d9d75829ef45deedb8e2b9cb8",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-observer",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "c6d7b63e0afb58fddbee34d31e9953e39b3828f9ecba0d59c3a5d00d52c26682",
+            "planSha256": "202461edfa2f317ebf16c72873721564e9919d0ad93d95f37b15b863a7da2630",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-list",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "50a239eab941e5564fd3585ff0b064fda34678f47175641ff42621cc9f4b49a6",
+            "planSha256": "e9e0778e64f4963876045b0d751d640ae9e93338b71aa4feaaef301251426670",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-list",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "dc15bba6426163a2845fd288366ec4218644cd636e14134ae322c32675edb998",
+            "planSha256": "f27e0ca5959248ec450fe4995d40291238584e09696a1924e553f42b15f084b8",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-nonvisual",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "4e151ecb1a24016104ff59181c9c081418cded5cdcc32f50ced1d6cec80951e0",
+            "planSha256": "442bb44fdc947e100d2ba7c126ff469a80247ea633d8e19ec09f9c83dda647b3",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-worker",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "46e3dd18dbce79597e0c39e865aea3ed45e7d66d19e15f64d3203517e78f7cb4",
+            "planSha256": "e1f0013e0a253e5afecc0510fbbd836f5b286066f6a4e765722a31179edcb99f",
+            "hasLaunchReceipt": true
+          }
+        ],
+        "nativeEvents": [
+          {
+            "title": "strict-view",
+            "operations": [
+              "startViewTransition"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "f9f6cb2a23a48483359885aba87a4f5e2274fe25d76b43615f469003b4b97536"
+          },
+          {
+            "title": "strict-observer",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "d3da1f36646e0951c7af0629e604b66c9acb75af6c430073dfd1fcb2249a9f9e"
+          },
+          {
+            "title": "strict-list",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "972b6764750540ad1717be91557f56d21792694154c9a5327ed1c6de16071258"
+          },
+          {
+            "title": "strict-nonvisual",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "9a3863f57a7f260a1debd7523886aca419e7dd9d27a53abe28a095f36210478c"
+          },
+          {
+            "title": "strict-cross-frame",
+            "operations": [
+              "startViewTransition",
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation",
+              "violation"
+            ],
+            "journalSha256": "afc85fdf48569126d366fb40a3c2d316afcac1eb0a23f29ff15746685063e464"
+          },
+          {
+            "title": "strict-worker",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "d00ced7f804228741740ecc8beaeafb3fd705c9968d01f00927b1bf4f2e247d7"
+          },
+          {
+            "title": "ordinary-view",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "637ae83bd811f5475677f5f847752a634087153c91603a3fba9478e97bf58d5d"
+          },
+          {
+            "title": "ordinary-observer",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "2cc87d1f8ee588e21e2d7283441950beaef88c23040351b5070f35d082367eff"
+          },
+          {
+            "title": "ordinary-list",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "cc691345a4e84bc7244e11faa9a5c7fcb3a6030188bed54a998357073751ab85"
+          },
+          {
+            "title": "ordinary-nonvisual",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "118751dc39133478129b35324f347a91c0204cf10d9753619a58c098de423915"
+          },
+          {
+            "title": "ordinary-cross-frame",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "f517ffa52be8dc7bff5eb5de01eeb11ab006d7254979fbcef403a540f0bcd43a"
+          },
+          {
+            "title": "ordinary-worker",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "5f88f9050f327d9eb4ac02d71e6a5ec8469988078f193f053c3baef5a0db1cab"
+          },
+          {
+            "title": "discovery-view",
+            "operations": [
+              "startViewTransition"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "4aedea252554caeb79572d1362229236fe1533ffd68535217ff8b85285a1490d"
+          },
+          {
+            "title": "discovery-observer",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "9c1100c0d1a82afec983b074321bcb6494c25adf22a9f97382b969f97d82e0bf"
+          },
+          {
+            "title": "discovery-list",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "01fc07757a080c2fee22117cd1e738fa3de9055ed0a506580e0b8871d07b17a8"
+          },
+          {
+            "title": "discovery-nonvisual",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "cf66822d09d0979960da836d206bc3831de8f411b9339b2bb6d888b373d8c71e"
+          },
+          {
+            "title": "discovery-cross-frame",
+            "operations": [
+              "PerformanceObserver.observe",
+              "startViewTransition"
+            ],
+            "kinds": [
+              "use",
+              "use"
+            ],
+            "journalSha256": "1be134d7afe0689a43a691ffda928977fd353f22af3fb5b27fec9cf47beeba8c"
+          },
+          {
+            "title": "discovery-worker",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "16e9a1b9c13a7e3628fba16da683a24b501212e6f7bdb427146c2343f1c57be6"
+          }
+        ],
+        "resourceSha256": "063708155648cb23e47deb8d5e3459e7ddfa06c58c51f9e85b3c67a4eefac6ba",
+        "reportSha256": "9072f8f204a61b9a6e32b361ba78206b3209c43af9e87d1f3c49c9dc55680fd5"
+      },
+      {
+        "engine": "pw",
+        "tests": 18,
+        "expectedRejected": 5,
+        "expectedPassed": 13,
+        "unobservedWriterPids": 5,
+        "attempts": [
+          {
+            "title": "discovery-observer",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "67d501d93012b0818c13719ca9369ab551a8238726a1babc9982a8650788d187",
+            "planSha256": "67ab965b6479fee2f953b108e1e1e654773659d2919325e61863f9700807bea0",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-view",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "3f422864836ae2955063bb52ddb02e6a04cbb1116d81f83f1c639dca04b2e238",
+            "planSha256": "05cadf73a879fafbe488c2834f34455712f971aa6b242424cf7ac6a291d2c3ad",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-nonvisual",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "6292e88f8fc011e790ed4bc0d05da8a0b7f82ec84b3c951b55f084d4defb1c5e",
+            "planSha256": "0568133d6fc262f5f6ed11f39efd9786aa1ebbd88c37e1ffb168ee1b5e95bf92",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-cross-frame",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 2,
+            "observedCapabilities": [],
+            "reportSha256": "ecdaab14d08cf1bb975ca325bb48bdae2054e36b7b3c9174aa20037079d1b195",
+            "planSha256": "45923516c5f2d51082b971e49c0b791f1760ba1ffa57675ac2edc5b19a982432",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-worker",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "53fb963ce284e1637b40ff0b675000a5422227efd931b8afce070452df8561ba",
+            "planSha256": "d2886be45aa20deb21f25668cfb0dd4bbcb0dab833829603f84f761fba6cf548",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-list",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "340ec5b14a622aa2819a46078e7d2b69c977d9cc6cc5e05fec4875e98c630f83",
+            "planSha256": "c73265058003a36ba07baf9521d8d1f77899689881fb6a07713a3042073f0388",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-observer",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "eb6b7770ef5df29f6a3347322c0db889554e4eac4baf5e983a2388719088c9c1",
+            "planSha256": "5c47b9bba81b7968b8bcf091cc987b05b8429a0eb4419244013893f523e149dc",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-list",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "538453bbd7c6dda51ae668f60e6b798f863872330772daf0a13d4170d4a8dcd3",
+            "planSha256": "80b51aa711f3e76409c1033468adf957755a52b6992dd52db8601066ec1c3d9d",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-nonvisual",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "3a6a7b204a25c685aff7bbb99eddcbda349165a3e395e054f75afa685c6621f8",
+            "planSha256": "d45f7fc180336db9e023e3d8dde97a72e55814f156199137faa88e104b663b06",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-observer",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "833cb9de532093edf43e083051edf47be9e9bdbf518ac134aa501d7c969ae4af",
+            "planSha256": "e8dc7f2dcbb6a6ecc45f8e75a2ea7d1c8016a4b38d569d4f5ef69be9b17e9648",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "strict-list",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "ca691b9ef7ef58023e43356e7d20446225a577b8d7eee1b8cfb4f30f7a3a1f57",
+            "planSha256": "1137f20d36310d7fa0ae8e070dbf6435045ce642294506d47e9d88b0564e6208",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-cross-frame",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "10591b2726b580e8303866e30273089fda0dde6b22b9a1159de0ec712d90c510",
+            "planSha256": "86b0d5c98566c9bd9490d8db1f7078c327855fefa4d3774b9c0734094e50c7b7",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-cross-frame",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 2,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "917b83ad370d850a3316cf153fdd19409c4f0a11ed768f5af335566e1ed9e326",
+            "planSha256": "5327e7643d223bb0aaf2ff010487497a11d8cb5516779f2080c01ecc4a5322a4",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-view",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "fa57baf86b400a5b13cf08eeead05462ce5db94de501977f6640ba768b5f5a97",
+            "planSha256": "e7163c69cfa5b623814e52103c8e44491833b3c81b23601d7f1d8d5d6e0c3272",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-view",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "6dd8f9be36fcf6f47cf7b38b355bbb61dc2b1198539df4017987663c896e8c6c",
+            "planSha256": "a708963e22eb5b7db29be3ce2bea41e212148dfd188593a09550aad12c39f729",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "ordinary-worker",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "c499e4fb060ef8b63ea051fd97cdbb582414fd33957d8709eeca61419d5b936d",
+            "planSha256": "ed093dc7fbac4fd56fdc1ac7b429f64e0df6edea40c24ae3ed9c59998e3b641a",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-nonvisual",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "55ab86976aeb0ac56e5862a31152e8e6bef22bf3b7ac053dafa0449a37aa049b",
+            "planSha256": "a663a9b6b55dad54626e59e27fa1e52f4edda322642f1c229c16e013229381c8",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-worker",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 1,
+            "observedCapabilities": [
+              "painting"
+            ],
+            "reportSha256": "e4492b77b694f61fbc0686a1bb51eb7b26b9a769158ace58d7511c48a037f570",
+            "planSha256": "1d6f51b74cb384d0ea3a3b7ce43209a68572b1ea1283ea89084521c0ded63607",
+            "hasLaunchReceipt": true
+          }
+        ],
+        "nativeEvents": [
+          {
+            "title": "strict-view",
+            "operations": [
+              "startViewTransition"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "1aaebeaf395632e47b752dff1e6212e546e3678838b0f03f63dbce4f2d15f70a"
+          },
+          {
+            "title": "strict-observer",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "12ed1704266165ccaca12ee555ec8763f2ef7651b1e1dbdc44305da704da297c"
+          },
+          {
+            "title": "strict-list",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "aa376ce51308186067b740c635d4273a2c9fdb271c1f1e2df3652a075361e87e"
+          },
+          {
+            "title": "strict-nonvisual",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "b2b22d0435a3b2565c97bef45d51d6e58544df768ddfc20982521a68dc4277d6"
+          },
+          {
+            "title": "strict-cross-frame",
+            "operations": [
+              "startViewTransition",
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation",
+              "violation"
+            ],
+            "journalSha256": "fbc2decd69511b2623fad9ff3ecb8b9f8d50c7bdc5c0c02aa41aec673b2cf4e3"
+          },
+          {
+            "title": "strict-worker",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "violation"
+            ],
+            "journalSha256": "18285e0128cd0fe9d2a32128a41509045ba4668b91537fe9d1663728e3468aff"
+          },
+          {
+            "title": "ordinary-view",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "ff52b6282e693828cc87f94c46efa47d7639b07b02da225b69e00a3a81d5c9cb"
+          },
+          {
+            "title": "ordinary-observer",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "66c63869491bd22c54d4c4b0ec168117e56ab50e1cc45721a674755176ec2d5d"
+          },
+          {
+            "title": "ordinary-list",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "7f60af11d3853b85bd8b51508c34cdee166755eb3ec650873f870948d85d0387"
+          },
+          {
+            "title": "ordinary-nonvisual",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "ff91617f3adb6e220f1f7bf212f6f05256f62c32bdc451f89e27257be8410466"
+          },
+          {
+            "title": "ordinary-cross-frame",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "b6d15ca63949fcf13acbf4bcc5fa15068a65f9ae73c889e3b5d54ce2f3c8e33c"
+          },
+          {
+            "title": "ordinary-worker",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "68bd27bc16241f739abb9f72597a5a35137adfb91ef2a74f44b093726a06bf3b"
+          },
+          {
+            "title": "discovery-view",
+            "operations": [
+              "startViewTransition"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "62cc447f6e97d2250ae42df7e70b0a3a5e39c6a04d21d1f357424e36be3fd2f8"
+          },
+          {
+            "title": "discovery-observer",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "c6b53eef53927c70d4a9d5f1d73eae278d74e33ac706b71a84555d7181df069c"
+          },
+          {
+            "title": "discovery-list",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "263caa278e99f139f48a04519140313c1ca87f8771b53717ac8af77cb7b9b57b"
+          },
+          {
+            "title": "discovery-nonvisual",
+            "operations": [],
+            "kinds": [],
+            "journalSha256": "001300e5c3d80dc1ce4228d56d32971f6a7fc33466f6dfb44f166ae5fd4ea238"
+          },
+          {
+            "title": "discovery-cross-frame",
+            "operations": [
+              "PerformanceObserver.observe",
+              "startViewTransition"
+            ],
+            "kinds": [
+              "use",
+              "use"
+            ],
+            "journalSha256": "28ff88d4f1247be0aed6829071d576605283be5c02b0014c4bddbb4e162e80a5"
+          },
+          {
+            "title": "discovery-worker",
+            "operations": [
+              "PerformanceObserver.observe"
+            ],
+            "kinds": [
+              "use"
+            ],
+            "journalSha256": "2d0bab5b401f7097ed2335e1ee858a1adc62e0f23b3307fd5f1c84fb8fc9483d"
+          }
+        ],
+        "resourceSha256": "a4a3495948c12b4dd77e5e899e21ad7e7383198a8fb4e66a549b374fb1ac2da1",
+        "reportSha256": "895d9b4e05bd9cfbb32e66e1d674cb51f81683d288d7b1f13efb60e33ce59090"
+      }
+    ],
+    "sourceEntries": 1108,
+    "unobservedWriterPids": 8
+  },
+  "legacyRunnerControls": {
+    "status": "passed-expected-runner-outcomes",
+    "rows": [
+      {
+        "engine": "fw",
+        "suite": "controls-v2",
+        "tests": 12,
+        "attempts": 13,
+        "stats": {
+          "startTime": "2026-10-18T03:46:59.637Z",
+          "duration": 2991.13,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 7,
+          "flaky": 1
+        },
+        "rows": [
+          {
+            "title": "no-browser",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "564942abb0b5aec4db24cf87a317ef2f1330b9a3df5e7bef79cf51c6c1fef9e3",
+            "planSha256": "1b9199a2f02d286e1bfe080751d46f6947303fc4531b9f073c7fdf70264e095e",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "caught-paint",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "a1a2d9f71723ad69c835b80dee59b097529bace5a83719ac4e0fda73d596550f",
+            "planSha256": "f701bfeb356e695de5c132c49a16bcdf7f938a6797bfae202a1113595ab57922",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-storage-state",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "1b099625108f683472ac89391b9c41b5f8acaa6ba0e602f9888b871c2b2d9b85",
+            "planSha256": "d14644e25ef8d742dd82af2d65bd1f1b04b0657fa3a546c3513a7de58973d931",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "timeout-after-violation",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "5ec7f0b485ac2a580fd3637e5334e0ced0f001f8bb320cedccb239155f2035d9",
+            "planSha256": "06e9367f9c84b0e7ba598507950ed1647059a3e781eecdd61aad08329ce0fc81",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-local",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "b6a03d08ac89b68b3fcc073b20e12259ca3bf78fcc8306437348ec264d40fa58",
+            "planSha256": "111d67d7710f44941423d34afb840ea8f9d8d0c5967876d59fb19a31f0c76936",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "allowed-local",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "ad0c7950fc8f6e061c6a6a124afbcafd7f020315e616fdc0cbc9c352b44f9105",
+            "planSha256": "e5b0692f59625e2777392d168b0bbdbe68e2578abfb3884c74780cd5cf7e7305",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "fresh-retry",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "7345e7b5e46c9d848c0e05e539436f1471705f61b4f39693e0533efeb08e950c",
+            "planSha256": "78cfe41a44b79ff10bd1e5e4735b911263a9dbe00d480366f07067ab44d5e7d0",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-screenshot",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "ff998eba9f9824d7b72e6b5685590c9c45cd37bfe924983af4e42d1420b3ff74",
+            "planSha256": "73e093fdbf5b387f3dbc2365c247b6ac7e0e94f205999f16948593ad4f178f74",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-session",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "26cb6ab550c0161b48c7855b5b180b454a6e3303cbc2517118c4ed55afaf069a",
+            "planSha256": "dee32ee742ae65dc4e48ff4462c05a04aa6d7e8b55ee6395102e00e7ae6d75f1",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "presence-only",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "8a3837a0bc6e2c8f045cec95e23cdb90e6817d6beda7bbc900288b846331fcef",
+            "planSha256": "d1d8f42bc130ff97228883a5921a106b3384f01ce558acc70fc221db577d2098",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-second-context",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "98fcddf51856bdf03fb269abdda55d3ea08c9df081bc7461c0722b7a6737d6d1",
+            "planSha256": "e7c5871266204ab6c7a73cb0e36217eccca508143f6fa8d631824d7878fa231b",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-local-session",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 2,
+            "observedCapabilities": [
+              "storage.localStorage",
+              "storage.sessionStorage"
+            ],
+            "reportSha256": "eda882f01206f6fed566827e613b011a64d5241515ea9a257cf631c42839e134",
+            "planSha256": "0cbc85bad02cb7e3dce3c3497f1cc00251f3fb99eb290ce9856139fc1befd544",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "fresh-retry",
+            "retry": 1,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "2d745a12c033d322fe9254711c58b420a41dbd2cbfcb0408ca44ac5cdd1b5e6e",
+            "planSha256": "14454523cab9fd55bf0d5386b6beb586ee2a5bec5b14cf186671bf62d99135ae",
+            "hasLaunchReceipt": true
+          }
+        ],
+        "unobservedWriterPids": 1,
+        "resourceSha256": "1de73e7908a6dbf31f8d15efc1aff0f98fad3fec865b0b918bce9eaa8fc206fc",
+        "runnerReportSha256": "383fb052e619c71b65b26bcd17277974f7d311bd6ea3a59b77915c19fe5dd9aa"
+      },
+      {
+        "engine": "fw",
+        "suite": "boundaries-v3",
+        "tests": 11,
+        "attempts": 11,
+        "stats": {
+          "startTime": "2026-10-18T03:47:06.283Z",
+          "duration": 3693.904,
+          "expected": 3,
+          "skipped": 0,
+          "unexpected": 8,
+          "flaky": 0
+        },
+        "rows": [
+          {
+            "title": "preparation-failure",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "a42e96304fb09c682cd5b10f6089fbe244212f520416a58df7c60c4e7243fd53",
+            "planSha256": "c779b2025396e891efe69f0762b529840c4f3167790012c9d42ca212f6afbfc5",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "unrelated-page-error",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "bee16cb69b7766b62a27161fb406c7c1613976e9c12c1ad8242d7d688c30cdd9",
+            "planSha256": "98995b81e075993c0cdad560f9000fc77b48d2c4917a5542d4cb8f52665e7808",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "journal-missing",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "3493915e5851ea5256d43851c918b5c9fed87a040793f49ec1a70e151780993f",
+            "planSha256": "bafc4594f0026e7a2a99e25c9c526a8f8bdd88a4f772c729f1f6fe991a24aee7",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "original-browser-termination",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "9e805d84c1318d34afe8acdaeee5357aa6cc6fb9f449ed3049baf4dae74333eb",
+            "planSha256": "ffa32e172faa69f3577e6e1c80032fabb3d16a16a9fe721826d297905d81980b",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "healthy-after-failures",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "3db4c480b4e90b12ae60604c547c1a9bdf9dec65e4bba1bc22431e1258889d71",
+            "planSha256": "c96c781c4e63ec33b377bd1c700f925bc6009814f261bb2acd832f7b3cf6af40",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "frozen-before-launch",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "47c0580fdcdd325b58d02f5de0ec5c3fe0550ff31041c35f01c572c10d6c345c",
+            "planSha256": "b84024eb52bf11d0dfcdfbf00aa3f9b1ce85ed27228d14d578bef37c27ebb739",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "video-preparation-failure",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "e1fbf83821b0e9329092010bba4e723b65a21d4e9bc8d46f877819de1501971a",
+            "planSha256": "69ed6595625608aa72712de0cec8c11b5efe134e612081e5cf457621d7c00c3f",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "state-incomplete",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "8acf666d7a7cee85a70bc84395186a76855cf350b1e502047383a92f3aaeb178",
+            "planSha256": "b3fdc232ba50b7026985e89f5a9a4c50fa891dd2298d8ae55af863306d4842e4",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "launch-receipt-missing",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "2cb48398a78a5ad1905f88a4331b6d9ae7312b51b25131855d135456b6916c54",
+            "planSha256": "f62153fc4a166584dc9be10f80ffa9afad2e333341ff85eed3aa25feefda8ce5",
+            "hasLaunchReceipt": false
+          }
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "714f8ef8f48025bc4ec0728d023394ac4da5eec7e730dab0bb0526e56457c379",
+        "runnerReportSha256": "205b18da7278d74b1432de10425600a1448310b5e35ccc71a876fcfa1fbc187b"
+      },
+      {
+        "engine": "pw",
+        "suite": "controls-v2",
+        "tests": 12,
+        "attempts": 13,
+        "stats": {
+          "startTime": "2026-10-18T03:47:03.009Z",
+          "duration": 2878.384,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 7,
+          "flaky": 1
+        },
+        "rows": [
+          {
+            "title": "no-browser",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "78ec81df195048ccc2458b37206cf62e423b2197e7165bc4e9605ef3e590ac49",
+            "planSha256": "c9ec71153691ed75e52d22a2d2cef2f31df526a9e63780da23eef5cccc66a595",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "caught-storage-state",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "42efbd081b471905c052ee28a8f7c970d1b424fa83f1ef0eb07036c8943cbd83",
+            "planSha256": "8cc435018f6c8c8810a39b0aeac31b0848668654eee226d1da1457ecc120da58",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-session",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "38303cf9e35c65ba68482e5a56e1166d8ba8784016a53aed956ff992086e5a07",
+            "planSha256": "a08a9c9484817a61f9d4a0ffde96f7adbfeb49455eb1cfbcae7d7a99cb1e72d7",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-local",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "9c1df5099b249e07fbbd53fbd56e88d45f40a9e023e94778518b6942c6094382",
+            "planSha256": "8afd1184a821a2b0fbea78538fe6b0eee75cb82365af1171274d046573b81a8b",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "timeout-after-violation",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "ed550f232d26218492f667a9129559900e237c5dcc45727a035279dc0fc95adf",
+            "planSha256": "74768012193e320e2ac3459e6914653dd170a341cf8b42737dff21c9ae9222df",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "fresh-retry",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "36b89e464093c8a0cf65feac267600d4c6090d93f4b6b955348ca377ade75138",
+            "planSha256": "0998f640a58f1c9bbb76ade2b694785aefcde304324d2e92ffac0949efe082b5",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-second-context",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "fca875e38acc167a7161be19e11ec36bc4eaf8d8f3538882062e43326aeed5a3",
+            "planSha256": "36c0c35c754a9732becd06400267b143bb575089a701c3c67f79a70345ce2d7b",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-screenshot",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "7a34b4aa3c58e3d3126d8f4fdc8bc52a13573b2cd5f09c3a59ec58a2a55d1495",
+            "planSha256": "67f6f789b104c26a9b69d0414a5821c0679e0486f36facaed92d7dbd251b332a",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "presence-only",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "77f3f7255c537846631f325969184b5a972ea492c029f65112b90915aa63c981",
+            "planSha256": "7f9b61e789cdefadad701174c195af5c69402328b84be61503dff2f89c02e726",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "discovery-local-session",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 2,
+            "observedCapabilities": [
+              "storage.localStorage",
+              "storage.sessionStorage"
+            ],
+            "reportSha256": "15185ea79b557648e3c73482b8f286b69778265a9527b0f11ea81158f5d9cada",
+            "planSha256": "eea625231e1c1ddc075657a8ecb5bf01d5d90a4b7cf07842090c99e3a53ee43e",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "caught-paint",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "rejected-capability",
+            "records": 1,
+            "observedCapabilities": [],
+            "reportSha256": "701a57692c44af4df5646546c65f5b5f45aae3d9113472be87e4ec993aafac7c",
+            "planSha256": "6d7e76970239d3f649fa331fd78e78690824cc0c518df903b464a3b0ac251321",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "allowed-local",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "0310e09eb700b82ef92b09c4db5e806214b87f6b56c0eb59fa26a06c15359d39",
+            "planSha256": "422ca3a63ae1fa32731d1244d8b9a381d4ce70c4fc3eaef361a58250709bbb63",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "fresh-retry",
+            "retry": 1,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "87c9dabff4831e7c3edbc08bd5f0f0451c4ad475122e824350d926bd084e54f7",
+            "planSha256": "a1357d65f0049d0da86249929571d28872c3f4ac9ea3c214923173b49a8c2108",
+            "hasLaunchReceipt": true
+          }
+        ],
+        "unobservedWriterPids": 3,
+        "resourceSha256": "d690474b823eb16c56bf06f3f136909ecfc297064e4ea176b6bd53ce6b7287b5",
+        "runnerReportSha256": "5a9c82d7f22d94580ad0978a6b5964fb13c0ef1e1a872c00e5f10165c4ebfb5f"
+      },
+      {
+        "engine": "pw",
+        "suite": "boundaries-v3",
+        "tests": 11,
+        "attempts": 11,
+        "stats": {
+          "startTime": "2026-10-18T03:47:10.402Z",
+          "duration": 2378.0119999999997,
+          "expected": 3,
+          "skipped": 0,
+          "unexpected": 8,
+          "flaky": 0
+        },
+        "rows": [
+          {
+            "title": "frozen-before-launch",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "b3b8a7b4ef8f96b706592f1eca1fb7789b5d478f63902e546d77a644fbefc6f2",
+            "planSha256": "21899170bd813e5e6a6aaf685fb7115d5e4d6e54e7bdaa18b759a5e5fc5d89ab",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "journal-missing",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "92554804b5836e92b3532944fde84c469778e03bdcb0e1b951eb898de0ebb7f7",
+            "planSha256": "f091c2a75321f8eb5ec1e8d8e515a509dcf997cfbdfef61a60f5f54c0e6652e9",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "launch-receipt-missing",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "5bf3693ad620740d46f339bb29869672f506070e7ac3091ac6fd5078599412e6",
+            "planSha256": "5fbe4726e7ac3812bfbd208ff35516a8b1d2ceb6e8946fc407fd8fd425bb4bff",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "preparation-failure",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "c89ffe33a83d531f3011fea3700e5c1a92ca85ceb948f25fa444c257cb2e0918",
+            "planSha256": "670cf1ae58bf6055f205e2f7f70503c87d4b550d8d945fd4bec2338c0bdfb598",
+            "hasLaunchReceipt": false
+          },
+          {
+            "title": "original-browser-termination",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "49462908cd0824a92034c14a581fe8833f96ff30380a66a708ab42dc1db90d72",
+            "planSha256": "06330d7229624715ddbbb7dbce973b0c7b6bc83747f9fd4ae21a8c43a3f89b55",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "healthy-after-failures",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "0ea2bd068463b7ca0c4e393349817e9fed4537b37c6ff6bf0f00c87faf54081f",
+            "planSha256": "bebde4b0a7401657a8037cd8f444872607658065d4ed56211186ebecbd0d7aa2",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "state-incomplete",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "invalid-recording",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "13192418b0f588d3c456e44fc85d4cab0ab330c6f2374316675d9bafdf1b5a44",
+            "planSha256": "ca2233e8f768677b7c07b72fb409353ae6e38f07d821c08dca91677befc245e5",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "unrelated-page-error",
+            "retry": 0,
+            "status": "accepted-recorded-scope",
+            "nativeStatus": "passed-observed-scope",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "b1133dca3b5c4fa4458beca218899bf7c02f162a4506e9d164260002fb243475",
+            "planSha256": "633491627b51527cc94f8bdfa6b6cf3fe506f1a69d027d5109a0e472b743659e",
+            "hasLaunchReceipt": true
+          },
+          {
+            "title": "video-preparation-failure",
+            "retry": 0,
+            "status": "rejected",
+            "nativeStatus": "no-browser-created",
+            "records": 0,
+            "observedCapabilities": [],
+            "reportSha256": "2df21c3d40572cd443dd80cb556e2cfba3a6dcc325bf05c2012858dc76636ed7",
+            "planSha256": "d539903bd5be8d6d966f793bd5738adec63985f43905e71661155aeed50f623a",
+            "hasLaunchReceipt": false
+          }
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "6551601fc1c28a570a19a6dddca8d7cb82d219830a033cca2742157d64cbc598",
+        "runnerReportSha256": "02a85eae1028d09ffb96034b866df907670a980fdc09d56aac454552648e8cfc"
+      }
+    ],
+    "scope": "Negative controls intentionally fail original tests. Per-test journal and renderer receipts establish selected recording scope; sampled process custody is not exhaustive."
+  },
+  "applications": {
+    "status": "passed-original-applications-with-per-test-recording",
+    "sourceEntries": 1118,
+    "rows": [
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 1,
+        "mode": "restricted",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "b587c038c3e3d29bc7dc384749321babb1a65800222321400f0675d4f9746875",
+        "runnerReportSha256": "f76e0f40b12b709c8b863c3243cfa2506d14f7d25276e3216010c62fa2f96e5b",
+        "ownerReportSha256": "ea5d2d721187dd55e2bea138786941bf849c0c8c447f684d06786ec0034867eb",
+        "verificationSha256": "41b2b4deb10ea284329e558837e0f6e2c247085d7b7c1dce30175f962d3fbdd3",
+        "attemptReportsSha256": "2e987f7c36d62c75b396204ed56d134f75e929dae9f7a9b20fe895c0d5662e15"
+      },
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 1,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 78,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "280a5dfb470683f29dbcb6270169611b8cac0144c17fb2b20a490faf483be82c",
+        "runnerReportSha256": "386770060594b7029f0443cce5f3619dc1b167da4473066d5203a1f5ead1693f",
+        "ownerReportSha256": "b52ebce491f9d43bfd74191178f3ac114aa9df52fca3f14c8e9c795d374137f7",
+        "verificationSha256": "4b0d5169177522ded90c5a8b9a3d0c3a0d071414fb6e8f1dfacb72fb059b0397",
+        "attemptReportsSha256": "b039002a0f835a4f147fe8bef38209f61da5eb794abd5fc99e61a8f60fe4da3d"
+      },
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "restricted",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "3cfca17e613cea866e1f1c9aca10f6ad3bcd2e699ac2d1c08e7a3c7c711533dc",
+        "runnerReportSha256": "1b758d4a1f28f245ecbbb20c7a27eefd41baf9798eb8bca28e76a860c158ca50",
+        "ownerReportSha256": "3a07b7845da4e3aabe40a93ad3ab0b6770d15593a495f32454c25932223cfbba",
+        "verificationSha256": "c57c6e30ab59bdd21baaf07d125f536e1f0b79786273a3a265167de7d0772123",
+        "attemptReportsSha256": "4257e69fe1cacd33278774f568e0be883e974ecfb9db53a5647a05d812c1d50a"
+      },
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 80,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "3434c3eb4df7a7d7894e08f1d544bf37665b73efb85fb522e9faaa3484c322be",
+        "runnerReportSha256": "33f9f6bdd5fd8c879b98d51120b06692f0d40826e210f4b354d5748338f46945",
+        "ownerReportSha256": "1f823c199937140fc4b29c5361ce762f3f4914d7c672a033d2df9918572cab9a",
+        "verificationSha256": "810732311070c6e680141a3491ae6913e07aee5bf584c76590f0327b9498f793",
+        "attemptReportsSha256": "d293048512b43212f82078f5e1a752d1ab8b744894a158cc75ecd7e64bdafaa0"
+      },
+      {
+        "engine": "flashwright",
+        "application": "svgomg",
+        "workers": 1,
+        "mode": "restricted",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "9fb2cef795cf87ebf8b7221ed73d30a4581bdbd347c0c0b1c02654746bc7a6b8",
+        "runnerReportSha256": "2cca5849f80a41d6cee317adaef81fd025d954f7ce1e87d4175fe5d97a6c7203",
+        "ownerReportSha256": "981041771d98d94fd71b415847ef8ea227d3bd7931f715aada4a4fd84e586fdc",
+        "verificationSha256": "6850a732ea4e9deb86c9dd5be566342450be8dac0c656cb687eeb850769845de",
+        "attemptReportsSha256": "993ccb7e5742af90bf36d120e9cae35c8fe4272aa1f99effc5f23ac48d0e663f"
+      },
+      {
+        "engine": "flashwright",
+        "application": "svgomg",
+        "workers": 1,
+        "mode": "discovery",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "dacf7a0b77790718d96854831473a68032b40b2677017397f0557b5d0c9e0577",
+        "runnerReportSha256": "c5c99265472c851c0eb2d9566401998a6399f707892164577350c029bfaed91e",
+        "ownerReportSha256": "c72e5b3d4d24ce60aaa42ff0cadf619061967cfbee206fb7dc7a686da526dfb0",
+        "verificationSha256": "d77fb209667b643756b8454112ae7beeddd776b7fae60e35caebf2fc021d8831",
+        "attemptReportsSha256": "9d4ed843c135014b88a416c07a7ffc8a667333a33fdc15c081305d7a825dda48"
+      },
+      {
+        "engine": "flashwright",
+        "application": "svgomg",
+        "workers": 4,
+        "mode": "restricted",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "62d9d9d8b30525ca4717045316fea3f8a453f26737823e276898ce39d9fd7276",
+        "runnerReportSha256": "2450fd59208fff0322b189e02f418aadac513705536aa4bf3d15505da9fc1d01",
+        "ownerReportSha256": "bee85b7b6d037afd73416d4f9ee72941c64c854a5b36fd1acdf56be0849d9145",
+        "verificationSha256": "7f5c3f4bf97a4881b0ae0d83d76e5f8e910e8eeb3024e5b4c6fab562c3cfc03e",
+        "attemptReportsSha256": "4f55e6d2ce8433401ea9d9a0a7f41fb5194f257110ada73d0f8fbdeed2b9802f"
+      },
+      {
+        "engine": "flashwright",
+        "application": "svgomg",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "6a8d2358bdddcd076f0e71b99b88097f33feb5f6edc31def3d4fa5aedab6450a",
+        "runnerReportSha256": "5d2aebfb841c44a6a79ba9d76a13874209374feb838343d671290beb5b826f9f",
+        "ownerReportSha256": "d5541844eebaf5e70a031b5a957c7fa698ecb840aa7d1f30315e21c63ad47bbe",
+        "verificationSha256": "8ffe5d540303f6626a015f1012fb98c897b28ad4ea4e20c42517ba3b532c211b",
+        "attemptReportsSha256": "690b4befc13c0167d2b1c152dad612a49204d37451b05cc34129aa01a36ba9de"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 1,
+        "mode": "restricted",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "4a462e41edb39304ccfdcebbe718914954763bf95318254f89233fe5c7668560",
+        "runnerReportSha256": "e51770fe8ef5fb5e0908e9b302a88eec6c6daa4947f933c28945e0894c3429d5",
+        "ownerReportSha256": "88b482788adf5867296d7e1b53ad21296fc1440e743e6bad9cbd5adc6fbea544",
+        "verificationSha256": "30bc88736fff4e99547cada368486b1c61654cef0e642fca22f5aee9a79af5d6",
+        "attemptReportsSha256": "cbad3de9cdc18520016ebee654a25c608128c54047199a92778368f726012c7a"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 1,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 79,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "f3a9e39f161bb3c564a20fb9058d7426cbaccc04d2f174a80bc68ff44dde58d8",
+        "runnerReportSha256": "683757f32d82bb55e1ff0641a21e1eb4a8c4a781ed8f0c465b2e896e0ed21dd8",
+        "ownerReportSha256": "aa60957d44b36d2baaef3d75e5d0a122e4d875c055235e9943078702c25db9a8",
+        "verificationSha256": "d4bbe6b53867b6690b34ccce88f9384f9426bc60a33a83759ab6125760421e38",
+        "attemptReportsSha256": "a926f2ab16e25fc89d1da0071d30c4028e79c6e60eb5b6aee9d317c9618ee98d"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "restricted",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "a6ffa3b7c1fdb291f097c085c1d0c00f70b0c1a9555fe60712e0dc7b904716bd",
+        "runnerReportSha256": "21debf40601d3115d79282c246788aac1cf01fae7574d4142a77fff70142abc8",
+        "ownerReportSha256": "a9dde744a03b10bb14976c82e0e7353e6d50f88a68f8a10a2a5dd229db568d22",
+        "verificationSha256": "5a811db10298ee1ffeb5389cb76cd493209131efdfd320b693f14f409714c78c",
+        "attemptReportsSha256": "d3a0cabc15426c155c24bebddfbbc61a71711f82f3ce56bad4d56a2c98c81fa5"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 80,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "35cec79356a5e33dff86a5e3f9c21b47416910b174221a75595b2b559e32a2c4",
+        "runnerReportSha256": "7f39e1f74fb4aab01868d953ff05ffad1c7086021a9e83b8309d4584cc8183db",
+        "ownerReportSha256": "df90f3f882a168189c3596f68645751a6163e361b9a4e51f930fd701a475c79c",
+        "verificationSha256": "81bd1382944ba333aff0d8cd5578f49a60229ab587c767e022d1ba40f4ac2d4d",
+        "attemptReportsSha256": "cef79a45fbfbd51c6222e29ffb84801af838e568be5720619da09b5c5bee4e22"
+      },
+      {
+        "engine": "playwright",
+        "application": "svgomg",
+        "workers": 1,
+        "mode": "restricted",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "77995d2c42e1bdabb5bc66df9f3a0835f303220739c5f06eb2ce6e4f22fe352e",
+        "runnerReportSha256": "919050e90fe8b8d3556f662fb1e349b5bc21b82e9eb9e88f015099b5df7f43fb",
+        "ownerReportSha256": "678bb88016e2fda0ee09c5a6001f3de4de882e84ed4573ae2e756fdc1aed4853",
+        "verificationSha256": "6a6418acb2556b3a1b584bc619fca28fa9c6f36fc2e7a5001c23b924847643f1",
+        "attemptReportsSha256": "d43203e260b108fd3564024a1049c05d2b924ea7843ed99f523e10b0ec6b7f89"
+      },
+      {
+        "engine": "playwright",
+        "application": "svgomg",
+        "workers": 1,
+        "mode": "discovery",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "6c2e08f120a212ef14320580adb00f500d4166895674c33c22f32794ac71f465",
+        "runnerReportSha256": "63fc41b3e3b67e70f46da408a4a1d8059b7d26ee59de2ccb423735adb23bc3dd",
+        "ownerReportSha256": "f54efdfc233131a34049162bfa16c59f0a7fb8484af91a14206e8ae1771e4a6b",
+        "verificationSha256": "b996b357204a6a0ad4ef70c67fe404b76f3a8ea8f582a8b7c3bf54d93f2424a4",
+        "attemptReportsSha256": "86fc4b960ee6aada54bfbf0fdaa3f7f9445fafe61bdbb01098418b1379c5a4e4"
+      },
+      {
+        "engine": "playwright",
+        "application": "svgomg",
+        "workers": 4,
+        "mode": "restricted",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "e838d6876b124f4011ee346892f61e4bafa3c4839e366cc91e2225a4a7156b9a",
+        "runnerReportSha256": "d4403041681b5077578af12b959991455c8e875bc0248495c9e28a374caa4fb6",
+        "ownerReportSha256": "7eca683ec9fd0c94b48814e4a5335b6c99ac55df36e5a8e5b8cda758518876a1",
+        "verificationSha256": "78b146628388b5406fd6a28e3f2c9c8caddbc4505afa8a0f7c8662646f995ea9",
+        "attemptReportsSha256": "94716c682419d789a0d5398c865390390d889363abb42aaf1267c3d14d33da2d"
+      },
+      {
+        "engine": "playwright",
+        "application": "svgomg",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 6,
+        "perTestJournals": 6,
+        "records": 0,
+        "observedCapabilities": [],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "1e77689b9fb0d1d192f99fa53e368d4858d53e16b3d713b57b0dcf490020e31c",
+        "runnerReportSha256": "5aa8b6828808b08431b9c61b1281e087f98faf05d3daf53247cc32c8f4b9c7cd",
+        "ownerReportSha256": "66c0d04c17540a7b889123b82e9c0db3817c2bc2a0c2d4731ee55de1e45d504c",
+        "verificationSha256": "370679e9cc6cdf02767095b93ddcdf462d9c652c3464c4e8a030a19e5a5e4df1",
+        "attemptReportsSha256": "36b766cb85a962df126fdac97c709b855aab462b55f44799060f463a7bb10250"
+      }
+    ],
+    "tests": 240,
+    "perTestJournals": 240,
+    "runtimeFiles": 11,
+    "unobservedWriterPids": 0,
+    "scope": "Original per-test and retry identities, original browser wait, complete native counters and observed group drain verified. The 100ms process sampler is not exhaustive custody or final resource admission. No performance inference."
+  },
+  "fourWorkerRepetitions": {
+    "status": "passed-original-applications-with-per-test-recording",
+    "sourceEntries": 1118,
+    "rows": [
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 80,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "db59eb7c3eb1cc3c1692654746b5dd645956b90acad9d79b82acec2efffd8990",
+        "runnerReportSha256": "6e9eb7785e871b3d7797857a75846368c69bfbc45d1819b034fd41378f6e7eb6",
+        "ownerReportSha256": "5b51ca0be20c5f9872a35998cf9c2a79929556952ed311890637f7fa13edc62f",
+        "verificationSha256": "9c16841ee4e74db3e35d63e60506e1bec98d03644430f75ad7ac7aa62bcece5f",
+        "attemptReportsSha256": "d796e586c9af2de73fa50cd3d37ddbe19acb003e5e0a3f4de974b2c7a6dda81b"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 79,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "17bc77803fa75f673b26950780227138913b70dfa7d39c574849c9abebd9de1a",
+        "runnerReportSha256": "2db196b5df633b45a0bcd16d67673424f2321c342c7ccc7385d9bd233113e18a",
+        "ownerReportSha256": "d47ba8cf79eee4b0aca50f59f3b5b9b6f1214caf417a5a8b17a8487b1c617fce",
+        "verificationSha256": "ae3d99e7dc21a10723acbbe42f6966080ffb615be4f77767b48e6fd58cff9a60",
+        "attemptReportsSha256": "030166bffbcc2c70feb33edf3ef8453c3f8e2e648833dcec87d6050bd91ee78e"
+      },
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 81,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "5922cceb1e90cab9141a9e82fdf5409cf1d75c5f9f19dbcb370bc018b8023eb3",
+        "runnerReportSha256": "7a79a098b5d874e078cb64e41ea29f427dd699a8ebd8af5b1a9a76d8a334295d",
+        "ownerReportSha256": "44e62f2ef5309a9325917859dcf3047166a3be06441b6a37834ba0224ba8eb34",
+        "verificationSha256": "0f703aabd242e9633b1c544aa2e107c5d9b9986a8976f4cdd85996489ee1a900",
+        "attemptReportsSha256": "8bdd9bc9da3a894075856c01d6e6972559cf412dc1bcaf94fbb400232ed3fb26"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 81,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "a2ba9bf5b9a31f31cfc7a25d69e8ba3de7773fdbaabd1fa2f44faa130db837f0",
+        "runnerReportSha256": "c1bfafd61552977e8e09df6735118b2f69d88ab58958b748ccea47215867e812",
+        "ownerReportSha256": "53193e34eb75ca1324cd7b6d06fcbbd84c1cc83c7651106d758c7d1c186e69d0",
+        "verificationSha256": "b2c34ef6413d301458fc9711796adce5a60bd20032bec66f4dfb78d7d181ff80",
+        "attemptReportsSha256": "4cd9526398e08c222ade353dc4c11502f666c613df8fa205b4c240b5da2c5814"
+      },
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 80,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "0ab9eb592355aed8455e90f941a3e20b9f8615ff94ecb18b4eab924e54bb97cd",
+        "runnerReportSha256": "52fb62a11fd67e684432679d002b85439a4e6cf91d928df5f2c9089dd270a485",
+        "ownerReportSha256": "59f667ea584560d27135f025d77c67200d229989dbe268283786bb2979f57f25",
+        "verificationSha256": "1e8757d87dacd4276079919c9793b5d9f5f1fd0d5907efc9f4b358fa64526f4c",
+        "attemptReportsSha256": "002912917a71828bd49c1a0ecf6f2a09ca8c30cc8e9e706af8602eef22bef5a2"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 81,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "da30be036c9aa932eda010d6e4fe3e1f931c6b9874d35bc0dbc0a4611fa87106",
+        "runnerReportSha256": "3c33ff4a54d6ee7cfe6af2b5a10586b170efea1cfc53816bc917c7dfa120459c",
+        "ownerReportSha256": "7492b58d648f7ee94ece9f608ec2619d0eb47358483f1629329aaec5355b17a0",
+        "verificationSha256": "c8d8b80cfe83387de61aa521da5e7f23f6f0ed22ffc35cc46305bcceaa9f6036",
+        "attemptReportsSha256": "e2f79725d12119900a43a5e20f9e81bf5145179e361d4fdbf715591aeeb2d9cf"
+      },
+      {
+        "engine": "flashwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 80,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "6b8ab83c4bba1c150f069f953127616671bc5d6700e23de482e81ea4d9bf0b41",
+        "runnerReportSha256": "bda97ac50f763753ae2e0697a3db3aa111fa61873fb9e2745462b3302a0c9fd8",
+        "ownerReportSha256": "0430869ba7706123ba0516e2a9253ac640f555faca2da0a5340c5abf06b34574",
+        "verificationSha256": "c6a8b8534cb0536e30e06de42429def1676e5868286c2ee0ac83a3404c411f6d",
+        "attemptReportsSha256": "401e450a0b1f95ce61898eb79cfa3f725c06bd6a170bcedebf8848630478c026"
+      },
+      {
+        "engine": "playwright",
+        "application": "todomvc",
+        "workers": 4,
+        "mode": "discovery",
+        "tests": 24,
+        "perTestJournals": 24,
+        "records": 80,
+        "observedCapabilities": [
+          "storage.localStorage"
+        ],
+        "unobservedWriterPids": 0,
+        "resourceSha256": "271c9cda6c55f1b518b5ab10a626584b3aa9ca669d0587c181ab178154b435aa",
+        "runnerReportSha256": "c2d0a07901696432e7e3798ae179385d6c75e0c6e4233deb974c09c3520371db",
+        "ownerReportSha256": "5a8fdc088c2c8b16ddcb1a423d9507a32b70723d85679fd5b1e8bfae7d1f1bdf",
+        "verificationSha256": "3db753483949fe23bef4ee53f2449d56f0315b75d72d3e841bc5d2f5d4aad01a",
+        "attemptReportsSha256": "a42316998cd1f9bc4aa125da73c190dfa6a4449098f768f8fc459271ce2159fa"
+      }
+    ],
+    "tests": 192,
+    "perTestJournals": 192,
+    "runtimeFiles": 11,
+    "unobservedWriterPids": 0,
+    "scope": "Original per-test and retry identities, original browser wait, complete native counters and observed group drain verified. The 100ms process sampler is not exhaustive custody or final resource admission. No performance inference."
+  },
+  "totals": {
+    "originalApplicationRuns": 24,
+    "originalApplicationTests": 432,
+    "originalPerTestJournals": 432,
+    "retirementControls": 16,
+    "unconfiguredJournalControls": 2,
+    "caughtDependencyCases": 36,
+    "legacyRunnerCases": 46,
+    "legacyRunnerAttempts": 48,
+    "parserNegatives": 9,
+    "unobservedWriterPids": 17
+  },
+  "builds": {
+    "incremental": [
+      {
+        "seconds": 20.696362596001563,
+        "resourcesSha256": "ed23bdcc18b0bd2f6279a39611e60db2170b46329493cebe5b8f6b34533645e7"
+      },
+      {
+        "seconds": 21.886333713999193,
+        "resourcesSha256": "a30bc8aa535166d0ec5a33e9605683a3f953d42fbb3cc600f83b887ce48773f6"
+      }
+    ],
+    "scope": "Two local incremental builds including relinking; not a clean-build benchmark."
+  },
+  "runtimeFiles": {
+    "headless_shell": {
+      "sha256": "5c0b01235df9c3b9a0409aaae0a24dc61ceadecd71598dcc4676997905260a3d",
+      "bytes": 324400624
+    },
+    "icudtl.dat": {
+      "sha256": "c5da2fc389d1bb0ecb13fe22a8e069b7abc491f8aa5d16eb65d4ff32c85a46b6",
+      "bytes": 10876464
+    },
+    "v8_context_snapshot.bin": {
+      "sha256": "2e0fc6c5713fb7e940508562cb9904c1781d2b415ee96e139badd325699e7ecd",
+      "bytes": 721176
+    },
+    "headless_lib_data.pak": {
+      "sha256": "8873709b04abb73bc0f491c8730b4446ee076f2e9bdedee5de203f1bf80ac3ad",
+      "bytes": 596650
+    },
+    "headless_lib_strings.pak": {
+      "sha256": "b795fb041aa29ef388ea81c04f0587672e93165521eae3cc1afc28dcf9ff3f98",
+      "bytes": 5086177
+    },
+    "headless_command_resources.pak": {
+      "sha256": "66cc2fdded0b16a0223f46aeef3b83ab9e0c5d940d3bd4a2c8a29385f844503b",
+      "bytes": 3033
+    },
+    "libEGL.so": {
+      "sha256": "cc2e0679e7fa2b0526b6da73886166f2f75afbd50096ab35586e3c9cf8c6f228",
+      "bytes": 405832
+    },
+    "libGLESv2.so": {
+      "sha256": "a60f15cd3beb6a0fb49763f00e857c0ece6ced592998a40c640b0e90f323e9cd",
+      "bytes": 19936656
+    },
+    "libvk_swiftshader.so": {
+      "sha256": "b07dc1c0a184df4e62fa47fab96468e051302f6052134302fc0f848029db4755",
+      "bytes": 6462056
+    },
+    "vk_swiftshader_icd.json": {
+      "sha256": "c9eef28b6b984fec220ef0abfecc40b502d46946706e47bfe97707027cb818bd",
+      "bytes": 107
+    },
+    "libvulkan.so.1": {
+      "sha256": "f48477207a52732c7826a301b4baa3c7b98f25f8c1fbb3f7d3114b1d862e75d4",
+      "bytes": 921648
+    }
+  },
+  "nativeSourceBindings": {
+    "third_party/blink/public/common/storage_key/flashwright_capability_retirement.h": "166e9d9440383fa51470165f312f9694523fd33b58e44b64de57b4ce22902152",
+    "third_party/blink/public/common/storage_key/flashwright_capability_ledger.h": "3a6d2bdf259b055eabcc49146a68c331522f06580957dd960db1c1a16eac66d2",
+    "content/browser/child_process_launcher_helper_linux.cc": "49017793ca77b78f1ae229b6b568d00efcbe8cb9561cf28497d39aafecf26c88",
+    "content/child/child_thread_impl.cc": "d8b7e6173c95b585db36a3c309526b38d4e08b41efe6376ca7a47bd485671ee6",
+    "content/renderer/render_thread_impl.cc": "f1e9a9c7acd858f2e38d5b99dbc55fa3ab899940067a917affafe0a18afc9d38",
+    "third_party/blink/renderer/core/inspector/flashwright_capability_record.h": "c101958035e0425e49a378cdf466aa9096fc435d0a1b814e469427e917ec2a1e",
+    "third_party/blink/renderer/core/timing/performance_observer.cc": "d4a00ba15fc17c494337c2cddefb4c33a08908790bf40405bb0ad1d7721488a7",
+    "third_party/blink/renderer/core/view_transition/view_transition_supplement.cc": "daaa436448c0ee8104ac1544aa21f6847335b7cfffebea2522d0f0335f729e24",
+    "content/browser/renderer_host/render_process_host_impl.cc": "a72d0046d34815e4721d1b250717bd121384f699008e3a77d8227a22894b1f12"
+  },
+  "experimentBindings": {
+    "patch-native.py": "f0886e7a3875d08cc85ff4d76ec747ba3c5f2caf69858aa4ad5502464346c6f0",
+    "native.patch": "afd56399d655cfb0577b90ee3209e27e4f0e087fdd4316189d9508c48b263bc7",
+    "prepare.py": "28ac62f19915bf427247ad604154b6f427bf52657d43fb02461bfbc131bfeb42",
+    "contracts.mjs": "386a3b74538da7df186a7b8b2b4b88334e7093e67394e374b2547052a7694d81",
+    "realm-guards.mjs": "891af2a91a55c471926f7bd69b37320754441c22128b7d9a968307a36c275fa3",
+    "attempt-manager.mjs": "6e305e7af38aed3db2db570327ff03212c303e2ac9069f79f53f9e97e94ea45c",
+    "runner-fw.mjs": "1db5fcf262cd11939ea116b69d722a17e1c15be723896534f149ec74deeffceb",
+    "runner-pw.mjs": "d7532f93c6e161adee8fb6232a4306c7e5e835c9de5787a72751fcbbd5c578da",
+    "seal-attempt.py": "477332d737fe7626c82776ae6a27a646d2acfafa72b1eb063683df009869b798",
+    "ledger.py": "dd852a0ad02546fd9863e8cbe2b98b62d315d7332a55de99ccc19b8ff4b730fc",
+    "browser-supervisor.py": "0324c26fb03509a2cb16ecf7f4e3153ddfa188b9e974ed8d6469dc86513af691",
+    "recording-checks.py": "68652be6621f6e2e79fb6c7da6615069772a061711e9a5fe39fd022ec6b6cb3c",
+    "prepare-applications-v2.mjs": "0e9b16c3b3a117d4d374baa777a491970ebe43b7802faef9e77ad3581af086de",
+    "run-applications-v2.py": "9ca2c2941bcb9da1260d9a0fe45349d7ab5e598c5bb69c6f97426ba8d9a8d55e",
+    "run-controls.py": "bf1d77dea89121859e5917d38801bf9b1fa7d06f768ef16083a5fc79c4c0c6ed",
+    "run-legacy.py": "8fd72f71d42ba8779a6be536409952a427fec72cb006629c4ef72cec5a4800c8",
+    "verify-legacy.py": "dabc09a008528c182e44242a7d810d943f85ddd48411561bc1b9c6cd2e938f5f",
+    "control-retirement.mjs": "9b1d43ba66f05e0a247822913b94c285f21614714746b29f2c9395cfe8239da6",
+    "run-retirement.py": "7da80d3694a12d366d06d8a08e5604d2e9e8872955ae78cde2ea16095e90fab1",
+    "patch-self-exit.py": "dd8574dd08ef893152e115392948712ab21e65a68d0da591aa70b3ba656f0af6",
+    "native-v1.patch": "f1c6f26e3e4ec0f02e16dd46aa0e6bdc9a70e2ec6528afd5b76e54b338194109",
+    "attempt-manager-v1.mjs": "fe369fb3c3bb9441ca6674c759a57a9437981d2c030a26afd7f98db7ce7ef3a3",
+    "run-retirement-v2.py": "69a69b553d4b528e35fda638ad22a4fb30db0c540f60b65f190792277ff5df39",
+    "control-retirement-v3.mjs": "04d52a48e2d456ebfc566f4acd304d7fead582f4c171eff5dfc0682fedad282f",
+    "run-retirement-v3.py": "312b58bc9434ab3d337e0f59af59a7359ad92acbc7fc3bf319c3bbf6bec71571",
+    "complete-owner.mjs": "6a37f623990f565cab974122fa1c3a3e49ae7aa4fa7813a86422dfb0f78e3574",
+    "verify-suite.mjs": "711695c7efea29df4c82de151217299cb919c42fe377f835f9391631a46a374b",
+    "application-outcomes-with-contract.mjs": "164962fd885aee8ea644dc848733362f8b7ef773ed3e4e20e657cc92a37e36ae",
+    "verify-retirement.py": "ff7174bde9facbf2db4ffd1a0d0db9e5858a42e117a87347168b2de6e3fbea80",
+    "prepare-repeat.mjs": "56dadcf27b48201c0c5f973306d9b16bfab6bd1ba3918df623a69af9482439cb",
+    "run-repeat.py": "f03e4c0365095639e562b14602bd274fd7fb6c70c2aefbdd306eb619f14f7500",
+    "verify-retirement-initial.py": "bba0bc1f8f50363299464cecd0066629fe870edf8eaadacdf5def5f321f4b0e3",
+    "verify-controls.py": "fdb53fe2cd9b12f8e6dbd218826c911bdae4a61ae80899418301be4856266cde",
+    "verify-applications.py": "35e6ffe5e46e20ba7b3e7df9b231096b3f6ddc5731abfeb4031f8630aae8ed83",
+    "verify-repeat.py": "ba768d5c9759e85308391388d990a22f2301505a66a0851befa1317da41ceed3",
+    "control-stalled.mjs": "4fb450e3ea5fcc991f7c83d80d4cdb7341bb9722f25466dbc442edf445f3c0fe",
+    "run-stalled.py": "e50a4aa78bbcebd839593b7dec6a6425ca3dc648e8b863629ef907329ca93a63",
+    "verify-stalled.py": "b58d546b7f9c16f3f74734659c903e1b0f7703d4b88a5b6941aae0e558f24e04",
+    "export.py": "d080a9692b8271f8fdf7e4653e0188cff22336e485c85e6de85e1260f076c988",
+    "control-default.mjs": "79dddfc0ca30fec7a5f121d412f8870595c0f0663cf69b81b54800cd99bac032",
+    "run-default.py": "2e9154149d15c565f39cb1a1e221d64db22443cdee00d0aeaa81764a18c54279"
+  },
+  "priorFailureEvidence": "compatibility/evidence/caught-paint-dependency-checkpoint-2026-10-18.json",
+  "limitations": [
+    "The first guard failed the deterministic control because renderer self-exit bypassed browser-owned termination. That candidate, executable and original failed run are retained separately.",
+    "One forced-kill control initially expected only an unfinished-record error. The existing abnormal-renderer protection instead terminated the browser, also invalidating the recording. The corrected control permits either verified failure cause and does not admit a killed writer.",
+    "Missing or damaged journals and original failed termination remain invalid. The shared completion counters and original browser wait were not relaxed; forced-kill and stalled-writer controls remain rejected.",
+    "These guards cover the selected ordinary multiprocess Linux headless-shell paths. Sanitizer builds, single-process mode, alternate keep-child-after-IPC-reset behavior, arbitrary signal interruption, other process exit paths and other platforms are not admitted.",
+    "The append-lock fault controls verify bounded observed failure without watchdog cleanup. They do not establish universal native shutdown latency or lock fairness under every workload.",
+    "Original process waits, completed counters and observed group drain are verified. The 100ms sampler misses some control writers. Direct live group/mapping checks select held writers, but standalone stat/map receipts were not saved. Exhaustive custody and final resource admission remain open.",
+    "Fresh browser per attempt and no-sandbox file recording are private diagnostic policies. No previous paint or preparation timing applies automatically to this executable.",
+    "Remaining painting/capture dependencies, other storage, network exclusions, complete discovery, public runner integration and production IPC remain unfinished. Representative majority-scenario 2x performance, complete competitor admission and release remain unproven."
+  ]
+}
