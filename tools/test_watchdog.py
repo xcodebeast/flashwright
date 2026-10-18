@@ -15,7 +15,63 @@ import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
 from tools.watchdog import (RootProcessCpuAccounting, cleanup_owned_processes, main,
-                           parse_linux_process_stat, process_snapshot, record_cpu_observation)
+                           parse_linux_process_stat, process_snapshot, publish_report, record_cpu_observation)
+
+
+class ReportPublicationTests(unittest.TestCase):
+    def test_reader_never_observes_a_partially_serialized_report(self):
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / 'report.json'
+            partial = threading.Event()
+            resume = threading.Event()
+            failures = []
+            report = {'samples': list(range(1000)), 'exitCode': 0}
+            original_dump = json.dump
+
+            def blocked_dump(value, handle, **kwargs):
+                handle.write(' ')
+                handle.flush()
+                partial.set()
+                if not resume.wait(5):
+                    raise TimeoutError('Reader did not release writer')
+                original_dump(value, handle, **kwargs)
+
+            def writer():
+                try:
+                    publish_report(destination, report)
+                except BaseException as error:
+                    failures.append(error)
+
+            with patch('tools.watchdog.json.dump', side_effect=blocked_dump):
+                thread = threading.Thread(target=writer)
+                thread.start()
+                try:
+                    self.assertTrue(partial.wait(5))
+                    self.assertFalse(destination.exists())
+                finally:
+                    resume.set()
+                    thread.join(5)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(failures, [])
+            self.assertEqual(json.loads(destination.read_text()), report)
+            self.assertEqual(list(Path(directory).iterdir()), [destination])
+
+    def test_a_competing_report_is_preserved(self):
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / 'report.json'
+            publish_report(destination, {'exitCode': 17})
+            original = destination.read_bytes()
+            with self.assertRaises(FileExistsError):
+                publish_report(destination, {'exitCode': 0})
+            self.assertEqual(destination.read_bytes(), original)
+            self.assertEqual(list(Path(directory).iterdir()), [destination])
+
+    def test_serialization_failure_publishes_nothing_and_removes_partial_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / 'report.json'
+            with self.assertRaises(TypeError):
+                publish_report(destination, {'samples': [0, object()]})
+            self.assertEqual(list(Path(directory).iterdir()), [])
 
 
 @unittest.skipUnless(sys.platform == 'linux', 'Linux native process counters')
