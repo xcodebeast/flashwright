@@ -307,7 +307,34 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
     return candidates.completeMatches.slice(index, index + 1);
   }
 
-  async function observeAssertion({ options, selector, prefix }) {
+  function observeViewport(element, options, descriptor) {
+    return new Promise((resolve, reject) => {
+      let observer;
+      let frame;
+      let settled = false;
+      const cleanup = () => {
+        if (settled) return false;
+        settled = true;
+        observer?.disconnect();
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        descriptor.cancelObservation = undefined;
+        return true;
+      };
+      descriptor.cancelObservation = () => { if (cleanup()) resolve({ status: 'cancelled' }); };
+      try {
+        observer = new IntersectionObserver(entries => {
+          const ratio = entries[0].intersectionRatio;
+          if (!cleanup()) return;
+          resolve({ received: `viewport ratio ${ratio}`, matches: ratio > 0 && ratio > (options.expectedNumber ?? 0) - 1e-9 });
+        });
+        observer.observe(element);
+        frame = requestAnimationFrame(() => { frame = undefined; });
+      } catch (error) { cleanup(); reject(error); }
+    });
+  }
+
+  async function observeAssertion(descriptor) {
+    const { options, selector, prefix } = descriptor;
     const expression = options.expression;
     let elements = [];
     let element;
@@ -319,7 +346,12 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
       } else if (multiple) elements = injected.querySelectorAll(selector, document);
       else element = injected.querySelector(selector, document, true);
     }
-    const result = await injected._expectCore(element, options, elements);
+    // The pinned intersection rule needs an asynchronous observer. Its lifetime
+    // belongs to this condition, including cancellation before the first callback.
+    const result = expression === 'to.be.in.viewport' && element
+      ? await observeViewport(element, options, descriptor)
+      : await injected._expectCore(element, options, elements);
+    if (result.status === 'cancelled') return result;
     const fullAriaSnapshot = expression === 'to.match.aria' && (options.ariaSnapshotCapture === 'always' ||
       (options.ariaSnapshotCapture === 'mismatch' && !result.matches));
     if (fullAriaSnapshot && result.received &&
@@ -363,11 +395,13 @@ function createLocatorRuntime(injected, codec, { conditionInstrumentation = fals
   async function waitForAssertion(units, deadline, expression, isNot, token) {
     if (expired(deadline)) return { status: 'expired', observation: null };
     const descriptor = prepareAssertion(units, expression, isNot, selectorBatchCache);
-    const result = await conditions.wait({
+    let result;
+    try { result = await conditions.wait({
       token, isNot, timeoutMilliseconds: deadline === null ? null : Math.max(0, deadline - Date.now()),
       canShareSelectorQueries: readOnlyAssertions.has(expression) && isReadOnlySelector(descriptor.selector),
       check: () => safely(() => observeAssertion(descriptor)),
-    });
+      cleanup: expression === 'to.be.in.viewport' ? () => descriptor.cancelObservation?.() : undefined,
+    }); } finally { descriptor.cancelObservation?.(); }
     if (conditionInstrumentation && result.observation) result.observation.conditionMetrics = inspectAssertionConditions();
     return result;
   }

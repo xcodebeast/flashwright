@@ -15,8 +15,14 @@
     "https://github.com/microsoft/playwright/blob/v1.60.0/packages/injected/src/injectedScript.ts"
   ],
   "retainedExtract": "compatibility/upstream/common-matchers.source.txt",
-  "extractSha256": "8dd739bb0aa049ca3aae558eec75df8d8d286edcc53a69aa5b007740a85a094f",
+  "extractSha256": "2603a9d79913bf4b5b9fe668d5544d3fe6a6f7060bda01459ea58e05e74919ae",
   "snippets": {
+    "toBeInViewport": {
+      "path": "node_modules/playwright/lib/matchers/expect.js",
+      "firstLine": 12363,
+      "lastLine": 12367,
+      "sha256": "d973011bdab9a65d9ba9d10a33674dc92a43bd0463e096208f3f4058fff4c8ef"
+    },
     "toHaveAccessibleDescription": {
       "path": "node_modules/playwright/lib/matchers/expect.js",
       "firstLine": 12381,
@@ -71,6 +77,18 @@
       "lastLine": 12500,
       "sha256": "de19034fa64c6c2804042a37d4465c21bde959118fa7f629693657aff45f7e12"
     },
+    "toBeOK": {
+      "path": "node_modules/playwright/lib/matchers/expect.js",
+      "firstLine": 12519,
+      "lastLine": 12540,
+      "sha256": "3d339dec6c035eb16abf1ac0e5debd893cae28678d6894dcec0a4ab3e0f2cbcf"
+    },
+    "viewportRatio": {
+      "path": "packages/resident-runtime/playwright-injected.js",
+      "firstLine": 6895,
+      "lastLine": 6905,
+      "sha256": "a4cf0910df1fcfcb5851768d41b919b526310ba7a165154bce2ad370160e07a6"
+    },
     "_ariaSnapshotForExpect": {
       "path": "packages/resident-runtime/playwright-injected.js",
       "firstLine": 7679,
@@ -103,24 +121,31 @@
     }
   },
   "implementation": {
-    "packages/flashwright-runner/src/matchers.ts": "49df225963dd9cd83832e79a19956bedcd493cc61a8fa654f7a787bca33195b6",
-    "packages/flashwright-runner/src/index.ts": "391c3d81e3216b270bc6843de46017886ff9297ece4c55d7310f780b28f6642c",
+    "packages/flashwright-runner/src/response-matcher.ts": "592511245d7f5f37a44d66c2c07c59880b2f4c70dd9956ef7171d225f606305d",
+    "packages/flashwright-core/src/runner-integration.ts": "06157fbeee5cc77705b67889516fea37a01ee0a191e9f645297df086f2da703c",
+    "compatibility/m2/viewport-response-matchers.mjs": "affdda5dd7f5838cb8d2547f60cb59f9c42c945cbc646fcd79c824bda57dbf2f",
+    "tools/run-viewport-response-matchers.mjs": "84db9407facd1202db388d5cf4cec007ca620beb5e6d2cee758a2b616c96bab4",
+    "tools/test-viewport-observer-lifetime.mjs": "19fce866641862665fb724c4d2c505e7d107f50e47c086a04b2cb67e5cf30aec",
+    "packages/flashwright-runner/src/matchers.ts": "208f63730af9b0b4f5e5592818c7c1533c9ec42873b7bb78452262f9af1d5579",
+    "packages/flashwright-runner/src/index.ts": "4f38a0e9689a08e08fe6d2675e45f79b5aa08139e172dd284ae88aef4905dd3d",
     "packages/flashwright-core/src/assertions.ts": "b90a4e21e2ed0a9dc2082d1697efe55b79286882c35bfbc2177dc17f41ebe5d5",
-    "crates/flashwright-engine/src/assertions.rs": "344e0b9e344d9170ed61345d9a5da85a3e6420fe9289be94f016dfafd038212d",
-    "packages/resident-runtime/locator-runtime.js": "20ff5bc7b3e29082d5a2573e636fc6fec0393bc087cb88fb100a01917b39f348",
-    "packages/resident-runtime/condition-registry.js": "46d9eafd7f7f07b94d73747a85547ae10f82c900929f6d0a08329f3ddeb025d6",
+    "crates/flashwright-engine/src/assertions.rs": "508060b698150ae486f14f623736ba4ea025142c1e4d99907b43e9402af11276",
+    "packages/resident-runtime/locator-runtime.js": "cbd8ff97ea04b9d20cc961618fd7d19ad79816eb732aa81f145fa480b3be3fda",
+    "packages/resident-runtime/condition-registry.js": "9e984e6b1a04891f76614dec75182083272085a8d00c8e48f6c502920e694b96",
     "tools/test-common-matchers.mjs": "84fb3a0ac86d7303b14767c8941d9844b387479daa2665470df2b8d28477a2d2",
     "tools/test-matcher-context-runtime.mjs": "99026f7fc1f8f7e82ec327d81c50c341fa0521fceef7e8cc8c8ed56ddeb83464",
     "tools/run-matcher-context-tests.mjs": "35b7fc082e708acfaeb52f35fdf42903bf547fb235c860490c1aac9f459a655b",
     "compatibility/m2/matcher-context/assertions.spec.cjs": "3d757b290c927e03833e1d6cc83bacadcd2284c5d369547bcc54cfaad2d6e4ce",
     "compatibility/m2/matcher-context/playwright.config.cjs": "a8c603bcbe3e03509264566e74b2a40e26fc3060228984d62533f3831ee0ea5a",
     "tools/run-common-matcher-tests.mjs": "489528c7b73a05da6bd96c71050ebe643a503a770e49435061690d5d76a592b5",
-    "tools/test-packed-common-matchers.mjs": "7e90dae707faa282602f794a03d3959b09677fff3eeef1c66126ac39a66b9250",
+    "tools/test-packed-common-matchers.mjs": "dee285e76e81762e4950383d2ba0182c25df45bbdc201a1da62b57054632c3ff",
     "compatibility/m2/common-matchers-fixture.mjs": "8a7017ec9f71d8edcc854c596337cd32048f876583c9435fe7cb7f832a8a2775",
-    "compatibility/m2/common-matchers-types.ts": "ce038ffbaa00f00fb39d5d1bb71b3003e324c09e081fff9add8a66fbbb663771"
+    "compatibility/m2/common-matchers-types.ts": "3ee16102ea389b7b035b0a3ae7b9f33efb27edb8ff9b2205d0ea66fc4f37f49e"
   },
   "relationship": "Flashwright adapts the pinned host matcher request shapes and executes the already retained injected DOM predicates through its independent native assertion lifecycle. The broader retained predicate methods contain branches that are not admitted by this slice.",
   "contracts": [
+    "Viewport assertions preserve the pinned native intersection threshold and missing-target negation, with owned observers/RAF callbacks retired synchronously on cancellation, expiry, document replacement or completion. No visibility requirement, scrolling or ratio clamping is introduced.",
+    "API-response OK assertions check immutable native status once; only failing textual responses read diagnostics, bounded to 1000 UTF-16 units. URL/status replaces unavailable private fetch logs. Pinned MIME classification remains an upstream utility dependency.",
     "Class arrays have exact element cardinality and ordered matching; scalar exact class matching preserves the attribute string. Partial classes require string tokens and reject regular expressions.",
     "Computed CSS accepts before/after pseudo-elements; selected values retarget labels and require a multiple select, preserving DOM option order.",
     "Accessibility name/description/error text uses pinned whitespace normalization and explicit ignoreCase precedence. Role matching requires a literal string and does not infer role hierarchy.",

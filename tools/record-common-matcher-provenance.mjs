@@ -5,10 +5,10 @@ import typescript from 'typescript';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 assert.equal(JSON.parse(await readFile('node_modules/playwright/package.json', 'utf8')).version, '1.60.0');
-const wrappers = ['toHaveClass', 'toContainClass', 'toHaveCSS', 'toHaveId', 'toHaveValues', 'toHaveRole', 'toHaveAccessibleName', 'toHaveAccessibleDescription', 'toHaveAccessibleErrorMessage'];
+const wrappers = ['toBeInViewport', 'toBeOK', 'toHaveClass', 'toContainClass', 'toHaveCSS', 'toHaveId', 'toHaveValues', 'toHaveRole', 'toHaveAccessibleName', 'toHaveAccessibleDescription', 'toHaveAccessibleErrorMessage'];
 const sources = [
   { path: 'node_modules/playwright/lib/matchers/expect.js', sha256: '10b9442388bd9cfaae64e3f76c74081548687ab89e7d1f1ea20c93de6bd02358', names: wrappers, kind: 'function' },
-  { path: 'packages/resident-runtime/playwright-injected.js', sha256: '7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a', names: ['_ariaSnapshotForExpect', '_expectCore', 'expectSingleElement', 'expectArray', 'matchesClassList'], kind: 'method' },
+  { path: 'packages/resident-runtime/playwright-injected.js', sha256: '7000b1119dc91aabdb4a19b0ebf9d3e1f02cdb59153cff8c3cdc690e503e944a', names: ['viewportRatio', '_ariaSnapshotForExpect', '_expectCore', 'expectSingleElement', 'expectArray', 'matchesClassList'], kind: 'method' },
 ];
 const snippets = {};
 for (const source of sources) {
@@ -30,7 +30,7 @@ for (const source of sources) {
   for (const name of source.names) assert(Object.hasOwn(snippets, name), `Missing source contract: ${name}`);
 }
 const extract = Object.entries(snippets).map(([name, snippet]) => `// ${name}: ${snippet.path}:${snippet.firstLine}-${snippet.lastLine}\n${snippet.text}`).join('\n\n') + '\n';
-const implementationPaths = ['packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts', 'packages/flashwright-core/src/assertions.ts', 'crates/flashwright-engine/src/assertions.rs', 'packages/resident-runtime/locator-runtime.js', 'packages/resident-runtime/condition-registry.js', 'tools/test-common-matchers.mjs', 'tools/test-matcher-context-runtime.mjs', 'tools/run-matcher-context-tests.mjs', 'compatibility/m2/matcher-context/assertions.spec.cjs', 'compatibility/m2/matcher-context/playwright.config.cjs', 'tools/run-common-matcher-tests.mjs', 'tools/test-packed-common-matchers.mjs', 'compatibility/m2/common-matchers-fixture.mjs', 'compatibility/m2/common-matchers-types.ts'];
+const implementationPaths = ['packages/flashwright-runner/src/response-matcher.ts', 'packages/flashwright-core/src/runner-integration.ts', 'compatibility/m2/viewport-response-matchers.mjs', 'tools/run-viewport-response-matchers.mjs', 'tools/test-viewport-observer-lifetime.mjs', 'packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts', 'packages/flashwright-core/src/assertions.ts', 'crates/flashwright-engine/src/assertions.rs', 'packages/resident-runtime/locator-runtime.js', 'packages/resident-runtime/condition-registry.js', 'tools/test-common-matchers.mjs', 'tools/test-matcher-context-runtime.mjs', 'tools/run-matcher-context-tests.mjs', 'compatibility/m2/matcher-context/assertions.spec.cjs', 'compatibility/m2/matcher-context/playwright.config.cjs', 'tools/run-common-matcher-tests.mjs', 'tools/test-packed-common-matchers.mjs', 'compatibility/m2/common-matchers-fixture.mjs', 'compatibility/m2/common-matchers-types.ts'];
 const implementation = Object.fromEntries(await Promise.all(implementationPaths.map(async path => [path, hash(await readFile(path))])));
 const licensePath = 'compatibility/upstream/LICENSE.playwright';
 const noticePath = 'compatibility/upstream/NOTICE.playwright';
@@ -41,6 +41,8 @@ const provenance = {
   snippets: Object.fromEntries(Object.entries(snippets).map(([name, { text: _text, ...metadata }]) => [name, metadata])), implementation,
   relationship: 'Flashwright adapts the pinned host matcher request shapes and executes the already retained injected DOM predicates through its independent native assertion lifecycle. The broader retained predicate methods contain branches that are not admitted by this slice.',
   contracts: [
+    'Viewport assertions preserve the pinned native intersection threshold and missing-target negation, with owned observers/RAF callbacks retired synchronously on cancellation, expiry, document replacement or completion. No visibility requirement, scrolling or ratio clamping is introduced.',
+    'API-response OK assertions check immutable native status once; only failing textual responses read diagnostics, bounded to 1000 UTF-16 units. URL/status replaces unavailable private fetch logs. Pinned MIME classification remains an upstream utility dependency.',
     'Class arrays have exact element cardinality and ordered matching; scalar exact class matching preserves the attribute string. Partial classes require string tokens and reject regular expressions.',
     'Computed CSS accepts before/after pseudo-elements; selected values retarget labels and require a multiple select, preserving DOM option order.',
     'Accessibility name/description/error text uses pinned whitespace normalization and explicit ignoreCase precedence. Role matching requires a literal string and does not infer role hierarchy.',

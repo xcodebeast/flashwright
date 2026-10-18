@@ -6,13 +6,16 @@ export interface TimeoutOptions { timeout?: number }
 export interface TextOptions extends TimeoutOptions { ignoreCase?: boolean; useInnerText?: boolean }
 export interface AccessibleTextOptions extends TimeoutOptions { ignoreCase?: boolean }
 export interface CSSOptions extends TimeoutOptions { pseudo?: 'before' | 'after' }
+export interface ViewportOptions extends TimeoutOptions { ratio?: number }
 
 function validate(method: string, options: object, supported: string[]): void {
   if (!options || typeof options !== 'object' || Array.isArray(options)) throw failure('InvalidArgumentError', method, 'options must be an object');
   for (const [key, value] of Object.entries(options)) {
     if (!supported.includes(key)) throw failure('UnsupportedFeatureError', `${method}.${key}`, 'assertion option is not implemented');
     if (value === undefined || key === 'timeout') continue;
-    if (key === 'pseudo') {
+    if (key === 'ratio') {
+      if (typeof value !== 'number' || !Number.isFinite(value)) throw failure('InvalidArgumentError', `${method}.${key}`, 'expected a finite number');
+    } else if (key === 'pseudo') {
       if (value !== 'before' && value !== 'after') throw failure('InvalidArgumentError', `${method}.${key}`, 'expected before or after');
     } else if (typeof value !== 'boolean') throw failure('InvalidArgumentError', `${method}.${key}`, 'expected a boolean');
   }
@@ -71,6 +74,10 @@ function accessibleTextAssertion(state: ExpectMatcherState, name: string, expres
 }
 
 export const matchers = {
+  async toBeInViewport(this: ExpectMatcherState, actual: Locator, options: ViewportOptions = {}) {
+    validate('toBeInViewport', options, ['timeout', 'ratio']);
+    return stateAssertion(this, 'toBeInViewport', actual, 'to.be.in.viewport', options, options.ratio === undefined ? {} : { expectedNumber: options.ratio });
+  },
   async toHaveClass(this: ExpectMatcherState, actual: Locator, expected: Text | readonly Text[], options: TimeoutOptions = {}) { return classAssertion(this, actual, expected, options, false); },
   async toContainClass(this: ExpectMatcherState, actual: Locator, expected: string | readonly string[], options: TimeoutOptions = {}) { return classAssertion(this, actual, expected, options, true); },
   async toHaveCSS(this: ExpectMatcherState, actual: Locator, name: string, expected: Text, options: CSSOptions = {}) {

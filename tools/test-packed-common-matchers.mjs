@@ -3,8 +3,8 @@ import { createHash } from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { mkdir, mkdtemp, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { viewportHTML } from '../compatibility/m2/viewport-response-matchers.mjs';
 import { commonMatcherHTML } from '../compatibility/m2/common-matchers-fixture.mjs';
 import { packConsumerPackages } from './packed-artifacts.mjs';
 import { installPackedConsumer } from './install-packed-consumer.mjs';
@@ -16,12 +16,21 @@ const require = createRequire(import.meta.url);
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const output = resolve(process.argv[2]);
 await mkdir(output);
-const consumer = await mkdtemp(join(tmpdir(), 'flashwright-common-matchers-'));
+const consumer = await mkdtemp(join(output, 'consumer-'));
 const report = { status: 'running', ...runtimeMetadata, scope: 'Packed alias consumers run the same common matcher corpus in ESM and CommonJS; no performance claim.' };
-const sources = ['tools/test-packed-common-matchers.mjs', 'compatibility/m2/common-matchers-fixture.mjs', 'compatibility/m2/common-matchers-types.ts', 'packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts', 'packages/flashwright-core/src/assertions.ts', 'crates/flashwright-engine/src/assertions.rs'];
+const sources = ['compatibility/m2/viewport-response-matchers.mjs', 'packages/flashwright-runner/src/response-matcher.ts', 'packages/flashwright-core/src/runner-integration.ts', 'tools/test-packed-common-matchers.mjs', 'compatibility/m2/common-matchers-fixture.mjs', 'compatibility/m2/common-matchers-types.ts', 'packages/flashwright-runner/src/matchers.ts', 'packages/flashwright-runner/src/index.ts', 'packages/flashwright-core/src/assertions.ts', 'crates/flashwright-engine/src/assertions.rs'];
 const sourceHashes = async () => Object.fromEntries(await Promise.all(sources.map(async path => [path, hash(await readFile(path))])));
 const { server, close: closeServer } = createHttpFixture((request, response) => {
+  const url = new URL(request.url, 'http://localhost');
+  if (url.pathname === '/api') {
+    response.statusCode = Number(url.searchParams.get('status'));
+    const type = url.searchParams.get('type'); if (type !== 'absent') response.setHeader('content-type', type);
+    response.end('body-marker ' + 'x'.repeat(1100) + ' end-marker'); return;
+  }
   response.setHeader('content-type', 'text/html; charset=utf-8');
+  if (url.pathname === '/viewport') { response.end(viewportHTML); return; }
+  if (url.pathname === '/child' && url.searchParams.has('viewport')) { response.end('<div id="child" style="width:50px;height:50px">child</div><div id="far" style="position:absolute;top:2000px">far</div>'); return; }
+
   response.end(request.url === '/child' ? '<button id="child-button">Child action</button>' : request.url === '/successor' ? '<div id="successor" class="arrived">Successor</div>' : commonMatcherHTML);
 });
 try {
@@ -44,12 +53,31 @@ for (const browser of [upstream.chromium, upstream.firefox, upstream.webkit]) {
 }
 upstream.request.newContext = async () => { throw new Error('Forbidden upstream request backend entered'); };
 `);
+  await copyFile('compatibility/m2/viewport-response-matchers.mjs', join(consumer, 'viewport-response-matchers.mjs'));
   const body = `
 test('packed common matchers', async ({ page }) => {
   const { commonMatcherCases } = await import('./common-matchers-fixture.mjs');
   const origin = process.env.FLASHWRIGHT_MATCHER_ORIGIN;
   await page.goto(origin);
   await commonMatcherCases(page, expect, (name, callback) => test.step(name, callback), origin, 'flashwright');
+});
+test('packed viewport and response matchers', async ({ page }) => {
+  const { viewportCases, responseCases } = await import('./viewport-response-matchers.mjs');
+  const { request } = await import('playwright');
+  const origin = process.env.FLASHWRIGHT_MATCHER_ORIGIN;
+  await page.goto(origin + '/viewport');
+  await viewportCases(page, expect, (name, callback) => test.step(name, callback), origin, 'flashwright');
+  await responseCases(request, expect, (name, callback) => test.step(name, callback), origin);
+});
+test('soft viewport and response failures retain runner reporting', async ({ page, request }, testInfo) => {
+  test.fail();
+  const origin = process.env.FLASHWRIGHT_MATCHER_ORIGIN;
+  await page.goto(origin + '/viewport');
+  await expect.soft(page.locator('#absent')).toBeInViewport({ timeout: 80 });
+  const response = await request.get(origin + '/api?status=200&type=text/plain');
+  await expect.soft(response).not.toBeOK();
+  expect(testInfo.errors).toHaveLength(2);
+  await expect(page.locator('#visible')).toBeInViewport();
 });
 `;
   await writeFile(join(consumer, 'common-esm.spec.mjs'), `import './poison.cjs';\nimport { test, expect } from '@playwright/test';\n${body}`);
@@ -59,7 +87,7 @@ test('packed common matchers', async ({ page }) => {
   execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '--noEmit', '--strict', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'declarations.mts', 'declarations.cts'], { cwd: consumer, stdio: 'inherit' });
   await writeFile(join(consumer, 'flashwright.config.mjs'), `
 import { defineConfig } from '@playwright/test';
-export default defineConfig({ testDir: '.', testMatch: '*.spec.*', workers: 1, timeout: 30000, expect: { timeout: 3000 },
+export default defineConfig({ testDir: '.', testMatch: '*.spec.*', workers: 1, timeout: 30000, expect: { timeout: 3000 }, use: { viewport: { width: 640, height: 480 } },
   reporter: [['json', { outputFile: process.env.FLASHWRIGHT_MATCHER_REPORT }]] });
 `);
   const resultsPath = join(output, 'results.json');
@@ -70,11 +98,11 @@ export default defineConfig({ testDir: '.', testMatch: '*.spec.*', workers: 1, t
   await writeFile(join(output, 'runner.log'), log);
   assert.equal(code, 0, log);
   const results = JSON.parse(await readFile(resultsPath));
-  assert.equal(results.stats.expected, 2);
+  assert.equal(results.stats.expected, 6);
   assert.equal(results.stats.unexpected + results.stats.skipped + results.stats.flaky, 0);
   assert.deepEqual(results.errors, []);
   report.resultsSha256 = hash(await readFile(resultsPath));
-  report.cases = { moduleModes: ['ESM', 'CommonJS'], groupsPerMode: 15, aliasDeclarations: ['NodeNext import', 'NodeNext require'], upstreamBrowserAndRequestPoisoned: true };
+  report.cases = { moduleModes: ['ESM', 'CommonJS'], commonGroupsPerMode: 15, viewportAndResponseGroupsPerMode: 19, softFailureGroupsPerMode: 1, aliasDeclarations: ['NodeNext import', 'NodeNext require'], upstreamBrowserAndRequestPoisoned: true };
   assert.deepEqual(await sourceHashes(), report.sourceHashes);
   assert.deepEqual(await identifyBrowser(process.env.FLASHWRIGHT_BROWSER_PATH), report.browser);
   assert.equal(hash(await readFile(process.env.FLASHWRIGHT_DRIVER_PATH)), report.driverSha256);
