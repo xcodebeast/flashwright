@@ -4,6 +4,31 @@ Flashwright has not established performance leadership. The [five-engine checkpo
 
 The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its Linux Chrome draft now completes the seven fixture outcome categories, but equivalent-work and comparative measurements remain unadmitted. It has no result in the historical five-engine snapshot. The system-WebKit backend on macOS requires a separate comparison class. See the [outcome checkpoint](../compatibility/evidence/bun-webview-outcome-checkpoint-2026-10-16.json) and [contender configuration](../benchmarks/configurations/competitors.json).
 
+## Declarative capability experiment on Linux
+
+Selected native omissions work, but the complete per-test capability API remains a private prototype. The [compatible-worker experiment](../benchmarks/results/capability-worker-reuse-linux-2026-10-18.json) passes 360 functional and 720 timed original TodoMVC/SVGOMG test executions across both engines, one/four workers and reversed execution order. Both full and restricted profiles reuse one browser per compatible worker and create a fresh context per test. This removes the earlier prototype's extra browser launch per test from the comparison.
+
+Restrictions omit painting/capture, unused DOM storage and service workers; TodoMVC also omits IndexedDB, while SVGOMG retains it because its application accesses it. Native construction traces confirm the selected objects are omitted and raster tasks disappear. Ordinary networking, JavaScript, layout and required input behavior remain enabled.
+
+The table reports percentage reduction in complete-owner elapsed time for restricted versus full capabilities **within each engine**. Positive values mean faster; negative values mean slower. These two blocks are an engineering screen, not confidence intervals or a Flashwright-versus-Playwright ranking.
+
+| Engine | Application | Workers | First block | Reversed block |
+| --- | --- | ---: | ---: | ---: |
+| flashwright | todomvc | 1 | -2.58% | +11.15% |
+| flashwright | todomvc | 4 | +2.65% | +4.55% |
+| flashwright | svgomg | 1 | -24.82% | +7.02% |
+| flashwright | svgomg | 4 | +0.70% | -2.34% |
+| playwright | todomvc | 1 | -0.02% | -0.07% |
+| playwright | todomvc | 4 | +2.55% | +2.77% |
+| playwright | svgomg | 1 | -0.12% | +4.65% |
+| playwright | svgomg | 4 | +18.26% | +3.56% |
+
+No cell meets the predeclared 20% reduction in both blocks. This does not show that removing optional browser work inherently slows execution: it shows that these exclusions have not delivered a consistent large complete-suite benefit on these applications. The cause of individual regressions remains unresolved. Removing the prototype's redundant browser launches separately saves roughly 48–64% in the longer-per-worker Flashwright cells; ordinary Playwright already reuses browsers, so that is not an engine advantage.
+
+There is a separate positive result. In the [painting-density experiment](../benchmarks/results/capability-paint-density-linux-2026-10-18.json), disabling drawing reduces preparation-through-cleanup elapsed time by about 22–25% across both engines on the 4,096-tile synthetic workload, while the sparse workload is essentially unchanged. The unchanged backend application previously passed [496 recorded test executions](../compatibility/evidence/capability-recorded-backend-checkpoint-2026-10-18.json); that earlier fresh-browser experiment does not verify backend execution with the newer compatible-worker adapter.
+
+Selected isolation, immutable-profile, retry and caught-violation controls pass. Native violations in the reused browser are currently attributed to the worker and fail suite teardown; exact per-attempt native attribution, bounded long-suite record retention, broader capability enforcement and public packaging remain unfinished. Sampled resource observations do not establish complete process custody. The representative majority-scenario 2× objective remains unmet.
+
 ## Latest measured broad comparison
 
 Eight rotated blocks ran on native macOS arm64 with full Chrome 148.0.7778.96. Bun 1.4.2 coordinated the run; every shared library workload used Node 22.22.0. Each library flow has three warmups and 12 measured observations per launch. Complete work includes preparation, warmup, semantic verification and cleanup; child process wall also includes imports and the sampling wrapper. Brackets below are 95% launch-clustered intervals.
