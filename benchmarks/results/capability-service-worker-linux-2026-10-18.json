@@ -1,0 +1,1906 @@
+{
+  "schemaVersion": 1,
+  "status": "private-service-worker-screen-with-retained-guardian-failure",
+  "sourceBaseline": "93122dab723cd70f25c288c06d535f0099628d5f",
+  "platform": "linux-x64",
+  "browserVersion": "Chromium 148.0.7778.96",
+  "runtime": "Bun 1.4.2",
+  "reference": "Playwright 1.60.0",
+  "privatePrototype": true,
+  "publicFeatureDelivered": false,
+  "performanceAdmission": false,
+  "resourceAdmission": false,
+  "mechanism": "Immutable network.serviceWorker profile omits ServiceWorkerContextCore, its registry initialization and non-network update-check loader bundle/prewarm. Retains wrapper, observer lists and process manager required by navigation/lifecycle. Native window/dedicated-worker getters reject before acquisition; native journal preserves caught violations. Selected DevTools mutation and service-worker clearing commands reject before effects. CacheStorage, other storage, ordinary network and worker services remain enabled.",
+  "scope": "Fresh ephemeral contexts only; no persistent profile with prior service-worker registrations. Ordinary service-worker interception is separately verified in full mode. Availability-only prototype/presence probes are preserved. This is one network capability, not the complete proposed contract.",
+  "browserSha256": "411e37217c67d9165661d45389def81aec1ffe56e14c11ec6c4b529be71c9274",
+  "runtimeManifestSha256": "50e7f6b32719f072f5bdb89c8b97bde6306d41525813f088651bc0302497e7c0",
+  "runtimeFiles": {
+    "headless_shell": {
+      "sha256": "411e37217c67d9165661d45389def81aec1ffe56e14c11ec6c4b529be71c9274",
+      "bytes": 324413928
+    },
+    "icudtl.dat": {
+      "sha256": "c5da2fc389d1bb0ecb13fe22a8e069b7abc491f8aa5d16eb65d4ff32c85a46b6",
+      "bytes": 10876464
+    },
+    "v8_context_snapshot.bin": {
+      "sha256": "2e0fc6c5713fb7e940508562cb9904c1781d2b415ee96e139badd325699e7ecd",
+      "bytes": 721176
+    },
+    "headless_lib_data.pak": {
+      "sha256": "8873709b04abb73bc0f491c8730b4446ee076f2e9bdedee5de203f1bf80ac3ad",
+      "bytes": 596650
+    },
+    "headless_lib_strings.pak": {
+      "sha256": "b795fb041aa29ef388ea81c04f0587672e93165521eae3cc1afc28dcf9ff3f98",
+      "bytes": 5086177
+    },
+    "headless_command_resources.pak": {
+      "sha256": "66cc2fdded0b16a0223f46aeef3b83ab9e0c5d940d3bd4a2c8a29385f844503b",
+      "bytes": 3033
+    },
+    "libEGL.so": {
+      "sha256": "cc2e0679e7fa2b0526b6da73886166f2f75afbd50096ab35586e3c9cf8c6f228",
+      "bytes": 405832
+    },
+    "libGLESv2.so": {
+      "sha256": "a60f15cd3beb6a0fb49763f00e857c0ece6ced592998a40c640b0e90f323e9cd",
+      "bytes": 19936656
+    },
+    "libvk_swiftshader.so": {
+      "sha256": "b07dc1c0a184df4e62fa47fab96468e051302f6052134302fc0f848029db4755",
+      "bytes": 6462056
+    },
+    "vk_swiftshader_icd.json": {
+      "sha256": "c9eef28b6b984fec220ef0abfecc40b502d46946706e47bfe97707027cb818bd",
+      "bytes": 107
+    },
+    "libvulkan.so.1": {
+      "sha256": "f48477207a52732c7826a301b4baa3c7b98f25f8c1fbb3f7d3114b1d862e75d4",
+      "bytes": 921648
+    }
+  },
+  "nativePatches": {
+    "third_party/blink/public/common/storage_key/flashwright_service_worker_policy.h": {
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "f3ffce9ba05869ff5d6b1c75a00d551508106d9017041bacdd3f5b67fb26a498",
+      "patch": "943f7fa92138952d78ee2fc31f22bfeb13d46e0990f4e8c3529199af4fa70b69"
+    },
+    "third_party/blink/renderer/core/inspector/flashwright_service_worker_access.h": {
+      "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": "459cae3c77aa5e91c8b30fe6ac0b15adc8d203a238b05f12170f723a056c2ce3",
+      "patch": "c848f622e935b4aa033adee46b46b2c416a48105fb88a0d5d09d22cae7b4cbb1"
+    },
+    "third_party/blink/renderer/modules/service_worker/navigator_service_worker.cc": {
+      "before": "bbece788e15bdc2d4ee57173348c5fed8568ce8bf2720b11e8a9772ca628c10b",
+      "after": "fc28309459f5fb7ee2daad47a92830a8b3e98ab92a9d1722dbca2d23b66d6973",
+      "patch": "dbd4854421504bac184e6243ccabf6add5082853f7ef21ea23ff7cb3170c6cf7"
+    },
+    "third_party/blink/renderer/modules/service_worker/worker_navigator_service_worker.cc": {
+      "before": "348aabd43f24c454f067261c1d929564fbae98f137e6c6fc06938f72b2ab6ad8",
+      "after": "d20f0234b2cd52fa8529722fddd39c2409583a9b9651d9cee3f734a6798f573f",
+      "patch": "0bfa11e9d4854bef7699e495e0a517d5c6c04e9101f18ea2f55996f4c144b175"
+    },
+    "content/browser/service_worker/service_worker_context_wrapper.cc": {
+      "before": "b247b9c585c0c5c653fbf27f918c798c0452271ecb2d73b400d9cf192095f34b",
+      "after": "1ce604a53643fbc13446e748da94ee6cd90fd214d73311ce487d9aca79489f64",
+      "patch": "16675e3944d13151d593794d0c59a4b94109aef43bb3ee25081eff310e09ce09"
+    },
+    "content/browser/devtools/protocol/service_worker_handler.cc": {
+      "before": "28f6d4130cf07db67c0a04ef540b1451f75a441f0704cf6a40ed4dc5d6e6869f",
+      "after": "c5a319c2678f2b1130304f55e4173ff52d3d0bd1cfb5a455f1a95eb3e580f3d8",
+      "patch": "af300fe676a761c9c0fd29df54d0aeb11680f538d1e35406cf1e6849498f0e3c"
+    },
+    "content/browser/devtools/protocol/storage_handler.cc": {
+      "before": "200e211a12138da1e8b71267c38a7d59ea5aafc58c8b9c80760b1b6e2ea85ea6",
+      "after": "40a400806e339e4c95b1110df5144fe14671ce238a58e1d71c08f5096f92df6e",
+      "patch": "7229371fb0de9f73fd71c4a8f2048fe4a9db3c9fe4fb3308fe9a1ef93ece8fe4"
+    }
+  },
+  "verification": {
+    "focusedControls": [
+      {
+        "engine": "playwright",
+        "cases": [
+          {
+            "name": "probe",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "unrelated",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "window",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "same-frame",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "remote-frame",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "srcdoc",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "popup",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "registration",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "worker",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "devtools",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "devtools-clear",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "probe",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "unrelated",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "window",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "same-frame",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "remote-frame",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "srcdoc",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "popup",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "registration",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "worker",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "devtools",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "devtools-clear",
+            "excluded": true,
+            "status": "passed"
+          }
+        ],
+        "unsupported": [],
+        "resultSha256": "3c082be275f74e73c3ba680739cde81c82651a5080fdd4fa73e255af6539e4f3",
+        "resourcesSha256": "9e96f2ec9b358aff20ab68a11d09eb44be8a004879d13b3fe403912becdf23f7"
+      },
+      {
+        "engine": "flashwright",
+        "cases": [
+          {
+            "name": "probe",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "unrelated",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "window",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "same-frame",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "remote-frame",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "srcdoc",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "registration",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "worker",
+            "excluded": false,
+            "status": "passed"
+          },
+          {
+            "name": "probe",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "unrelated",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "window",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "same-frame",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "remote-frame",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "srcdoc",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "registration",
+            "excluded": true,
+            "status": "passed"
+          },
+          {
+            "name": "worker",
+            "excluded": true,
+            "status": "passed"
+          }
+        ],
+        "unsupported": [
+          "popup event waiting",
+          "public DevTools session"
+        ],
+        "resultSha256": "0aff529fca7610019fb4470f5800a69d1f4996fc3b65bf4624917e3d731164cc",
+        "resourcesSha256": "f549bd8c63f69942ca0fd1adc9bd2430e8642e3b1c46805f24d23b6a084f67ff"
+      }
+    ],
+    "runnerControls": [
+      {
+        "engine": "playwright",
+        "tests": 4,
+        "attempts": 5,
+        "status": "passed",
+        "resultSha256": "2265bba243fe51f129e185346c6ea4690d2fac865674d01518643f805af66de5",
+        "resourceSha256": "974063224e7ee613d0f37e027ee4ccb21e79d63954619e57c9f45424ae42f82b"
+      },
+      {
+        "engine": "flashwright",
+        "tests": 4,
+        "attempts": 5,
+        "status": "passed",
+        "resultSha256": "e858eaf4ea1026eaf5cdd3d9ba8cb27fb3c3edbda3d11d47f38d918363176030",
+        "resourceSha256": "aaae07a4639638c8be3d85cfe9d7e93e3566005391cd681d71af8cb7cb5d6a66"
+      }
+    ],
+    "runnerCoverage": [
+      "caught native failure becomes an expected failed attempt",
+      "retry keeps the frozen declaration and fresh storage",
+      "clean successor",
+      "separate full-capability attempt",
+      "declaration input mutation cannot broaden the copied contract"
+    ],
+    "construction": {
+      "status": "passed-native-service-construction-controls",
+      "rows": [
+        {
+          "excluded": false,
+          "contexts": 3,
+          "omitted": 0,
+          "created": 3
+        },
+        {
+          "excluded": true,
+          "contexts": 3,
+          "omitted": 3,
+          "created": 0
+        }
+      ]
+    },
+    "constructionTraceSha256": {
+      "ordinary-trace.json": "a435ecb772e349fb03e6a193b5e38d500a6a3290fc876ad6f52f6d9d888c4c91",
+      "omitted-trace.json": "d51aa2d8e350722b8510d9bb7dba0c5c6ce69750cf7536d4cee8bfc6d86ab7c6"
+    },
+    "invalidDeclarations": {
+      "status": "passed",
+      "invalidDeclarationsRejected": 13,
+      "accessorsInvoked": 0,
+      "copiedImmutableContract": true,
+      "defaultFullNetwork": true
+    },
+    "malformedNativeRecords": {
+      "status": "passed",
+      "acceptedNativeRecords": 33,
+      "rejectedMalformedRecords": [
+        "window-operation",
+        "window-capability",
+        "window-kind",
+        "window-attempt",
+        "window-policy",
+        "window-process",
+        "window-locationKind",
+        "window-locationTruncated",
+        "source-document",
+        "source-realm",
+        "source-scriptUrlTruncated",
+        "source-line",
+        "source-executionContext",
+        "browser-location",
+        "clear-capability"
+      ]
+    },
+    "sourcesUnchanged": 1118,
+    "nativePatchedFilesUnchanged": 7,
+    "functionalSourceManifestSha256": "7dfc9582ca6ae41481f0e1f8a3c162744e1623b6d68588f0ed1cb9cc5102f1be",
+    "timingSourceManifestSha256": "848afd0017c03fd693d8260048f83c7f67079fe29b0229fd6d0e9aeb7bd829f5",
+    "missedNativeWriterSamples": [
+      {
+        "run": "final-controls-playwright",
+        "process": 1522263
+      },
+      {
+        "run": "final-controls-playwright",
+        "process": 1521573
+      },
+      {
+        "run": "final-controls-playwright",
+        "process": 1522039
+      },
+      {
+        "run": "final-controls-flashwright",
+        "process": 1524259
+      },
+      {
+        "run": "application-refresh-12-playwright-svgomg-1-discovery",
+        "process": 1545331
+      }
+    ],
+    "exhaustiveProcessCustody": false
+  },
+  "originalFunctionalTestExecutions": 240,
+  "functionalRuns": [
+    {
+      "name": "application-refresh-00-flashwright-todomvc-1-discovery",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "discovery",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.64861969899357,
+      "runnerMilliseconds": 11175.030999999999,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 80,
+      "observedCapabilities": [
+        "storage.localStorage"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "be575383e0feb7f6c125ac5f30a2aa863fb8840b351490cc6d9599e54bf1eeda",
+      "reportSha256": "4ac7a6b3cb35dd54b585aa94bdc525e644a5d5422e9bf73fe2d6a29ac8a60ff4"
+    },
+    {
+      "name": "application-refresh-01-flashwright-todomvc-1-restricted",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "restricted",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.960946200000762,
+      "runnerMilliseconds": 11522.382,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "6919820cc7a71ba958f1949861838c4dac7bad079e7a1109374dcd7bc87a2498",
+      "reportSha256": "eba525acb4972556133cb79d2f34bee4b6e8e0cfe7fba32ead513b325a9790af"
+    },
+    {
+      "name": "application-refresh-02-flashwright-todomvc-4-discovery",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "discovery",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 6.371968980995007,
+      "runnerMilliseconds": 5928.529,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 81,
+      "observedCapabilities": [
+        "storage.localStorage"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "6e13c566385fb2abd1ce10479b8b68e47f116634d22c8696ac8469d88591aff7",
+      "reportSha256": "b83dd57517771467a14d2e6559709e759d9290db1621b2758653046a7e001900"
+    },
+    {
+      "name": "application-refresh-03-flashwright-todomvc-4-restricted",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "restricted",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.8544875610023155,
+      "runnerMilliseconds": 5423.377,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "048915033f8abd1af066008aa7f3e3d905e8c6ced2a17d3a2d6daac5053393c0",
+      "reportSha256": "a7857038f2a253aac7a610d7da9577a070ec65898314418a74f78f9d06294e8c"
+    },
+    {
+      "name": "application-refresh-04-flashwright-svgomg-1-discovery",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "discovery",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.779567698002211,
+      "runnerMilliseconds": 3362.331,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 6,
+      "observedCapabilities": [
+        "storage.indexedDB"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "4a89c9cbfd88d32552fce8aef6457710058b1c97a2821a2677a50679a9ff0403",
+      "reportSha256": "bfc039ba32f4a9679b48041808c50d798fb6ec0bbcae1f10cd1568f06c690909"
+    },
+    {
+      "name": "application-refresh-05-flashwright-svgomg-1-restricted",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "restricted",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.909915258998808,
+      "runnerMilliseconds": 3488.3390000000004,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "ad8a1501115f0e3ae64bff83acfaa544bd1180b06685f681fbf7622c0673a58d",
+      "reportSha256": "96ff415132017ebe066b5289825f85a5c3980701cd1e24d22801fb61d4624122"
+    },
+    {
+      "name": "application-refresh-06-flashwright-svgomg-4-discovery",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "discovery",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.6963309300044784,
+      "runnerMilliseconds": 2259.7599999999998,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 6,
+      "observedCapabilities": [
+        "storage.indexedDB"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "c0a29e365bbec64af06c9c35c19c98cda5617bc2167c72b7bc641c83adbf300e",
+      "reportSha256": "b6deb8a148c1966b97a23ad8d14b8ee39a2ec71c93b801b8c8bae93059930e11"
+    },
+    {
+      "name": "application-refresh-07-flashwright-svgomg-4-restricted",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "restricted",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.685082804004196,
+      "runnerMilliseconds": 2257.2650000000003,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "3a7b57f520f08e2c8d224833693c20754f9362668a2a110c48ded6cb632374b2",
+      "reportSha256": "f790b7449dbdc761d43a2dcca26e3797a646d6515f1c8d6ccb1d3111a046bac3"
+    },
+    {
+      "name": "application-refresh-08-playwright-todomvc-1-discovery",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "discovery",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.796759862001636,
+      "runnerMilliseconds": 11326.987000000001,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 79,
+      "observedCapabilities": [
+        "storage.localStorage"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "55bb56274c0029543073873615a82989d4a9598cfb648932f81692de55699454",
+      "reportSha256": "ef72bb25dd7486ef7bf1cd2ded1b6a98991794fb86d2f8fa0202199be8edbdda"
+    },
+    {
+      "name": "application-refresh-09-playwright-todomvc-1-restricted",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "restricted",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.440868621000845,
+      "runnerMilliseconds": 11043.02,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "dccb34f4c7ef58b1ea46b875dcb9ba0748ab96ff75dc1f6a6020b1bc1afc8db9",
+      "reportSha256": "0491936a3e290521b7fd6e6dfcf72ad16635e3dda4d48e506276f2646459268c"
+    },
+    {
+      "name": "application-refresh-10-playwright-todomvc-4-discovery",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "discovery",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 6.225722481001867,
+      "runnerMilliseconds": 5796.899,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 80,
+      "observedCapabilities": [
+        "storage.localStorage"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "06d28c72cd9efaee7e1fdbd041ec4fc5265e1df9e9615e34846c19051b3ff217",
+      "reportSha256": "9f127783bf1b0254bec7212d11ecb1adaacefefda23ed60ce5cc77b071f9963f"
+    },
+    {
+      "name": "application-refresh-11-playwright-todomvc-4-restricted",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "restricted",
+      "block": null,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 6.328335733000131,
+      "runnerMilliseconds": 5904.295,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "d66fcfb4321929e2456b799d3eaf0d087ae75635e6ce3de197e531c576819093",
+      "reportSha256": "3d58ff2ee7f889ca889e7192b3c05f50e5a64644307efd346aacf7822eae79dd"
+    },
+    {
+      "name": "application-refresh-12-playwright-svgomg-1-discovery",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "discovery",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.9237008330019307,
+      "runnerMilliseconds": 3527.428,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 6,
+      "observedCapabilities": [
+        "storage.indexedDB"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "dbceb26a3e4932474a1690ceedee1a1e06b7fda2b2d1e886c7c87cb5dc410b01",
+      "reportSha256": "5f2a6de8e749de3142ae558d1edbb4d98337e047b6545b670a20386367056abc"
+    },
+    {
+      "name": "application-refresh-13-playwright-svgomg-1-restricted",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "restricted",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 4.158416117999877,
+      "runnerMilliseconds": 3764.594,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "5c683835216f91a103ed63a766b5ae63180d415e64aa6c32b7606b76927b792c",
+      "reportSha256": "b92b9e3546a46874c04e40e8ac3fce59eb10178b08d13046654e0da432eab72f"
+    },
+    {
+      "name": "application-refresh-14-playwright-svgomg-4-discovery",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "discovery",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.588766836001014,
+      "runnerMilliseconds": 2193.042,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 6,
+      "observedCapabilities": [
+        "storage.indexedDB"
+      ],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "43f58545a54c7e811a91963a6eeaca8598c9a237bdcdfbd784095c3ad1d7132a",
+      "reportSha256": "18428ec1458136e1c24b1df008e160eb40078087e1703eb1ff328af269dbb6bc"
+    },
+    {
+      "name": "application-refresh-15-playwright-svgomg-4-restricted",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "restricted",
+      "block": null,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.722577614003967,
+      "runnerMilliseconds": 2315.43,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "bb1b702431ee25a8fbea9e9a048df637947b9e74959a0080d50918f51d408289",
+      "reportSha256": "fd45b6c250277082c2e9ec356ef14940519ac289a8785c858ca7422925b4b350"
+    }
+  ],
+  "originalTimedTestExecutions": 480,
+  "timedTestsPassed": 479,
+  "timedTestsFailed": 1,
+  "timingCleanupFailure": {
+    "run": "timing-1-28-flashwright-todomvc-4-restricted",
+    "test": "should trim whitespace from new todo",
+    "error": "browser.close: browser guardian cleanup failed: Ok(ExitStatus(unix_wait_status(256)))",
+    "nativeJournal": "complete, no violations, original browser exit zero and group drained",
+    "outerSupervisor": "exit 1; no cleanup signals or observed survivors",
+    "disposition": "Retained failed sample; no ratio admitted for its pair and no replacement. Three previously unrun planned cells completed separately. Guardian root cause remains unresolved."
+  },
+  "timingRuns": [
+    {
+      "name": "timing-0-00-flashwright-todomvc-1-full",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "full",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.995427900001232,
+      "runnerMilliseconds": 11545.155999999999,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "4fb2a179ccd57989aae9c079e5fe2841097d09feb3dbc57bbf03aa34a734572d",
+      "reportSha256": "a4d1974c0e04e7e80dcd0a3dd7c224b597cc7056ee8c38d270cf73fc229e620f"
+    },
+    {
+      "name": "timing-0-01-flashwright-todomvc-1-restricted",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 12.083434421001584,
+      "runnerMilliseconds": 11630.712,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "672089b5643b8cc9ead9fbd2fbb70bc4a0ddde4fc3cdfc1bcb8101e4fe69ff4b",
+      "reportSha256": "1bc59c49c1c2a592844e73189cfdf4466918c957b8617029baca3bd99054b43b"
+    },
+    {
+      "name": "timing-0-02-flashwright-todomvc-4-full",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "full",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.812161300003936,
+      "runnerMilliseconds": 5371.400000000001,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "2f5fc8d39f7cd79734040a99fe746fb62ddb44bcd0c22aed600c35de0de3f8e8",
+      "reportSha256": "e0566adade7ff4033cc5e5a0af888efc4461e94ac815fd91e41257717fd2e9c7"
+    },
+    {
+      "name": "timing-0-03-flashwright-todomvc-4-restricted",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 6.227880496997386,
+      "runnerMilliseconds": 5793.400000000001,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "cb155eed4773cfbc53c62d8a2f34297406e0e079f4710553a868fdd0866ba6e4",
+      "reportSha256": "c7afeb94fcdc82216cd0b37b8284a371770fa4504d27c1afe07e3ac348517c7d"
+    },
+    {
+      "name": "timing-0-04-flashwright-svgomg-1-full",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "full",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 4.130768032999185,
+      "runnerMilliseconds": 3690.288,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "ec4dc0c7746a748af7e9ba7ad4402e509d7fac43659e920f848c54fd2cc9f446",
+      "reportSha256": "9a3a0f6af4882ceb5c7a95402e1c5fed7ca43bf0d63648c7b884ba113a432510"
+    },
+    {
+      "name": "timing-0-05-flashwright-svgomg-1-restricted",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.084313444000145,
+      "runnerMilliseconds": 4555.337,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "99f937775ba10b040b3c843066b4ebcd518299691a1ec97a883545f767eb90b5",
+      "reportSha256": "40b872a4208b0bb346bff20bf12b7fb3c2bd88c23d1b0bb1f3976f6bcf46488a"
+    },
+    {
+      "name": "timing-0-06-flashwright-svgomg-4-full",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "full",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.112063156993827,
+      "runnerMilliseconds": 2622.047,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "79e530ecc671f8fa2f31bc8fd74e768b188f9ab27425185496f4ffae1a235897",
+      "reportSha256": "20dea5e64fc568b044f7e3182fab2226f01b18c4b7b4a3ebff86bfd010484a90"
+    },
+    {
+      "name": "timing-0-07-flashwright-svgomg-4-restricted",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.3566390620035236,
+      "runnerMilliseconds": 2896.9410000000003,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "03c0f5159c68ad9215942d85946c7f9be6268ca876def6ddedb4e28bd8a512c3",
+      "reportSha256": "00317cbc0b558fe8a5cb7a488460512a6f7597b2f4fa2e524f8cfb13680d54cd"
+    },
+    {
+      "name": "timing-0-08-playwright-todomvc-1-full",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "full",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.831200155997067,
+      "runnerMilliseconds": 11363.475,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "efe1a3831e427d75ba2f7be0d0461c9a1e94bc739a29f96dec009bc07a825237",
+      "reportSha256": "96a3a2e158ba03b3103d3305b8504dbfdd90afe5b08856fdbbb661aa4cf0ad0c"
+    },
+    {
+      "name": "timing-0-09-playwright-todomvc-1-restricted",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.82150602099864,
+      "runnerMilliseconds": 11428.360999999999,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "9c0b9df22fa3ebb78e588777dcf3df06a4107b325eec058552b829a2b7057427",
+      "reportSha256": "33b59a681eb4b3e2a90c6de7d150184c9139fbe4f093445a83f1a3662aa6f499"
+    },
+    {
+      "name": "timing-0-10-playwright-todomvc-4-full",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "full",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 6.210584526001185,
+      "runnerMilliseconds": 5795.572,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "124a99feb27f62fc9e6f67784aabd18587e09d87cd34a2af7bd13a6264354ff2",
+      "reportSha256": "a6e755f608afbc1a0e6bd05ea841ba5e54d167ab1bf7ad8b6824578de7dd8d48"
+    },
+    {
+      "name": "timing-0-11-playwright-todomvc-4-restricted",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.987949973998184,
+      "runnerMilliseconds": 5587.87,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "bfb0144d444167a89c99db1905b5e29984d069d0437cd7f338105c96bc5cc88c",
+      "reportSha256": "57d34f7afe93a34191112f40714ff316de18a61893298148136a3d815f4e54f0"
+    },
+    {
+      "name": "timing-0-12-playwright-svgomg-1-full",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "full",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 4.096750736003742,
+      "runnerMilliseconds": 3709.884,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "4e50d94b85139df54823625f145d439e44e39f00c082b62e7a8f5b20a0a65fbd",
+      "reportSha256": "1d965126bd68c51114506b127fb7440bbcc2857c0bf49376cf47de27425f8983"
+    },
+    {
+      "name": "timing-0-13-playwright-svgomg-1-restricted",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 4.101850266000838,
+      "runnerMilliseconds": 3711.482,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "4dce3332a9081016f1764e82310110750fa6d963b2b7bf4f7c3ec8e86384a022",
+      "reportSha256": "0c821d5ecd35681fe737494dc2b66946c4549f4c9689c5156275255877ccbdc7"
+    },
+    {
+      "name": "timing-0-14-playwright-svgomg-4-full",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "full",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.5915960050042486,
+      "runnerMilliseconds": 2197.61,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "a32c510dba7de3ca92ed4e8417dd2ea217f989af94b6fc58ad626bc082b33453",
+      "reportSha256": "33cd5cb351e5af9e1df13b1960b56eb65737d32238458adad386fd79cd386267"
+    },
+    {
+      "name": "timing-0-15-playwright-svgomg-4-restricted",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 0,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.540978108001582,
+      "runnerMilliseconds": 2148.918,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "2c637bbed270afb5380b54e94b4d9d666d00d42227d5883ac5c0e127230382ce",
+      "reportSha256": "f526b675ed2e0590221499583afed9f370188c9f859a0f095bd578c0ca2e860f"
+    },
+    {
+      "name": "timing-1-16-playwright-svgomg-4-restricted",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.4507820139988326,
+      "runnerMilliseconds": 2058.902,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "3d970bb4c264b6c0f8166e9a817991bb34f92cdd3fc8f151f04f0d3691458391",
+      "reportSha256": "6c7c8c739a18d46ed2dc1d46fb7c004b3ad5422e02046c10f7d84535233e6bcb"
+    },
+    {
+      "name": "timing-1-17-playwright-svgomg-4-full",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "full",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.5418142519993125,
+      "runnerMilliseconds": 2165.864,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "5161c8cbba43e91c19a74e42e66c63d1705a1f45d8d2194a2dd075f092d5e08f",
+      "reportSha256": "783efd4fdedf125336063bab2b2beee488780bb94b2c431265e79fe3eae87baf"
+    },
+    {
+      "name": "timing-1-18-playwright-svgomg-1-restricted",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.7763090590015054,
+      "runnerMilliseconds": 3384.134,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "b467cef03e66379c5d840234ab6e9884cc9aa02e75c366921ed88c249e0b8c44",
+      "reportSha256": "2d2318ba6e5f8119f019f9cc7bec31db16b8100fa1714239e65c3b835795df82"
+    },
+    {
+      "name": "timing-1-19-playwright-svgomg-1-full",
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "full",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 4.108148472005269,
+      "runnerMilliseconds": 3726.172,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "04a1eaeafc40c479b9b3bd2eef45e11718416b23423549bcae6f66bc820be2dd",
+      "reportSha256": "f85b7bf30a812930168932bd127aea6b88c7f42f6286ffb014746847e607dc05"
+    },
+    {
+      "name": "timing-1-20-playwright-todomvc-4-restricted",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 6.191256849000638,
+      "runnerMilliseconds": 5789.311,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "2ef677acf18bea95898f7aa137545f1f463fe2c1a7b969e218cfb2608b256450",
+      "reportSha256": "b0b5de9d4e3c63cc701193c8f52100301f926b2bef1bf7f08e059d8870407826"
+    },
+    {
+      "name": "timing-1-21-playwright-todomvc-4-full",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "full",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.979596400000446,
+      "runnerMilliseconds": 5578.128000000001,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "b60dfcb79d37d4d85028153385a3db32e883d3aa19bf5a885c58a118bff19dde",
+      "reportSha256": "1c835ac07714e1086dcfa7d7f5f9b1051a5b1e1d5bbe1823b494944651f35e99"
+    },
+    {
+      "name": "timing-1-22-playwright-todomvc-1-restricted",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.635529257000599,
+      "runnerMilliseconds": 11239.346,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "4efe7258671fa8fc0e3526959f461dae7ec19c44faf485e3a362dcb51e006803",
+      "reportSha256": "b99e7608d262c75bc41b078508afeedd188d5d106e53b7c9e71c2a6affe57d44"
+    },
+    {
+      "name": "timing-1-23-playwright-todomvc-1-full",
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "full",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.541573052993044,
+      "runnerMilliseconds": 11140.252,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "327bb92683952b6281afa4d746e22ddc24947010b3e598a753dcba6530ed4e3f",
+      "reportSha256": "eef5518416977c7718d98bce12d3ba0a182a20cbeeb58192fd9a7c37858e7dfe"
+    },
+    {
+      "name": "timing-1-24-flashwright-svgomg-4-restricted",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.5300464799947804,
+      "runnerMilliseconds": 2061.94,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "ee3f5109e59be005c05188578c3231d63e26594e133405519e8a7a9ea81d9066",
+      "reportSha256": "397ce34f6ab6c0e6d438573c1794497c405b1c8add135e401b2f0016c8078c69"
+    },
+    {
+      "name": "timing-1-25-flashwright-svgomg-4-full",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "full",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 2.504976178999641,
+      "runnerMilliseconds": 2092.615,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "87a8cc69331081695c358d5d66bcea95f9189e0019d92f8694aea45b757f24ec",
+      "reportSha256": "6ec40995e7c62ca2f0cd17e9ab26c11aad6796b030ff74502feece2648ed6dc7"
+    },
+    {
+      "name": "timing-1-26-flashwright-svgomg-1-restricted",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.767620940998313,
+      "runnerMilliseconds": 3356.179,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "115dd5acef86335347bd65944dbdfa4ab1f0f2653a826de2007e9e925f86bb5b",
+      "reportSha256": "8b663ad022172e5818a47b26cddcf765e34864928c40c4c4c738ab86155417fd"
+    },
+    {
+      "name": "timing-1-27-flashwright-svgomg-1-full",
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "full",
+      "block": 1,
+      "tests": 6,
+      "successfulTimedSample": true,
+      "passedTests": 6,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 3.9832560690047103,
+      "runnerMilliseconds": 3567.763,
+      "nativeJournalsVerified": 6,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "e7930e6a558c6cda52806cb3c7eb11e267aaf8f818b1b317cb406e195facc12f",
+      "reportSha256": "c076fc73067a563c7a416b24166da5c2fb3ff333bc3fb5120722a2b333135381"
+    },
+    {
+      "name": "timing-1-28-flashwright-todomvc-4-restricted",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": false,
+      "passedTests": 23,
+      "failures": 1,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.88518132900208,
+      "runnerMilliseconds": 5457.021,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "f8b79fb65d4347b4471a87edeea514e0a8a11baa5fa8014194b9e82a88ca1df7",
+      "reportSha256": "e79c1108fc2cf29f7030cdcf3ada75e2b8668d5c6c3f9f29d8b55b55bb06dcf9"
+    },
+    {
+      "name": "timing-1-29-flashwright-todomvc-4-full",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "full",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 5.927009798004292,
+      "runnerMilliseconds": 5503.826999999999,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "99705fa289eaeaae712e6181f18f29702893a55210cfa26ffa3d86217905f80f",
+      "reportSha256": "f668a5b588a33a8bd2b1663d0fe5f759d6acb0880823b643ce8245dd8d85699c"
+    },
+    {
+      "name": "timing-1-30-flashwright-todomvc-1-restricted",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "restricted",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.6642295940037,
+      "runnerMilliseconds": 11234.113,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "bd27dc24ca334ebdd06da8abc5e3b05a1ed6b0564b66eca8fd051c1a785187a2",
+      "reportSha256": "b0fc806eaccff8491707ff1cd79577500a74201cde9ed46a1c5599673479bb11"
+    },
+    {
+      "name": "timing-1-31-flashwright-todomvc-1-full",
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "full",
+      "block": 1,
+      "tests": 24,
+      "successfulTimedSample": true,
+      "passedTests": 24,
+      "failures": 0,
+      "skips": 0,
+      "flaky": 0,
+      "elapsedSeconds": 11.518340729999181,
+      "runnerMilliseconds": 11089.214999999998,
+      "nativeJournalsVerified": 24,
+      "nativeRecords": 0,
+      "observedCapabilities": [],
+      "cleanObservedTeardown": true,
+      "resourceSha256": "260c6e38b4180a3174a73c2d362209c75a7ccb761d980f11b79b5fe15ba17048",
+      "reportSha256": "6cef518c7a5b32a245f4c58681650b4e591f1b45998f031c40151480b5fa2f20"
+    }
+  ],
+  "timingPolicy": {
+    "createdUtc": "2026-10-18T12:59:46.777153+00:00",
+    "hypothesis": "Service-worker core omission reduces complete-suite costs through less fresh-partition initialization.",
+    "profiles": {
+      "full": "All capabilities enabled; discovery off",
+      "restricted": "Only network.serviceWorker excluded; all others enabled; discovery off"
+    },
+    "matrix": {
+      "engines": [
+        "flashwright",
+        "playwright"
+      ],
+      "applications": [
+        "todomvc",
+        "svgomg"
+      ],
+      "workers": [
+        1,
+        4
+      ],
+      "blocks": 2,
+      "order": "Full nested order reversed in block two, including profiles"
+    },
+    "resourcePolicy": "Same systemd CPUQuota=400%, MemoryMax=8G, swap zero; serial runs; retries zero; artifact capture off",
+    "primaryMetric": "Original watchdog elapsedSeconds including application server startup, unchanged runner execution, and observed shutdown. Source generation/dependency/browser acquisition precedes all owner captures.",
+    "advancement": "At least 20% complete-owner elapsed reduction for restricted Flashwright versus full Flashwright in at least three of four application/worker cells in both blocks; all declared outcomes/journals/cleanup valid. Otherwise retain functionality without advancing this omission alone for broad speed leadership.",
+    "limitations": [
+      "Fresh browser per attempt in both arms for native journal custody; does not represent well-configured ordinary Playwright browser reuse.",
+      "Two blocks are an engineering screen, not confidence or population-tail admission.",
+      "Sampled resources do not prove exhaustive custody.",
+      "No backend application in this screen.",
+      "This tests service-worker omission, not all network subsets or the complete feature idea."
+    ],
+    "performanceAdmission": false
+  },
+  "timingPlanSha256": "134a35780469db508dade60e9a754303920252e3a9eadeea7a9f1caeb4b789c2",
+  "comparisons": [
+    {
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 1,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 11.995427900001232,
+          "restrictedSeconds": 12.083434421001584,
+          "eligible": true,
+          "reductionPercent": -0.7336672083231299,
+          "fullOverRestrictedRatio": 0.9927167626409763
+        },
+        {
+          "block": 1,
+          "fullSeconds": 11.518340729999181,
+          "restrictedSeconds": 11.6642295940037,
+          "eligible": true,
+          "reductionPercent": -1.266578819157127,
+          "fullOverRestrictedRatio": 0.9874926275388546
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": -1.0001230137401285
+    },
+    {
+      "engine": "flashwright",
+      "application": "todomvc",
+      "workers": 4,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 5.812161300003936,
+          "restrictedSeconds": 6.227880496997386,
+          "eligible": true,
+          "reductionPercent": -7.1525750153074386,
+          "fullOverRestrictedRatio": 0.9332486875440403
+        },
+        {
+          "block": 1,
+          "fullSeconds": 5.927009798004292,
+          "restrictedSeconds": 5.88518132900208,
+          "eligible": false,
+          "reductionPercent": null,
+          "fullOverRestrictedRatio": null
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": -7.1525750153074386
+    },
+    {
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 1,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 4.130768032999185,
+          "restrictedSeconds": 5.084313444000145,
+          "eligible": true,
+          "reductionPercent": -23.083973812701085,
+          "fullOverRestrictedRatio": 0.8124534567934218
+        },
+        {
+          "block": 1,
+          "fullSeconds": 3.9832560690047103,
+          "restrictedSeconds": 3.767620940998313,
+          "eligible": true,
+          "reductionPercent": 5.413539181784954,
+          "fullOverRestrictedRatio": 1.0572337640604736
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": -8.835217315458065
+    },
+    {
+      "engine": "flashwright",
+      "application": "svgomg",
+      "workers": 4,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 3.112063156993827,
+          "restrictedSeconds": 3.3566390620035236,
+          "eligible": true,
+          "reductionPercent": -7.858963416602083,
+          "fullOverRestrictedRatio": 0.9271366684079183
+        },
+        {
+          "block": 1,
+          "fullSeconds": 2.504976178999641,
+          "restrictedSeconds": 2.5300464799947804,
+          "eligible": true,
+          "reductionPercent": -1.0008199361461134,
+          "fullOverRestrictedRatio": 0.990090972164594
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": -4.429891676374098
+    },
+    {
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 1,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 11.831200155997067,
+          "restrictedSeconds": 11.82150602099864,
+          "eligible": true,
+          "reductionPercent": 0.08193703825991605,
+          "fullOverRestrictedRatio": 1.000820042300973
+        },
+        {
+          "block": 1,
+          "fullSeconds": 11.541573052993044,
+          "restrictedSeconds": 11.635529257000599,
+          "eligible": true,
+          "reductionPercent": -0.8140675761974192,
+          "fullOverRestrictedRatio": 0.9919250597087343
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": -0.3660652689687516
+    },
+    {
+      "engine": "playwright",
+      "application": "todomvc",
+      "workers": 4,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 6.210584526001185,
+          "restrictedSeconds": 5.987949973998184,
+          "eligible": true,
+          "reductionPercent": 3.5847600345977226,
+          "fullOverRestrictedRatio": 1.0371804295242544
+        },
+        {
+          "block": 1,
+          "fullSeconds": 5.979596400000446,
+          "restrictedSeconds": 6.191256849000638,
+          "eligible": true,
+          "reductionPercent": -3.53971129222328,
+          "fullOverRestrictedRatio": 0.9658130078976844
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": 0.022524371187221393
+    },
+    {
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 1,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 4.096750736003742,
+          "restrictedSeconds": 4.101850266000838,
+          "eligible": true,
+          "reductionPercent": -0.1244774292045614,
+          "fullOverRestrictedRatio": 0.9987567732446586
+        },
+        {
+          "block": 1,
+          "fullSeconds": 4.108148472005269,
+          "restrictedSeconds": 3.7763090590015054,
+          "eligible": true,
+          "reductionPercent": 8.077590556063463,
+          "fullOverRestrictedRatio": 1.0878740081436833
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": 3.9765565634294506
+    },
+    {
+      "engine": "playwright",
+      "application": "svgomg",
+      "workers": 4,
+      "pairs": [
+        {
+          "block": 0,
+          "fullSeconds": 2.5915960050042486,
+          "restrictedSeconds": 2.540978108001582,
+          "eligible": true,
+          "reductionPercent": 1.9531553878353702,
+          "fullOverRestrictedRatio": 1.0199206348308434
+        },
+        {
+          "block": 1,
+          "fullSeconds": 2.5418142519993125,
+          "restrictedSeconds": 2.4507820139988326,
+          "eligible": true,
+          "reductionPercent": 3.58138829101603,
+          "fullOverRestrictedRatio": 1.0371441594888917
+        }
+      ],
+      "passes20PercentBothBlocks": false,
+      "medianReductionPercent": 2.7672718394257
+    }
+  ],
+  "advances": false,
+  "reproducedEnforcementGap": {
+    "operations": [
+      "Storage.clearDataForOrigin",
+      "Storage.clearDataForStorageKey"
+    ],
+    "before": "Both explicitly requested service-worker clearing commands returned success under exclusion.",
+    "after": "Both reject with network.serviceWorker and persist native violations before effects.",
+    "beforeBrowserSha256": "5c266f3043a2fe8442a2ac411e48bf65951e573860000fe21d583a500b82d186",
+    "beforeResultSha256": "daa5c09c6359aeacf4510029f67c2d4d9cee5f0c3df20144177e31626b278a16"
+  },
+  "retainedFailures": [
+    {
+      "name": "compile",
+      "reason": "Output directory argument mistakenly repeated the source prefix; rejected before compilation.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "8b652440d972c7a698c1352b3d1348b2e08165a67706260f3c318a7ec9bdeba9",
+      "logSha256": "f85002af0a35c0311f6bc7a103454972f47517d46850f98da7e522b56ccc0d5c"
+    },
+    {
+      "name": "control-probe",
+      "reason": "Private attempt output environment variable missing.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "9c395c6fd0d230308b01aa12ba39daedf89c7ee412960bbbec25dace29dc4a86",
+      "logSha256": "013cd4f9f0c6e188c3188991ab5922ed2b4cd445d5815f2a85b4f241827aae73"
+    },
+    {
+      "name": "controls-playwright",
+      "reason": "Verifier generator inserted new operation names into the wrong whitelist; native service-worker record was correctly rejected as unknown.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "1b8ce3dd7ba283cc64cd8110fe26d76e38be3b8e36b807e3d17ceeb4d509f9f2",
+      "logSha256": "83ba8c6d0c4b9d60e833fd5c61fbc3b07fd1dbb9ca5ee9a46b88da8eb7f410ca"
+    },
+    {
+      "name": "controls-playwright-v2",
+      "reason": "Experimental dedicated-worker service-worker control hung with only the Blink runtime feature enabled; manually interrupted.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": true,
+      "cleanupSignals": 1,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "cd2de7ddf48d5176056609a00a1f7a23c514d5d74c1fed98a1730e496ab6c5c2",
+      "logSha256": "010917e7ee087e24fecda2f23b5814bfa4f6c9964ef206c001950d560c1a2c61"
+    },
+    {
+      "name": "controls-playwright-v3",
+      "reason": "Experimental dedicated-worker control still hung after enabling the corresponding base feature; manually interrupted.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "e0937ff75a2c6c6da92113fe11f78a8771490ab659fc76757db99df462e69ec5",
+      "logSha256": "224b98acff4d0db79d11cc902cf18b17a7bc163632bf28419603a37247412e93"
+    },
+    {
+      "name": "worker-diagnostic",
+      "reason": "Experimental dedicated-worker full-mode access hung; original watchdog timed out.",
+      "exitCode": 1,
+      "timedOut": true,
+      "interrupted": false,
+      "cleanupSignals": 1,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "ca6aa30625c76a36c5a4e26a897feaff2ba52e958cac87e555dd0ba244fe0bb4",
+      "logSha256": "0bfbab015f71220d6ec808689a028128f49beb2ed865aacaba419afab683aecb"
+    },
+    {
+      "name": "worker-counterfactual",
+      "reason": "Same experimental dedicated-worker access hung on the preceding browser without the new omission patch and without the native journal; watchdog timed out.",
+      "exitCode": 1,
+      "timedOut": true,
+      "interrupted": false,
+      "cleanupSignals": 1,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "fe7eb6639191bf472a77227888198245ebb2a816c9a90ef58e53ac77ff8334a6",
+      "logSha256": "eefce09b5e7bc0e0c58ef083ca6580922ac733f1491f9dedeaccfef1ad4f96a9"
+    },
+    {
+      "name": "controls-playwright-v4",
+      "reason": "Native rejection was mapped to generic contract capability by the private host error parser; parser subsequently preserves network.serviceWorker.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "55033e02e591b8c6e43f844b4ae661d9f1f9886300aab7b25eb9016be8fabf2b",
+      "logSha256": "f62da4a5bc868daa7075ec853b32cc73d1e6f7f47ab931e11056e891651f4e26"
+    },
+    {
+      "name": "controls-flashwright",
+      "reason": "Control supplied unsupported launch args, preventing browser launch; finalizer also reported missing launch receipt.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "d1540bc0adb3b161bf05b1553285f1c11f8f6b4d6692a353d61f464fddb7bac8",
+      "logSha256": "ca281a8f557349114ea6ccf4f80ea185c7503d53da1e9e2e669fafb74c8efd0c"
+    },
+    {
+      "name": "controls-flashwright-v2",
+      "reason": "Control still supplied unsupported launch args after adding the explicit development driver path; no native launch receipt.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "afb102c48b9617886aa9db29ab959ddc42c2254c3de636fa9467b7801dc1b27f",
+      "logSha256": "8687e9e9449e1363854f4a861ee6302e927593f82855a63a9be7de94bc4250ec"
+    },
+    {
+      "name": "controls-flashwright-v3",
+      "reason": "Popup control attempted to serialize a Window result and use unsupported popup event waiting.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "c0c9cb775a82a8010c54dae2028348eeb7013975f9607c1f7aa9f14d7522e4cb",
+      "logSha256": "a628b56555df7621259ae105b5549c8d6ad5fb3f7fb8ddea834bb86d56c8f71b"
+    },
+    {
+      "name": "controls-flashwright-v4",
+      "reason": "Popup event waiting remains typed unsupported in Flashwright; final native popup control is Playwright-only.",
+      "exitCode": 1,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "resourceSha256": "2fb33bdc795be7a0c371daf24398cce7599d1a641bd2e93090148b28dcf605d1",
+      "logSha256": "86217bccb2f4c1d65339212daefd744a2e7ce1e62fac6d858f9cbd03c95b27c6"
+    }
+  ],
+  "limitations": [
+    "Default dedicated workers remain functional and lack the experimental serviceWorker API. Enabling that API hangs in the full-mode control on both the preceding and new browser; no functional admission for that experimental feature. The excluded getter was separately observed rejecting before its provider path.",
+    "Flashwright popup event waiting and public DevTools sessions remain unsupported; corresponding native controls use Playwright.",
+    "File journals, process-global policy and Linux no-sandbox execution remain private prototypes; production IPC, broader network/storage boundaries, portable packaging and final release gates are open.",
+    "Fresh browser per attempt adds costs unrelated to feature omission; these timings cannot establish a win against ordinary well-configured Playwright.",
+    "Selected source/runtime bindings and observed group drain do not establish exhaustive process custody. Five writer PIDs escaped the functional sampler.",
+    "The reused raw application verifier contains a generic drawing/DOM-storage profile description; actual frozen declarations and native policies verified here omit only network.serviceWorker.",
+    "No backend application refresh in this screen."
+  ],
+  "decision": "Retain the real service-worker omission and selected strict enforcement. Do not admit this screen: one guardian cleanup failed, and no complete application/worker cell meets the predeclared speed threshold in both blocks. Diagnose the cleanup failure without replacing its sample; this one subsystem does not test the whole capability idea.",
+  "driverSha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c",
+  "guardianDiagnostic": {
+    "launches": 256,
+    "concurrentLoops": 4,
+    "profiles": "alternating full and excluded",
+    "status": "no-failure-observed",
+    "driverSha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c",
+    "resultSha256": "cd35fd87820d6275be4deee246a391eacdfbcb7ada44df6be543f6190c85ab32",
+    "resourcesSha256": "ad0df8e955d434190ad9bcee0621fd34996d38f29eb9ef864eacd998d2efb321",
+    "scope": "Diagnostic only; does not establish absence or cause of the intermittent failure. A separately reproduced Linux ESRCH enumeration defect is recorded in guardian-proc-disappearance-checkpoint-2026-10-18.json."
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-linux-proc-disappearance-fix",
+  "sourceBaseline": "93122dab723cd70f25c288c06d535f0099628d5f",
+  "platform": "linux-x64",
+  "scope": "Treat ESRCH from /proc/PID/stat reads as a vanished process during group enumeration. Preserve other read failures and existing unreaped-leader ownership and live-member barriers.",
+  "browser": {
+    "distribution": "Chromium headless shell",
+    "version": "Google Chrome for Testing 148.0.7778.96",
+    "sha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a"
+  },
+  "driverSha256": "972978383cd39306aa14dc0f5939967a687fe8e4a92fb38956cc1ef03fa20902",
+  "preFixScreenDriver": {
+    "sha256": "18e331f1ae583b205e67f3c84f2cf37d48e59846e3045268eae600b5d55a785c",
+    "bytes": 14713328,
+    "reason": "Preserve exact pre-fix driver used by the service-worker screen and guardian diagnostic before rebuilding the shared release target."
+  },
+  "sources": {
+    "crates/flashwright-browser/src/process_group.rs": "dc742e293bb8007b8f94ef4a9897e26ba04f5f37b65f70947691819ad91951e7",
+    "crates/flashwright-browser/src/supervision.rs": "5bcecf66035cc331482d75c4f178e2e08b13a941caaf9bebf57d62cacd2e9380",
+    "compatibility/m1/test_guardian_shutdown.py": "8c8cb978cc612a1f828fbe37a169fc8b340c974bde47859bdd2d489ae1372bd2",
+    "compatibility/m1/guardian-shutdown-browser.py": "ff4886808c119b75d8b0d280de840e0b026803601ddb49d7e4abb20fa0792724",
+    "compatibility/m1/test_lifecycle.py": "738c7f39dbad70dd2a78c84a05ac467d295039b688dc639911fafd37e8d07009",
+    "compatibility/m1/test_public_lifecycle.py": "5d860843c2654eb76dcc0b0a9d79b3200c3f10b8f832f40a5a26310b2f917061",
+    "tools/watchdog.py": "80f2ee6391f401bb462e57c2b1f091b3e883d1db6fe35d9cd31d5a1f642f93b0",
+    "tools/run-python-tests.py": "10dfb82318a45c470f486002289f436f59de8390c6cad3887b345706352e7784",
+    "tools/build-driver.mjs": "73e2b287805708441f2b21edd22498d702540b53814647ca6cbea792fd7e74f3",
+    "Cargo.lock": "09a5486897ee684dd91f9a5a8bd286eb5572ebb009a5e487c717b32a9810aeb5"
+  },
+  "regression": {
+    "test": "process_disappearing_after_stat_open_is_not_an_enumeration_failure",
+    "method": "Open a real child process proc stat inode, kill and reap the child, then reopen the retained inode through /proc/self/fd. Assert native ESRCH and invoke the production read helper.",
+    "before": "Regression failed with errno 3 using the previous ENOENT-only logic.",
+    "beforeLogSha256": "bda8ac9df628d5fa6f5ec0daf92bc32293c9a2b44ee00b3325a28b66307d25bb",
+    "after": "Passes with ESRCH handled as vanished; missing paths, directory errors and invalid UTF-8 independently checked.",
+    "nativeReadReproduction": [
+      {
+        "method": "read-held-descriptor",
+        "errno": 3,
+        "error": "[Errno 3] No such process"
+      },
+      {
+        "method": "reopen-held-descriptor",
+        "errno": 3,
+        "error": "[Errno 3] No such process"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "browser-crate",
+      "status": "passed",
+      "logSha256": "31fb83b1be5dd4959db357798154bc2338c052fd153f8350871beb64d0f50dde",
+      "resourcesSha256": "00d24a5f37382b1104f8f24ad61c4fa582b62ff4a2265d370b289cbb542bfdf4",
+      "elapsedSeconds": 8.40949219000322,
+      "supervisorCleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "passed": 101,
+      "ignored": 1
+    },
+    {
+      "name": "release-build",
+      "status": "passed",
+      "logSha256": "f8ac570a726ca2a57150d6836a5852602dc6fde5bd1b6fb2ac9b6eb5f5459638",
+      "resourcesSha256": "e0d4b36e43efea90d4294265e1f8e35976b2618819ba027ead2cf96087848596",
+      "elapsedSeconds": 17.317512415000238,
+      "supervisorCleanupSignals": 0,
+      "remainingObservedProcesses": 0
+    },
+    {
+      "name": "clippy",
+      "status": "passed",
+      "logSha256": "ff42e3d29f80145d6030041c9d407178a6f3f338049cd314f072beec6676deae",
+      "resourcesSha256": "cba042aa96c5e2bc4585411ac1835c7d1e3a588e4934aa45ddfab8b60d429208",
+      "elapsedSeconds": 0.7674730619983166,
+      "supervisorCleanupSignals": 0,
+      "remainingObservedProcesses": 0
+    },
+    {
+      "name": "test_guardian_shutdown.py",
+      "status": "passed",
+      "logSha256": "1dce40bbe5dc8ae4ed47f1de4af935cf162704f7cddc8c9e209d0b4dc33c7fb5",
+      "resourcesSha256": "78ef945fde5fe01f4546e0d8b277d64f832dca0d0a3f34c125bf26c4fc1a5cf4",
+      "elapsedSeconds": 5.810631143001956,
+      "supervisorCleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "tests": 4
+    },
+    {
+      "name": "test_lifecycle.py",
+      "status": "passed",
+      "logSha256": "afc834bef21b6910b875a9ed20981886c5534a513ffb263f758312a819a9de2b",
+      "resourcesSha256": "46f50797a4e08203af3c083a52d4db61c5c56e95d090d618e3a9d49a33f22f64",
+      "elapsedSeconds": 9.468884886002343,
+      "supervisorCleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "tests": 8
+    },
+    {
+      "name": "test_public_lifecycle.py",
+      "status": "passed",
+      "logSha256": "ea47bf0076005b40b6bd98a0ade7e1cb194b5d49a6c0476e786b529587de2534",
+      "resourcesSha256": "1973e416c5254478cec9e6cb1396cf40692cd08c157ff9b78def45fe1c93263b",
+      "elapsedSeconds": 12.757392763000098,
+      "supervisorCleanupSignals": 0,
+      "remainingObservedProcesses": 0,
+      "tests": 12
+    }
+  ],
+  "limitations": [
+    "The earlier service-worker timing browser.close failure did not retain guardian stderr and remains unattributed. This independently reproduced defect is not a proven cause of that failure.",
+    "A preceding 256-launch diagnostic using the old driver observed no failure; it is not evidence that the intermittent failure was fixed.",
+    "Focused native Linux validation on one pinned stock distribution; combined-core refresh, other platforms and release gates remain separate.",
+    "Sampled observed-process cleanup is not exhaustive resource custody or performance admission."
+  ],
+  "performanceAdmission": false,
+  "resourceAdmission": false
+}
