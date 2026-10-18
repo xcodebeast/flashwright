@@ -1,0 +1,523 @@
+{
+  "schemaVersion": 1,
+  "classification": "native-linux-capability-compatible-worker-backend",
+  "status": "passed-selected-original-backend-matrix",
+  "testedCommit": "ee6e96cb8f01aa885863e9d7637668ae76ff1560",
+  "privatePrototype": true,
+  "publicFeatureDelivered": false,
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "decision": "The corrected compatible-worker adapter passes the complete backend functional matrix with painting/capture excluded and all storage/network retained. One browser per runner worker includes the separate setup worker; each test owns fresh contexts. This closes selected backend reuse functionality, without a new timing result.",
+  "environment": {
+    "os": "Linux",
+    "architecture": "x64",
+    "runtime": "Bun 1.4.2",
+    "reference": "Playwright 1.60.0",
+    "browser": "Private Chromium headless_shell 148.0.7778.96, network-boundary014-v2",
+    "browserSha256": "411e37217c67d9165661d45389def81aec1ffe56e14c11ec6c4b529be71c9274",
+    "runtimeManifestSha256": "50e7f6b32719f072f5bdb89c8b97bde6306d41525813f088651bc0302497e7c0",
+    "runtimeFiles": 11,
+    "driverSha256": "972978383cd39306aa14dc0f5939967a687fe8e4a92fb38956cc1ef03fa20902",
+    "cpuQuotaPercent": 400,
+    "memoryLimitBytes": 8589934592,
+    "swapLimitBytes": 0,
+    "artifacts": {
+      "trace": "off",
+      "video": "off",
+      "screenshot": "off"
+    }
+  },
+  "application": {
+    "sourceCommit": "7257e606cb94eada1dca40173e2b7f99dd549bc6",
+    "originalTestsPerRun": 62,
+    "testBodiesChanged": false,
+    "helperPolicy": "Existing common corrected signup helper retained unchanged.",
+    "services": "Fresh PostgreSQL, Mailpit, API and prebuilt original frontend per cell; private network namespace and bounded cgroup."
+  },
+  "matrix": {
+    "testsPassed": 496,
+    "workerJournals": 28,
+    "discovery": false,
+    "full": "All capabilities enabled.",
+    "restricted": "Painting/capture excluded; all storage and network including service workers enabled.",
+    "rows": [
+      {
+        "engine": "flashwright",
+        "workers": 1,
+        "mode": "full",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 2,
+        "browserLaunches": 2,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": true,
+          "screenshots": true
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "42f57fd0e37a3773c96d5f37dc307abfd15a72f27d8b015a21d8824b66ddd95d",
+          "runner-report.json": "d504b5eef3b3f9391147d571d7934e5420a7645dafcf2a404dd26e382b30cb0f",
+          "runner-resources.json": "bc8375b372470ca20b0489cae4ecd549821a489ad1979da7f0f310873fae449d",
+          "owner-report.json": "86611f29104b5543ae005cb5abc38ac1649b92883bcd51cea1233ad655cd863e",
+          "native.json": "1392fbb0df9603845e0745df400c338f1dcf55dfa59aef370bcd6133393b43ca",
+          "controller.json": "b95cf8873ae128660701297e2312778c28d932cfac19c9bef25236a15b1973ac",
+          "result.json": "07560c104376fafb2aa36d56ce1e791efb9813494d437a346961ac367de163f7",
+          "policy-before.json": "359de0ed488e2041f9995234efb0f3cfa84b1cd39dca8655b8285f2260f84241",
+          "policy-after.json": "975d9a253ebcb6df20897175c9786b5ebb20875deb0cf698b16a72e01712d9f7",
+          "verification.json": "d7c8eb28d386bd632d6aaaf6eab96fbc75ecbabf5fa8c69b67ee29366d53302f"
+        }
+      },
+      {
+        "engine": "flashwright",
+        "workers": 1,
+        "mode": "restricted",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 2,
+        "browserLaunches": 2,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": false,
+          "screenshots": false
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "b6bcdba45bebf8dc7d288f50cb7c933afbf96c825b9f4b85065cc3da72ffde47",
+          "runner-report.json": "bd76132489b179534d50e3878b869732bf36ca8e33997964583c29317c584b00",
+          "runner-resources.json": "615d30fc881634f9a7775c8490c97cb34a46e6522d15db577b314e00f32499fb",
+          "owner-report.json": "30c152f3fa5232971999004e77fcccd4d7c157d56a5a13edb282b81baf411d7b",
+          "native.json": "641b4733e4364607f95710973802fd668f41e7fb71ebb4c0ace60cee456f5049",
+          "controller.json": "9c2b3b0498729ed4a74ed4375dd41d962fc81655c2d08470b1bd4abed8bd18f0",
+          "result.json": "de33c17faea4fe0b2cb449aa97d7cc6999c5c884cc13955ee14b1aa9c020d9f4",
+          "policy-before.json": "5db35227cb5640b9d239e5686874f50a1711b7f951c1367ae58e71bc36bb1827",
+          "policy-after.json": "ceb8ec7e259dd8205a64f50325af27e3c3ca3aeea1bc4440dac5f92f2b4e1d60",
+          "verification.json": "133c14f8b8c901fa21d38d0a778d28f89fbdcf5d53da999013f18b673cc7b6e6"
+        }
+      },
+      {
+        "engine": "flashwright",
+        "workers": 4,
+        "mode": "full",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 5,
+        "browserLaunches": 5,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": true,
+          "screenshots": true
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "7ace7d7361e465e43e91dbbcdc5325f5cec243a16a3024f7d210b33f3d626b90",
+          "runner-report.json": "ec5ceaab9dee3af0462318531b1ca7e641ea5f4652ddb19eb2fe0247f87ce3ee",
+          "runner-resources.json": "f45061f6a74520c4bac33032fc0675265e12f274e4e118ad41673501e4769623",
+          "owner-report.json": "c82ac3ed913655985d2b9f458f706c445772a9a556df7f3fe133d70a921ae7f8",
+          "native.json": "df848dcdfdb75087ee060d693c2a6ec419d69c5b2a9be216d3f11e85fa9c4413",
+          "controller.json": "33140376403d540f1a1ca1a6cf3bc5b59f1ebc1fc9dee533abe728f736f007fa",
+          "result.json": "d28d09c066d773e5253c1d8af19f0ca639484bcc70d5fabd6671648f138c9220",
+          "policy-before.json": "583ae36246c6f4975ecd27b86ea9cda9617e96f009f9592818786ca214021b6b",
+          "policy-after.json": "ac5489a5be68b133f9663306a623610b883bab7517e1f13d4c6167d6adc55f17",
+          "verification.json": "64aeb174e7341bb2c22d48638dd9ca33454c8ea68ba5d0498e3f11cefa68d5f3"
+        }
+      },
+      {
+        "engine": "flashwright",
+        "workers": 4,
+        "mode": "restricted",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 5,
+        "browserLaunches": 5,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": false,
+          "screenshots": false
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "2a8bd2f5567e8cccac25a933d44845d751d5644ba38afb286d92a8e08a4fa325",
+          "runner-report.json": "295bff539f6db66a142a73140ff99b1f2e0fcec3b0d54ce903223be5f3005185",
+          "runner-resources.json": "b33a5ab443c1c2f6fd0bda4c554b0bcf59177091830dad5cbe4990f14709232e",
+          "owner-report.json": "ed16a26d89b77bb281dfecb2f24bd59de6f13668d52366649d8ee4d0427ea594",
+          "native.json": "0a24fec9db1b739020974d7a43f540537114eb111226ad11a983e0af8e7de345",
+          "controller.json": "8f04750665ab59cc9d8c661d70313157b339276f6ad189e7f69fed1bc123e820",
+          "result.json": "c7a35d55982a9182deb124021435cebf618433528e2e670f850b657f98eab310",
+          "policy-before.json": "43a4badf27f481c2551db7d098eeda2b2369f7541fde550ca45043f03cc6bc91",
+          "policy-after.json": "2291317b4a1b567aedad2e4ba4f71b2e554ea0551ed6afb9851bab418f812614",
+          "verification.json": "aa25b413593ef4dba03ec3a2b8992dcaf1a261a8b797c1ed97b467164517e530"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 1,
+        "mode": "full",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 2,
+        "browserLaunches": 2,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": true,
+          "screenshots": true
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "c6ba5e456528a1cf0c2b04d80537555e558949d29bcdb6806a012064c93d2ef4",
+          "runner-report.json": "821f3f090954e3306c5838b29283f547c1a62885dd60df2f515f5311189a1535",
+          "runner-resources.json": "eb6ecdaca63269ebf52f48d5d05daab9c6676006dd8b62f461589c1a88534371",
+          "owner-report.json": "3a4e2611e4c14e9114ae04a3357f15249272ddf2ae76085e040a79b3ca8f198c",
+          "native.json": "e41750dac3bdd9db4face3a7a28b36ec43a25addf1a543a55adb954987e24405",
+          "controller.json": "044b807c97ea0a11fbd616a27d0cf92bd98d5471527d3b1ea66b518bcaf31fc2",
+          "result.json": "3191351ed898159f27132b36f6fd20e5396ce1e1734ee8c2f37786906026c735",
+          "policy-before.json": "24af553555fdedf230a8a44c19a47cdff2b76e1d02219c6622ee1b98f5b1eee7",
+          "policy-after.json": "f58987e344c62fa2ca1e758c8998a41dfbdde24ac6c89aea6edc90b147ad1c8a",
+          "verification.json": "8de4019470bf2ee255b7ef299d67e2778f25998dfab9bc186f4335e728e631f5"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 1,
+        "mode": "restricted",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 2,
+        "browserLaunches": 2,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": false,
+          "screenshots": false
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "eff2662e3a1f935dcc9f5c399eed582d4375ea69731c0b93a4ad50cb466fa3a2",
+          "runner-report.json": "ec660a5df8e3723b51e63b4fc9108084caecc529dbbb3527898d5269c1c91f5a",
+          "runner-resources.json": "095cda5bc9fce27afa3aca5f77ef2c561e6d5ef5b2485f3b9f0fffc40e657a47",
+          "owner-report.json": "718353815a9b698c1e7e9d9f75bf2304d1a72f4a2bd936cb13b148d65d2e5f16",
+          "native.json": "3d61743409a1ecedf9b489e53010df618259fcd52d6d5112a32dc4cb4c0ef036",
+          "controller.json": "47111334578257c4f6839ff7b33ff2c59e32ea9827d538413d6d72a23c39c073",
+          "result.json": "6b43e5ae0f782d62c2e19ef785d1c76725d7b206558888c2704587995faeb72e",
+          "policy-before.json": "8a207b7e5d53cc11e32a21715946ae8edde076d3bccf9f32012af8e150a79e5a",
+          "policy-after.json": "c89dc2fa8212408ca77fd3d97c8cec60bfc91f0f41f4b6c86d41a8a0bc72ac10",
+          "verification.json": "f89d6eef538261e65c27fb490c8078b7c9a92eb4d8ddff3b5d38eaed844ee76e"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 4,
+        "mode": "full",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 5,
+        "browserLaunches": 5,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": true,
+          "screenshots": true
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "4b64902e431d1d191227cfb355ae07b478547ab38df220ba087e3e3b040be942",
+          "runner-report.json": "cbaa6c631a803b673f76f32c7399c2683ae3905e194c18dfbc8c7a2d00f63dcd",
+          "runner-resources.json": "2dad679e6e5799822ff8b2f63c03fe9f3f377bce3367494260b321eab7ffec89",
+          "owner-report.json": "49e86dbde208d3f078ec89e47eb733f5800424d7e30f538e8bb3b94080456248",
+          "native.json": "87c28292b8065802d46f73be6dd0061e1162da9bd659392f8bfb68432ce5d1cc",
+          "controller.json": "c84897d66751ea6d03880ac71873bca3f575521f31b000317f1f35c5523e309e",
+          "result.json": "80d924905e3c5c386291554907eba2411d80028b8ecbe845f2ea5f1a3abc9af5",
+          "policy-before.json": "e2ca734895d9e4cb26e0f61eb68ec0cbfc5ac9f7c79d4dee8788720343b939e2",
+          "policy-after.json": "a24a288d1be33772ee3f4fe2ef9c56ae7ae653934b57597403409ad2579662fb",
+          "verification.json": "4d96c4193ff521217541bfc6c792f2858815459e9423d72f957ba6b600ddce98"
+        }
+      },
+      {
+        "engine": "playwright",
+        "workers": 4,
+        "mode": "restricted",
+        "block": 0,
+        "testsPassed": 62,
+        "testScopesClosed": 62,
+        "workerJournals": 5,
+        "browserLaunches": 5,
+        "nativeRecords": 0,
+        "nativeViolations": 0,
+        "hostViolations": 0,
+        "sourceBinding": {
+          "beforeAfterIdentical": true,
+          "repositorySourceFiles": 1313,
+          "selectedDependencyEntries": 22924,
+          "fixtureSourceFiles": 28,
+          "generatedFiles": 2,
+          "runtimeFiles": 11
+        },
+        "features": {
+          "navigation": true,
+          "javascript": true,
+          "eventListeners": true,
+          "layout": true,
+          "storage": [
+            "localStorage",
+            "sessionStorage",
+            "indexedDB",
+            "other"
+          ],
+          "network": [
+            "serviceWorker",
+            "other"
+          ],
+          "painting": false,
+          "screenshots": false
+        },
+        "digests": {
+          "before.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "after.json": "0291a5991891fc784d5f0beaa5eef0a1313f0cbb9b15cdf06c465878e45689d1",
+          "prepared.json": "a146e911d0988c14d1df7faf39b673909bfa6734adbdd708827ad8dc7b6132bc",
+          "runner-report.json": "85c24c166aed5c8994adffe6b85c29a31f8ded5afac91da9640082905f03a7f6",
+          "runner-resources.json": "d0c586484dda97618b3ee6a622bce6f02d57aa1bb6b091166a058a4f2fb7854f",
+          "owner-report.json": "761dda32232e8c46aa7e7bced71b18f2bce64ec6fbef0585104ce6e68836e766",
+          "native.json": "e708245c077bfbcdf060899481ce3b5e7fa48d5be741fb368286bd327ff4991f",
+          "controller.json": "74bdfa065e116db2155cc933953a58db6bbe9d627b79cf3498527da7f86543c3",
+          "result.json": "f4b1b0a2edc722f1d4ec4c26c3700b23e6bb2d7e0f628ad377f7b16442d9a7f1",
+          "policy-before.json": "f2bb53f0819bc30b34ee4389ad799b52a2075ac5f447834a8a464ede91c9a489",
+          "policy-after.json": "c59c2c2c20a47b5ce859930ba364a5bc4786be2b28ccdeef2356e86ab1a9d5de",
+          "verification.json": "d46f2a6b80d0e5c3f31acd3ff809e4601dd5974f304f7f315435f325aa79849a"
+        }
+      }
+    ]
+  },
+  "controls": {
+    "groups": 10,
+    "testScopes": 24,
+    "workerLifetimes": 10,
+    "checks": [
+      "Fresh cookie/localStorage state in sequential test contexts and additional contexts",
+      "Viewport and native input retained",
+      "Closed scope rejects later context creation",
+      "Caught native violation remains rejected through a clean successor scope",
+      "Caught host screenshot violation rejects worker teardown",
+      "Incompatible worker declaration rejected"
+    ],
+    "nativeAttribution": "Worker lifetime only; no exact native per-test attribution.",
+    "missedWriterSamples": 2,
+    "digest": "a35cb6294358031df0598270f31363568d191cc4819330f7611861306eecf0f2"
+  },
+  "retainedFailures": [
+    {
+      "stage": "Initial019 loader",
+      "result": "No tests discovered; pinned CommonJS transform rejected the private adapter top-level awaited dynamic import. Local synchronous reading of the same manifest corrected loading."
+    },
+    {
+      "stage": "019 v2 project-worker output routing",
+      "result": "Test bodies passed but later worker journals nested under the first worker recording because worker startup mutated process.env.FW_CAP_RUN_OUTPUT. Five original runs remain diagnostic; final controller parent wait was interrupted. A no-browser two-worker control reproduces the defect, then passes with explicit recording-owned output directories.",
+      "beforeControlSha256": "e96c5e658ee1f9d17dbbf3569326d13fe6102acb804de7ffe3952662933b2292",
+      "afterControlSha256": "bbdb959c84c5e21237fc26a7c63c1af138ad9fd57b044f18dfd21366200f1cea"
+    },
+    {
+      "stage": "019 v3 broader service-worker omission",
+      "verifiedPriorCells": 5,
+      "verifiedPriorTests": 310,
+      "failedEngine": "playwright",
+      "failedWorkers": 1,
+      "passedTestBodies": 45,
+      "failedTestBodies": 17,
+      "result": "Pinned StorageScript.restore reads navigator.serviceWorker before restoring origin state. The native exclusion rejects that required access. Retain the failed run and its worker teardown violations; the new020 matrix explicitly enables service workers in both engines. No failed attempt was silently broadened.",
+      "runnerReportSha256": "ffaa5a292fb1ad96976c984a17494c222a79dbe13dc861dc017ff4df5bb2f77c",
+      "upstreamSourceSha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+    }
+  ],
+  "evidence": {
+    "preparationSha256": "9a92667a97d19288bebc8998444e21d127578807912f97a9aeb4ac4695790353",
+    "planSha256": "b87b368f2dcf36e1cbb0d8154e29a9d68f476488b1ca9c683f41c5cf3018ce5a",
+    "campaignSha256": "c407379af058993b5a457f5c6b92b0df2df1b7d96e454eb00ebc4e5511b3de69",
+    "verifierSha256": "c941e543903c8ba30d9b57de23dd4980c70bbe34dd6ee511390ea0351cd0ad6a"
+  },
+  "limitations": [
+    "No performance result follows from these functional runs.",
+    "No native dependency records were expected in discovery-off successful runs; zero missed writers is not evidence of exhaustive process custody.",
+    "Private Linux no-sandbox browser and file journal; production IPC, public API, full implicit discovery and exact per-test native attribution remain unfinished.",
+    "The reference adapter does not yet preflight its service-worker storage-restoration dependency; native enforcement rejects it during the operation.",
+    "Other platform, packed release and majority-scenario 2x performance gates remain open."
+  ]
+}
