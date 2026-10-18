@@ -21,7 +21,7 @@ Claims do not propagate to child options, sibling overloads, enclosing types or 
 | Feature | Status | Exact entries | Verified scope / difference |
 | --- | --- | ---: | --- |
 | [Dialog](#dialog) | experimental / verified-subset | 69 | 29 shared cases; occurrence/page/frame/session ownership, null-page prepublication, UTF-16 metadata, handling, duplicate/stale behavior, page/context listeners/predicates and packed module modes. |
-| [ConsoleMessage](#consolemessage) | experimental / verified-subset | 21 | Live page/context console delivery and same-process main-world child frames; exact diagnostics, aliases, timestamp, page, null worker, retained original-context argument handles and listener identity/order. |
+| [ConsoleMessage](#consolemessage) | experimental / verified-subset | 21 | Live page/context console delivery, same-process main-world diagnostics and selected remote-frame console API delivery on native Linux; retained original-context argument handles, page ownership, listener identity/order and remote completion ordering. |
 | [JSHandle](#jshandle) | experimental / verified-subset | 10 | Supported graph values/identity/cycles, nested handle arguments, UTF-16 properties, property ownership, original-context evaluation, DOM detachment, disposal/async disposal, allocation rollback and packed declarations. |
 | [ElementHandle](#elementhandle) | experimental / verified-subset | 6 | Captured original-node selectText/scrollIntoViewIfNeeded and original-node local-file/buffer/clear assignment. Core report accepted via checkpoint hash includes successful run-element-action-tests and run-file-input-tests. |
 | [ElementHandle explicit rejections](#elementhandle-explicit-rejection) | unsupported / explicit-rejection | 45 | These listed methods explicitly return UnsupportedFeatureError. |
@@ -96,17 +96,17 @@ Evidence: [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](..
 
 ## ConsoleMessage
 
-Live page/context console delivery and same-process main-world child frames; exact diagnostics, aliases, timestamp, page, null worker, retained original-context argument handles and listener identity/order.
+Live page/context console delivery, same-process main-world diagnostics and selected remote-frame console API delivery on native Linux; retained original-context argument handles, page ownership, listener identity/order and remote completion ordering.
 
-Limits: Worker logs, out-of-process frame delivery and console history remain outside this slice. worker() returns null within verified page scope. BigInt handles and value-derived text preserve values differing from pinned Playwright 1.60.0 (S4.l). 4096 retained/pending handles per page and bounded 4096-ID background release queue.
+Limits: Worker logs and console history remain outside this slice. Remote Log-domain sources and broad remote stack/source diagnostics remain unverified; the selected remote fixture checks source URL. worker() returns null within verified page scope. BigInt handles and value-derived text preserve values differing from pinned Playwright 1.60.0 (S4.l). 4096 retained/pending handles per page and bounded 4096-ID background release queue.
 
 Runtime defaults: Only the stated subset is reviewed; other defaults remain unverified.
 
 Assessment: experimental / verified-subset.
 
-Implementation: [packages/flashwright-core/src/console.ts](../packages/flashwright-core/src/console.ts), [packages/flashwright-core/src/index.ts](../packages/flashwright-core/src/index.ts), [packages/flashwright-core/src/subscribed-events.ts](../packages/flashwright-core/src/subscribed-events.ts).
+Implementation: [packages/flashwright-core/src/console.ts](../packages/flashwright-core/src/console.ts), [packages/flashwright-core/src/index.ts](../packages/flashwright-core/src/index.ts), [packages/flashwright-core/src/subscribed-events.ts](../packages/flashwright-core/src/subscribed-events.ts), [crates/flashwright-engine/src/console.rs](../crates/flashwright-engine/src/console.rs), [crates/flashwright-engine/src/events.rs](../crates/flashwright-engine/src/events.rs), [crates/flashwright-engine/src/renderer_setup.rs](../crates/flashwright-engine/src/renderer_setup.rs), [crates/flashwright-engine/src/handles.rs](../crates/flashwright-engine/src/handles.rs).
 
-Evidence: [compatibility/evidence/console-checkpoint-2026-10-08.json](../compatibility/evidence/console-checkpoint-2026-10-08.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance).
+Evidence: [compatibility/evidence/console-checkpoint-2026-10-08.json](../compatibility/evidence/console-checkpoint-2026-10-08.json) (conformance), [compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json](../compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json) (conformance), [compatibility/evidence/remote-console-checkpoint-2026-10-18.json](../compatibility/evidence/remote-console-checkpoint-2026-10-18.json) (conformance).
 
 Intentional differences:
 

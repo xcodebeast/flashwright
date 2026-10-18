@@ -244,6 +244,8 @@ const commands = [
   [process.execPath, 'tools/run-file-input-tests.mjs'],
   [process.execPath, 'tools/run-file-chooser-tests.mjs'],
   [process.execPath, 'tools/run-console-tests.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-remote-console-verifier.mjs'],
+  [process.execPath, 'tools/run-remote-console-tests.mjs', join(destination, 'remote-console')],
   [process.execPath, 'tools/run-init-script-tests.mjs'],
   [process.execPath, 'tools/run-runner-defaults-tests.mjs'],
   [process.execPath, 'tools/run-runner-screenshot-tests.mjs'],

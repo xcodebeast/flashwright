@@ -316,8 +316,8 @@
       "title": "ConsoleMessage",
       "status": "experimental",
       "assessment": "verified-subset",
-      "scope": "Live page/context console delivery and same-process main-world child frames; exact diagnostics, aliases, timestamp, page, null worker, retained original-context argument handles and listener identity/order.",
-      "limitations": "Worker logs, out-of-process frame delivery and console history remain outside this slice. worker() returns null within verified page scope. BigInt handles and value-derived text preserve values differing from pinned Playwright 1.60.0 (S4.l). 4096 retained/pending handles per page and bounded 4096-ID background release queue.",
+      "scope": "Live page/context console delivery, same-process main-world diagnostics and selected remote-frame console API delivery on native Linux; retained original-context argument handles, page ownership, listener identity/order and remote completion ordering.",
+      "limitations": "Worker logs and console history remain outside this slice. Remote Log-domain sources and broad remote stack/source diagnostics remain unverified; the selected remote fixture checks source URL. worker() returns null within verified page scope. BigInt handles and value-derived text preserve values differing from pinned Playwright 1.60.0 (S4.l). 4096 retained/pending handles per page and bounded 4096-ID background release queue.",
       "defaults": "Only the stated subset is reviewed; other defaults remain unverified.",
       "differences": [
         "Primitive BigInt console arguments and derived text retain their value; pinned 1.60.0 loses that handle value (S4.l)."
@@ -334,6 +334,22 @@
         {
           "path": "packages/flashwright-core/src/subscribed-events.ts",
           "sha256": "73d8ac555d89745d6d6b687cf99769e623b4b364161c9b446e17b21da0bc09a8"
+        },
+        {
+          "path": "crates/flashwright-engine/src/console.rs",
+          "sha256": "987a58de99e3b536bc4cf28a5fcddd5ed8be70f2e04b690cdf3c758aecc9a485"
+        },
+        {
+          "path": "crates/flashwright-engine/src/events.rs",
+          "sha256": "173626a00286589b108f5d725d1c68b9a4e885457aff200156a87e730eb8de76"
+        },
+        {
+          "path": "crates/flashwright-engine/src/renderer_setup.rs",
+          "sha256": "ef040d89d6e0ea2778a04be3fc894510500c4058303c70a8c9b3caa3b14e76c7"
+        },
+        {
+          "path": "crates/flashwright-engine/src/handles.rs",
+          "sha256": "faeeacf855f27d152b4a1d6850ca56ab6643184de5e32853c24629d342c12af1"
         }
       ],
       "evidence": [
@@ -345,6 +361,11 @@
         {
           "path": "compatibility/evidence/dialog-recovery-checkpoint-2026-10-09.json",
           "sha256": "e810135e44a972d445a0887d72a46d8c5e3b45eae82089e693b7bd83c1431d93",
+          "kind": "conformance"
+        },
+        {
+          "path": "compatibility/evidence/remote-console-checkpoint-2026-10-18.json",
+          "sha256": "0048d97210ecbe49d9d7d5642f0acb10b06af9a88e5bb0a62824a1455a08340d",
           "kind": "conformance"
         }
       ],
