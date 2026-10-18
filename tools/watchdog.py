@@ -6,8 +6,10 @@ import ctypes
 import errno
 from datetime import datetime, timezone
 import json
+import math
 import os
 from pathlib import Path
+import select
 import signal
 import subprocess
 import sys
@@ -32,6 +34,49 @@ def publish_report(path, report):
     finally:
         if temporary is not None:
             temporary.unlink()
+
+
+class OwnerExitNotification:
+    """Wake resource sampling on owner exit without consuming its wait4 record."""
+
+    def __init__(self, child):
+        self.child = child
+        self.descriptor = None
+        self.poller = None
+        self.receipt = {"method": "not-used"}
+
+    def wait(self, seconds):
+        if self.child.returncode is not None:
+            return
+        if self.receipt["method"] == "not-used":
+            self.receipt = {"method": "periodic-poll", "reason": "platform-unavailable"}
+            if sys.platform == "linux" and hasattr(os, "pidfd_open"):
+                try:
+                    self.descriptor = os.pidfd_open(self.child.pid, 0)
+                except OSError as error:
+                    if error.errno not in (errno.ENOSYS, errno.EINVAL, errno.ENODEV,
+                                          errno.EPERM, errno.EACCES, errno.ESRCH):
+                        self.receipt = {"method": "failed", "reason": "pidfd-open-error",
+                                        "errno": error.errno}
+                        raise
+                    self.receipt = {"method": "periodic-poll", "reason": "pidfd-unavailable",
+                                    "errno": error.errno}
+                else:
+                    self.poller = select.poll()
+                    self.poller.register(self.descriptor, select.POLLIN)
+                    self.receipt = {"method": "linux-pidfd-poll"}
+        if self.poller is None:
+            time.sleep(seconds)
+            return
+        for _descriptor, events in self.poller.poll(math.ceil(seconds * 1000)):
+            if events & (select.POLLERR | select.POLLNVAL):
+                self.receipt["error"] = "invalid-poll-events"
+                raise OSError(errno.EIO, "Original-owner exit notification failed")
+
+    def close(self):
+        if self.descriptor is not None:
+            descriptor, self.descriptor = self.descriptor, None
+            os.close(descriptor)
 
 
 class RootProcessCpuAccounting:
@@ -309,6 +354,7 @@ def main():
     child = subprocess.Popen(command, start_new_session=True, env=environment)
     launch_returned = time.monotonic() - started
     root_cpu = RootProcessCpuAccounting(child, started)
+    exit_notification = OwnerExitNotification(child)
     interrupted = False
     timed_out = False
 
@@ -367,12 +413,17 @@ def main():
     try:
         while root_cpu.poll() is None and not interrupted:
             observe()
+            if child.returncode is not None or interrupted:
+                break
             if time.monotonic() - started >= arguments.timeout:
                 timed_out = True
                 break
-            time.sleep(0.1)
+            exit_notification.wait(min(0.1, max(0, arguments.timeout - (time.monotonic() - started))))
     finally:
-        remaining, cleanup_signals, cleanup = cleanup_owned_processes(observe, child.pid)
+        try:
+            exit_notification.close()
+        finally:
+            remaining, cleanup_signals, cleanup = cleanup_owned_processes(observe, child.pid)
         root_cpu.poll()
         report = {
             "schemaVersion": 2, "cpuAccounting": "maximum-per-observed-process-identity",
@@ -385,6 +436,7 @@ def main():
             "maximumSampledConcurrentRssBytes": max(sample["concurrentRssBytes"] for sample in samples),
             "observedCpuSeconds": sum(details["cpuSeconds"] for details in cpu_records.values()),
             "rootPollCpu": root_cpu.receipt,
+            "ownerExitNotification": exit_notification.receipt,
             "observedProcessCount": len(cpu_records), "remainingObservedProcesses": list(remaining),
             "processes": [{"process": process, **details} for (process, _started), details in cpu_records.items()],
             "cleanupSignals": cleanup_signals,

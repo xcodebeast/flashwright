@@ -29,6 +29,31 @@ There is a separate positive result. In the [painting-density experiment](../ben
 
 Selected isolation, immutable-profile, retry and caught-violation controls pass. Native violations in the reused browser are currently attributed to the worker and fail suite teardown; exact per-attempt native attribution, bounded long-suite record retention, broader capability enforcement and public packaging remain unfinished. Sampled resource observations do not establish complete process custody. The representative majority-scenario 2× objective remains unmet.
 
+## Current Linux controlled-family baseline
+
+The [exit-notification baseline](../benchmarks/results/watchdog-notification-controlled-linux-2026-10-18.json) runs the six original controlled workload families through both native runner adapters on stock full Chrome 148.0.7778.96 and Bun 1.4.2. Both engines receive the same four-core CPU quota, 8 GiB memory limit, zero swap and artifact policy. Each launch includes 15 fresh-context test executions, preparation, runner startup, default failure diagnostics and cleanup.
+
+The table shows Playwright elapsed time divided by Flashwright elapsed time, measured from original owner launch through its terminal wait. Greater than 1 means Flashwright is faster. The two blocks reverse execution order; they are individual observations, not confidence bounds.
+
+| Controlled family | Workers | First block | Reversed block |
+| --- | ---: | ---: | ---: |
+| interaction | 1 | 0.812× | 1.021× |
+| interaction | 4 | 0.965× | 0.995× |
+| assertion | 1 | 1.196× | 0.922× |
+| assertion | 4 | 0.945× | 0.885× |
+| navigation | 1 | 0.973× | 0.981× |
+| navigation | 4 | 0.868× | 1.007× |
+| setup | 1 | 1.005× | 0.901× |
+| setup | 4 | 0.911× | 0.860× |
+| backend | 1 | 0.983× | 1.008× |
+| backend | 4 | 0.956× | 1.002× |
+| failure | 1 | 0.943× | 0.919× |
+| failure | 4 | 0.977× | 0.941× |
+
+All 48 launches completed 720 test executions: 600 passed and 120 produced their intended failure outcomes, with zero unexpected failures. No cell reaches 2× in both blocks. These controlled fixtures do not replace the application corpus or the final competitor campaign.
+
+This matrix follows a measurement correction: Linux process-exit notification now wakes the supervisor without waiting for its 100 ms resource-sampling sleep. Twenty-four short-process controls reduced median final-event-to-wait delay from 52.6 ms to 1.7 ms. That is improved observation precision, not an engine speedup. The earlier 48-launch polling-based matrix remains separately retained in the same result file. Neither matrix establishes complete process/resource custody or final performance acceptance.
+
 ## Latest measured broad comparison
 
 Eight rotated blocks ran on native macOS arm64 with full Chrome 148.0.7778.96. Bun 1.4.2 coordinated the run; every shared library workload used Node 22.22.0. Each library flow has three warmups and 12 measured observations per launch. Complete work includes preparation, warmup, semantic verification and cleanup; child process wall also includes imports and the sampling wrapper. Brackets below are 95% launch-clustered intervals.
