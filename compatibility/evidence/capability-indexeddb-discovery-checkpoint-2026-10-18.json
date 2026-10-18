@@ -29,47 +29,47 @@
       {
         "case": "contradictory-violation",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "native event contradicts policy"
       },
       {
         "case": "unknown-capability",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "unknown native event"
       },
       {
         "case": "wrong-operation",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "native capability/operation mismatch"
       },
       {
         "case": "worker-with-document",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "invalid document identity"
       },
       {
         "case": "worker-as-window-without-document",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "invalid document identity"
       },
       {
         "case": "missing-execution-identity",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "missing execution identity"
       },
       {
         "case": "missing-source-position",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "invalid source position"
       },
       {
         "case": "wrong-attempt",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "wrong native attempt or policy"
       },
       {
         "case": "unknown-realm",
         "rejected": true,
-        "reason": "owner header changed"
+        "reason": "invalid document identity"
       }
     ],
     "rows": [
@@ -885,7 +885,7 @@
         "journalSha256": "939ef2cca4d6bf77bfd765792224083c48cfc7cb6bc79df4283dc1d30ee36089"
       }
     ],
-    "verificationSha256": "84c195f6ad66ee7378c8a3a25f952b91a2e9e19c428fcb8054907b1579148ba0",
+    "verificationSha256": "584ba4185d4153be2c5292b3aaef6914d8b5ad150a7940727c77d287ee0d36e8",
     "nativeSourceSha256": {
       "third_party/blink/renderer/modules/indexeddb/global_indexed_db.cc": "7ec889decb0b6d2c6fec7e0320627a9d9e50b25bb7d9fb3588c3679715741b4a",
       "third_party/blink/renderer/modules/buckets/storage_bucket.cc": "ce427e517a2dbd23485f249a116c48ab57a492dfb5e4aca749ebf588aa17c059",
@@ -918,7 +918,7 @@
       "runtime-manifest.json": "4ac58b7b6e54cd10540a115f0be681092ef149f783e4aa6226309dca65c1ceb3",
       "seal-attempt.py": "477332d737fe7626c82776ae6a27a646d2acfafa72b1eb063683df009869b798",
       "source-controls.mjs": "f826d0ead635ab8173d8faba2ebbaa945fe17e5174b30d0d80bb1be86d75a53e",
-      "verify.py": "78f0d64a3335e5f6ec5e3169b6b2ef39ce162d5c093000cbbfd2d28fb0b1aa67"
+      "verify.py": "9a95fc25fabf0d742381aeeb3b5f4cc27a891366a4665f10909f79acce3eabee"
     },
     "incrementalBuilds": [
       {
@@ -962,6 +962,10 @@
     {
       "stage": "permission-controls",
       "detail": "Fixtures initially expected granted storage access without granting permission. Both engines deny under the same default policy; the earlier allowed Playwright evidence used an explicit permission grant. Retain all failed expectations and the separate successful permission-granted control."
+    },
+    {
+      "stage": "malformed-record-fixture-correction",
+      "detail": "Original copied-record controls paired a stale journal with another attempt plan, so all nine were rejected at the owner header rather than their intended field. Corrected selection pairs the original journal and plan, verifies the valid journal first, and now rejects each intended malformed field. Original verifier and public evidence remain retained."
     }
   ],
   "limits": [
