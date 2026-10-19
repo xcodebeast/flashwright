@@ -1,0 +1,5283 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-private-idea02-partial-removal-screens",
+  "ratioMeaning": "Incremental Flashwright candidate/normal elapsed time: lower is faster. Every other original ratio remains under its original field name; same-profile PW/FW comparisons are separate.",
+  "screenRule": "Candidate <=0.8 x normal in BOTH reversed blocks in >=3/4 application-worker cells; cleanup intervention/failure blocks admission.",
+  "metricCaveat": "V8-core completeMilliseconds ends at original owner reap. Other stages use watchdog observedLifetimeIncludingDrainMilliseconds and retain ownerLifetimeMilliseconds separately. No cross-metric aggregate.",
+  "stages": [
+    {
+      "stage": "v8-core",
+      "originalAnalysis": "workbench/idea02-v8-applications-001/analysis.json",
+      "originalAnalysisSha256": "3812839f1bae3d8114520b00c02c9e67ec0d658f440c9b0f973e8aec42281609",
+      "originalStatus": "analyzed",
+      "metric": "completeMilliseconds",
+      "records": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 4121.353030001046,
+          "runnerMilliseconds": 3775.64,
+          "sampledCpuSeconds": 4.6000000000000005,
+          "maximumSampledConcurrentRssBytes": 1012645888,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 4539.125442999648,
+          "runnerMilliseconds": 3766.2140000000004,
+          "sampledCpuSeconds": 5.11,
+          "maximumSampledConcurrentRssBytes": 1149177856,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 4116.019877998042,
+          "runnerMilliseconds": 3764.832,
+          "sampledCpuSeconds": 4.37,
+          "maximumSampledConcurrentRssBytes": 1070182400,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 4141.049181002018,
+          "runnerMilliseconds": 3752.826,
+          "sampledCpuSeconds": 4.33,
+          "maximumSampledConcurrentRssBytes": 1043054592,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 2910.6974440001068,
+          "runnerMilliseconds": 2579.088,
+          "sampledCpuSeconds": 7.17,
+          "maximumSampledConcurrentRssBytes": 3454099456,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 2904.1981820046203,
+          "runnerMilliseconds": 2494.1119999999996,
+          "sampledCpuSeconds": 6.79,
+          "maximumSampledConcurrentRssBytes": 3580329984,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 2872.2382900014054,
+          "runnerMilliseconds": 2522.027,
+          "sampledCpuSeconds": 6.81,
+          "maximumSampledConcurrentRssBytes": 3626053632,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "completeMilliseconds": 2940.8822559998953,
+          "runnerMilliseconds": 2552.365,
+          "sampledCpuSeconds": 7.2,
+          "maximumSampledConcurrentRssBytes": 3527192576,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 1987.4530949964537,
+          "runnerMilliseconds": 1676.204,
+          "sampledCpuSeconds": 2.18,
+          "maximumSampledConcurrentRssBytes": 1053200384,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 2264.1952729973127,
+          "runnerMilliseconds": 1862.331,
+          "sampledCpuSeconds": 2.32,
+          "maximumSampledConcurrentRssBytes": 1085816832,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 1762.1042149985442,
+          "runnerMilliseconds": 1354.7630000000001,
+          "sampledCpuSeconds": 2.02,
+          "maximumSampledConcurrentRssBytes": 1077354496,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 2064.8977070013643,
+          "runnerMilliseconds": 1688.191,
+          "sampledCpuSeconds": 2.38,
+          "maximumSampledConcurrentRssBytes": 1077026816,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 2202.067686004739,
+          "runnerMilliseconds": 1894.4289999999999,
+          "sampledCpuSeconds": 4.68,
+          "maximumSampledConcurrentRssBytes": 3412721664,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 2387.2241450008005,
+          "runnerMilliseconds": 1991.095,
+          "sampledCpuSeconds": 4.67,
+          "maximumSampledConcurrentRssBytes": 3553775616,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 2397.015980001015,
+          "runnerMilliseconds": 2055.938,
+          "sampledCpuSeconds": 4.61,
+          "maximumSampledConcurrentRssBytes": 3606609920,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "completeMilliseconds": 2309.820859001775,
+          "runnerMilliseconds": 1934.833,
+          "sampledCpuSeconds": 4.74,
+          "maximumSampledConcurrentRssBytes": 3479826432,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2319.8222919963882,
+          "runnerMilliseconds": 2009.339,
+          "sampledCpuSeconds": 4.62,
+          "maximumSampledConcurrentRssBytes": 3462082560,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2422.303261999332,
+          "runnerMilliseconds": 2023.8799999999999,
+          "sampledCpuSeconds": 4.78,
+          "maximumSampledConcurrentRssBytes": 3596193792,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2329.30318700528,
+          "runnerMilliseconds": 1990.8579999999997,
+          "sampledCpuSeconds": 4.6,
+          "maximumSampledConcurrentRssBytes": 3532402688,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2384.881787998893,
+          "runnerMilliseconds": 2012.394,
+          "sampledCpuSeconds": 4.78,
+          "maximumSampledConcurrentRssBytes": 3423993856,
+          "browserLaunches": 4
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2010.055578997708,
+          "runnerMilliseconds": 1695.529,
+          "sampledCpuSeconds": 2.05,
+          "maximumSampledConcurrentRssBytes": 1060466688,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2040.4481959994882,
+          "runnerMilliseconds": 1641.3310000000001,
+          "sampledCpuSeconds": 2.12,
+          "maximumSampledConcurrentRssBytes": 1094336512,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2011.0795910004526,
+          "runnerMilliseconds": 1678.1280000000002,
+          "sampledCpuSeconds": 2.15,
+          "maximumSampledConcurrentRssBytes": 1073319936,
+          "browserLaunches": 1
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "completeMilliseconds": 2062.6106429990614,
+          "runnerMilliseconds": 1688.768,
+          "sampledCpuSeconds": 2.39,
+          "maximumSampledConcurrentRssBytes": 1059258368,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 2877.29221599875,
+          "runnerMilliseconds": 2547.9399999999996,
+          "sampledCpuSeconds": 7.1,
+          "maximumSampledConcurrentRssBytes": 3499286528,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 2865.6423639986315,
+          "runnerMilliseconds": 2454.912,
+          "sampledCpuSeconds": 6.69,
+          "maximumSampledConcurrentRssBytes": 3637047296,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 2858.589204006421,
+          "runnerMilliseconds": 2501.4190000000003,
+          "sampledCpuSeconds": 6.93,
+          "maximumSampledConcurrentRssBytes": 3567570944,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 2923.778846001369,
+          "runnerMilliseconds": 2536.246,
+          "sampledCpuSeconds": 7.09,
+          "maximumSampledConcurrentRssBytes": 3447992320,
+          "browserLaunches": 4
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 4116.055521000817,
+          "runnerMilliseconds": 3789.919,
+          "sampledCpuSeconds": 4.5200000000000005,
+          "maximumSampledConcurrentRssBytes": 1038139392,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 4238.310774002457,
+          "runnerMilliseconds": 3822.243,
+          "sampledCpuSeconds": 4.45,
+          "maximumSampledConcurrentRssBytes": 1093222400,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 4095.09162500035,
+          "runnerMilliseconds": 3744.962,
+          "sampledCpuSeconds": 4.39,
+          "maximumSampledConcurrentRssBytes": 1058230272,
+          "browserLaunches": 1
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "completeMilliseconds": 4179.549822998524,
+          "runnerMilliseconds": 3787.746,
+          "sampledCpuSeconds": 4.16,
+          "maximumSampledConcurrentRssBytes": 1029783552,
+          "browserLaunches": 1
+        }
+      ],
+      "comparisons": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "candidateBaselineOverNormal": 0.9067869856617138,
+              "sameNormalPolicyPlaywrightOverFlashwright": 0.907961915077077,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 1.0060809480386061,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0012957060852676,
+              "referenceBaselineOverNormal": 1.0047790497095481,
+              "candidateSampledCpuRatio": 0.8551859099804305,
+              "candidateSampledRssRatio": 0.9312591557629178
+            },
+            {
+              "block": 1,
+              "candidateBaselineOverNormal": 1.0349733686366773,
+              "sameNormalPolicyPlaywrightOverFlashwright": 1.020624251111394,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 0.9711547218878931,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 0.9861357615953108,
+              "referenceBaselineOverNormal": 0.9848083394895016,
+              "candidateSampledCpuRatio": 1.0136674259681095,
+              "candidateSampledRssRatio": 1.0330666480877235
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "candidateBaselineOverNormal": 0.9889952785587262,
+              "sameNormalPolicyPlaywrightOverFlashwright": 1.0022378851538982,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 1.0238991194558777,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0133899593681284,
+              "referenceBaselineOverNormal": 1.0103703021631496,
+              "candidateSampledCpuRatio": 1.0029455081001473,
+              "candidateSampledRssRatio": 1.0127707915762885
+            },
+            {
+              "block": 1,
+              "candidateBaselineOverNormal": 1.0024673569683693,
+              "sameNormalPolicyPlaywrightOverFlashwright": 1.0228048304050061,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 1.004065354472169,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.0202874171365948,
+              "referenceBaselineOverNormal": 0.9841004971815174,
+              "candidateSampledCpuRatio": 0.9653679653679654,
+              "candidateSampledRssRatio": 1.0194744135689429
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "pairs": [
+            {
+              "block": 0,
+              "candidateBaselineOverNormal": 0.7782474577229787,
+              "sameNormalPolicyPlaywrightOverFlashwright": 0.8777745977560888,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 1.171836313326718,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.1278862385549062,
+              "referenceBaselineOverNormal": 1.0389667621338499,
+              "candidateSampledCpuRatio": 0.8706896551724138,
+              "candidateSampledRssRatio": 0.9922064792600305
+            },
+            {
+              "block": 1,
+              "candidateBaselineOverNormal": 1.0146034026353108,
+              "sameNormalPolicyPlaywrightOverFlashwright": 1.0256235766248185,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 0.9851049308375639,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 1.010861558280688,
+              "referenceBaselineOverNormal": 0.9745201237180965,
+              "candidateSampledCpuRatio": 0.986046511627907,
+              "candidateSampledRssRatio": 1.0195809052781817
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "pairs": [
+            {
+              "block": 0,
+              "candidateBaselineOverNormal": 1.0041017660703206,
+              "sameNormalPolicyPlaywrightOverFlashwright": 0.9224385948911389,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 0.963623471129632,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 0.918670423717328,
+              "referenceBaselineOverNormal": 1.0489327252208742,
+              "candidateSampledCpuRatio": 0.9871520342612421,
+              "candidateSampledRssRatio": 1.0148670905844832
+            },
+            {
+              "block": 1,
+              "candidateBaselineOverNormal": 1.0399261356412857,
+              "sameNormalPolicyPlaywrightOverFlashwright": 1.0238606126088157,
+              "sameBaselinePolicyPlaywrightOverFlashwright": 0.9576927581237877,
+              "crossPolicyNormalPlaywrightOverBaselineFlashwright": 0.9845512844789087,
+              "referenceBaselineOverNormal": 0.9727200331983353,
+              "candidateSampledCpuRatio": 1.039130434782609,
+              "candidateSampledRssRatio": 1.018058842559685
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        }
+      ],
+      "limitations": [
+        "Only two opposite-order pairs; no final uncertainty interval",
+        "Sampled process CPU/RSS diagnostic only, not complete resource admission",
+        "Selected immutable inputs do not attest loaded memory or complete native libraries",
+        "Partial V8 core cut only; OS sandbox and site-isolation source removal are not present.",
+        "Retained014 and candidate have separate native builds; runtime manifests and build evidence bind exact products."
+      ],
+      "policyCaveat": "Inherited original environment and wrapper symlink identities were not retained; primary metric ends at original owner reap.",
+      "admission": false
+    },
+    {
+      "stage": "linux-os",
+      "originalAnalysis": "workbench/idea02-os-applications-001/analysis.json",
+      "originalAnalysisSha256": "5000bc0465ca38bfc0fdf5e42d1b240a5a36dafe862cd5e66a339112e8e82457",
+      "originalStatus": "analyzed-selected-original-os-screen",
+      "metric": "observedLifetimeIncludingDrainMilliseconds",
+      "records": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4084.7537930021645,
+          "observedLifetimeIncludingDrainMilliseconds": 4146.116825002537,
+          "postOwnerObservationMilliseconds": 61.363032000372186,
+          "sampledCpuSeconds": 4.18,
+          "maximumSampledConcurrentRssBytes": 993529856,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4190.856421002536,
+          "observedLifetimeIncludingDrainMilliseconds": 4252.5366350018885,
+          "postOwnerObservationMilliseconds": 61.68021399935242,
+          "sampledCpuSeconds": 3.93,
+          "maximumSampledConcurrentRssBytes": 1024892928,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4113.920625000901,
+          "observedLifetimeIncludingDrainMilliseconds": 4175.458780002373,
+          "postOwnerObservationMilliseconds": 61.53815500147175,
+          "sampledCpuSeconds": 4.08,
+          "maximumSampledConcurrentRssBytes": 1009967104,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4182.120808996842,
+          "observedLifetimeIncludingDrainMilliseconds": 4243.3141189976595,
+          "postOwnerObservationMilliseconds": 61.19331000081729,
+          "sampledCpuSeconds": 3.8800000000000003,
+          "maximumSampledConcurrentRssBytes": 1006657536,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2157.650922999892,
+          "observedLifetimeIncludingDrainMilliseconds": 2164.036917994963,
+          "postOwnerObservationMilliseconds": 6.385994995071087,
+          "sampledCpuSeconds": 5.54,
+          "maximumSampledConcurrentRssBytes": 3193352192,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2272.0625549991382,
+          "observedLifetimeIncludingDrainMilliseconds": 2277.7930660013226,
+          "postOwnerObservationMilliseconds": 5.7305110021843575,
+          "sampledCpuSeconds": 5.41,
+          "maximumSampledConcurrentRssBytes": 3263655936,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2176.228787000582,
+          "observedLifetimeIncludingDrainMilliseconds": 2237.8110150020802,
+          "postOwnerObservationMilliseconds": 61.58222800149815,
+          "sampledCpuSeconds": 5.37,
+          "maximumSampledConcurrentRssBytes": 3218681856,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2259.738312997797,
+          "observedLifetimeIncludingDrainMilliseconds": 2265.390145999845,
+          "postOwnerObservationMilliseconds": 5.651833002048079,
+          "sampledCpuSeconds": 5.74,
+          "maximumSampledConcurrentRssBytes": 3166605312,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1792.9206810003961,
+          "observedLifetimeIncludingDrainMilliseconds": 1854.849135997938,
+          "postOwnerObservationMilliseconds": 61.92845499754185,
+          "sampledCpuSeconds": 1.79,
+          "maximumSampledConcurrentRssBytes": 1015136256,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1838.5448760018335,
+          "observedLifetimeIncludingDrainMilliseconds": 1843.8960679995944,
+          "postOwnerObservationMilliseconds": 5.351191997760907,
+          "sampledCpuSeconds": 1.81,
+          "maximumSampledConcurrentRssBytes": 1057140736,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1765.577857993776,
+          "observedLifetimeIncludingDrainMilliseconds": 1827.3617689992534,
+          "postOwnerObservationMilliseconds": 61.78391100547742,
+          "sampledCpuSeconds": 1.78,
+          "maximumSampledConcurrentRssBytes": 1042702336,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1864.0035329954117,
+          "observedLifetimeIncludingDrainMilliseconds": 1925.5429889963125,
+          "postOwnerObservationMilliseconds": 61.53945600090083,
+          "sampledCpuSeconds": 2.09,
+          "maximumSampledConcurrentRssBytes": 1016250368,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1485.7428920004168,
+          "observedLifetimeIncludingDrainMilliseconds": 1547.1936199974152,
+          "postOwnerObservationMilliseconds": 61.45072799699847,
+          "sampledCpuSeconds": 3.12,
+          "maximumSampledConcurrentRssBytes": 3118530560,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1546.3074190047337,
+          "observedLifetimeIncludingDrainMilliseconds": 1607.5419379994855,
+          "postOwnerObservationMilliseconds": 61.23451899475185,
+          "sampledCpuSeconds": 3.0,
+          "maximumSampledConcurrentRssBytes": 3192725504,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1601.398203005374,
+          "observedLifetimeIncludingDrainMilliseconds": 1662.823072001629,
+          "postOwnerObservationMilliseconds": 61.4248689962551,
+          "sampledCpuSeconds": 3.23,
+          "maximumSampledConcurrentRssBytes": 3258073088,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1597.253690000798,
+          "observedLifetimeIncludingDrainMilliseconds": 1658.6480010009836,
+          "postOwnerObservationMilliseconds": 61.39431100018555,
+          "sampledCpuSeconds": 3.27,
+          "maximumSampledConcurrentRssBytes": 3168235520,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1547.4685020017205,
+          "observedLifetimeIncludingDrainMilliseconds": 1609.3742640005075,
+          "postOwnerObservationMilliseconds": 61.90576199878706,
+          "sampledCpuSeconds": 3.24,
+          "maximumSampledConcurrentRssBytes": 3042078720,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1622.2925409965683,
+          "observedLifetimeIncludingDrainMilliseconds": 1683.4262979973573,
+          "postOwnerObservationMilliseconds": 61.133757000789046,
+          "sampledCpuSeconds": 3.22,
+          "maximumSampledConcurrentRssBytes": 3103989760,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1638.3730079978704,
+          "observedLifetimeIncludingDrainMilliseconds": 1699.7332949977135,
+          "postOwnerObservationMilliseconds": 61.36028699984308,
+          "sampledCpuSeconds": 3.13,
+          "maximumSampledConcurrentRssBytes": 3132526592,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1590.433611003391,
+          "observedLifetimeIncludingDrainMilliseconds": 1652.1857410043594,
+          "postOwnerObservationMilliseconds": 61.752130000968464,
+          "sampledCpuSeconds": 3.25,
+          "maximumSampledConcurrentRssBytes": 3205500928,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1794.1096560025471,
+          "observedLifetimeIncludingDrainMilliseconds": 1856.0355870067724,
+          "postOwnerObservationMilliseconds": 61.925931004225276,
+          "sampledCpuSeconds": 1.82,
+          "maximumSampledConcurrentRssBytes": 1006764032,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1868.4539129972109,
+          "observedLifetimeIncludingDrainMilliseconds": 1930.9645550019923,
+          "postOwnerObservationMilliseconds": 62.5106420047814,
+          "sampledCpuSeconds": 1.89,
+          "maximumSampledConcurrentRssBytes": 1045975040,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1835.4224159993464,
+          "observedLifetimeIncludingDrainMilliseconds": 1841.1776209977688,
+          "postOwnerObservationMilliseconds": 5.755204998422414,
+          "sampledCpuSeconds": 1.76,
+          "maximumSampledConcurrentRssBytes": 1042657280,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1860.548905999167,
+          "observedLifetimeIncludingDrainMilliseconds": 1921.9095220032614,
+          "postOwnerObservationMilliseconds": 61.36061600409448,
+          "sampledCpuSeconds": 2.07,
+          "maximumSampledConcurrentRssBytes": 1031094272,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2192.8962590027368,
+          "observedLifetimeIncludingDrainMilliseconds": 2255.0142020045314,
+          "postOwnerObservationMilliseconds": 62.11794300179463,
+          "sampledCpuSeconds": 5.75,
+          "maximumSampledConcurrentRssBytes": 3134488576,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2257.45335600368,
+          "observedLifetimeIncludingDrainMilliseconds": 2262.8185940047842,
+          "postOwnerObservationMilliseconds": 5.365238001104444,
+          "sampledCpuSeconds": 5.59,
+          "maximumSampledConcurrentRssBytes": 3262070784,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2144.705625003553,
+          "observedLifetimeIncludingDrainMilliseconds": 2206.202471003053,
+          "postOwnerObservationMilliseconds": 61.49684599949978,
+          "sampledCpuSeconds": 5.33,
+          "maximumSampledConcurrentRssBytes": 3292790784,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2233.800958994834,
+          "observedLifetimeIncludingDrainMilliseconds": 2296.0930639965227,
+          "postOwnerObservationMilliseconds": 62.29210500168847,
+          "sampledCpuSeconds": 5.7,
+          "maximumSampledConcurrentRssBytes": 3218153472,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4135.546842997428,
+          "observedLifetimeIncludingDrainMilliseconds": 4197.102650003217,
+          "postOwnerObservationMilliseconds": 61.555807005788665,
+          "sampledCpuSeconds": 4.24,
+          "maximumSampledConcurrentRssBytes": 982851584,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4197.122983001464,
+          "observedLifetimeIncludingDrainMilliseconds": 4258.666812995216,
+          "postOwnerObservationMilliseconds": 61.5438299937523,
+          "sampledCpuSeconds": 3.97,
+          "maximumSampledConcurrentRssBytes": 1016754176,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4117.773984005908,
+          "observedLifetimeIncludingDrainMilliseconds": 4179.224762003287,
+          "postOwnerObservationMilliseconds": 61.45077799737919,
+          "sampledCpuSeconds": 3.87,
+          "maximumSampledConcurrentRssBytes": 1007415296,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4177.507833999698,
+          "observedLifetimeIncludingDrainMilliseconds": 4183.227084002283,
+          "postOwnerObservationMilliseconds": 5.719250002584886,
+          "sampledCpuSeconds": 4.01,
+          "maximumSampledConcurrentRssBytes": 990568448,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9818748522081853,
+              "playwrightCandidateOverNormal": 1.0234429703979853,
+              "sameNormalPlaywrightOverFlashwright": 0.9749749810211089,
+              "sameCandidatePlaywrightOverFlashwright": 1.0162509900277947,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9929727590318065
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0190088007982248,
+              "playwrightCandidateOverNormal": 1.003316952611537,
+              "sameNormalPlaywrightOverFlashwright": 1.0009576709143246,
+              "sameCandidatePlaywrightOverFlashwright": 0.9855437944090536,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9822855996241052
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9824470222532413,
+              "playwrightCandidateOverNormal": 1.0468352582906897,
+              "sameNormalPlaywrightOverFlashwright": 0.9500586116867679,
+              "sameCandidatePlaywrightOverFlashwright": 1.0123241555309528,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9670329189942571
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0256622516499996,
+              "playwrightCandidateOverNormal": 0.9821092347535381,
+              "sameNormalPlaywrightOverFlashwright": 1.0407444893090891,
+              "sameCandidatePlaywrightOverFlashwright": 0.9965510306389871,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0147048773948992
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9910329550090756,
+              "playwrightCandidateOverNormal": 1.0381129934647435,
+              "sameNormalPlaywrightOverFlashwright": 1.0059401764494387,
+              "sameCandidatePlaywrightOverFlashwright": 1.0537283977714098,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0150421046696942
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.048766035921926,
+              "playwrightCandidateOverNormal": 0.9657247470589424,
+              "sameNormalPlaywrightOverFlashwright": 1.0438479699540029,
+              "sameCandidatePlaywrightOverFlashwright": 0.9611960935268734,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9953106166680923
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 1.0343886107698927,
+              "playwrightCandidateOverNormal": 1.0720364791859436,
+              "sameNormalPlaywrightOverFlashwright": 0.9624592574690952,
+              "sameCandidatePlaywrightOverFlashwright": 0.9974891670250764,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9304619631810711
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 0.9904061436883378,
+              "playwrightCandidateOverNormal": 0.9740879757394426,
+              "sameNormalPlaywrightOverFlashwright": 0.9720264619553634,
+              "sameCandidatePlaywrightOverFlashwright": 0.9560111220283634,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9814422781501261
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        }
+      ],
+      "limitations": [
+        "Two opposite-order pairs only; no final uncertainty interval.",
+        "Watchdog observed lifetime includes natural cleanup after owner exit; it is not exhaustive process custody.",
+        "CPU/RSS are sampled diagnostic observations, not complete resource admission.",
+        "Explicit immutable source/dependency/runtime bindings do not attest loaded memory or complete native libraries.",
+        "Separate custom native builds; compare these explicit artifacts, without attributing every cross-build difference to a single mechanism.",
+        "No site-isolation source removal or final representative majority-scenario 2x admission."
+      ],
+      "policyCaveat": "Original deliberate environment, wrapper/runtime bindings and browser observations verified by source campaign; observed lifetime includes drain but is not exhaustive custody.",
+      "admission": false
+    },
+    {
+      "stage": "site-policy",
+      "originalAnalysis": "workbench/idea02-site-applications-001/analysis.json",
+      "originalAnalysisSha256": "e6487e12a2dbdf9c7e3e07a194eb03e09866048f5ed7b90026391419f649ebcf",
+      "originalStatus": "analyzed-selected-original-site-policy-screen",
+      "metric": "observedLifetimeIncludingDrainMilliseconds",
+      "records": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4070.090610999614,
+          "observedLifetimeIncludingDrainMilliseconds": 4132.9124930052785,
+          "postOwnerObservationMilliseconds": 62.82188200566452,
+          "sampledCpuSeconds": 3.9000000000000004,
+          "maximumSampledConcurrentRssBytes": 972242944,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4117.97291199764,
+          "observedLifetimeIncludingDrainMilliseconds": 4180.632076997426,
+          "postOwnerObservationMilliseconds": 62.6591649997863,
+          "sampledCpuSeconds": 4.3,
+          "maximumSampledConcurrentRssBytes": 1010556928,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4045.0514879994444,
+          "observedLifetimeIncludingDrainMilliseconds": 4107.528117994661,
+          "postOwnerObservationMilliseconds": 62.47662999521708,
+          "sampledCpuSeconds": 3.88,
+          "maximumSampledConcurrentRssBytes": 1060610048,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4140.673497000535,
+          "observedLifetimeIncludingDrainMilliseconds": 4203.562671005784,
+          "postOwnerObservationMilliseconds": 62.889174005249515,
+          "sampledCpuSeconds": 4.07,
+          "maximumSampledConcurrentRssBytes": 1054027776,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2191.637059993809,
+          "observedLifetimeIncludingDrainMilliseconds": 2198.0878059985116,
+          "postOwnerObservationMilliseconds": 6.450746004702523,
+          "sampledCpuSeconds": 5.64,
+          "maximumSampledConcurrentRssBytes": 3162112000,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2225.6807000012486,
+          "observedLifetimeIncludingDrainMilliseconds": 2287.7846470000804,
+          "postOwnerObservationMilliseconds": 62.103946998831816,
+          "sampledCpuSeconds": 5.62,
+          "maximumSampledConcurrentRssBytes": 3255447552,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2161.1469769995892,
+          "observedLifetimeIncludingDrainMilliseconds": 2223.568907000299,
+          "postOwnerObservationMilliseconds": 62.421930000709835,
+          "sampledCpuSeconds": 5.44,
+          "maximumSampledConcurrentRssBytes": 3481055232,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2264.097766004852,
+          "observedLifetimeIncludingDrainMilliseconds": 2270.68617400073,
+          "postOwnerObservationMilliseconds": 6.5884079958777875,
+          "sampledCpuSeconds": 5.82,
+          "maximumSampledConcurrentRssBytes": 3433582592,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1794.7974540002178,
+          "observedLifetimeIncludingDrainMilliseconds": 1857.630054000765,
+          "postOwnerObservationMilliseconds": 62.832600000547245,
+          "sampledCpuSeconds": 1.84,
+          "maximumSampledConcurrentRssBytes": 1004646400,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1902.753614995163,
+          "observedLifetimeIncludingDrainMilliseconds": 1965.1999849957065,
+          "postOwnerObservationMilliseconds": 62.44637000054354,
+          "sampledCpuSeconds": 1.88,
+          "maximumSampledConcurrentRssBytes": 1052880896,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1762.6360739959637,
+          "observedLifetimeIncludingDrainMilliseconds": 1825.2591389973531,
+          "postOwnerObservationMilliseconds": 62.62306500138948,
+          "sampledCpuSeconds": 1.84,
+          "maximumSampledConcurrentRssBytes": 1101910016,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1837.5120149939903,
+          "observedLifetimeIncludingDrainMilliseconds": 1843.5866089930641,
+          "postOwnerObservationMilliseconds": 6.074593999073841,
+          "sampledCpuSeconds": 2.02,
+          "maximumSampledConcurrentRssBytes": 1079021568,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1544.61142099899,
+          "observedLifetimeIncludingDrainMilliseconds": 1606.8514919970767,
+          "postOwnerObservationMilliseconds": 62.240070998086594,
+          "sampledCpuSeconds": 3.2800000000000002,
+          "maximumSampledConcurrentRssBytes": 3039813632,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1643.8855770029477,
+          "observedLifetimeIncludingDrainMilliseconds": 1706.1597030042321,
+          "postOwnerObservationMilliseconds": 62.27412600128446,
+          "sampledCpuSeconds": 3.25,
+          "maximumSampledConcurrentRssBytes": 3127533568,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1466.7266329997801,
+          "observedLifetimeIncludingDrainMilliseconds": 1529.3170389995794,
+          "postOwnerObservationMilliseconds": 62.59040599979926,
+          "sampledCpuSeconds": 3.16,
+          "maximumSampledConcurrentRssBytes": 3395567616,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1589.1530139997485,
+          "observedLifetimeIncludingDrainMilliseconds": 1651.3208599935751,
+          "postOwnerObservationMilliseconds": 62.16784599382663,
+          "sampledCpuSeconds": 3.28,
+          "maximumSampledConcurrentRssBytes": 3399925760,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1553.6049630027264,
+          "observedLifetimeIncludingDrainMilliseconds": 1616.4610639971215,
+          "postOwnerObservationMilliseconds": 62.85610099439509,
+          "sampledCpuSeconds": 3.22,
+          "maximumSampledConcurrentRssBytes": 3275407360,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1678.0039859950193,
+          "observedLifetimeIncludingDrainMilliseconds": 1683.5981289987103,
+          "postOwnerObservationMilliseconds": 5.594143003690988,
+          "sampledCpuSeconds": 3.19,
+          "maximumSampledConcurrentRssBytes": 3331223552,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1551.8298929964658,
+          "observedLifetimeIncludingDrainMilliseconds": 1613.8594889998785,
+          "postOwnerObservationMilliseconds": 62.029596003412735,
+          "sampledCpuSeconds": 3.2,
+          "maximumSampledConcurrentRssBytes": 3262881792,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1606.935102994612,
+          "observedLifetimeIncludingDrainMilliseconds": 1669.259278998652,
+          "postOwnerObservationMilliseconds": 62.324176004040055,
+          "sampledCpuSeconds": 3.31,
+          "maximumSampledConcurrentRssBytes": 3001200640,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1793.3967810022295,
+          "observedLifetimeIncludingDrainMilliseconds": 1856.4413630010677,
+          "postOwnerObservationMilliseconds": 63.04458199883811,
+          "sampledCpuSeconds": 1.9,
+          "maximumSampledConcurrentRssBytes": 1069228032,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1850.1316039983067,
+          "observedLifetimeIncludingDrainMilliseconds": 1856.1955580007634,
+          "postOwnerObservationMilliseconds": 6.0639540024567395,
+          "sampledCpuSeconds": 1.82,
+          "maximumSampledConcurrentRssBytes": 1124413440,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1775.8927219983889,
+          "observedLifetimeIncludingDrainMilliseconds": 1838.3057570026722,
+          "postOwnerObservationMilliseconds": 62.4130350042833,
+          "sampledCpuSeconds": 1.8,
+          "maximumSampledConcurrentRssBytes": 1040777216,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1864.3040900060441,
+          "observedLifetimeIncludingDrainMilliseconds": 1926.750720005657,
+          "postOwnerObservationMilliseconds": 62.446629999612924,
+          "sampledCpuSeconds": 2.09,
+          "maximumSampledConcurrentRssBytes": 1012244480,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2204.0792219995637,
+          "observedLifetimeIncludingDrainMilliseconds": 2267.208527002367,
+          "postOwnerObservationMilliseconds": 63.12930500280345,
+          "sampledCpuSeconds": 5.79,
+          "maximumSampledConcurrentRssBytes": 3390431232,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2266.567598999245,
+          "observedLifetimeIncludingDrainMilliseconds": 2272.932624000532,
+          "postOwnerObservationMilliseconds": 6.365025001286995,
+          "sampledCpuSeconds": 5.35,
+          "maximumSampledConcurrentRssBytes": 3501264896,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2158.514060000016,
+          "observedLifetimeIncludingDrainMilliseconds": 2164.774156000931,
+          "postOwnerObservationMilliseconds": 6.260096000914928,
+          "sampledCpuSeconds": 5.4,
+          "maximumSampledConcurrentRssBytes": 3228676096,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2258.855890002451,
+          "observedLifetimeIncludingDrainMilliseconds": 2321.8325979978545,
+          "postOwnerObservationMilliseconds": 62.97670799540356,
+          "sampledCpuSeconds": 5.8,
+          "maximumSampledConcurrentRssBytes": 3135307776,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4115.916050999658,
+          "observedLifetimeIncludingDrainMilliseconds": 4178.359889003332,
+          "postOwnerObservationMilliseconds": 62.44383800367359,
+          "sampledCpuSeconds": 4.41,
+          "maximumSampledConcurrentRssBytes": 1059864576,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4156.556763999106,
+          "observedLifetimeIncludingDrainMilliseconds": 4219.029316998785,
+          "postOwnerObservationMilliseconds": 62.472552999679465,
+          "sampledCpuSeconds": 4.03,
+          "maximumSampledConcurrentRssBytes": 1081622528,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4451.605531001405,
+          "observedLifetimeIncludingDrainMilliseconds": 4458.114048997231,
+          "postOwnerObservationMilliseconds": 6.508517995825969,
+          "sampledCpuSeconds": 4.0,
+          "maximumSampledConcurrentRssBytes": 1002483712,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 5552.964465001423,
+          "observedLifetimeIncludingDrainMilliseconds": 5618.8142630053335,
+          "postOwnerObservationMilliseconds": 65.84979800391011,
+          "sampledCpuSeconds": 4.7700000000000005,
+          "maximumSampledConcurrentRssBytes": 991666176,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9825136587826048,
+              "playwrightCandidateOverNormal": 1.017094525499893,
+              "sameNormalPlaywrightOverFlashwright": 0.9885855576110825,
+              "sameCandidatePlaywrightOverFlashwright": 1.0233801328323,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0061799637839144
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 0.9463708802936023,
+              "playwrightCandidateOverNormal": 0.7436373037838153,
+              "sameNormalPlaywrightOverFlashwright": 1.2603567789543608,
+              "sameCandidatePlaywrightOverFlashwright": 0.9903604775080388,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.3317789095152075
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9719310381403311,
+              "playwrightCandidateOverNormal": 1.0330279653997896,
+              "sameNormalPlaywrightOverFlashwright": 0.9607931449670377,
+              "sameCandidatePlaywrightOverFlashwright": 1.0211899288805915,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9885404491304195
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0499629338699268,
+              "playwrightCandidateOverNormal": 0.9764737255206984,
+              "sameNormalPlaywrightOverFlashwright": 1.0725518833276648,
+              "sameCandidatePlaywrightOverFlashwright": 0.997481624867485,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0215140446667772
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9287905317185013,
+              "playwrightCandidateOverNormal": 0.9924401282281928,
+              "sameNormalPlaywrightOverFlashwright": 0.9452626033908826,
+              "sameCandidatePlaywrightOverFlashwright": 1.0100410235479103,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.017734969414367
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0097316787101076,
+              "playwrightCandidateOverNormal": 0.9635088461239122,
+              "sameNormalPlaywrightOverFlashwright": 1.0481122156453413,
+              "sameCandidatePlaywrightOverFlashwright": 1.0001324240860532,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0380106296994298
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.8963504625661564,
+              "playwrightCandidateOverNormal": 1.0276748462555365,
+              "sameNormalPlaywrightOverFlashwright": 0.941794305168331,
+              "sameCandidatePlaywrightOverFlashwright": 1.0797766701623923,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.050698743962349
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0432123369315438,
+              "playwrightCandidateOverNormal": 0.9683702731709822,
+              "sameNormalPlaywrightOverFlashwright": 1.034327517591451,
+              "sameCandidatePlaywrightOverFlashwright": 0.9601228678951328,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9914832110150977
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        }
+      ],
+      "limitations": [
+        "Two opposite-order pairs only; no final uncertainty interval.",
+        "Watchdog observed lifetime includes natural cleanup after owner exit; it is not exhaustive process custody.",
+        "CPU/RSS are sampled diagnostic observations, not complete resource admission.",
+        "Explicit immutable source/dependency/runtime bindings do not attest loaded memory or complete native libraries.",
+        "Separate custom native builds; compare these explicit artifacts, without attributing every cross-build difference to a single mechanism.",
+        "Partial policy source cut only; core process locks/CPSP/frame/worker machinery retained. No full site-isolation removal or final representative majority-scenario 2x admission."
+      ],
+      "policyCaveat": "Original deliberate environment, wrapper/runtime bindings and browser observations verified by source campaign; observed lifetime includes drain but is not exhaustive custody.",
+      "admission": false
+    },
+    {
+      "stage": "site-enforcement",
+      "originalAnalysis": "workbench/idea02-site-enforcement-applications-001/analysis.json",
+      "originalAnalysisSha256": "ecb4065bac253359c37fc6818e814380b25f7a4e63ad3b62b6388dff89cdcf50",
+      "originalStatus": "analyzed-selected-original-site-enforcement-screen",
+      "metric": "observedLifetimeIncludingDrainMilliseconds",
+      "records": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4993.99433999497,
+          "observedLifetimeIncludingDrainMilliseconds": 5058.431664998352,
+          "postOwnerObservationMilliseconds": 64.43732500338228,
+          "sampledCpuSeconds": 4.34,
+          "maximumSampledConcurrentRssBytes": 964780032,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4586.066103998746,
+          "observedLifetimeIncludingDrainMilliseconds": 4593.030789998011,
+          "postOwnerObservationMilliseconds": 6.964685999264475,
+          "sampledCpuSeconds": 4.26,
+          "maximumSampledConcurrentRssBytes": 993976320,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4413.269669996225,
+          "observedLifetimeIncludingDrainMilliseconds": 4477.589141999488,
+          "postOwnerObservationMilliseconds": 64.31947200326249,
+          "sampledCpuSeconds": 4.13,
+          "maximumSampledConcurrentRssBytes": 1076293632,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4576.018233005016,
+          "observedLifetimeIncludingDrainMilliseconds": 4582.7106130018365,
+          "postOwnerObservationMilliseconds": 6.692379996820819,
+          "sampledCpuSeconds": 4.5,
+          "maximumSampledConcurrentRssBytes": 1067012096,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2419.183283003804,
+          "observedLifetimeIncludingDrainMilliseconds": 2426.6272579989163,
+          "postOwnerObservationMilliseconds": 7.443974995112512,
+          "sampledCpuSeconds": 6.27,
+          "maximumSampledConcurrentRssBytes": 3071127552,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2453.7791469992953,
+          "observedLifetimeIncludingDrainMilliseconds": 2460.4674090005574,
+          "postOwnerObservationMilliseconds": 6.688262001262046,
+          "sampledCpuSeconds": 5.79,
+          "maximumSampledConcurrentRssBytes": 3158548480,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2363.172723002208,
+          "observedLifetimeIncludingDrainMilliseconds": 2427.7584000010393,
+          "postOwnerObservationMilliseconds": 64.58567699883133,
+          "sampledCpuSeconds": 5.95,
+          "maximumSampledConcurrentRssBytes": 3528556544,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2441.9844500007457,
+          "observedLifetimeIncludingDrainMilliseconds": 2506.958174002648,
+          "postOwnerObservationMilliseconds": 64.97372400190216,
+          "sampledCpuSeconds": 6.35,
+          "maximumSampledConcurrentRssBytes": 3484491776,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1917.3928329983028,
+          "observedLifetimeIncludingDrainMilliseconds": 1981.8406689955737,
+          "postOwnerObservationMilliseconds": 64.44783599727089,
+          "sampledCpuSeconds": 2.14,
+          "maximumSampledConcurrentRssBytes": 987164672,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1952.165481998236,
+          "observedLifetimeIncludingDrainMilliseconds": 1958.5210629957146,
+          "postOwnerObservationMilliseconds": 6.3555809974786825,
+          "sampledCpuSeconds": 2.12,
+          "maximumSampledConcurrentRssBytes": 1039556608,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1903.8401100042392,
+          "observedLifetimeIncludingDrainMilliseconds": 1969.3614420029917,
+          "postOwnerObservationMilliseconds": 65.52133199875243,
+          "sampledCpuSeconds": 1.97,
+          "maximumSampledConcurrentRssBytes": 1118748672,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1984.9981849984033,
+          "observedLifetimeIncludingDrainMilliseconds": 1992.516942002112,
+          "postOwnerObservationMilliseconds": 7.518757003708743,
+          "sampledCpuSeconds": 1.98,
+          "maximumSampledConcurrentRssBytes": 1100447744,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1575.1418660001946,
+          "observedLifetimeIncludingDrainMilliseconds": 1640.8052269980544,
+          "postOwnerObservationMilliseconds": 65.66336099785985,
+          "sampledCpuSeconds": 3.39,
+          "maximumSampledConcurrentRssBytes": 3123437568,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1722.8866220029886,
+          "observedLifetimeIncludingDrainMilliseconds": 1729.9616180025623,
+          "postOwnerObservationMilliseconds": 7.07499599957373,
+          "sampledCpuSeconds": 3.43,
+          "maximumSampledConcurrentRssBytes": 3249238016,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1771.0223809990566,
+          "observedLifetimeIncludingDrainMilliseconds": 1835.7768790010596,
+          "postOwnerObservationMilliseconds": 64.75449800200295,
+          "sampledCpuSeconds": 3.54,
+          "maximumSampledConcurrentRssBytes": 3469492224,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1766.0326109980815,
+          "observedLifetimeIncludingDrainMilliseconds": 1831.0247600020375,
+          "postOwnerObservationMilliseconds": 64.992149003956,
+          "sampledCpuSeconds": 3.48,
+          "maximumSampledConcurrentRssBytes": 3398987776,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1660.3356570049073,
+          "observedLifetimeIncludingDrainMilliseconds": 1667.022781999549,
+          "postOwnerObservationMilliseconds": 6.687124994641636,
+          "sampledCpuSeconds": 3.36,
+          "maximumSampledConcurrentRssBytes": 3240927232,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1767.5774740055203,
+          "observedLifetimeIncludingDrainMilliseconds": 1831.2240130035207,
+          "postOwnerObservationMilliseconds": 63.646538998000324,
+          "sampledCpuSeconds": 3.41,
+          "maximumSampledConcurrentRssBytes": 3377307648,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1717.8898509955616,
+          "observedLifetimeIncludingDrainMilliseconds": 1724.2829479946522,
+          "postOwnerObservationMilliseconds": 6.393096999090631,
+          "sampledCpuSeconds": 3.37,
+          "maximumSampledConcurrentRssBytes": 2923458560,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1716.4779510057997,
+          "observedLifetimeIncludingDrainMilliseconds": 1723.6997600048198,
+          "postOwnerObservationMilliseconds": 7.221808999020141,
+          "sampledCpuSeconds": 3.66,
+          "maximumSampledConcurrentRssBytes": 3035107328,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1905.0809199979994,
+          "observedLifetimeIncludingDrainMilliseconds": 1969.7219239969854,
+          "postOwnerObservationMilliseconds": 64.64100399898598,
+          "sampledCpuSeconds": 2.12,
+          "maximumSampledConcurrentRssBytes": 1052422144,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 2075.777250000101,
+          "observedLifetimeIncludingDrainMilliseconds": 2139.980653002567,
+          "postOwnerObservationMilliseconds": 64.20340300246608,
+          "sampledCpuSeconds": 2.03,
+          "maximumSampledConcurrentRssBytes": 1112420352,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1990.0838990070042,
+          "observedLifetimeIncludingDrainMilliseconds": 1996.6219810012262,
+          "postOwnerObservationMilliseconds": 6.538081994222011,
+          "sampledCpuSeconds": 2.04,
+          "maximumSampledConcurrentRssBytes": 1026600960,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 2017.7501840007608,
+          "observedLifetimeIncludingDrainMilliseconds": 2082.0126679973328,
+          "postOwnerObservationMilliseconds": 64.26248399657197,
+          "sampledCpuSeconds": 2.14,
+          "maximumSampledConcurrentRssBytes": 998043648,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2363.9062240035855,
+          "observedLifetimeIncludingDrainMilliseconds": 2429.4560800044565,
+          "postOwnerObservationMilliseconds": 65.54985600087093,
+          "sampledCpuSeconds": 6.14,
+          "maximumSampledConcurrentRssBytes": 3371061248,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2374.0048030012986,
+          "observedLifetimeIncludingDrainMilliseconds": 2438.611629004299,
+          "postOwnerObservationMilliseconds": 64.6068260030006,
+          "sampledCpuSeconds": 5.82,
+          "maximumSampledConcurrentRssBytes": 3464859648,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2337.599031998252,
+          "observedLifetimeIncludingDrainMilliseconds": 2344.9735100002727,
+          "postOwnerObservationMilliseconds": 7.3744780020206235,
+          "sampledCpuSeconds": 5.76,
+          "maximumSampledConcurrentRssBytes": 3177771008,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2429.342955998436,
+          "observedLifetimeIncludingDrainMilliseconds": 2493.9357249968452,
+          "postOwnerObservationMilliseconds": 64.59276899840916,
+          "sampledCpuSeconds": 6.36,
+          "maximumSampledConcurrentRssBytes": 3084742656,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4473.135405998619,
+          "observedLifetimeIncludingDrainMilliseconds": 4480.287411999598,
+          "postOwnerObservationMilliseconds": 7.152006000978872,
+          "sampledCpuSeconds": 4.35,
+          "maximumSampledConcurrentRssBytes": 1052602368,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4473.805872999947,
+          "observedLifetimeIncludingDrainMilliseconds": 4538.225040996622,
+          "postOwnerObservationMilliseconds": 64.41916799667524,
+          "sampledCpuSeconds": 4.14,
+          "maximumSampledConcurrentRssBytes": 1066213376,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4423.996338999132,
+          "observedLifetimeIncludingDrainMilliseconds": 4489.455629998702,
+          "postOwnerObservationMilliseconds": 65.45929099956993,
+          "sampledCpuSeconds": 4.31,
+          "maximumSampledConcurrentRssBytes": 980815872,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4551.602161998744,
+          "observedLifetimeIncludingDrainMilliseconds": 4558.079517999431,
+          "postOwnerObservationMilliseconds": 6.477356000686996,
+          "sampledCpuSeconds": 4.62,
+          "maximumSampledConcurrentRssBytes": 995438592,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9748659102721641,
+              "playwrightCandidateOverNormal": 0.9059548327422803,
+              "sameNormalPlaywrightOverFlashwright": 1.101327619229947,
+              "sameCandidatePlaywrightOverFlashwright": 1.0234772480610863,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.129722157299025
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0108631012348226,
+              "playwrightCandidateOverNormal": 0.9829331397812083,
+              "sameNormalPlaywrightOverFlashwright": 1.0152855699346224,
+              "sameCandidatePlaywrightOverFlashwright": 0.9872334164847187,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.004374943248396
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9867061807525406,
+              "playwrightCandidateOverNormal": 1.033103937054583,
+              "sameNormalPlaywrightOverFlashwright": 0.9862464542802512,
+              "sameCandidatePlaywrightOverFlashwright": 1.0326225929242279,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9995340796670202
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.039931418672621,
+              "playwrightCandidateOverNormal": 0.9741454263050543,
+              "sameNormalPlaywrightOverFlashwright": 1.063524050212642,
+              "sameCandidatePlaywrightOverFlashwright": 0.9962455895432677,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0226867186781747
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 1.0055349820903614,
+              "playwrightCandidateOverNormal": 1.0053870491072066,
+              "sameNormalPlaywrightOverFlashwright": 1.0119067425112038,
+              "sameCandidatePlaywrightOverFlashwright": 1.0117578721230418,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0063366869719403
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0718006079094913,
+              "playwrightCandidateOverNormal": 0.9460662532335317,
+              "sameNormalPlaywrightOverFlashwright": 1.0427675783441424,
+              "sameCandidatePlaywrightOverFlashwright": 0.9204391269768281,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9729119116456026
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 1.0611662477926378,
+              "playwrightCandidateOverNormal": 1.115930599119312,
+              "sameNormalPlaywrightOverFlashwright": 0.9484633704720865,
+              "sameCandidatePlaywrightOverFlashwright": 0.9974113853086504,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.893793382936003
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0620206011624955,
+              "playwrightCandidateOverNormal": 0.9671189964050859,
+              "sameNormalPlaywrightOverFlashwright": 0.9996617794135756,
+              "sameCandidatePlaywrightOverFlashwright": 0.9103325263113748,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9412828511229805
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        }
+      ],
+      "limitations": [
+        "Two opposite-order pairs only; no final uncertainty interval.",
+        "Watchdog observed lifetime includes natural cleanup after owner exit; it is not exhaustive process custody.",
+        "CPU/RSS are sampled diagnostic observations, not complete resource admission.",
+        "Explicit immutable source/dependency/runtime bindings do not attest loaded memory or complete native libraries.",
+        "Separate custom native builds; compare these explicit artifacts, without attributing every cross-build difference to a single mechanism.",
+        "Narrow physical jail/citadel gate/helper omission only; core process locks/CPSP/frame/worker machinery retained. No full site-isolation removal or final representative majority-scenario 2x admission."
+      ],
+      "policyCaveat": "Original deliberate environment, wrapper/runtime bindings and browser observations verified by source campaign; observed lifetime includes drain but is not exhaustive custody.",
+      "admission": false
+    },
+    {
+      "stage": "v8-checks",
+      "originalAnalysis": "workbench/idea02-v8-checks-applications-001/analysis.json",
+      "originalAnalysisSha256": "dce20ffa2402efae84901cf080dcb251315028777aa090dc03f1abe1840f297c",
+      "originalStatus": "analyzed-selected-original-v8-checks-screen",
+      "metric": "observedLifetimeIncludingDrainMilliseconds",
+      "records": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4641.62741000473,
+          "observedLifetimeIncludingDrainMilliseconds": 4706.399055001384,
+          "postOwnerObservationMilliseconds": 64.77164499665378,
+          "sampledCpuSeconds": 4.51,
+          "maximumSampledConcurrentRssBytes": 925036544,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4536.85963099997,
+          "observedLifetimeIncludingDrainMilliseconds": 4601.997260004282,
+          "postOwnerObservationMilliseconds": 65.13762900431175,
+          "sampledCpuSeconds": 4.2299999999999995,
+          "maximumSampledConcurrentRssBytes": 943759360,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4434.987289001583,
+          "observedLifetimeIncludingDrainMilliseconds": 4500.082757003838,
+          "postOwnerObservationMilliseconds": 65.09546800225507,
+          "sampledCpuSeconds": 4.06,
+          "maximumSampledConcurrentRssBytes": 1077374976,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4711.475034004252,
+          "observedLifetimeIncludingDrainMilliseconds": 4776.700148002419,
+          "postOwnerObservationMilliseconds": 65.22511399816722,
+          "sampledCpuSeconds": 4.32,
+          "maximumSampledConcurrentRssBytes": 1061920768,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2394.837642998027,
+          "observedLifetimeIncludingDrainMilliseconds": 2460.4572349999216,
+          "postOwnerObservationMilliseconds": 65.61959200189449,
+          "sampledCpuSeconds": 6.17,
+          "maximumSampledConcurrentRssBytes": 2826993664,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2431.673300001421,
+          "observedLifetimeIncludingDrainMilliseconds": 2495.9795090035186,
+          "postOwnerObservationMilliseconds": 64.3062090020976,
+          "sampledCpuSeconds": 5.97,
+          "maximumSampledConcurrentRssBytes": 2959876096,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2351.957749997382,
+          "observedLifetimeIncludingDrainMilliseconds": 2417.0455819985364,
+          "postOwnerObservationMilliseconds": 65.08783200115431,
+          "sampledCpuSeconds": 5.87,
+          "maximumSampledConcurrentRssBytes": 3390099456,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2484.233682997001,
+          "observedLifetimeIncludingDrainMilliseconds": 2548.3655909993104,
+          "postOwnerObservationMilliseconds": 64.1319080023095,
+          "sampledCpuSeconds": 6.21,
+          "maximumSampledConcurrentRssBytes": 3333718016,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1965.3149919977295,
+          "observedLifetimeIncludingDrainMilliseconds": 2029.8905210001976,
+          "postOwnerObservationMilliseconds": 64.5755290024681,
+          "sampledCpuSeconds": 2.02,
+          "maximumSampledConcurrentRssBytes": 940384256,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1985.8584429966868,
+          "observedLifetimeIncludingDrainMilliseconds": 2050.1900689996546,
+          "postOwnerObservationMilliseconds": 64.33162600296782,
+          "sampledCpuSeconds": 2.06,
+          "maximumSampledConcurrentRssBytes": 985239552,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1824.225641998055,
+          "observedLifetimeIncludingDrainMilliseconds": 1887.889510995592,
+          "postOwnerObservationMilliseconds": 63.663868997537065,
+          "sampledCpuSeconds": 1.8,
+          "maximumSampledConcurrentRssBytes": 1087840256,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1862.4436959944433,
+          "observedLifetimeIncludingDrainMilliseconds": 1925.585102995683,
+          "postOwnerObservationMilliseconds": 63.14140700123971,
+          "sampledCpuSeconds": 2.04,
+          "maximumSampledConcurrentRssBytes": 1053986816,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1603.1825659956667,
+          "observedLifetimeIncludingDrainMilliseconds": 1610.7381599940709,
+          "postOwnerObservationMilliseconds": 7.55559399840422,
+          "sampledCpuSeconds": 3.34,
+          "maximumSampledConcurrentRssBytes": 2746966016,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1667.813328000193,
+          "observedLifetimeIncludingDrainMilliseconds": 1731.1595529972692,
+          "postOwnerObservationMilliseconds": 63.346224997076206,
+          "sampledCpuSeconds": 3.27,
+          "maximumSampledConcurrentRssBytes": 2866176000,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1577.1506119999685,
+          "observedLifetimeIncludingDrainMilliseconds": 1640.7025670050643,
+          "postOwnerObservationMilliseconds": 63.551955005095806,
+          "sampledCpuSeconds": 3.19,
+          "maximumSampledConcurrentRssBytes": 3172433920,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 0,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1619.4001359981485,
+          "observedLifetimeIncludingDrainMilliseconds": 1682.6595060047111,
+          "postOwnerObservationMilliseconds": 63.259370006562676,
+          "sampledCpuSeconds": 3.2600000000000002,
+          "maximumSampledConcurrentRssBytes": 3176525824,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1529.1939079979784,
+          "observedLifetimeIncludingDrainMilliseconds": 1592.8015379977296,
+          "postOwnerObservationMilliseconds": 63.607629999751225,
+          "sampledCpuSeconds": 3.23,
+          "maximumSampledConcurrentRssBytes": 3344420864,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1623.683074998553,
+          "observedLifetimeIncludingDrainMilliseconds": 1630.27000099828,
+          "postOwnerObservationMilliseconds": 6.5869259997271,
+          "sampledCpuSeconds": 3.24,
+          "maximumSampledConcurrentRssBytes": 3352616960,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1608.6665889961296,
+          "observedLifetimeIncludingDrainMilliseconds": 1615.5377440009033,
+          "postOwnerObservationMilliseconds": 6.871155004773755,
+          "sampledCpuSeconds": 3.25,
+          "maximumSampledConcurrentRssBytes": 2940366848,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 2104.316873002972,
+          "observedLifetimeIncludingDrainMilliseconds": 2168.3514329997706,
+          "postOwnerObservationMilliseconds": 64.03455999679863,
+          "sampledCpuSeconds": 3.52,
+          "maximumSampledConcurrentRssBytes": 2751885312,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1770.8928189967992,
+          "observedLifetimeIncludingDrainMilliseconds": 1833.974880995811,
+          "postOwnerObservationMilliseconds": 63.082061999011785,
+          "sampledCpuSeconds": 1.96,
+          "maximumSampledConcurrentRssBytes": 1050472448,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1909.5349759954843,
+          "observedLifetimeIncludingDrainMilliseconds": 1973.095724999439,
+          "postOwnerObservationMilliseconds": 63.5607490039547,
+          "sampledCpuSeconds": 1.92,
+          "maximumSampledConcurrentRssBytes": 1090838528,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1773.5798089997843,
+          "observedLifetimeIncludingDrainMilliseconds": 1836.817595998582,
+          "postOwnerObservationMilliseconds": 63.237786998797674,
+          "sampledCpuSeconds": 1.84,
+          "maximumSampledConcurrentRssBytes": 970219520,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 6,
+          "ownerLifetimeMilliseconds": 1865.2736110016122,
+          "observedLifetimeIncludingDrainMilliseconds": 1929.1855159972329,
+          "postOwnerObservationMilliseconds": 63.911904995620716,
+          "sampledCpuSeconds": 2.1,
+          "maximumSampledConcurrentRssBytes": 946069504,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2252.4442480062135,
+          "observedLifetimeIncludingDrainMilliseconds": 2316.545522000524,
+          "postOwnerObservationMilliseconds": 64.10127399431076,
+          "sampledCpuSeconds": 5.86,
+          "maximumSampledConcurrentRssBytes": 3292483584,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2259.5351290001418,
+          "observedLifetimeIncludingDrainMilliseconds": 2323.076471002423,
+          "postOwnerObservationMilliseconds": 63.54134200228145,
+          "sampledCpuSeconds": 5.62,
+          "maximumSampledConcurrentRssBytes": 3415748608,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2230.5977319992962,
+          "observedLifetimeIncludingDrainMilliseconds": 2294.2590000020573,
+          "postOwnerObservationMilliseconds": 63.66126800276106,
+          "sampledCpuSeconds": 5.65,
+          "maximumSampledConcurrentRssBytes": 2940149760,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 2294.8259559998405,
+          "observedLifetimeIncludingDrainMilliseconds": 2301.8149039999116,
+          "postOwnerObservationMilliseconds": 6.988948000071105,
+          "sampledCpuSeconds": 5.84,
+          "maximumSampledConcurrentRssBytes": 2897514496,
+          "browserLaunches": 4,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            },
+            {
+              "workerIndex": 1,
+              "parallelIndex": 1
+            },
+            {
+              "workerIndex": 2,
+              "parallelIndex": 2
+            },
+            {
+              "workerIndex": 3,
+              "parallelIndex": 3
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4233.4606160002295,
+          "observedLifetimeIncludingDrainMilliseconds": 4240.268060006201,
+          "postOwnerObservationMilliseconds": 6.8074440059717745,
+          "sampledCpuSeconds": 4.0200000000000005,
+          "maximumSampledConcurrentRssBytes": 1016737792,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "candidate",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4151.277318000211,
+          "observedLifetimeIncludingDrainMilliseconds": 4214.609190996271,
+          "postOwnerObservationMilliseconds": 63.331872996059246,
+          "sampledCpuSeconds": 4.16,
+          "maximumSampledConcurrentRssBytes": 1049227264,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "flashwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4118.838076996326,
+          "observedLifetimeIncludingDrainMilliseconds": 4125.027358000807,
+          "postOwnerObservationMilliseconds": 6.189281004481018,
+          "sampledCpuSeconds": 3.77,
+          "maximumSampledConcurrentRssBytes": 939954176,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        },
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "profile": "normal",
+          "engine": "playwright",
+          "block": 1,
+          "tests": 24,
+          "ownerLifetimeMilliseconds": 4198.47781000135,
+          "observedLifetimeIncludingDrainMilliseconds": 4204.787720002059,
+          "postOwnerObservationMilliseconds": 6.309910000709351,
+          "sampledCpuSeconds": 4.140000000000001,
+          "maximumSampledConcurrentRssBytes": 922791936,
+          "browserLaunches": 1,
+          "actualReporterWorkers": [
+            {
+              "workerIndex": 0,
+              "parallelIndex": 0
+            }
+          ]
+        }
+      ],
+      "comparisons": [
+        {
+          "application": "todomvc",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9778542886398092,
+              "playwrightCandidateOverNormal": 1.0149373421546835,
+              "sameNormalPlaywrightOverFlashwright": 1.0226861923418453,
+              "sameCandidatePlaywrightOverFlashwright": 1.0614694008833636,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.045847223070829
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0217166639687159,
+              "playwrightCandidateOverNormal": 1.0084380811510085,
+              "sameNormalPlaywrightOverFlashwright": 1.01933571709447,
+              "sameCandidatePlaywrightOverFlashwright": 1.0060880778850732,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9976696603293153
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "todomvc",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.968375570905029,
+              "playwrightCandidateOverNormal": 1.035728463290845,
+              "sameNormalPlaywrightOverFlashwright": 0.9857682028736772,
+              "sameCandidatePlaywrightOverFlashwright": 1.0543307954052699,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0179606265288097
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.012560687786488,
+              "playwrightCandidateOverNormal": 1.0063995666962686,
+              "sameNormalPlaywrightOverFlashwright": 1.003293396254672,
+              "sameCandidatePlaywrightOverFlashwright": 0.9971886637898404,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9908476680522974
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 1,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9208363358801881,
+              "playwrightCandidateOverNormal": 0.9486152494799968,
+              "sameNormalPlaywrightOverFlashwright": 0.9900986994784529,
+              "sameCandidatePlaywrightOverFlashwright": 1.0199670540995867,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0752168011833068
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0741925215098833,
+              "playwrightCandidateOverNormal": 0.9506472372864536,
+              "sameNormalPlaywrightOverFlashwright": 1.0502869311573833,
+              "sameCandidatePlaywrightOverFlashwright": 0.9294910823428663,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9777455252444893
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        },
+        {
+          "application": "svgomg",
+          "workers": 4,
+          "blocks": [
+            {
+              "block": 0,
+              "flashwrightCandidateOverNormal": 0.9477477475512925,
+              "playwrightCandidateOverNormal": 1.0446511716161893,
+              "sameNormalPlaywrightOverFlashwright": 0.9304388825427992,
+              "sameCandidatePlaywrightOverFlashwright": 1.025572544252329,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.981736843951131
+            },
+            {
+              "block": 1,
+              "flashwrightCandidateOverNormal": 1.0091191041819252,
+              "playwrightCandidateOverNormal": 0.7345679827343274,
+              "sameNormalPlaywrightOverFlashwright": 1.3421855608460227,
+              "sameCandidatePlaywrightOverFlashwright": 0.9770170198938783,
+              "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.330056635816154
+            }
+          ],
+          "advancesDeclaredWallScreen": false
+        }
+      ],
+      "limitations": [
+        "Two opposite-order pairs only; no final uncertainty interval.",
+        "Watchdog observed lifetime includes natural cleanup after owner exit; it is not exhaustive process custody.",
+        "CPU/RSS are sampled diagnostic observations, not complete resource admission.",
+        "Explicit immutable source/dependency/runtime bindings do not attest loaded memory or complete native libraries.",
+        "Separate custom native builds; compare these explicit artifacts, without attributing every cross-build difference to a single mechanism.",
+        "Selected V8 sandbox-check omission stage only; ordinary CHECK, Wasm tables, pointer compression and other declared retained mechanisms remain. No full V8/security removal or final representative majority-scenario 2x admission."
+      ],
+      "policyCaveat": "Original deliberate environment, wrapper/runtime bindings and browser observations verified by source campaign; observed lifetime includes drain but is not exhaustive custody.",
+      "admission": false
+    }
+  ],
+  "cumulative": {
+    "stage": "combined-selected-removals",
+    "originalAnalysis": "workbench/idea02-combined-applications-002/analysis.json",
+    "originalAnalysisSha256": "3580adf3aa6338902d2b47b1aeaf0ee3ea86d1fe296fcb33241d7ebe8825e3b2",
+    "originalStatus": "analyzed-selected-original-combined-removal-screen",
+    "metric": "observedLifetimeIncludingDrainMilliseconds",
+    "testsPassed": 480,
+    "independentSuiteLaunches": 32,
+    "records": [
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4192.790364999382,
+        "observedLifetimeIncludingDrainMilliseconds": 4256.578272994375,
+        "postOwnerObservationMilliseconds": 63.787907994992565,
+        "sampledCpuSeconds": 3.97,
+        "maximumSampledConcurrentRssBytes": 885047296,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4287.662164999347,
+        "observedLifetimeIncludingDrainMilliseconds": 4350.99212500063,
+        "postOwnerObservationMilliseconds": 63.329960001283325,
+        "sampledCpuSeconds": 4.1000000000000005,
+        "maximumSampledConcurrentRssBytes": 911134720,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4123.214778999682,
+        "observedLifetimeIncludingDrainMilliseconds": 4129.824776005989,
+        "postOwnerObservationMilliseconds": 6.609997006307822,
+        "sampledCpuSeconds": 3.65,
+        "maximumSampledConcurrentRssBytes": 934404096,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4189.147905002756,
+        "observedLifetimeIncludingDrainMilliseconds": 4253.257112002757,
+        "postOwnerObservationMilliseconds": 64.10920700000133,
+        "sampledCpuSeconds": 4.09,
+        "maximumSampledConcurrentRssBytes": 928800768,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2196.560676995432,
+        "observedLifetimeIncludingDrainMilliseconds": 2203.621167995152,
+        "postOwnerObservationMilliseconds": 7.060490999720059,
+        "sampledCpuSeconds": 5.63,
+        "maximumSampledConcurrentRssBytes": 2762096640,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2235.4879999984405,
+        "observedLifetimeIncludingDrainMilliseconds": 2299.731762999727,
+        "postOwnerObservationMilliseconds": 64.24376300128642,
+        "sampledCpuSeconds": 5.57,
+        "maximumSampledConcurrentRssBytes": 2868387840,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2257.3440240012133,
+        "observedLifetimeIncludingDrainMilliseconds": 2321.8531109960168,
+        "postOwnerObservationMilliseconds": 64.50908699480351,
+        "sampledCpuSeconds": 5.54,
+        "maximumSampledConcurrentRssBytes": 2879918080,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2269.3319949976285,
+        "observedLifetimeIncludingDrainMilliseconds": 2333.471229998395,
+        "postOwnerObservationMilliseconds": 64.13923500076635,
+        "sampledCpuSeconds": 5.9,
+        "maximumSampledConcurrentRssBytes": 2883608576,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1778.5988640025607,
+        "observedLifetimeIncludingDrainMilliseconds": 1842.7374980019522,
+        "postOwnerObservationMilliseconds": 64.13863399939146,
+        "sampledCpuSeconds": 1.9300000000000002,
+        "maximumSampledConcurrentRssBytes": 910368768,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1830.4852940054843,
+        "observedLifetimeIncludingDrainMilliseconds": 1894.5895730066695,
+        "postOwnerObservationMilliseconds": 64.1042790011852,
+        "sampledCpuSeconds": 1.85,
+        "maximumSampledConcurrentRssBytes": 949014528,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1784.8344759986503,
+        "observedLifetimeIncludingDrainMilliseconds": 1848.6720799992327,
+        "postOwnerObservationMilliseconds": 63.83760400058236,
+        "sampledCpuSeconds": 1.77,
+        "maximumSampledConcurrentRssBytes": 974708736,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1481.478669003991,
+        "observedLifetimeIncludingDrainMilliseconds": 1544.7493070023484,
+        "postOwnerObservationMilliseconds": 63.270637998357415,
+        "sampledCpuSeconds": 1.78,
+        "maximumSampledConcurrentRssBytes": 931573760,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1494.794455000374,
+        "observedLifetimeIncludingDrainMilliseconds": 1501.3163250041544,
+        "postOwnerObservationMilliseconds": 6.52187000378035,
+        "sampledCpuSeconds": 3.13,
+        "maximumSampledConcurrentRssBytes": 2749509632,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1584.444356005406,
+        "observedLifetimeIncludingDrainMilliseconds": 1648.188883002149,
+        "postOwnerObservationMilliseconds": 63.744526996742934,
+        "sampledCpuSeconds": 3.22,
+        "maximumSampledConcurrentRssBytes": 2764767232,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1623.281747000874,
+        "observedLifetimeIncludingDrainMilliseconds": 1687.3268350027502,
+        "postOwnerObservationMilliseconds": 64.04508800187614,
+        "sampledCpuSeconds": 3.32,
+        "maximumSampledConcurrentRssBytes": 2832064512,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 0,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1426.788441996905,
+        "observedLifetimeIncludingDrainMilliseconds": 1491.361529995629,
+        "postOwnerObservationMilliseconds": 64.57308799872408,
+        "sampledCpuSeconds": 3.42,
+        "maximumSampledConcurrentRssBytes": 2837475328,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1536.9466289994307,
+        "observedLifetimeIncludingDrainMilliseconds": 1600.492799996573,
+        "postOwnerObservationMilliseconds": 63.546170997142326,
+        "sampledCpuSeconds": 3.24,
+        "maximumSampledConcurrentRssBytes": 2751393792,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1634.576044001733,
+        "observedLifetimeIncludingDrainMilliseconds": 1697.7068179985508,
+        "postOwnerObservationMilliseconds": 63.13077399681788,
+        "sampledCpuSeconds": 3.29,
+        "maximumSampledConcurrentRssBytes": 2905145344,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1526.8783079955028,
+        "observedLifetimeIncludingDrainMilliseconds": 1590.7536939994316,
+        "postOwnerObservationMilliseconds": 63.875386003928725,
+        "sampledCpuSeconds": 3.08,
+        "maximumSampledConcurrentRssBytes": 2705166336,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1607.0822740002768,
+        "observedLifetimeIncludingDrainMilliseconds": 1670.996353001101,
+        "postOwnerObservationMilliseconds": 63.91407900082413,
+        "sampledCpuSeconds": 3.23,
+        "maximumSampledConcurrentRssBytes": 2664165376,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1814.1470340051455,
+        "observedLifetimeIncludingDrainMilliseconds": 1878.1691280019004,
+        "postOwnerObservationMilliseconds": 64.02209399675485,
+        "sampledCpuSeconds": 1.91,
+        "maximumSampledConcurrentRssBytes": 942907392,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1848.320238001179,
+        "observedLifetimeIncludingDrainMilliseconds": 1854.9245139947743,
+        "postOwnerObservationMilliseconds": 6.604275993595365,
+        "sampledCpuSeconds": 1.86,
+        "maximumSampledConcurrentRssBytes": 987615232,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1488.3048159972532,
+        "observedLifetimeIncludingDrainMilliseconds": 1552.283698998508,
+        "postOwnerObservationMilliseconds": 63.97888300125487,
+        "sampledCpuSeconds": 1.59,
+        "maximumSampledConcurrentRssBytes": 931385344,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 6,
+        "ownerLifetimeMilliseconds": 1850.4846889991313,
+        "observedLifetimeIncludingDrainMilliseconds": 1857.2276679988136,
+        "postOwnerObservationMilliseconds": 6.7429789996822365,
+        "sampledCpuSeconds": 2.02,
+        "maximumSampledConcurrentRssBytes": 915456000,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2234.585476995562,
+        "observedLifetimeIncludingDrainMilliseconds": 2241.624447000504,
+        "postOwnerObservationMilliseconds": 7.0389700049418025,
+        "sampledCpuSeconds": 5.61,
+        "maximumSampledConcurrentRssBytes": 2885537792,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2248.143833996437,
+        "observedLifetimeIncludingDrainMilliseconds": 2311.7854359952617,
+        "postOwnerObservationMilliseconds": 63.641601998824626,
+        "sampledCpuSeconds": 5.52,
+        "maximumSampledConcurrentRssBytes": 2972819456,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2168.614821996016,
+        "observedLifetimeIncludingDrainMilliseconds": 2175.334285995632,
+        "postOwnerObservationMilliseconds": 6.719463999615982,
+        "sampledCpuSeconds": 5.32,
+        "maximumSampledConcurrentRssBytes": 2845712384,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 2222.208008999587,
+        "observedLifetimeIncludingDrainMilliseconds": 2286.4301730005536,
+        "postOwnerObservationMilliseconds": 64.22216400096659,
+        "sampledCpuSeconds": 5.72,
+        "maximumSampledConcurrentRssBytes": 2761031680,
+        "browserLaunches": 4,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4076.222316005442,
+        "observedLifetimeIncludingDrainMilliseconds": 4140.490788005991,
+        "postOwnerObservationMilliseconds": 64.26847200054908,
+        "sampledCpuSeconds": 4.09,
+        "maximumSampledConcurrentRssBytes": 906313728,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "candidate",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4209.085259994026,
+        "observedLifetimeIncludingDrainMilliseconds": 4215.5270779985585,
+        "postOwnerObservationMilliseconds": 6.4418180045322515,
+        "sampledCpuSeconds": 4.01,
+        "maximumSampledConcurrentRssBytes": 949059584,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "flashwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4131.507199002954,
+        "observedLifetimeIncludingDrainMilliseconds": 4138.547180999012,
+        "postOwnerObservationMilliseconds": 7.039981996058486,
+        "sampledCpuSeconds": 3.59,
+        "maximumSampledConcurrentRssBytes": 900542464,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "profile": "normal",
+        "engine": "playwright",
+        "block": 1,
+        "tests": 24,
+        "ownerLifetimeMilliseconds": 4230.048750003334,
+        "observedLifetimeIncludingDrainMilliseconds": 4293.845908003277,
+        "postOwnerObservationMilliseconds": 63.79715799994301,
+        "sampledCpuSeconds": 4.24,
+        "maximumSampledConcurrentRssBytes": 905887744,
+        "browserLaunches": 1,
+        "actualReporterWorkers": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0
+          }
+        ]
+      }
+    ],
+    "comparisons": [
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "blocks": [
+          {
+            "block": 0,
+            "flashwrightCandidateOverNormal": 0.9491685246397432,
+            "playwrightCandidateOverNormal": 0.9992197580360054,
+            "sameNormalPlaywrightOverFlashwright": 0.9783006152863948,
+            "sameCandidatePlaywrightOverFlashwright": 1.0298880322269122,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0306922215501284
+          },
+          {
+            "block": 1,
+            "flashwrightCandidateOverNormal": 1.018600705424594,
+            "playwrightCandidateOverNormal": 0.9642849037243166,
+            "sameNormalPlaywrightOverFlashwright": 1.0375249381515512,
+            "sameCandidatePlaywrightOverFlashwright": 0.9822000218230852,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0185786566082036
+          }
+        ],
+        "advancesDeclaredWallScreen": false
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "blocks": [
+          {
+            "block": 0,
+            "flashwrightCandidateOverNormal": 1.0096190992150473,
+            "playwrightCandidateOverNormal": 1.0589257645048762,
+            "sameNormalPlaywrightOverFlashwright": 0.9582079107872955,
+            "sameCandidatePlaywrightOverFlashwright": 1.0050038130953918,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9490786292892809
+          },
+          {
+            "block": 1,
+            "flashwrightCandidateOverNormal": 1.062726520185001,
+            "playwrightCandidateOverNormal": 0.9804036324707657,
+            "sameNormalPlaywrightOverFlashwright": 1.051070719438449,
+            "sameCandidatePlaywrightOverFlashwright": 0.9696507349244753,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9890321728825183
+          }
+        ],
+        "advancesDeclaredWallScreen": false
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "blocks": [
+          {
+            "block": 0,
+            "flashwrightCandidateOverNormal": 0.9757638838186115,
+            "playwrightCandidateOverNormal": 0.8382904828698026,
+            "sameNormalPlaywrightOverFlashwright": 0.9726314998543831,
+            "sameCandidatePlaywrightOverFlashwright": 0.8355994141497445,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9967898135848501
+          },
+          {
+            "block": 1,
+            "flashwrightCandidateOverNormal": 1.1949648863745217,
+            "playwrightCandidateOverNormal": 1.011275655841188,
+            "sameNormalPlaywrightOverFlashwright": 1.1964486061388437,
+            "sameCandidatePlaywrightOverFlashwright": 1.0125312991616389,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 1.0012416429815136
+          }
+        ],
+        "advancesDeclaredWallScreen": false
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "blocks": [
+          {
+            "block": 0,
+            "flashwrightCandidateOverNormal": 1.02374603566632,
+            "playwrightCandidateOverNormal": 0.9933692887749704,
+            "sameNormalPlaywrightOverFlashwright": 0.9108885155623252,
+            "sameCandidatePlaywrightOverFlashwright": 0.8838604940418662,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.8897602372344818
+          },
+          {
+            "block": 1,
+            "flashwrightCandidateOverNormal": 1.0672342452527772,
+            "playwrightCandidateOverNormal": 0.9578074764329055,
+            "sameNormalPlaywrightOverFlashwright": 1.0504431699919083,
+            "sameCandidatePlaywrightOverFlashwright": 0.9427380411203244,
+            "crossBuildNormalPlaywrightOverCandidateFlashwright": 0.9842667386887571
+          }
+        ],
+        "advancesDeclaredWallScreen": false
+      }
+    ],
+    "limitations": [
+      "Two opposite-order pairs only; no final uncertainty interval.",
+      "Watchdog observed lifetime includes natural cleanup after owner exit; it is not exhaustive process custody.",
+      "CPU/RSS are sampled diagnostic observations, not complete resource admission.",
+      "Explicit immutable source/dependency/runtime bindings do not attest loaded memory or complete native libraries.",
+      "Separate custom native builds; compare these explicit artifacts, without attributing every cross-build difference to a single mechanism.",
+      "Controlled cumulative comparison of these explicit selected artifacts only; no full site-isolation/V8/security deletion, individual-mechanism attribution or final representative majority-scenario 2x/resource admission. Incremental V8-checks screen remains distinct; do not pool measurements or multiply stage ratios."
+    ],
+    "advancesDeclaredWallScreen": false,
+    "priorIncompleteCampaignIncluded": false,
+    "performanceAdmission": false,
+    "resourceAdmission": false,
+    "goalAchieved": false
+  }
+}
