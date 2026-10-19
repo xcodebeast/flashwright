@@ -29,6 +29,25 @@ There is a separate positive result. In the [painting-density experiment](../ben
 
 Selected isolation, immutable-profile, retry and caught-violation controls pass. Native violations in the reused browser are currently attributed to the worker and fail suite teardown; exact per-attempt native attribution, bounded long-suite record retention, broader capability enforcement and public packaging remain unfinished. Sampled resource observations do not establish complete process custody. The representative majority-scenario 2× objective remains unmet.
 
+## Chromium protection-removal experiment on Linux
+
+The [Idea 02 checkpoint](../compatibility/evidence/idea02-partial-removal-checkpoint-2026-10-19.json) records a private Chromium build with selected V8 sandbox machinery, Linux OS sandbox paths, physical site-isolation policy and jail/citadel enforcement removed from source/build paths. Ordinary JIT/GC and logical origin, storage, network and frame behavior remain. This is partial removal: shared process-lock metadata, committed-origin tracking and frame/navigation routing remain. The browser reports a distinct custom identity, and unsupported configurations reject.
+
+Five incremental screens each passed 480 original TodoMVC/SVGOMG tests across both engines, one/four workers and two reversed blocks. None met the declared 20% reduction in both blocks for any Flashwright application/worker cell. The [complete observations](../benchmarks/results/idea02-partial-removal-linux-2026-10-19.json) retain all stage ratios separately, including the early V8 screen's missing environment evidence and different timing boundary.
+
+A separate cumulative screen compares the preserved browser from before Idea 02 with the final selected removals, using the same private driver and matched launch flags. Both profiles retain the existing `--no-sandbox` launch policy; the Linux OS stage tests source/build omissions beyond that runtime setting. All 480 original tests passed across 32 launches. The table shows candidate elapsed time divided by baseline elapsed time **within Flashwright**; below 1 means faster. Elapsed time includes owner startup and observed natural descendant drain.
+
+| Application | Workers | First block | Reversed block |
+| --- | ---: | ---: | ---: |
+| TodoMVC | 1 | 0.949× | 1.019× |
+| TodoMVC | 4 | 1.010× | 1.063× |
+| SVGOMG | 1 | 0.976× | 1.195× |
+| SVGOMG | 4 | 1.024× | 1.067× |
+
+No cumulative cell improves in both orders. These selected removals have not delivered a consistent complete-suite speedup, and the unchanged cuts do not advance. Two blocks on a shared host cannot establish the cause of individual regressions or uncertainty bounds. Incremental ratios are not multiplied or pooled with the cumulative results.
+
+Selected correctness gates pass: 116 native V8 cases, 22 upstream mjsunit files, 3,868 additional BigInt boundary assertions, 170 browser-semantic checks and 66 native process-security controls across enforcement-on/off builds. Counts overlap across stages and are not exhaustive conformance. The first cumulative campaign remains excluded after a malformed process-title sample; a corrected observer retains partial reads and still rejects unexpected launch flags. Its fresh full campaign and the failed originals are documented separately. Full site-isolation machinery removal, macOS coverage, public adoption, complete resource accounting and the representative 2× objective remain unfinished.
+
 ## Current Linux controlled-family baseline
 
 The [exit-notification baseline](../benchmarks/results/watchdog-notification-controlled-linux-2026-10-18.json) runs the six original controlled workload families through both native runner adapters on stock full Chrome 148.0.7778.96 and Bun 1.4.2. Both engines receive the same four-core CPU quota, 8 GiB memory limit, zero swap and artifact policy. Each launch includes 15 fresh-context test executions, preparation, runner startup, default failure diagnostics and cleanup.
