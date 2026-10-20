@@ -136,7 +136,7 @@ test('ANSI reporter messages and relative original document paths preserve diagn
 for (const [name, change, reason] of [
   ['missing case', state => state.specifications.pop(), /suite cases/],
   ['duplicate title', state => { state.specifications[0].title = state.specifications[1].title; }, /suite cases/],
-  ['wrong workload inventory', state => state.report.configuration.workloads.pop(), /seven-workload fixture/],
+  ['wrong workload inventory', state => state.report.configuration.workloads.pop(), /full fixture or its original failure family/],
   ['wrong configured timeout', state => { state.report.configuration.expectedFailureTimeoutMilliseconds = 25; }, /changed assertion timeout/],
   ['runner-level error', state => state.report.runner.errors.push({ message: 'worker crashed' }), /Runner-level/],
   ['multiple tests', state => state.specifications[0].tests.push(state.specifications[0].tests[0]), /exactly one test/],
@@ -249,3 +249,19 @@ for (const runtime of [undefined, { name: 'node', version: '20.0.0' }, { name: '
     await assert.rejects(verify(state), /runtime identity|verified runtime version/);
   }));
 }
+
+for (const engine of ['playwright', 'flashwright']) test(`${engine} retains all diagnostics in the isolated original failure family`, () => withFixture(async state => {
+  state.report.configuration.workloads = ['failure'];
+  state.report.runner.suites = [{ specs: state.specifications.filter(spec => spec.title.startsWith('failure/')) }];
+  const receipt = await verify(state);
+  assert.equal(receipt.suiteCaseCount, 15);
+  assert.equal(receipt.casesPerEngine, 15);
+  assert.equal(receipt.successfulCasesWithoutArtifacts, 0);
+  state.report.runner.suites[0].specs.pop();
+  await assert.rejects(verify(state), /missing, duplicated or reordered/);
+}, engine));
+
+test('isolated diagnostics reject an arbitrary subset of the original families', () => withFixture(async state => {
+  state.report.configuration.workloads = ['interaction', 'failure'];
+  await assert.rejects(verify(state), /full fixture or its original failure family/);
+}));
