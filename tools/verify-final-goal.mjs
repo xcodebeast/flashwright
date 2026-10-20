@@ -8,6 +8,7 @@ import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidenc
 import { reconstructFinalGoalLinuxCapturedOutputs } from './final-goal-linux-evidence.mjs';
 import { reconstructFinalGoalLinuxApplication } from './final-goal-linux-application.mjs';
 import { decodeLinuxApplicationJson } from './final-goal-linux-json.mjs';
+import { createFinalGoalEvidenceBudget, finalGoalEvidenceLimits } from './final-goal-evidence-budget.mjs';
 import { reconstructFinalGoalLinuxBackend } from './final-goal-linux-backend.mjs';
 import { reconstructFinalGoalLinuxFamily } from './final-goal-linux-family.mjs';
 import { runnerFamilies } from '../benchmarks/runner-family-contract.mjs';
@@ -16,12 +17,7 @@ import { finalGoalAccountingClasses, finalGoalResourceMetrics } from '../benchma
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
   verifyFinalGoalConfiguration } from '../benchmarks/final-goal-contract.mjs';
 
-export const finalGoalEvidenceLimits = Object.freeze({
-  maximumFileBytes: 32 * 1024 * 1024,
-  maximumAggregateJsonBytes: 512 * 1024 * 1024,
-  opaqueReadChunkBytes: 64 * 1024,
-  maximumLinuxRunCachedBytes: 256 * 1024 * 1024,
-});
+export { finalGoalEvidenceLimits };
 
 /** Hash ordinary files with a fixed buffer; only JSON reads retain bytes until parsing. */
 async function retainedFile(directory, path, reserveJsonBytes, { maximumFileBytes = finalGoalEvidenceLimits.maximumFileBytes, expectedSize } = {}) {
@@ -106,14 +102,8 @@ function verifyScenarioTopology(result, configuration) {
 /** Bound input bytes and bind raw files; input limits do not bound parsed heap or process RSS. */
 export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonBytes = finalGoalEvidenceLimits.maximumAggregateJsonBytes } = {}) {
   directory = resolve(directory);
-  assert.ok(Number.isSafeInteger(maximumAggregateJsonBytes) && maximumAggregateJsonBytes > 0
-    && maximumAggregateJsonBytes <= finalGoalEvidenceLimits.maximumAggregateJsonBytes, 'JSON byte budget must be positive and cannot exceed the declared limit');
+  const budget = createFinalGoalEvidenceBudget(maximumAggregateJsonBytes);
   const checked = new Map();
-  let aggregateJsonBytes = 0;
-  function reserveJsonBytes(size) {
-    assert.ok(size <= maximumAggregateJsonBytes - aggregateJsonBytes, 'Aggregate JSON byte budget exceeded before parsing');
-    aggregateJsonBytes += size;
-  }
   function verifyReceiptIdentity(entry) {
     assert.match(entry.sha256 ?? '', /^[a-f0-9]{64}$/);
     if (checked.has(entry.path)) assert.equal(checked.get(entry.path), entry.sha256, 'Retained file has conflicting identities');
@@ -125,20 +115,20 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     assert.equal(file.sha256, entry.sha256, 'Retained evidence bytes changed');
     checked.set(entry.path, file.sha256);
   }
-  async function jsonFile(path, expectedSha256, bytesOnly = false, limits) {
+  async function jsonFile(path, expectedSha256, bytesOnly = false, limits, reserveJsonBytes = budget.reserveMetadata) {
     const file = await retainedFile(directory, path, reserveJsonBytes, limits);
     if (expectedSha256 !== undefined) assert.equal(file.sha256, expectedSha256, 'Retained evidence bytes changed');
     if (checked.has(path)) assert.equal(checked.get(path), file.sha256, 'Retained evidence bytes changed');
     checked.set(path, file.sha256);
     return bytesOnly ? file.jsonBytes : JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(file.jsonBytes));
   }
-  async function jsonEvidence(entry) {
+  async function jsonEvidence(entry, reserveJsonBytes) {
     verifyReceiptIdentity(entry);
-    return jsonFile(entry.path, entry.sha256);
+    return jsonFile(entry.path, entry.sha256, false, undefined, reserveJsonBytes);
   }
-  async function linuxManifest(entry) {
+  async function linuxManifest(entry, reserveJsonBytes) {
     verifyReceiptIdentity(entry);
-    return decodeLinuxApplicationJson(await jsonFile(entry.path, entry.sha256, true, { maximumFileBytes: 4 * 1024 ** 2 }));
+    return decodeLinuxApplicationJson(await jsonFile(entry.path, entry.sha256, true, { maximumFileBytes: 4 * 1024 ** 2 }, reserveJsonBytes));
   }
   const campaign = await jsonFile('campaign.json');
   verifyCampaignTopology(campaign);
@@ -162,11 +152,12 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
       for (const [attemptIndex, attempt] of cell.attempts.entries()) {
         for (const receipt of attempt.evidence ?? []) await evidence(receipt);
         for (const [engine, run] of Object.entries(attempt.runs ?? {})) {
+          const reserveRunBytes = budget.forRun(run);
           for (const receipt of run.evidence) await evidence(receipt);
           for (const kind of ['report', 'resources']) {
             const files = run.evidence.filter(receipt => receipt.kind === kind);
             assert.equal(files.length, 1, `Missing unique raw ${kind} file`);
-            assert.deepEqual(await jsonEvidence(files[0]), run[kind], `Inline ${kind} differs from original raw file`);
+            assert.deepEqual(await jsonEvidence(files[0], reserveRunBytes), run[kind], `Inline ${kind} differs from original raw file`);
           }
           for (const test of run.report.tests) for (const receipt of test.diagnostics?.evidence ?? []) await evidence(receipt);
           const linuxOriginals = run.evidence.filter(receipt => receipt.kind === 'linux-cgroup-originals');
@@ -191,12 +182,12 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
                 assert(Number.isSafeInteger(limits.expectedSize) && limits.expectedSize >= 0
                   && limits.expectedSize <= finalGoalEvidenceLimits.maximumLinuxRunCachedBytes - linuxCachedBytes,
                 'Linux run retained-byte cache limit exceeded before reading');
-                bytes = await jsonFile(receipt.path, receipt.sha256, true, limits);
+                bytes = await jsonFile(receipt.path, receipt.sha256, true, limits, reserveRunBytes);
                 linuxBytes.set(receipt.path, bytes); linuxCachedBytes += bytes.length;
               }
               return bytes;
             };
-            const manifest = await linuxManifest(linuxOriginals[0]);
+            const manifest = await linuxManifest(linuxOriginals[0], reserveRunBytes);
             assert.equal(manifest.accountingClass, finalGoalAccountingClasses.linux);
             const derived = await reconstructFinalGoalResourceEvidence(manifest, {},
               linuxReadBytes);
@@ -210,7 +201,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               resourceAdmission: false, performanceAccepted: false });
             if (outputManifests.length) {
               assert.equal(outputManifests.length, 1, 'Missing unique retained Linux output manifest');
-              const outputs = await reconstructFinalGoalLinuxCapturedOutputs(manifest, await linuxManifest(outputManifests[0]),
+              const outputs = await reconstructFinalGoalLinuxCapturedOutputs(manifest, await linuxManifest(outputManifests[0], reserveRunBytes),
                 linuxReadBytes);
               assert.equal(outputs.captureIdentity, derived.captureIdentity, 'Output capture identity differs from resources');
               linuxCapturedOutputs.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine, ...outputs });
@@ -221,7 +212,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               assert.equal(outputManifests.length, 1, 'Backend outcomes require captured outputs');
               assert.equal(result.id, 'application-backend-corpus', 'Unsupported Linux backend scenario');
               const workload = await reconstructFinalGoalLinuxBackend({ resourceManifest: manifest,
-                outputManifest: await linuxManifest(outputManifests[0]), manifest: await linuxManifest(backendManifests[0]),
+                outputManifest: await linuxManifest(outputManifests[0], reserveRunBytes), manifest: await linuxManifest(backendManifests[0], reserveRunBytes),
                 readBytes: linuxReadBytes, engine,
                 workers: configuration.cells.find(declared => declared.id === cell.id).workers });
               assert.equal(workload.captureIdentity, derived.captureIdentity);
@@ -233,7 +224,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               assert.equal(outputManifests.length, 1, 'Family outcomes require captured outputs');
               assert(runnerFamilies.some(family => result.id === `runner-${family}`), 'Unsupported Linux controlled-family scenario');
               const workload = await reconstructFinalGoalLinuxFamily({ resourceManifest: manifest,
-                outputManifest: await linuxManifest(outputManifests[0]), manifest: await linuxManifest(familyManifests[0]),
+                outputManifest: await linuxManifest(outputManifests[0], reserveRunBytes), manifest: await linuxManifest(familyManifests[0], reserveRunBytes),
                 readBytes: linuxReadBytes,
                 family: result.id.slice('runner-'.length), engine,
                 workers: configuration.cells.find(declared => declared.id === cell.id).workers });
@@ -247,7 +238,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               assert(['application-todomvc', 'application-svgomg'].includes(result.id), 'Unsupported Linux application scenario');
               const application = result.id.slice('application-'.length);
               const workload = await reconstructFinalGoalLinuxApplication({ resourceManifest: manifest,
-                outputManifest: await linuxManifest(outputManifests[0]), manifest: await jsonEvidence(applicationManifests[0]),
+                outputManifest: await linuxManifest(outputManifests[0], reserveRunBytes), manifest: await jsonEvidence(applicationManifests[0], reserveRunBytes),
                 readBytes: linuxReadBytes,
                 corpus: await loadApplicationCorpus(applicationCorpusDirectory(application)), application, engine,
                 workers: configuration.cells.find(declared => declared.id === cell.id).workers });
@@ -283,17 +274,18 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
       const actualStatus = analyzedCells.get(cell.id).status;
       if (!['confirmed-win', 'uncertain', 'nonwinner'].includes(actualStatus)) continue;
       for (const attempt of cell.attempts) for (const run of Object.values(attempt.runs)) {
+        const reserveRunBytes = budget.forRun(run);
         const watchdogReceipt = run.evidence.find(receipt => receipt.kind === 'watchdog');
         const lifecycleReceipt = run.evidence.find(receipt => receipt.kind === 'lifecycle');
         const treeReceipt = run.evidence.find(receipt => receipt.kind === 'owner-tree');
-        const manifest = await jsonEvidence(treeReceipt);
+        const manifest = await jsonEvidence(treeReceipt, reserveRunBytes);
         assert.equal(manifest.files?.watchdogReportBytes?.path, watchdogReceipt.path, 'Owner tree borrows another watchdog path');
         assert.equal(manifest.files?.watchdogReportBytes?.sha256, watchdogReceipt.sha256, 'Owner tree borrows another watchdog capture');
-        const lifecycle = await jsonEvidence(lifecycleReceipt);
+        const lifecycle = await jsonEvidence(lifecycleReceipt, reserveRunBytes);
         const derivedResources = await reconstructFinalGoalResourceEvidence(manifest, { lifecycle,
           collectorSha256: declaration.resourceCollectorSha256,
           requiredResourceComponents: scenarios.get(result.id).requiredResourceComponents },
-        (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
+        (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits, reserveRunBytes));
         assert.deepEqual(derivedResources, run.resources, 'Resources differ from original raw owner-tree reconstruction');
         assert.deepEqual(derivedResources.ownerInterval, run.report.ownerInterval, 'Original owner interval differs from report');
         assert.deepEqual(derivedResources.watchdogClock, run.report.watchdogClock, 'Raw watchdog clock differs from original report');
@@ -302,8 +294,8 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
   }
 
   return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations, linuxCapturedOutputs, linuxApplicationOutcomes, linuxControlledFamilyOutcomes, linuxBackendOutcomes,
-    inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
-      scope: 'Cumulative structured and retained payload bytes actually read; each Linux run reuses one bounded byte snapshot for repeated derivations. Other repeated JSON reads are charged again; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
+    inputBudget: { ...budget.summary(),
+      scope: 'Campaign metadata and each original run have separate cumulative input budgets, within the fixed 288-run topology and aggregate ceiling. Each Linux run reuses one bounded byte snapshot for repeated derivations. Other repeated JSON reads, including later owner reconstruction, are charged again to the same scope; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
     scope: 'Retained file integrity and pure final-goal policy validation. Original behavior, source and collector algorithm admission remain separately required; a draft never proves final acceptance.' };
 }
 
