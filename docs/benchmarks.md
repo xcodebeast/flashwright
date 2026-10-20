@@ -59,6 +59,17 @@ No cumulative cell improves in both orders. These selected removals have not del
 
 Selected correctness gates pass: 116 native V8 cases, 22 upstream mjsunit files, 3,868 additional BigInt boundary assertions, 170 browser-semantic checks and 66 native process-security controls across enforcement-on/off builds. Counts overlap across stages and are not exhaustive conformance. The first cumulative campaign remains excluded after a malformed process-title sample; a corrected observer retains partial reads and still rejects unexpected launch flags. Its fresh full campaign and the failed originals are documented separately. Full site-isolation machinery removal, macOS coverage, public adoption, complete resource accounting and the representative 2× objective remain unfinished.
 
+The subsequent [physical-origin attribution](../benchmarks/results/idea02-physical-origin-attribution-linux-2026-10-20.json) passes 60 original tests across four fresh single-worker launches, with one traced and one untraced launch per application. The instrumented browser also passes 33 selected native cases. All four original browser exits and both trace publications are verified.
+
+| Traced application | Original tests | Resolver calls | Summed resolver spans | Within synchronous navigation dispatch |
+| --- | ---: | ---: | ---: | ---: |
+| TodoMVC | 24 | 2,143 | 7.374 ms | 4.675 ms |
+| SVGOMG | 6 | 630 | 2.115 ms | 1.289 ms |
+
+Every observed lookup found an empty physical isolated-origin registry. These small instrumented spans give no reason to prioritize the unchanged lookup-removal candidate for large suite gains. They do not measure the remaining shared process/frame machinery or establish achievable savings. Caller, resolver and lock spans nest and must not be added. JSON durations have microsecond precision; complete zero-duration events retain their counts.
+
+Each trace includes startup, original application work and a deliberate idle wait for capture publication, ending before ordinary browser teardown. No comparative timing ratio is calculated. The earlier wrong-driver campaign and failed shutdown-trace campaign remain excluded; the latter passed test bodies but lacked a complete trace and original traced browser-exit receipt. Broader Idea 02 removal and the representative 2× objective remain open.
+
 ## Current Linux controlled-family baseline
 
 The [exit-notification baseline](../benchmarks/results/watchdog-notification-controlled-linux-2026-10-18.json) runs the six original controlled workload families through both native runner adapters on stock full Chrome 148.0.7778.96 and Bun 1.4.2. Both engines receive the same four-core CPU quota, 8 GiB memory limit, zero swap and artifact policy. Each launch includes 15 fresh-context test executions, preparation, runner startup, default failure diagnostics and cleanup.

@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "classification": "diagnostic-native-linux-physical-origin-attribution",
+  "status": "60-original-tests-passed-selected-resolver-spans-attributed",
+  "baseCommit": "64962d9e7c9a337a38f930ffed54ece9e5161307",
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "optimizationAdopted": false,
+  "goalAchieved": false,
+  "scope": {
+    "platform": "Linux x64",
+    "engine": "Flashwright private exact-product driver 005",
+    "runtime": "Bun 1.4.2",
+    "workers": 1,
+    "launches": 4,
+    "testsPassed": 60,
+    "tracedTests": 30,
+    "nativeCasesPassed": 33,
+    "nativeInventoryCases": 177,
+    "policy": "Original TodoMVC/SVGOMG test and helper bodies, outcome/HTTP contracts and ordinary test timeouts; one control and one traced launch per application.",
+    "trace": "Fixed 30-second navigation.debug capture with a 64 MiB finite buffer. Diagnostic worker teardown awaits trace publication before ordinary browser close.",
+    "captureBoundary": "Startup, application work and trailing idle capture; ordinary browser teardown occurs after trace stops.",
+    "validation": "Four exact initial exec observations and original successful browser waits. Required parser, clock, event-loss and buffer-loss counters are zero in both traces."
+  },
+  "browser": {
+    "distribution": "Private cumulative Idea 02 Chromium headless_shell with attribution instrumentation",
+    "sha256": "dfe9b4341d3b2a7224a7e10b4e0aa729de447a441f9a1259db7b3879d969b4eb",
+    "runtime": {
+      "headless_shell": {
+        "sha256": "dfe9b4341d3b2a7224a7e10b4e0aa729de447a441f9a1259db7b3879d969b4eb",
+        "bytes": 323606056
+      },
+      "icudtl.dat": {
+        "sha256": "c5da2fc389d1bb0ecb13fe22a8e069b7abc491f8aa5d16eb65d4ff32c85a46b6",
+        "bytes": 10876464
+      },
+      "v8_context_snapshot.bin": {
+        "sha256": "f4cf36ef9bb176ec73006851f615ac9c540e515de71f3157e81df61fd9b8353f",
+        "bytes": 739656
+      },
+      "headless_lib_data.pak": {
+        "sha256": "8873709b04abb73bc0f491c8730b4446ee076f2e9bdedee5de203f1bf80ac3ad",
+        "bytes": 596650
+      },
+      "headless_lib_strings.pak": {
+        "sha256": "b795fb041aa29ef388ea81c04f0587672e93165521eae3cc1afc28dcf9ff3f98",
+        "bytes": 5086177
+      },
+      "headless_command_resources.pak": {
+        "sha256": "66cc2fdded0b16a0223f46aeef3b83ab9e0c5d940d3bd4a2c8a29385f844503b",
+        "bytes": 3033
+      },
+      "libEGL.so": {
+        "sha256": "cc2e0679e7fa2b0526b6da73886166f2f75afbd50096ab35586e3c9cf8c6f228",
+        "bytes": 405832
+      },
+      "libGLESv2.so": {
+        "sha256": "a60f15cd3beb6a0fb49763f00e857c0ece6ced592998a40c640b0e90f323e9cd",
+        "bytes": 19936656
+      },
+      "libvk_swiftshader.so": {
+        "sha256": "b07dc1c0a184df4e62fa47fab96468e051302f6052134302fc0f848029db4755",
+        "bytes": 6462056
+      },
+      "vk_swiftshader_icd.json": {
+        "sha256": "c9eef28b6b984fec220ef0abfecc40b502d46946706e47bfe97707027cb818bd",
+        "bytes": 107
+      },
+      "libvulkan.so.1": {
+        "sha256": "f48477207a52732c7826a301b4baa3c7b98f25f8c1fbb3f7d3114b1d862e75d4",
+        "bytes": 921648
+      }
+    },
+    "buildReceiptSha256": "125e64a591669f5e08d40ce843192389d9a71c8b1b3c58f6485e63771cf3bee6",
+    "instrumentationPatchSha256": "44ce16adcbdf52d74ecf8c0f2648b29a2883d17ea5f035d3b36245b6574a06e7"
+  },
+  "launches": [
+    {
+      "application": "todomvc",
+      "profile": "control",
+      "testsPassed": 24,
+      "originalBrowserExitSha256": "105cfe69d35ebff66c586dd940c240f4ee92d9f26ffe8dbd109f03938f4a2cd0",
+      "execObservationSha256": "1db48149763961d21400484b3efe2ce98afd3bc90fd687f3fc9d5aadeb1c6083",
+      "functionalVerificationSha256": "13c7fefcb1b8c458a7eb04b93db57ce5491e10d180183cd975b99d008f82524a"
+    },
+    {
+      "application": "svgomg",
+      "profile": "control",
+      "testsPassed": 6,
+      "originalBrowserExitSha256": "43ccc299db92b2c82828d35cc7b93b7a2748d0d3bf24c2f179887b113667e29b",
+      "execObservationSha256": "14e63be85b38731b63676f2344fd34e493513306b48a05bb5190dce162e2c5eb",
+      "functionalVerificationSha256": "010d48181b961e04689b86f918aff2f86819c4efaac72b18b48a0a3b099a93b5"
+    },
+    {
+      "application": "svgomg",
+      "profile": "trace",
+      "testsPassed": 6,
+      "originalBrowserExitSha256": "f1be78993a2b64e7d7a2baf280f56638cf029d3b2373eca8a575981ae7a4f70f",
+      "execObservationSha256": "d097bd1d9f382cf313ca8ba9b80cd435c826fe7719625dc566c2193d461618ff",
+      "functionalVerificationSha256": "4733f5ff596b7d0eb06601d71347a095efd911b22f7898437eb62b3cd70b52f2",
+      "publicationReceiptSha256": "0a6c4134a9f8c5d7991af5bbded989da72528878a4106b8064a0f53cac66a67a"
+    },
+    {
+      "application": "todomvc",
+      "profile": "trace",
+      "testsPassed": 24,
+      "originalBrowserExitSha256": "730e3837ae619a8d3d405bb3219483be5ecf29a37f569e864b960f0aee073322",
+      "execObservationSha256": "aea37abd0e121d6f48b949f6ec09677ec25d6a5e79f2ffa6b98442eaf77a8814",
+      "functionalVerificationSha256": "15d7848881a8ff568cf40024eb8e5189696e7bb502c9706188eb5500ba03b2af",
+      "publicationReceiptSha256": "a9f161a3559a2de3cc85a704a741d1f60b70a6c6da3b031df33b1c1ebffeb002"
+    }
+  ],
+  "observations": [
+    {
+      "application": "svgomg",
+      "originalTests": 6,
+      "traceSha256": "ab4a2f499dbe09541c1077cf5e721fa339d9a63b5bb1b7d34a7cca4fc3685799",
+      "traceBytes": 594234,
+      "traceClockDomain": "LINUX_CLOCK_MONOTONIC",
+      "originalPhysicalPhaseCounts": {
+        "X": 2602,
+        "I": 464
+      },
+      "physicalEventCounts": {
+        "PhysicalOrigin.NavigationDispatch": 36,
+        "PhysicalOrigin.CallerSameSite": 54,
+        "PhysicalOrigin.CallerDedicated": 456,
+        "PhysicalOrigin.ResolveWithSiteCanonicalization": 456,
+        "PhysicalOrigin.Resolve": 630,
+        "PhysicalOrigin.LockWait": 630,
+        "PhysicalOrigin.Locked": 630,
+        "PhysicalOrigin.CallerAgentKey": 174
+      },
+      "resolveCalls": 630,
+      "outcomes": {
+        "1": 630
+      },
+      "registryBucketCounts": {
+        "0": 630
+      },
+      "callerCounts": {
+        "PhysicalOrigin.CallerDedicated": 456,
+        "PhysicalOrigin.CallerAgentKey": 174
+      },
+      "resolverMilliseconds": 2.115,
+      "resolverInsideNavigationDispatchMilliseconds": 1.289,
+      "resolverOutsideNavigationDispatchMilliseconds": 0.826,
+      "navigationDispatchUnionMilliseconds": 13.911,
+      "lockWaitMilliseconds": 0.399,
+      "lockedMilliseconds": 0.449
+    },
+    {
+      "application": "todomvc",
+      "originalTests": 24,
+      "traceSha256": "d3d93cd19f81575b21da55ba02e35f63a47db125342b2a2d5fcaa6f4550cac8e",
+      "traceBytes": 1800506,
+      "traceClockDomain": "LINUX_CLOCK_MONOTONIC",
+      "originalPhysicalPhaseCounts": {
+        "X": 8859,
+        "I": 1445
+      },
+      "physicalEventCounts": {
+        "PhysicalOrigin.NavigationDispatch": 96,
+        "PhysicalOrigin.CallerSameSite": 144,
+        "PhysicalOrigin.CallerDedicated": 1492,
+        "PhysicalOrigin.ResolveWithSiteCanonicalization": 1492,
+        "PhysicalOrigin.Resolve": 2143,
+        "PhysicalOrigin.LockWait": 2143,
+        "PhysicalOrigin.Locked": 2143,
+        "PhysicalOrigin.CallerAgentKey": 651
+      },
+      "resolveCalls": 2143,
+      "outcomes": {
+        "1": 2143
+      },
+      "registryBucketCounts": {
+        "0": 2143
+      },
+      "callerCounts": {
+        "PhysicalOrigin.CallerDedicated": 1492,
+        "PhysicalOrigin.CallerAgentKey": 651
+      },
+      "resolverMilliseconds": 7.374,
+      "resolverInsideNavigationDispatchMilliseconds": 4.675,
+      "resolverOutsideNavigationDispatchMilliseconds": 2.699,
+      "navigationDispatchUnionMilliseconds": 46.488,
+      "lockWaitMilliseconds": 1.479,
+      "lockedMilliseconds": 1.454
+    }
+  ],
+  "interpretation": {
+    "outcome1": "No physical isolated-origin registry bucket for the requested site.",
+    "decision": "Deprioritize the unchanged physical-origin lookup-removal candidate as a route to large suite gains. Do not launch another timing screen for this narrow cut without new evidence of material cost.",
+    "remainingScope": "Shared process/frame/navigation machinery removal is unfinished; these observations do not reject the broader Idea 02 proposal.",
+    "savings": "No achievable speedup or whole-suite critical-path bound is calculated."
+  },
+  "retainedFailures": [
+    "Run 001 used a driver that correctly rejected the custom product: all 24 TodoMVC setup attempts failed, with no completed test bodies or original browser-wait receipts.",
+    "Run 002 passed 36 original tests, but its traced SVGOMG launch lacked a completed trace and original browser-wait receipt. The campaign remains rejected.",
+    "A separate fixed-duration publication control passed. An initial X-only decoder assumption was corrected before run 003 materialization after checking the pinned exporter."
+  ],
+  "limits": [
+    "One traced and one untraced complete corpus per application, one worker; no uncertainty or speed inference.",
+    "Selected disjoint resolver durations are observed wall spans including trace recording; lock slices are perturbed and exclude some entry/release overhead.",
+    "Caller, wrapper, resolver and lock slices nest; their durations cannot be added.",
+    "One-microsecond containment margin accounts for integer-microsecond JSON timestamps/durations; nanosecond units do not add precision and zero-duration calls retain their counts.",
+    "Pinned export_json.cc882-905 exports closed zero-duration thread slices as I and unfinished slices as B; source-bound instrumentation uses scoped/begin-end events only. I counts remain explicit and contribute zero duration.",
+    "Only synchronous navigation ownership is joined. No host test/native navigation clock mapping or whole-suite critical path is established.",
+    "Trace counters and original browser exit are checked; this is not complete process/resource custody or continuous environment attestation."
+  ],
+  "provenance": {
+    "analysis.json": "2c94dd96686a29d1a4dd75ea179a8702e797a2f4fd7d727a330eb3a26858e7f3",
+    "analyze.py": "b2138dea4209e485719c7d6f54f1e5aacacdfccf7cc808e2ed52499666c2f3bb",
+    "results.json": "f209cd2d576b1bb072fc3a16643ab99ce7b92416f75ca53f2d4b50c4b03abe19",
+    "inputs.json": "9f3c71fff3d7a9a50bf0b06fee939f8fc9c9bed04595f66d4e70a5f314cd6b1b",
+    "plan.json": "34ca95857767b5ec08c7610ae56a1f3932136465c5b9cee38e2a7c8e8e6e35c1",
+    "build-binding.json": "8a76d8c6a4aed2cf2a2606ba208dfad39996f4120b01ab2b211a673c90c896c6",
+    "parent-result.json": "adc5b06bb8a9542ecb249f544ffa691e078468fb49033890301e0ae4d2f6e72f"
+  }
+}
