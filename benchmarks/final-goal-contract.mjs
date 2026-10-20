@@ -16,6 +16,7 @@ const hashPattern = /^[a-f0-9]{64}$/;
 export const finalGoalResourceVerifierPaths = Object.freeze([
   'benchmarks/final-goal-contract.mjs', 'benchmarks/final-goal-resource-policy.mjs', 'benchmarks/statistics.mjs',
   'tools/verify-final-goal.mjs', 'tools/final-goal-original-resources.mjs', 'tools/final-goal-owner-evidence.mjs',
+  'tools/final-goal-evidence-budget.mjs',
   'tools/final-goal-owner-tree.mjs', 'tools/final-goal-owner-records.mjs', 'tools/final-goal-owner-javascript.mjs',
   'tools/final-goal-owner-native.mjs', 'tools/final-goal-clock-projection.mjs', 'tools/watchdog.py',
   'tools/final-goal-linux-evidence.mjs', 'tools/final_goal_linux_evidence.py',

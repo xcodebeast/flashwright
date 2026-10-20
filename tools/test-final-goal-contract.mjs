@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceVerifierPaths, renderFinalGoalReport } from '../benchmarks/final-goal-contract.mjs';
 import { finalGoalEvidenceLimits, verifyFinalGoalEvidence } from './verify-final-goal.mjs';
+import { createFinalGoalEvidenceBudget } from './final-goal-evidence-budget.mjs';
 import { attachSyntheticResourceOriginals, retainSyntheticCampaign } from './final-goal-synthetic-fixture.mjs';
 
 const temporaryRoot = fileURLToPath(new URL('../workbench/final-goal-contract/', import.meta.url));
@@ -455,6 +456,52 @@ test('loader charges repeated JSON reads and rejects the aggregate boundary befo
       maximumAggregateJsonBytes: finalGoalEvidenceLimits.maximumAggregateJsonBytes + 1,
     }), /cannot exceed the declared limit/);
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('evidence budgets cover the full matrix while retaining independent run and metadata bounds', () => {
+  const budget = createFinalGoalEvidenceBudget();
+  assert.equal(finalGoalEvidenceLimits.maximumRuns, draft.scenarios.length * draft.cells.length * draft.independentPairs * 2);
+  budget.reserveMetadata(finalGoalEvidenceLimits.maximumMetadataJsonBytes);
+  assert.throws(() => budget.reserveMetadata(1), /metadata JSON byte budget/);
+  let firstRun;
+  for (let index = 0; index < finalGoalEvidenceLimits.maximumRuns; index++) {
+    const run = {};
+    firstRun ??= run;
+    budget.forRun(run)(finalGoalEvidenceLimits.maximumRunJsonBytes);
+  }
+  const summary = budget.summary();
+  assert.equal(summary.aggregateJsonBytes, finalGoalEvidenceLimits.maximumAggregateJsonBytes);
+  assert.equal(summary.runCount, 288);
+  assert.equal(summary.maximumObservedRunJsonBytes, finalGoalEvidenceLimits.maximumRunJsonBytes);
+  assert.throws(() => budget.forRun({}), /Too many runs/);
+  // A second reconstruction must not obtain a fresh allowance for the same run.
+  assert.throws(() => budget.forRun(firstRun)(1), /Run JSON byte budget/);
+  assert.equal(budget.summary().aggregateJsonBytes, summary.aggregateJsonBytes);
+});
+
+test('per-run reservations cannot consume unused metadata or another run allowance', () => {
+  const budget = createFinalGoalEvidenceBudget(), first = {}, second = {};
+  budget.forRun(first)(finalGoalEvidenceLimits.maximumRunJsonBytes - 1);
+  budget.forRun(second)(7);
+  budget.forRun(first)(1);
+  assert.throws(() => budget.forRun(first)(1), /Run JSON byte budget/);
+  assert.equal(budget.summary().runCount, 2);
+  assert.equal(budget.summary().metadataJsonBytes, 0);
+  assert.equal(budget.summary().aggregateJsonBytes, finalGoalEvidenceLimits.maximumRunJsonBytes + 7);
+});
+
+test('lower aggregate limits span all scopes and invalid reservations never change counters', () => {
+  const budget = createFinalGoalEvidenceBudget(10), run = {};
+  budget.reserveMetadata(4);
+  budget.forRun(run)(6);
+  const before = budget.summary();
+  assert.throws(() => budget.reserveMetadata(1), /Aggregate JSON byte budget/);
+  assert.throws(() => budget.forRun(run)(1), /Aggregate JSON byte budget/);
+  for (const size of [-1, NaN, 0.5, Infinity, '1']) {
+    assert.throws(() => budget.reserveMetadata(size));
+    assert.throws(() => budget.forRun(run)(size));
+  }
+  assert.deepEqual(budget.summary(), before);
 });
 
 test('loader streams opaque receipts and preserves raw JSON equality and path identities', async () => {

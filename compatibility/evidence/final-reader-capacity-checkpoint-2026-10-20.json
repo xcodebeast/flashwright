@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-bounded-reader-capacity",
+  "date": "2026-10-20",
+  "sourceCommitBeforeChanges": "6f2b86926bc97d3a7db1007d7ddd759d3e944900",
+  "scope": "Retained-evidence reader capacity and regression checks; no new browser runs or performance/resource admission.",
+  "budgetPolicy": {
+    "maximumFileBytes": 33554432,
+    "maximumMetadataJsonBytes": 536870912,
+    "maximumRunJsonBytes": 268435456,
+    "maximumRuns": 288,
+    "maximumAggregateJsonBytes": 77846282240,
+    "opaqueReadChunkBytes": 65536,
+    "maximumLinuxRunCachedBytes": 268435456
+  },
+  "capacityFixture": {
+    "classification": "Synthetic retained-reader capacity test; 36 historical captures replayed eight times, no new browser executions or independent pairs.",
+    "scenarioCount": 9,
+    "workerCells": 2,
+    "pairsPerCell": 8,
+    "engineRows": 288,
+    "distinctHistoricalCaptures": 36,
+    "outcomeRowsIncludingRepeatedOutcomes": 5824,
+    "aggregateReadBytes": 3027046211,
+    "metadataReadBytes": 3371211,
+    "maximumObservedRunReadBytes": 27258823,
+    "checkedFiles": 916,
+    "unchangedOriginalFiles": 904,
+    "goalAccepted": false,
+    "resourceAdmission": false,
+    "performanceAccepted": false
+  },
+  "verification": {
+    "bunRegressionChecks": 574,
+    "focusedNode24Checks": 153,
+    "sourceReview": "No actionable findings; source review only, independent of execution.",
+    "lowerAggregateLimitControl": {
+      "status": "passed",
+      "maximumAggregateJsonBytes": 536870912,
+      "rejection": "Aggregate JSON byte budget exceeded before parsing",
+      "scope": "Capacity fixture must reject under the old aggregate ceiling, rather than reset cumulative accounting per run."
+    },
+    "checks": [
+      "Fixed matrix size agrees with configured scenario/cell/pair count",
+      "Metadata and each run reject excess before allocation",
+      "A repeated owner reconstruction shares the original run allowance",
+      "Unused metadata and other run allowances cannot be borrowed",
+      "Invalid reservations leave byte counters unchanged",
+      "Existing integrity, malformed input, original resource and outcome corruption controls retained"
+    ]
+  },
+  "sourceReceipts": [
+    {
+      "path": "tools/final-goal-evidence-budget.mjs",
+      "bytes": 2462,
+      "sha256": "2d725993f7a3891c0d69f96b45b983f627da4026ab233144400454dd30183d1d"
+    },
+    {
+      "path": "tools/verify-final-goal.mjs",
+      "bytes": 22507,
+      "sha256": "28e0957ff1d979e77d5f5e3322440fb6b6d1cfdf822536da94f5c0c62df651db"
+    },
+    {
+      "path": "tools/test-final-goal-contract.mjs",
+      "bytes": 52598,
+      "sha256": "73e466b55240846a34867f1ac598df30a20316b78ca6ded2ac30a176780f5e6f"
+    },
+    {
+      "path": "benchmarks/final-goal-contract.mjs",
+      "bytes": 41477,
+      "sha256": "b0c5603fa20246adbb1246d6ce7bfa690e18a42c0feeceb2c8ddb1a0df0ec9b1"
+    }
+  ],
+  "retainedEvidence": [
+    {
+      "path": "workbench/final-goal-reader-scale-001/plan.json",
+      "bytes": 557,
+      "sha256": "c37149fc4a5babf4525ab3996b4ffe92881c51e94bedfbbcbcc6273613a696d6"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/capacity-result.json",
+      "bytes": 9608,
+      "sha256": "d45fc31b8302a25867b5fb627389ccf320de5a2319d48b9f13f6991508bfad39"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/lower-limit-result.json",
+      "bytes": 261,
+      "sha256": "95f60c479769b6ac4368d86ac6cfb33d2e345a54558f07c2b0d83b8a719bb558"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/bun-tests.log",
+      "bytes": 41858,
+      "sha256": "4d1d38c549d9b0312f1654c4d68283a515a72f44909bbfa80b5787c68591cc8c"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/node-tests.log",
+      "bytes": 11344,
+      "sha256": "633e5fdbf67848552c372d94f730e126162d76b97c91d34cf3ab7ca2047622ba"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/source-receipts.json",
+      "bytes": 206846,
+      "sha256": "293fce30817c23e02bce590f66a50b3803f047c1fc6b7f685c54c5bfb1dcaa51"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/implementation-receipts.json",
+      "bytes": 772,
+      "sha256": "e9e69dd28255fa224b17d6f92b1b251f638d97a5bf075dfc4239a46f0f791764"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/verify.mjs",
+      "bytes": 2205,
+      "sha256": "4c67690aeaea2abcc821f47bfece86f28d4928eb0b713ab779126ee7a91748a1"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/lower-limit.mjs",
+      "bytes": 785,
+      "sha256": "6d5c4ebee5aaf5ba77167636d56c2b9dcabe77904ee110c582c1e64c0b20588f"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-001/prepare.py",
+      "bytes": 2161,
+      "sha256": "ff859e4cb6e746aca3029be4ef1be4db0f29664e5b583c08c32131881f938823"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-review-001/report.md",
+      "bytes": 4380,
+      "sha256": "e60f2ea233c3a1e6cdb6b79cd0f390b30a21d89da3ca5f6b75adb0f89f382b2c"
+    },
+    {
+      "path": "workbench/final-goal-reader-scale-review-001/source-hashes.json",
+      "bytes": 1771,
+      "sha256": "3e2b9901e8f24a4d67731a4a3120baded3e8012d971a000d10ef1ac6e5eb799a"
+    }
+  ],
+  "originalVerifierWaits": [
+    {
+      "kind": "resources",
+      "path": "workbench/final-goal-reader-scale-001/resources/2026-10-20T21-51-07Z-fba536aa.json",
+      "bytes": 846674,
+      "sha256": "36eba8e54ba2c96b68bc3ae5d692cf46987e9735659af4852c9e0fbbe1d5dcdb",
+      "originalExitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": []
+    },
+    {
+      "kind": "negative-resources",
+      "path": "workbench/final-goal-reader-scale-001/negative-resources/2026-10-20T21-53-39Z-65770c2f.json",
+      "bytes": 162056,
+      "sha256": "417a4d9a2664b209cd346a97935ab5825884ea97e21e030842db05a1129029b1",
+      "originalExitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": []
+    }
+  ],
+  "limitations": [
+    "Capacity repeats 36 historical captures eight times; it is not 288 independent original launches.",
+    "Historical source states remain noncomparable and unadmitted. No benchmark values are promoted.",
+    "Input-byte limits do not bound parsed heap or RSS. Linux raw snapshots remain local to a single run.",
+    "Full Linux policy/provenance/workload/clock/closure admission and fresh fixed final campaign remain open.",
+    "No browser optimization, 2x gain, competitor leadership or release acceptance is established."
+  ]
+}
