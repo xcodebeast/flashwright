@@ -70,6 +70,25 @@ Every observed lookup found an empty physical isolated-origin registry. These sm
 
 Each trace includes startup, original application work and a deliberate idle wait for capture publication, ending before ordinary browser teardown. No comparative timing ratio is calculated. The earlier wrong-driver campaign and failed shutdown-trace campaign remain excluded; the latter passed test bodies but lacked a complete trace and original traced browser-exit receipt. Broader Idea 02 removal and the representative 2× objective remain open.
 
+## Application compilation inherited by Linux renderers
+
+The [application-code inheritance screen](../benchmarks/results/application-code-inheritance-linux-2026-10-20.json) tests a different preparation mechanism: compile the exact application source in a donor isolate, without executing it, then let ordinary browser compilation reuse the inherited code in fresh contexts. The private browser retains normal network loading and application execution. Native observations verify both the inherited shared-function identity and an explicit in-memory compilation-cache hit.
+
+Before timing, 180 unchanged TodoMVC/SVGOMG tests pass across ordinary, virgin-donor and application-seeded profiles at one and four workers. Twelve direct fresh-context controls pass application behavior, trusted input and storage/global isolation. Twelve additional controls verify that changing source text, origin offset or host metadata prevents seed reuse while the original served application still works.
+
+The subsequent screen passes 360 original tests across 24 cells and 60 browser launches, with 120 inherited application compilations. Both orders include application services, runner startup, all donor preparation and observed natural cleanup. Only the seeded profile pays manifest serialization. Each cell uses the same four-core quota, 8 GiB memory limit, zero swap, browser, driver and artifact policy. Ratios below are seeded elapsed time divided by the indicated control; below 1 means faster.
+
+| Application | Workers | Seeded / ordinary, forward / reverse | Seeded / virgin donor, forward / reverse |
+| --- | ---: | ---: | ---: |
+| TodoMVC | 1 | 0.959 / 0.963 | 0.953 / 0.956 |
+| TodoMVC | 4 | 1.031 / 1.021 | 1.031 / 0.971 |
+| SVGOMG | 1 | 0.978 / 0.986 | 0.989 / 0.969 |
+| SVGOMG | 4 | 0.967 / 0.975 | 0.989 / 0.976 |
+
+No cell reaches the predeclared 20% reduction against both controls in both orders. The mechanism works in this tested slice, but the unchanged composition does not advance as a large-gain optimization. Every observed application hit uses the ordinary streaming path, which can perform background parsing before the final cache lookup. A hit therefore does not prove that all parsing was avoided. Separate component controls also show that explicit memory pressure clears the inherited default cache.
+
+These are two observations per cell on a shared host, not confidence bounds, a stock-browser comparison or a Playwright speed ratio. The initial compiler failures and missing-driver foundation launch remain separate from successful campaigns. Exhaustive manifest validation, broader lifecycle/conformance, complete resource custody, public adoption and the representative 2× objective remain open.
+
 ## Current Linux controlled-family baseline
 
 The [exit-notification baseline](../benchmarks/results/watchdog-notification-controlled-linux-2026-10-18.json) runs the six original controlled workload families through both native runner adapters on stock full Chrome 148.0.7778.96 and Bun 1.4.2. Both engines receive the same four-core CPU quota, 8 GiB memory limit, zero swap and artifact policy. Each launch includes 15 fresh-context test executions, preparation, runner startup, default failure diagnostics and cleanup.

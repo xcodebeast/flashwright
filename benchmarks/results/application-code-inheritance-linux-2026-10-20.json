@@ -1,0 +1,1098 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "classification": "private-native-linux-application-compilation-inheritance-screen",
+  "status": "mechanism-confirmed-complete-work-screen-negative",
+  "baseCommit": "a5a2326aba32bd555b89138342cbc058add9cbf4",
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "optimizationAdopted": false,
+  "goalAchieved": false,
+  "scope": {
+    "platform": "Linux x64",
+    "runtime": "Bun 1.4.2",
+    "engine": "Flashwright",
+    "browser": "Private cumulative Idea 02 headless shell with physical-origin diagnostics and application-compilation observation",
+    "profiles": {
+      "ordinary": "Application preparation and renderer inheritance disabled.",
+      "inherit": "Existing virgin-isolate renderer donor, without application compilation.",
+      "seeded": "Exact application source and origin metadata eagerly compiled without execution in a plain donor context, then inherited by normal renderers."
+    },
+    "screenTestsPassed": 360,
+    "screenCells": 24,
+    "screenBrowserLaunches": 60,
+    "screenInheritedApplicationCompilations": 120,
+    "workers": [
+      1,
+      4
+    ],
+    "orders": [
+      "forward",
+      "reverse"
+    ],
+    "controls": "Same executable, driver, ordinary launch flags, original test/helper bodies, HTTP contracts and fresh-context policy. No retries or skips. Trace, video and screenshot policies off.",
+    "timing": "Owner startup through observed natural descendant drain; includes application service, runner, all browser/donor preparation and cleanup. Only seeded mode serializes the application manifest.",
+    "resources": "Each sequential cell receives four CPU quota cores, 8 GiB memory, zero swap and the same priority.",
+    "instrumentation": "Original-parent initial exec stop then detach; bounded native cache-hit diagnostics. No enabled startup trace. This is not a stock-browser or Playwright comparison."
+  },
+  "identities": {
+    "browserSha256": "fbcc2607301dd2866931e8155497034e7a302c85444374bab8a396f63b6ca525",
+    "driverSha256": "2739d60a9551ec108616836d43a976696dcccd0b972397ab4f53a2f708ac73f1",
+    "testedPatchSha256": "e0686b634ac5e65fc2c263c4177f192e48b36823d8c9e93fcde55f64fb63dd45",
+    "nativeSourceAndRuntimeReceiptSha256": "14ea296548fda2d55cbcd5de4687ece8e2246b70d80fbd603fbc41ce7627d7ee",
+    "sourceDependencyAndHarnessHashesSha256": "3926ad7f29142b0fa2437d61929ed824d35d7db247148aee41a843a167277c67",
+    "dependencyMembershipAndSymlinksSha256": "7bcc7f94269bf8866749a32dcf2e0cc0a495bc801f8a0d601e416789a70e4feb",
+    "prospectivePlanSha256": "372775b06fe99d6f0c3af677f0cf0ed507087081e9367f11e7182383add6bf2c",
+    "originalScreenResultsSha256": "1bc060fff78d022e7fe07c75e2c44d53646146e5034d54da2512a1f3c118ef58"
+  },
+  "functionalEvidence": {
+    "component": "Six fresh launches across two original application bundles: 16 pre-GC inherited hits and four fresh-process control hits. Real bundles compile only; separate synthetic execution/heap checks pass. Explicit memory pressure clears the inherited default cache.",
+    "directBrowserControls": "Twelve fresh contexts across ordinary, virgin-donor and seeded profiles pass real application actions, trusted clicks and storage/global isolation; four native inherited application hits.",
+    "mismatchControls": "Twelve additional fresh contexts separately change source, origin line offset or host metadata. All miss the seed and still pass original served application behavior.",
+    "originalCorpus": "180 unchanged TodoMVC/SVGOMG tests across three profiles at one/four workers; 30 original browser exits and 60 inherited application hits.",
+    "originalCorpusReceiptSha256": "29ec8155ef34a4686084844b30878609cb72685aecbc8b207ba9264d498065bb",
+    "scopeLimit": "Focused private mechanism evidence, not exhaustive manifest validation, crash/GC/browser conformance or public feature delivery."
+  },
+  "acceptance": {
+    "minimumReduction": 0.2,
+    "comparison": "seeded elapsed <=0.8 times both ordinary and virgin-inherit in each order for the same application/worker cell",
+    "mustPassBothOrders": true,
+    "allOriginalTestsRequired": true,
+    "noRetryOrResume": true,
+    "metric": "observedLifetimeIncludingDrainMilliseconds",
+    "resourceLimit": "4 CPU, 8GiB, zero swap per sequential cell",
+    "uncertainty": "Two observations per cell are a prioritization screen, not a confidence interval; sampled process custody is not final resource admission."
+  },
+  "comparisons": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "blocks": [
+        {
+          "block": "forward",
+          "seededOverOrdinary": 0.9586934712094489,
+          "seededOverVirginDonor": 0.953461088304215,
+          "passesDeclaredThreshold": false
+        },
+        {
+          "block": "reverse",
+          "seededOverOrdinary": 0.9626992925668305,
+          "seededOverVirginDonor": 0.9558010951982031,
+          "passesDeclaredThreshold": false
+        }
+      ],
+      "passesBothOrders": false
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "blocks": [
+        {
+          "block": "forward",
+          "seededOverOrdinary": 1.0305377713592279,
+          "seededOverVirginDonor": 1.031463355370441,
+          "passesDeclaredThreshold": false
+        },
+        {
+          "block": "reverse",
+          "seededOverOrdinary": 1.020648849046533,
+          "seededOverVirginDonor": 0.9712894451801422,
+          "passesDeclaredThreshold": false
+        }
+      ],
+      "passesBothOrders": false
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "blocks": [
+        {
+          "block": "forward",
+          "seededOverOrdinary": 0.9784377918055743,
+          "seededOverVirginDonor": 0.9892881969538814,
+          "passesDeclaredThreshold": false
+        },
+        {
+          "block": "reverse",
+          "seededOverOrdinary": 0.9864846137357228,
+          "seededOverVirginDonor": 0.9694300461842185,
+          "passesDeclaredThreshold": false
+        }
+      ],
+      "passesBothOrders": false
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "blocks": [
+        {
+          "block": "forward",
+          "seededOverOrdinary": 0.9670627109212708,
+          "seededOverVirginDonor": 0.9889076742602341,
+          "passesDeclaredThreshold": false
+        },
+        {
+          "block": "reverse",
+          "seededOverOrdinary": 0.9745731354864304,
+          "seededOverVirginDonor": 0.9762825136943238,
+          "passesDeclaredThreshold": false
+        }
+      ],
+      "passesBothOrders": false
+    }
+  ],
+  "observations": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "ordinary",
+      "block": "forward",
+      "tests": 24,
+      "elapsedMilliseconds": 4249.395558999822,
+      "ownerMilliseconds": 4184.913550998317,
+      "observedCpuSeconds": 4.14,
+      "maximumSampledConcurrentRssBytes": 952922112,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "7bcfd6b2c44505330c4fe507635703402e33da6572a818954de1f4b719f6f831",
+          "initialExecObservationSha256": "9735791fbd6c9a0b9d1a7a9b430a504326531b0ffb71148709d2da73e2b71ab0",
+          "nativeDiagnosticsSha256": "94a15916b7b0d2c817e819fa9f226e1b7edd9e3c6736511e526ea98afa3c361a"
+        }
+      ],
+      "resourceReceiptSha256": "8f2dcbdec1c5c5f4aefa49d7ed86260e9281557d5bfc508c340adb3a27ccc6ea",
+      "originalRunnerReportSha256": "733490eaf95f822956f5410a40f0d52943681d2238a8cfe7ff8676f80861ab75"
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "inherit",
+      "block": "forward",
+      "tests": 24,
+      "elapsedMilliseconds": 4272.715299000993,
+      "ownerMilliseconds": 4207.8842789997,
+      "observedCpuSeconds": 4.16,
+      "maximumSampledConcurrentRssBytes": 1053487104,
+      "launches": [
+        {
+          "inheritedRenderers": 24,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "ecc228d37d562360ad282ad84ce8a08c946633ae599169c0b284ffebacae8e86",
+          "initialExecObservationSha256": "83d3a7d3ced11ee07d7f9c8451d451f294730f937e98bc4f979deb6bf5b71aff",
+          "nativeDiagnosticsSha256": "ab46e640c63060968554fbc3f903b16c673991d94cd9330ffaf08e3d5f975da2"
+        }
+      ],
+      "resourceReceiptSha256": "0fece0839426fbcf6e9ebf62c5856361e11e2c0796f916add31ae65c93cceff8",
+      "originalRunnerReportSha256": "f0d926db750515a7d6ecf5cd66fecf9f2c4c7fabc87f3a00ac45f4b277baf18a"
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "seeded",
+      "block": "forward",
+      "tests": 24,
+      "elapsedMilliseconds": 4073.8677789995563,
+      "ownerMilliseconds": 4009.2582200013567,
+      "observedCpuSeconds": 3.93,
+      "maximumSampledConcurrentRssBytes": 1080729600,
+      "launches": [
+        {
+          "inheritedRenderers": 24,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 24,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "2ea60075b6fca551c5abbb36d4039ff5cadb00c43816e437ae540ad5a2760368",
+          "initialExecObservationSha256": "885f1fa5c44cb90bb6045161528ca6a4956cc49d4649a8617effd917c0021856",
+          "nativeDiagnosticsSha256": "3e0cd309924e80da5b03bbde2edcbe66cbbe178490fa9ed3e24992124e2dbcdb"
+        }
+      ],
+      "resourceReceiptSha256": "99fc95e0819ccfc127b9c966226a0e65e093f0c4d4fc372a91bacb618758eaf3",
+      "originalRunnerReportSha256": "bd495656e397aaf18e5faf08f511345dc9f7a9d0ed06a796bae634a025f64caa"
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "ordinary",
+      "block": "forward",
+      "tests": 6,
+      "elapsedMilliseconds": 1905.4062379982497,
+      "ownerMilliseconds": 1840.836743998807,
+      "observedCpuSeconds": 1.8800000000000001,
+      "maximumSampledConcurrentRssBytes": 984920064,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "ad4e61671695369ef399c1195099fc32becd806951bb29c354712a840e0e8b88",
+          "initialExecObservationSha256": "37617b79e519cd768b554f08aecad9670e2af95b96dd15288eb114aca9343954",
+          "nativeDiagnosticsSha256": "8f750c00f30eda13c1e768e38d5ee6e2017f9c73634653af4ab8ac61b3521585"
+        }
+      ],
+      "resourceReceiptSha256": "b98a7e3c3491572ec16d0dfdc3202b8ebda0359057a9884d96f3e4f574f93fab",
+      "originalRunnerReportSha256": "9889fc52d4134fd17dd901ef883cf952a2b3170275e53dd54c21bd481044d91d"
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "inherit",
+      "block": "forward",
+      "tests": 6,
+      "elapsedMilliseconds": 1884.507949998806,
+      "ownerMilliseconds": 1820.2038899980835,
+      "observedCpuSeconds": 1.88,
+      "maximumSampledConcurrentRssBytes": 1093165056,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "f050b81d45f4fbd67c90532f3c4632fc2fc3e9e76c31c7f39fed4e72e7d1dfc7",
+          "initialExecObservationSha256": "62eba95fc7c5f5c3dcfb8f3060720f4a5574066a4a05a8ed98f0f6da76a387ba",
+          "nativeDiagnosticsSha256": "cbf5f6d88f300853a79391e498e92b6e3ac175c614717741143384a6b7a7ccba"
+        }
+      ],
+      "resourceReceiptSha256": "716a3127eb4bad6436227995d1b8aaa067f0774cc618b7444a9a0b5fc4f28c1c",
+      "originalRunnerReportSha256": "ca11ea2e071d56eb376ac6f34dfb19bede1031c4bfc76bcbb4a2a9c1905f9a9b"
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "seeded",
+      "block": "forward",
+      "tests": 6,
+      "elapsedMilliseconds": 1864.321471999574,
+      "ownerMilliseconds": 1799.9287540005753,
+      "observedCpuSeconds": 1.97,
+      "maximumSampledConcurrentRssBytes": 1099563008,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 6,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "c387421d7a65da0d355d32e4f1d201beb23386709c51372852ea6ef369ba7419",
+          "initialExecObservationSha256": "ffbf5a286d1784e166a3f38d54317b249e82457768d918ff0988c15c0b5f1d6c",
+          "nativeDiagnosticsSha256": "95f36d5c8ffdee92487a4e57c81c4e2bf4497f92c92e31a761c31f638a731468"
+        }
+      ],
+      "resourceReceiptSha256": "cbd6376df7f8991a5d8a0535f8ed308d8ea2a4e31775878b3e044f892e5004c7",
+      "originalRunnerReportSha256": "c54f0bfec02876cb38f46d3d0172f13ce4f68330524f012d225dcfde66a218e6"
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "ordinary",
+      "block": "forward",
+      "tests": 24,
+      "elapsedMilliseconds": 2185.3827580016514,
+      "ownerMilliseconds": 2121.2941670019063,
+      "observedCpuSeconds": 5.7,
+      "maximumSampledConcurrentRssBytes": 2968367104,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "afda6b81678cd0b404935978af25f7489d3d6114677a7ff93798a9d49cfccace",
+          "initialExecObservationSha256": "d7dab9468fb55aa7f644077ddc39780796975b7cb1a416fc3d64793b732f33eb",
+          "nativeDiagnosticsSha256": "be261461bca846f1b25874421d731a1aa00c0fd35e80aaccd3725d7ba48e8bcd"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "d7acd53c4e783506707e2277ddef3822ff780cec5e6c6040ed19ebd66fa282a8",
+          "initialExecObservationSha256": "30a2b1736f076112f855daaeca7aa8cde3fa3b48a5730a81e705453ca792f41a",
+          "nativeDiagnosticsSha256": "d8cb8a745033cb89906ab029ad633f55e5196d09abccfbda1701b853e032f470"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "9f62050aea804440c6d5e85b93124986b27ef00571f27dd4d7671f7dfa0a7b2a",
+          "initialExecObservationSha256": "106073f296387ef7e634879d389bd4ba082a816af949f58257a7ba54fd6f84e6",
+          "nativeDiagnosticsSha256": "9dcaa18bbe29800b6214587fc57e34a9d9dc3110e51bbf1207ca933d29c57ba3"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "07d083a265181b118466289a78117c553f8e091bcbdf24fdc6e02fe8e3df4d5d",
+          "initialExecObservationSha256": "f515682a3f92bd1d0ff670b42da1d0c83d38290c01d01101f5df051d55c9d98c",
+          "nativeDiagnosticsSha256": "2ed587dcf5a64d21256aadcf91fb02767c9c8d172d9f34aba763b98080a6a5a6"
+        }
+      ],
+      "resourceReceiptSha256": "ed401767f0eda0c5a29a2a078d0146a24edbceb9cf4f5a8e11f4c68a428a51c0",
+      "originalRunnerReportSha256": "e10f1cd5ad21587bb915c84f894283515b2e0f7011603f6e5b90ff4254f7ed56"
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "inherit",
+      "block": "forward",
+      "tests": 24,
+      "elapsedMilliseconds": 2183.4217040013755,
+      "ownerMilliseconds": 2176.423208002234,
+      "observedCpuSeconds": 5.65,
+      "maximumSampledConcurrentRssBytes": 3460911104,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "2f2c9e6c189e6cc70bfc5e1183fab77a61d8c0f05208955e9c62b8cf96cf3abe",
+          "initialExecObservationSha256": "5da9d75276ea39b5476431e2b688c06c8ecf3eb6f18ec21d4676f518baa9c789",
+          "nativeDiagnosticsSha256": "d192dd6a174365ccef8131826f309ff94bd6512dc6c5d96520e93adc642d56a9"
+        },
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "ce1f5d0de5bdcd81d6c296c21b7424706cf8910dfb6faaf9e086a7c52e1e3755",
+          "initialExecObservationSha256": "94a50442f80b1b45f47b2830424f170e1b5450df9ff00601d222adb9fbddcbb3",
+          "nativeDiagnosticsSha256": "97a776c8c9dedbd2dcf40d159a6069bac748f646bf5a464b4e8d24204d3994c2"
+        },
+        {
+          "inheritedRenderers": 5,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "285f6caaf5e57b53d1f5b9bfe83c0a47afb4e0e71cd6384dd5beb0a914925391",
+          "initialExecObservationSha256": "b1b672be76baf951dd4cfced338623ab6ea3c4c9efebd97dde6c5f0c067d754f",
+          "nativeDiagnosticsSha256": "dfee6cd4e6a4b14edabdf0c5864da65f3088a04379a762c96cb6b84961ac837c"
+        },
+        {
+          "inheritedRenderers": 7,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "b22b2b10215268652571ce0022491bc305c1ec998acd1c0dd0714281d5e2a161",
+          "initialExecObservationSha256": "9f1b08704105c5eb10939dd695413fcefa15c64a528a1dd7ca3d96ba176cb5e4",
+          "nativeDiagnosticsSha256": "b44a67024475e4211482b73f9d006140cb3eb539a891a0b1a9195ec257a45e7e"
+        }
+      ],
+      "resourceReceiptSha256": "da22037268ee2818f0a3e8deab53a09728157e0910efcc092498d29bdb4359ad",
+      "originalRunnerReportSha256": "74bc44eb66d3a0dcacaae5c3920c5373b2b6078043857da24739cda33948c1d1"
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "seeded",
+      "block": "forward",
+      "tests": 24,
+      "elapsedMilliseconds": 2252.1194769979047,
+      "ownerMilliseconds": 2188.1311260003713,
+      "observedCpuSeconds": 5.5600000000000005,
+      "maximumSampledConcurrentRssBytes": 3514195968,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 6,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "64963597a924bb317049626a92d3f779862c89bf4572bab2e3b703868e9da338",
+          "initialExecObservationSha256": "d508a86ea560362c00d8361e9ce2f4cc7ab94cae41af1d56a901996106d9ef69",
+          "nativeDiagnosticsSha256": "65d6c05eb5e9e9c1bbe55191a2a777e7bb9d20d3c9d8e75c7f86aceb6b990246"
+        },
+        {
+          "inheritedRenderers": 5,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 5,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "54bd39ad84038362293d5e75b90b8b2af4ea7ca177c0bc5e563085e945788ff1",
+          "initialExecObservationSha256": "035252e90ace415b342617e25e82e9927c09303a30cfbbb76fb9d633b19946e6",
+          "nativeDiagnosticsSha256": "86211d1a63bb95b150a8834e63ee16476565e39d65b85c711ea7f3b490190819"
+        },
+        {
+          "inheritedRenderers": 7,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 7,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "70d804b07bc31ffc1f2dc1c355c5e6c0ac724405473ba53d4ddafea6b94c00a1",
+          "initialExecObservationSha256": "2459e3807d5fa24cea5781e672e2084ed75f3b4d9e4ddf23c1cf83ea3c50060d",
+          "nativeDiagnosticsSha256": "0bd739c7a76309a996616b29caeeec6adce3bb386f5ff6b94d3ef16c48963961"
+        },
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 6,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "4aa7e861d5a0057b9d454feaf2dc893c05a51e3ec323e9b068489ffa6b83d0c0",
+          "initialExecObservationSha256": "bed0eaef9ef4e499727a04192722bc153956b451cf80405941ea2a0f0304e000",
+          "nativeDiagnosticsSha256": "98d01038495c7d89b51fc2b9924d85c428f2ac97c78156f6e04898acb94c5f9c"
+        }
+      ],
+      "resourceReceiptSha256": "2400af1ea6594764fa232432a22de7eaba30c24f0149237cb93971cbe65b9657",
+      "originalRunnerReportSha256": "387296294d3b6cc15ed5057db09b7fd98ce4111f46eda597a6fcd2abadc293cc"
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "ordinary",
+      "block": "forward",
+      "tests": 6,
+      "elapsedMilliseconds": 1653.130828999565,
+      "ownerMilliseconds": 1589.0104380014236,
+      "observedCpuSeconds": 3.2199999999999998,
+      "maximumSampledConcurrentRssBytes": 2839633920,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "6ff1f40c2bb58f1deb8f2343ea68edb7520ded0c6c1a803bc7ede2de22437ee6",
+          "initialExecObservationSha256": "6041d1318b8a0ff2271b8d5d3831c56bfbc1bdd060c785d3fddb595963d78f1c",
+          "nativeDiagnosticsSha256": "34a8d63ff83db38ea515fdbff72a5a76a7c81c2fe850be50fb4cb1bd690f7362"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "aa0201aab3468dd0f59d81f598c5acee93ec4434066cec4d91410d6dd25c4a03",
+          "initialExecObservationSha256": "a7a441bf94f9aee2adbdd4115f97365bb469fae87213a0cc39cd080146924cf5",
+          "nativeDiagnosticsSha256": "3b867c7120ab009ff476fd2d5cc425e19f63a13ef8f55b635136138030cffb02"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "e4f46eda3b70ee4e53da321d810377cd8c7b6b1fe12f299f84dd3d52918e4325",
+          "initialExecObservationSha256": "4965de04854e2b938e31a09f9a2e5698b516ccb012901531d75d971f2ebbd4b2",
+          "nativeDiagnosticsSha256": "524ffced3bf9fa8804b91f65f8e7cbbea26af66638567395d92c44edeaad90f5"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "f02b4451a6a5e8173427464fda6a75c7ca2244f2c3d737f795ced4e2cac0b473",
+          "initialExecObservationSha256": "11e6ef6362848cd3f1505f216117acbd1fa23147326ffcbbe657c6e677d0c69f",
+          "nativeDiagnosticsSha256": "b23d3855262b118dd991ddd3cd38c1f60a37ef7f44eb8b1191c0ec830c19c00e"
+        }
+      ],
+      "resourceReceiptSha256": "1b4bd8830039a141e7cf7a3de8b940f26ff44fe56ab4627501fd614d71b3dd66",
+      "originalRunnerReportSha256": "1d893b1914a3a1ab37b2bd9eafbabe0856533f2a61379ba7b0e48f6589593121"
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "inherit",
+      "block": "forward",
+      "tests": 6,
+      "elapsedMilliseconds": 1616.6131809986837,
+      "ownerMilliseconds": 1609.527568998601,
+      "observedCpuSeconds": 3.35,
+      "maximumSampledConcurrentRssBytes": 3326013440,
+      "launches": [
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "729084979bd1c30fa9329687a648d726fbfbd1aa11c3ece756212037d0b8a6cf",
+          "initialExecObservationSha256": "3e62ec1234342357e42a365b16dcda95c94e5b8c1c89bba96a89e42205173c83",
+          "nativeDiagnosticsSha256": "32f38a168d5fff6f5af9785378fd4a7f04043dd54ddb94bd30014760a8b3a57d"
+        },
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "c34f43765fd9c1bb2ed0be72dd9de40fbdd5a1bf4d2f39552fba8064d18ccb6b",
+          "initialExecObservationSha256": "1af9911295b3dc9f59fee14c14ab4ffdb40d5a8df220e32fbbc6e32479bc78fa",
+          "nativeDiagnosticsSha256": "bdc38fd2a0d7d83c441b03ca5db1155d6af3cedeb4821b567cedb8af77b2804c"
+        },
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "9c12b0ea2145aaf724a176fe9dc9708d90b6fd9a38be4d8ce8966211f530aa48",
+          "initialExecObservationSha256": "e6645d097df82e5f6296e990215596be48d25b1c571518b48922d14d128e768e",
+          "nativeDiagnosticsSha256": "f08fab326a22a47c32308f5992a16fccb414090c7a28fad0f19d3da70b74a7a8"
+        },
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "e20dc3af96742a60d8956e091ecb49b265f43852e5c7ee5839ec48b5c6e0ce4e",
+          "initialExecObservationSha256": "aeebb1e7c8f338b676c4a4fae56b47c3a86b3bc38c545ea2e14710a0bd4077cd",
+          "nativeDiagnosticsSha256": "dd0a7ae7330f9ca01436f7fdf197bfa0c449287bb8b31a817850bf58e4aa4437"
+        }
+      ],
+      "resourceReceiptSha256": "4d23df96e56f9bbe5bafe859521571d6162dd20ac673db91f74d72369f7c0d74",
+      "originalRunnerReportSha256": "5ec2b1679f633e1bd452325966fde2ba00a9babaae9325434ce427b0a704b390"
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "seeded",
+      "block": "forward",
+      "tests": 6,
+      "elapsedMilliseconds": 1598.6811809998471,
+      "ownerMilliseconds": 1591.4258769989829,
+      "observedCpuSeconds": 3.27,
+      "maximumSampledConcurrentRssBytes": 3321323520,
+      "launches": [
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 2,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "1b5cf9845b52c2eb18aa19c74e9e5feef6c6f8efd93487a8dce5339db9949a41",
+          "initialExecObservationSha256": "4cbf0f657d392d3462be2c18eb48879216f6c70d8ae4128ddd487aafbb1f4506",
+          "nativeDiagnosticsSha256": "4e568f09273b9219e94e9ca19606a620b9cf9b344d65750c6971e9a0794e9da7"
+        },
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 1,
+          "inheritedCodeHits": 2,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "52e2058bd7cb2db30a46b52d66554d2e55a9eb63212304b7d26bc2a56d6ffaf5",
+          "initialExecObservationSha256": "e46fa437c6627d4944c6818c86a492632d3fc3be236cf215853bc6a33c818d95",
+          "nativeDiagnosticsSha256": "79c268d19009d01e877d44792a14dd0018022800623e4919a6f3e04120d670d2"
+        },
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 1,
+          "inheritedCodeHits": 1,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "b804c2d808ee772adbc131f96f785f166015dc148a4348d92295b52d64348ea6",
+          "initialExecObservationSha256": "ddf08ee952572336090be05545ef9ff0f81cb0504b640a20dd723be2521bc3c4",
+          "nativeDiagnosticsSha256": "71ba1a03201019d53ab3a4bec5b91b2080235367b9c10b43d4220abe2ab5b523"
+        },
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 1,
+          "inheritedCodeHits": 1,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "105582fce68bf6fa7aad86f74258b66660496e144922730d7a337dca736b4825",
+          "initialExecObservationSha256": "47cd7c68f53e82430ee638a7e37f5942d24eff821dac9c694057756039fd9916",
+          "nativeDiagnosticsSha256": "9ae2e53ca2ff786077b305845af6b192e6e6742886ae6daf2a66dca211686ffb"
+        }
+      ],
+      "resourceReceiptSha256": "53162c725bb2b5741c2756a2e42d5f4f52945a11186ccb789d76a792d1df4d4c",
+      "originalRunnerReportSha256": "728df3a31aec814c5f8ce23f85a50ad52a8431331d722d694948dee6f42a11d2"
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "seeded",
+      "block": "reverse",
+      "tests": 6,
+      "elapsedMilliseconds": 1595.5510310013779,
+      "ownerMilliseconds": 1588.1193130007887,
+      "observedCpuSeconds": 3.3000000000000003,
+      "maximumSampledConcurrentRssBytes": 3416690688,
+      "launches": [
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 2,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "0493187204ace91882c1995a65105d4b347aada42899ea36e7f8101e62d2c393",
+          "initialExecObservationSha256": "4e359e0bc7174fce75961acfa4f32ee0028b6a6a14daa981042321a05672f6b8",
+          "nativeDiagnosticsSha256": "e0eb03ccc745cb4603ce4e1c6c8c8cf584923a63381af67dca23ab75c4ce2f4d"
+        },
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 1,
+          "inheritedCodeHits": 1,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "0cd7d9535d0ff83a983418830c6133f31e0866b72f1e26fb192c4e224a7f5e40",
+          "initialExecObservationSha256": "110d64a94c41f37e2aef98e6f37494101585cc885a8fdce7159fc17936010619",
+          "nativeDiagnosticsSha256": "5d3b9a98c0dd8059fff479cd4d82c22efa6430a0ea2d1b865427e62c312efe5b"
+        },
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 1,
+          "inheritedCodeHits": 1,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "53aac52450aed97d7dcf19ff97ff8c1d99720bffe223e96f3d46e44bbc5de593",
+          "initialExecObservationSha256": "11e8fb805de3d8eb38ea36693845b4e4f9fb2abd7d56f408012d516417eb133b",
+          "nativeDiagnosticsSha256": "8aa686a3cd190afc2fb454f3b71ba4ca4b6c61c84241a6798932c789b709d96b"
+        },
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 1,
+          "inheritedCodeHits": 2,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "519c8ff52525c22635e2f03e4dc7dd330aa6680fbdf89607ce011b49bdebc92d",
+          "initialExecObservationSha256": "938d21cf721c6ba7d21e7f4f9e31bbb4fe6613bccd93f1408cb43932c2c1fbe8",
+          "nativeDiagnosticsSha256": "d072cd51cca6a02a772922993d58c0464355b2902a340dd48c60db17bfc3597e"
+        }
+      ],
+      "resourceReceiptSha256": "3a3e1acfeffb058b770f0557783174964334da267d5575ce3fe98af162cb298a",
+      "originalRunnerReportSha256": "696611aae6428a167706d3b5654df0821eff405af879592b6597cc88eafbb785"
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "inherit",
+      "block": "reverse",
+      "tests": 6,
+      "elapsedMilliseconds": 1634.312823000073,
+      "ownerMilliseconds": 1570.0309759995434,
+      "observedCpuSeconds": 3.25,
+      "maximumSampledConcurrentRssBytes": 3309641728,
+      "launches": [
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "b28343ca6b71f790ff7c26a59b58b31b9fe847cc90b778bbf1685e1e20330487",
+          "initialExecObservationSha256": "99ab3908f81bee13fd3c9e59a6bbc8a3cb54768b23131c581326ba18b2f737a0",
+          "nativeDiagnosticsSha256": "1cea6a807d242c8d8a2aa60caad1279222d0438b5c481a0d212252f78f98e325"
+        },
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "d7a205552743bbb51810eb1b4314139f71b5e9b53207c958530c723ea68306e3",
+          "initialExecObservationSha256": "cfc90b10d9404bc89eab48914dc40010da4267fb63582c920adeebd7839b09bd",
+          "nativeDiagnosticsSha256": "a2ec87d61ac22f8b66b209627798d936c32b45f8d4ce6b0a6aef03bf75bf5d1a"
+        },
+        {
+          "inheritedRenderers": 2,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "c6b3c40d99508643cc5feaa67069a4a502c3139fc05728376a813f68185b15b9",
+          "initialExecObservationSha256": "0ec32b33cdaa7458a47ea705be76b2f08953ddf8094a4762f1f8b03626a3223c",
+          "nativeDiagnosticsSha256": "4e38eff11b1a420ca19dd67dd32edfe665471af6ffe198280c0ad96efa49ac34"
+        },
+        {
+          "inheritedRenderers": 1,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "1f634ceea5602f80b58811a6f477d7e590843746962ea973ecbb86cef6b39569",
+          "initialExecObservationSha256": "e70b7fc89ecfac3c2dab942b2c79cdba8f8260d70a765a19b2b8d8bf9c33c6c8",
+          "nativeDiagnosticsSha256": "35e3b7825fc3b9e918faf744132aa2e5f07a272177c50e6fdfb55d328722f7b1"
+        }
+      ],
+      "resourceReceiptSha256": "1c9c9a3bcce7d26082e7fbe0273a5f06e09ae434d8f60535632c5e8d2c60c291",
+      "originalRunnerReportSha256": "01e27166461fcf3329c7926f81c20b740a43c9dc7c8ac1c3d20b50b9eb25afaa"
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "profile": "ordinary",
+      "block": "reverse",
+      "tests": 6,
+      "elapsedMilliseconds": 1637.1793690013874,
+      "ownerMilliseconds": 1572.4165700012236,
+      "observedCpuSeconds": 3.2,
+      "maximumSampledConcurrentRssBytes": 2909716480,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "a6bb592dac8603d743e483f9f604d5dae5022f3c30dc33b6bef971f0abce26dc",
+          "initialExecObservationSha256": "6751861623a1823220625e2bb28d31c6d09abb837bc1ad7b5b4be1fd81fe2030",
+          "nativeDiagnosticsSha256": "9c91b90a5520363e4424bb0fb36365c6427eb6ab835ab6be6d26c4c5093acb31"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "74f44ffaabe4582b9d62733cae6eeafb80e3cee3091f01c7fd5f85a8378359de",
+          "initialExecObservationSha256": "76be805ec3cb61a32301a972d998ce744d4fe356534e3caa804e63db0c9f8b04",
+          "nativeDiagnosticsSha256": "5a44dc1f669e98cbebceeef0fb8c8edf0ae88698132263f52cd5adbe7d81bfa8"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "47f1f3b49633cb3f18a4a9010d32cde7d36fffa9da693b89003235d4bcff3647",
+          "initialExecObservationSha256": "038ced32bf2e3ea91bb1e3534c6b40eab9744b666ca8ae1639697ce3f6891a5b",
+          "nativeDiagnosticsSha256": "49a33e513bad7a3ac921bcbd01fa19535127a6c1df294937edf44d3462a4873f"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "788b059e8bb1abb2748a62e6cb92b292af86029940fc0afff71f0fca83c01180",
+          "initialExecObservationSha256": "7258dd78c130f8818808f6e447f0a5697d7ba8482f8d6a7f7c80a0267058d97e",
+          "nativeDiagnosticsSha256": "f6b36bfcedd5c27a5f58a7493544548d389af8b55e4ba880d27428c14009f014"
+        }
+      ],
+      "resourceReceiptSha256": "5a051c3973e46951ccc0e4bba6bf40b0a648c71ed47baaf217893e85165753e0",
+      "originalRunnerReportSha256": "d9b5eb3e3d74d5284a7c639e9f2ecf19d8b476653f94987fe10ff6948571e205"
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "seeded",
+      "block": "reverse",
+      "tests": 24,
+      "elapsedMilliseconds": 2197.7700050010753,
+      "ownerMilliseconds": 2191.0680809996848,
+      "observedCpuSeconds": 5.69,
+      "maximumSampledConcurrentRssBytes": 3500236800,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 6,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "95a94a4b977b1635d9c0871f87809295c6f09190019f5afd53ad3f5959986a79",
+          "initialExecObservationSha256": "ebc54d5e109d47da21e8a59726b4a443045b08ca06345a77ed2b73a96a955d8d",
+          "nativeDiagnosticsSha256": "db5470e8e207c17fdc8fdd8b53c2462f1d3258136817f26b9ec69bfcbc2bde37"
+        },
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 6,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "7c92130fbcd38b45b336f65410640113f03587d2fb2adcb0ab58030f6ca11652",
+          "initialExecObservationSha256": "b5acdbcabae8750742c86de3c4c20fdacca08ee6282d3b67d48b2dd9d41bc9f2",
+          "nativeDiagnosticsSha256": "fe1682747dedadf6b99e9e6b023818817ed6539bfc9a08af36ad1192dfba9dd6"
+        },
+        {
+          "inheritedRenderers": 5,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 5,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "e2a6f1dd0c87e1355e3de520d322577630a6c5104b1ddfd12e5f9ddca4607205",
+          "initialExecObservationSha256": "99232b1c7b6647563466e78f9f840b28d86edd5e0bd4287a52696288e4bc4136",
+          "nativeDiagnosticsSha256": "3d7e99ba963d4c1a64d21799271a8e556471a3991b7fa1fa638f17a5bfeae99a"
+        },
+        {
+          "inheritedRenderers": 7,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 7,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "3d7ad4b941028f38b73bcb2a3ddefa89e188316e177c635b1ea771686a6407fb",
+          "initialExecObservationSha256": "19d0d20bc6946d65ac3fab614e0478895f22c17b6e46b68b05b5167c9ec156ae",
+          "nativeDiagnosticsSha256": "6a92ff96662bb9873f3a63b228d292129df4a869bafc747579bf3524ece6fafb"
+        }
+      ],
+      "resourceReceiptSha256": "68988b4d2f7b8cf3dc2a3e58c8e398c1e0069b88df131464de2e21276a328361",
+      "originalRunnerReportSha256": "49d3eb2a1c50982e330bfc2fa8656543a160ee4be95c79cf60489f3e555ee2fd"
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "inherit",
+      "block": "reverse",
+      "tests": 24,
+      "elapsedMilliseconds": 2262.734364001517,
+      "ownerMilliseconds": 2198.6361060007766,
+      "observedCpuSeconds": 5.5600000000000005,
+      "maximumSampledConcurrentRssBytes": 3425648640,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "e6a672a28deb61dd335ccabca693948b66344de6e3e6e7252b4e4e0db518654f",
+          "initialExecObservationSha256": "affe3164094335064f649dc09f1c1d6fa2fcc9a401964b11ef5e21d5c9483893",
+          "nativeDiagnosticsSha256": "aa9ff704b32e36f5f0495104a37a603b089fc05e98371a3d270b3b9ec031a639"
+        },
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "ec5ffcd8431cc5fc128bcd5d3309aeb3379722bd71553ca9c8f88bf4a18226c0",
+          "initialExecObservationSha256": "2f0dd1d8f2694445f0aad3780fdf6fee0b2b2a93aa97a9b4f1a8007f4b164ebc",
+          "nativeDiagnosticsSha256": "a3949eed2d43b14d9f88e39142c2801122e32674cf53f2c925c98eec3eae8ef7"
+        },
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "df6fe9d17e9e71d92f10a2441c6d938bc0ac2daa9e51ce8b017d34b153197305",
+          "initialExecObservationSha256": "2532d75260d2fbb5545e7e057a438538455c46699d44e4fe99f4fdb30221d3ee",
+          "nativeDiagnosticsSha256": "21bf61de3823612adf0bfb107845f1f9194df9f0a807b02bb493d5119dec5b3e"
+        },
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "237ddac2b85ca5c89dbcde823276c95e0f7fd92bdbc915be2e9afa781538b789",
+          "initialExecObservationSha256": "1db34b8a77a272bd57dba1c2cd82be78ae570ac7bb55f15349251d4f95a730f3",
+          "nativeDiagnosticsSha256": "2220b36074f57467d6392ec1e9d46ff60b694f4c0893cc1c4f37658e2d7d78cb"
+        }
+      ],
+      "resourceReceiptSha256": "62b8d5e59d2596dacb88a1618f634e40eb685ceb44eaca2b0f0429ca52324d41",
+      "originalRunnerReportSha256": "725b971a0351dc38466349a8ae64de50bde09d837e8b2f7c12df11681ed949d2"
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "profile": "ordinary",
+      "block": "reverse",
+      "tests": 24,
+      "elapsedMilliseconds": 2153.306700001849,
+      "ownerMilliseconds": 2146.7277000010654,
+      "observedCpuSeconds": 5.82,
+      "maximumSampledConcurrentRssBytes": 3032756224,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "78b3df2d2590fb191e96529041f91fa2b9cb257a07d8a5b9a76b7c46616fd087",
+          "initialExecObservationSha256": "9f5e4fed0e1314d57b63f1d29f911b616ac9380230ad9f74feb598b74904bbce",
+          "nativeDiagnosticsSha256": "9a9e5ff58adc98380b4829a034da040fdb3da2b366c740510d3d27c992a3e2d0"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "acce12e022f09fe5419e36ea7e393e0568fdaa9fb633f85d05cdb5abad2a7903",
+          "initialExecObservationSha256": "fc90aa5cf7bd361251456f3e73db477a84cbf62fd888e22fa3e7bff3c9410c4a",
+          "nativeDiagnosticsSha256": "8bce906b3ef40b8688c05693e2ba04bc6d25878d69d31810cbdbe58ea45d23fd"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "a2ff3d146f226a6638ccaaafe91fdfdc2bf0383a93a719bac4206e60f695897f",
+          "initialExecObservationSha256": "f44a73af7a7b238ea89893916bc389509ca66f8c16ac28cca28faaaf10ab3203",
+          "nativeDiagnosticsSha256": "a3f9c3857292d394a8bbff890fc1c75c0f7a8a12e5182f0bee502b8f07863bbc"
+        },
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "e01d65735eae934209006d9a14765d816210e1a595db35f8457429c22df6fb62",
+          "initialExecObservationSha256": "f2245b29841b5ed014f00a44ef5b9e037ee6ac152c0643fb7bcdf2b00cfda763",
+          "nativeDiagnosticsSha256": "31a993d501a4daf6d489846f532bd0ca2f4c01b6e81486fd5f3dab7109bcc161"
+        }
+      ],
+      "resourceReceiptSha256": "234ac414140ec2968c08236af5bff3d2995dfdebe0e11c9bd066cacff0601498",
+      "originalRunnerReportSha256": "37e4b1f33d06a86c57f216b0e3f7cf017433622b53d48e18133b3fbad7d0c99a"
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "seeded",
+      "block": "reverse",
+      "tests": 6,
+      "elapsedMilliseconds": 1434.339531999285,
+      "ownerMilliseconds": 1427.26263700024,
+      "observedCpuSeconds": 1.65,
+      "maximumSampledConcurrentRssBytes": 1086078976,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 6,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "dbaf1fcb27ff162ff5613d8758395a9a5e417fcf7b256972d240eb0d42955ad8",
+          "initialExecObservationSha256": "9e219d234430953281da944b3217ebd2766728914b744beaeacde7b0a0186d8a",
+          "nativeDiagnosticsSha256": "1de776d5f095eb41c573c27e4257880404c177012c50adc938bce4f3f29a4799"
+        }
+      ],
+      "resourceReceiptSha256": "86319cf630b48c5601dceb657cea6ef69cf3dcd0162f8e15366b168ba0ccee21",
+      "originalRunnerReportSha256": "63f191cc5a4b430ce6dd58c81c4ce15d55578d13426927b870b32c48801eb37a"
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "inherit",
+      "block": "reverse",
+      "tests": 6,
+      "elapsedMilliseconds": 1479.5699159985816,
+      "ownerMilliseconds": 1415.4018650006037,
+      "observedCpuSeconds": 1.65,
+      "maximumSampledConcurrentRssBytes": 1084178432,
+      "launches": [
+        {
+          "inheritedRenderers": 6,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "0e66a3793f662d0f64c38435c86240c0d6608a3d2e8836f5a48e898af0ccdfb9",
+          "initialExecObservationSha256": "d2eb9f2caca286b9a6fac9686940fc891f28fda0a3b94838ed80905743bb0b27",
+          "nativeDiagnosticsSha256": "de63e63fe9e9147eb4ea9a1114bfe71b3392b0ad0251865f22e417202c35a233"
+        }
+      ],
+      "resourceReceiptSha256": "89ca1b42ac98226e3cce314d5932b36e358bfde523a16f939a310e5a1857880f",
+      "originalRunnerReportSha256": "6edaca52316a5d2a6f3289609fd691665b5f9328ef5992e635629d7e1914b3a5"
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "profile": "ordinary",
+      "block": "reverse",
+      "tests": 6,
+      "elapsedMilliseconds": 1453.990779002197,
+      "ownerMilliseconds": 1446.8190240004333,
+      "observedCpuSeconds": 1.65,
+      "maximumSampledConcurrentRssBytes": 968478720,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "dee899dc1d99f41de0ecc0ef5eefd1502ba0be49058fd12513ec25b318ea9d7d",
+          "initialExecObservationSha256": "7298337994054322cc8bd66021f56b86f2846d3084f7761f501f4fa7c3d1c978",
+          "nativeDiagnosticsSha256": "2c7a5cbcbb6db01af01848ead90a1108957475c6f26dc7da7ef90e6482f8ed8b"
+        }
+      ],
+      "resourceReceiptSha256": "f2f1d968ac18c3ec61e960b0b65c1508fbd4a940ba2e13ce4bdd3df6863d5e52",
+      "originalRunnerReportSha256": "c1a65ecba1f378118382d0422990a4e2e47998e6feb4436755181489c62c71c0"
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "seeded",
+      "block": "reverse",
+      "tests": 24,
+      "elapsedMilliseconds": 4074.4701020012144,
+      "ownerMilliseconds": 4009.5606249997218,
+      "observedCpuSeconds": 3.87,
+      "maximumSampledConcurrentRssBytes": 1070436352,
+      "launches": [
+        {
+          "inheritedRenderers": 24,
+          "seedCompilations": 2,
+          "inheritedCodeHits": 24,
+          "paths": [
+            "streaming"
+          ],
+          "originalExitSha256": "4db8b7b3a2b84f9f568a05c5f1ebc631fc8e7852ed669379f3c0b15b7a079f2c",
+          "initialExecObservationSha256": "1b4c233d027f7413808c9a4277a7923c5951f30a867a03ca1e486b526755b208",
+          "nativeDiagnosticsSha256": "571e955131c389df31b12b22225f13ce201bcbf9b642e3479c4adf19550be07d"
+        }
+      ],
+      "resourceReceiptSha256": "8f687c59dd45d20c227c74a471f1ddecec57463ee2dfa2203963f1d2c210ca47",
+      "originalRunnerReportSha256": "be3abe7130bd54d89fd00a694ef321105c0a8dc80da17e39c5eef9e8409700e4"
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "inherit",
+      "block": "reverse",
+      "tests": 24,
+      "elapsedMilliseconds": 4262.884947998828,
+      "ownerMilliseconds": 4198.252736998256,
+      "observedCpuSeconds": 4.04,
+      "maximumSampledConcurrentRssBytes": 1060999168,
+      "launches": [
+        {
+          "inheritedRenderers": 24,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "35b534fe73fe12d506ff866609b23893fade172f786144d84039e64da2b8169a",
+          "initialExecObservationSha256": "20da44431ea19b2a99a6d66790e5d844a01f805231c6bab93342ebf1ea7e2b93",
+          "nativeDiagnosticsSha256": "e008d5d4a3cda6dd6201eef6072361dcc509428739c9a0e76d49af59919b793d"
+        }
+      ],
+      "resourceReceiptSha256": "2cbe1f4e447e34f792c212370bebff1b726bacbc2488e4edcc8002e46d99ca72",
+      "originalRunnerReportSha256": "46c12e2d62c9777dc766766dff7a671a86c4c42e1401bd44e9050c380f9777bc"
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "profile": "ordinary",
+      "block": "reverse",
+      "tests": 24,
+      "elapsedMilliseconds": 4232.339354002761,
+      "ownerMilliseconds": 4166.8324140009645,
+      "observedCpuSeconds": 3.72,
+      "maximumSampledConcurrentRssBytes": 949252096,
+      "launches": [
+        {
+          "inheritedRenderers": 0,
+          "seedCompilations": 0,
+          "inheritedCodeHits": 0,
+          "paths": [],
+          "originalExitSha256": "8e28f83fb2c0d5b030c09030e8f298b5bf058f61ec635139f8263e8e4cb25b9e",
+          "initialExecObservationSha256": "dbe92aca3a48f3cee2bd8a36f0423b8f052916ded682c7c7521d9655e402fb48",
+          "nativeDiagnosticsSha256": "bfa52a7d7e7e0c2a114d35f6c519fe3762b025a8699fb066e5a540cc6e8c855e"
+        }
+      ],
+      "resourceReceiptSha256": "c5e9046206a2cd64d0e7cfecf197c3be66ea9488349bfdbce8882fbd9e0bf226",
+      "originalRunnerReportSha256": "b0419db31668708fe0ba1bb0e1cf7b515c3cbc0ba46e5effef809a67ea63aba6"
+    }
+  ],
+  "interpretation": {
+    "decision": "Do not adopt or repeat this unchanged seeded-donor composition as a large-gain candidate.",
+    "mechanism": "Every observed seeded application compilation reaches Chromium's ordinary streaming path and records the same inherited shared-function object plus an explicit in-memory cache hit, with exact source and metadata.",
+    "limit": "Streaming can perform background parsing before final cache lookup. Hits prove reuse at finalization, not elimination of all parsing or a causal explanation of suite timings.",
+    "uncertainty": "Two reversed observations per cell are an engineering screen, not confidence bounds. Shared-host changes are visible across blocks; sampled process observation does not establish exhaustive custody or final resource admission.",
+    "open": "Broader source/streaming-work removal, other application families, other platforms, compatibility refresh, release and the representative majority-scenario 2x objective remain unverified."
+  },
+  "retainedFailures": [
+    "Initial component compile rejected an unsafe diagnostic printf; fixed before successful compilation and component runs.",
+    "Initial browser-foundation service omitted the explicit private driver environment and failed before browser launch. A fresh corrected campaign passed.",
+    "Initial browser integration compile rejected unsafe fputs in diagnostics. C++ stream output compiled and linked; failed build receipts remain separate."
+  ]
+}
