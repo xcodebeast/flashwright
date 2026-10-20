@@ -137,7 +137,9 @@ export async function verifyRunnerFailureDiagnostics(report, directory, { record
   const originalDirectory = recordedDirectory;
   assert.ok(['playwright', 'flashwright'].includes(report.engine), 'Unknown diagnostic engine');
   const configuration = report.configuration;
-  assert.deepEqual(configuration.workloads, controlledWorkloads, 'Diagnostics admission supports only the controlled seven-workload fixture');
+  const failureFamily = configuration.workloads.length === 1 && configuration.workloads[0] === 'failure';
+  assert.deepEqual(configuration.workloads, failureFamily ? ['failure'] : controlledWorkloads,
+    'Diagnostics admission supports the controlled full fixture or its original failure family');
   for (const count of [configuration.warmupIterations, configuration.measuredIterations]) {
     assert.ok(Number.isInteger(count) && count >= 0, 'Invalid workload iteration count');
   }
@@ -162,8 +164,9 @@ export async function verifyRunnerFailureDiagnostics(report, directory, { record
   const declarationColumn = declarationText.indexOf('test(') + runtimeColumnOffset;
   const callSite = { line: assertionLine, column: assertionText.indexOf('.toBeVisible') + 1 + runtimeColumnOffset };
   const originalLocation = { file: sourcePath, ...callSite };
-  const offset = report.launchIndex % controlledWorkloads.length;
-  const workloads = controlledWorkloads.slice(offset).concat(controlledWorkloads.slice(0, offset));
+  const selectedWorkloads = failureFamily ? ['failure'] : controlledWorkloads;
+  const offset = report.launchIndex % selectedWorkloads.length;
+  const workloads = selectedWorkloads.slice(offset).concat(selectedWorkloads.slice(0, offset));
   const titles = workloads.flatMap(workload => [['warmup', configuration.warmupIterations], ['sample', configuration.measuredIterations]]
     .flatMap(([phase, count]) => Array.from({ length: count }, (_, index) => `${workload}/${phase}/${index}`)));
   const specifications = runnerSpecifications(report.runner.suites);
