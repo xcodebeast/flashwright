@@ -89,6 +89,23 @@ No cell reaches the predeclared 20% reduction against both controls in both orde
 
 These are two observations per cell on a shared host, not confidence bounds, a stock-browser comparison or a Playwright speed ratio. The initial compiler failures and missing-driver foundation launch remain separate from successful campaigns. Exhaustive manifest validation, broader lifecycle/conformance, complete resource custody, public adoption and the representative 2× objective remain open.
 
+The [streaming follow-up](../benchmarks/results/application-streaming-suppression-linux-2026-10-20.json) tests the remaining hypothesis directly: disable streaming for a declared donor-prepared script, then compile its full response through ordinary V8 cache validation. Initial-URL matching selects this policy; it never authorizes executing prepared source in place of a changed response. Source, origin and host-option mismatch controls retain normal compilation.
+
+Before this change, eight diagnostic launches pass 120 unchanged tests and record current client-operation intervals. Ordinary TodoMVC navigation totals about 1.29–1.30 seconds over 24 tests, versus about 0.38 seconds for page creation. SVGOMG click intervals total about 0.66–0.68 seconds. These intervals include queueing, browser/application waits and cleanup; they do not identify removable work or CPU shares.
+
+The follow-up passes 180 original tests and 28 direct fresh-context controls before its 360-test timing screen. The screen retains 60 original browser exits, 120 URL-policy suppression decisions and 120 matching inherited-cache hits through the non-streaming path. Its seeded streaming control supplies another 120 hits. Preparation, ordinary scheduling, HTTP/outcome contracts, resource limits and cleanup remain in the same complete-work comparison.
+
+| Application | Workers | Deferred / ordinary, forward / reverse | Deferred / seeded streaming, forward / reverse |
+| --- | ---: | ---: | ---: |
+| TodoMVC | 1 | 0.965 / 0.941 | 1.023 / 0.972 |
+| TodoMVC | 4 | 0.992 / 0.976 | 0.962 / 0.987 |
+| SVGOMG | 1 | 1.281 / 1.091 | 1.277 / 1.009 |
+| SVGOMG | 4 | 1.038 / 1.067 | 0.800 / 1.060 |
+
+No cell reaches the declared 20% reduction against both controls in both orders. Retain the SVGOMG regression without inferring a universal cause or slowdown. Suppression markers count capped policy decisions, not avoided background tasks; off-thread code-cache consumption remains available. Independent source review found no blocking source-substitution or thread-ownership defect, but it did identify a stale header description.
+
+Both application-compilation prototypes are now removed from the active native checkout. The restored browser and ten runtime companions match the pre-experiment bytes exactly; six additional launches pass twelve fresh application contexts, including obsolete flags with a nonexistent manifest. Tested patches, runtimes and failed or successful historical observations remain separately archived. Neither composition advances, and neither establishes stock-browser performance, final resource admission or the representative 2× objective.
+
 ## Current Linux controlled-family baseline
 
 The [exit-notification baseline](../benchmarks/results/watchdog-notification-controlled-linux-2026-10-18.json) runs the six original controlled workload families through both native runner adapters on stock full Chrome 148.0.7778.96 and Bun 1.4.2. Both engines receive the same four-core CPU quota, 8 GiB memory limit, zero swap and artifact policy. Each launch includes 15 fresh-context test executions, preparation, runner startup, default failure diagnostics and cleanup.
