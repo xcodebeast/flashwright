@@ -7,6 +7,9 @@ import { pathToFileURL } from 'node:url';
 import { reconstructFinalGoalResourceEvidence } from './final-goal-owner-evidence.mjs';
 import { reconstructFinalGoalLinuxCapturedOutputs } from './final-goal-linux-evidence.mjs';
 import { reconstructFinalGoalLinuxApplication } from './final-goal-linux-application.mjs';
+import { decodeLinuxApplicationJson } from './final-goal-linux-json.mjs';
+import { reconstructFinalGoalLinuxFamily } from './final-goal-linux-family.mjs';
+import { runnerFamilies } from '../benchmarks/runner-family-contract.mjs';
 import { applicationCorpusDirectory, loadApplicationCorpus } from '../benchmarks/application-corpus.mjs';
 import { finalGoalAccountingClasses, finalGoalResourceMetrics } from '../benchmarks/final-goal-resource-policy.mjs';
 import { analyzeFinalGoal, finalGoalHash, finalGoalResourceContext, finalGoalScenarioIds, renderFinalGoalReport,
@@ -131,6 +134,10 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     verifyReceiptIdentity(entry);
     return jsonFile(entry.path, entry.sha256);
   }
+  async function linuxManifest(entry) {
+    verifyReceiptIdentity(entry);
+    return decodeLinuxApplicationJson(await jsonFile(entry.path, entry.sha256, true, { maximumFileBytes: 4 * 1024 ** 2 }));
+  }
   const campaign = await jsonFile('campaign.json');
   verifyCampaignTopology(campaign);
   const configuration = await jsonEvidence(campaign.configuration);
@@ -140,6 +147,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
   const linuxResourceObservations = [];
   const linuxCapturedOutputs = [];
   const linuxApplicationOutcomes = [];
+  const linuxControlledFamilyOutcomes = [];
   const scenarios = new Map(configuration.scenarios.map(scenario => [scenario.id, scenario]));
   for (const entry of campaign.scenarios) {
     const result = await jsonEvidence(entry);
@@ -161,11 +169,12 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
           const linuxOriginals = run.evidence.filter(receipt => receipt.kind === 'linux-cgroup-originals');
           const outputManifests = run.evidence.filter(receipt => receipt.kind === 'linux-captured-outputs');
           const applicationManifests = run.evidence.filter(receipt => receipt.kind === 'linux-application-workload');
-          if (linuxOriginals.length || outputManifests.length || applicationManifests.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
+          const familyManifests = run.evidence.filter(receipt => receipt.kind === 'linux-controlled-family');
+          if (linuxOriginals.length || outputManifests.length || applicationManifests.length || familyManifests.length || run.resources.accountingClass === finalGoalAccountingClasses.linux
             && run.resources.status === 'verified-local-observations') {
             assert.equal(configuration.accountingClass, finalGoalAccountingClasses.linux, 'Linux originals require the Linux campaign class');
             assert.equal(linuxOriginals.length, 1, 'Missing unique raw Linux cgroup originals');
-            const manifest = await jsonEvidence(linuxOriginals[0]);
+            const manifest = await linuxManifest(linuxOriginals[0]);
             assert.equal(manifest.accountingClass, finalGoalAccountingClasses.linux);
             const derived = await reconstructFinalGoalResourceEvidence(manifest, {},
               (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
@@ -179,10 +188,24 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               resourceAdmission: false, performanceAccepted: false });
             if (outputManifests.length) {
               assert.equal(outputManifests.length, 1, 'Missing unique retained Linux output manifest');
-              const outputs = await reconstructFinalGoalLinuxCapturedOutputs(manifest, await jsonEvidence(outputManifests[0]),
+              const outputs = await reconstructFinalGoalLinuxCapturedOutputs(manifest, await linuxManifest(outputManifests[0]),
                 (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits));
               assert.equal(outputs.captureIdentity, derived.captureIdentity, 'Output capture identity differs from resources');
               linuxCapturedOutputs.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine, ...outputs });
+            }
+            assert(!(applicationManifests.length && familyManifests.length), 'Cannot mix application and controlled-family manifests');
+            if (familyManifests.length) {
+              assert.equal(familyManifests.length, 1, 'Missing unique Linux controlled-family manifest');
+              assert.equal(outputManifests.length, 1, 'Family outcomes require captured outputs');
+              assert(runnerFamilies.some(family => result.id === `runner-${family}`), 'Unsupported Linux controlled-family scenario');
+              const workload = await reconstructFinalGoalLinuxFamily({ resourceManifest: manifest,
+                outputManifest: await linuxManifest(outputManifests[0]), manifest: await linuxManifest(familyManifests[0]),
+                readBytes: (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits),
+                family: result.id.slice('runner-'.length), engine,
+                workers: configuration.cells.find(declared => declared.id === cell.id).workers });
+              assert.equal(workload.captureIdentity, derived.captureIdentity);
+              assert.equal(workload.tests.length, scenarios.get(result.id).expectedTestCount);
+              linuxControlledFamilyOutcomes.push({ scenarioId: result.id, cellId: cell.id, attemptIndex, engine, ...workload });
             }
             if (applicationManifests.length) {
               assert.equal(applicationManifests.length, 1, 'Missing unique Linux application manifest');
@@ -190,7 +213,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
               assert(['application-todomvc', 'application-svgomg'].includes(result.id), 'Unsupported Linux application scenario');
               const application = result.id.slice('application-'.length);
               const workload = await reconstructFinalGoalLinuxApplication({ resourceManifest: manifest,
-                outputManifest: await jsonEvidence(outputManifests[0]), manifest: await jsonEvidence(applicationManifests[0]),
+                outputManifest: await linuxManifest(outputManifests[0]), manifest: await jsonEvidence(applicationManifests[0]),
                 readBytes: (receipt, limits) => jsonFile(receipt.path, receipt.sha256, true, limits),
                 corpus: await loadApplicationCorpus(applicationCorpusDirectory(application)), application, engine,
                 workers: configuration.cells.find(declared => declared.id === cell.id).workers });
@@ -244,7 +267,7 @@ export async function verifyFinalGoalEvidence(directory, { maximumAggregateJsonB
     }
   }
 
-  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations, linuxCapturedOutputs, linuxApplicationOutcomes,
+  return { analysis, checkedFiles: Object.fromEntries(checked), linuxResourceObservations, linuxCapturedOutputs, linuxApplicationOutcomes, linuxControlledFamilyOutcomes,
     inputBudget: { ...finalGoalEvidenceLimits, maximumAggregateJsonBytes, aggregateJsonBytes,
       scope: 'Cumulative structured and retained payload read bytes, including repeated reads; opaque hashing uses a fixed buffer. Parsed object overhead and process RSS are not bounded by these byte limits.' },
     scope: 'Retained file integrity and pure final-goal policy validation. Original behavior, source and collector algorithm admission remain separately required; a draft never proves final acceptance.' };
