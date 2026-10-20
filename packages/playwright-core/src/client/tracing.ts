@@ -109,9 +109,9 @@ export class Tracing extends ChannelOwner<channels.TracingChannel> implements ap
     await this._wrapApiCall(async () => {
       if (this._harId)
         throw new Error('HAR recording has already been started');
-      if (options.resourcesDir && path.endsWith('.zip'))
+      if (options.resourcesDir && /\.zip$/i.test(path))
         throw new Error('resourcesDir option is not compatible with a .zip har file');
-      const defaultContent = path.endsWith('.zip') ? 'attach' : 'embed';
+      const defaultContent = /\.zip$/i.test(path) ? 'attach' : 'embed';
       this._harId = await this._recordIntoHAR(path, null, {
         url: options.urlFilter,
         updateContent: options.content ?? defaultContent,
@@ -133,7 +133,7 @@ export class Tracing extends ChannelOwner<channels.TracingChannel> implements ap
   }
 
   async _recordIntoHAR(har: string, page: Page | null, options: { url?: string | RegExp, updateContent?: 'attach' | 'embed' | 'omit', updateMode?: 'minimal' | 'full', resourcesDir?: string } = {}): Promise<string> {
-    const isZip = har.endsWith('.zip');
+    const isZip = /\.zip$/i.test(har);
     const { harId } = await this._channel.harStart({
       page: page?._channel,
       options: {
@@ -156,7 +156,7 @@ export class Tracing extends ChannelOwner<channels.TracingChannel> implements ap
       return;
     this._harRecorders.delete(harId);
     const isLocal = !this._connection.isRemote();
-    const isZip = harParams.path.endsWith('.zip');
+    const isZip = /\.zip$/i.test(harParams.path);
 
     if (isLocal) {
       const { entries } = await this._channel.harExport({ harId, mode: 'entries' }, kNoTimeout);
