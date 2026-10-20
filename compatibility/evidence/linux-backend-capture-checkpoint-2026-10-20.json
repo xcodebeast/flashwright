@@ -1,0 +1,444 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-current-linux-backend-capture-functionality",
+  "date": "2026-10-20",
+  "sourceCommit": "3fd4ffa3e197f4d43d39ba8cdd88a5ae2c2d0742",
+  "platform": "linux",
+  "architecture": "x64",
+  "scope": "Four fresh native-service executions of the corrected 62-test backend corpus using the current capture coordinator, both engines at one/four workers. Development consumers and stock full Chrome; no final campaign admission.",
+  "tests": {
+    "correctedBatchExecutions": 248,
+    "correctedBatchPassed": 248,
+    "retainedResourceAndOutputReplays": 4,
+    "retainedOutputsVerified": 44,
+    "privateSuiteDraftPositiveControls": 4,
+    "privateSuiteDraftCorruptionControls": 56,
+    "launchJoinCorruptionControls": 4
+  },
+  "resourcePolicy": {
+    "cpuMax": "400000 100000",
+    "memoryMaxBytes": 8589934592,
+    "memorySwapMaxBytes": 0,
+    "naturalDrain": true
+  },
+  "expandedInputScope": {
+    "filesPerCell": 24874,
+    "includes": [
+      "Original backend application, migrations and templates",
+      "Effective dotenv and mounted hostname configuration (receipts only)",
+      "Base Python standard library and selected startup ELF dependencies",
+      "unshare and mount helpers",
+      "Existing browser, driver, Bun, frontend, venv and PostgreSQL selected inputs"
+    ],
+    "loadedLibraryAttestation": false,
+    "optionalUnresolved": "Only unused _tkinter Tk/Tcl requirements; no GUI extension workload claimed."
+  },
+  "completeClock": "Original native command includes private network/tmpfs setup, fresh initdb, migrations, seed, service startup, all tests, service shutdown and natural process drain. Input hashing and independent verification are outside.",
+  "rows": [
+    {
+      "engine": "playwright",
+      "workers": 1,
+      "originalTestsPassed": 62,
+      "browserLaunches": 2,
+      "nativeCleanObservedTeardown": true,
+      "observedDrainedMembership": true,
+      "adoptedChildren": 0,
+      "retainedOutputs": 11,
+      "commandElapsedNanoseconds": "49066519517",
+      "cgroupCpuMicroseconds": "52260344",
+      "cgroupChargedPeakBytes": "1184956416",
+      "evidence": [
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/prepared.json",
+          "bytes": 6177,
+          "sha256": "2a70e7f251261ad5281548e3224ee4ee4beac29e0837ad435da36c4b8542e15b"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/capture-inputs.json",
+          "bytes": 6027118,
+          "sha256": "aad9552a8d569ce78b4dd1a6461825504d09d974d4687234889d6c50c7b1130d"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/capture/capture.json",
+          "bytes": 12191,
+          "sha256": "d68c8c46304835999bdcbbd115ac372d1092add71b57ad6b259e4978148c5997"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/capture/before.json",
+          "bytes": 12658855,
+          "sha256": "fdf6acde5ac89d1ab12afe2e2f1645a7f6f3264ffde1accb2473eb5bc95b915c"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/capture/after.json",
+          "bytes": 12658854,
+          "sha256": "ffc17143130d41033e1f3769d03681eb547fac8390042d1c134f0a57cef7e005"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/capture/native.json",
+          "bytes": 3018,
+          "sha256": "d55bc9eaba0ca6a4451295a42e7ada3f7e31c598a22193597e9bd38190109db1"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/owner-report.json",
+          "bytes": 19447,
+          "sha256": "95ed40ca77ee0fb5feff06153418a0874f7940036c9c4d108522ccdd233e1b1a"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/runner-report.json",
+          "bytes": 89122,
+          "sha256": "28042fc793579acbe0bef11f33f5b61ac54e28852de3f3329e76e588bc3f5c2f"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-00-1-stock-playwright/runner-resources.json",
+          "bytes": 1244065,
+          "sha256": "6cea00fd69876e7673fcd10c46cc9e8ae4094e30e33e66c8b9a0cf85ad44afa9"
+        },
+        {
+          "path": "workbench/linux-backend-retained-001/owned-00-1-stock-playwright-verification.json",
+          "bytes": 11620,
+          "sha256": "52e729908177e81768083c53e3714f4d509d57cb50be9ab3c88829f626acfbc4"
+        }
+      ]
+    },
+    {
+      "engine": "flashwright",
+      "workers": 1,
+      "originalTestsPassed": 62,
+      "browserLaunches": 2,
+      "nativeCleanObservedTeardown": true,
+      "observedDrainedMembership": true,
+      "adoptedChildren": 0,
+      "retainedOutputs": 11,
+      "commandElapsedNanoseconds": "48646260477",
+      "cgroupCpuMicroseconds": "53152603",
+      "cgroupChargedPeakBytes": "1237958656",
+      "evidence": [
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/prepared.json",
+          "bytes": 6173,
+          "sha256": "afa8738f1376bb7022a3f2c3c3899055db9b2729dc75222c4c39f602fdaf998c"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/capture-inputs.json",
+          "bytes": 6027149,
+          "sha256": "425e2e8163be4eb5034bb5cc00cba6312e6e4f056f3cbce9e84076d1f99f2514"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/capture/capture.json",
+          "bytes": 12236,
+          "sha256": "2da6565219ae651b7757b176eb5d3b4a5a01dec5468e20f5633cb08601c264f4"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/capture/before.json",
+          "bytes": 12658926,
+          "sha256": "b54bae398f54385b31395912de4d4187cd6f4878277caf177f5d23aebd5bd7b4"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/capture/after.json",
+          "bytes": 12658925,
+          "sha256": "baec6de3160437625e5a97a907f2dc7e73576380656e03eaa8dcd9374371ab5a"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/capture/native.json",
+          "bytes": 3024,
+          "sha256": "6212a6a2eda4472085a4cfe0d9e12d67aaa54a41010f7bba6f4eb6dccfddbffc"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/owner-report.json",
+          "bytes": 23669,
+          "sha256": "ce8cfce8cd4f7b56d1f389b9b37adfe58697b489451894e37976620edda82526"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/runner-report.json",
+          "bytes": 94022,
+          "sha256": "0d27e22f270fc19cc9690b1750bec6935294264f8811aacf13ea340436127ced"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-01-1-stock-flashwright/runner-resources.json",
+          "bytes": 1391592,
+          "sha256": "d1b552f6e457b5fee399bf6f070199e3b3db852a7666a48f7016040a99702e9e"
+        },
+        {
+          "path": "workbench/linux-backend-retained-001/owned-01-1-stock-flashwright-verification.json",
+          "bytes": 11609,
+          "sha256": "dfba84102e8855c5c1fc6449dc0aae9b4c14dea3562587a9eb005d108f1d6205"
+        }
+      ]
+    },
+    {
+      "engine": "playwright",
+      "workers": 4,
+      "originalTestsPassed": 62,
+      "browserLaunches": 5,
+      "nativeCleanObservedTeardown": true,
+      "observedDrainedMembership": true,
+      "adoptedChildren": 0,
+      "retainedOutputs": 11,
+      "commandElapsedNanoseconds": "21667472744",
+      "cgroupCpuMicroseconds": "55922115",
+      "cgroupChargedPeakBytes": "2090303488",
+      "evidence": [
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/prepared.json",
+          "bytes": 6177,
+          "sha256": "d8cf2369af5322d5ff8ad4d771d49c01de87373b8f4a47ab4809ebc1b2c06e10"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/capture-inputs.json",
+          "bytes": 6027118,
+          "sha256": "f6c833c67a8abba6907b80fb5641f0c645f29185f8359385b7078b306345741e"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/capture/capture.json",
+          "bytes": 12193,
+          "sha256": "20671f7070f227089969805cbed0339f7ab685e328d6e60c6bf43af440a8a10a"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/capture/before.json",
+          "bytes": 12658855,
+          "sha256": "563eba4cd7b62f459336410e35f9e51e6a031da90cba418e2d45215b5d2d46ee"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/capture/after.json",
+          "bytes": 12658854,
+          "sha256": "eff25ea545bd03071c61e9f78592d0f2fcf21412055be8bce5f9b2407c32d448"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/capture/native.json",
+          "bytes": 3025,
+          "sha256": "4a24592be1bbfefb9472300b0e6cd47ad7b0c6cf1e032e2fce24d5665ad0e703"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/owner-report.json",
+          "bytes": 29964,
+          "sha256": "e7c42bff60f9b87b1533ac451b5f7cea17e52b4acf671ec03ddeec38db90e422"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/runner-report.json",
+          "bytes": 111219,
+          "sha256": "ad4df6527324757eaf305c22e52ed7170132530754c4ce8ac4113bb6b090224a"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-02-4-stock-playwright/runner-resources.json",
+          "bytes": 1293361,
+          "sha256": "aef29c83572d754f743358dc44e0e411081cdeba7538012609a1665fb5d342f3"
+        },
+        {
+          "path": "workbench/linux-backend-retained-001/owned-02-4-stock-playwright-verification.json",
+          "bytes": 20356,
+          "sha256": "ce6d60b4573683d57c7fb4fad1a333b46929db5cfa44294125b64498308be522"
+        }
+      ]
+    },
+    {
+      "engine": "flashwright",
+      "workers": 4,
+      "originalTestsPassed": 62,
+      "browserLaunches": 5,
+      "nativeCleanObservedTeardown": true,
+      "observedDrainedMembership": true,
+      "adoptedChildren": 0,
+      "retainedOutputs": 11,
+      "commandElapsedNanoseconds": "21626541176",
+      "cgroupCpuMicroseconds": "54795500",
+      "cgroupChargedPeakBytes": "2144243712",
+      "evidence": [
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/prepared.json",
+          "bytes": 6173,
+          "sha256": "5ed8d57a1a78a1322737b227c7cf43c70e14e0c5fa2aa45bdff1e52ff09b6992"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/capture-inputs.json",
+          "bytes": 6027149,
+          "sha256": "0fee2e2c9ab629eabbd6893e875f0c934b125a2f0464532a2d6d09f4d6e75bd1"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/capture/capture.json",
+          "bytes": 12238,
+          "sha256": "9795c2e8495984ec9c8aeaa6b72dec36c7e4ff3b36e42858f650f68e08933fa2"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/capture/before.json",
+          "bytes": 12658926,
+          "sha256": "1ffdd854ecf438329b7a39bce4aee429530fdfd03ec5f8b5128ac07dbce4fe4d"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/capture/after.json",
+          "bytes": 12658925,
+          "sha256": "f6eaf474dd45b250095666925dee607038ff9d8ade7e5d7ea67538f259c4f020"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/capture/native.json",
+          "bytes": 3026,
+          "sha256": "8ae3863194e8824c8a4f9974c30dea980b8ef46bebd2c3ce1408741ebf268bee"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/owner-report.json",
+          "bytes": 40537,
+          "sha256": "ed2dcd390382dbac5545133eb303ebcbdc72645159fb14d693314651f88e7eac"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/runner-report.json",
+          "bytes": 116383,
+          "sha256": "4bd3e7545faae2e573b68cdb9f7ed3d59597d9c8ed153836074351b06defe4ee"
+        },
+        {
+          "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/runner-resources.json",
+          "bytes": 1437069,
+          "sha256": "ab2983a3875a38de82b28acbabe988bcad02b4c1a23d5f63a6f397e8b8fd2d8c"
+        },
+        {
+          "path": "workbench/linux-backend-retained-001/owned-03-4-stock-flashwright-verification.json",
+          "bytes": 20315,
+          "sha256": "6f3e1a81f1e411c8db8966c72a35a4e0fa5588ef21f0e201101ba497ca2875ac"
+        }
+      ]
+    }
+  ],
+  "retainedAttempts": [
+    {
+      "path": "workbench/linux-backend-capture-002/owned-03-4-stock-flashwright/verification-stderr.txt",
+      "scope": "All native work exited zero, but the outer controller retained failure because directory enumeration order differed from the launch bundle. Exact unique-PID full-record comparison independently verified all four original captures without workload reruns; original controller remains failed."
+    },
+    {
+      "path": "workbench/linux-backend-capture-001",
+      "testsPassed": 248,
+      "scope": "Selected-input-only; later review found omitted backend sources/configuration and base Python dependencies. Preserved without retroactive admission.",
+      "correction": "Fresh batch002 after expanded inventory preflight. First batch001 original empty argv sample was independently reverified against complete samples of the same original PID/start/parent; first failure retained."
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/freeze.log",
+      "scope": "Pre-workload optional Tk/Tcl dependency collection failure; explicit unresolved optional extension retained."
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/preflight-path-correction.json",
+      "scope": "Before workload execution, normalized 60 dependency paths and preserved original input requests. No native retry."
+    }
+  ],
+  "review": {
+    "concreteInputOmissionsCorrected": true,
+    "artifacts": [
+      {
+        "path": "workbench/backend-capture-review-001/review.md",
+        "bytes": 6849,
+        "sha256": "d565491e3216da45a3eed485a8d1af78c1377f6e6d32461bc2bafd26dee5aab6"
+      },
+      {
+        "path": "workbench/backend-capture-review-001/expanded-input-addendum.md",
+        "bytes": 3121,
+        "sha256": "0d61ac10f40e6329c85f69163ed69e2b6e781c62ecc0e8d5029835d653e19b79"
+      }
+    ]
+  },
+  "provenance": [
+    {
+      "path": "workbench/linux-backend-capture-002/plan.json",
+      "bytes": 529,
+      "sha256": "6ea924c422d236d113327a5761579d66846160b8bf2ca4d1b1a73d2d54bc1a87"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/freeze.mjs",
+      "bytes": 6814,
+      "sha256": "a4d3ce58428da93521ccc68f34a03f7bc5371d2863d8aacae2e22542e9e45e8e"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/dependency-closure.json",
+      "bytes": 109473,
+      "sha256": "a926eb6e6f31b9914e79800ae767bd27809b61bfed817209cfe47bc872eec397"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/preflight.json",
+      "bytes": 647,
+      "sha256": "4f12f0ff762a882afee09917e50bd2369070384cfc623348dc097049a73c2908"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/run.py",
+      "bytes": 7509,
+      "sha256": "8589314752449167bd464b9932597517c647bd91c2fba3b06d3bb5ae15caf205"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/owner.py",
+      "bytes": 9098,
+      "sha256": "02aad64514674aa1a05b95e8b6d56535fbe4d68db7ded590a2b52d296a1ffdff"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/service_stack_owned.py",
+      "bytes": 13339,
+      "sha256": "aedced592f64d1baa9ce0cb45699f8405b845ef18f519c38110e2ade8901c6ce"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/verify.mjs",
+      "bytes": 9579,
+      "sha256": "17f4b6baf05247cdacd6e298eb5d94b29edad8db4fcfbf507667db2a05051f6e"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/results.json",
+      "bytes": 1397,
+      "sha256": "fee14f8b6a0d4eaca94de65c3873dc1779fc1623b48d3200e62d7725000e249b"
+    },
+    {
+      "path": "workbench/linux-backend-capture-002/controller.json",
+      "bytes": 934,
+      "sha256": "3042cee851a1eeca98b7b7de9f5058caa5f15a3b2b016d5c9db3044e2fce4b88"
+    },
+    {
+      "path": "workbench/linux-backend-retained-001/replay.mjs",
+      "bytes": 4089,
+      "sha256": "1fd2fd59c2685b83b65f5c555501a7a79f0f6f72ef0362fdcac8753ed51f48f0"
+    },
+    {
+      "path": "workbench/linux-backend-retained-001/verification.json",
+      "bytes": 1602,
+      "sha256": "f1773762637b3e60c1fc4cfa139a1ec3a911d3d5756731a4e11a89a3e7c62512"
+    },
+    {
+      "path": "workbench/linux-backend-retained-001/verify-corrected.mjs",
+      "bytes": 9926,
+      "sha256": "b7b02e9186054f8ca6ab2ab189ea87b65028c656a54b779509c1ba24d12f3c14"
+    },
+    {
+      "path": "workbench/linux-backend-retained-001/launch-join-check.json",
+      "bytes": 229,
+      "sha256": "dbb35a98fa82fa39fce7f4c9ba46f0421acb0ae55c2b0b66e9794820658d0e21"
+    }
+  ],
+  "limitations": [
+    "Selected boundary inputs and startup ELF dependencies are not exhaustive dynamically loaded-library or transient policy/custody attestation.",
+    "Retained resource/output reconstruction passed; backend source/configuration and outcome joins are not yet integrated into the final campaign loader. The outcome helper remains a private draft.",
+    "Fresh native PostgreSQL and private-network resource policy differ from historical Docker runs; do not pool timings.",
+    "No retries occur, so on-first-retry policy does not exercise retry trace creation.",
+    "One execution per cell is functional evidence, not an uncertainty-qualified speed comparison or representative majority-scenario result.",
+    "Shared host infrastructure, packed-release coverage, callback execution and native context ownership remain separate."
+  ],
+  "resourceAdmission": false,
+  "performanceAccepted": false,
+  "goalAccepted": false,
+  "executables": {
+    "browser": {
+      "bytes": 276917464,
+      "sha256": "adc1c21ceed5c2a67184766376fe816ac03e556cc0ca3f782e8212235fe05c6f"
+    },
+    "driver": {
+      "bytes": 14704080,
+      "sha256": "304adf3a79ca2465c71c5d808ef7b9fe0d7cafe971092de8af3a8148d9a9f30b"
+    },
+    "launcher": {
+      "bytes": 84464,
+      "sha256": "7c44fa8e7326e62e81ab3f70ff682bfc0eb3b447b39cf9fbb779a31948364762"
+    },
+    "runtime": {
+      "bytes": 84464,
+      "sha256": "7c44fa8e7326e62e81ab3f70ff682bfc0eb3b447b39cf9fbb779a31948364762"
+    }
+  },
+  "runtimeRoleNote": "The capture runtime is its initial bwrap owner command; Python and Bun are separately bound among selected inputs.",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "browser": {
+    "distribution": "full-chromium",
+    "version": "148.0.7778.96"
+  }
+}
