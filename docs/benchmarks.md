@@ -106,7 +106,40 @@ No cell reaches the declared 20% reduction against both controls in both orders.
 
 Both application-compilation prototypes are now removed from the active native checkout. The restored browser and ten runtime companions match the pre-experiment bytes exactly; six additional launches pass twelve fresh application contexts, including obsolete flags with a nonexistent manifest. Tested patches, runtimes and failed or successful historical observations remain separately archived. Neither composition advances, and neither establishes stock-browser performance, final resource admission or the representative 2× objective.
 
-## Current Linux controlled-family baseline
+## Matched nine-scenario Linux baseline — October 20
+
+The [current-source baseline](../benchmarks/results/matched-nine-scenario-linux-2026-10-20.json) runs all nine declared scenarios on commit `784fe47b`: six controlled families, TodoMVC, SVGOMG and the real-service backend corpus. Both engines use stock full Chrome 148.0.7778.96 and Bun 1.4.2, with Playwright 1.60.0 as reference. All 72 captures share browser/driver identities. Across the campaign, 8,230 distinct selected source/dependency files stayed unchanged, with matching hashes wherever an input was repeated. The second block reverses both scenario-group and per-group execution order. This is a fresh diagnostic comparison, separate from the historical mixed-revision retained-evidence drafts.
+
+Each complete interval starts at native command launch and ends after terminal waits, natural descendant drain and final cgroup counters. It includes fixture/service startup, runner startup, tests, diagnostics and shutdown; backend runs start fresh PostgreSQL, Mailpit and API processes inside that interval. Input hashing and the outside collector are excluded. Every capture receives a four-CPU quota, 8 GiB charged-memory limit and zero swap on the same Linux x64 host. The host exposes six logical CPUs on an AMD Ryzen 9 7900X3D and 32.7 GB physical memory; this is a shared controlled host, without an exclusive reservation or CPU pinning.
+
+Ratios are **Flashwright time / Playwright time**; below 1 means faster. Medians contain only two complete-launch observations per engine/cell. No confidence interval or causal slowdown claim follows from these samples.
+
+| Scenario | Workers | Playwright median (s) | Flashwright median (s) | FW / PW, blocks A / B |
+| --- | ---: | ---: | ---: | ---: |
+| application-backend-corpus | 1 | 49.374 | 48.328 | 0.989 / 0.969 |
+| application-backend-corpus | 4 | 21.709 | 21.725 | 1.000 / 1.001 |
+| application-svgomg | 1 | 2.296 | 2.322 | 1.015 / 1.008 |
+| application-svgomg | 4 | 2.523 | 2.826 | 1.063 / 1.179 |
+| application-todomvc | 1 | 4.547 | 4.750 | 1.080 / 1.009 |
+| application-todomvc | 4 | 3.249 | 3.263 | 1.027 / 0.982 |
+| runner-assertion | 1 | 1.560 | 1.696 | 1.082 / 1.093 |
+| runner-assertion | 4 | 1.458 | 1.591 | 1.083 / 1.101 |
+| runner-backend | 1 | 2.741 | 2.813 | 1.030 / 1.022 |
+| runner-backend | 4 | 2.423 | 2.589 | 1.053 / 1.085 |
+| runner-failure | 1 | 9.735 | 10.550 | 1.087 / 1.080 |
+| runner-failure | 4 | 3.932 | 4.403 | 1.087 / 1.152 |
+| runner-interaction | 1 | 2.318 | 2.525 | 1.158 / 1.019 |
+| runner-interaction | 4 | 2.487 | 2.418 | 0.918 / 1.029 |
+| runner-navigation | 1 | 1.669 | 1.725 | 1.034 / 1.033 |
+| runner-navigation | 4 | 1.534 | 1.564 | 1.028 / 1.012 |
+| runner-setup | 1 | 1.551 | 1.633 | 1.047 / 1.059 |
+| runner-setup | 4 | 1.458 | 1.560 | 1.067 / 1.073 |
+
+All 1,456 original outcomes verified: 1,336 passes and 120 intended failures with their 120 failure documents. No unexpected outcome occurred, and no capture was rerun. All 72 groups drained without caller-forced cleanup. The stricter native clean-teardown flag was true in 8 captures; the supervisor consumed 1,225 exited adopted descendants across the campaign. Those original distinctions and wait costs are retained, not relabelled as clean teardown.
+
+**None of the 18 scenario/worker cells reaches 2× in both observed blocks.** The unchanged stock-browser implementation therefore has no demonstrated route to the representative 2× target from this baseline. Kernel charged CPU and memory are retained per run; charged memory is not simultaneous RSS, and cache charging can vary. Reviewed final Linux admission joins, eight independent pairs per cell, current release gates, other-platform coverage and broad competitor acceptance remain open. Raw originals and private harness receipts remain locally retained; this export is not a portable sealed release campaign.
+
+## Earlier Linux controlled-family baseline
 
 The [exit-notification baseline](../benchmarks/results/watchdog-notification-controlled-linux-2026-10-18.json) runs the six original controlled workload families through both native runner adapters on stock full Chrome 148.0.7778.96 and Bun 1.4.2. Both engines receive the same four-core CPU quota, 8 GiB memory limit, zero swap and artifact policy. Each launch includes 15 fresh-context test executions, preparation, runner startup, default failure diagnostics and cleanup.
 
