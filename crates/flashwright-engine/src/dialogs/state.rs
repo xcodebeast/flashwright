@@ -7,6 +7,8 @@ use serde::Deserialize;
 use serde_json::value::RawValue;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
+use crate::page_state::BeforeUnloadNavigation;
+
 pub(super) const MAXIMUM_DIALOG_BYTES: usize = 1024 * 1024;
 const MAXIMUM_ENGINE_DIALOGS: usize = 128;
 const MAXIMUM_ENGINE_DIALOG_BYTES: usize = 8 * 1024 * 1024;
@@ -102,6 +104,12 @@ pub(super) struct DialogOccurrence {
 struct CurrentDialog {
     occurrence: Arc<DialogOccurrence>,
     handling: bool,
+    navigation: Option<BeforeUnloadNavigation>,
+}
+
+pub(super) struct ClosedDialog {
+    pub kind: DialogKind,
+    pub navigation: Option<BeforeUnloadNavigation>,
 }
 
 pub(crate) struct DialogState {
@@ -171,6 +179,7 @@ impl DialogState {
         self.current = Some(CurrentDialog {
             occurrence: occurrence.clone(),
             handling: false,
+            navigation: None,
         });
         Ok(occurrence)
     }
@@ -203,16 +212,32 @@ impl DialogState {
         Ok(current.occurrence.clone())
     }
 
+    /// Bind the intent in the same event turn that admits the modal.
+    pub(super) fn bind_navigation(&mut self, navigation: Option<BeforeUnloadNavigation>) {
+        if let Some(current) = self.current.as_mut()
+            && current.occurrence.kind == DialogKind::Beforeunload
+        {
+            current.navigation = navigation;
+        }
+    }
+
     /// Only browser events clear current visibility. A command reply never clears a successor.
-    pub(super) fn closed(&mut self, session_identifier: &str, frame_identifier: &str) -> bool {
+    pub(super) fn closed(
+        &mut self,
+        session_identifier: &str,
+        frame_identifier: &str,
+    ) -> Option<ClosedDialog> {
         if self.current.as_ref().is_some_and(|current| {
             current.occurrence.session_identifier == session_identifier
                 && current.occurrence.frame_identifier == frame_identifier
         }) {
-            self.current = None;
-            return true;
+            let current = self.current.take().unwrap();
+            return Some(ClosedDialog {
+                kind: current.occurrence.kind,
+                navigation: current.navigation,
+            });
         }
-        false
+        None
     }
 
     pub(crate) fn retire(&mut self) {
@@ -257,7 +282,7 @@ mod tests {
         drop(open(&mut state, &budget, "first"));
         let pending_reply = state.claim("first", "dialog.accept").unwrap();
         assert!(state.claim("first", "dialog.dismiss").is_err());
-        assert!(state.closed("session", "frame"));
+        assert!(state.closed("session", "frame").is_some());
         drop(open(&mut state, &budget, "second"));
         assert_eq!(
             budget.occurrences.available_permits(),
@@ -283,8 +308,8 @@ mod tests {
         assert_eq!(occurrence.event_json.as_ref(), OPENING);
         assert_eq!(occurrence.kind, DialogKind::Prompt);
         assert_eq!(occurrence.page_identifier, "page");
-        assert!(!state.closed("other-session", "frame"));
-        assert!(!state.closed("session", "other-frame"));
+        assert!(state.closed("other-session", "frame").is_none());
+        assert!(state.closed("session", "other-frame").is_none());
         state.retire();
         assert_eq!(occurrence.session_identifier, "session");
         assert_eq!(
@@ -332,7 +357,7 @@ mod tests {
         let mut second_page = DialogState::default();
         drop(open(&mut first_page, &budget, "first"));
         let pending_reply = first_page.claim("first", "dialog.accept").unwrap();
-        assert!(first_page.closed("session", "frame"));
+        assert!(first_page.closed("session", "frame").is_some());
         assert!(
             second_page
                 .open(&budget, "second".into(), "page2", "session2", OPENING)

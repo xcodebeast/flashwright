@@ -425,6 +425,51 @@ export async function ordinaryDialogCases(browser, check, baseURL) {
     });
   }
 
+  for (const trigger of ['link', 'form']) {
+    await scenario(`dismissed beforeunload releases ${trigger} clicks and preserves the next navigation`, async ({ page }) => {
+      await page.evaluate(({ destination, trigger }) => {
+        const arm = document.createElement('button');
+        arm.id = 'arm-beforeunload'; arm.textContent = 'Arm';
+        arm.onclick = () => {
+          window.onbeforeunload = event => { event.preventDefault(); event.returnValue = 'armed'; };
+        };
+        document.body.append(arm);
+        const link = document.createElement('a');
+        link.href = destination; link.textContent = 'Navigate';
+        const form = document.createElement('form');
+        form.action = destination;
+        const submit = document.createElement('button');
+        submit.textContent = 'Submit'; form.append(submit);
+        document.body.append(link, form);
+        (trigger === 'link' ? link : submit).id = 'navigate';
+      }, { destination: `${baseURL}/destination`, trigger });
+      await page.locator('#arm-beforeunload').click();
+      const originalURL = page.url();
+      for (let iteration = 0; iteration < 2; iteration++) {
+        const opened = page.waitForEvent('dialog');
+        const navigation = observe(page.waitForNavigation());
+        const click = observe(page.locator('#navigate').click());
+        const dialog = await opened;
+        assert.equal(dialog.type(), 'beforeunload');
+        assert.equal(click.settled, false);
+        await dialog.dismiss();
+        await fulfilled(click);
+        const outcome = await navigation.outcome;
+        assert.equal(outcome.status, 'rejected');
+        assert.match(outcome.error.message, /navigation cancelled by beforeunload dialog/);
+        assert.equal(page.url(), originalURL);
+        assert.equal(await page.evaluate(() => 42), 42);
+      }
+      const opened = page.waitForEvent('dialog');
+      const navigation = observe(page.waitForNavigation());
+      const click = observe(page.locator('#navigate').click());
+      await (await opened).accept();
+      await fulfilled(click);
+      await fulfilled(navigation);
+      assert.equal(new URL(page.url()).pathname, '/destination');
+    });
+  }
+
   for (const handlingMode of ['default', 'accept', 'dismiss']) {
     await scenario(`beforeunload navigation uses ${handlingMode} handling without losing its page`, async ({ page }) => {
       await page.evaluate(() => {

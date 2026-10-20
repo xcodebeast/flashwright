@@ -16,6 +16,9 @@ use crate::network_observer::{
 use crate::network_request::RequestState;
 use crate::network_state::{HeaderKind, NetworkRequests};
 
+mod dialog_navigation;
+pub(crate) use dialog_navigation::BeforeUnloadNavigation;
+
 const MAXIMUM_EXECUTION_CONTEXTS: usize = 1024;
 const MAXIMUM_INITIAL_EVENTS: usize = 1024;
 const MAXIMUM_INITIAL_EVENT_BYTES: usize = 4 * 1024 * 1024;

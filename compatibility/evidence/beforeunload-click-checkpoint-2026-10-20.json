@@ -1,0 +1,81 @@
+{
+  "status": "passed-focused-native-linux-development-checkpoint",
+  "baseCommit": "7f24852a53c8e235f3b44f415f3f1c4e429777d6",
+  "platform": "linux-x64",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "reference": "Playwright 1.60.0",
+  "correction": "A native rejected beforeunload modal retires only its captured loaderless main-frame navigation intent if both intent and document sequences still match. The click succeeds; explicit navigation waits reject; subsequent navigation remains usable.",
+  "sourceSha256": {
+    "crates/flashwright-engine/src/dialogs/events.rs": "c1ba4a81f23e4909839d2cba742a4c4d22f3d1b123e617da16c2e471ef0ba7c4",
+    "crates/flashwright-engine/src/dialogs/state.rs": "55d70a32aad62860b3ad5f8adcc8d7646c9d4a023d3c0faeca9b0d5c94a8a397",
+    "crates/flashwright-engine/src/page_state.rs": "4a869abd9fcf87c8973ed2a7f10a078344b7f89cd83a2e101fcf35794e57f023",
+    "crates/flashwright-engine/src/page_state/dialog_navigation.rs": "3dbbc30713f231a72517370ab8edcd1a1bb26804a539458e52291deb858dbca7",
+    "compatibility/m2/dialog-fixture.mjs": "776bb01872c778c14b06505604b2ebc158d2b90e810c26be1e187b97f09aa821"
+  },
+  "productionDriverSha256": "304adf3a79ca2465c71c5d808ef7b9fe0d7cafe971092de8af3a8148d9a9f30b",
+  "stockBrowser": {
+    "distribution": "chromium-headless-shell",
+    "version": "148.0.7778.96",
+    "sha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+    "binaryUnchanged": true
+  },
+  "hostChecks": {
+    "engineTestsPassed": 390,
+    "formatting": "passed",
+    "strictClippy": "passed",
+    "releaseBuild": "passed"
+  },
+  "sharedDialogCorpus": {
+    "cases": 31,
+    "stockReference": "passed",
+    "stockProductionDriver": "passed",
+    "customBrowserPrivateDriver": "passed",
+    "sourceEntriesVerified": 1314,
+    "newCases": [
+      "Repeated rejected link navigation followed by accepted navigation",
+      "Repeated rejected form submission followed by accepted navigation"
+    ],
+    "explicitNavigationWaits": "Reject on both engines with beforeunload cancellation; triggering clicks succeed."
+  },
+  "privateCharacterization": {
+    "supportedCasesPerEngine": 13,
+    "unsupportedFeature": "NavigateEvent.deferPageSwap unavailable in the selected browser",
+    "correctedComparisons": [
+      "Ordinary pointer preparation, reference first",
+      "Native pointer preparation, candidate first"
+    ],
+    "differences": 0,
+    "baseline": "Both link and form dismissal timed out in Flashwright and succeeded in Playwright; reproduced in both engine orders.",
+    "snapshotInputsVerified": 364,
+    "browserSha256": "a2879c3bd30439a438917cef402fced066b54592424de0d2cb4d092cd1ca7c93",
+    "browserProduct": "HeadlessChrome/148.0.7778.96-flashwright-idea02-v8-core-linux-os-001-flashwright-idea02-site-policy-001-flashwright-idea02-site-enforcement-001-flashwright-idea02-v8-checks-001-flashwright-native-action-channel-001-pointer-preparation-001-driver-transport-001-init-recovery-001-native-ack-001-routed-input-001-exact-callbacks-001",
+    "driverSha256": "83ff6bd0e033830a78d0213a0fb38f59ba677b7f99b6e4ef96552008ed5bb424"
+  },
+  "originalProcessExitsVerified": 15,
+  "reportSha256": {
+    "verified-results.json": "77ee8ade8398b5c0f6cc214652099fc9aedcf5612087fe2f3963fa02e7c8f04a",
+    "contract-before-002.json": "b182f6eff090f780dd49fa2af08b3a0565406cce21adfee3fd387d9844c27fb4",
+    "contract-after-001.json": "9a14b7d520c6f1ea96e38842aca91b5491f57d7a2f3cdeaff84a62932a7c86a6",
+    "contract-native-after-002.json": "b81df8a519484659238a13427ca8ff665e5cd0cb1bbe4ce76f9e7d1371239ddf",
+    "dialogs-candidate-001/report.json": "136733aa8dd87e84ece986b5743bceb9b28403961b0d730c5d0e5ca7b06b09a8",
+    "dialogs-stock-candidate-002/report.json": "64f82598a65928c6d78bbb46c36ab51099c0c8e1bd44c92dcfa8485c144520d0",
+    "dialogs-stock-reference-002/report.json": "a796651eb4121162bf541cb7f923169f44a3d22ae982fd4d661bf1beb2257fee",
+    "host-checks-002-result.json": "669d1b3dc0fcc33c0b8c6a2831475ce98c897089a31b6f30acfb5c842dabb29e"
+  },
+  "retainedFailures": [
+    "Initial deferPageSwap fixture expected a runtime feature that this browser does not expose; corrected fixture records unsupported explicitly.",
+    "Initial private driver source copy omitted existing native experiment fields; compile failed before browser execution, then fields were restored.",
+    "Strict Clippy rejected default field reassignment in the new host test; corrected without changing production behavior."
+  ],
+  "evidenceBoundary": "Generic dialog reports identify the launcher and can misclassify its distribution. Selected stock runs separately hash the actual executable before/after and match its file identity to original-parent exec receipts. Earlier stock passes without those new before/after receipts remain separate.",
+  "limitations": [
+    "Focused correctness only; no performance or representative 2x speedup claim.",
+    "No complete-core, packed consumer, macOS or release refresh in this checkpoint.",
+    "Native pointer preparation is not the integrated coarse native action controller.",
+    "No cross-process beforeunload cancellation or unavailable deferPageSwap coverage.",
+    "Page.close runBeforeUnload:true remains unsupported."
+  ]
+}
