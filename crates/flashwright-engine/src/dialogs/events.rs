@@ -6,6 +6,7 @@ use crate::*;
 #[serde(rename_all = "camelCase")]
 struct ClosingFields {
     frame_id: String,
+    result: bool,
 }
 
 impl Engine {
@@ -25,7 +26,7 @@ impl Engine {
             let fields: ClosingFields = serde_json::from_str(raw).map_err(|error| {
                 ErrorRecord::new(ErrorCode::Protocol, "page.dialog", error.to_string())
             })?;
-            if page
+            if let Some(closed) = page
                 .state
                 .dialogs
                 .lock()
@@ -34,6 +35,14 @@ impl Engine {
             {
                 state.dialog_open = false;
                 state.sequence += 1;
+                if !fields.result
+                    && closed.kind == DialogKind::Beforeunload
+                    && let Some(original) = closed.navigation
+                    && let Some(event) = state.cancel_beforeunload_navigation(original)
+                    && state.published
+                {
+                    self.emit(identifier, "navigation", event);
+                }
                 page.state.changed.send_replace(state.sequence);
             }
             return Ok(());
@@ -48,6 +57,7 @@ impl Engine {
             &page.session_identifier,
             raw,
         )?;
+        dialogs.bind_navigation(state.beforeunload_navigation());
         state.dialog_open = true;
         state.sequence += 1;
         page.state.changed.send_replace(state.sequence);
