@@ -22,7 +22,8 @@ import { isDeepStrictEqual } from 'util';
 
 import type { Browser, LaunchOptions } from 'playwright-core';
 
-const speculativeOptions = { handleSIGINT: false, headless: true };
+// The options the browser fixture uses for a default project whose contexts are recycled.
+const speculativeOptions = { handleSIGINT: false, headless: true, ...(process.env.FLASHWRIGHT_ISOLATION === 'strict' ? {} : { recycleContexts: true }) };
 // The fixtures and the worker entry are bundled separately; share the launch through a global.
 const speculativeKey = Symbol.for('flashwright.speculativeBrowser');
 
@@ -42,7 +43,8 @@ export async function takeSpeculativeBrowser(browserName: string, options: Launc
     return;
   const serverBrowser = (browser as any)._connection.toImpl?.(browser);
   if (browserName !== 'chromium' || !isDeepStrictEqual(rest, speculativeOptions) || !serverBrowser || !artifactsDir) {
-    await browser.close().catch(() => {});
+    // Not the browser this project needs: close it in the background, out of the test's steps.
+    (browser as any)._wrapApiCall(() => browser.close(), { internal: true }).catch(() => {});
     return;
   }
   // The browser was launched before the worker knew its output folders; nothing has used them yet.

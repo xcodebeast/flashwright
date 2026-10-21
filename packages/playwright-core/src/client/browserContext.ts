@@ -529,7 +529,7 @@ export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel>
       for (const page of this.pages())
         page._onClose();
       this._onClose();
-      await this._browser!._channel.disconnectFromReusedContext({ reason: options.reason ?? '' }, kNoTimeout);
+      await this._browser!._channel.closeRecycledContext({ reason: options.reason ?? '' }, kNoTimeout);
     } else {
       await this._channel.close(options, kNoTimeout);
       await this._closedPromise;

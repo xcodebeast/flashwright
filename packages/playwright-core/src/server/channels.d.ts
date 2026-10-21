@@ -835,6 +835,8 @@ export interface BrowserChannel extends BrowserEventTarget, Channel {
   newContext(params: BrowserNewContextParams, progress: Progress): Promise<BrowserNewContextResult>;
   newContextForReuse(params: BrowserNewContextForReuseParams, progress: Progress): Promise<BrowserNewContextForReuseResult>;
   disconnectFromReusedContext(params: BrowserDisconnectFromReusedContextParams, progress: Progress): Promise<BrowserDisconnectFromReusedContextResult>;
+  newContextForRecycle(params: BrowserNewContextForRecycleParams, progress: Progress): Promise<BrowserNewContextForRecycleResult>;
+  closeRecycledContext(params: BrowserCloseRecycledContextParams, progress: Progress): Promise<BrowserCloseRecycledContextResult>;
   newBrowserCDPSession(params: BrowserNewBrowserCDPSessionParams, progress: Progress): Promise<BrowserNewBrowserCDPSessionResult>;
   startTracing(params: BrowserStartTracingParams, progress: Progress): Promise<BrowserStartTracingResult>;
   stopTracing(params: BrowserStopTracingParams, progress: Progress): Promise<BrowserStopTracingResult>;
@@ -1194,6 +1196,168 @@ export type BrowserDisconnectFromReusedContextOptions = {
 
 };
 export type BrowserDisconnectFromReusedContextResult = void;
+export type BrowserNewContextForRecycleParams = {
+  noDefaultViewport?: boolean,
+  viewport?: {
+    width: number,
+    height: number,
+  },
+  screen?: {
+    width: number,
+    height: number,
+  },
+  ignoreHTTPSErrors?: boolean,
+  clientCertificates?: {
+    origin: string,
+    cert?: Binary,
+    key?: Binary,
+    passphrase?: string,
+    pfx?: Binary,
+  }[],
+  javaScriptEnabled?: boolean,
+  bypassCSP?: boolean,
+  userAgent?: string,
+  locale?: string,
+  timezoneId?: string,
+  geolocation?: {
+    longitude: number,
+    latitude: number,
+    accuracy?: number,
+  },
+  permissions?: string[],
+  extraHTTPHeaders?: NameValue[],
+  offline?: boolean,
+  httpCredentials?: HttpCredentials[],
+  deviceScaleFactor?: number,
+  isMobile?: boolean,
+  hasTouch?: boolean,
+  colorScheme?: 'dark' | 'light' | 'no-preference' | 'no-override',
+  reducedMotion?: 'reduce' | 'no-preference' | 'no-override',
+  forcedColors?: 'active' | 'none' | 'no-override',
+  acceptDownloads?: 'accept' | 'deny' | 'internal-browser-default',
+  contrast?: 'no-preference' | 'more' | 'no-override',
+  baseURL?: string,
+  recordVideo?: {
+    dir?: string,
+    size?: {
+      width: number,
+      height: number,
+    },
+    fps?: number,
+    showActions?: {
+      duration?: number,
+      position?: 'top-left' | 'top' | 'top-right' | 'bottom-left' | 'bottom' | 'bottom-right',
+      fontSize?: number,
+      cursor?: 'none' | 'pointer',
+      style?: {
+        point?: string,
+        highlight?: string,
+        title?: string,
+      },
+    },
+  },
+  strictSelectors?: boolean,
+  serviceWorkers?: 'allow' | 'block',
+  selectorEngines?: SelectorEngine[],
+  testIdAttributeName?: string,
+  proxy?: {
+    server: string,
+    bypass?: string,
+    username?: string,
+    password?: string,
+  },
+  storageState?: {
+    cookies?: SetNetworkCookie[],
+    origins?: SetOriginStorage[],
+    credentials?: SetVirtualCredential[],
+  },
+};
+export type BrowserNewContextForRecycleOptions = {
+  noDefaultViewport?: boolean,
+  viewport?: {
+    width: number,
+    height: number,
+  },
+  screen?: {
+    width: number,
+    height: number,
+  },
+  ignoreHTTPSErrors?: boolean,
+  clientCertificates?: {
+    origin: string,
+    cert?: Binary,
+    key?: Binary,
+    passphrase?: string,
+    pfx?: Binary,
+  }[],
+  javaScriptEnabled?: boolean,
+  bypassCSP?: boolean,
+  userAgent?: string,
+  locale?: string,
+  timezoneId?: string,
+  geolocation?: {
+    longitude: number,
+    latitude: number,
+    accuracy?: number,
+  },
+  permissions?: string[],
+  extraHTTPHeaders?: NameValue[],
+  offline?: boolean,
+  httpCredentials?: HttpCredentials[],
+  deviceScaleFactor?: number,
+  isMobile?: boolean,
+  hasTouch?: boolean,
+  colorScheme?: 'dark' | 'light' | 'no-preference' | 'no-override',
+  reducedMotion?: 'reduce' | 'no-preference' | 'no-override',
+  forcedColors?: 'active' | 'none' | 'no-override',
+  acceptDownloads?: 'accept' | 'deny' | 'internal-browser-default',
+  contrast?: 'no-preference' | 'more' | 'no-override',
+  baseURL?: string,
+  recordVideo?: {
+    dir?: string,
+    size?: {
+      width: number,
+      height: number,
+    },
+    fps?: number,
+    showActions?: {
+      duration?: number,
+      position?: 'top-left' | 'top' | 'top-right' | 'bottom-left' | 'bottom' | 'bottom-right',
+      fontSize?: number,
+      cursor?: 'none' | 'pointer',
+      style?: {
+        point?: string,
+        highlight?: string,
+        title?: string,
+      },
+    },
+  },
+  strictSelectors?: boolean,
+  serviceWorkers?: 'allow' | 'block',
+  selectorEngines?: SelectorEngine[],
+  testIdAttributeName?: string,
+  proxy?: {
+    server: string,
+    bypass?: string,
+    username?: string,
+    password?: string,
+  },
+  storageState?: {
+    cookies?: SetNetworkCookie[],
+    origins?: SetOriginStorage[],
+    credentials?: SetVirtualCredential[],
+  },
+};
+export type BrowserNewContextForRecycleResult = {
+  context: BrowserContextChannel,
+};
+export type BrowserCloseRecycledContextParams = {
+  reason: string,
+};
+export type BrowserCloseRecycledContextOptions = {
+
+};
+export type BrowserCloseRecycledContextResult = void;
 export type BrowserNewBrowserCDPSessionParams = {};
 export type BrowserNewBrowserCDPSessionOptions = {};
 export type BrowserNewBrowserCDPSessionResult = {
@@ -1830,6 +1994,7 @@ export type BrowserTypeLaunchParams = {
   downloadsPath?: string,
   tracesDir?: string,
   artifactsDir?: string,
+  recycleContexts?: boolean,
   chromiumSandbox?: boolean,
   firefoxUserPrefs?: any,
   cdpPort?: number,
@@ -1855,6 +2020,7 @@ export type BrowserTypeLaunchOptions = {
   downloadsPath?: string,
   tracesDir?: string,
   artifactsDir?: string,
+  recycleContexts?: boolean,
   chromiumSandbox?: boolean,
   firefoxUserPrefs?: any,
   cdpPort?: number,
@@ -1883,6 +2049,7 @@ export type BrowserTypeLaunchPersistentContextParams = {
   downloadsPath?: string,
   tracesDir?: string,
   artifactsDir?: string,
+  recycleContexts?: boolean,
   chromiumSandbox?: boolean,
   firefoxUserPrefs?: any,
   cdpPort?: number,
@@ -1972,6 +2139,7 @@ export type BrowserTypeLaunchPersistentContextOptions = {
   downloadsPath?: string,
   tracesDir?: string,
   artifactsDir?: string,
+  recycleContexts?: boolean,
   chromiumSandbox?: boolean,
   firefoxUserPrefs?: any,
   cdpPort?: number,

@@ -1183,14 +1183,16 @@ export class Frame extends SdkObject<FrameEventMap> {
   // Flashwright: sleep for up to `timeout` ms, but wake as soon as this frame's DOM, input, focus,
   // scroll or navigation state changes, so the next retry sees the change immediately.
   async waitForChangeOrTimeout(timeout: number): Promise<void> {
-    const sleep = new Promise<void>(f => setTimeout(f, timeout));
+    let timer: NodeJS.Timeout | undefined;
+    const sleep = new Promise<void>(f => timer = setTimeout(f, timeout));
     const context = this._contextData.get('utility')?.context;
     if (!context)
       return await sleep;
     const change = context.injectedScript()
         .then(injected => injected.evaluate((injected, timeout) => injected.waitForChange(timeout), timeout))
         .catch(() => sleep);
-    await Promise.race([sleep, change]);
+    // A pending timer would keep this frame, and its page, reachable until it fires.
+    await Promise.race([sleep, change]).finally(() => clearTimeout(timer));
   }
 
   isNonRetriableError(e: Error) {

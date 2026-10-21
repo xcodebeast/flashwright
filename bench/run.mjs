@@ -73,7 +73,7 @@ async function runOnce(engine, extraArgs = []) {
   const child = process.env.BENCH_CPU
     ? spawn('bash', ['-c', `TIMEFORMAT='CPUTIME %U %S'; time ${command.map(a => `'${a}'`).join(' ')}`], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
     : process.env.BENCH_PROCCPU
-      ? spawn('python3', [resolve(import.meta.dirname, 'proc-cpu.py'), ...command], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
+      ? spawn('python3', [resolve(import.meta.dirname, process.env.BENCH_PROCCPU === 'threads' ? 'thread-cpu.py' : 'proc-cpu.py'), ...command], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
       : spawn(command[0], command.slice(1), { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout.on('data', c => { output += c; });

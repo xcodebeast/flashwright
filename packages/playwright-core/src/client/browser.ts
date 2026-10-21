@@ -67,8 +67,9 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
     // Flashwright: the test runner asks for a recycled context through the public method, so the
     // call is logged, traced and reported exactly like creating a new context.
     if ((options as any)[kRecycleContext]) {
-      const { [kRecycleContext]: _, ...rest } = options as any;
-      return await this._innerNewContext(rest, true);
+      const rest = { ...options };
+      delete (rest as any)[kRecycleContext];
+      return await this._innerNewContext(rest, true, true);
     }
     return await this._innerNewContext(options, false);
   }
@@ -88,11 +89,11 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
     await this._channel.disconnectFromReusedContext({ reason }, kNoTimeout);
   }
 
-  async _innerNewContext(userOptions: BrowserContextOptions = {}, forReuse: boolean): Promise<BrowserContext> {
+  async _innerNewContext(userOptions: BrowserContextOptions = {}, forReuse: boolean, recycle = false): Promise<BrowserContext> {
     const options = this._browserType._playwright.selectors._withSelectorOptions(userOptions);
     await this._instrumentation.runBeforeCreateBrowserContext(options);
     const contextOptions = await prepareBrowserContextParams(options);
-    const response = forReuse ? await this._channel.newContextForReuse(contextOptions, kNoTimeout) : await this._channel.newContext(contextOptions, kNoTimeout);
+    const response = recycle ? await this._channel.newContextForRecycle(contextOptions, kNoTimeout) : forReuse ? await this._channel.newContextForReuse(contextOptions, kNoTimeout) : await this._channel.newContext(contextOptions, kNoTimeout);
     const context = BrowserContext.from(response.context);
     if (forReuse)
       context._forReuse = true;

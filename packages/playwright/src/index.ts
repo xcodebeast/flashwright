@@ -69,6 +69,7 @@ type WorkerFixtures = PlaywrightWorkerArgs & PlaywrightWorkerOptions & {
   _optionContextReuseMode: config.ContextReuseMode,
   _optionConnectOptions: PlaywrightWorkerOptions['connectOptions'],
   _reuseContext: boolean,
+  _recycleContext: boolean,
 };
 
 // Note: utility fixtures and _utilityTest are reused in electron package. Be mindful when changing them.
@@ -235,7 +236,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     playwright._defaultLaunchOptions = undefined;
   }, { scope: 'worker', auto: true, box: true }],
 
-  browser: [async ({ playwright, browserName, _browserOptions, connectOptions }, use, workerInfo) => {
+  browser: [async ({ playwright, browserName, _browserOptions, connectOptions, _recycleContext }, use, workerInfo) => {
     if (!['chromium', 'firefox', 'webkit'].includes(browserName))
       throw new Error(`Unexpected browserName "${browserName}", must be one of "chromium", "firefox" or "webkit"`);
 
@@ -254,10 +255,13 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       return;
     }
 
-    const speculativeBrowser = await takeSpeculativeBrowser(browserName, _browserOptions);
+    // Flashwright: only the browser whose contexts are recycled gets the switches that keep their
+    // renderers warm; browsers that tests launch themselves keep Playwright's defaults.
+    const recycleOptions = (_recycleContext ? { recycleContexts: true } : {}) as LaunchOptions;
+    const speculativeBrowser = await takeSpeculativeBrowser(browserName, { ..._browserOptions, ...recycleOptions });
     if (speculativeBrowser)
       reportAdoptedLaunch(_browserOptions);
-    const browser = speculativeBrowser ?? await playwright[browserName].launch();
+    const browser = speculativeBrowser ?? await playwright[browserName].launch(recycleOptions);
     if (process.env.PLAYWRIGHT_DASHBOARD)
       await browser.bind(`worker-${workerInfo.parallelIndex}`);
     await use(browser);
@@ -459,18 +463,23 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
 
   reuseContext: [false, { scope: 'worker', option: true, box: true }],
 
-  _reuseContext: [async ({ video, _optionContextReuseMode, reuseContext }, use) => {
+  _reuseContext: [async ({ video, _optionContextReuseMode, reuseContext, _recycleContext }, use) => {
     let mode = _optionContextReuseMode;
     if (process.env.PW_TEST_REUSE_CONTEXT || reuseContext)
       mode = 'when-possible';
-    // Flashwright recycles contexts by default; FLASHWRIGHT_ISOLATION=strict restores a fresh context per test.
-    if (process.env.FLASHWRIGHT_ISOLATION !== 'strict')
-      mode = 'when-possible';
-    const reuse = mode === 'when-possible' && normalizeVideoMode(video) === 'off';
+    const reuse = (mode === 'when-possible' || _recycleContext) && normalizeVideoMode(video) === 'off';
     await use(reuse);
   }, { scope: 'worker',  title: 'context', box: true }],
 
-  context: async ({ browser, video, _reuseContext, _contextFactory }, use, testInfoPublic) => {
+  // Flashwright recycles contexts by default (a new tab per test in a warm context); an explicit
+  // reuse request (VS Code, UI mode, the reuseContext option) keeps Playwright's own reuse, and
+  // FLASHWRIGHT_ISOLATION=strict restores a fresh context per test.
+  _recycleContext: [async ({ video, _optionContextReuseMode, reuseContext }, use) => {
+    const explicitReuse = !!process.env.PW_TEST_REUSE_CONTEXT || reuseContext || _optionContextReuseMode === 'when-possible';
+    await use(!explicitReuse && process.env.FLASHWRIGHT_ISOLATION !== 'strict' && normalizeVideoMode(video) === 'off');
+  }, { scope: 'worker', box: true }],
+
+  context: async ({ browser, video, _reuseContext, _recycleContext, _contextFactory }, use, testInfoPublic) => {
     const browserImpl = browser as BrowserImpl;
     const testInfo = testInfoPublic as TestInfoImpl;
     const show = typeof video === 'string' ? undefined : video.show;
@@ -480,6 +489,15 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       await installScreencastTitleUpdater(testInfo, context, show?.test);
       await use(context);
       await close();
+      return;
+    }
+
+    if (!_recycleContext) {
+      const context = await browserImpl._wrapApiCall(() => browserImpl._newContextForReuse(), { internal: true });
+      await installScreencastTitleUpdater(testInfo, context, show?.test);
+      await use(context);
+      const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';
+      await browserImpl._wrapApiCall(() => browserImpl._disconnectFromReusedContext(closeReason), { internal: true });
       return;
     }
 
@@ -493,9 +511,18 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     await context.close({ reason: closeReason, [kRecycleContext]: true } as { reason: string });
   },
 
-  page: async ({ context }, use) => {
+  page: async ({ context, _reuseContext, _recycleContext }, use) => {
     // Flashwright: a recycled context hands out the tab it prepared for this test.
-    await use(await context.newPage());
+    if (!_reuseContext || _recycleContext) {
+      await use(await context.newPage());
+      return;
+    }
+
+    // First time we are reusing the context, we should create the page.
+    let [page] = context.pages();
+    if (!page)
+      page = await context.newPage();
+    await use(page);
   },
 
   mount: async ({ page, baseURL }, use) => {

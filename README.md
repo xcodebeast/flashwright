@@ -43,8 +43,8 @@ Each item keeps Playwright's observable behavior; the differences that remain ar
 
 ## Differences from Playwright
 
-- Contexts are recycled by default (Chromium). Tests see a fresh context and reports keep the usual "Create context"/"Close context" steps; a test that leaves a request in flight at its end gets up to 50 ms for it to settle. Set `FLASHWRIGHT_ISOLATION=strict` to create a new context for every test, exactly like Playwright.
-- Chromium is launched with `--renderer-process-limit=1`, so a context's pages share one renderer process (cross-site frames still get their own).
+- Contexts are recycled by default (Chromium). Tests see a fresh context and reports keep the usual "Create context"/"Close context" steps; a test that leaves a request in flight at its end gets up to 50 ms for it to settle. A context in which the test paused, used the debugger, the recorder or `page.pickLocator()`, or visited a non-http origin is closed instead of recycled. Explicit context reuse (`reuseContext`, VS Code, UI mode) keeps Playwright's own behavior. Set `FLASHWRIGHT_ISOLATION=strict` to create a new context for every test, exactly like Playwright.
+- The browser the test runner launches for recycled contexts runs with `--renderer-process-limit=1` and without script streaming, so a context's same-site pages share one renderer process (cross-site frames still get their own): a renderer crash or a busy script affects all of them. Browsers that tests or scripts launch themselves keep Playwright's defaults.
 - PNGs from `page.screenshot()` and `locator.screenshot()` have identical pixels but are larger files (typically 1.6–1.9×). `toHaveScreenshot()` baselines are unchanged.
 - The CLI may start worker processes and a headless browser before it has read the config; unused ones are closed. Flashwright keeps two things in the system temp directory: `flashwright-worker-hints.json` (worker counts per project) and `flashwright-code-cache/` (a few MB per Node version). Set `PW_DISABLE_WORKER_STANDBY=1` or `FLASHWRIGHT_DISABLE_CODE_CACHE=1` to turn either off.
 - Firefox and WebKit keep Playwright's behavior.
@@ -61,7 +61,7 @@ npx playwright install chromium
 
 `bench/consumer-test.mjs` packs the packages and runs an unmodified upstream example suite against them in a fresh project, as a drop-in replacement for `@playwright/test`.
 
-The upstream suites are the compatibility bar. On Chromium, `tests/page` passes 2610/2610 (including the recycling isolation tests), matching pristine Playwright v1.64.1 on the same machine, and `tests/playwright-test` fails exactly the tests that pristine Playwright fails in this environment (branded Chrome and WebKit dependencies are missing here), apart from one timing-sensitive test that assumes two workers start at the same instant.
+The upstream suites are the compatibility bar, compared against pristine Playwright v1.64.1 on the same machine. On Chromium, `tests/page` passes 2610/2610 (including the recycling isolation tests). `tests/library` matches pristine except for two checks that inspect Playwright's internal bookkeeping (the server-side list of contexts and the CDP session map, which include the recycled context between tests). `tests/playwright-test` fails exactly the tests that pristine Playwright fails in this environment (branded Chrome and WebKit dependencies are missing here), apart from one timing-sensitive test that assumes two workers start at the same instant.
 
 ## Repository layout
 

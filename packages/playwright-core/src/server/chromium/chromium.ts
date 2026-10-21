@@ -372,7 +372,7 @@ export class Chromium extends BrowserType {
       throw new Error('Playwright manages remote debugging connection itself.');
     if (args.find(arg => !arg.startsWith('-')))
       throw new Error('Arguments can not specify page to be opened');
-    const chromeArguments = [...chromiumSwitches()];
+    const chromeArguments = [...chromiumSwitches({ recycleContexts: options.recycleContexts })];
 
     // See https://issues.chromium.org/issues/40277080
     chromeArguments.push('--enable-unsafe-swiftshader');

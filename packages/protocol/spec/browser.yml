@@ -83,7 +83,7 @@ Browser:
         context: BrowserContext
 
     newContextForReuse:
-      title: Create context
+      internal: true
       parameters:
         $mixin: ContextOptions
         proxy:
@@ -109,6 +109,39 @@ Browser:
         context: BrowserContext
 
     disconnectFromReusedContext:
+      internal: true
+      parameters:
+        reason: string
+
+    # Flashwright: the test runner's recycled contexts. Like newContextForReuse, but each test gets
+    # a new tab in the warm context; reported like creating and closing a context.
+    newContextForRecycle:
+      title: Create context
+      parameters:
+        $mixin: ContextOptions
+        proxy:
+          type: object?
+          properties:
+            server: string
+            bypass: string?
+            username: string?
+            password: string?
+        storageState:
+          type: object?
+          properties:
+            cookies:
+              type: array?
+              items: SetNetworkCookie
+            origins:
+              type: array?
+              items: SetOriginStorage
+            credentials:
+              type: array?
+              items: SetVirtualCredential
+      returns:
+        context: BrowserContext
+
+    closeRecycledContext:
       title: Close context
       parameters:
         reason: string

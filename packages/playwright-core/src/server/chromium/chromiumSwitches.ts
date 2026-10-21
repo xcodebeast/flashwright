@@ -56,7 +56,17 @@ const disabledFeatures = [
   'msEdgeUpdateLaunchServicesPreferredVersion',
 ].filter(Boolean);
 
-export const chromiumSwitches = (options?: { android?: boolean }) => [
+// Flashwright: switches for browsers whose contexts the test runner recycles (see the
+// recycleContexts launch option). A recycled context gives each test a new tab next to the
+// previous one, and --renderer-process-limit=1 lets that tab join the context's renderer, which
+// has already compiled the application's code; the context's same-site pages share that process.
+// In such warm renderers, script streaming compiles each script again on a background thread while
+// the main thread would reuse the renderer's compiled copy: a 700 KB React app reloads ~30% faster
+// without it, for ~5% more on a cold renderer.
+const recycleSwitches = ['--renderer-process-limit=1'];
+const recycleDisabledFeatures = ['ScriptStreaming'];
+
+export const chromiumSwitches = (options?: { android?: boolean, recycleContexts?: boolean }) => [
   '--disable-field-trial-config', // https://source.chromium.org/chromium/chromium/src/+/main:testing/variations/README.md
   '--disable-background-networking',
   '--disable-background-timer-throttling',
@@ -71,7 +81,7 @@ export const chromiumSwitches = (options?: { android?: boolean }) => [
   '--disable-dev-shm-usage',
   '--disable-edgeupdater', // Disables Edge-specific updater on mac.
   '--disable-extensions',
-  '--disable-features=' + disabledFeatures.join(','),
+  '--disable-features=' + [...disabledFeatures, ...(options?.recycleContexts ? recycleDisabledFeatures : [])].join(','),
   process.env.PLAYWRIGHT_LEGACY_SCREENSHOT ? '' : '--enable-features=CDPScreenshotNewSurface',
   '--allow-pre-commit-input',
   '--disable-hang-monitor',
@@ -101,8 +111,5 @@ export const chromiumSwitches = (options?: { android?: boolean }) => [
   '--disable-search-engine-choice-screen',
   // Prevents the "three dots" menu crash in IdentityManager::HasPrimaryAccount for ephemeral contexts.
   options?.android ? '' : '--disable-sync',
-  // Flashwright: let a context's new pages join its existing renderer process. Recycled contexts
-  // open each test's page next to the previous one, so the page starts in a renderer that has
-  // already compiled the application's code. Site isolation still separates cross-site frames.
-  options?.android ? '' : '--renderer-process-limit=1',
+  ...(options?.recycleContexts ? recycleSwitches : []),
 ].filter(Boolean);

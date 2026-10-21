@@ -97,6 +97,8 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
   static forContext(context: BrowserContext, params: RecorderParams): Promise<Recorder> {
     let recorderPromise = (context as any)[recorderSymbol] as Promise<Recorder>;
     if (!recorderPromise) {
+      // Flashwright: a recorder stays installed in its context; never hand it to another test.
+      context.preventRecycling();
       recorderPromise = Recorder._create(context, params);
       (context as any)[recorderSymbol] = recorderPromise;
     }
@@ -209,7 +211,7 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
       });
 
       this._context.on(BrowserContext.Events.Page, (page: Page) => this._onPage(page));
-      for (const page of this._context.pages())
+      for (const page of this._context.announcedPages())
         this._onPage(page);
       this._context.dialogManager.addDialogHandler(dialog => {
         this._onDialog(dialog.page());
@@ -259,8 +261,8 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
     this._debugger.setMuted(this._isRecording());
     if (this._mode !== 'none' && this._mode !== 'standby') {
       let pageToFocus = this._pickLocatorPage;
-      if (!pageToFocus && this._context.pages().length === 1)
-        pageToFocus = this._context.pages()[0];
+      if (!pageToFocus && this._context.announcedPages().length === 1)
+        pageToFocus = this._context.announcedPages()[0];
       pageToFocus?.bringToFront(nullProgress).catch(() => {});
     }
     await this._refreshOverlay();
@@ -303,7 +305,7 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
   }
 
   url(): string | undefined {
-    const page = this._context.pages()[0];
+    const page = this._context.announcedPages()[0];
     return page?.mainFrame().url();
   }
 
@@ -370,7 +372,7 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
     if (previous && previous.selector === selector && previous.anyFrame === anyFrame)
       return;
     this._highlightedSelector = selector === undefined ? undefined : { selector, anyFrame };
-    await Promise.all(this._context.pages().map(async page => {
+    await Promise.all(this._context.announcedPages().map(async page => {
       if (previous)
         await page.highlightController.removeHighlight(previous.selector).catch(() => {});
       if (selector)
@@ -379,7 +381,7 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
   }
 
   private async _refreshOverlay() {
-    await Promise.all(this._context.pages().map(
+    await Promise.all(this._context.announcedPages().map(
         page => page.safeNonStallingEvaluateInAllFrames('window.__pw_refreshOverlay()', 'main')));
   }
 
@@ -520,13 +522,13 @@ export class Recorder extends EventEmitter<RecorderEventMap> implements Instrume
   }
 
   private _filePrimaryURLChanged() {
-    const page = this._context.pages()[0];
+    const page = this._context.announcedPages()[0];
     this.emit(RecorderEvent.PageNavigated, page?.mainFrame().url());
   }
 
   clear(): void {
     if (this._params.mode === 'recording') {
-      for (const page of this._context.pages())
+      for (const page of this._context.announcedPages())
         this._onFrameNavigated(page.mainFrame(), page);
     }
   }

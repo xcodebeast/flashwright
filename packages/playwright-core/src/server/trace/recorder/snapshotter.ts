@@ -86,7 +86,7 @@ export class Snapshotter {
   }
 
   async _initialize(progress: Progress) {
-    for (const page of this._context.pages())
+    for (const page of this._context.announcedPages())
       this._onPage(page);
     this._eventListeners = [
       eventsHelper.addEventListener(this._context, BrowserContext.Events.Page, this._onPage.bind(this)),
