@@ -1,0 +1,1165 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "status": "private-engineering-screen-not-release-acceptance",
+  "baseCommit": "089c68f9",
+  "platform": "linux-x64",
+  "workers": 1,
+  "runtime": "Bun 1.4.2",
+  "reference": "Playwright 1.60.0; stock Chromium headless shell 148.0.7778.96",
+  "scope": "Twenty complete one-worker launches of original TodoMVC (24 tests) and SVGOMG (6 tests), five arms and two opposite-order pairs. Full pinned utility bundle. Passing-suite Bun bridge is private and incomplete.",
+  "timeBoundary": "Watchdog owner spawn through final observed process drain, including original corpus validation, fixture startup/closure, runner/browser startup, fresh contexts, warmups implicit in first test, and unused renderer reservation cleanup.",
+  "limits": {
+    "cpuQuota": "400%",
+    "memoryMax": "8G",
+    "swap": 0,
+    "nice": 10,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "arms": {
+    "stock": "Playwright runner and stock browser",
+    "custom": "Playwright runner and custom browser, ordinary frames",
+    "custom-fast": "Playwright runner and custom browser, classic scheduler early idle deadline and uncapped frames",
+    "candidate": "Independent Bun bridge and custom browser, physical renderer reuse and ordinary frames",
+    "candidate-fast": "Independent Bun bridge and custom browser, physical renderer reuse, classic scheduler early idle deadline and uncapped frames"
+  },
+  "policy": "All custom arms enable cache-preserving single retirement collection. Fast arms explicitly disable SlimScheduler. Common ordered launch policy is otherwise unchanged apart from profile location.",
+  "prospectiveAdvanceRule": "Advance further composition work only if fast candidate reduces complete time by at least20% against ordinary candidate in both opposite-order pairs for both applications. Report stock and same-policy Playwright ratios separately; no automatic adoption or final-matrix launch. Full2x/four-worker/final-eight-pair requirements unchanged.",
+  "advanceRuleMet": false,
+  "stockPairsAtLeastTwofold": 0,
+  "testsPassed": 300,
+  "runs": [
+    {
+      "name": "00-todomvc-stock",
+      "arm": "stock",
+      "pair": 1,
+      "application": "todomvc",
+      "mode": "playwright",
+      "tests": 24,
+      "completeMilliseconds": 3848.5096270014765,
+      "ownerBodyMilliseconds": 3693.09411,
+      "wait4CpuSeconds": 2.220131,
+      "sampledPeakRssBytes": 909160448,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+        "launchRecordSha256": "3d3cbc8a3fe5c6dbe103ca3b7997c62541cff34679af2bfd7d9e8c8ab1d4a7ee"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "6072c374b509364306e71bfafc837d5fe29f0da8db826a041d66936ecf9a83ed",
+      "rawSha256": {
+        "resources.json": "6eb3217e2aacb934f7942c1a0927dff82d257e8fee99d405e5ad481c39ba766a",
+        "owner-report.json": "7718336f06baf9c129fd5d481c064e68ad9763da6c7b3530329405bc3992795e",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "01-todomvc-custom",
+      "arm": "custom",
+      "pair": 1,
+      "application": "todomvc",
+      "mode": "playwright",
+      "tests": 24,
+      "completeMilliseconds": 4251.623058997211,
+      "ownerBodyMilliseconds": 4095.3968330000002,
+      "wait4CpuSeconds": 2.443034,
+      "sampledPeakRssBytes": 925904896,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "bf64bb5543867c56d8625874d6e0d0d613d25758ab0d87ad5b8a5a46223a585e"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "ee52d82fd95c97f5ed1b15dd334c561d79a2ca887fc38821b027de40b54459ae",
+      "rawSha256": {
+        "resources.json": "9f7c66ecd4763025116c59b29b79c00f5f94e857010d78efcfe1da210f8617b2",
+        "owner-report.json": "8f17505147d16ddabe87d7f690f39cca15f08404e4acf7e303e2580e45a2b89f",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "02-todomvc-custom-fast",
+      "arm": "custom-fast",
+      "pair": 1,
+      "application": "todomvc",
+      "mode": "playwright",
+      "tests": 24,
+      "completeMilliseconds": 3603.884067997569,
+      "ownerBodyMilliseconds": 3506.810226,
+      "wait4CpuSeconds": 2.695776,
+      "sampledPeakRssBytes": 939282432,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "22fdf59fe34f978f7a418eae04f8d4ec0ae1655ace215f22baf87772fc1362b2"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "4424c401fe3828ed39553522031298285ad35c817c02ca014d3858823d788672",
+      "rawSha256": {
+        "resources.json": "6afc407615f8819584a9ea0af92092cb62a062491c9bc8e9468385db8089150f",
+        "owner-report.json": "a4ddac9295dbb29e51898e9844d823b3ba2c7a49746bc35feba31dfac6ee6493",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "03-todomvc-candidate",
+      "arm": "candidate",
+      "pair": 1,
+      "application": "todomvc",
+      "mode": "candidate",
+      "tests": 24,
+      "completeMilliseconds": 2733.3485650015064,
+      "ownerBodyMilliseconds": 2578.3912060000002,
+      "wait4CpuSeconds": 1.426093,
+      "sampledPeakRssBytes": 779948032,
+      "reservation": {
+        "transfers": 24,
+        "claims": 23,
+        "preparationReleases": 23,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "bd0b0ad769e477f8f74c51cd9320e2e5ac7f2b5d4babceb462c7fc7339db70d8"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "9c60bd5dbbb446b643feb1e8522756ccbde0b081488c09e0c5c4558cea5a208e",
+      "rawSha256": {
+        "resources.json": "2ccb8473d90e23381e65835cbd24a5a6ce8fe4e91eb42f7e3054cc7781438431",
+        "owner-report.json": "7150ef76ae64fb91a759731f4a9bcbcf1fa21b8fdbc508fdf894e5cd5a277f6e",
+        "stderr.txt": "96f360e0d5ec6ab86f6a2c7fdc7bc8b1ba53c73fa9f8a60e6042441594318d37"
+      }
+    },
+    {
+      "name": "04-todomvc-candidate-fast",
+      "arm": "candidate-fast",
+      "pair": 1,
+      "application": "todomvc",
+      "mode": "candidate",
+      "tests": 24,
+      "completeMilliseconds": 2163.5294380103005,
+      "ownerBodyMilliseconds": 2008.04593,
+      "wait4CpuSeconds": 1.647147,
+      "sampledPeakRssBytes": 779526144,
+      "reservation": {
+        "transfers": 24,
+        "claims": 23,
+        "preparationReleases": 23,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "cd614ad27fd6e5e008d639a1cddb83adc4a224a94a6c4aca0c5c04c552226cbc"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "e3f194d6ef0d0b6c95491d47307304235a22d3f7a85b7790dd81ebe37f534afd",
+      "rawSha256": {
+        "resources.json": "a0f9387133b01a0fad7822858550f5e5097b4cf905ea88a2aa133e754a1ae649",
+        "owner-report.json": "923bf63c96f6cde7eab9cf59c06a5b1cde8a1c4e99b369f35e1d2efe4f1e1760",
+        "stderr.txt": "5615ba9ae80fb25a91f072dba9d6d242eaa939fe0f53e79c5da9a5f40ac75576"
+      }
+    },
+    {
+      "name": "05-todomvc-candidate-fast",
+      "arm": "candidate-fast",
+      "pair": 2,
+      "application": "todomvc",
+      "mode": "candidate",
+      "tests": 24,
+      "completeMilliseconds": 2085.2429179940373,
+      "ownerBodyMilliseconds": 1988.0456410000002,
+      "wait4CpuSeconds": 1.653158,
+      "sampledPeakRssBytes": 782442496,
+      "reservation": {
+        "transfers": 24,
+        "claims": 23,
+        "preparationReleases": 23,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "0a45a891640d1d7edf60252732ddc2f599e6e4b79b577873cfcc2a5a0a4c14ee"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "3a7642c5ce38bd7f8514383d7a394f8fc397d6dbfc22c1e2967a1e53b0e90fd1",
+      "rawSha256": {
+        "resources.json": "f92242ca216c888bad1f19b621cae689922e14478790ff9f66bf62cd79eb6488",
+        "owner-report.json": "6cb0577dd595c413838485eefb109484e25f372c11b0239a9139febb91278adc",
+        "stderr.txt": "8a7e6d3de5936eedf94dba772ea221225e18561acfd0b135234281a2e4a5fb29"
+      }
+    },
+    {
+      "name": "06-todomvc-candidate",
+      "arm": "candidate",
+      "pair": 2,
+      "application": "todomvc",
+      "mode": "candidate",
+      "tests": 24,
+      "completeMilliseconds": 2853.171620008652,
+      "ownerBodyMilliseconds": 2697.288874,
+      "wait4CpuSeconds": 1.4227139999999998,
+      "sampledPeakRssBytes": 782344192,
+      "reservation": {
+        "transfers": 24,
+        "claims": 23,
+        "preparationReleases": 23,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "ad8070f96d7a0375ba010f0cd71b16c04b5a231e96857d36f9101e22232976ae"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "b77b3e920f1b767e364b4f94125a4c226438d3694fa8881f5dc4e8adcb73e1b7",
+      "rawSha256": {
+        "resources.json": "c59213452086cd20b4cea2b51f161bfb9cf51d4b545b36af77fd76ecbd757154",
+        "owner-report.json": "b9c701c3a637c96073cc22b5768f5f4cd758ccdc63755d703f935b5ef4d0d3dd",
+        "stderr.txt": "67a94f95b9375252538e6bbaf3cc9bac1918efe75649efbc8870bc109ba6c58d"
+      }
+    },
+    {
+      "name": "07-todomvc-custom-fast",
+      "arm": "custom-fast",
+      "pair": 2,
+      "application": "todomvc",
+      "mode": "playwright",
+      "tests": 24,
+      "completeMilliseconds": 3621.056352989399,
+      "ownerBodyMilliseconds": 3465.076944,
+      "wait4CpuSeconds": 2.678509,
+      "sampledPeakRssBytes": 920162304,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "1f7a0649b04a70778e28ba8828b4258e566fe7f8e977ea35389be030dc66060c"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "f2a92a72a29ddcfbea8f00a7a2ce6d1c56b669b7b7a827b8f5a2e8c77b450f76",
+      "rawSha256": {
+        "resources.json": "eae620591043603818e3112a84e6753a28f119577b776732c0045c88497c1034",
+        "owner-report.json": "5fafba1217e1be6202c94147741d35a1512ebba2482c32aa19fe10278c18034e",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "08-todomvc-custom",
+      "arm": "custom",
+      "pair": 2,
+      "application": "todomvc",
+      "mode": "playwright",
+      "tests": 24,
+      "completeMilliseconds": 4141.343441006029,
+      "ownerBodyMilliseconds": 4042.6169840000002,
+      "wait4CpuSeconds": 2.467361,
+      "sampledPeakRssBytes": 927985664,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "756d18a766966e247353c43f896b0e85f90171b24ba25825bb8228f7bd970cfd"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "d90bdfcccfcd6b0a4e42c410b2f2bb6d746c822ddbe96c289e260c52369011e8",
+      "rawSha256": {
+        "resources.json": "4358669a9565d9ff493e5c98ba4bf5235ff96e4d65f01af4d0c5e2f4d29d9b4f",
+        "owner-report.json": "c1e62fd0628fd70f3062aebced58bb0020ce1666249c64ed764c7788969d7219",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "09-todomvc-stock",
+      "arm": "stock",
+      "pair": 2,
+      "application": "todomvc",
+      "mode": "playwright",
+      "tests": 24,
+      "completeMilliseconds": 3804.475230994285,
+      "ownerBodyMilliseconds": 3704.616408,
+      "wait4CpuSeconds": 2.222295,
+      "sampledPeakRssBytes": 915877888,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+        "launchRecordSha256": "760dfc40b2ca91575de479be97346561ca0178dbaf3253680df1c60cf114828f"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "bbb1f0fca7c3f078d36c154d3b92a2b25cbb036e79a29854dfeb0e8d70b4476e",
+      "rawSha256": {
+        "resources.json": "5d38334dbb3dbe56b2b1978197ecdbb6ee1cff94642dbccc3116fca82d2dc5b2",
+        "owner-report.json": "8f2fc02434344d960b6c8d8259eb2b1ed2ecd959b4478ed14b3217adaf51a78c",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "10-svgomg-stock",
+      "arm": "stock",
+      "pair": 1,
+      "application": "svgomg",
+      "mode": "playwright",
+      "tests": 6,
+      "completeMilliseconds": 1987.4024979944807,
+      "ownerBodyMilliseconds": 1832.1430930000001,
+      "wait4CpuSeconds": 1.174271,
+      "sampledPeakRssBytes": 941064192,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+        "launchRecordSha256": "82d20ed740da3218e7a86201b06acc5b4273469f5ecf1d58b6fb6fa1fcd534d2"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "0bf69114a1c93ec394f9d97cd23a182c1354f17ccd0b9e1edc84e3ba117688e7",
+      "rawSha256": {
+        "resources.json": "d08d629c077cc32ab9907ca4aa6f9be852ffccbe22f53a3934c73a7a42e83dbe",
+        "owner-report.json": "d257ce5b28b425551855fdfe4737a41f9143e67eb46c0bf8fae847874302377e",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "11-svgomg-custom",
+      "arm": "custom",
+      "pair": 1,
+      "application": "svgomg",
+      "mode": "playwright",
+      "tests": 6,
+      "completeMilliseconds": 2098.1185880082194,
+      "ownerBodyMilliseconds": 1942.742513,
+      "wait4CpuSeconds": 1.254611,
+      "sampledPeakRssBytes": 957313024,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "c6aefe2beeb8203b658ae1c09476204d8d6da5328eeb5f6cd836b7778207a31b"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "9de1fbbf44b23f8c8b63a5c2a48c8a2bb5f816dd28a5c3513c5cf3f76e7271f2",
+      "rawSha256": {
+        "resources.json": "612919f9de3503149992f522a66f69ad7aa6bcdfc8cf549fe8479beb017153a5",
+        "owner-report.json": "604002d51d1aec7819b4833baf22826406f15d20feebb82c73df0d736a5a493c",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "12-svgomg-custom-fast",
+      "arm": "custom-fast",
+      "pair": 1,
+      "application": "svgomg",
+      "mode": "playwright",
+      "tests": 6,
+      "completeMilliseconds": 1619.5592429867247,
+      "ownerBodyMilliseconds": 1463.069867,
+      "wait4CpuSeconds": 1.272989,
+      "sampledPeakRssBytes": 943435776,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "634453f369251f14a377307c3727e578ecd0be3597113edf477901657064be44"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "0d3c4097e91317bfb11de8b245e1bfb5b5f92737f3b5a18ef0d104af183ef6ad",
+      "rawSha256": {
+        "resources.json": "9bcd05293814d683604dea59413e4b0214b17fa3f5d341f7bfcd5af65b50da65",
+        "owner-report.json": "9eade4b564cdb7ed64d8b75856925f11312a40db6950f4b3d8e82fc06c6a1f54",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "13-svgomg-candidate",
+      "arm": "candidate",
+      "pair": 1,
+      "application": "svgomg",
+      "mode": "candidate",
+      "tests": 6,
+      "completeMilliseconds": 1369.350975000998,
+      "ownerBodyMilliseconds": 1211.820073,
+      "wait4CpuSeconds": 0.7088639999999999,
+      "sampledPeakRssBytes": 786100224,
+      "reservation": {
+        "transfers": 6,
+        "claims": 5,
+        "preparationReleases": 5,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "afbbde829f387fb3cf31af4b13e295306f8332ffbb6256ceaef768af5bffc9b4"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "8edf52ec621484290b27e5c973e44351678156bc0ffd2167d98ea2ebb848b680",
+      "rawSha256": {
+        "resources.json": "783d1fd265e654d53f7d287332a349f3455119395277c6d723afcb6519950548",
+        "owner-report.json": "04513e489b28f24af75d42c7850613db573202b20ee952f8ed52fc41729f84a4",
+        "stderr.txt": "5d8183d948ed7ebad45b1db2086f3b93457b38decc8324dab6853ac5629841fd"
+      }
+    },
+    {
+      "name": "14-svgomg-candidate-fast",
+      "arm": "candidate-fast",
+      "pair": 1,
+      "application": "svgomg",
+      "mode": "candidate",
+      "tests": 6,
+      "completeMilliseconds": 1203.6317189922556,
+      "ownerBodyMilliseconds": 1046.634239,
+      "wait4CpuSeconds": 0.743925,
+      "sampledPeakRssBytes": 789196800,
+      "reservation": {
+        "transfers": 6,
+        "claims": 5,
+        "preparationReleases": 5,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "f58b4910453a90415e0ae56c46fca1e6ba41943525d25711dbf3a0304ceed7ee"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "c0d4e42f504a28c7335ae4f8a0621f80f39684d330b3a0a7c1a4691359f433fc",
+      "rawSha256": {
+        "resources.json": "2583ce05c09b126ce76391dbfda936ae43d4480e6f3ac0b6f689ebfa2befa11f",
+        "owner-report.json": "865a33c2904aa8cc63d0e38ef54fbb4604a67fea712fb71a1e17f1d3b2f66b51",
+        "stderr.txt": "eab07d0fb096f8c19c2f88efd7c61694266379318d940909e420b0e027630c28"
+      }
+    },
+    {
+      "name": "15-svgomg-candidate-fast",
+      "arm": "candidate-fast",
+      "pair": 2,
+      "application": "svgomg",
+      "mode": "candidate",
+      "tests": 6,
+      "completeMilliseconds": 1195.8395050023682,
+      "ownerBodyMilliseconds": 1040.546607,
+      "wait4CpuSeconds": 0.7439229999999999,
+      "sampledPeakRssBytes": 788705280,
+      "reservation": {
+        "transfers": 6,
+        "claims": 5,
+        "preparationReleases": 5,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "7f9724cfdf2a2d9292bae146bb6f0c107834165c9faf58bb4df0fd3350978a39"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "c58a31bfb69e4d4ff3ab485f98580cd1e1b45cb51865fdd5dafea67b5d1c13c9",
+      "rawSha256": {
+        "resources.json": "0d28c14558f542981240f95fd742f5cc831b783796896c87248c203e106239e1",
+        "owner-report.json": "76dcb8dc33bc3199e05ca71ba8092b34620ea0275c6d1788a5b79c9a12518f83",
+        "stderr.txt": "f0b8b07c91b337ab97f3909d9aacd7862249a77e48ae3de1780ede398c0b29a9"
+      }
+    },
+    {
+      "name": "16-svgomg-candidate",
+      "arm": "candidate",
+      "pair": 2,
+      "application": "svgomg",
+      "mode": "candidate",
+      "tests": 6,
+      "completeMilliseconds": 1709.07929999521,
+      "ownerBodyMilliseconds": 1553.2831370000001,
+      "wait4CpuSeconds": 0.6989639999999999,
+      "sampledPeakRssBytes": 792043520,
+      "reservation": {
+        "transfers": 6,
+        "claims": 5,
+        "preparationReleases": 5,
+        "singlePhysicalRendererVerified": true
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "90407d35a94c607f781550ed901de472d8985ac3b1b315c1ccb89cd8193fb729"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "cda6af521b6ac824f69334a0fd481d0f2a532f9f07c3b36e78245883fb69949a",
+      "rawSha256": {
+        "resources.json": "f802736d78c6713151f596b14fc83bf3cc39a792b0a0d6f0c740394c8085c862",
+        "owner-report.json": "e92e5cb662a0b5ac2bc4dc945129a700a9b25f0cf31b8736fa6d002c163d0aed",
+        "stderr.txt": "f6b416897a40e01009cb4296934791b535507d7d5207f80125938676b2822160"
+      }
+    },
+    {
+      "name": "17-svgomg-custom-fast",
+      "arm": "custom-fast",
+      "pair": 2,
+      "application": "svgomg",
+      "mode": "playwright",
+      "tests": 6,
+      "completeMilliseconds": 1561.549942009151,
+      "ownerBodyMilliseconds": 1459.654987,
+      "wait4CpuSeconds": 1.289587,
+      "sampledPeakRssBytes": 944439296,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "45698e4175682fbf53af9882a5245d5644579caf8f359b14565e90cf2d9c80a2"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "69b7818dbcce55fa44ff6befc74755ee52a4eecdb471d2c7f3201236582f6f63",
+      "rawSha256": {
+        "resources.json": "a73fddb88d95d08db2d3ff8b5f80c56046b0539a261d5440fcde4fe847183926",
+        "owner-report.json": "33a2f3e946ed55ff071828f65966240410fa3feb6f2e890323cd2d4aacd6fe1d",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "18-svgomg-custom",
+      "arm": "custom",
+      "pair": 2,
+      "application": "svgomg",
+      "mode": "playwright",
+      "tests": 6,
+      "completeMilliseconds": 2085.2217380015645,
+      "ownerBodyMilliseconds": 1929.065713,
+      "wait4CpuSeconds": 1.250234,
+      "sampledPeakRssBytes": 951406592,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "233f8230456e7490f8cec314f0f4f406d1eeeba5d62b13775a643b7c9bc25709"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "578d6f8fc73e7839ef41470342f0a186a8d4fa8aed131d93e83524f42acaf59b",
+      "rawSha256": {
+        "resources.json": "069b8358d32b70331081925c6a8d567514d771e060b81ed288586f53b94d6acc",
+        "owner-report.json": "6ed57ae658f6e9f8a9e7363b4bdf80a2806b9984eedaab216468254189d51f95",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "19-svgomg-stock",
+      "arm": "stock",
+      "pair": 2,
+      "application": "svgomg",
+      "mode": "playwright",
+      "tests": 6,
+      "completeMilliseconds": 1967.5095840066206,
+      "ownerBodyMilliseconds": 1810.593036,
+      "wait4CpuSeconds": 1.1849969999999999,
+      "sampledPeakRssBytes": 946245632,
+      "reservation": {
+        "transfers": 0,
+        "claims": 0,
+        "preparationReleases": 0,
+        "singlePhysicalRendererVerified": false
+      },
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+        "launchRecordSha256": "3456b5b6b5ff991c0eb18457533819931d65338f5242f73022e09cdf33d57845"
+      },
+      "cleanObservedExit": true,
+      "sourceOutcomeFixtureAndRequestReceiptSha256": "3c6cb7131c5e73518884c04b0899d22efa8f142d401cee0602ffdc7ecf0fa5f8",
+      "rawSha256": {
+        "resources.json": "dea564315f0459b18b99ed6a38dfbaf280ec0c98b1de9cff66f1411b129ff5bd",
+        "owner-report.json": "492be3e4f3390d0bc3a48badcccab3067589fca63fbaa10610826c01ca854431",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "pairs": [
+    {
+      "application": "todomvc",
+      "pair": 1,
+      "stockPlaywrightOverFastCandidate": 1.7788108446265356,
+      "samePolicyPlaywrightOverFastCandidate": 1.6657430237288091,
+      "candidateTimeReductionPercent": 20.846925060613042,
+      "stockSampledPeakRssReductionPercent": 14.258682753431874
+    },
+    {
+      "application": "todomvc",
+      "pair": 2,
+      "stockPlaywrightOverFastCandidate": 1.824475795200933,
+      "samePolicyPlaywrightOverFastCandidate": 1.736515358351047,
+      "candidateTimeReductionPercent": 26.91491449828336,
+      "stockSampledPeakRssReductionPercent": 14.569124743406835
+    },
+    {
+      "application": "svgomg",
+      "pair": 1,
+      "stockPlaywrightOverFastCandidate": 1.651171588979426,
+      "samePolicyPlaywrightOverFastCandidate": 1.3455604546070834,
+      "candidateTimeReductionPercent": 12.102029284977256,
+      "stockSampledPeakRssReductionPercent": 16.13783557923326
+    },
+    {
+      "application": "svgomg",
+      "pair": 2,
+      "stockPlaywrightOverFastCandidate": 1.6452956904135092,
+      "samePolicyPlaywrightOverFastCandidate": 1.3058189961754596,
+      "candidateTimeReductionPercent": 30.030191986660903,
+      "stockSampledPeakRssReductionPercent": 16.648991199781836
+    }
+  ],
+  "selectedControls": [
+    {
+      "arm": "candidate",
+      "cases": [
+        {
+          "index": 0,
+          "before": {
+            "start": 392.5,
+            "until": 472.5
+          },
+          "after": {
+            "stopAt": 473.09999999403954,
+            "frames": 6,
+            "click": {
+              "trusted": true,
+              "timestamp": 509.09999999403954,
+              "x": 56,
+              "frames": 6
+            },
+            "count": 1,
+            "rect": {
+              "x": 6,
+              "y": 0,
+              "width": 100,
+              "height": 30,
+              "top": 0,
+              "right": 106,
+              "bottom": 30,
+              "left": 6
+            }
+          },
+          "freshStorage": true
+        },
+        {
+          "index": 1,
+          "before": {
+            "start": 11.5,
+            "until": 91.5
+          },
+          "after": {
+            "stopAt": 94.8999999910593,
+            "frames": 6,
+            "click": {
+              "trusted": true,
+              "timestamp": 130,
+              "x": 56,
+              "frames": 6
+            },
+            "count": 1,
+            "rect": {
+              "x": 6,
+              "y": 0,
+              "width": 100,
+              "height": 30,
+              "top": 0,
+              "right": 106,
+              "bottom": 30,
+              "left": 6
+            }
+          },
+          "freshStorage": true
+        },
+        {
+          "index": 2,
+          "before": {
+            "start": 13.700000002980232,
+            "until": 93.70000000298025
+          },
+          "after": {
+            "stopAt": 97,
+            "frames": 6,
+            "click": {
+              "trusted": true,
+              "timestamp": 132.09999999403954,
+              "x": 56,
+              "frames": 6
+            },
+            "count": 1,
+            "rect": {
+              "x": 6,
+              "y": 0,
+              "width": 100,
+              "height": 30,
+              "top": 0,
+              "right": 106,
+              "bottom": 30,
+              "left": 6
+            }
+          },
+          "freshStorage": true
+        }
+      ],
+      "idle": {
+        "milliseconds": 3003.910815,
+        "cgroupCpuMicroseconds": 208244,
+        "ticks": 60
+      },
+      "cleanObservedExit": true,
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "7a37fe3cbbc4348a6e9233b9c5de2e720b06bf0bec835d8b1ffd58cca7bb7966"
+      },
+      "rawSha256": {
+        "frame-controls.json": "e81c5d63b741b31f9f6d7ebb6545be754ebcb2630a1bb5f5f5d9eb1f5ec39046",
+        "resources.json": "40986aec0148598d77899f72556011da56eb78b341318a0d611a3b2736ed050b"
+      }
+    },
+    {
+      "arm": "candidate-fast",
+      "cases": [
+        {
+          "index": 0,
+          "before": {
+            "start": 384.20000000298023,
+            "until": 464.1000000089407
+          },
+          "after": {
+            "stopAt": 464.1000000089407,
+            "frames": 332,
+            "click": {
+              "trusted": true,
+              "timestamp": 531.7000000029802,
+              "x": 62,
+              "frames": 332
+            },
+            "count": 1,
+            "rect": {
+              "x": 12,
+              "y": 0,
+              "width": 100,
+              "height": 30,
+              "top": 0,
+              "right": 112,
+              "bottom": 30,
+              "left": 12
+            }
+          },
+          "freshStorage": true
+        },
+        {
+          "index": 1,
+          "before": {
+            "start": 7.0999999940395355,
+            "until": 87.09999999403954
+          },
+          "after": {
+            "stopAt": 87.20000000298023,
+            "frames": 387,
+            "click": {
+              "trusted": true,
+              "timestamp": 146.09999999403954,
+              "x": 77,
+              "frames": 387
+            },
+            "count": 1,
+            "rect": {
+              "x": 27,
+              "y": 0,
+              "width": 100,
+              "height": 30,
+              "top": 0,
+              "right": 127,
+              "bottom": 30,
+              "left": 27
+            }
+          },
+          "freshStorage": true
+        },
+        {
+          "index": 2,
+          "before": {
+            "start": 5.299999997019768,
+            "until": 85.29999999701977
+          },
+          "after": {
+            "stopAt": 85.40000000596046,
+            "frames": 404,
+            "click": {
+              "trusted": true,
+              "timestamp": 143.90000000596046,
+              "x": 54,
+              "frames": 404
+            },
+            "count": 1,
+            "rect": {
+              "x": 4,
+              "y": 0,
+              "width": 100,
+              "height": 30,
+              "top": 0,
+              "right": 104,
+              "bottom": 30,
+              "left": 4
+            }
+          },
+          "freshStorage": true
+        }
+      ],
+      "idle": {
+        "milliseconds": 3005.1123500000003,
+        "cgroupCpuMicroseconds": 218458,
+        "ticks": 60
+      },
+      "cleanObservedExit": true,
+      "launch": {
+        "orderedArgumentsVerified": true,
+        "browserObserved": true,
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+        "launchRecordSha256": "b6655adeea71b93ce69d3d89a5f24ffe37d952c26907039445d8f00cf2fbc163"
+      },
+      "rawSha256": {
+        "frame-controls.json": "40a68cb2944ed4dac55c2cefc6901164412fbc19c5cc0910f21ca6e24f930d98",
+        "resources.json": "bc67bafb48f7093af58d0759c9cef94282bac9ab2e243abef7348eecc29423f5"
+      }
+    }
+  ],
+  "inputs": {
+    "entries": 1388,
+    "unchanged": true,
+    "manifestSha256": "5e1c340810ae9eade44fc7e0ba462a1893925da83d6baaf54310b3d398ed8d72"
+  },
+  "priorSlimSchedulerAttempt": {
+    "inputs": {
+      "entries": 1385,
+      "unchanged": true,
+      "manifestSha256": "00de9eec22e7ea2f9b569343f29ce10ce77d0d30f144828d2bd539114b08513a"
+    },
+    "completedRows": [
+      {
+        "name": "00-todomvc-stock",
+        "arm": "stock",
+        "pair": 1,
+        "application": "todomvc",
+        "mode": "playwright",
+        "tests": 24,
+        "completeMilliseconds": 3804.362876995583,
+        "ownerBodyMilliseconds": 3704.19676,
+        "wait4CpuSeconds": 2.2427580000000003,
+        "sampledPeakRssBytes": 907448320,
+        "reservation": {
+          "transfers": 0,
+          "claims": 0,
+          "preparationReleases": 0,
+          "singlePhysicalRendererVerified": false
+        },
+        "launch": {
+          "orderedArgumentsVerified": true,
+          "browserObserved": true,
+          "browserSha256": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+          "launchRecordSha256": "a91b1f753d8ae892656aa93bab6074326b772f62e4d417cb1c061c9b30244494"
+        },
+        "cleanObservedExit": true,
+        "sourceOutcomeFixtureAndRequestReceiptSha256": "1f3035356c6cec945488737965872e551dbbfca6c3456d699ab1ff7b59e3baf1",
+        "rawSha256": {
+          "resources.json": "bfc183a4ecfcce12e038148c706c093a1b51d83c8cb5b8c3d98f982b778c6330",
+          "owner-report.json": "5b390178135c96bc3737bc4cce31ce9dd209583f2de866feaa7a9ce7c2252990",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "01-todomvc-custom",
+        "arm": "custom",
+        "pair": 1,
+        "application": "todomvc",
+        "mode": "playwright",
+        "tests": 24,
+        "completeMilliseconds": 4221.734147009556,
+        "ownerBodyMilliseconds": 4065.3049410000003,
+        "wait4CpuSeconds": 2.443635,
+        "sampledPeakRssBytes": 928321536,
+        "reservation": {
+          "transfers": 0,
+          "claims": 0,
+          "preparationReleases": 0,
+          "singlePhysicalRendererVerified": false
+        },
+        "launch": {
+          "orderedArgumentsVerified": true,
+          "browserObserved": true,
+          "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+          "launchRecordSha256": "b19a5938609eddde0447f5c349b6bf1bce72694c510f2eb2290d1b562feaca70"
+        },
+        "cleanObservedExit": true,
+        "sourceOutcomeFixtureAndRequestReceiptSha256": "e5f417311192d87064f1b8b78efa55ba2c72dd9cfcd130467aa9d5f7d520234a",
+        "rawSha256": {
+          "resources.json": "ff0dd458ec1f94c938395044d82af5bb27be7c7e00a2dd479e15d99890d7ac0a",
+          "owner-report.json": "3585f2c76745df97e0ef08c9714e9bb25c4aafc21aad52d9fe49cdddf933c211",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "02-todomvc-custom-fast",
+        "arm": "custom-fast",
+        "pair": 1,
+        "application": "todomvc",
+        "mode": "playwright",
+        "tests": 24,
+        "completeMilliseconds": 3694.052834995091,
+        "ownerBodyMilliseconds": 3536.064794,
+        "wait4CpuSeconds": 2.709229,
+        "sampledPeakRssBytes": 934797312,
+        "reservation": {
+          "transfers": 0,
+          "claims": 0,
+          "preparationReleases": 0,
+          "singlePhysicalRendererVerified": false
+        },
+        "launch": {
+          "orderedArgumentsVerified": true,
+          "browserObserved": true,
+          "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+          "launchRecordSha256": "5fae32f6b511f0a5efaa972e5931540670859b99d3bc7963f327ea79509dfb6a"
+        },
+        "cleanObservedExit": true,
+        "sourceOutcomeFixtureAndRequestReceiptSha256": "14c77686d870e28eb999c2e176776d6d002638423b789a44c441b9c2c317a200",
+        "rawSha256": {
+          "resources.json": "1939bb081e3a7a5f3d744c120e09a97c19c128547acc5864c7c5301f05a5ad9c",
+          "owner-report.json": "8d74b04ad1e35ff6219493647632a32366f1d2aac6def0cabd0355c518e2345b",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "03-todomvc-candidate",
+        "arm": "candidate",
+        "pair": 1,
+        "application": "todomvc",
+        "mode": "candidate",
+        "tests": 24,
+        "completeMilliseconds": 2697.7073770103743,
+        "ownerBodyMilliseconds": 2540.6639450000002,
+        "wait4CpuSeconds": 1.4220249999999999,
+        "sampledPeakRssBytes": 778252288,
+        "reservation": {
+          "transfers": 24,
+          "claims": 23,
+          "preparationReleases": 23,
+          "singlePhysicalRendererVerified": true
+        },
+        "launch": {
+          "orderedArgumentsVerified": true,
+          "browserObserved": true,
+          "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+          "launchRecordSha256": "3a49cbfab6976d52e95e0ce78d2a710a814f75cb2b70893e1522500de11c7624"
+        },
+        "cleanObservedExit": true,
+        "sourceOutcomeFixtureAndRequestReceiptSha256": "ca9239ff915c9a539b96344b0ca5adba6edb87838c8c259773cfaf1704176160",
+        "rawSha256": {
+          "resources.json": "50c150906105216bad4942fe49e9a248e3dd751b74153dec54972c98ca101937",
+          "owner-report.json": "85d815e27801e304a75defb3d17b5309284531643432638ba9bcfa11406bdca7",
+          "stderr.txt": "d846126b3c910e11ba0a2505f32cab3898870b4a1dcc44fe770b655238cc6f90"
+        }
+      }
+    ],
+    "failedAttempt": {
+      "name": "04-todomvc-candidate-fast",
+      "completeMilliseconds": 12851.841579002212,
+      "exitCode": 1,
+      "passedTestsBeforeFailure": 4,
+      "failedTest": "tests/completing-todos/should-complete-multiple-todos.spec.ts",
+      "failure": "Renderer transfer exceeded its private preparation budget",
+      "transferTimeoutSeconds": 12,
+      "transfers": 4,
+      "claims": 4,
+      "preparationReleases": 4,
+      "missingAfterAllReport": true,
+      "observedCleanupWithoutIntervention": true,
+      "plannedButUnexecutedLaunches": 15,
+      "rawSha256": {
+        "resources.json": "5254e78aedf23ef88cadef9d7055f78e8ac04afeed3e6beb790e73edb1d9eeaf",
+        "stderr.txt": "a06edc1903f0aae8bde5ab09eb00702dc0fd8efeba2fcc922112b0553a96ffa1",
+        "junit.xml": "f884b51824539297d38706a12d40fd41515d6498c427a81bb0a957ae6e3b5bdd",
+        "owner-report.json": "b290b72ddf6ffcff8b15a0f897307f2034f8f90e64ab5c45242ff993773a6a00"
+      }
+    },
+    "initialControlFailure": "First version started the 80 ms motion budget before the first frame and could fail the multiple-frame assertion. Retained; corrected control starts inside the first callback and preserves observations before asserting. Subsequent isolated motion/storage/idle controls passed.",
+    "verboseDiagnostic": {
+      "testsPassed": 24,
+      "diagnosticOnly": true,
+      "receiptSha256": "cc42d8ab614c643efdf55066a54c887a9ee4163ba7ae7134dcc1554223545cdd",
+      "limitation": "Verbose logging perturbs scheduling; this successful diagnostic does not invalidate either failed run."
+    },
+    "ringDiagnostic": {
+      "exitCode": 1,
+      "phases": [
+        {
+          "diagnosticPhase": "transfer-start",
+          "elapsedMicroseconds": 420960
+        },
+        {
+          "diagnosticPhase": "context-inventory-start",
+          "elapsedMicroseconds": 420960
+        },
+        {
+          "diagnosticPhase": "target-inventory-start",
+          "elapsedMicroseconds": 421086
+        },
+        {
+          "diagnosticPhase": "process-inventory-start",
+          "elapsedMicroseconds": 421141
+        },
+        {
+          "action": "inspect",
+          "diagnosticPhase": "observe-start",
+          "elapsedMicroseconds": 421281
+        },
+        {
+          "action": "inspect",
+          "diagnosticPhase": "observe-reply",
+          "elapsedMicroseconds": 423021
+        },
+        {
+          "action": "retain",
+          "diagnosticPhase": "observe-start",
+          "elapsedMicroseconds": 423022
+        },
+        {
+          "action": "retain",
+          "diagnosticPhase": "observe-reply",
+          "elapsedMicroseconds": 423744
+        },
+        {
+          "diagnosticPhase": "close-target-start",
+          "elapsedMicroseconds": 423745
+        },
+        {
+          "diagnosticPhase": "close-target-reply",
+          "elapsedMicroseconds": 423822,
+          "outcome": "\"resourceDisposed\""
+        },
+        {
+          "action": "inspect",
+          "diagnosticPhase": "observe-start",
+          "elapsedMicroseconds": 423822
+        },
+        {
+          "action": "inspect",
+          "diagnosticPhase": "observe-reply",
+          "elapsedMicroseconds": 424698
+        },
+        {
+          "action": "inspect",
+          "diagnosticPhase": "observe-start",
+          "elapsedMicroseconds": 427791
+        }
+      ],
+      "finding": "After target-close acknowledgement, renderer still reported one frame/view. The next inspect did not return before the unchanged outer transfer timeout. No preparation detach or retirement GC was reached.",
+      "stderrSha256": "2a4d7e084222d048c9439fe4b8adecc023364e88bbd3552c9e39c5faf111898f"
+    },
+    "debugger": {
+      "finding": "Renderer main thread blocked in LayerTreeHost::WaitForCommitCompletion during Document::Shutdown and WebViewImpl::Close; compositor thread idle in epoll_wait.",
+      "exactSchedulerRootCauseProven": false,
+      "limitation": "Private renderer debug permission, renderer command prefix and gdb attachment perturb launch and execution. Diagnostic only; no host ptrace policy changed.",
+      "stackSha256": "b18bddac89dfeb94c70dda326c94099019abdbbdf7c39793b35f1b9a65d32724"
+    },
+    "diagnosticDriverRestored": true,
+    "diagnosticModuleRestored": true,
+    "nativeBrowserRebuilt": false
+  },
+  "performanceAdmission": false,
+  "fullResourceAdmission": false,
+  "limitations": [
+    "Only two opposite-order pairs at one worker and two applications; no confidence interval or final majority-scenario result.",
+    "Selected controls cover real-time movement, trusted hit geometry, fresh storage and a gross isolated idle CPU guard; not all animation, screenshot, timer or context-isolation behavior.",
+    "The private bridge lacks general fixture graphs, hook ordering, retries, worker replacement, timeout cancellation and requested reporters/artifacts. Its bail path skipped afterAll reporting on the failed attempt.",
+    "wait4 CPU is inclusive original-owner usage rolled up by actual reaping, not complete tree accounting. Peak RSS is a sampled concurrent sum, not exact charged memory.",
+    "Pre-exec argument records are joined to observed process identities; native feature behavior has prior source/build provenance rather than new per-call instrumentation in these timing runs.",
+    "The classic scheduler result is a separate composition, not a fix or proof of root cause for the failed SlimScheduler mode.",
+    "Private raw harnesses, native binaries and diagnostics are retained locally; sanitized evidence alone is not a standalone reproducibility package."
+  ]
+}

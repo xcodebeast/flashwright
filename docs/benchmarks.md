@@ -58,6 +58,21 @@ Nine selected parser cases and nine bridge controls per utility mode pass. Reser
 
 Keep this composition private. The bridge still lacks general fixture/hook semantics, retries, failure worker replacement, timeout cancellation and requested artifacts. This is a useful measurement of combined startup and renderer savings, not a compatible runner release or evidence for the majority-scenario 2× target. Preserve the gap and do not expand the unchanged composition's campaign.
 
+## Independent runner, renderer reuse and frame scheduling on Linux
+
+The [combined frame-scheduling screen](../benchmarks/results/bun-reuse-frame-composition-linux-2026-10-21.json) adds uncapped frames and the existing classic scheduler early idle deadline to the private Bun bridge and physical renderer reuse. Twenty complete one-worker launches pass all 300 original tests. Five arms include stock Playwright, ordinary and accelerated custom-browser Playwright, and ordinary and accelerated candidates. The second pair reverses the first pair's order. Time includes fixture validation/startup, runner/browser startup, test execution, unused final reservations and observed process drain.
+
+| Application | Stock Playwright, first / reverse pair | Accelerated candidate, first / reverse pair | Stock / candidate | Time saved versus ordinary candidate |
+| --- | ---: | ---: | ---: | ---: |
+| TodoMVC, 24 tests | 3.849 / 3.804 s | 2.164 / 2.085 s | 1.779× / 1.824× | 20.85% / 26.91% |
+| SVGOMG, 6 tests | 1.987 / 1.968 s | 1.204 / 1.196 s | 1.651× / 1.645× | 12.10% / 30.03% |
+
+No pair reaches 2×. The prospective rule required at least 20% savings versus the ordinary candidate in both pairs for both applications; SVGOMG's first pair fails it. Do not promote this composition or launch the final acceptance campaign on these results. All launch policies, original test/fixture callback identities, request contracts and reservation host/process joins verify. Each candidate run retains one physical renderer while transferring fresh contexts. Selected real-time motion, trusted input, fresh-storage and isolated idle-CPU controls pass; these do not establish complete frame, screenshot or isolation compatibility.
+
+The preceding SlimScheduler composition failed on TodoMVC's fifth test after four passing captures. It reached the unchanged 12-second renderer-transfer deadline; fifteen planned captures were not run. A bounded diagnostic reproduced the failure after target-close acknowledgement, before retirement GC. A debugger found the renderer main thread waiting for compositor commit during document shutdown while the compositor thread was idle. This localizes the stall but does not prove its exact scheduler cause. A separate verbose diagnostic passed all 24 tests; its logging perturbs timing and does not erase the failures. All observations are retained. The completed campaign explicitly disables SlimScheduler and uses the existing classic scheduler policy; it is a separate composition, not a claimed fix for SlimScheduler.
+
+The bridge remains private: general fixture graphs, hook ordering, retries, worker replacement, cancellation and requested artifacts remain incomplete. The failed run also exposed skipped final reporting under Bun's bail behavior. Two pairs on two applications are engineering evidence, not confidence intervals or the nine-scenario, one/four-worker, eight-pair release result. CPU and memory remain limited observations. No product runtime or native-browser change is adopted by this checkpoint.
+
 ## Retirement garbage-collection attribution on Linux
 
 The [retirement attribution checkpoint](../benchmarks/results/retirement-gc-attribution-linux-2026-10-21.json) measures the existing native collection policy before investing in another browser build. Four instrumented one-worker runs of the private Bun bridge with renderer reuse pass all 60 original tests. The traces contain 60 nonoverlapping retirement calls, matching the reservation counts and renderer identities.
