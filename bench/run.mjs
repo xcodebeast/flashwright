@@ -47,22 +47,23 @@ for (const engine of engines) {
   const config = { testDir: './tests', workers, retries: 0, fullyParallel: false, timeout: 30000, expect: { timeout: 5000 },
     reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.HTML_REPORT ? [['html', { open: 'never', outputFolder: join(project, 'html-report') }]] : []), ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')], [resolve(import.meta.dirname, 'worker-timeline.cjs')]] : [])],
     outputDir: join(project, 'results'),
-    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(workload ? { baseURL: server.url } : {}), ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
+    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
   if (shop) {
     Object.assign(config, { fullyParallel: true, projects: [
       { name: 'setup', testMatch: /.*\.setup\.ts/.source },
       { name: 'chromium', dependencies: ['setup'], use: { storageState: 'auth.json' } },
     ] });
-    config.use.baseURL = server.url;
   }
-  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); export default defineConfig(config);\n`);
+  // The config stays byte-identical across runs, like a real project's, so the transform cache
+  // hits; the app URL comes from the environment.
+  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); if (process.env.BENCH_BASE_URL) config.use.baseURL = process.env.BENCH_BASE_URL; export default defineConfig(config);\n`);
   projects[engine] = { project, definition, variant };
 }
 
 async function runOnce(engine) {
   const { project, definition, variant } = projects[engine];
   await rm(join(project, 'report.json'), { force: true });
-  const env = { ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt') };
+  const env = { ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
   for (const assignment of variant.split('+').filter(Boolean)) { const [k, v = '1'] = assignment.split('='); env[k] = v; }
   env.BENCH_T0 = String(Date.now());
   const started = performance.now();
