@@ -99,6 +99,7 @@ test('should reuse browser with special characters in the launch options', async
   expect(workerIndex2).not.toBe(workerIndex1);
 });
 
+// Flashwright: recycled contexts report the same steps as new ones.
 test('should produce correct test steps', async ({ runInlineTest, runServer }) => {
   const server = await runServer();
   const result = await runInlineTest({
@@ -134,6 +135,8 @@ test('should produce correct test steps', async ({ runInlineTest, runServer }) =
     'onStepEnd [pw:api] connect',
     'onStepEnd [fixture] Fixture "browser"',
     'onStepBegin [fixture] Fixture "context"',
+    'onStepBegin [pw:api] Create context',
+    'onStepEnd [pw:api] Create context',
     'onStepEnd [fixture] Fixture "context"',
     'onStepBegin [fixture] Fixture "page"',
     'onStepBegin [pw:api] Create page',
@@ -148,6 +151,8 @@ test('should produce correct test steps', async ({ runInlineTest, runServer }) =
     'onStepBegin [fixture] Fixture "page"',
     'onStepEnd [fixture] Fixture "page"',
     'onStepBegin [fixture] Fixture "context"',
+    'onStepBegin [pw:api] Close context',
+    'onStepEnd [pw:api] Close context',
     'onStepEnd [fixture] Fixture "context"',
     'onStepEnd [hook] After Hooks'
   ]);

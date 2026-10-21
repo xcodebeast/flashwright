@@ -20,6 +20,7 @@ import { eventsHelper } from '@utils/eventsHelper';
 
 import { addSuggestedRebaseline } from './rebase';
 import { WorkerHost } from './workerHost';
+import { ensureSpareStandby, recordWorkerCount } from './workerStandby';
 import { ipc, test as testNs } from '../common';
 import { addLocationAndSnippetToError } from '../reporters/internalReporter';
 import { serializeError } from '../util';
@@ -170,8 +171,12 @@ export class Dispatcher {
 
     // 4. When worker encounters error, we stop it and create a new one.
     //    We also do not keep the worker alive if it cannot serve any more jobs.
-    if (result.didFail)
+    if (result.didFail) {
       void worker.stop(true /* didFail */);
+      // Flashwright: a failure means a replacement worker; have the next one ready in advance.
+      if (result.remainingJob || this._queue.length)
+        ensureSpareStandby();
+    }
     else if (this._isWorkerRedundant(worker))
       void worker.stop();
 
@@ -230,6 +235,8 @@ export class Dispatcher {
     // 1. Allocate workers.
     for (let i = 0; i < this._testRun.config.config.workers; i++)
       this._workerSlots.push({});
+    // Flashwright: the next run of this project pre-spawns as many workers as start now.
+    recordWorkerCount(Math.min(this._workerSlots.length, this._queue.length));
     // 2. Schedule enough jobs.
     this._scheduleJobs();
     this._checkFinished();

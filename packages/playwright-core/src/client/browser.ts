@@ -31,6 +31,9 @@ import type { BrowserContextOptions, LaunchOptions, Logger } from './types';
 import type * as api from '../../types/types';
 import type * as channels from './channels';
 
+// Flashwright: marks a newContext()/close() call made by the test runner for a recycled context.
+const kRecycleContext = Symbol.for('flashwright.recycleContext');
+
 export class Browser extends ChannelOwner<channels.BrowserChannel> implements api.Browser {
   readonly _contexts = new Set<BrowserContext>();
   private _isConnected = true;
@@ -61,6 +64,12 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
   }
 
   async newContext(options: BrowserContextOptions = {}): Promise<BrowserContext> {
+    // Flashwright: the test runner asks for a recycled context through the public method, so the
+    // call is logged, traced and reported exactly like creating a new context.
+    if ((options as any)[kRecycleContext]) {
+      const { [kRecycleContext]: _, ...rest } = options as any;
+      return await this._innerNewContext(rest, true);
+    }
     return await this._innerNewContext(options, false);
   }
 

@@ -194,6 +194,9 @@ export class Page extends SdkObject<PageEventMap> {
   video: Artifact | undefined;
   private _opener: Page | undefined;
   readonly isStorageStatePage: boolean;
+  // Flashwright: a tab opened in advance for a recycled context. Clients do not see it until a test
+  // asks the context for a new page.
+  private _heldForRecycle: boolean;
   private _locatorHandlers = new Map<number, { selector: string, noWaitAfter?: boolean, resolved?: ManualPromise<void> }>();
   private _lastLocatorHandlerUid = 0;
   private _locatorHandlerRunningCounter = 0;
@@ -221,6 +224,7 @@ export class Page extends SdkObject<PageEventMap> {
       this.pdf = delegate.pdf.bind(delegate);
     this.coverage = delegate.coverage ? delegate.coverage() : null;
     this.isStorageStatePage = browserContext.isCreatingStorageStatePage();
+    this._heldForRecycle = browserContext.isPreparingRecycledPage();
   }
 
   async reportAsNew(opener: Page | undefined, error?: Error) {
@@ -245,6 +249,15 @@ export class Page extends SdkObject<PageEventMap> {
       this.frameManager.createDummyMainFrameIfNeeded();
     }
     this._initialized = error || this;
+    if (!this._heldForRecycle)
+      this._announce();
+
+    // Note: it is important to resolve _initializedPromise at the end,
+    // so that anyone who awaits waitForInitializedOrError got a ready and reported page.
+    this._initializedPromise.resolve(this._initialized);
+  }
+
+  private _announce() {
     this.emitOnContext(BrowserContext.Events.Page, this);
 
     for (const pageError of this._pageErrors)
@@ -259,10 +272,19 @@ export class Page extends SdkObject<PageEventMap> {
       this.emit(Page.Events.Close);
     else if (!this.isStorageStatePage)
       this.instrumentation.onPageOpen(this);
+  }
 
-    // Note: it is important to resolve _initializedPromise at the end,
-    // so that anyone who awaits waitForInitializedOrError got a ready and reported page.
-    this._initializedPromise.resolve(this._initialized);
+  isHeldForRecycle(): boolean {
+    return this._heldForRecycle;
+  }
+
+  // Reports a held tab to clients as if it had just been created.
+  revealHeldPage() {
+    if (!this._heldForRecycle)
+      return;
+    this._heldForRecycle = false;
+    if (this._initialized)
+      this._announce();
   }
 
   initializedOrUndefined(): Page | undefined {

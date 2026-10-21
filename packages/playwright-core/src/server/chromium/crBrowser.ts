@@ -593,6 +593,10 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
     return !!this._browserContextId;
   }
 
+  protected override async doFreezePages(pages: Page[]): Promise<void> {
+    await Promise.all(pages.map(page => (page.delegate as CRPage)._mainFrameSession._client.send('Page.setWebLifecycleState', { state: 'frozen' }).catch(() => {})));
+  }
+
   protected override async doClearSiteData(page: Page, origins: string[]): Promise<void> {
     // Storage.clearDataForOrigin acts on the storage partition of the session's browser context.
     const session = (page.delegate as CRPage)._mainFrameSession._client;
