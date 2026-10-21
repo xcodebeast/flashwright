@@ -42,6 +42,21 @@ export function setRawStackFormatter(formatter: typeof rawStackFormatter) {
   rawStackFormatter = formatter;
 }
 
+// Flashwright: errors created ahead of time for calls that rarely fail (a pending protocol call,
+// an operation's timeout) only record where the call was made, for debugging. Node's default
+// depth is enough for that, and much cheaper than the deep stacks the test runner enables.
+export function withShallowStack<T>(create: () => T): T {
+  const stackTraceLimit = Error.stackTraceLimit;
+  if (stackTraceLimit <= 10)
+    return create();
+  Error.stackTraceLimit = 10;
+  try {
+    return create();
+  } finally {
+    Error.stackTraceLimit = stackTraceLimit;
+  }
+}
+
 export function captureRawStack(): RawStack {
   const stackTraceLimit = Error.stackTraceLimit;
   Error.stackTraceLimit = 50;

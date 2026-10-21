@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { withShallowStack } from '@utils/stackTrace';
 import { EventEmitter } from 'events';
 
 import { debugLogger } from '@utils/debugLogger';
@@ -201,7 +202,7 @@ export class BidiSession extends EventEmitter {
     const messageObj = { id, method, params };
     this._rawSend(messageObj);
     return new Promise<bidiCommands.Commands[T]['returnType']>((resolve, reject) => {
-      this._callbacks.set(id, { resolve, reject, error: new ProtocolError('error', method) });
+      this._callbacks.set(id, { resolve, reject, error: withShallowStack(() => new ProtocolError('error', method)) });
     });
   }
 
