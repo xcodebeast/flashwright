@@ -578,3 +578,20 @@ The subsequent [video owner checkpoint](../compatibility/evidence/video-owner-re
 Direct comparison against the preserved pre-fix binary reproduces both blank video in the second/third reused contexts and roughly 3.15–3.17 mean CPU cores during a three-second idle window. The corrected browser displays the red video in all three contexts and uses 0.070–0.074 mean cores, with both default and explicit software-decoder settings. Native records confirm that the same physical renderer still transfers between distinct logical hosts. All 50 focused native tests and 60 original TodoMVC/SVGOMG tests at one/four workers pass, with natural process cleanup.
 
 This also corrects the earlier graphics evidence: decoded video pixels and a CSS screenshot pixel passed, but video presentation in the screenshot had not been checked. The retained old screenshots show that failure. The new checks inspect the actual video region. These results close the selected ended-video regression; live MediaStream/WebRTC, closure during playback, wider codec coverage, full resource admission and the final performance campaign remain open.
+
+## Shared browser across independent workers
+
+The [shared-browser screen](../benchmarks/results/shared-browser-linux-2026-10-21.json) tests one suite-owned browser instead of one browser per worker. Each worker keeps its own Rust driver and CDP connection through a private pipe-to-WebSocket bridge. Fresh contexts retain dispose-on-detach, and closing one worker's browser lease leaves other workers running. Selected controls verify same-origin storage isolation, independent client closure and cleanup after abrupt client death.
+
+The matched screen includes browser/server startup, original test callbacks and all shutdown work under the same four-core quota and 8 GiB limit. Shared-browser startup overlaps ordinary suite discovery. Both arms use the corrected custom browser, physical renderer reuse, fast frame scheduling and explicit software video decoding. Each timing cell shows two opposite-order observations in seconds.
+
+| Application | Workers | Separate browsers | Shared browser | Shared elapsed change |
+| --- | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | 2.008 / 1.991 | 2.259 / 2.252 | 12.5% / 13.1% slower |
+| TodoMVC | 4 | 1.666 / 1.775 | 2.269 / 2.356 | 36.2% / 32.8% slower |
+| SVGOMG | 1 | 0.982 / 0.981 | 1.020 / 1.030 | 3.9% / 5.0% slower |
+| SVGOMG | 4 | 1.852 / 1.339 | 1.251 / 1.151 | 32.5% / 14.0% faster |
+
+All 240 matched test executions pass. Sharing reduces four-worker sampled RSS by roughly 39–43%, but fails the declared speed gate: at least 20% less complete time for both four-worker applications in both orders, without more than 5% regression at one worker. Separate browsers remain selected. This comparison includes transport-bridge overhead; it does not isolate browser count or rule out every native shared-browser architecture.
+
+The evidence also retains 120 preliminary test executions, the initial transport's approximately five-second shutdown delay, and a launch-receipt collision in the first isolation harness. The corrected transport exits after its WebSocket closes; every matched native browser exits normally with no remaining contexts. These are engineering observations, not a Playwright comparison, final resource admission or the nine-scenario performance gate.
