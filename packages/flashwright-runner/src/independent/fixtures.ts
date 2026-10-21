@@ -14,6 +14,18 @@ export interface NativeTestFixtures {
   contextOptions: BrowserContextOptions; baseURL: string | undefined;
   viewport: ViewportSize | null; storageState: BrowserContextOptions['storageState'];
   actionTimeout: number; navigationTimeout: number;
+  screen: BrowserContextOptions['screen'];
+  userAgent: BrowserContextOptions['userAgent'];
+  deviceScaleFactor: BrowserContextOptions['deviceScaleFactor'];
+  isMobile: BrowserContextOptions['isMobile'];
+  hasTouch: BrowserContextOptions['hasTouch'];
+  ignoreHTTPSErrors: BrowserContextOptions['ignoreHTTPSErrors'];
+  javaScriptEnabled: BrowserContextOptions['javaScriptEnabled'];
+  acceptDownloads: BrowserContextOptions['acceptDownloads'];
+  colorScheme: BrowserContextOptions['colorScheme'];
+  reducedMotion: BrowserContextOptions['reducedMotion'];
+  forcedColors: BrowserContextOptions['forcedColors'];
+  contrast: BrowserContextOptions['contrast'];
   _contextDefaults: void;
 }
 
@@ -39,10 +51,24 @@ export const nativeFixtures: Fixtures<NativeTestFixtures, NativeWorkerFixtures> 
   baseURL: [async ({ contextOptions }, use) => use(contextOptions.baseURL ?? process.env.PLAYWRIGHT_TEST_BASE_URL), { option: true }],
   viewport: [async ({ contextOptions }, use) => use(contextOptions.viewport === undefined ? { width: 1280, height: 720 } : contextOptions.viewport), { option: true }],
   storageState: [async ({ contextOptions }, use) => use(contextOptions.storageState), { option: true }],
+  screen: [async ({ contextOptions }, use) => use(contextOptions.screen), { option: true }],
+  userAgent: [async ({ contextOptions }, use) => use(contextOptions.userAgent), { option: true }],
+  deviceScaleFactor: [async ({ contextOptions }, use) => use(contextOptions.deviceScaleFactor), { option: true }],
+  isMobile: [async ({ contextOptions }, use) => use(contextOptions.isMobile), { option: true }],
+  hasTouch: [async ({ contextOptions }, use) => use(contextOptions.hasTouch), { option: true }],
+  ignoreHTTPSErrors: [async ({ contextOptions }, use) => use(contextOptions.ignoreHTTPSErrors), { option: true }],
+  javaScriptEnabled: [async ({ contextOptions }, use) => use(contextOptions.javaScriptEnabled), { option: true }],
+  acceptDownloads: [async ({ contextOptions }, use) => use(contextOptions.acceptDownloads), { option: true }],
+  colorScheme: [async ({ contextOptions }, use) => use(contextOptions.colorScheme), { option: true }],
+  reducedMotion: [async ({ contextOptions }, use) => use(contextOptions.reducedMotion), { option: true }],
+  forcedColors: [async ({ contextOptions }, use) => use(contextOptions.forcedColors), { option: true }],
+  contrast: [async ({ contextOptions }, use) => use(contextOptions.contrast), { option: true }],
   actionTimeout: [0, { option: true }], navigationTimeout: [0, { option: true }],
-  _contextDefaults: [async ({ contextOptions, baseURL, viewport, storageState, actionTimeout, navigationTimeout }, use) => {
+  _contextDefaults: [async ({ contextOptions, baseURL, viewport, storageState, screen, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled, acceptDownloads, colorScheme, reducedMotion, forcedColors, contrast, actionTimeout, navigationTimeout }, use) => {
+    const inherited = { screen, userAgent, deviceScaleFactor, isMobile, hasTouch, ignoreHTTPSErrors, javaScriptEnabled, acceptDownloads, colorScheme, reducedMotion, forcedColors, contrast };
+    const forwarded = Object.fromEntries(Object.entries(inherited).filter(([, value]) => value !== undefined));
     const restore = runnerIntegration.installContextDefaults(1, {
-      contextOptions: { ...contextOptions, viewport, ...(baseURL === undefined ? {} : { baseURL }), ...(storageState === undefined ? {} : { storageState }) },
+      contextOptions: { ...contextOptions, ...forwarded, viewport, ...(baseURL === undefined ? {} : { baseURL }), ...(storageState === undefined ? {} : { storageState }) },
       actionTimeout, navigationTimeout,
     });
     try { await use(); } finally { restore(); }

@@ -6,11 +6,15 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { failure } from '@flashwright/core';
 import { currentFiniteTestInfo, type FiniteTestInfo, type SuiteTestResult } from './suite-runtime.js';
 import type { PlannedTest } from './suite-collector.js';
+import type { IndependentConfig } from './config.js';
 
 export interface IndependentAttachment { name: string; path: string; contentType: string }
 export interface IndependentStep { title: string; started: number; duration: number; status: 'running' | 'passed' | 'failed'; parent: number | null; error?: string }
 export interface IndependentTestInfo extends FiniteTestInfo {
   readonly outputDir: string;
+  readonly titlePath: readonly string[];
+  readonly project: IndependentConfig & { readonly name: string };
+  readonly annotations: { type: string; description?: string }[];
   readonly attachments: IndependentAttachment[];
   outputPath(...segments: string[]): string;
   attach(name: string, options: { body?: string | Buffer; path?: string; contentType?: string }): Promise<void>;
@@ -24,7 +28,7 @@ export function currentIndependentInfo(): IndependentTestInfo {
   if (!output?.open) throw failure('InvalidArgumentError', 'test.info', 'independent attempt output scope has ended');
   return output.info;
 }
-export function beginOutput(test: PlannedTest, info: FiniteTestInfo, root: string): void {
+export function beginOutput(test: PlannedTest, info: FiniteTestInfo, root: string, project?: IndependentConfig & { readonly name: string }): void {
   const outputDir = join(root, createHash('sha256').update(test.id).digest('hex').slice(0, 20) + '-retry' + info.retry);
   const outputPath = (...segments: string[]): string => {
     const target = resolve(outputDir, ...segments);
@@ -33,7 +37,7 @@ export function beginOutput(test: PlannedTest, info: FiniteTestInfo, root: strin
     return target;
   };
   const attachments: IndependentAttachment[] = [];
-  const enriched = Object.assign(info, { outputDir, attachments, outputPath, attach });
+  const enriched = Object.assign(info, { outputDir, titlePath: test.titlePath, project: project!, annotations: [] as { type: string; description?: string }[], attachments, outputPath, attach });
   const output: AttemptOutput = { info: enriched, open: true, pending: new Set(), errors: [], steps: [] };
   outputs.set(info, output); byId.set(test.id, output);
   function attach(name: string, options: { body?: string | Buffer; path?: string; contentType?: string }): Promise<void> {
@@ -67,7 +71,7 @@ export async function finishOutput(result: SuiteTestResult): Promise<void> {
   if (!owner) throw new Error('Missing original attempt output');
   owner.open = false;
   await Promise.allSettled([...owner.pending]);
-  const record = { id: result.test.id, retry: owner.info.retry, attachments: owner.info.attachments, steps: owner.steps, attachmentErrors: owner.errors.map(String) };
+  const record = { id: result.test.id, retry: owner.info.retry, annotations: owner.info.annotations, attachments: owner.info.attachments, steps: owner.steps, attachmentErrors: owner.errors.map(String) };
   await mkdir(owner.info.outputDir, { recursive: true });
   if (result.errors.length) {
     const errors = result.errors.map(e => e.error instanceof Error ? e.error.stack ?? e.error.message : String(e.error)).join('\n\n').slice(0, 32768);

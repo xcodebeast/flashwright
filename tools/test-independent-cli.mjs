@@ -30,6 +30,7 @@ custom('native fixtures and assertions', async ({ page, message }) => {
   await page.setContent('<button onclick="this.textContent=event.isTrusted?\\'clicked\\':\\'untrusted\\'">ready</button>');
   await test.step('click button', async () => { await page.locator('button').click(); });
   await expect(page.locator('button')).toHaveText('clicked');
+  expect(await page.evaluate(() => ({ userAgent: navigator.userAgent, scale: devicePixelRatio, dark: matchMedia('(prefers-color-scheme: dark)').matches }))).toEqual({ userAgent: 'Flashwright independent integration', scale: 2, dark: true });
   expect(message).toBe('configured');
   expect(readFileSync(test.info().outputPath('created-by-test.txt'),'utf8')).toBe('output-path-ready');
   await test.info().attach('result', { body: Buffer.from('retained bytes'), contentType: 'text/plain' });
@@ -60,7 +61,7 @@ for (const runtimeName of ['bun', 'node22', 'node24']) {
   execFileSync(runtime, ['--require', join(directory, 'guard.cjs'), join(directory, 'identity.mjs')], { cwd: directory, stdio: 'inherit' });
   for (const [application, workers] of [['smoke',2], ['todomvc',1], ['svgomg',1], ['todomvc',4], ['svgomg',4]]) {
     const name = `${runtimeName}-${application}-w${workers}`, outputFile = join(directory, name + '.json'), config = join(directory, name + '.config.cjs');
-    const value = { testDir: './' + application, workers, retries: application === 'smoke' ? 1 : 0, outputDir: './results-' + name, use: { launchOptions: { executablePath: browser }, ...(application === 'smoke' ? { message: 'configured' } : {}) }, reporter: [['json', { outputFile }]] };
+    const value = { testDir: './' + application, workers, retries: application === 'smoke' ? 1 : 0, outputDir: './results-' + name, use: { launchOptions: { executablePath: browser }, ...(application === 'smoke' ? { message: 'configured', userAgent: 'Flashwright independent integration', deviceScaleFactor: 2, colorScheme: 'dark' } : {}) }, reporter: [['json', { outputFile }]] };
     await writeFile(config, 'module.exports=' + JSON.stringify(value));
     const args = ['-B',join(root,'tools/watchdog.py'),'--timeout','90','--report',join(directory,name+'.resources.json'),'--',process.execPath,join(directory,'owner.mjs'),directory,application,runtime,config];
     const child = spawn('python3', args, { cwd: root, env: { ...process.env, FLASHWRIGHT_DRIVER_PATH: driver }, stdio: ['ignore','pipe','pipe'] });

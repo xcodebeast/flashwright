@@ -5,6 +5,8 @@ import { failure, type ProcessFailure, type ProcessPlan, type ProcessTestResult,
 export interface ProcessRunnerOptions {
   modulePath: string;
   workers: number;
+  workerIndexBase?: number;
+  collectOnly?: boolean;
   retries?: number;
   timeoutMs?: number;
   testWatchdogMs?: number;
@@ -55,7 +57,7 @@ class ProcessWorker {
   readonly ready = deferred<ProcessPlan>();
   readonly exited = deferred<void>();
   readonly child: ChildProcess;
-  readonly options: Required<Omit<ProcessRunnerOptions, 'env'>>;
+  readonly options: Required<Omit<ProcessRunnerOptions, 'env' | 'collectOnly'>>;
   plan: ProcessPlan | undefined;
   workerKey: number | undefined;
   active: { id: string; retry: number } | undefined;
@@ -73,7 +75,7 @@ class ProcessWorker {
   #sequence = 0;
   #closePromise: Promise<ProcessFailure[]> | undefined;
 
-  constructor(options: Required<Omit<ProcessRunnerOptions, 'env'>>, env: NodeJS.ProcessEnv, workerIndex: number, parallelIndex: number) {
+  constructor(options: Required<Omit<ProcessRunnerOptions, 'env' | 'collectOnly'>>, env: NodeJS.ProcessEnv, workerIndex: number, parallelIndex: number) {
     this.options = options;
     this.record = { workerIndex, parallelIndex, pid: undefined, exitCode: null, signal: null, forcedTermination: false, stdout: '', stderr: '', outputTruncated: false };
     this.child = spawn(process.execPath, [join(__dirname, 'process-worker.js'), options.modulePath, String(options.workers), String(workerIndex), String(parallelIndex), String(options.timeoutMs)], {
@@ -222,10 +224,10 @@ class ProcessWorker {
  * a separate watchdog handles blocked workers and does not prove descendant exit. */
 export async function runProcessSuite(input: ProcessRunnerOptions): Promise<ProcessSuiteResult> {
   check(process.platform !== 'win32', 'Independent process runner currently requires Unix process groups');
-  const options = { modulePath: resolve(input.modulePath), workers: input.workers, retries: input.retries ?? 0, timeoutMs: input.timeoutMs ?? 30000, testWatchdogMs: input.testWatchdogMs ?? 0, startupTimeoutMs: input.startupTimeoutMs ?? 30000, shutdownTimeoutMs: input.shutdownTimeoutMs ?? 5000, killGraceMs: input.killGraceMs ?? 250 };
+  const options = { modulePath: resolve(input.modulePath), workers: input.workers, workerIndexBase: input.workerIndexBase ?? 0, retries: input.retries ?? 0, timeoutMs: input.timeoutMs ?? 30000, testWatchdogMs: input.testWatchdogMs ?? 0, startupTimeoutMs: input.startupTimeoutMs ?? 30000, shutdownTimeoutMs: input.shutdownTimeoutMs ?? 5000, killGraceMs: input.killGraceMs ?? 250 };
   for (const [name, value] of Object.entries(options)) if (name !== 'modulePath') check(Number.isSafeInteger(value) && Number(value) >= (['workers', 'startupTimeoutMs', 'shutdownTimeoutMs', 'killGraceMs'].includes(name) ? 1 : 0), `Invalid ${name}`);
   const all: ProcessWorker[] = [], results: ProcessTestResult[] = [], workerErrors: ProcessFailure[] = [];
-  let plan: ProcessPlan | undefined, nextWorker = 0;
+  let plan: ProcessPlan | undefined, nextWorker = options.workerIndexBase;
   const start = async (slot: number): Promise<ProcessWorker> => {
     const worker = new ProcessWorker(options, input.env ?? {}, nextWorker++, slot); all.push(worker);
     const received = await worker.ready.promise;
@@ -235,7 +237,7 @@ export async function runProcessSuite(input: ProcessRunnerOptions): Promise<Proc
   };
   const retire = async (worker: ProcessWorker): Promise<void> => { workerErrors.push(...await worker.close()); };
   try {
-    const initial = await start(0), queue: Task[] = plan!.groups.map(g => ({ group: g.id, attempts: g.tests.map(id => ({ id, retry: 0 })) }));
+    const initial = await start(0), queue: Task[] = input.collectOnly ? [] : plan!.groups.map(g => ({ group: g.id, attempts: g.tests.map(id => ({ id, retry: 0 })) }));
     const slots = Math.min(options.workers, queue.length);
     const dispatch = async (slot: number): Promise<void> => {
       let worker: ProcessWorker | undefined = slot === 0 ? initial : undefined;
@@ -276,7 +278,7 @@ export async function runProcessSuite(input: ProcessRunnerOptions): Promise<Proc
   finally { for (const worker of all) workerErrors.push(...await worker.close()); }
   // close() is idempotent; its errors are collected once per original worker.
   const uniqueErrors = [...new Set(workerErrors)];
-  const complete = plan && plan.tests.every(t => results.some(r => r.id === t.id));
+  const complete = plan && (input.collectOnly || plan.tests.every(t => results.some(r => r.id === t.id)));
   const last = new Map(results.map(r => [r.id, r]));
   const passed = complete && !uniqueErrors.length && [...last.values()].every(r => !unexpected(r));
   return { status: passed ? 'passed' : 'failed', plan, results, workerErrors: uniqueErrors, workers: all.map(w => w.record) };
