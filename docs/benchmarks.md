@@ -28,6 +28,21 @@ A subsequent direct comparison runs another 360 unchanged tests across 24 comple
 
 No cell reaches 2×. The candidate beats stock Playwright only for one-worker TodoMVC, and sampled peak RSS is about 15–23% higher than stock in every pair. Do not adopt this composition based on its improvement over reuse disabled. Four separate instrumented runs pass another 60 tests and place about 0.8–0.9 seconds before the first engine operation. Pointer actions, navigation and context retirement dominate the observed operation intervals; those intervals include waiting and are not CPU costs or guaranteed savings. Startup investigation remains separate from the timed comparison. The result file preserves the attribution controller's initial verifier-invocation failure and continuation without rerunning the completed workload.
 
+## Runner native-transform experiment on Linux
+
+The [native-transform screen](../benchmarks/results/native-transform-linux-2026-10-21.json) retains 240 passing original TodoMVC/SVGOMG tests across sixteen one-worker launches. It keeps the pinned runner and fixtures, adds conservative SWC transformation with Babel fallback, and defers three eager Babel consumers. Both modes use the same private renderer-reuse browser and driver. This compares two Flashwright variants, not Playwright.
+
+| Application | Transform cache | Complete time saved, first / reverse pair |
+| --- | --- | ---: |
+| TodoMVC | Cold | −0.54% / 3.43% |
+| SVGOMG | Cold | −0.57% / 6.14% |
+| TodoMVC | Warm | −0.97% / 0.74% |
+| SVGOMG | Warm | −0.55% / 19.96% |
+
+No cell meets the prospective 20% reduction in both orders. Reject this composition for adoption. Cold native runs still need Babel for forty framework files and use roughly 4–6% more sampled peak RSS. Warm caches are independently copied from each mode's earlier cold run before timing; they are explicitly separate from cold startup. The single near-20% observation is not a consistent gain or a reason to change the threshold.
+
+Thirty-two source-loader controls, eight selected semantic differential cases and focused caller/error checks pass after tightening fallback rules for TypeScript module extensions and CommonJS export descriptors. An initial caller-test adaptation incorrectly assumed CommonJS within an ESM package; the failed attempt and explicit fixture correction are retained. These controls do not prove complete transform compatibility. All three generated runtime files were restored exactly; no product transform change was adopted. The checkpoint records provenance gaps, sampled-resource limits and every timed observation. The representative 2× objective remains unmet.
+
 ## Declarative capability experiment on Linux
 
 Selected native omissions work, but the complete per-test capability API remains a private prototype. The [compatible-worker experiment](../benchmarks/results/capability-worker-reuse-linux-2026-10-18.json) passes 360 functional and 720 timed original TodoMVC/SVGOMG test executions across both engines, one/four workers and reversed execution order. Both full and restricted profiles reuse one browser per compatible worker and create a fresh context per test. This removes the earlier prototype's extra browser launch per test from the comparison.
