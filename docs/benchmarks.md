@@ -647,3 +647,31 @@ Controls cover distinct Rust workers, fresh storage, same-name downloads with di
 The transport control initially reproduced a buffered terminal reply being overtaken by WebSocket EOF. The corrected parser drains buffered input before publishing closure; the new 1,000-event terminal-reply control and 23 existing connection tests pass. A separate receipt check initially failed because concurrent stderr writes interleaved. Repeating the worker controls with separate log files verified ten exact context/host/process joins and eight successor claims. Killing a driver leaves one artifact directory that the suite owner removes after native browser exit. Both failures and their corrections remain in the evidence.
 
 Sampled RSS is not charged peak memory. The inner owner's cgroup CPU interval excludes some outer shared-browser startup and shutdown, so this screen makes no complete charged-CPU reduction claim. Source recovery patches and their exact upstream revisions are retained in the [Linux source checkpoint](../tools/chromium/recovered-linux-2026-10-21/README.md); preservation does not make the experimental browser a released default.
+
+
+## Native composition across controlled scenario families
+
+The [controlled-family screen](../benchmarks/results/native-controlled-families-linux-2026-10-21.json) extends the separate-browser native composition beyond the two application suites. It retains the six original controlled families, 15 tests per capture, one/four workers, fresh contexts and the intentional 250 ms assertion failures with ordinary worker replacement. The independent runner uses renderer reuse, classic uncapped frame scheduling and lazy VAAPI discovery; Playwright uses stock Chromium. Original test bodies are unchanged.
+
+A complete 24-capture functional preflight precedes 48 matched captures in two reversed-order blocks. The matched comparison verifies 600 passing outcomes, 120 intentional failures and 220 original browser-launch receipts. All original owners drain without cleanup intervention. These are observed speedup ratios against Playwright, including fixture/browser/runner startup, original callbacks, failure documents and shutdown:
+
+| Family | Workers | Block 0 | Block 1 |
+| --- | ---: | ---: | ---: |
+| Interaction | 1 | 2.119× | 2.109× |
+| Interaction | 4 | 2.803× | 2.392× |
+| Assertion | 1 | 1.419× | 1.441× |
+| Assertion | 4 | 1.544× | 1.575× |
+| Navigation | 1 | 1.431× | 1.372× |
+| Navigation | 4 | 1.608× | 1.447× |
+| Setup | 1 | 1.498× | 1.357× |
+| Setup | 4 | 1.586× | 1.585× |
+| Backend | 1 | 1.712× | 1.684× |
+| Backend | 4 | 2.585× | 2.358× |
+| Failure | 1 | 1.232× | 1.252× |
+| Failure | 4 | 1.411× | 1.347× |
+
+Only interaction exceeds 2× in both worker counts and both blocks. Backend exceeds 2× at four workers but falls short at one. The result does not meet the majority-scenario goal, establish confidence from eight pairs, or replace the requirement for two real application wins. It shifts the next attribution work toward fresh-document initialization and context teardown.
+
+Two separate diagnostic library runs each create 15 fresh contexts and add one repeated assertion per context. Across the 14 warm contexts in each run, median context closure is 12.02 / 11.97 ms, first assertion is 8.69 / 8.64 ms, and repeated assertion is 0.68 / 0.63 ms. These API intervals include scheduling and downstream work; they do not isolate browser CPU or prove removable savings. Source inspection finds three sequential CDP calls for first assertion: isolated-world creation, evaluation of a combined 373,154-byte runtime, then the resident assertion. The existing realm is reused on the repeat. Context teardown also performs the serial native renderer-transfer protocol; this measurement does not isolate garbage collection.
+
+Two preflight identity-check failures are retained: the verifier first required the stock browser version for the custom browser, and its first correction selected the stock alternative from the driver admission list. The final verifier freezes the unique exact custom version already accepted by that driver. Two diagnostic import failures occurred before any server/browser work; the completed diagnostic runs use the public facade. None of these attempts contributes to the timing ratios. Complete charged-resource custody, broader diagnostic conformance and final performance admission remain open.
