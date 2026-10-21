@@ -19,6 +19,8 @@
 // entry exposes the same names but initializes each part on first access, so a test run does not
 // pay for the CLI, trace tools, MCP server or remote servers it never touches.
 
+import { utilsFacade } from './generated/utilsFacade';
+
 export {};
 
 // esbuild replaces module.exports with its own object for this module; define the getters there.
@@ -43,7 +45,17 @@ const withServer = (load: () => unknown) => () => {
 };
 
 lazy('iso', () => require('@isomorphic/index'));
-lazy('utils', () => require('@utils/index'));
+// The runner destructures a few helpers from `utils` while it starts; each name loads only the
+// module that defines it instead of the whole barrel.
+lazy('utils', () => {
+  const facade = {};
+  for (const [names, load] of utilsFacade) {
+    let module: any;
+    for (const name of names)
+      Object.defineProperty(facade, name, { enumerable: true, get: () => (module ??= load())[name] });
+  }
+  return facade;
+});
 lazy('clientEventEmitter', () => require('./client/eventEmitter').EventEmitter);
 lazy('libCli', withServer(() => require('./cli/program')));
 lazy('libCliTestStub', withServer(() => require('./cli/programWithTestStub')));

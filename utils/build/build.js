@@ -322,6 +322,13 @@ steps.push(new ProgramStep({
   shell: true,
 }));
 
+// Flashwright: per-module map of the utils barrel for coreBundle's lazy `utils` namespace.
+steps.push(new ProgramStep({
+  command: 'node',
+  args: ['utils/generate_utils_facade.js'],
+  shell: true,
+}));
+
 class EsbuildStep extends Step {
   /** @type {import('esbuild').BuildOptions} */
   constructor(options, watchPaths = []) {
@@ -1041,6 +1048,15 @@ onChanges.push({
     'utils/generate_injected.js',
   ],
   script: 'utils/generate_injected.js',
+});
+
+// Generate the utils facade.
+onChanges.push({
+  inputs: [
+    'packages/utils/**',
+    'utils/generate_utils_facade.js',
+  ],
+  script: 'utils/generate_utils_facade.js',
 });
 
 // Generate channels.
