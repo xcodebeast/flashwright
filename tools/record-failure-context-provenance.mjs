@@ -10,6 +10,7 @@ const selected = [
   ['node_modules/playwright/lib/errorContext.js', ['buildErrorContext', 'buildCodeFrame', 'fixTestInstructions']],
   ['node_modules/playwright/lib/index.js', ['ArtifactsRecorder._takePageSnapshot', 'ArtifactsRecorder.willCloseBrowserContext', 'ArtifactsRecorder.didFinishTest']],
   ['node_modules/playwright/lib/worker/workerProcessEntry.js', ['WorkerMain._runTest']],
+  ['node_modules/playwright-core/lib/coreBundle.js', ['parseStackFrame', 'parseErrorStack', 'belongsToNodeModules', 'fileURLToPath', 'stripAnsiEscapes', 'init_stringUtils', 'init_stackTrace']],
   ['packages/resident-runtime/playwright-injected.js', ['InjectedScript.incrementalAriaSnapshot']],
 ];
 for (const [path, names] of selected) {
@@ -40,9 +41,11 @@ const implementationPaths = [
   'packages/resident-runtime/sources.txt', 'packages/flashwright-core/src/failure-context-snapshot.ts',
   'packages/flashwright-core/src/index.ts', 'packages/flashwright-core/src/runner-integration.ts',
   'packages/flashwright-runner/src/failure-context-format.ts', 'packages/flashwright-runner/src/failure-context-recorder.ts',
+  'packages/flashwright-runner/src/independent/output.ts', 'packages/flashwright-runner/src/independent/suite-collector.ts',
   'packages/flashwright-runner/src/runner-artifact-coordinator.ts', 'packages/flashwright-runner/src/runner-trace-finalizer.ts',
   'packages/flashwright-runner/src/screenshot-recorder.ts', 'packages/flashwright-runner/src/artifact-errors.ts',
   'tools/test-failure-context-format.mjs', 'tools/test-failure-context-recorder.mjs',
+  'tools/test-independent-output.mjs', 'tools/test-independent-failure-context.mjs',
   'tools/test-failure-context-snapshot.mjs', 'tools/test-failure-context-operation.mjs',
   'tools/test-screenshot-ownership.mjs', 'tools/test-runner-artifact-coordinator.mjs',
   'tools/test-runner-trace-finalizer.mjs', 'tools/run-failure-context-tests.mjs',
@@ -56,10 +59,12 @@ const provenance = {
     'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/errorContext.ts',
     'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/index.ts',
     'https://github.com/microsoft/playwright/blob/v1.60.0/packages/playwright/src/worker/workerMain.ts',
+    'https://github.com/microsoft/playwright/blob/v1.60.0/packages/isomorphic/stackTrace.ts',
+    'https://github.com/microsoft/playwright/blob/v1.60.0/packages/isomorphic/stringUtils.ts',
     'https://github.com/microsoft/playwright/blob/v1.60.0/packages/injected/src/injectedScript.ts',
   ],
   retainedExtract: 'compatibility/upstream/failure-context.source.txt', extractSha256: hash(extract), implementation,
-  relationship: 'The formatter adapts the pinned Markdown instructions, sections and ordinary source-frame layout with independently bounded streaming source reads. The original-attempt recorder independently implements publication and lifecycle ownership. Private native fallback invokes the already attributed pinned injected AI renderer in the existing isolated locator realm; it is not a public AI snapshot implementation.',
+  relationship: 'The formatter adapts the pinned Markdown instructions, sections, source-frame layout, stack-location parsing and ANSI stripping with independently bounded streaming source reads, without importing the upstream runtime. Default and independent original-attempt recorders own their publication and lifecycle. Independent collection captures mapped declaration locations through structured runtime call sites, and independent output retains bounded original error data and matcher YAML before atomic failure-document publication. Private native fallback invokes the already attributed pinned injected AI renderer in the existing isolated locator realm; it is not a public AI snapshot implementation.',
   contracts: [
     'Default documents are independent of trace and screenshot policies. Matcher observation diagnostics take precedence over fallback. PLAYWRIGHT_NO_COPY_PROMPT suppresses fallback only.',
     'Creation claims and late cleanup retain their original TestInfo; explicit successor adoption takes precedence. Once-only worker final stop follows all hooks, seals original action/creation admission, and releases failure ownership even when optional preflight diagnostics fail.',

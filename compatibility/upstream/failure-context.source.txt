@@ -337,6 +337,122 @@ async _runTest(test, retry, nextTest) {
       await removeFolders([testInfo.outputDir]);
   }
 
+// stripAnsiEscapes: node_modules/playwright-core/lib/coreBundle.js:588
+function stripAnsiEscapes(str) {
+  return str.replace(ansiRegex, "");
+}
+
+// init_stringUtils: node_modules/playwright-core/lib/coreBundle.js:592
+init_stringUtils = __esm({
+  "packages/isomorphic/stringUtils.ts"() {
+    "use strict";
+    escaped = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+    ansiRegex = new RegExp("([\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~])))", "g");
+  }
+})
+
+// parseStackFrame: node_modules/playwright-core/lib/coreBundle.js:3135
+function parseStackFrame(text2, pathSeparator, showInternalStackFrames) {
+  const match = text2 && text2.match(re);
+  if (!match)
+    return null;
+  let fname = match[2];
+  let file = match[7];
+  if (!file)
+    return null;
+  if (!showInternalStackFrames && (file.startsWith("internal") || file.startsWith("node:")))
+    return null;
+  const line = match[8];
+  const column = match[9];
+  const closeParen = match[11] === ")";
+  const frame = {
+    file: "",
+    line: 0,
+    column: 0
+  };
+  if (line)
+    frame.line = Number(line);
+  if (column)
+    frame.column = Number(column);
+  if (closeParen && file) {
+    let closes = 0;
+    for (let i = file.length - 1; i > 0; i--) {
+      if (file.charAt(i) === ")") {
+        closes++;
+      } else if (file.charAt(i) === "(" && file.charAt(i - 1) === " ") {
+        closes--;
+        if (closes === -1 && file.charAt(i - 1) === " ") {
+          const before = file.slice(0, i - 1);
+          const after = file.slice(i + 1);
+          file = after;
+          fname += ` (${before}`;
+          break;
+        }
+      }
+    }
+  }
+  if (fname) {
+    const methodMatch = fname.match(methodRe);
+    if (methodMatch)
+      fname = methodMatch[1];
+  }
+  if (file) {
+    if (file.startsWith("file://"))
+      file = fileURLToPath(file, pathSeparator);
+    frame.file = file;
+  }
+  if (fname)
+    frame.function = fname;
+  return frame;
+}
+
+// parseErrorStack: node_modules/playwright-core/lib/coreBundle.js:3214
+function parseErrorStack(stack, pathSeparator, showInternalStackFrames = false) {
+  const lines = stack.split("\n");
+  let firstStackLine = lines.findIndex((line) => line.startsWith("    at "));
+  if (firstStackLine === -1)
+    firstStackLine = lines.length;
+  const message = lines.slice(0, firstStackLine).join("\n");
+  const stackLines = lines.slice(firstStackLine);
+  let location2;
+  for (const line of stackLines) {
+    const frame = parseStackFrame(line, pathSeparator, showInternalStackFrames);
+    if (!frame || !frame.file)
+      continue;
+    if (belongsToNodeModules(frame.file, pathSeparator))
+      continue;
+    location2 = { file: frame.file, column: frame.column || 0, line: frame.line || 0 };
+    break;
+  }
+  return { message, stackLines, location: location2 };
+}
+
+// belongsToNodeModules: node_modules/playwright-core/lib/coreBundle.js:3233
+function belongsToNodeModules(file, pathSeparator) {
+  return file.includes(`${pathSeparator}node_modules${pathSeparator}`);
+}
+
+// fileURLToPath: node_modules/playwright-core/lib/coreBundle.js:3236
+function fileURLToPath(fileUrl, pathSeparator) {
+  if (!fileUrl.startsWith("file://"))
+    return fileUrl;
+  let path59 = decodeURIComponent(fileUrl.slice(7));
+  if (path59.startsWith("/") && /^[a-zA-Z]:/.test(path59.slice(1)))
+    path59 = path59.slice(1);
+  return path59.replace(/\//g, pathSeparator);
+}
+
+// init_stackTrace: node_modules/playwright-core/lib/coreBundle.js:3245
+init_stackTrace = __esm({
+  "packages/isomorphic/stackTrace.ts"() {
+    "use strict";
+    re = new RegExp(
+      "^(?:\\s*at )?(?:(new) )?(?:(.*?) \\()?(?:eval at ([^ ]+) \\((.+?):(\\d+):(\\d+)\\), )?(?:(.+?):(\\d+):(\\d+)|(native))(\\)?)$"
+    );
+    methodRe = /^(.*?) \[as (.*?)\]$/;
+  }
+})
+
 // InjectedScript.incrementalAriaSnapshot: packages/resident-runtime/playwright-injected.js:6655
 incrementalAriaSnapshot(node, options) {
     if (node.nodeType !== Node.ELEMENT_NODE)

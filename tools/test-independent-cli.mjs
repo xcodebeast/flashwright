@@ -61,7 +61,7 @@ for (const runtimeName of ['bun', 'node22', 'node24']) {
   execFileSync(runtime, ['--require', join(directory, 'guard.cjs'), join(directory, 'identity.mjs')], { cwd: directory, stdio: 'inherit' });
   for (const [application, workers] of [['smoke',2], ['todomvc',1], ['svgomg',1], ['todomvc',4], ['svgomg',4]]) {
     const name = `${runtimeName}-${application}-w${workers}`, outputFile = join(directory, name + '.json'), config = join(directory, name + '.config.cjs');
-    const value = { testDir: './' + application, workers, retries: application === 'smoke' ? 1 : 0, outputDir: './results-' + name, use: { launchOptions: { executablePath: browser }, ...(application === 'smoke' ? { message: 'configured', userAgent: 'Flashwright independent integration', deviceScaleFactor: 2, colorScheme: 'dark' } : {}) }, reporter: [['json', { outputFile }]] };
+    const value = { testDir: './' + application, workers, retries: application === 'smoke' ? 1 : 0, outputDir: './results-' + name, use: { trace: 'on-first-retry', launchOptions: { executablePath: browser }, ...(application === 'smoke' ? { message: 'configured', userAgent: 'Flashwright independent integration', deviceScaleFactor: 2, colorScheme: 'dark' } : {}) }, reporter: [['json', { outputFile }]] };
     await writeFile(config, 'module.exports=' + JSON.stringify(value));
     const args = ['-B',join(root,'tools/watchdog.py'),'--timeout','90','--report',join(directory,name+'.resources.json'),'--',process.execPath,join(directory,'owner.mjs'),directory,application,runtime,config];
     const child = spawn('python3', args, { cwd: root, env: { ...process.env, FLASHWRIGHT_DRIVER_PATH: driver }, stdio: ['ignore','pipe','pipe'] });
@@ -76,6 +76,10 @@ for (const runtimeName of ['bun', 'node22', 'node24']) {
       assert.deepEqual(report.results.map(r=>[r.retry,r.status]),[[0,'passed'],[0,'failed'],[1,'passed']]);
       const first=report.results[0];assert.equal(await readFile(first.attachments.find(a=>a.name==='result').path,'utf8'),'retained bytes');assert.equal(first.steps[0].status,'passed');
       const failed=report.results[1];assert.match(failed.errors[0].stack,/smoke\.spec\.ts/);const doc=await readFile(failed.attachments.find(a=>a.name==='error-context').path,'utf8');assert.match(doc,/original failure sentinel/);assert.match(doc,/failure snapshot sentinel/);
+      assert.ok(!failed.attachments.some(a=>a.name==='trace'));
+      const retried=report.results[2];assert.ok(!retried.attachments.some(a=>a.name==='trace-error'));
+      const trace=retried.attachments.find(a=>a.name==='trace');assert.ok(trace);
+      execFileSync('python3',['-c','import sys,zipfile,json\nwith zipfile.ZipFile(sys.argv[1]) as z:\n assert z.testzip() is None\n assert "test.trace" in z.namelist()\n assert any(n.startswith("resources/src@") for n in z.namelist())\n records=[json.loads(l) for n in z.namelist() if n.endswith(".trace") for l in z.read(n).splitlines()]\n assert any(r["type"]=="frame-snapshot" for r in records)\n',trace.path]);
       assert.notEqual(failed.workerIndex,report.results[2].workerIndex);
     } else {
       const expected=applications[application].expected;assert.equal(report.results.length,expected.length);assert.ok(report.results.every(r=>r.status==='passed'&&r.retry===0));

@@ -105,6 +105,9 @@ else {
                         assert.match(doc, /#missing/);
                         assert.match(doc, /Increment/);
                         assert.match(doc, /workloads\.spec\.mjs/);
+                        assert.match(doc, /# Test source/);
+                        assert.match(doc, />\s*\d+\s*\|/);
+                        assert.match(doc, /\^/);
                     }
                 }
                 assert.equal(pids.size, family === 'failure' ? 15 : workers);
@@ -121,6 +124,6 @@ else {
                 runs.push({ name, family, engine, workers, tests: records.length, intentionalFailures: family === 'failure' ? 15 : 0, completeMilliseconds: owner.completeMilliseconds, observedPeakRssBytes: resources.peakRssBytes, reportSha256: sha(await readFile(reportFile)), resourcesSha256: sha(await readFile(join(folder, 'resources.json'))) });
                 console.log(name, 'passed');
             }
-    await writeFile(join(directory, 'verified.json'), JSON.stringify({ status: 'passed', sourceSha256: sha(source), runs, limitations: ['One functional capture per cell, not comparative performance acceptance.', 'No final source-code-frame or resource custody admission.'] }, null, 2));
+    await writeFile(join(directory, 'verified.json'), JSON.stringify({ status: 'passed', sourceSha256: sha(source), runs, limitations: ['One functional capture per cell, not comparative performance acceptance.', 'No final resource custody admission.'] }, null, 2));
     console.log(JSON.stringify({ status: 'passed', directory, runs: runs.length }));
 }
