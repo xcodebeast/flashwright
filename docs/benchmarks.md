@@ -700,3 +700,23 @@ Positive percentages below mean less complete time than the same candidate with 
 The predeclared gate required at least 10% reduction in setup, assertion and navigation at both worker counts in both orders, with no application regression over 5%. It failed. Single-worker setup improves consistently, but most four-worker savings are small, navigation varies sharply, and the second four-worker SVGOMG observation regresses 28.15%. That observation remains included; its cause is not established. Neither application exceeds 2× at both worker counts in both orders.
 
 The [patches and reconstruction notes](../tools/chromium/locator-source-reference.md) remain experimental. The preceding sources and known baseline executables are restored. The native browser rebuild is byte-identical to its preceding baseline; the Rust rebuild succeeds but has a different digest, so restoration explicitly uses the preserved known baseline driver. No source-cache adoption, larger unchanged campaign, final confidence/resource admission or release claim follows from this screen.
+
+## Worker startup and CPU-affinity attribution
+
+The [startup and affinity checkpoint](../benchmarks/results/worker-startup-affinity-linux-2026-10-21.json) profiles 12 complete native runs with 180 passing original outcomes. Parent-observed worker collection commonly takes about 50 ms; workers 1–3 start after worker 0 finishes collection. Browser startup overlaps part of that interval. Framework-only process prewarming would require separating framework readiness from user-config/test collection, preserving assignment identities, environment inheritance, retries and unused-process shutdown. It is not selected as the next large-gain experiment.
+
+The four-worker application diagnostics also record frequent CPU-quota throttling. A separate screen tests whether restricting affinity from CPUs 0–5 to CPUs 0–3 helps under the unchanged four-core quota, 8 GiB memory limit and zero swap. Both Playwright and Flashwright receive each policy. Ten functional preflight captures pass 150 outcomes before 40 timed captures pass another 600 original tests. The owner records its actual affinity and resource settings; the complete clock includes startup and natural drain.
+
+Positive reductions mean the four-CPU affinity is faster than six-CPU affinity. These are four-worker observations in two reversed blocks:
+
+| Family | Flashwright reduction, blocks 0 / 1 | Playwright reduction, blocks 0 / 1 | Playwright / Flashwright at four CPUs, blocks 0 / 1 |
+| --- | ---: | ---: | ---: |
+| setup | -0.25% / -2.25% | 0.09% / -2.04% | 1.629× / 1.465× |
+| assertion | -6.27% / 0.96% | 0.09% / -1.09% | 1.486× / 1.573× |
+| navigation | -4.20% / 1.15% | -1.37% / -1.69% | 1.510× / 1.671× |
+| todomvc | 6.05% / -3.42% | -5.84% / -0.88% | 1.794× / 1.649× |
+| svgomg | 25.32% / -4.79% | -0.50% / -2.32% | 1.957× / 1.818× |
+
+The declared gate requires at least 10% candidate improvement in both applications in both orders and no controlled-family regression over 5%. It fails. The favorable first SVGOMG observation does not survive reversed order. Reduced aggregate throttled time is not equivalent to recovered wall-clock time. Keep the existing benchmark policy; this result does not establish a new engine speedup or final performance/resource acceptance.
+
+An earlier diagnostic used Bun's process-relative `hrtime` values, which cannot align different worker PIDs. Those 12 passing captures remain separately retained for within-process use only. The corrected captures use UTC milliseconds for cross-process chronology and monotonic intervals within each process; their maximum within-process elapsed discrepancy is below 1 ms. All five instrumented generated JavaScript modules were restored byte-for-byte before timing. No product, browser or Rust implementation changed.
