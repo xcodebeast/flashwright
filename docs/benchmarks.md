@@ -745,3 +745,20 @@ Positive reductions mean the four-CPU affinity is faster than six-CPU affinity. 
 The declared gate requires at least 10% candidate improvement in both applications in both orders and no controlled-family regression over 5%. It fails. The favorable first SVGOMG observation does not survive reversed order. Reduced aggregate throttled time is not equivalent to recovered wall-clock time. Keep the existing benchmark policy; this result does not establish a new engine speedup or final performance/resource acceptance.
 
 An earlier diagnostic used Bun's process-relative `hrtime` values, which cannot align different worker PIDs. Those 12 passing captures remain separately retained for within-process use only. The corrected captures use UTC milliseconds for cross-process chronology and monotonic intervals within each process; their maximum within-process elapsed discrepancy is below 1 ms. All five instrumented generated JavaScript modules were restored byte-for-byte before timing. No product, browser or Rust implementation changed.
+
+## Bounded renderer-retirement recheck
+
+The [retirement screen](../benchmarks/results/early-retirement-recheck-linux-2026-10-21.json) first measures the existing cleanup path. Every one of 30 audited plain-page retirements needs a second readiness check, with warm median wait 5.061/5.063 ms and memory collection 0.472/0.491 ms. This identifies an observed polling delay; it does not mean every browser context always pays five milliseconds.
+
+A default-off candidate schedules one earlier check at 250 µs, then retains the original 5 ms fallback. Both original cleanup predicates and collection remain. Warm context closure falls from 12.39/11.72 ms to 7.44/7.07 ms in reversed diagnostic orders. Both policies pass 14 worker/successor contexts, including nested/shared/service workers and forced termination of an infinite-loop worker. That slow termination still takes about two seconds in both arms. Fresh storage/cache/registration/global state and natural shutdown pass; forced native race ordering remains unverified.
+
+Complete timing disables audit logs and runs the unchanged setup body 240 times per capture, after a 15-test preflight at each worker/policy combination. All 1,980 outcomes pass. Positive reductions mean less elapsed time; CPU change is relative charged cgroup CPU.
+
+| Workers | Block | Baseline, ms | Early recheck, ms | Elapsed reduction | CPU change |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 0 | 7934.5 | 6855.6 | 13.60% | -0.79% |
+| 1 | 1 | 8063.3 | 6822.0 | 15.39% | -2.09% |
+| 4 | 0 | 4684.9 | 4683.0 | 0.04% | -1.18% |
+| 4 | 1 | 4722.0 | 4747.9 | -0.55% | 1.61% |
+
+The all-worker 10% advancement gate fails, so this standalone candidate is not adopted or expanded to applications. Keep the single-worker gain as evidence when designing a distinct combination with CPU-reducing changes; their benefits cannot be added or multiplied without measuring that combination. The [patch notes](../tools/chromium/early-retirement-recheck.md) preserve the implementation and remaining lifecycle gaps. Original source and the exact baseline browser are restored. No final confidence, resource, majority-scenario or release gate is closed.
