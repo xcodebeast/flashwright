@@ -327,8 +327,8 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
 
   async _retryAction(progress: Progress, actionName: string, action: (progress: Progress, retry: number) => Promise<PerformActionResult>, options: { trial?: boolean, force?: boolean, skipActionPreChecks?: boolean }): Promise<'error:notconnected' | 'done'> {
     let retry = 0;
-    // We progressively wait longer between retries, up to 500ms.
-    const waitTime = [0, 20, 100, 100, 500];
+    // We progressively wait longer between retries, up to 100ms. Page changes cut the wait short.
+    const waitTime = [0, 20, 50, 100];
 
     while (true) {
       if (retry) {
@@ -336,7 +336,8 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
         const timeout = waitTime[Math.min(retry - 1, waitTime.length - 1)];
         if (timeout) {
           progress.log(`  waiting ${timeout}ms`);
-          await progress.wait(timeout);
+          // Flashwright: retry as soon as the page changes rather than after the full backoff.
+          await progress.race(this._frame.waitForChangeOrTimeout(timeout));
         }
       } else {
         progress.log(`attempting ${actionName} action${options.trial ? ' (trial run)' : ''}`);

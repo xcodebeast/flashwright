@@ -33,7 +33,7 @@ for (const engine of engines) {
   const config = { testDir: './tests', workers, retries: 0, fullyParallel: false, timeout: 30000, expect: { timeout: 5000 },
     reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')]] : [])],
     outputDir: join(project, 'results'),
-    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off' } };
+    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
   await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; export default defineConfig(${JSON.stringify(config)});\n`);
   projects[engine] = { project, definition, variant };
 }
@@ -43,6 +43,7 @@ async function runOnce(engine) {
   await rm(join(project, 'report.json'), { force: true });
   const env = { ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt') };
   for (const assignment of variant.split('+').filter(Boolean)) { const [k, v = '1'] = assignment.split('='); env[k] = v; }
+  env.BENCH_T0 = String(Date.now());
   const started = performance.now();
   const child = spawn(node, [definition.cli, 'test', '--config', join(project, 'runner.config.mjs')], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';

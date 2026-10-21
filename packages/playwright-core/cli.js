@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 require('./lib/bootstrap');
+// Flashwright: keep V8's compiled code for Playwright's own modules across runs. Setting the
+// environment variable extends the cache to worker processes.
+const nodeModule = require('module');
+if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
+  const { directory } = nodeModule.enableCompileCache();
+  if (directory)
+    process.env.NODE_COMPILE_CACHE = directory;
+}
+
 const { libCli, libCliTestStub } = require('./lib/coreBundle');
 const { program } = require('./lib/utilsBundle');
 libCli.decorateProgram(program);

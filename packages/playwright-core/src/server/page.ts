@@ -911,6 +911,8 @@ export class Page extends SdkObject<PageEventMap> {
     const origin = frame.origin();
     if (origin)
       this.browserContext.addVisitedOrigin(origin);
+    else if (!/^(about|data|blob|chrome-error):/.test(frame.url()))
+      this.browserContext.preventRecycling();
     if (frame === this.mainFrame()) {
       if (this._consoleMessages.length > 0)
         (this._consoleMessages[this._consoleMessages.length - 1] as any)[navigationMarkSymbol] = true;

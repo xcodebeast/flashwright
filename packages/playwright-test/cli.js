@@ -15,5 +15,14 @@
  * limitations under the License.
  */
 
+// Flashwright: keep V8's compiled code for Playwright's own modules across runs. Setting the
+// environment variable extends the cache to worker processes.
+const nodeModule = require('module');
+if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
+  const { directory } = nodeModule.enableCompileCache();
+  if (directory)
+    process.env.NODE_COMPILE_CACHE = directory;
+}
+
 const { program } = require('playwright/lib/program');
 program.parse(process.argv);

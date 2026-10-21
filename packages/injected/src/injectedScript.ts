@@ -709,6 +709,35 @@ export class InjectedScript {
     }
   }
 
+  // Flashwright: resolves on the next DOM mutation or input/focus/scroll/animation/navigation event
+  // in this document, or after `timeout` ms. Server-side retries use it to re-check as soon as
+  // something changes instead of sleeping out a fixed backoff.
+  waitForChange(timeout: number): Promise<void> {
+    return new Promise<void>(resolve => {
+      const events = ['input', 'change', 'focusin', 'focusout', 'scroll', 'resize', 'load', 'transitionend', 'animationend', 'popstate', 'hashchange'];
+      const options = { capture: true, passive: true };
+      const done = () => {
+        observer.disconnect();
+        this.utils.builtins.clearTimeout(timer);
+        for (const event of events)
+          this.window.removeEventListener(event, done, options);
+        resolve();
+      };
+      const observer = new MutationObserver(done);
+      observer.observe(this.document, { attributes: true, childList: true, characterData: true, subtree: true });
+      for (const event of events)
+        this.window.addEventListener(event, done, options);
+      const timer = this.utils.builtins.setTimeout(done, timeout);
+    });
+  }
+
+  private _hasPendingAnimations(node: Node): boolean {
+    const document = node.ownerDocument;
+    if (!document || typeof document.getAnimations !== 'function')
+      return true;
+    return document.getAnimations().some(animation => animation.pending);
+  }
+
   private async _checkElementIsStable(node: Node): Promise<'error:notconnected' | boolean> {
     const continuePolling = Symbol('continuePolling');
     let lastRect: { x: number, y: number, width: number, height: number } | undefined;
@@ -754,7 +783,15 @@ export class InjectedScript {
         reject(e);
       }
     };
-    this.utils.builtins.requestAnimationFrame(raf);
+    // Flashwright: take the first sample now instead of waiting a frame for it. Running
+    // animations, rAF-driven scripts and smooth scrolling move the element by the next frame,
+    // so comparing against that frame keeps the same guarantee. Animations that have not
+    // produced their first frame yet still sit at their start position on that frame; when
+    // any are pending, sample on two frames like before.
+    if (this._stableRafCount === 1 && !this._hasPendingAnimations(node))
+      raf();
+    else
+      this.utils.builtins.requestAnimationFrame(raf);
 
     return result;
   }

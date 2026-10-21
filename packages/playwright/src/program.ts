@@ -24,9 +24,6 @@ import { setBoxedStackPrefixes } from '@utils/stackTrace';
 import { gracefullyProcessExitDoNotHang } from '@utils/processLauncher';
 import { builtInReporters, config, configLoader } from './common';
 import { runTests, clearCache, runTestServerAction } from './cli/testActions';
-import { showReport, mergeReports } from './cli/reportActions';
-import { TestServerBackend, testServerBackendTools } from './mcp/test/testBackend';
-import { ClaudeGenerator, CodexGenerator, OpencodeGenerator, VSCodeGenerator, CopilotGenerator } from './agents/generateAgents';
 import { packageRoot, packageJSON } from './package';
 
 export { program };
@@ -35,7 +32,14 @@ import type { TraceMode } from '../types/test';
 import type { Command } from 'commander';
 
 setBoxedStackPrefixes([packageRoot]);
-libCli.decorateProgram(program);
+// Flashwright: `test` is by far the most common command; skip loading the other commands'
+// implementations (trace tools, MCP servers, reports, agents) unless they are requested.
+if (process.argv[2] !== 'test')
+  libCli.decorateProgram(program);
+
+const reportActions = () => require('./cli/reportActions') as typeof import('./cli/reportActions');
+const testBackend = () => require('./mcp/test/testBackend') as typeof import('./mcp/test/testBackend');
+const agentGenerators = () => require('./agents/generateAgents') as typeof import('./agents/generateAgents');
 
 function addTestCommand(program: Command) {
   const command = program.command('test [test-filter...]');
@@ -101,7 +105,7 @@ function addShowReportCommand(program: Command) {
   const command = program.command('show-report [report]');
   command.description('show HTML report');
   command.action(async (report, options) => {
-    await showReport(report, options.host, +options.port);
+    await reportActions().showReport(report, options.host, +options.port);
   });
   command.option('--host <host>', 'Host to serve report on', 'localhost');
   command.option('--port <port>', 'Port to serve report on', '9323');
@@ -121,7 +125,7 @@ function addMergeReportsCommand(program: Command) {
   command.description('merge multiple blob reports (for sharded tests) into a single report');
   command.action(async (dir, options) => {
     try {
-      await mergeReports(dir, options);
+      await reportActions().mergeReports(dir, options);
     } catch (e) {
       console.error(e);
       gracefullyProcessExitDoNotHang(1);
@@ -146,6 +150,7 @@ function addTestMCPServerCommand(program: Command) {
   command.option('--port <port>', 'port to listen on for SSE transport.');
   command.action(async options => {
     tools.setupExitWatchdog();
+    const { TestServerBackend, testServerBackendTools } = testBackend();
     const factory: tools.ServerBackendFactory = {
       name: 'Playwright Test Runner',
       nameInConfig: 'playwright-test-runner',
@@ -170,15 +175,15 @@ function addInitAgentsCommand(program: Command) {
   command.action(async opts => {
     const loadedConfig = await configLoader.loadConfigFromFile(opts.config);
     if (opts.loop === 'opencode') {
-      await OpencodeGenerator.init(loadedConfig, opts.project, opts.prompts);
+      await agentGenerators().OpencodeGenerator.init(loadedConfig, opts.project, opts.prompts);
     } else if (opts.loop === 'vscode-legacy') {
-      await VSCodeGenerator.init(loadedConfig, opts.project);
+      await agentGenerators().VSCodeGenerator.init(loadedConfig, opts.project);
     } else if (opts.loop === 'claude') {
-      await ClaudeGenerator.init(loadedConfig, opts.project, opts.prompts);
+      await agentGenerators().ClaudeGenerator.init(loadedConfig, opts.project, opts.prompts);
     } else if (opts.loop === 'codex') {
-      await CodexGenerator.init(loadedConfig, opts.project, opts.prompts);
+      await agentGenerators().CodexGenerator.init(loadedConfig, opts.project, opts.prompts);
     } else {
-      await CopilotGenerator.init(loadedConfig, opts.project, opts.prompts);
+      await agentGenerators().CopilotGenerator.init(loadedConfig, opts.project, opts.prompts);
       return;
     }
   });
