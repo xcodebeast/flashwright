@@ -1,0 +1,705 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "passed-selected-video-owner-reuse-controls",
+  "scope": "Private original-owner video submitter and bundle correction. This is a correctness/resource regression checkpoint, not public renderer-reuse adoption or final comparative performance admission.",
+  "patch": {
+    "path": "tools/chromium/video-original-owner.patch",
+    "originalSourceHashes": {
+      "content/renderer/media/media_factory.cc": "9354cfa0803274218aabde257facecd74b2a4377c6f1af8c67876e023313410d",
+      "flashwright_development/BUILD.gn": "133835e943aeb2873a529115d74f002413f75379853f16ae060d59f3a569936a",
+      "third_party/blink/public/platform/web_video_frame_submitter.h": "fd04ac26cb8bb2180f9c97849420ba144f6bf47d9d137521fc1a6455efab3136",
+      "third_party/blink/renderer/core/testing/dummy_page_holder.cc": "483510909282450883284f3e72805c7d7b5f369e81449c3432ca60635ce8daf5",
+      "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.cc": "ccb5ef9a42938d64c212f3b808475a2d4284c7b4cc0cfb6a1be4f00ec18834aa",
+      "third_party/blink/renderer/platform/BUILD.gn": "a738bf065046b1976701fc7584e79c79899d073fa8f7717340463d9069b5ca0f",
+      "third_party/blink/renderer/platform/exported/web_video_frame_submitter.cc": "18cbbcddf22fa8511c7952f153e0dbf2127fa549e79973d351b24e0f5991e12c",
+      "third_party/blink/renderer/platform/graphics/video_frame_sink_bundle.cc": "371a7c136351630259f4974fa2b950656e7fe1be893c098f0f43cec418e4ad19",
+      "third_party/blink/renderer/platform/graphics/video_frame_sink_bundle.h": "7426f654c971c83e59d4874d4b9d855a8d4ef616fc69258f03fc6196897ee307",
+      "third_party/blink/renderer/platform/graphics/video_frame_sink_bundle_test.cc": "cfecb377d259b76374016422f51ddc1ce97e1f1b3bb339c42949d336c9b95ee2",
+      "third_party/blink/renderer/platform/graphics/video_frame_submitter.cc": "0660996ddc31cc1be1017e83e24aea73362aa1443a6aaae7ec59c900a15b37e1",
+      "third_party/blink/renderer/platform/graphics/video_frame_submitter.h": "c9838f6894bff61055d8b4df63caa197ace15f5805d589339adfa2d414bcb498",
+      "third_party/blink/renderer/platform/graphics/video_frame_submitter_test.cc": "9943f05dd57eb26ffe5bc9e5e89accc6136b6723f9930477fe50b54ae38f9565",
+      "third_party/blink/renderer/platform/peerconnection/vsync_provider.cc": "b29ce7e5c078c2ea1f542dccc1d5e75898cfec64b785b4704b75c28ea4a24147",
+      "third_party/blink/renderer/platform/peerconnection/vsync_provider.h": "5c54573e6f7e1bce645c55291737d62ed9133f55727afd350385cf03723c46e6",
+      "third_party/blink/renderer/platform/testing/noop_url_loader.cc": "902a85af2b3fa4e8104ceb4fc4c2277bb0ac3d08db22b6e7f55ec53d11d517c4",
+      "third_party/blink/renderer/platform/testing/noop_url_loader.h": "7b7ecf8bc40d4120aa288c191b519c36fe2e1e255c4c18b2d17600ebf81006a6",
+      "third_party/blink/renderer/platform/testing/url_loader_mock.cc": "b9b10f047f8449b1b1cf6cc397ed83fb716234c11920797274bdbdb540759fe2"
+    },
+    "candidateSourceHashes": {
+      "content/renderer/media/media_factory.cc": "e6cca5bebd9240cefef760e04cfaf481b1aa618b5cf03d5f8c91c6d0a5826257",
+      "flashwright_development/BUILD.gn": "4707c553552a470abb3946387ce59ef25eb343dbb6b2521c69d11ea18ea0e888",
+      "third_party/blink/public/platform/web_video_frame_submitter.h": "a00725b7e729414de175c23111fd2aaf39e243ebd748beb62e9cc118355c0e14",
+      "third_party/blink/renderer/core/testing/dummy_page_holder.cc": "53087c070c756bb93a9573072954a1f721e9cef0aaaf4f2ba5d765f361312c99",
+      "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.cc": "b44927e725f556678157889af77456ec633ce71087d0cd9d3b6d8759bec75cdc",
+      "third_party/blink/renderer/platform/BUILD.gn": "1877d326118c29a8999d3f9227198c34aee4f104b33436d7c90a5a2de2e35543",
+      "third_party/blink/renderer/platform/exported/web_video_frame_submitter.cc": "b378b361b4b53d0ccfe38b2221115a1a8686dd054509a9267fd40dde774ad857",
+      "third_party/blink/renderer/platform/graphics/video_frame_sink_bundle.cc": "fb3376ac90c161a45174191dc3e4547898f8326ae08cf58a9ea85666cacf572a",
+      "third_party/blink/renderer/platform/graphics/video_frame_sink_bundle.h": "dfe0f771652e7e8fac29627c9914bb11fe5f6bf93bfd7abd9081a74d1e4f965f",
+      "third_party/blink/renderer/platform/graphics/video_frame_sink_bundle_test.cc": "4200a17593995786bf845ed8206ef4c7362dc0d87ae3cfff033a40a59883611b",
+      "third_party/blink/renderer/platform/graphics/video_frame_submitter.cc": "94d78598fe903b9603a95128eb6a23280843e24ab41ee3d2cdaa1b5999343d7c",
+      "third_party/blink/renderer/platform/graphics/video_frame_submitter.h": "58a44128152929f80c98d59c58dc38fd09fc5fa18e57ee7f7e1b597b497ed416",
+      "third_party/blink/renderer/platform/graphics/video_frame_submitter_test.cc": "71452fc81977076e83bdabc188fa4ec72eec32d930f868c5521a82dba5589fc3",
+      "third_party/blink/renderer/platform/peerconnection/vsync_provider.cc": "1f560aa377046108060d8b4da81e19ae1bcee45dbe54f1a37b3bce0040a1cca9",
+      "third_party/blink/renderer/platform/peerconnection/vsync_provider.h": "9c4eb4b338559bf190028bdb5a2aafede317eff32d6ff3e3bc3f7eca6a87da62",
+      "third_party/blink/renderer/platform/testing/noop_url_loader.cc": "1dda549eccea2e1f60dece701dc1f38f93389653fc547b45c5156366e511cb23",
+      "third_party/blink/renderer/platform/testing/noop_url_loader.h": "c56db5d47e0f587d840ef9a5e4fd6325ee54cceae2b07567170d3902ac9b5efd",
+      "third_party/blink/renderer/platform/testing/url_loader_mock.cc": "20b0621ba655af5e7c9581a2560151a092b0fb9fe213aa608c148bcb48e68f9c"
+    },
+    "patchSha256": "caa74d6e50df7c5921e18c29e709c514f2540d3dd3d24b296aa8a98ae701ef24",
+    "applyAndReverseVerified": true,
+    "excludedPrivateEntryPoint": "flashwright_development/BUILD.gn",
+    "requires": "Existing private renderer retirement, broker identity/retirement, and page/execution-context original service owner implementation; not a standalone upstream Chromium patch.",
+    "prerequisiteSourceHashes": {
+      "third_party/blink/public/common/browser_interface_broker_identity.h": "6e723b87c6f7aefbf9684da1a0d6918e2e9c6464fa07859e7c60be159c69f2c3",
+      "third_party/blink/common/thread_safe_browser_interface_broker_proxy.cc": "871106c534b2e9eeac9d54df4eb8171e94ce614db478d45b6da43b439682a403",
+      "third_party/blink/renderer/core/execution_context/execution_context_process_service_owner.h": "9db821659be28860110164dccd68a53044058b823d0b2829a867393f0993128c",
+      "third_party/blink/renderer/core/page/page_process_service_owner.h": "dea5882e7865300d4aa60b48fafa1cd1c5f1459bb7720019814e1d6e876876cc",
+      "third_party/blink/renderer/core/testing/dummy_page_holder.h": "495cfcf02953244b9df3a94ce5e95cfa24cd92587c8c395fdb0a069c1c84e312",
+      "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h": "99d97cbc0870c80452a9891a7813a03ed79d08b34217458b7742a481d7bd0f86",
+      "third_party/blink/renderer/platform/testing/url_loader_mock.h": "43105a16bc1a8d281e88868e9a4aac11551f3969ece0cb4491465a40b7c1af7d"
+    }
+  },
+  "browserSha256": {
+    "baseline": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+    "fixed": "d281066bfd100da94daca926c897b36c4e8df7ba6fc063d8f0f13b5152bdbe08"
+  },
+  "implementation": [
+    "Capture the original document broker before posting video submitter construction, including the MediaStream factory.",
+    "Register compositor sinks and bundles through that retained broker. Key thread-local bundles by immutable broker identity and frame-sink client ID.",
+    "Preserve successor bundles when an old owner disconnects. Guard delayed GPU recovery and late responses after original-owner retirement.",
+    "Carry the original broker through VSync initialization; process-static WebRTC dependencies retain their existing lifetime and are not generally admitted by this change.",
+    "Repair stale test-helper declarations/definitions and install the supplied original broker in DummyPageHolder."
+  ],
+  "nativeTests": {
+    "count": 50,
+    "failures": 0,
+    "suites": [
+      {
+        "name": "VideoFrameSinkBundleTest",
+        "tests": 13
+      },
+      {
+        "name": "VideoFrameSubmitterTest",
+        "tests": 37
+      }
+    ],
+    "cases": [
+      "VideoFrameSinkBundleTest.BatchSubmissionsDuringOnBeginFrame",
+      "VideoFrameSinkBundleTest.ClientIdentitySeparatesBundles",
+      "VideoFrameSinkBundleTest.DeliversBeginFrameCompletionOnFlushWithBeginFrames",
+      "VideoFrameSinkBundleTest.DeliversBeginFramesDisabledOnSinksDisabled",
+      "VideoFrameSinkBundleTest.DeliversBeginFramesDisabledWithoutSinksOnRegistration",
+      "VideoFrameSinkBundleTest.DeliversBeginFramesEnabledOnSinkAdded",
+      "VideoFrameSinkBundleTest.DeliversBeginFramesEnabledWithSinkOnRegistration",
+      "VideoFrameSinkBundleTest.GetOrCreateSharedInstance",
+      "VideoFrameSinkBundleTest.OldOwnerDisconnectPreservesSuccessor",
+      "VideoFrameSinkBundleTest.OmitsBeginFrameCompletionOnceOnFlushWithoutBeginFrames",
+      "VideoFrameSinkBundleTest.PassThrough",
+      "VideoFrameSinkBundleTest.Reconnect",
+      "VideoFrameSinkBundleTest.RegistersThroughCapturedBroker",
+      "VideoFrameSubmitterTest.CallsFramePresentedCallback",
+      "VideoFrameSubmitterTest.DidReceiveFrameStillSubmitsIfRendering",
+      "VideoFrameSubmitterTest.DidReceiveFrameSubmitsFrame",
+      "VideoFrameSubmitterTest.FrameSizeChangeUpdatesLocalSurfaceId",
+      "VideoFrameSubmitterTest.FrameTokenWraparoundSorting",
+      "VideoFrameSubmitterTest.FrameTransformTakesPrecedent",
+      "VideoFrameSubmitterTest.GpuChannelArrivesAlreadyLostAfterContextLostSoftwareCompositing",
+      "VideoFrameSubmitterTest.GpuChannelNotReadyAfterContextLostSoftwareCompositing",
+      "VideoFrameSubmitterTest.MissedFrameArgDoesNotProduceFrame",
+      "VideoFrameSubmitterTest.MissingProviderDoesNotProduceFrame",
+      "VideoFrameSubmitterTest.NoDuplicateFramesDidReceiveFrame",
+      "VideoFrameSubmitterTest.NoDuplicateFramesOnBeginFrame",
+      "VideoFrameSubmitterTest.NoUpdateOnFrameDoesNotProduceFrame",
+      "VideoFrameSubmitterTest.NotRenderingDoesNotProduceFrame",
+      "VideoFrameSubmitterTest.OnBeginFrameSubmitsFrame",
+      "VideoFrameSubmitterTest.OpaqueFramesNotifyEmbedder",
+      "VideoFrameSubmitterTest.PageVisibilityControlsSubmission",
+      "VideoFrameSubmitterTest.PreferredInterval",
+      "VideoFrameSubmitterTest.ProcessTimingDetails",
+      "VideoFrameSubmitterTest.RecreateCompositorFrameSinkAfterContextLost",
+      "VideoFrameSubmitterTest.RecreateCompositorFrameSinkAfterContextLostSoftwareCompositing",
+      "VideoFrameSubmitterTest.RetiredOriginalOwnerRejectsLateGpuProvider",
+      "VideoFrameSubmitterTest.RetiredOriginalOwnerStopsContextRecovery",
+      "VideoFrameSubmitterTest.RetirementCancelsPendingGpuRetry",
+      "VideoFrameSubmitterTest.ReturnsResourceOnCompositorAck",
+      "VideoFrameSubmitterTest.RotationInformationPassedToResourceProvider",
+      "VideoFrameSubmitterTest.SetForceSubmitForcesSubmission",
+      "VideoFrameSubmitterTest.ShouldSubmitPreventsSubmission",
+      "VideoFrameSubmitterTest.StatRenderingFlipsBits",
+      "VideoFrameSubmitterTest.StopRenderingSkipsUpdateCurrentFrame",
+      "VideoFrameSubmitterTest.StopUsingProviderDuringContextLost",
+      "VideoFrameSubmitterTest.StopUsingProviderNullsProvider",
+      "VideoFrameSubmitterTest.StopUsingProviderSubmitsFrameAndStopsRendering",
+      "VideoFrameSubmitterTest.VideoRotationOutputRect",
+      "VideoFrameSubmitterTest.WaitingForAckPreventsNewFrame",
+      "VideoFrameSubmitterTest.WaitingForAckPreventsSubmitSingleFrame",
+      "VideoFrameSubmitterTest.ZeroSizedFramesAreNotSubmitted"
+    ],
+    "gtestXmlSha256": "ab8f1535441ab2762b557cbc036855af4d09a5908b72d92821966004a5b1e733",
+    "stages": [
+      {
+        "stage": "configure",
+        "exitCode": 0
+      },
+      {
+        "stage": "compile",
+        "exitCode": 0
+      },
+      {
+        "stage": "build-tests",
+        "exitCode": 0
+      },
+      {
+        "stage": "unit-tests",
+        "exitCode": 0
+      },
+      {
+        "stage": "build-browser",
+        "exitCode": 0
+      }
+    ],
+    "cleanup": {
+      "configure": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "compile": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "build-tests": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "unit-tests": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "build-browser": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      }
+    }
+  },
+  "functionalControls": {
+    "scope": "Three sequential fresh contexts per cell, original renderer reuse enabled; real one-second red VP8 WebM playback, direct video pixels, actual screenshot video/CSS pixels, Canvas2D and WebGL1/2 pixels, storage isolation, trusted moving-target click, timers, idle and natural shutdown.",
+    "samePolicyWithinDecoderComparison": true,
+    "idleGuardMaximumMeanCores": 0.25,
+    "runs": [
+      {
+        "revision": "baseline",
+        "decoderPolicy": "default",
+        "contextCount": 3,
+        "apiControlsPassed": true,
+        "videoPixelsPassed": false,
+        "idleGuardPassed": false,
+        "meanIdleCores": 3.1702327907818955,
+        "idle": {
+          "milliseconds": 3000.9931850000003,
+          "cgroupCpuMicroseconds": 9513847,
+          "ticks": 60
+        },
+        "endedVideoIdle": {
+          "milliseconds": 1004.4737870000004,
+          "cgroupCpuMicroseconds": 2478555
+        },
+        "pixels": [
+          {
+            "index": 0,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          },
+          {
+            "index": 1,
+            "video": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": false,
+            "cssPassed": true
+          },
+          {
+            "index": 2,
+            "video": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": false,
+            "cssPassed": true
+          }
+        ],
+        "reuse": {
+          "transfers": 3,
+          "distinctPhysicalProcesses": 1,
+          "distinctSuccessorHosts": 3
+        },
+        "cleanup": {
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        },
+        "rawHashes": {
+          "frame-controls.json": "bf5835738014031012af982fd0af4623a21b630900ac9733aa877ae23ad32ece",
+          "verified-controls.json": "f234c9c2999b4b04a84faeea61dc253c1ab85f9f5b41d3a7d090cf08f08f43ff",
+          "owner.log": "34ce72a8909db0ff32229a4e5f7fecd6d3838c476f57e831abc672fcb5edfc11",
+          "resources.json": "338bbf97818100892be5944945ede460a9813648345067d27de763c4b2ecd1d3",
+          "graphics-0.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece",
+          "graphics-1.png": "f9d8bc4ad325aad3e334790a68bb44e849b3052c1a2cf80fa569177fa5e02c3b",
+          "graphics-2.png": "f9d8bc4ad325aad3e334790a68bb44e849b3052c1a2cf80fa569177fa5e02c3b"
+        }
+      },
+      {
+        "revision": "baseline",
+        "decoderPolicy": "software-video",
+        "contextCount": 3,
+        "apiControlsPassed": true,
+        "videoPixelsPassed": false,
+        "idleGuardPassed": false,
+        "meanIdleCores": 3.1503789286085433,
+        "idle": {
+          "milliseconds": 3003.112392,
+          "cgroupCpuMicroseconds": 9460942,
+          "ticks": 60
+        },
+        "endedVideoIdle": {
+          "milliseconds": 1002.1175520000002,
+          "cgroupCpuMicroseconds": 2415932
+        },
+        "pixels": [
+          {
+            "index": 0,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          },
+          {
+            "index": 1,
+            "video": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": false,
+            "cssPassed": true
+          },
+          {
+            "index": 2,
+            "video": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": false,
+            "cssPassed": true
+          }
+        ],
+        "reuse": {
+          "transfers": 3,
+          "distinctPhysicalProcesses": 1,
+          "distinctSuccessorHosts": 3
+        },
+        "cleanup": {
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        },
+        "rawHashes": {
+          "frame-controls.json": "4c0be2a6e077774326ad579f58150aece719e838c2f8952f139e702c4d39f462",
+          "verified-controls.json": "08376b46437071054e9a191c66d85d1f31f1e19e42ecdd00da20eb76802a9921",
+          "owner.log": "5949dc4657ccb6e2bcb7c8fe36fa5ceb8201f191685a97d577c980430175b28f",
+          "resources.json": "a768c41c5886ee6742ed46c22cd8a459dc97199455ae6a421a3c0324b0708800",
+          "graphics-0.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece",
+          "graphics-1.png": "f9d8bc4ad325aad3e334790a68bb44e849b3052c1a2cf80fa569177fa5e02c3b",
+          "graphics-2.png": "f9d8bc4ad325aad3e334790a68bb44e849b3052c1a2cf80fa569177fa5e02c3b"
+        }
+      },
+      {
+        "revision": "fixed",
+        "decoderPolicy": "default",
+        "contextCount": 3,
+        "apiControlsPassed": true,
+        "videoPixelsPassed": true,
+        "idleGuardPassed": true,
+        "meanIdleCores": 0.06953138109557966,
+        "idle": {
+          "milliseconds": 3000.7745669999995,
+          "cgroupCpuMicroseconds": 208648,
+          "ticks": 60
+        },
+        "endedVideoIdle": {
+          "milliseconds": 1004.1958249999998,
+          "cgroupCpuMicroseconds": 89044
+        },
+        "pixels": [
+          {
+            "index": 0,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          },
+          {
+            "index": 1,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          },
+          {
+            "index": 2,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          }
+        ],
+        "reuse": {
+          "transfers": 3,
+          "distinctPhysicalProcesses": 1,
+          "distinctSuccessorHosts": 3
+        },
+        "cleanup": {
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        },
+        "rawHashes": {
+          "frame-controls.json": "bbff589d89c5d61562c7f9fa3ecc9efa6ae97a6c6d622cf3e6faa5a6329e84df",
+          "verified-controls.json": "61b673affba646a71e6058ff0ff880f10a3c0ecbf30fd0898031758e8e1b5f20",
+          "owner.log": "f06306b022cd8dfcd5a003d99bb15537366bdca83c622f7f55dc1627908436eb",
+          "resources.json": "0503cfcf036ce80e2c978582e00fbd2d99d5e8460e98f3ddbc93ab86cf1f8cc8",
+          "graphics-0.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece",
+          "graphics-1.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece",
+          "graphics-2.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece"
+        }
+      },
+      {
+        "revision": "fixed",
+        "decoderPolicy": "software-video",
+        "contextCount": 3,
+        "apiControlsPassed": true,
+        "videoPixelsPassed": true,
+        "idleGuardPassed": true,
+        "meanIdleCores": 0.07364572672870391,
+        "idle": {
+          "milliseconds": 3003.772382,
+          "cgroupCpuMicroseconds": 221215,
+          "ticks": 60
+        },
+        "endedVideoIdle": {
+          "milliseconds": 1003.0572190000003,
+          "cgroupCpuMicroseconds": 88617
+        },
+        "pixels": [
+          {
+            "index": 0,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          },
+          {
+            "index": 1,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          },
+          {
+            "index": 2,
+            "video": [
+              254,
+              0,
+              0,
+              255
+            ],
+            "css": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "videoPassed": true,
+            "cssPassed": true
+          }
+        ],
+        "reuse": {
+          "transfers": 3,
+          "distinctPhysicalProcesses": 1,
+          "distinctSuccessorHosts": 3
+        },
+        "cleanup": {
+          "exitCode": 0,
+          "timedOut": false,
+          "interrupted": false,
+          "cleanupSignals": [],
+          "remainingObservedProcesses": []
+        },
+        "rawHashes": {
+          "frame-controls.json": "87159112d0eb65115d2eaa97228871e9a4352fc44f900682e432cfc45ddc3e75",
+          "verified-controls.json": "b82ce77a52dc223a98b0f90e426faa630dc11a4b990658a1e87ad82cb70eecdb",
+          "owner.log": "21aee155b5fdb9b8daf4e3b422f0d5a55943a3e570cd261d15d3dda7918178aa",
+          "resources.json": "6d469055f64955ee5a47045b376a99cce67b1c003ccc81ee4416de1680895a75",
+          "graphics-0.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece",
+          "graphics-1.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece",
+          "graphics-2.png": "24191e5f671c78a04e6129cfee399bb3c134b57ea2653362df02133641d2bece"
+        }
+      }
+    ]
+  },
+  "applicationRegression": {
+    "tests": 60,
+    "scope": "Original TodoMVC/SVGOMG callbacks and fixtures at one/four workers with the independent process runner and explicit software decoding. Zero retries. No paired performance claim.",
+    "runs": [
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "tests": 24,
+        "completeMilliseconds": 2013.5941769985948,
+        "performanceAdmission": false,
+        "fullResourceAdmission": false,
+        "files": {
+          "prepared.json": "40dd2812bea508c1f89fb09e28858a08f530ff6be65039e45dde7c235bb15ca0",
+          "owner-report.json": "e14d11d8816460a5a009289713581ca6b774cdacd34ef371f1dcd1e687d889d8",
+          "resources.json": "b6384fde006ef8e18fe2de7c693445f4c1f9883255abdc7a334b8a7965b89350",
+          "candidate-report.json": "1d9bf0a8ec6f68d271b335586d0e436a6e6e8970c8ec76d372fd643a4f8915e6"
+        }
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "tests": 6,
+        "completeMilliseconds": 960.4457259993069,
+        "performanceAdmission": false,
+        "fullResourceAdmission": false,
+        "files": {
+          "prepared.json": "d8e4ef8dd2a44241bf86f256c74ddfaff1f45e2bb981426270116a3123a89d0c",
+          "owner-report.json": "9b131f5bf0db2e5abc1cc9d71385eec99419e4fa5c3ff4482bdfc015ad71d5bb",
+          "resources.json": "ebb222f860f8ea6c5689002d5f3bb79019e858f744c35abd3a9305a06a32dfba",
+          "candidate-report.json": "f945650ceeec14b0dae3abbc95a2186c867755df0e94fd60c7f53850b453ccd6"
+        }
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "tests": 24,
+        "completeMilliseconds": 1747.8231830027653,
+        "performanceAdmission": false,
+        "fullResourceAdmission": false,
+        "files": {
+          "prepared.json": "7edfe326460988a4595fb29314b1a8db334426af578480824c820e5528704956",
+          "owner-report.json": "98fd8fac9192983c964d31b2b23496c090e04617073e2f4e395b2807dee55687",
+          "resources.json": "76c20e0ac11307a0b5edb8f2d44f4207b2ff7d75b20bad9fadab0bc4a440bb77",
+          "candidate-report.json": "6eab41ac61f6022bf56e2e28b53bedc1c7db09b2ce5145224d029e460d441df1"
+        }
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "tests": 6,
+        "completeMilliseconds": 1370.9374480094993,
+        "performanceAdmission": false,
+        "fullResourceAdmission": false,
+        "files": {
+          "prepared.json": "21647bb32947d06e688e3b25594741ddc2a4166b6824c9a115b45a29c643c671",
+          "owner-report.json": "69224ed52b8a552092ced703de31e1cb9b60ab63bf96d633b8f07223fbf8288a",
+          "resources.json": "9e740854281c106a14d8b51c105d47cb059f334fc405e47142d28cdc7a24886e",
+          "candidate-report.json": "82d8b5ae089be5d472d87797499375f0771efed868f7d2b0f08188bf25a7fc50"
+        }
+      }
+    ]
+  },
+  "failedBuildAttempts": [
+    {
+      "attempt": "initial",
+      "reason": "Incorrect Viz test-support target"
+    },
+    {
+      "attempt": "002",
+      "reason": "Private focused target visibility"
+    },
+    {
+      "attempt": "003",
+      "reason": "VSync bundle caller required original broker"
+    },
+    {
+      "attempt": "004",
+      "reason": "Stale URLLoader test helpers"
+    },
+    {
+      "attempt": "005",
+      "reason": "Stale DummyPageHolder test helper"
+    }
+  ],
+  "evidenceCorrection": "Prior controls checked decoded video pixels and a CSS screenshot pixel, but did not verify video presentation in the screenshot. Retained screenshots reveal blank video after reuse. Both baseline cells reproduce that failure here; all corrected screenshot video pixels pass.",
+  "limitations": [
+    "No final nine-scenario eight-pair comparison or 2x claim.",
+    "No packed public browser/runner release or complete resource admission.",
+    "Selected ended-video cleanup passes; this does not establish every asynchronous media destruction path.",
+    "Live MediaStream, WebRTC, close-during-playback, and hardware codec breadth remain unverified.",
+    "VSync queued retirement/current-owner replacement is source-reviewed, not covered by a dedicated new runtime test."
+  ],
+  "finalPerformanceAdmission": false,
+  "publicAdoption": false,
+  "selectedInputsUnchanged": true,
+  "harnessHashes": {
+    "linux-video-owner-controls-001": {
+      "adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+      "aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+      "browser.py": "0df12e92272e27bd99fe3f447c7b78b6d5453c773387a9dfadfb48a8f2490c9f",
+      "campaign.py": "36b217a3c32101c862ba76612f4d0821f8db54d9fb90ee1492c75f3ebad37113",
+      "entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+      "frame-controls.mjs": "dcb19155e41023fe5d085555136511c73b7e1906a947ee4f624b02ef2c84a6f2",
+      "guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+      "matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+      "owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+      "prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+      "process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+      "sample.webm": "5ce380d55933bf34d5bd24c565564165c97065364cd5103bc67c220c16e001a7",
+      "verify-pixels.cjs": "4ec9213aa6b969cb5db9de2eb4987cd42e0b3e036b20672c1c7229d77ff7d735",
+      "verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+      "yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+      "yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    },
+    "linux-video-owner-apps-001": {
+      "adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+      "aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+      "browser.py": "8640a11945f062d3ec4ea6e7548810acce3aee3ffb8d8db700a96272ac56ea0c",
+      "campaign.py": "2092f2b33f61efabf4708abb8d383dad750b66086ce2505bd8a0459231ff13ea",
+      "entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+      "guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+      "matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+      "owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+      "prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+      "process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+      "verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+      "yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+      "yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    }
+  }
+}
