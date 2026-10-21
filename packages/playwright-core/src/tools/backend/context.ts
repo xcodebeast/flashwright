@@ -65,6 +65,7 @@ export type ContextConfig = {
     navigation?: number;
     expect?: number;
     settle?: number;
+    adaptiveSettle?: boolean;
   };
   browser?: {
     contextOptions?: playwrightTypes.BrowserContextOptions;

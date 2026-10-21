@@ -184,6 +184,7 @@ const longhandTypes: Record<string, LonghandType> = {
   'timeouts.idle': 'number',
   'timeouts.navigation': 'number',
   'timeouts.settle': 'number',
+  'timeouts.adaptiveSettle': 'boolean',
 
   // snapshot
   'snapshot.mode': 'string',

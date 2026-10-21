@@ -569,6 +569,33 @@ export class Tab extends EventEmitter<TabEventsInterface> {
 
     await this.page.evaluate(ms => new Promise(f => setTimeout(f, ms)), time).catch(() => {});
   }
+
+  // Flashwright: the adaptive settle (timeouts.adaptiveSettle). Resolves once the page has had no
+  // DOM changes for 100ms, or after `maxTime` if it keeps changing.
+  async waitForQuiet(maxTime: number) {
+    if (this._javaScriptBlocked()) {
+      await new Promise(f => setTimeout(f, maxTime));
+      return;
+    }
+
+    await this.page.evaluate(({ quietTime, maxTime }) => new Promise<void>(resolve => {
+      let quietTimer: ReturnType<typeof setTimeout>;
+      const done = () => {
+        observer.disconnect();
+        clearTimeout(quietTimer);
+        clearTimeout(maxTimer);
+        resolve();
+      };
+      const restart = () => {
+        clearTimeout(quietTimer);
+        quietTimer = setTimeout(done, quietTime);
+      };
+      const observer = new MutationObserver(restart);
+      observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+      const maxTimer = setTimeout(done, maxTime);
+      restart();
+    }), { quietTime: Math.min(100, maxTime), maxTime }).catch(() => {});
+  }
 }
 
 export type ConsoleMessage = {

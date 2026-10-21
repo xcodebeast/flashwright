@@ -225,6 +225,13 @@ export type Config = {
     settle?: number;
 
     /**
+     * Flashwright: respond as soon as the page has had no DOM changes for 100ms and the requests the action started
+     * have finished, instead of always waiting the full settle time (which stays the upper bound). Faster, but a page
+     * that updates after a timer (for example a debounced search) may be captured before it does. Defaults to false.
+     */
+    adaptiveSettle?: boolean;
+
+    /**
      * Close the browser after this many milliseconds without a tool call, and relaunch it on the next one.
      * Defaults to one hour for headless browsers Playwright launched, and to no timeout for headed or attached ones. Pass 0 to disable.
      * The CLI shuts the whole session down instead of relaunching.

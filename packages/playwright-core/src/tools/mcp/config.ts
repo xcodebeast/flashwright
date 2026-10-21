@@ -80,6 +80,7 @@ export type CLIOptions = {
   timeoutAction?: number;
   timeoutNavigation?: number;
   timeoutSettle?: number;
+  adaptiveSettle?: boolean;
   userAgent?: string;
   webmcp?: boolean;
   userDataDir?: string;
@@ -400,6 +401,7 @@ function configFromCLIOptions(cliOptions: CLIOptions): Config & { configFile?: s
       idle: cliOptions.idleTimeout,
       navigation: cliOptions.timeoutNavigation,
       settle: cliOptions.timeoutSettle,
+      adaptiveSettle: cliOptions.adaptiveSettle,
     },
   };
 
@@ -466,6 +468,7 @@ export function configFromEnv(env?: NodeJS.ProcessEnv): Config & { configFile?: 
   options.idleTimeout = numberParser(e.PLAYWRIGHT_MCP_IDLE_TIMEOUT);
   options.timeoutNavigation = numberParser(e.PLAYWRIGHT_MCP_TIMEOUT_NAVIGATION);
   options.timeoutSettle = numberParser(e.PLAYWRIGHT_MCP_TIMEOUT_SETTLE);
+  options.adaptiveSettle = envToBoolean(e.PLAYWRIGHT_MCP_ADAPTIVE_SETTLE);
   options.userAgent = envToString(e.PLAYWRIGHT_MCP_USER_AGENT);
   options.webmcp = envToBoolean(e.PLAYWRIGHT_MCP_WEBMCP);
   options.userDataDir = envToString(e.PLAYWRIGHT_MCP_USER_DATA_DIR);
