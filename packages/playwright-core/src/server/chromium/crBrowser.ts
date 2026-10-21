@@ -589,6 +589,16 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
       await page._networkManager.clearCache();
   }
 
+  override supportsRecycling(): boolean {
+    return !!this._browserContextId;
+  }
+
+  protected override async doClearSiteData(page: Page, origins: string[]): Promise<void> {
+    // Storage.clearDataForOrigin acts on the storage partition of the session's browser context.
+    const session = (page.delegate as CRPage)._mainFrameSession._client;
+    await Promise.all(origins.map(origin => session.send('Storage.clearDataForOrigin', { origin, storageTypes: 'all' })));
+  }
+
   async cancelDownload(guid: string) {
     // The upstream CDP method is implemented in a way that no explicit error would be given
     // regarding the requested `guid`, even if the download is in a state not suitable for

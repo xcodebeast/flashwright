@@ -119,12 +119,21 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _playwrightBindingExposed?: Promise<void>;
   readonly dialogManager: DialogManager;
   private _consoleApiExposed = false;
+  // Options that context methods can change after creation, restored when the context is recycled.
+  private _recycleBaseline: Pick<types.BrowserContextOptions, 'geolocation' | 'extraHTTPHeaders' | 'offline' | 'httpCredentials'>;
+  private _recyclingPrevented = false;
 
   constructor(browser: Browser, options: types.BrowserContextOptions, browserContextId: string | undefined) {
     super(browser, 'browser-context');
     this.attribution.context = this;
     this._browser = browser;
     this._options = options;
+    this._recycleBaseline = structuredClone({
+      geolocation: options.geolocation,
+      extraHTTPHeaders: options.extraHTTPHeaders,
+      offline: options.offline,
+      httpCredentials: options.httpCredentials,
+    });
     this._browserContextId = browserContextId;
     this._isPersistentContext = !browserContextId;
     this._closePromise = new Promise(fulfill => this._closePromiseFulfill = fulfill);
@@ -198,7 +207,12 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   canResetForReuse(): boolean {
     if (this._closedStatus !== 'open')
       return false;
-    return true;
+    return !this._recyclingPrevented;
+  }
+
+  // Called when a test leaves state that a recycle cannot reliably clear, e.g. file: origins.
+  preventRecycling() {
+    this._recyclingPrevented = true;
   }
 
   static reusableContextHash(params: channels.BrowserNewContextForReuseParams): string {
@@ -229,6 +243,11 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
         this.selectors().setTestIdAttributeName(params.testIdAttributeName);
     }
 
+    if (this.supportsRecycling()) {
+      await this._recycle(progress);
+      return;
+    }
+
     // Close extra pages early.
     let page: Page | undefined = this.pages()[0];
     const otherPages = this.possiblyUninitializedPages().filter(p => p !== page);
@@ -251,6 +270,52 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     await this.setStorageState(progress, this._options.storageState, 'resetForReuse');
 
     await page?.resetForReuse(progress);
+  }
+
+  // Flashwright: hand a used context to the next test as if it were new. The next test gets a
+  // brand-new tab, opened before the previous pages close so the renderer process (and the
+  // application code it already compiled) stays warm. Everything the previous test could have
+  // changed is put back: options, permissions, cookies, per-origin storage and caches.
+  private async _recycle(progress: Progress) {
+    Object.assign(this._options, structuredClone(this._recycleBaseline));
+    await this.clock.uninstall(progress);
+    await progress.race(this.dialogManager.closeBeforeUnloadDialogs());
+
+    const previousPages = this.possiblyUninitializedPages();
+    const page = await this.newPage(progress);
+    await progress.race(Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {}))));
+
+    await progress.race(Promise.all(Array.from(this._downloads).map(download => download.artifact.deleteOnContextClose())));
+    this._downloads.clear();
+
+    this._permissions.clear();
+    await progress.race(this.doClearPermissions());
+    if (this._options.permissions)
+      await progress.race(this.grantPermissions(this._options.permissions));
+
+    const origins = [...this._origins];
+    this._origins = new Set();
+    await progress.race(Promise.all([
+      this.doClearCookies(),
+      this.doClearSiteData(page, origins),
+      this.clearCache(),
+    ]));
+
+    const state = this._options.storageState;
+    if (state?.credentials?.length)
+      this.credentials.clear();
+    else
+      await this.credentials.dispose(progress);
+    if (state)
+      await this.setStorageState(progress, state, 'initial');
+  }
+
+  // Recycling needs a backend that can clear all per-origin storage without navigating.
+  supportsRecycling(): boolean {
+    return false;
+  }
+
+  protected async doClearSiteData(page: Page, origins: string[]): Promise<void> {
   }
 
   browserClosed() {

@@ -88,7 +88,7 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
     const context = this._object.contextForReuse();
     const contextDispatcher = context ? this.connection.existingDispatcher<BrowserContextDispatcher>(context) : undefined;
     if (contextDispatcher) {
-      await progress.race(contextDispatcher.stopPendingOperations(new Error(params.reason)));
+      await progress.race(contextDispatcher.stopPendingOperations(new Error(params.reason), 50));
       contextDispatcher._dispose();
     }
   }

@@ -1141,7 +1141,9 @@ export class Frame extends SdkObject<FrameEventMap> {
   }
 
   async retryWithProgressAndBackoff<R>(progress: Progress, action: (progress: Progress, continuePolling: symbol) => Promise<R | symbol>): Promise<R> {
-    const backoffScale = [20, 50, 100, 100, 500];
+    // Flashwright: retries wake up as soon as the page changes (see waitForChangeOrTimeout), so the
+    // backoff only bounds how long a change that emits no DOM mutation or event can go unnoticed.
+    const backoffScale = [20, 50, 100];
     if (progress.timeout) {
       // For small timeouts, cap the large backoff values to produce meaningul retries.
       while (backoffScale.length && backoffScale[backoffScale.length - 1] > progress.timeout / 5)
@@ -1159,7 +1161,7 @@ export class Frame extends SdkObject<FrameEventMap> {
       if (timeout) {
         // Make sure we react immediately upon page close or frame detach.
         // We need this to show expected/received values in time.
-        const actionPromise = new Promise(f => setTimeout(f, timeout));
+        const actionPromise = this.waitForChangeOrTimeout(timeout);
         await progress.race(LongStandingScope.raceMultiple([
           this._page.openScope,
           this._detachedScope,
@@ -1176,6 +1178,19 @@ export class Frame extends SdkObject<FrameEventMap> {
         continue;
       }
     }
+  }
+
+  // Flashwright: sleep for up to `timeout` ms, but wake as soon as this frame's DOM, input, focus,
+  // scroll or navigation state changes, so the next retry sees the change immediately.
+  async waitForChangeOrTimeout(timeout: number): Promise<void> {
+    const sleep = new Promise<void>(f => setTimeout(f, timeout));
+    const context = this._contextData.get('utility')?.context;
+    if (!context)
+      return await sleep;
+    const change = context.injectedScript()
+        .then(injected => injected.evaluate((injected, timeout) => injected.waitForChange(timeout), timeout))
+        .catch(() => sleep);
+    await Promise.race([sleep, change]);
   }
 
   isNonRetriableError(e: Error) {

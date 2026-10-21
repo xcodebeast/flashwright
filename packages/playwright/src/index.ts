@@ -467,6 +467,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     let mode = _optionContextReuseMode;
     if (process.env.PW_TEST_REUSE_CONTEXT || reuseContext)
       mode = 'when-possible';
+    // Flashwright recycles contexts by default; FLASHWRIGHT_ISOLATION=strict restores a fresh context per test.
+    if (process.env.FLASHWRIGHT_ISOLATION !== 'strict')
+      mode = 'when-possible';
     const reuse = mode === 'when-possible' && normalizeVideoMode(video) === 'off';
     await use(reuse);
   }, { scope: 'worker',  title: 'context', box: true }],

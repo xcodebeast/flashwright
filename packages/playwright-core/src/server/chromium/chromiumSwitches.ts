@@ -101,4 +101,8 @@ export const chromiumSwitches = (options?: { android?: boolean }) => [
   '--disable-search-engine-choice-screen',
   // Prevents the "three dots" menu crash in IdentityManager::HasPrimaryAccount for ephemeral contexts.
   options?.android ? '' : '--disable-sync',
+  // Flashwright: let a context's new pages join its existing renderer process. Recycled contexts
+  // open each test's page next to the previous one, so the page starts in a renderer that has
+  // already compiled the application's code. Site isolation still separates cross-site frames.
+  options?.android ? '' : '--renderer-process-limit=1',
 ].filter(Boolean);

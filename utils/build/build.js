@@ -687,7 +687,8 @@ steps.push(new EsbuildStep({
 // Build playwright-core as a single bundle.
 steps.push(new EsbuildStep({
   bundle: true,
-  entryPoints: [filePath('packages/playwright-core/src/coreBundle.ts')],
+  // coreBundle.ts carries the types; coreBundleRuntime.ts exposes the same names lazily.
+  entryPoints: [filePath('packages/playwright-core/src/coreBundleRuntime.ts')],
   outfile: filePath('packages/playwright-core/lib/coreBundle.js'),
   external: [
     '../../api.json',
