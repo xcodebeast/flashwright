@@ -4,6 +4,36 @@ Flashwright has not established performance leadership. The [five-engine checkpo
 
 The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its Linux Chrome adapter now has eight launches of native library timing observations across seven fixture categories, shown separately below. Equivalent-work and comparative measurements remain unadmitted; it has no result in the historical five-engine snapshot. The system-WebKit backend on macOS requires a separate comparison class. See the [native observations](../benchmarks/results/bun-webview-native-linux-2026-10-21.json) and [contender configuration](../benchmarks/configurations/competitors.json).
 
+## Integrated runner with lazy video-capability initialization
+
+The [lazy VAAPI comparison](../benchmarks/results/lazy-vaapi-initialization-linux-2026-10-21.json) runs the public independent scheduler with the private renderer-reuse and frame-scheduling composition. The custom browser keeps ordinary hardware-decoding policy and defers native video-driver capability discovery until a consumer needs it. Both Flashwright arms use the same binary; the reference uses stock Playwright. Complete times include HTTP startup, tests, shutdown and observed natural drain under equal resource limits.
+
+Each cell shows the two opposite-order observations in seconds. These 24 captures pass all 360 original tests.
+
+| Application | Workers | Stock Playwright | Eager discovery | Lazy discovery | Playwright / lazy |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | 3.841 / 3.903 | 2.077 / 2.225 | 1.954 / 1.992 | 1.966× / 1.959× |
+| TodoMVC | 4 | 2.729 / 2.696 | 2.328 / 2.386 | 1.664 / 1.699 | 1.640× / 1.587× |
+| SVGOMG | 1 | 1.647 / 1.957 | 1.219 / 1.210 | 0.932 / 1.115 | 1.768× / 1.755× |
+| SVGOMG | 4 | 2.370 / 2.293 | 2.532 / 2.040 | 1.234 / 1.270 | 1.921× / 1.805× |
+
+Four-worker complete times fall 28.5–28.8% for TodoMVC and 37.7–51.3% for SVGOMG against eager discovery. The Playwright ratios remain below 2×. Selected rendering, isolation, codec-query and software-playback controls pass, but this machine never reaches successful deferred hardware initialization. The feature requires the existing unsandboxed experimental profile; first hardware use and watchdog behavior remain unverified. This is an engineering improvement, not public default adoption or the final nine-scenario, eight-pair acceptance campaign.
+
+## Bounded retirement collection: rejected
+
+The subsequent [same-binary comparison](../benchmarks/results/batched-retirement-collection-linux-2026-10-21.json) retains every existing context/worker retirement fence but forces garbage collection every fourth closure, or earlier when observed V8 heap/backing-store bytes reach 64 MiB. Ordinary memory pressure remains checked at every closure. Both Flashwright arms retain lazy video-capability initialization.
+
+| Application | Workers | Complete time saved, first order | Complete time saved, reverse order |
+| --- | ---: | ---: | ---: |
+| TodoMVC | 1 | -0.7% | -1.1% |
+| TodoMVC | 4 | 11.9% | 1.9% |
+| SVGOMG | 1 | -4.9% | -11.6% |
+| SVGOMG | 4 | 16.9% | -20.9% |
+
+Negative savings mean slower execution. All 360 original application tests pass, as do 64 fresh-context functional controls. Native traces verify skipped/fourth collections and immediate collection for large backing stores; all 16 video screenshots retain the expected visible pixels. No late timer/finalizer beacon is observed, which does not prove synchronous finalizer drainage. The 64 MiB trigger is not a process memory limit.
+
+The predeclared gate requires at least 10% lower TodoMVC time at both worker counts in both orders, with no more than 5% regression elsewhere. It fails. The candidate is rejected and the preceding native source is restored; the archived patch is experiment evidence only. Do not repeat this unchanged policy as a general speed optimization or select its single favorable four-worker observation as the result.
+
 ## Renderer reuse experiment on Linux
 
 The [renderer reuse screen](../benchmarks/results/renderer-reuse-linux-2026-10-21.json) records 240 passing unchanged TodoMVC/SVGOMG tests across 16 complete runs. The private browser retains physical renderer compilation state across actual fresh BrowserContexts, after retiring original document, connection and worker ownership. Both modes use the same custom browser, private driver and feature flags; only reservation reuse changes. This is a comparison against reuse disabled, not against Playwright.

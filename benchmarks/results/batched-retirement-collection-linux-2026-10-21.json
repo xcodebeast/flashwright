@@ -1,0 +1,1769 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "engineering-advancement-gate-failed",
+  "sourceCommit": "15bde74168a1ffe8c68c7e7b921f603e8fd96cea",
+  "reference": "Playwright1.60.0, Bun1.4.2, Chromium148.0.7778.96",
+  "change": "After all existing document, worker and access retirement fences, force collection every fourth retired connection or earlier when summed V8 used heap and backing-store bytes reach64MiB; check actual memory pressure at every boundary. Lazy VAAPI discovery enabled in both candidate arms.",
+  "patch": "tools/chromium/batched-retirement-collection.patch",
+  "patchSha256": "4096bc39ad1a5e4a4a6d15d0e98f17f2624cd783f06f652b63502fda32bca2f0",
+  "policy": {
+    "blocks": 2,
+    "workerCounts": [
+      1,
+      4
+    ],
+    "cpuQuota": "400%",
+    "memoryMaxGiB": 8,
+    "swapMax": 0,
+    "cpuAffinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "nice": 10,
+    "retries": 0,
+    "artifacts": "trace/video/screenshot off in timings",
+    "order": "stock Playwright, every-context collection, batched collection; reversed in second block",
+    "clock": "Complete supervised owner including HTTP fixture startup, original tests, teardown and observed natural drain",
+    "freshContextPerTest": true,
+    "sameCandidateBinary": true,
+    "advance": "At least10% lower complete TodoMVC time at one and four workers in both orders, no more than5% regression in another cell, no isolation/resource failures. Final 2x goal remains separate."
+  },
+  "captureCount": 24,
+  "passingApplicationTests": 360,
+  "observations": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 3813.0498570099007,
+        "independent-fast": 1974.6875520067988,
+        "independent-batched": 1988.5125720029464
+      },
+      "candidateReduction": -0.007001117712064353,
+      "baselinePlaywrightSpeedup": 1.9309636368218583,
+      "candidatePlaywrightSpeedup": 1.9175387225081375
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent-batched": 1997.7851220028242,
+        "independent-fast": 1976.055498002097,
+        "playwright": 3846.5995290025603
+      },
+      "candidateReduction": -0.010996464432652342,
+      "baselinePlaywrightSpeedup": 1.9466050082559363,
+      "candidatePlaywrightSpeedup": 1.9254320630570412
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2796.15407899837,
+        "independent-fast": 1873.520669003483,
+        "independent-batched": 1650.8784600009676
+      },
+      "candidateReduction": 0.11883627049651801,
+      "baselinePlaywrightSpeedup": 1.4924596911362775,
+      "candidatePlaywrightSpeedup": 1.69373709012881
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent-batched": 1645.396471998538,
+        "independent-fast": 1677.7390029892558,
+        "playwright": 2809.8881089972565
+      },
+      "candidateReduction": 0.019277450743585667,
+      "baselinePlaywrightSpeedup": 1.6748064532032882,
+      "candidatePlaywrightSpeedup": 1.7077270778296365
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1963.0275850067846,
+        "independent-fast": 885.6202239985578,
+        "independent-batched": 928.9931899984367
+      },
+      "candidateReduction": -0.048974678789572845,
+      "baselinePlaywrightSpeedup": 2.2165568624254695,
+      "candidatePlaywrightSpeedup": 2.1130699408141926
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent-batched": 999.4382470031269,
+        "independent-fast": 895.2330159954727,
+        "playwright": 2013.9713490061695
+      },
+      "candidateReduction": -0.11640012057841842,
+      "baselinePlaywrightSpeedup": 2.2496616110239107,
+      "candidatePlaywrightSpeedup": 2.015103339346056
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2369.2518409952754,
+        "independent-fast": 1249.3864639982348,
+        "independent-batched": 1038.4200250118738
+      },
+      "candidateReduction": 0.16885603059219556,
+      "baselinePlaywrightSpeedup": 1.896332247280232,
+      "candidatePlaywrightSpeedup": 2.281592981576202
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent-batched": 1275.360614003148,
+        "independent-fast": 1055.3088449960342,
+        "playwright": 2358.895584999118
+      },
+      "candidateReduction": -0.20851883318379727,
+      "baselinePlaywrightSpeedup": 2.2352656250199274,
+      "candidatePlaywrightSpeedup": 1.8495910561287692
+    }
+  ],
+  "runs": [
+    {
+      "name": "b0-todomvc-w1-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 3813.0498570099007,
+      "ownerBodyMilliseconds": 3713.6430339999997,
+      "wait4CpuSeconds": 2.247974,
+      "sampledPeakRssBytes": 911966208,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "26bdaa4ebec925cabcf51b9cb765775c1cde18d3edbd72c48b41ebfee78c4536",
+        "owner-report.json": "adae355b70dc49371d1a2d087c0e89a9e664e0617087dd9d1f257640cc44df2e",
+        "resources.json": "8cf00fb10a97a5e926fe6e7ad5d26dfd0825b35f97633e8d04a612a69646cf27",
+        "report.json": "9568d03faf89af661b6af21106a943d78c8e6fc58c81a0d19d755c19fa018d2f"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5278829,
+        "user_usec": 3514347,
+        "system_usec": 1764482,
+        "nice_usec": 3312505,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 37,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 378310656,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-todomvc-w1-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1974.6875520067988,
+      "ownerBodyMilliseconds": 1874.857659,
+      "wait4CpuSeconds": 1.717396,
+      "sampledPeakRssBytes": 766468096,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "2777f329770fa60d46bafe66620568b70601f330d4d42ae005e9d76b9f763798",
+        "owner-report.json": "2c4699e3dbc3aba1239324e8b2f141d938afe005cec8c7bf0bb377f57384ff6b",
+        "resources.json": "702e8c45809c82dea3b5a14798d8df7ce718ece6d76278723da043794d8b2631",
+        "report.json": "f022d20728356858eebdc18ee1aad2407055297f17bb5af26f0d53a257b07d1b"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 4573813,
+        "user_usec": 3163296,
+        "system_usec": 1410517,
+        "nice_usec": 2831183,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 232521728,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-todomvc-w1-independent-batched",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1988.5125720029464,
+      "ownerBodyMilliseconds": 1830.202864,
+      "wait4CpuSeconds": 1.7099799999999998,
+      "sampledPeakRssBytes": 789471232,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "8afed5174f307b21b7a0a632f747631f1b04abfcf98d3ef52e27c495a6626e81",
+        "owner-report.json": "69a618b90445680ed1cd6fdd042e9f7811947f9d1be7b9cb2991a4339bb14861",
+        "resources.json": "4c32773e64ee781d511b6e769c3af18060cca933170875673bac07d51c6c57d8",
+        "report.json": "afacf8acba830faf0043aef416c80171ff427ead980aec2250afa2b97835e82f"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 4533077,
+        "user_usec": 3064999,
+        "system_usec": 1468079,
+        "nice_usec": 2739198,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 249319424,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-svgomg-w1-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1963.0275850067846,
+      "ownerBodyMilliseconds": 1862.6942470000001,
+      "wait4CpuSeconds": 1.1928649999999998,
+      "sampledPeakRssBytes": 935419904,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "620a60afe5ed25cb77bf5c29fc2e113f90d0e99fbf6fbd04912672413ab92f35",
+        "owner-report.json": "b0f31aa107c0b3005bf05038f845ff88ff0f08d54bfd7d5198012cbf78d84d95",
+        "resources.json": "b723fb1f586066acaf83feee1feb4a858e07ca57c8b11b9cd70685f823ca599b",
+        "report.json": "1fb4b125e8ca03a40d4d5906b0dae5e681d14896e7b3d23cb3ad2065ea791371"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 2517669,
+        "user_usec": 1577500,
+        "system_usec": 940169,
+        "nice_usec": 1516354,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 385228800,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-svgomg-w1-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 885.6202239985578,
+      "ownerBodyMilliseconds": 784.2504789999999,
+      "wait4CpuSeconds": 0.768976,
+      "sampledPeakRssBytes": 798601216,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "0c7c735acd7c5622d89bbfff8f90cbb94d97a017eda73d30576dec52f33b3539",
+        "owner-report.json": "5800ceb2e902d7a10214f9454f91103552c5b6550b0a2c841ea9d5d10c601232",
+        "resources.json": "79d4092fc1bfdbaf25bdf5cf5dd2c64ec2cbedfe9403538cff6510d8a2c9023b",
+        "report.json": "8b8747fa40692d1d97690424d323b30e1d3e4e604f62b4203e699aed9e0c2bd5"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 2182983,
+        "user_usec": 1535646,
+        "system_usec": 647336,
+        "nice_usec": 1456990,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 8,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 250040320,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-svgomg-w1-independent-batched",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 928.9931899984367,
+      "ownerBodyMilliseconds": 772.742848,
+      "wait4CpuSeconds": 0.765773,
+      "sampledPeakRssBytes": 811696128,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "0eb3f06371780d4feb2086183787ea479118fbe476189646b99675766f5923c9",
+        "owner-report.json": "4faf862fa20379056fd3acf71065c74503b70a67b4429e2d2069502239798d98",
+        "resources.json": "2e42d27be8782afebbd006254aa01df950690c2dd9f54fc779ccee4bfac05900",
+        "report.json": "a2251c96b389b0fef385dc83138ca70a33b7c073208f79621be2067118111a9e"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 2176368,
+        "user_usec": 1508904,
+        "system_usec": 667463,
+        "nice_usec": 1408175,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 263606272,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-todomvc-w4-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2796.15407899837,
+      "ownerBodyMilliseconds": 2638.525823,
+      "wait4CpuSeconds": 3.538761,
+      "sampledPeakRssBytes": 3021463552,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "9f252ec4c7f04f9fdddea16b4e69d55a0e7735c9c2c704bdf1d9a347933b2bd9",
+        "owner-report.json": "0eca3607acff1bbad9e0dd0668859a1a59b151b4c1ef8f9cbda1f3b1beec9e14",
+        "resources.json": "44cfa260af7e2d1bfdb5d56af42cfc97294ab324f50ef54d6c622c9bfaa6a2c3",
+        "report.json": "fa5edbb7a1afb10aec7cc38091c04f81631877477d7cedfb95bbb4b4e9f4b60f"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 8205140,
+        "user_usec": 4696922,
+        "system_usec": 3508218,
+        "nice_usec": 4614862,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 27,
+        "nr_throttled": 12,
+        "throttled_usec": 817080,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 963538944,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-todomvc-w4-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1873.520669003483,
+      "ownerBodyMilliseconds": 1713.5781949999998,
+      "wait4CpuSeconds": 2.300917,
+      "sampledPeakRssBytes": 2581082112,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "3449b4bfabbbb1165edbb622920e52654de46e61b4bb93bbeea92f2abfe63334",
+        "owner-report.json": "4a537bfad37765219f4ee4c42a3658f7c8cc89042073431fc74d0c56afe94e2c",
+        "resources.json": "bd07ecc2a84dca6bf7e7eb262b203a713c800898dfb3b143a4bf9f12ee74d682",
+        "report.json": "74ebb511b1eac9ccc730f256b793b17b2f7731ff0cfb0c292e2c06e79caa1611"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5871834,
+        "user_usec": 3861251,
+        "system_usec": 2010584,
+        "nice_usec": 3829577,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 18,
+        "nr_throttled": 9,
+        "throttled_usec": 822808,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 591966208,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-todomvc-w4-independent-batched",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1650.8784600009676,
+      "ownerBodyMilliseconds": 1492.7623199999998,
+      "wait4CpuSeconds": 2.276142,
+      "sampledPeakRssBytes": 2609119232,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "2bb07d85e9e6b1e59c345104b5a47ebb723c188bfe62750f3ce0ee6d2f32aa14",
+        "owner-report.json": "774a85bf0bc5899b74ab1634f43bb5013cf195ec0fca4bf789ae093c6faba250",
+        "resources.json": "e84b32eb800ab5f0ca94eaaad3e62c8169e51cc658d0adcf419a25f07edbc7ed",
+        "report.json": "8d08fbd01032da5c665300a3cc969b82ef19169d29301e51bf8189e8b34141be"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5698945,
+        "user_usec": 3647856,
+        "system_usec": 2051089,
+        "nice_usec": 3610612,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 975470,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 631623680,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-svgomg-w4-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2369.2518409952754,
+      "ownerBodyMilliseconds": 2211.214199,
+      "wait4CpuSeconds": 2.2354839999999996,
+      "sampledPeakRssBytes": 2989953024,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "6e75df25f3e993c08a722fec6cd8cbead88bac494885db4f2df79cb229a342a2",
+        "owner-report.json": "12326686598632ed8acc12757e456ff53695cf8479d30d8eb45b2f9149514ded",
+        "resources.json": "4c9e2e7a52302067cd3f3b44c85875778735d04eb1d09b22feadc8ca8e158716",
+        "report.json": "e1db44c15d3f72eaa4b674ef12d99880957b478683f644db180ce9f339ba9b57"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5327422,
+        "user_usec": 2662057,
+        "system_usec": 2665364,
+        "nice_usec": 2577404,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 6,
+        "throttled_usec": 539669,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 909492224,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-svgomg-w4-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1249.3864639982348,
+      "ownerBodyMilliseconds": 1092.975387,
+      "wait4CpuSeconds": 1.243339,
+      "sampledPeakRssBytes": 2644336640,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "93929bf3f59e42384d37025c27132f218212ff95634929cd182a028d603be733",
+        "owner-report.json": "feecc59403df7d4296061464ecd4abc827153cd1348f50591cbaa7c135423334",
+        "resources.json": "b5c8da825836775dc06582dbf09f0df7f8d0b6ab3db6211132ec5013441ddc46",
+        "report.json": "3cae4f647fbece9ec2aa2d8c038c11d2717ac2c0bc4d902628fc587571fc527e"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 3833599,
+        "user_usec": 2585475,
+        "system_usec": 1248123,
+        "nice_usec": 2572549,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 8,
+        "throttled_usec": 747900,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 628572160,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b0-svgomg-w4-independent-batched",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1038.4200250118738,
+      "ownerBodyMilliseconds": 882.9350440000001,
+      "wait4CpuSeconds": 1.2300879999999998,
+      "sampledPeakRssBytes": 2587770880,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "dc95a171f73bacd6c673616f36f6535e4c6461ee79c27b7277e82decb9b886d5",
+        "owner-report.json": "1b2a1ad157bf6cb67c1e7203a4a83862fa6eb2b5ace7e28dec375c69214be895",
+        "resources.json": "792785178bf51c8bdf336214e1609e392e4a7ec7c04df2f79ded65eb7f2d6aec",
+        "report.json": "262033297b37e8db366e4a41d1d442ccb8ce2f40b762420e1f74e420a11df419"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 3219559,
+        "user_usec": 2053480,
+        "system_usec": 1166080,
+        "nice_usec": 2028557,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 9,
+        "nr_throttled": 7,
+        "throttled_usec": 834800,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 624025600,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-todomvc-w1-independent-batched",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1997.7851220028242,
+      "ownerBodyMilliseconds": 1837.751404,
+      "wait4CpuSeconds": 1.732806,
+      "sampledPeakRssBytes": 780156928,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "183d702ab3df122d5ba80ec21a113320950b3f145c44b670e7376ec36082452a",
+        "owner-report.json": "449015576ce0be7860a232312a5f2c140a85d2b346fc7997d21cf5643b181e00",
+        "resources.json": "ce7d6c848e36f26c305631761cda971783236dac946c1179a54c90e66ef7fdd0",
+        "report.json": "7d8ff937fd77396c7669286737269630ebf99a38775ffaedc7287f7b868f9235"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 4575206,
+        "user_usec": 3108537,
+        "system_usec": 1466669,
+        "nice_usec": 2770430,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 18,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 243187712,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-todomvc-w1-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1976.055498002097,
+      "ownerBodyMilliseconds": 1814.890966,
+      "wait4CpuSeconds": 1.701006,
+      "sampledPeakRssBytes": 768212992,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "6af7142d73ff4e8f92fdfe8a532b19696c25da1dd90dbeb76896ca3a42b3b8b5",
+        "owner-report.json": "4608c9ef9027c7eab8da8857c7237f0614cb0b424fcf16e9a53e58faa59381d7",
+        "resources.json": "756e3ef4e6bebeeb8d829982c9df223c5f287ff28a14c2795e41bf916b39fadc",
+        "report.json": "e54d2301697e48e0d106fde10268f007970c0ad33dd902c22bb432e9ba38e1ad"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 4518022,
+        "user_usec": 3088627,
+        "system_usec": 1429394,
+        "nice_usec": 2736736,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 18,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 229916672,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-todomvc-w1-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 3846.5995290025603,
+      "ownerBodyMilliseconds": 3687.959484,
+      "wait4CpuSeconds": 2.2547550000000003,
+      "sampledPeakRssBytes": 921288704,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "c9c68fb920f72fe296470229b38189927e684ac32370fa93ea4fe7771d9ca5ee",
+        "owner-report.json": "3f01a8fb35996d0723e0263f515eabbc998b97b0a2207f9dba5bfeba9c51b540",
+        "resources.json": "0e3ec9f70a0b4d5c8725893d088821dbea3a9a0c9935d827e827e42576326a25",
+        "report.json": "ea530fa8de1e9f8f6b7f49b503f147fbd9d6d19d4fb7904838db039256db2828"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5280193,
+        "user_usec": 3495305,
+        "system_usec": 1784889,
+        "nice_usec": 3276144,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 36,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 388272128,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-svgomg-w1-independent-batched",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 999.4382470031269,
+      "ownerBodyMilliseconds": 899.8705600000001,
+      "wait4CpuSeconds": 0.853849,
+      "sampledPeakRssBytes": 804663296,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "c26803b8a293ee724c89e4d36a9a634d6b0479a295b0aa6aa90c6532a63247df",
+        "owner-report.json": "acec1fa3814227f4ef209058480be59b3b3217a45e7760b5a78f241e95a0459c",
+        "resources.json": "dcfb0ae0928405da438f7a1894264af626997c52d0606038f8b0f50d7ffc95d5",
+        "report.json": "e131506f969759b21daac9f89f5346ba98a460e04bc0103ab686f886e74a008d"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 2488879,
+        "user_usec": 1710145,
+        "system_usec": 778734,
+        "nice_usec": 1626240,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 9,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 268300288,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-svgomg-w1-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 895.2330159954727,
+      "ownerBodyMilliseconds": 794.658429,
+      "wait4CpuSeconds": 0.770864,
+      "sampledPeakRssBytes": 797515776,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "1ece2b4f55387cdd9cdb71d8835ce747e5a05e262cfbefb19f34b3141c6d5a2a",
+        "owner-report.json": "507926af5e2f2c4cf38f06fe95027ee4527f0308bba858a9ee41995c2d5d18e5",
+        "resources.json": "4f909cdc589e47d61c70b4d957e5e8b02fb88b1cacba6a9e63526fdee296f329",
+        "report.json": "b7bedcb3146f96b9c3f29f2ced4d33bfbfae5a658818fc985545f52b9a7febf5"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 2231476,
+        "user_usec": 1561374,
+        "system_usec": 670103,
+        "nice_usec": 1474832,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 8,
+        "nr_throttled": 1,
+        "throttled_usec": 5410,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 250093568,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-svgomg-w1-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2013.9713490061695,
+      "ownerBodyMilliseconds": 1855.288994,
+      "wait4CpuSeconds": 1.2107709999999998,
+      "sampledPeakRssBytes": 936919040,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "d467e81965506efb7637e3edad3d16c775576c7bb7282632e7596841a6112a16",
+        "owner-report.json": "8f4e610f0ce861c4279b1159a87d8a6c6624faf15c77e39276785f8b9b76dd71",
+        "resources.json": "ecec54831e92dca0d2a94a1ce8ef76309d91c59a7e8609ad8dcc568bbdcb74c7",
+        "report.json": "4004f1e042a78fbbd90109d5bbff3e615dcfee7343a00843cc81e06e14198f93"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 2540238,
+        "user_usec": 1604320,
+        "system_usec": 935918,
+        "nice_usec": 1555047,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 386699264,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-todomvc-w4-independent-batched",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1645.396471998538,
+      "ownerBodyMilliseconds": 1489.8625969999998,
+      "wait4CpuSeconds": 2.255015,
+      "sampledPeakRssBytes": 2609758208,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "d36871b5e5eec2544ee99ecb62f8e35d294f1b85f1512682213b9ee4d1467b9e",
+        "owner-report.json": "23821a6b7465df3130e3a03a339559a3687009c1cbf284008dc5edbc5699852e",
+        "resources.json": "8bf7cc10a044d4aca02e1ed381c7de74634c280bba17f76b4df502f54d42a41b",
+        "report.json": "0a47f0bcf3bb780065c6ca317c2f6041f0bcc01d9522c8fc9508e61d0c11d490"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5735128,
+        "user_usec": 3744791,
+        "system_usec": 1990336,
+        "nice_usec": 3707014,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 1112449,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 652410880,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-todomvc-w4-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1677.7390029892558,
+      "ownerBodyMilliseconds": 1520.145622,
+      "wait4CpuSeconds": 2.24898,
+      "sampledPeakRssBytes": 2575650816,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "f8b72cf01781bfb62a59e2dcd02cd941fb2bcf707efbc212029e671af7feaf45",
+        "owner-report.json": "dbf0e4fdcd6bb2275f40505dcee5bafd5b48cfe22e7b31b60dbd7e113f67fbc7",
+        "resources.json": "e4cc51a82a42f41c43980c711829e5712abf8fe49b171a2f43b8ed0785873d91",
+        "report.json": "f7309ead453e0e4acc799b5267b38cc4b60c8f155573f000e0ff4ab1cb090f65"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5809585,
+        "user_usec": 3832832,
+        "system_usec": 1976754,
+        "nice_usec": 3773682,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 1141623,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 599638016,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-todomvc-w4-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2809.8881089972565,
+      "ownerBodyMilliseconds": 2652.468618,
+      "wait4CpuSeconds": 3.4723179999999996,
+      "sampledPeakRssBytes": 3022073856,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "be2cf1406e01434a40af0b967d5e814b41bd4b7ca259a189bdf49b4814f5c932",
+        "owner-report.json": "7b565a57221f326cbe51bdf93e969585886900293f6c2f30d131bfff3e1264ac",
+        "resources.json": "aaa83083fee956b6547c7e481002017e9b74fe03ffaef1269a333e7c60696a2b",
+        "report.json": "5bbfd10cf8ca1f48caff8f6e993a6539ac72b8a9d407f11b32f2f1c47a0ebd3c"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 8165203,
+        "user_usec": 4674082,
+        "system_usec": 3491120,
+        "nice_usec": 4556888,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 26,
+        "nr_throttled": 12,
+        "throttled_usec": 922055,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 953008128,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-svgomg-w4-independent-batched",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-batched",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1275.360614003148,
+      "ownerBodyMilliseconds": 1115.8649269999999,
+      "wait4CpuSeconds": 1.271862,
+      "sampledPeakRssBytes": 2593562624,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "7bdc9904bcdff536b27b80722b83cba28b61a261d2a5d42f7ad58b4e7604d918",
+        "owner-report.json": "4166a45ccbe0c2dbf9ab61d2e9a1a43a75c5aa0a0fa407ce9045c0d2dfa4def0",
+        "resources.json": "c2912ecf229a1c244494a471cb00693896364a1742c0cfbdf2d086f7286cb455",
+        "report.json": "ef2d8b12630ef517ddf65a454c6610d6ed433e0ad7dd6de84143ee94cf1648f4"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 3919559,
+        "user_usec": 2621396,
+        "system_usec": 1298163,
+        "nice_usec": 2581020,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 8,
+        "throttled_usec": 615529,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 631164928,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-svgomg-w4-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1055.3088449960342,
+      "ownerBodyMilliseconds": 897.714845,
+      "wait4CpuSeconds": 1.2415749999999999,
+      "sampledPeakRssBytes": 2609963008,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "a2b9497d02a9920dcf41205675d546185d95bc4a1c5208f3ad474aa226d8e326",
+        "owner-report.json": "d515cd98feeb805447ee6935f9b4d118388c1ff9f7229cdba67a0adf35cd8089",
+        "resources.json": "0ca0aa17a71d6a2b7a9da7e28829cef24adc2ff9bd0663337b50745b2e022e7b",
+        "report.json": "5e97416adca8b6fe49ca2e50ab092136de260e7abff248b7f3effe236bf05b4b"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 3289916,
+        "user_usec": 2082178,
+        "system_usec": 1207737,
+        "nice_usec": 2066136,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 9,
+        "nr_throttled": 7,
+        "throttled_usec": 498242,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 614522880,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    },
+    {
+      "name": "b1-svgomg-w4-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2358.895584999118,
+      "ownerBodyMilliseconds": 2197.3219879999997,
+      "wait4CpuSeconds": 2.225203,
+      "sampledPeakRssBytes": 2983542784,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "4e931bb814ace969cc046db256d00e71dc6a2d45225b2a80cf798d47ade7d105",
+        "owner-report.json": "cead9bf3449f92c6d796025f7dd665a5c718ad9a6c673ca1b60eab9882870ee3",
+        "resources.json": "b96684f16718e323125c5b959edbf75a2955d8b0e4949029437986bf872b1a09",
+        "report.json": "54e61597fd425df9cc05bb1eb04e6f73ba2d8f906c8899811d5ea1cd58e22a40"
+      },
+      "ownerCgroupCpuDelta": {
+        "usage_usec": 5490897,
+        "user_usec": 2679223,
+        "system_usec": 2811673,
+        "nice_usec": 2605095,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 6,
+        "throttled_usec": 612613,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCgroupMemoryPeakBytes": 947367936,
+      "ownerCgroupMemoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      }
+    }
+  ],
+  "functionalControls": [
+    {
+      "name": "public-each",
+      "contexts": 8,
+      "collectionBoundaries": [],
+      "samePhysicalRendererInTrace": null,
+      "idleCpuCores": {},
+      "nativeTraceSha256": "38142ed5252d9de038ea5a59507f0bc15b7099a69a4dda0cd433edbb1a969bdc",
+      "resourcesSha256": "02a5fb559c6fec42244ad6e412f3ec33bf4379afe6be8e048b3052af901c1a75",
+      "reportSha256": "441bc9863065ef841804666e6b1f31e3b175a0cba6b43f0c23b4b066f7a178d1"
+    },
+    {
+      "name": "public-batched",
+      "contexts": 8,
+      "collectionBoundaries": [
+        {
+          "collections": 0,
+          "heap_budget_bytes": 2456424,
+          "retired_connections": 1
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 3514250,
+          "retired_connections": 2
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 4608464,
+          "retired_connections": 3
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 6303407,
+          "retired_connections": 0
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 2927690,
+          "retired_connections": 1
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 3451921,
+          "retired_connections": 2
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 4576736,
+          "retired_connections": 3
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 6280679,
+          "retired_connections": 0
+        }
+      ],
+      "samePhysicalRendererInTrace": true,
+      "idleCpuCores": {},
+      "nativeTraceSha256": "3411c76a1165a9d9b3ddd08eabc7ebaf4292af51ee4cbf99bc4049e18fe3f481",
+      "resourcesSha256": "abdbbad15ca627a86ac2bf400732c94551cad977d48dc068a365ad16a1c379b2",
+      "reportSha256": "358c0633850942e9e4bb595d8091576fc703e38192e9a45e34281fa42f1c529f"
+    },
+    {
+      "name": "media-each",
+      "contexts": 8,
+      "collectionBoundaries": [],
+      "samePhysicalRendererInTrace": null,
+      "idleCpuCores": {
+        "idle": 0.07262827099638401,
+        "endedVideoIdle": 0.09181579341006592
+      },
+      "nativeTraceSha256": "c05741cc4b6e4a0a21bdef2501bd4ec346184e8625aafeddb92474f4acda59d6",
+      "resourcesSha256": "1f570ceefec4227fdf53f14b0ea5672036650c5a41a1423c66e0fa6badb49f69",
+      "reportSha256": "ef833aaf3456a46434350c71dc8dd4eda5a178a9ae23542538aa14654c7dbdd0"
+    },
+    {
+      "name": "media-batched",
+      "contexts": 8,
+      "collectionBoundaries": [
+        {
+          "collections": 0,
+          "heap_budget_bytes": 2530238,
+          "retired_connections": 1
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 4114869,
+          "retired_connections": 2
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 6286088,
+          "retired_connections": 3
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 6357331,
+          "retired_connections": 0
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 2442805,
+          "retired_connections": 1
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 4131508,
+          "retired_connections": 2
+        },
+        {
+          "collections": 0,
+          "heap_budget_bytes": 6303583,
+          "retired_connections": 3
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 6408942,
+          "retired_connections": 0
+        }
+      ],
+      "samePhysicalRendererInTrace": true,
+      "idleCpuCores": {
+        "idle": 0.07296410316545099,
+        "endedVideoIdle": 0.09443967163750615
+      },
+      "nativeTraceSha256": "68231df71d5f1c3acf26727c7a510dbcaf1ebd4c1ad4c0d9b72a3f40e8222fc5",
+      "resourcesSha256": "6961a4957f47e57557ab5c9d872827426c20dd8df13b3c8a1c7dcbe2907bd49e",
+      "reportSha256": "884060fb81d872767e0fafaf6ae29c7e97348f55d9db9e01c0c430f6a6ce9f06"
+    },
+    {
+      "name": "pressure-each",
+      "contexts": 8,
+      "collectionBoundaries": [],
+      "samePhysicalRendererInTrace": null,
+      "idleCpuCores": {},
+      "nativeTraceSha256": "d52cbd493a78078b994d44a941c84680035dcff40f985c5d300a56269ee77a32",
+      "resourcesSha256": "0771ab1361d8930adf968801d1cead55161ab419d4dfe6f58a75adab0af5113c",
+      "reportSha256": "f4d1994c3a72237b87b6c133d67e38c8a86dfb45fbd873d8425ffcba5f13492a"
+    },
+    {
+      "name": "pressure-batched",
+      "contexts": 8,
+      "collectionBoundaries": [
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        },
+        {
+          "collections": 1,
+          "heap_budget_bytes": 67108864,
+          "retired_connections": 0
+        }
+      ],
+      "samePhysicalRendererInTrace": true,
+      "idleCpuCores": {},
+      "nativeTraceSha256": "c26ebf59058615eebe5b72dfefb01f3e53a145feaa1547d2af97ee866c09567c",
+      "resourcesSha256": "678ad5e43c69777aded3aba4f9dccb7850e15ea018206170ea16001371eb69ff",
+      "reportSha256": "550c3b3c896a560a45028b2fc59a1178f90e9d80b1af6340c83958be8dad6c1a"
+    }
+  ],
+  "nativeBoundaryVerification": {
+    "status": "passed",
+    "ordinaryPattern": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "pressureCollections": 8,
+    "pressureTriggerBytes": 67108864,
+    "retirementCountPerRun": 8
+  },
+  "screenshotVerification": {
+    "status": "passed",
+    "screenshots": [
+      {
+        "capture": "media-each/graphics-0.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-1.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-2.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-3.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-4.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-5.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-6.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-each/graphics-7.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-0.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-1.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-2.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-3.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-4.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-5.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-6.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      },
+      {
+        "capture": "media-batched/graphics-7.png",
+        "video": [
+          254,
+          0,
+          0,
+          255
+        ],
+        "css": [
+          18,
+          52,
+          86,
+          255
+        ]
+      }
+    ]
+  },
+  "retiredCallbackControls": {
+    "status": "passed-selected-controls",
+    "runs": [
+      {
+        "name": "public-each",
+        "cases": 8,
+        "beacons": [],
+        "lateBeacons": []
+      },
+      {
+        "name": "public-batched",
+        "cases": 8,
+        "beacons": [],
+        "lateBeacons": []
+      }
+    ]
+  },
+  "selectedInputsUnchanged": true,
+  "sourceBinding": {
+    "scope": "Private bounded forced-GC batching after all original context/worker/access retirement fences. Default off. All isolates collect together every fourth boundary or at64MiB capped summed heap/external budget. Actual memory pressure honored every boundary.",
+    "sourceBefore": {
+      "content/renderer/renderer_browser_connection.cc": "69f1086594821a5c974c6d388f3e98dfb9608f5e81010aef008d36a144961335",
+      "v8/src/api/context-retirement.cc": "91ec4eae31a2c8ac5d33617e9abf27ba310eea35f9beec5242d835e09f0e3566",
+      "v8/include/v8-context-retirement.h": "82d0f9928050ea6648d0f76a56a6efb94d0a9113e12174e9276c226433e8b204"
+    },
+    "sourceAfter": {
+      "content/renderer/renderer_browser_connection.cc": "b42c942bafff466b34b89377f967e8636e3cca86338afc7ebfa24131bd2f144d",
+      "v8/src/api/context-retirement.cc": "164af4cada27317afd758963ff2094be51efd69d2972e3809934656afff437a1",
+      "v8/include/v8-context-retirement.h": "28d5a34e50f0ed8edb70d40d90b5650eb8191af67ca5567ac64fe76742c37286"
+    },
+    "advance": "At least10% lower complete TodoMVC time at one and four workers in both orders, no more than5% regression in another cell, no isolation/resource failures. Final 2x goal remains separate.",
+    "controls": [
+      "eight fresh contexts with worker/blob/pending-operation retirement",
+      "video owner cleanup and moving trusted input across eight contexts",
+      "native trace observes both skipped and forced collections",
+      "large external allocation triggers heap-budget collection before fourth retirement",
+      "complete original application comparisons and cgroup memory"
+    ]
+  },
+  "nativeBuild": {
+    "exitCode": 0,
+    "logSha256": "be188834c79855b354d87fdd56082a192232e14506618389070eb0e392f7dcd5",
+    "browserSha256": "1b5741d40f9946c5bedcd99a651caa1931ce299d56737391c838e9493b3007f7"
+  },
+  "harnessHashes": {
+    "campaign.py": "aee9128dd6780229349a7c71f4b2bf29b5afc8686c181429a555d0f51c93088a",
+    "prepare.mjs": "78a7740c842519a6b59a3b38f2a21a540fb6145ed76e17561ff3a44ce4870263",
+    "owner.mjs": "817365cefc98fe87df616c34e2c89924a735689c5ce069275e1fb1bb6b7f40af",
+    "browser.py": "bf4b079db3fa58dc1ad3b03d651d51a5d198675e12951e25e2114339d45efe35",
+    "verify-run.mjs": "5c9d9c99f9fb123c37ea5a50188b7a809a1552032e32269d17af8214bc33ff93",
+    "inputs.json": "b75b10c7b49657ab8249a53f0a58d8e1e24e316c753e71d9f63544ce60fdcb2a",
+    "completion.json": "da81d49b5322b8a2494dd8c58525c612a46207689da29b46926ce5d542ce9dfa"
+  },
+  "sourceReview": {
+    "blockingFenceLossFound": false,
+    "memoryPressureStillChecked": true,
+    "thresholdIsRendererMemoryLimit": false,
+    "synchronousFinalizerDrainProven": false
+  },
+  "retainedFailures": [
+    "First public control passed all8 contexts but native startup trace was not published before shutdown. Corrected diagnostic-only controls wait for trace publication; timing runs contain no tracing or added waits.",
+    "Initial screenshot decoder command could not import optional Pillow. Existing pinned PNG decoder subsequently verified all16 actual screenshots without rerunning browser work."
+  ],
+  "restoration": {
+    "status": "restored",
+    "sourceHashes": {
+      "content/renderer/renderer_browser_connection.cc": "69f1086594821a5c974c6d388f3e98dfb9608f5e81010aef008d36a144961335",
+      "v8/src/api/context-retirement.cc": "91ec4eae31a2c8ac5d33617e9abf27ba310eea35f9beec5242d835e09f0e3566",
+      "v8/include/v8-context-retirement.h": "82d0f9928050ea6648d0f76a56a6efb94d0a9113e12174e9276c226433e8b204"
+    },
+    "browserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "matchesPrecedingBrowser": true,
+    "buildExitCode": 0,
+    "buildLogSha256": "be188834c79855b354d87fdd56082a192232e14506618389070eb0e392f7dcd5"
+  },
+  "decision": {
+    "advancementThresholdPassed": false,
+    "defaultPromoted": false,
+    "finalPerformanceAdmission": false,
+    "majorityScenario2xGoalMet": false,
+    "action": "Reject this batching policy as a broad speed optimization and restore the preceding native sources; retain the negative screen."
+  },
+  "limitations": [
+    "Two applications and two opposite-order blocks, not the final nine-scenario eight-pair confidence gate.",
+    "64MiB triggers collection from V8 heap/backing-store observations; it does not bound Blink/native/media/GPU/process memory.",
+    "No callback beacon was observed in either finalizer control. The controls test absence of late effects, not proof that a FinalizationRegistry callback executed or drained.",
+    "Original request profiling includes waiting/scheduling; context-close duration is not guaranteed removable collection cost.",
+    "Cgroup CPU deltas cover fixture startup through fixture shutdown; memory.peak is the charged cgroup maximum observed at owner shutdown. Final resource custody is not admitted.",
+    "No public default, release or broader browser/platform admission."
+  ]
+}
