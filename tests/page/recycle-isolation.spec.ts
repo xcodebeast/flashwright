@@ -21,6 +21,8 @@
 import { test as it, expect } from './pageTest';
 
 it.describe.configure({ mode: 'default' });
+// Electron runs every test in the same application; there is no per-test context to compare with.
+it.skip(({ isElectron }) => isElectron);
 
 it('leaves storage, permissions and context settings behind', async ({ page, context, server }) => {
   await page.goto(server.PREFIX + '/serviceworkers/empty/sw.html');

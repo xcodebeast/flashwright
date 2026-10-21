@@ -293,6 +293,10 @@ export class CRPage implements PageDelegate {
       const deviceScaleFactor =  this._mainFrameSession._metricsOverride?.deviceScaleFactor || contentSize.width / cssContentSize.width || 1;
       clip.scale /= deviceScaleFactor;
     }
+    // Flashwright: Electron ships its own Chromium, which the speed-optimized encoding was not
+    // verified against; keep Playwright's default there.
+    if (this._browserContext._browser.options.name === 'electron')
+      optimizeForSpeed = undefined;
     const result = await progress.race(this._mainFrameSession._client.send('Page.captureScreenshot', { format, quality, clip, captureBeyondViewport: !fitsViewport, optimizeForSpeed }));
     if (!fitsViewport && this._browserContext._options.hasTouch) {
       // Capturing beyond viewport resets touch emulation in Chromium, so we re-apply it.

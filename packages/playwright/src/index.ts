@@ -472,11 +472,12 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   }, { scope: 'worker',  title: 'context', box: true }],
 
   // Flashwright recycles contexts by default (a new tab per test in a warm context); an explicit
-  // reuse request (VS Code, UI mode, the reuseContext option) keeps Playwright's own reuse, and
-  // FLASHWRIGHT_ISOLATION=strict restores a fresh context per test.
+  // reuse request (VS Code, UI mode, the reuseContext option) keeps Playwright's own reuse, debug
+  // sessions get a fresh context per test, and FLASHWRIGHT_ISOLATION=strict restores that always.
   _recycleContext: [async ({ video, _optionContextReuseMode, reuseContext }, use) => {
     const explicitReuse = !!process.env.PW_TEST_REUSE_CONTEXT || reuseContext || _optionContextReuseMode === 'when-possible';
-    await use(!explicitReuse && process.env.FLASHWRIGHT_ISOLATION !== 'strict' && normalizeVideoMode(video) === 'off');
+    const debugging = !!process.env.PWDEBUG || !!(globals.currentTestInfo() as TestInfoImpl | null)?._configInternal.configCLIOverrides.debug;
+    await use(!explicitReuse && !debugging && process.env.FLASHWRIGHT_ISOLATION !== 'strict' && normalizeVideoMode(video) === 'off');
   }, { scope: 'worker', box: true }],
 
   context: async ({ browser, video, _reuseContext, _recycleContext, _contextFactory }, use, testInfoPublic) => {
