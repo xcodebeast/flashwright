@@ -236,12 +236,15 @@ async function isPortUsed(port: number): Promise<boolean> {
 }
 
 async function waitFor(waitFn: () => Promise<boolean>, cancellationToken: { canceled: boolean }) {
-  const logScale = [100, 250, 500];
+  // Flashwright: a server that comes up between two checks is not noticed until the next one, so
+  // check often: each check is one local connection or request, and checks never overlap.
+  // (Playwright waited 100, 250, 500 ms and then a full second between checks.)
+  const logScale = [20, 50, 50];
   while (!cancellationToken.canceled) {
     const connected = await waitFn();
     if (connected)
       return;
-    const delay = logScale.shift() || 1000;
+    const delay = logScale.shift() || 100;
     debugWebServer(`Waiting ${delay}ms`);
     await new Promise(x => setTimeout(x, delay));
   }
