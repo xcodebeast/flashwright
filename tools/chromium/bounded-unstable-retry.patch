@@ -1,0 +1,173 @@
+--- a/crates/flashwright-engine/src/pointer.rs
++++ b/crates/flashwright-engine/src/pointer.rs
+@@ -11,6 +11,7 @@
+ mod completion;
+ mod geometry;
+ mod readiness;
++mod wait_audit;
+ 
+ #[derive(Clone, Copy, Deserialize, Serialize)]
+ #[serde(deny_unknown_fields)]
+@@ -190,6 +191,7 @@
+ 
+ impl PointerAction<'_> {
+     async fn run(&self) -> Result<(), ErrorRecord> {
++        let mut audit = wait_audit::Audit::new(&self.method, &self.page_identifier, &self.request);
+         let mut selector = super::locators::FrameSelector::new(
+             &self.page_identifier,
+             &self.frame,
+@@ -200,6 +202,7 @@
+         let mut delivery = InputDelivery::NotDispatched;
+         let mut retry_count = 0_usize;
+         loop {
++            audit.record("attempt-start", || json!({"retry":retry_count}));
+             self.operation
+                 .check()
+                 .map_err(|error| self.decorate(error, delivery))?;
+@@ -209,6 +212,7 @@
+                     .await
+                     .map_err(|error| self.decorate(error, delivery))?;
+             }
++            audit.record("resolve-start", || json!({"retry":retry_count}));
+             let realm = match self
+                 .engine
+                 .resolve_frame_selector(
+@@ -222,19 +226,20 @@
+             {
+                 Ok(Some(realm)) => realm,
+                 Ok(None) => {
+-                    self.pause(retry_count, "frame selector resolved to no frame", delivery)
++                    self.pause(retry_count, "frame selector resolved to no frame", delivery, &mut audit)
+                         .await?;
+                     retry_count += 1;
+                     continue;
+                 }
+                 Err(error) if context_was_destroyed(&error) => {
+-                    self.pause(retry_count, "document changed", delivery)
++                    self.pause(retry_count, "document changed", delivery, &mut audit)
+                         .await?;
+                     retry_count += 1;
+                     continue;
+                 }
+                 Err(error) => return Err(self.decorate(error, delivery)),
+             };
++            audit.record("resolve-end", || json!({"retry":retry_count}));
+             // Only a single attempt owns native pointer state. Retry delays and navigation waits
+             // release this lock so another action can make a waiting target ready.
+             let input_lock = self
+@@ -244,6 +249,7 @@
+                 }))
+                 .await
+                 .map_err(|error| self.decorate(error, delivery))?;
++            audit.record("input-lock-acquired", || json!({"retry":retry_count}));
+             let mut attempt = PointerAttempt {
+                 action: self,
+                 request: &selector.request,
+@@ -259,6 +265,12 @@
+                 resident_released: false,
+             };
+             let result = attempt.perform(retry_count).await;
++            audit.record("perform-end", || json!({"retry":retry_count,"outcome":match &result {
++                Ok((Outcome::Complete,_)) => "complete".to_owned(),
++                Ok((Outcome::Retry(reason),_)) => reason.clone(),
++                Ok((Outcome::Ready,_)) => "ready".to_owned(),
++                Err(error) => error.message.to_string(),
++            }}));
+             if !matches!(attempt.delivery, InputDelivery::NotDispatched) {
+                 delivery = attempt.delivery;
+             }
+@@ -274,6 +286,7 @@
+                     .to_owned(),
+             };
+             drop(input_lock);
++            audit.record("cleanup-end", || json!({"retry":retry_count,"cleanup":cleanup}));
+             if cleanup != "residentReleased" {
+                 let mut error = result.err().unwrap_or_else(|| {
+                     ErrorRecord::new(
+@@ -294,6 +307,7 @@
+                             .await;
+                         result.map_err(|error| self.decorate(error, delivery))?;
+                     }
++                    audit.record("complete", || json!({"retry":retry_count}));
+                     return Ok(());
+                 }
+                 Ok((Outcome::Retry(reason), _)) => reason,
+@@ -332,7 +346,7 @@
+                 false
+             };
+             if !used_hint {
+-                self.pause(retry_count, &reason, delivery).await?;
++                self.pause(retry_count, &reason, delivery, &mut audit).await?;
+             }
+             retry_count += 1;
+         }
+@@ -351,11 +365,21 @@
+         retry_count: usize,
+         reason: &str,
+         delivery: InputDelivery,
++        audit: &mut wait_audit::Audit,
+     ) -> Result<(), ErrorRecord> {
+-        self.operation
++        let mut pause_milliseconds = [0, 20, 100, 100, 500][retry_count.min(4)];
++        if reason == "error:unstable"
++            && retry_count < 32
++            && matches!(delivery, InputDelivery::NotDispatched)
++            && std::env::var("FLASHWRIGHT_EXPERIMENT_UNSTABLE_RETRY").as_deref() == Ok("1")
++        {
++            pause_milliseconds = pause_milliseconds.min(16);
++        }
++        audit.record("pause-start", || json!({"retry":retry_count,"reason":reason,"budgetMilliseconds":pause_milliseconds}));
++        let result = self.operation
+             .wait(self.page.state.while_alive(&self.method, async {
+                 sleep(Duration::from_millis(
+-                    [0, 20, 100, 100, 500][retry_count.min(4)],
++                    pause_milliseconds,
+                 ))
+                 .await;
+                 Ok(())
+@@ -365,7 +389,9 @@
+                 let mut error = self.decorate(error, delivery);
+                 error.message = format!("{}; last observation: {reason}", error.message).into();
+                 error
+-            })
++            });
++        audit.record("pause-end", || json!({"retry":retry_count,"succeeded":result.is_ok()}));
++        result
+     }
+ }
+ 
+--- /dev/null
++++ b/crates/flashwright-engine/src/pointer/wait_audit.rs
+@@ -0,0 +1,32 @@
++use serde_json::{json, Value};
++use std::{io::Write, time::Instant};
++
++pub(super) struct Audit {
++    started: Option<Instant>,
++    method: String,
++    page: String,
++    request: String,
++    events: Vec<Value>,
++    truncated: bool,
++}
++impl Audit {
++    pub(super) fn new(method: &str, page: &str, request: &[u16]) -> Self {
++        let enabled = std::env::var("FLASHWRIGHT_POINTER_WAIT_AUDIT").as_deref() == Ok("1");
++        Self { started: enabled.then(Instant::now), method: if enabled { method.into() } else { String::new() }, page: if enabled { page.into() } else { String::new() }, request: if enabled { String::from_utf16_lossy(request) } else { String::new() }, events: Vec::new(), truncated: false }
++    }
++    pub(super) fn record(&mut self, event: &str, detail: impl FnOnce() -> Value) {
++        if let Some(started) = self.started {
++            if self.events.len() < 256 {
++                self.events.push(json!({"event":event,"microseconds":started.elapsed().as_micros() as u64,"detail":detail()}));
++            } else { self.truncated = true; }
++        }
++    }
++}
++impl Drop for Audit {
++    fn drop(&mut self) {
++        if let Some(started) = self.started {
++            let record = json!({"pid":std::process::id(),"method":self.method,"page":self.page,"request":self.request,"totalMicroseconds":started.elapsed().as_micros() as u64,"events":self.events,"truncated":self.truncated});
++            let _ = writeln!(std::io::stderr().lock(), "flashwright-pointer-wait-audit {}", record);
++        }
++    }
++}
