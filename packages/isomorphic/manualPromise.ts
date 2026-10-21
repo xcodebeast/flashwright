@@ -57,7 +57,9 @@ export class ManualPromise<T = void> extends Promise<T> {
 export class LongStandingScope {
   private _terminateError: Error | undefined;
   private _closeError: Error | undefined;
-  private _terminatePromises = new Map<ManualPromise<Error>, string[]>();
+  // Flashwright: keep the caller's Error and format its stack only if the scope closes while
+  // racing; formatting stacks on every race is a large share of protocol call overhead.
+  private _terminatePromises = new Map<ManualPromise<Error>, Error>();
   private _isClosed = false;
 
   reject(error: Error) {
@@ -70,8 +72,8 @@ export class LongStandingScope {
   close(error: Error) {
     this._isClosed = true;
     this._closeError = error;
-    for (const [p, frames] of this._terminatePromises)
-      p.resolve(cloneError(error, frames));
+    for (const [p, callSite] of this._terminatePromises)
+      p.resolve(cloneError(error, callSite));
   }
 
   isClosed() {
@@ -94,12 +96,12 @@ export class LongStandingScope {
 
   private async _race(promises: Promise<any>[], safe: boolean, defaultValue?: any): Promise<any> {
     const terminatePromise = new ManualPromise<Error>();
-    const frames = (new Error().stack || '').split('\n');
+    const callSite = new Error();
     if (this._terminateError)
       terminatePromise.resolve(this._terminateError);
     if (this._closeError)
-      terminatePromise.resolve(cloneError(this._closeError, frames));
-    this._terminatePromises.set(terminatePromise, frames);
+      terminatePromise.resolve(cloneError(this._closeError, callSite));
+    this._terminatePromises.set(terminatePromise, callSite);
     try {
       return await Promise.race([
         terminatePromise.then(e => safe ? defaultValue : Promise.reject(e)),
@@ -123,7 +125,8 @@ export function signalToPromise(signal: AbortSignal): { promise: Promise<void>, 
   return { promise, dispose: dispose! };
 }
 
-function cloneError(error: Error, frames: string[]) {
+function cloneError(error: Error, callSite: Error) {
+  const frames = (callSite.stack || '').split('\n');
   const clone = new Error();
   clone.name = error.name;
   clone.message = error.message;

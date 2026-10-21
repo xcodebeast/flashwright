@@ -35,7 +35,7 @@ type Standby = {
 
 const standbys: Standby[] = [];
 let enabled = false;
-let hintFile: string | undefined;
+let hintKey: string | undefined;
 let workerCount = 0;
 
 // Variables that change how Playwright or Node behave while modules load. A standby worker
@@ -62,7 +62,7 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
   if (argv.some(arg => interactive.includes(arg.split('=')[0])))
     return;
   enabled = true;
-  hintFile = workerCountHintFile(argv);
+  hintKey = workerCountHintKey(argv);
   const cpus = os.availableParallelism?.() ?? os.cpus().length;
   const count = Math.max(1, Math.min(readWorkerCountHint(), cpus));
   for (let i = 0; i < count; i++)
@@ -102,7 +102,14 @@ function spawnStandby() {
 // Called when a worker had to be replaced after a failure while tests remain: keep one standby
 // ready so the next replacement does not pay for a cold start.
 export function ensureSpareStandby() {
-  if (enabled && !standbys.length)
+  ensureStandbys(1);
+}
+
+// Called while one phase of projects runs: the next phase starts new workers.
+export function ensureStandbys(count: number) {
+  if (!enabled)
+    return;
+  while (standbys.length < count)
     spawnStandby();
 }
 
@@ -139,28 +146,40 @@ export async function takeStandby(entryScript: string, env: NodeJS.ProcessEnv): 
   return standby.child;
 }
 
-function workerCountHintFile(argv: string[]) {
+// All projects share one small hint file, keeping only the most recently used entries.
+const hintFile = path.join(os.tmpdir(), 'flashwright-worker-hints.json');
+const maxHints = 500;
+
+function workerCountHintKey(argv: string[]) {
   const configIndex = argv.findIndex(arg => arg === '-c' || arg === '--config' || arg.startsWith('--config='));
   const config = configIndex === -1 ? '' : argv[configIndex].startsWith('--config=') ? argv[configIndex] : argv[configIndex + 1];
   const workers = argv.find(arg => arg.startsWith('--workers') || arg === '-j') ?? '';
-  const key = crypto.createHash('sha1').update([process.cwd(), config, workers].join('\0')).digest('hex').slice(0, 16);
-  return path.join(os.tmpdir(), 'flashwright', `workers-${key}.json`);
+  return crypto.createHash('sha1').update([process.cwd(), config, workers].join('\0')).digest('hex').slice(0, 16);
 }
 
-function readWorkerCountHint(): number {
+function readWorkerCountHints(): Record<string, { workers: number, usedAt: number }> {
   try {
-    return Number(JSON.parse(fs.readFileSync(hintFile!, 'utf8')).workers) || 1;
+    return JSON.parse(fs.readFileSync(hintFile, 'utf8'));
   } catch {
-    return 1;
+    return {};
   }
 }
 
+function readWorkerCountHint(): number {
+  return readWorkerCountHints()[hintKey!]?.workers || 1;
+}
+
 function writeWorkerCountHint() {
-  if (!workerCount)
+  if (!workerCount || !hintKey)
     return;
   try {
-    fs.mkdirSync(path.dirname(hintFile!), { recursive: true });
-    fs.writeFileSync(hintFile!, JSON.stringify({ workers: workerCount }));
+    const hints = readWorkerCountHints();
+    hints[hintKey] = { workers: workerCount, usedAt: Date.now() };
+    const recent = Object.entries(hints).sort((a, b) => b[1].usedAt - a[1].usedAt).slice(0, maxHints);
+    // Write a sibling file and rename it, so concurrent runs never read a partial file.
+    const temporary = `${hintFile}.${process.pid}`;
+    fs.writeFileSync(temporary, JSON.stringify(Object.fromEntries(recent)));
+    fs.renameSync(temporary, hintFile);
   } catch {
   }
 }

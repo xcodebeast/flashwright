@@ -22,11 +22,13 @@ import * as diff from 'diff';
 import { MultiMap } from '@isomorphic/multimap';
 
 import { config as commonConfig, FullConfigInternal } from '../common';
-import * as babel from '../transform/babelBundle';
+import type * as BabelBundle from '../transform/babelBundle';
+// Flashwright: Babel loads on first use; most runs never need it here.
+const babel = new Proxy({}, { get: (_, name) => (require('../transform/babelBundle') as any)[name] }) as typeof BabelBundle;
 
 import type { InternalReporter } from '../reporters/internalReporter';
 import type { T } from '../transform/babelBundle';
-const t: typeof T = babel.types;
+const t = new Proxy({}, { get: (_, name) => (babel.types as any)[name] }) as typeof T;
 
 type Location = {
   file: string;

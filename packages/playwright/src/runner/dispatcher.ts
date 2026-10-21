@@ -20,7 +20,7 @@ import { eventsHelper } from '@utils/eventsHelper';
 
 import { addSuggestedRebaseline } from './rebase';
 import { WorkerHost } from './workerHost';
-import { ensureSpareStandby, recordWorkerCount } from './workerStandby';
+import { ensureSpareStandby } from './workerStandby';
 import { ipc, test as testNs } from '../common';
 import { addLocationAndSnippetToError } from '../reporters/internalReporter';
 import { serializeError } from '../util';
@@ -235,8 +235,6 @@ export class Dispatcher {
     // 1. Allocate workers.
     for (let i = 0; i < this._testRun.config.config.workers; i++)
       this._workerSlots.push({});
-    // Flashwright: the next run of this project pre-spawns as many workers as start now.
-    recordWorkerCount(Math.min(this._workerSlots.length, this._queue.length));
     // 2. Schedule enough jobs.
     this._scheduleJobs();
     this._checkFinished();

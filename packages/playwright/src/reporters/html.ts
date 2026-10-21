@@ -37,7 +37,9 @@ import { extractZip } from '@utils/third_party/extractZip';
 declare const __PW_HMR__: boolean;
 
 import { CommonReporterOptions, formatError, formatResultFailure, internalScreen } from './base';
-import * as babel from '../transform/babelBundle';
+import type * as BabelBundle from '../transform/babelBundle';
+// Flashwright: Babel loads on first use; most runs never need it here.
+const babel = new Proxy({}, { get: (_, name) => (require('../transform/babelBundle') as any)[name] }) as typeof BabelBundle;
 import { resolveReporterOutputPath, stripAnsiEscapes } from '../util';
 
 import type { ReportConfigureParams, ReportEndParams, ReporterV2 } from './reporterV2';
