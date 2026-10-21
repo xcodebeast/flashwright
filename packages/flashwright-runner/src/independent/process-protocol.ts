@@ -8,7 +8,7 @@ export interface ProcessSuiteModule {
   onResult?(result: SuiteTestResult): unknown;
   onWorkerEnd?(errors: readonly PhaseFailure[]): unknown;
 }
-export interface ProcessTest { id: string; title: string; file: string; expectedStatus: ExpectedStatus; callbackHash: string }
+export interface ProcessTest { id: string; title: string; file: string; expectedStatus: ExpectedStatus; callbackHash: string; timeout: number | undefined; slow: boolean }
 export interface ProcessGroup { id: number; workerKey: number; tests: string[] }
 export interface ProcessPlan { tests: ProcessTest[]; groups: ProcessGroup[] }
 export interface ProcessFailure { phase: string; message: string; stack?: string }
@@ -27,7 +27,7 @@ export function failure(error: unknown, phase: string): ProcessFailure {
 export function processPlan(tests: readonly PlannedTest[], groups: readonly SuiteGroup[]): ProcessPlan {
   const pools: SuiteGroup['workerPool'][] = [];
   return {
-    tests: tests.map(test => ({ id: test.id, title: test.title, file: test.file, expectedStatus: test.expectedStatus, callbackHash: createHash('sha256').update(test.callback.toString()).digest('hex') })),
+    tests: tests.map(test => ({ id: test.id, title: test.title, file: test.file, expectedStatus: test.expectedStatus, callbackHash: createHash('sha256').update(test.callback.toString()).digest('hex'), timeout: test.timeout, slow: test.slow })),
     groups: groups.map((group, id) => {
       let workerKey = pools.findIndex(pool => pool.hasSameWorkerFixtures(group.workerPool));
       if (workerKey < 0) { workerKey = pools.length; pools.push(group.workerPool); }

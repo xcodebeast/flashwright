@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+import { mkdir,readFile,writeFile } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { resolve,join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { timeoutScenarios } from '../compatibility/runner-timeouts/scenarios.mjs';
+import { runProcessSuite } from '../packages/flashwright-runner/dist/commonjs/independent/process-runner.js';
+const root=resolve(import.meta.dirname,'..');
+const destination=resolve(process.argv[2]??join(root,'workbench',`independent-timeout-differential-${Date.now()}`));
+assert.ok(destination.startsWith(join(root,'workbench')+'/'));
+await mkdir(destination);const project=join(destination,'reference');await mkdir(project);
+const names=['deadlines','fixture-pool','fixture-runtime','suite-collector','suite-runtime','suite-groups','process-protocol','process-worker','process-runner'];
+const paths=[...names.flatMap(n=>[`packages/flashwright-runner/src/independent/${n}.ts`,`packages/flashwright-runner/dist/commonjs/independent/${n}.js`]),'compatibility/runner-timeouts/scenarios.mjs','compatibility/runner-timeouts/worker.cjs','tools/run-independent-timeout-differential.mjs'];
+const digest=async p=>createHash('sha256').update(await readFile(join(root,p))).digest('hex');
+const hashes=Object.fromEntries(await Promise.all(paths.map(async p=>[p,await digest(p)])));
+const referenceEvents=join(destination,'reference-events.jsonl'),scenarios=timeoutScenarios(()=>{});
+for(const {name} of scenarios)await writeFile(join(project,name+'.spec.cjs'),`const { test } = require('@playwright/test');
+const { appendFileSync } = require('node:fs');
+const { timeoutScenarios } = require(${JSON.stringify(join(root,'compatibility/runner-timeouts/scenarios.mjs'))});
+test.describe(${JSON.stringify(name)}, () => timeoutScenarios((name,event)=>appendFileSync(${JSON.stringify(referenceEvents)},JSON.stringify({name,event})+'\\n')).find(s=>s.name===${JSON.stringify(name)}).declare(test));
+`);
+await writeFile(join(project,'playwright.config.cjs'),'module.exports='+JSON.stringify({testDir:project,workers:1,retries:0,timeout:400,reporter:[['json',{outputFile:join(destination,'reference-report.json')}]],outputDir:join(project,'output')})+';\n');
+const args=['tools/watchdog.py','--timeout','120','--report',join(destination,'reference-resources.json'),'--',process.execPath,join(root,'node_modules/playwright/cli.js'),'test','--config',join(project,'playwright.config.cjs')];
+await writeFile(join(destination,'reference-command.json'),JSON.stringify({executable:'python3',args},null,2)+'\n');
+const child=spawn('python3',args,{cwd:root,stdio:['ignore','pipe','pipe']});let stdout='',stderr='';child.stdout.on('data',b=>stdout+=b);child.stderr.on('data',b=>stderr+=b);
+const exit=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});
+await writeFile(join(destination,'reference-stdout.txt'),stdout);await writeFile(join(destination,'reference-stderr.txt'),stderr);
+assert.equal(exit,1,'Intentional timeouts/failures must fail the reference');
+const resources=JSON.parse(await readFile(join(destination,'reference-resources.json')));assert.equal(resources.timedOut,false);assert.deepEqual(resources.cleanupSignals,[]);assert.deepEqual(resources.remainingObservedProcesses,[]);
+const reference=JSON.parse(await readFile(join(destination,'reference-report.json')));assert.deepEqual(reference.errors,[]);
+const pinned=[];function visit(suites, scenario){for(const suite of suites){const name=scenarios.some(s=>s.name===suite.title)?suite.title:scenario;for(const spec of suite.specs??[]){assert.equal(spec.tests.length,1);assert.equal(spec.tests[0].results.length,1);pinned.push({name,title:spec.title,status:spec.tests[0].results[0].status,expectedStatus:spec.tests[0].expectedStatus,errorCount:spec.tests[0].results[0].errors.length});}visit(suite.suites??[],name);}}visit(reference.suites);
+const events=JSON.parse('['+(await readFile(referenceEvents,'utf8')).trim().split('\n').join(',')+']');
+const outcomes=[];
+for(const scenario of scenarios){
+ const eventPath=join(destination,scenario.name+'-events.jsonl');
+ const result=await runProcessSuite({modulePath:join(root,'compatibility/runner-timeouts/worker.cjs'),workers:1,timeoutMs:400,startupTimeoutMs:5000,shutdownTimeoutMs:2000,killGraceMs:100,env:{FW_TIMEOUT_CASE:scenario.name,FW_TIMEOUT_EVENTS:eventPath}});
+ await writeFile(join(destination,scenario.name+'-result.json'),JSON.stringify(result,null,2)+'\n');
+ assert.deepEqual(result.workerErrors,[],scenario.name);
+ assert.ok(result.workers.every(w=>w.exitCode===0&&!w.signal&&!w.forcedTermination),scenario.name+' natural worker retirement');
+ for(const worker of result.workers)assert.throws(()=>process.kill(worker.pid,0),{code:'ESRCH'});
+ const actualEvents=(await readFile(eventPath,'utf8')).trim().split('\n').filter(Boolean).map(JSON.parse);
+ assert.deepEqual(actualEvents,events.filter(e=>e.name===scenario.name),scenario.name+' event sequence');
+ for(const resultEntry of result.results){
+  const title=JSON.parse(resultEntry.id).at(-1);const expected=pinned.find(p=>p.name===scenario.name&&p.title===title);assert.ok(expected,scenario.name+'/'+title);
+  assert.equal(resultEntry.status,expected.status,scenario.name+'/'+title);assert.equal(resultEntry.expectedStatus,expected.expectedStatus);
+  assert.equal(resultEntry.errors.length,expected.errorCount,scenario.name+'/'+title+' retained errors');
+  outcomes.push({name:scenario.name,title,status:resultEntry.status,expectedStatus:resultEntry.expectedStatus,errorCount:resultEntry.errors.length});
+ }
+}
+assert.equal(outcomes.length,pinned.length);
+for(const [p,h] of Object.entries(hashes))assert.equal(await digest(p),h,p);
+const report={status:'passed',scenarios:scenarios.length,outcomesPerImplementation:outcomes.length,exactLifecycleEventSequences:true,matchingErrorCounts:true,naturalWorkerRetirement:true,sourceHashes:hashes,outcomes,limitations:['Private independent runner; no public CLI/configuration, reporter/artifact or browser admission from these host cases.','This differential excludes blocked event loops; separate process watchdog controls cover forced recovery.','No performance claim.']};
+await writeFile(join(destination,'verified.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({destination,status:report.status,scenarios:report.scenarios,outcomes:report.outcomesPerImplementation}));

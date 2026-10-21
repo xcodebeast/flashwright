@@ -6,6 +6,7 @@ export interface ProcessRunnerOptions {
   modulePath: string;
   workers: number;
   retries?: number;
+  timeoutMs?: number;
   testWatchdogMs?: number;
   startupTimeoutMs?: number;
   shutdownTimeoutMs?: number;
@@ -65,6 +66,7 @@ class ProcessWorker {
   #hasClosed = false;
   #ended = false;
   #timer: ReturnType<typeof setTimeout> | undefined;
+  #testTimer: ReturnType<typeof setTimeout> | undefined;
   #termination: Promise<void> | undefined;
   #fatal: unknown;
   #failureAccounted = false;
@@ -74,7 +76,7 @@ class ProcessWorker {
   constructor(options: Required<Omit<ProcessRunnerOptions, 'env'>>, env: NodeJS.ProcessEnv, workerIndex: number, parallelIndex: number) {
     this.options = options;
     this.record = { workerIndex, parallelIndex, pid: undefined, exitCode: null, signal: null, forcedTermination: false, stdout: '', stderr: '', outputTruncated: false };
-    this.child = spawn(process.execPath, [join(__dirname, 'process-worker.js'), options.modulePath, String(options.workers), String(workerIndex), String(parallelIndex)], {
+    this.child = spawn(process.execPath, [join(__dirname, 'process-worker.js'), options.modulePath, String(options.workers), String(workerIndex), String(parallelIndex), String(options.timeoutMs)], {
       detached: true, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     });
     this.record.pid = this.child.pid;
@@ -85,7 +87,7 @@ class ProcessWorker {
     this.child.on('message', message => { try { this.message(message); } catch (error) { this.fail(error); } });
     this.child.once('error', error => this.fail(error));
     this.child.once('close', (code, signal) => {
-      this.#ended = true; clearTimeout(this.#timer);
+      this.#ended = true; clearTimeout(this.#timer); clearTimeout(this.#testTimer);
       this.record.exitCode = code; this.record.signal = signal;
       const error = this.#fatal ?? new Error(`Worker ${workerIndex} exited before completing its command (${code ?? signal})`);
       if (!this.#hasClosed || code !== 0 || signal !== null) { this.#fatal ??= error; this.terminate(); }
@@ -97,7 +99,25 @@ class ProcessWorker {
   }
   private arm(ms: number, reason: string): void {
     clearTimeout(this.#timer);
-    if (ms) this.#timer = setTimeout(() => { this.watchdogExpired = true; this.fail(new Error(reason)); }, ms);
+    if (!ms) return;
+    const deadline = performance.now() + ms;
+    const tick = (): void => {
+      const remaining = deadline - performance.now();
+      if (remaining > 0) this.#timer = setTimeout(tick, Math.min(2 ** 31 - 1, remaining));
+      else { this.watchdogExpired = true; this.fail(new Error(reason)); }
+    };
+    tick();
+  }
+  private armTest(ms: number, reason: string): void {
+    clearTimeout(this.#testTimer);
+    if (!ms) return;
+    const deadline = performance.now() + ms;
+    const tick = (): void => {
+      const remaining = deadline - performance.now();
+      if (remaining > 0) this.#testTimer = setTimeout(tick, Math.min(2 ** 31 - 1, remaining));
+      else { this.watchdogExpired = true; this.fail(new Error(reason)); }
+    };
+    tick();
   }
   private fail(error: unknown): void {
     this.#fatal ??= error;
@@ -111,7 +131,7 @@ class ProcessWorker {
   private terminate(): void {
     if (this.#termination) return;
     this.record.forcedTermination = true;
-    clearTimeout(this.#timer); this.signal('SIGTERM');
+    clearTimeout(this.#timer); clearTimeout(this.#testTimer); this.signal('SIGTERM');
     // The leader can exit while a TERM-resistant descendant still owns this
     // process group. Retain escalation even after observing the leader's close.
     this.#termination = new Promise(resolve => setTimeout(() => { this.signal('SIGKILL'); resolve(); }, this.options.killGraceMs));
@@ -126,6 +146,16 @@ class ProcessWorker {
       this.plan = value.plan; clearTimeout(this.#timer); this.ready.resolve(value.plan); return;
     }
     if (value.type === 'fatal') { this.fail(new Error(String(value.error?.message ?? 'Worker failed'))); return; }
+    if (value.type === 'deadline') {
+      check(!this.#hasClosed && ((this.#pending && value.token === this.#pending.token && this.active) || (this.#closePromise && !this.#pending && value.token === undefined)), 'Stale deadline receipt');
+      const notice = value.notice;
+      check(notice && typeof notice.active === 'boolean', 'Invalid deadline receipt');
+      if (notice.active) {
+        check(typeof notice.phase === 'string' && (notice.remaining === null || (typeof notice.remaining === 'number' && Number.isFinite(notice.remaining) && notice.remaining >= 0)), 'Invalid deadline budget');
+        this.arm(notice.remaining === null ? 0 : notice.remaining + this.options.shutdownTimeoutMs, `Worker did not finish timed ${notice.phase}`);
+      } else this.arm(this.#closePromise ? this.options.shutdownTimeoutMs : this.options.startupTimeoutMs, 'Worker stalled after timed phase');
+      return;
+    }
     if (value.type === 'closed') {
       check(this.#closePromise && !this.#pending && !this.#hasClosed && Array.isArray(value.errors), 'Unexpected worker shutdown receipt');
       this.#hasClosed = true; this.#closed.resolve(value.errors); return;
@@ -135,14 +165,16 @@ class ProcessWorker {
     if (value.type === 'begin') {
       check(!this.active && pending.task.attempts.some(a => a.id === value.id && a.retry === value.retry) && !this.runResults.some(r => r.id === value.id), 'Invalid test start receipt');
       this.active = { id: value.id, retry: value.retry };
-      this.arm(this.options.testWatchdogMs, `Worker watchdog exceeded ${this.options.testWatchdogMs} ms for ${value.id}`); return;
+      this.armTest(this.options.testWatchdogMs, `Worker watchdog exceeded ${this.options.testWatchdogMs} ms for ${value.id}`);
+      this.arm(this.options.startupTimeoutMs, 'Worker did not enter its test phase'); return;
     }
     if (value.type === 'result') {
       const result = value.result as ProcessTestResult;
       const planned = this.plan!.tests.find(t => t.id === result?.id);
-      check(this.active && result.id === this.active.id && result.retry === this.active.retry && planned && result.expectedStatus === planned.expectedStatus && result.workerIndex === this.record.workerIndex && result.parallelIndex === this.record.parallelIndex && ['passed', 'failed', 'skipped'].includes(result.status) && Array.isArray(result.errors) && Number.isFinite(result.duration), 'Invalid test result receipt');
+      check(this.active && result.id === this.active.id && result.retry === this.active.retry && planned && result.expectedStatus === planned.expectedStatus && result.workerIndex === this.record.workerIndex && result.parallelIndex === this.record.parallelIndex && ['passed', 'failed', 'skipped', 'timedOut'].includes(result.status) && Array.isArray(result.errors) && Number.isFinite(result.duration), 'Invalid test result receipt');
       this.runResults.push(result); this.active = undefined;
-      this.arm(this.options.testWatchdogMs, 'Worker stalled between test results'); return;
+      clearTimeout(this.#testTimer);
+      this.arm(this.options.startupTimeoutMs, 'Worker stalled between test results'); return;
     }
     if (value.type === 'done') {
       check(!this.active && typeof value.workerStopped === 'boolean' && Array.isArray(value.pending) && Array.isArray(value.skipIds), 'Invalid group completion');
@@ -159,7 +191,7 @@ class ProcessWorker {
     this.active = undefined; this.runResults = []; this.watchdogExpired = false;
     const token = ++this.#sequence, done = deferred<Done>();
     this.#pending = { token, task, done };
-    this.arm(this.options.testWatchdogMs, 'Worker did not start its group');
+    this.arm(this.options.startupTimeoutMs, 'Worker did not start its group');
     const command: RunRequest = { type: 'run', token, ...task };
     this.child.send(command, error => { if (error) this.fail(error); });
     try { return await done.promise; }
@@ -186,11 +218,11 @@ class ProcessWorker {
   }
 }
 
-/** Internal Unix process dispatcher. Watchdog termination is a liveness guard,
- * not compatible Playwright test-timeout cleanup or descendant-exit admission. */
+/** Internal Unix process dispatcher. Cooperative phase deadlines allow cleanup;
+ * a separate watchdog handles blocked workers and does not prove descendant exit. */
 export async function runProcessSuite(input: ProcessRunnerOptions): Promise<ProcessSuiteResult> {
   check(process.platform !== 'win32', 'Independent process runner currently requires Unix process groups');
-  const options = { modulePath: resolve(input.modulePath), workers: input.workers, retries: input.retries ?? 0, testWatchdogMs: input.testWatchdogMs ?? 30000, startupTimeoutMs: input.startupTimeoutMs ?? 30000, shutdownTimeoutMs: input.shutdownTimeoutMs ?? 5000, killGraceMs: input.killGraceMs ?? 250 };
+  const options = { modulePath: resolve(input.modulePath), workers: input.workers, retries: input.retries ?? 0, timeoutMs: input.timeoutMs ?? 30000, testWatchdogMs: input.testWatchdogMs ?? 0, startupTimeoutMs: input.startupTimeoutMs ?? 30000, shutdownTimeoutMs: input.shutdownTimeoutMs ?? 5000, killGraceMs: input.killGraceMs ?? 250 };
   for (const [name, value] of Object.entries(options)) if (name !== 'modulePath') check(Number.isSafeInteger(value) && Number(value) >= (['workers', 'startupTimeoutMs', 'shutdownTimeoutMs', 'killGraceMs'].includes(name) ? 1 : 0), `Invalid ${name}`);
   const all: ProcessWorker[] = [], results: ProcessTestResult[] = [], workerErrors: ProcessFailure[] = [];
   let plan: ProcessPlan | undefined, nextWorker = 0;

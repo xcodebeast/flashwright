@@ -2,8 +2,37 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { FixturePool, FixtureConfigurationError, fixtureDependencies } from '../packages/flashwright-runner/dist/commonjs/independent/fixture-pool.js';
 import { FixtureWorker } from '../packages/flashwright-runner/dist/commonjs/independent/fixture-runtime.js';
+import { timeSlot } from '../packages/flashwright-runner/dist/commonjs/independent/deadlines.js';
 
 const rejects = definition => assert.throws(() => new FixturePool(definition).validate(), FixtureConfigurationError);
+
+test('exhausted cleanup retains a fixture error already observed after use', async () => {
+  const sentinel = new Error('fixture sentinel');
+  const worker = new FixtureWorker(new FixturePool({ value: async ({}, use) => { void use(1); throw sentinel; } }), {});
+  const scope = worker.beginAttempt({});
+  await scope.run(({ value }) => value, 'test', { slot: timeSlot(1000), phase: 'test' });
+  await assert.rejects(scope.close({ slot: { timeout: 10, elapsed: 10 }, phase: 'cleanup' }), error => {
+    assert.deepEqual(error.errors, [sentinel]); return true;
+  });
+  await worker.close();
+});
+
+test('cleanup cannot reopen use admission after fixture setup expires', async () => {
+  let releaseSetup, finishLate;
+  const gate = new Promise(resolve => releaseSetup = resolve);
+  const late = new Promise(resolve => finishLate = resolve);
+  const worker = new FixtureWorker(new FixturePool({ value: async ({}, use) => {
+    await gate;
+    try { await use('late'); finishLate(undefined); } catch (error) { finishLate(error); }
+  } }), {});
+  const scope = worker.beginAttempt({});
+  await assert.rejects(scope.run(({ value }) => assert.fail('expired setup reached body'), 'test', { slot: timeSlot(20), phase: 'test' }), /timeout/);
+  const cleanup = scope.close({ slot: timeSlot(1000), phase: 'cleanup' });
+  releaseSetup();
+  await cleanup;
+  assert.match((await late).message, /timeout|setup has ended/);
+  await worker.close();
+});
 
 test('invalid dependency graphs reject before any fixture invocation', () => {
   rejects({ a: async ({ missing }, use) => use() });
@@ -11,7 +40,7 @@ test('invalid dependency graphs reject before any fixture invocation', () => {
   rejects({ a: async ({ b }, use) => use(), b: async ({ a }, use) => use() });
   rejects({ a: [async ({ b }, use) => use(), { scope: 'worker' }], b: 1 });
   rejects({ a: [1, { scope: 'invalid' }] });
-  rejects({ a: [1, { timeout: 100 }] });
+  rejects({ a: [1, { timeout: -1 }] });
   rejects({ a: [1, { box: true }] });
   rejects({ a: [1, { title: 'custom' }] });
   rejects({ a: [1, { auto: 'invalid' }] });

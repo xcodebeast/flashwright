@@ -2,13 +2,14 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { FixtureConfigurationError, type FixturePool } from './fixture-pool.js';
 import { FixtureWorker, type FixtureAttempt } from './fixture-runtime.js';
 import type { ExpectedStatus, HookType, PlannedSuite, PlannedTest } from './suite-collector.js';
+import { cleanupTimeout, currentDeadlineRun, exhausted, RunnerTimeoutError, timeSlot, timeoutValue, type TimeSlot } from './deadlines.js';
 
 export type FailurePhase = HookType | 'body' | 'testTeardown' | 'workerTeardown';
 export interface PhaseFailure { readonly phase: FailurePhase; readonly error: unknown }
 export interface CallbackExecution { readonly phase: HookType | 'body'; readonly callback: Function; readonly finished: number }
 export interface SuiteTestResult {
   readonly test: PlannedTest;
-  readonly status: 'passed' | 'failed' | 'skipped';
+  readonly status: 'passed' | 'failed' | 'skipped' | 'timedOut';
   readonly expectedStatus: ExpectedStatus;
   readonly errors: readonly PhaseFailure[];
   readonly executions: readonly CallbackExecution[];
@@ -26,7 +27,10 @@ export interface FiniteTestInfo {
   readonly testId: string; readonly title: string; readonly file: string;
   readonly retry: number; readonly workerIndex: number; readonly parallelIndex: number;
   readonly expectedStatus: ExpectedStatus;
-  status: 'passed' | 'failed' | 'skipped';
+  status: 'passed' | 'failed' | 'skipped' | 'timedOut';
+  readonly timeout: number;
+  setTimeout(timeout: number): void;
+  slow(condition?: boolean): void;
 }
 
 interface ActiveTestContext { info: FiniteTestInfo; active: boolean }
@@ -54,12 +58,14 @@ export interface SuiteRunOptions {
 export class SuiteWorker {
   readonly #worker: FixtureWorker;
   readonly #info: SuiteWorkerInfo;
+  readonly #timeout: number;
   readonly #context: WorkerTestContext = { current: undefined };
   #operation: Promise<WorkerGroupResult> | undefined;
   #closure: Promise<readonly PhaseFailure[]> | undefined;
   #stopped = false;
-  constructor(pool: FixturePool, info: SuiteWorkerInfo = { workerIndex: 0, parallelIndex: 0 }) {
-    this.#worker = new FixtureWorker(pool, info, callback => workerFixtureContext.run(this.#context, callback)); this.#info = info;
+  constructor(pool: FixturePool, info: SuiteWorkerInfo = { workerIndex: 0, parallelIndex: 0 }, timeout = 30000) {
+    this.#timeout = timeoutValue(timeout);
+    this.#worker = new FixtureWorker(pool, info, callback => workerFixtureContext.run(this.#context, callback), timeout); this.#info = info;
   }
   validate(tests: readonly PlannedTest[]): void {
     for (const test of tests) {
@@ -73,7 +79,7 @@ export class SuiteWorker {
     try { this.validate(tests); } catch (error) { return Promise.reject(error); }
     const operation = Promise.resolve().then(async () => {
       try {
-        const result = await executeGroup(tests, this.#worker, this.#info, this.#context, options);
+        const result = await executeGroup(tests, this.#worker, this.#info, this.#context, options, this.#timeout);
         this.#stopped = result.workerStopped;
         return result;
       } catch (error) {
@@ -92,7 +98,7 @@ export class SuiteWorker {
   private async finish(): Promise<readonly PhaseFailure[]> {
     await this.#operation?.catch(() => {});
     if (this.#stopped) return [];
-    try { await this.#worker.close(); return []; }
+    try { await this.#worker.close({ slot: timeSlot(this.#timeout), phase: 'workerTeardown' }); return []; }
     catch (cause) {
       const causes: unknown[] = cause instanceof AggregateError ? cause.errors : [cause];
       return Object.freeze(causes.map(error => Object.freeze({ phase: 'workerTeardown' as const, error })));
@@ -111,9 +117,11 @@ export async function runWorkerGroup(tests: readonly PlannedTest[], workerInfo?:
   return Object.freeze({ ...result, teardownErrors });
 }
 
-async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker, workerInfo: SuiteWorkerInfo, owner: WorkerTestContext, options: SuiteRunOptions): Promise<WorkerGroupResult> {
+async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker, workerInfo: SuiteWorkerInfo, owner: WorkerTestContext, options: SuiteRunOptions, projectTimeout: number): Promise<WorkerGroupResult> {
   const results: SuiteTestResult[] = [];
   const active = new Set<PlannedSuite>();
+  const slowSuites = new Set<PlannedSuite>();
+  let annotatingSuite: PlannedSuite | undefined;
   let failedBeforeAll: PlannedSuite | undefined, completed = 0;
   let workerStopped = false;
   let lastAttempt: { test: PlannedTest; info: FiniteTestInfo } | undefined;
@@ -121,7 +129,16 @@ async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker
     for (let index = 0; index < tests.length; index++) {
       const test = tests[index]!, errors: PhaseFailure[] = [], executions: CallbackExecution[] = [];
       const started = performance.now();
-      const info: FiniteTestInfo = { testId: test.id, title: test.title, file: test.file, retry: options.retries?.get(test.id) ?? 0, ...workerInfo, expectedStatus: test.expectedStatus, status: test.expectedStatus === 'skipped' ? 'skipped' : 'passed' };
+      const testSlot = timeSlot(test.timeout ?? projectTimeout);
+      let slowed = test.slow || test.suites.some(suite => slowSuites.has(suite));
+      if (slowed) testSlot.timeout *= 3;
+      const info: FiniteTestInfo = {
+        testId: test.id, title: test.title, file: test.file, retry: options.retries?.get(test.id) ?? 0, ...workerInfo,
+        expectedStatus: test.expectedStatus, status: test.expectedStatus === 'skipped' ? 'skipped' : 'passed',
+        get timeout() { return testSlot.timeout; },
+        setTimeout(timeout) { currentDeadlineRun().setTimeout(timeout); },
+        slow(condition = true) { const run = currentDeadlineRun(); if (condition && !slowed) { run.slow(); slowed = true; if (annotatingSuite) slowSuites.add(annotatingSuite); } },
+      };
       await options.onBegin?.(test, info);
       lastAttempt = { test, info };
       const context = { info, active: true };
@@ -130,21 +147,26 @@ async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker
       try { await executionContext.run(context, async () => {
         const record = (phase: FailurePhase, cause: unknown, cleanup = false): void => {
           const causes: unknown[] = cleanup && cause instanceof AggregateError ? cause.errors : [cause];
-          for (const error of causes) errors.push({ phase, error });
-          info.status = 'failed';
+          for (const error of causes) {
+            errors.push({ phase, error });
+            if (info.status === 'passed' || info.status === 'skipped') info.status = error instanceof RunnerTimeoutError ? 'timedOut' : 'failed';
+          }
         };
         const unexpected = (): boolean => info.status !== 'skipped' && info.status !== info.expectedStatus;
         const allHooks = async (suite: PlannedSuite, type: 'beforeAll' | 'afterAll'): Promise<void> => {
           for (const hook of suite.hooks.filter(h => h.type === type)) {
             const scope = worker.beginAttempt(info, test.pool);
-            try { if ((await scope.run(hook.callback, 'all-hooks-only')).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); }
+            const budget = { slot: timeSlot(projectTimeout), phase: type };
+            annotatingSuite = type === 'beforeAll' ? suite : undefined;
+            try { if ((await scope.run(hook.callback, 'all-hooks-only', budget)).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); }
             catch (error) { record(type, error); }
-            finally { try { await scope.close(); } catch (error) { record(type, error, true); } }
+            finally { try { await scope.close(budget); } catch (error) { record(type, error, true); } finally { annotatingSuite = undefined; } }
           }
         };
-        const eachHooks = async (scope: FixtureAttempt, suites: readonly PlannedSuite[], type: 'beforeEach' | 'afterEach'): Promise<void> => {
+        const eachHooks = async (scope: FixtureAttempt, suites: readonly PlannedSuite[], type: 'beforeEach' | 'afterEach', slot: TimeSlot): Promise<void> => {
           for (const suite of suites) for (const hook of suite.hooks.filter(h => h.type === type)) {
-            try { if ((await scope.run(hook.callback)).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); } catch (error) { record(type, error); }
+            if (exhausted(slot)) continue;
+            try { if ((await scope.run(hook.callback, 'test', { slot, phase: type })).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); } catch (error) { record(type, error); }
           }
         };
 
@@ -160,13 +182,14 @@ async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker
           if (!beforeAllFailed) {
             const scope = worker.beginAttempt(info, test.pool);
             try {
-              await eachHooks(scope, test.suites, 'beforeEach');
+              await eachHooks(scope, test.suites, 'beforeEach', testSlot);
               if (!errors.length) {
-                try { if ((await scope.run(test.callback)).ran) executions.push({ phase: 'body', callback: test.callback, finished: performance.now() }); } catch (error) { record('body', error); }
+                try { if ((await scope.run(test.callback, 'test', { slot: testSlot, phase: 'body' })).ran) executions.push({ phase: 'body', callback: test.callback, finished: performance.now() }); } catch (error) { record('body', error); }
               }
             } finally {
-              await eachHooks(scope, [...test.suites].reverse(), 'afterEach');
-              try { await scope.close(); } catch (error) { record('testTeardown', error, true); }
+              const cleanupSlot = timeSlot(cleanupTimeout(projectTimeout, testSlot.timeout));
+              await eachHooks(scope, [...test.suites].reverse(), 'afterEach', cleanupSlot);
+              try { await scope.close({ slot: cleanupSlot, phase: 'testTeardown' }); } catch (error) { record('testTeardown', error, true); }
             }
           }
         }
@@ -182,7 +205,7 @@ async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker
           workerStopped = true;
           // Failure shutdown belongs to this test; normal shutdown errors below
           // are separate and cannot retroactively rewrite a successful result.
-          try { await worker.close(); } catch (error) { record('workerTeardown', error, true); }
+          try { await worker.close({ slot: timeSlot(projectTimeout), phase: 'workerTeardown' }); } catch (error) { record('workerTeardown', error, true); }
         }
       }); } finally { context.active = false; owner.current = undefined; }
       const result = Object.freeze({ test, status: info.status, expectedStatus: info.expectedStatus, errors: Object.freeze(errors), executions: Object.freeze(executions), started, finished: performance.now() });
@@ -202,15 +225,16 @@ async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker
         active.delete(suite);
         for (const hook of suite.hooks.filter(h => h.type === 'afterAll')) {
           let scope: FixtureAttempt | undefined;
+          const budget = { slot: timeSlot(projectTimeout), phase: 'afterAll' };
           try {
             scope = worker.beginAttempt(owner.current!.info, lastAttempt!.test.pool);
-            await scope.run(hook.callback, 'all-hooks-only');
+            await scope.run(hook.callback, 'all-hooks-only', budget);
           } catch (cause) { cleanupErrors.push(cause); }
-          finally { try { await scope?.close(); } catch (cause) { retain(cause); } }
+          finally { try { await scope?.close(budget); } catch (cause) { retain(cause); } }
         }
       }
       if (!workerStopped) {
-        try { await worker.close(); } catch (cause) { retain(cause); }
+        try { await worker.close({ slot: timeSlot(projectTimeout), phase: 'workerTeardown' }); } catch (cause) { retain(cause); }
       }
     };
     // Observer failures can arrive between attempts. Drain entered suites with

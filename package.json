@@ -52,7 +52,9 @@
     "test:device-runner": "python3 tools/watchdog.py --timeout 180 --report-directory compatibility/evidence/resources -- bun tools/run-device-runner-tests.mjs",
     "test:fixture-core": "bun test ./tools/test-independent-fixtures.mjs && bun tools/run-independent-fixture-differential.mjs",
     "test:process-core": "bun test ./tools/test-independent-processes.mjs",
-    "test:suite-core": "bun test ./tools/test-independent-suites.mjs && bun tools/run-independent-suite-differential.mjs"
+    "test:suite-core": "bun test ./tools/test-independent-suites.mjs && bun tools/run-independent-suite-differential.mjs",
+    "test:runner-deadlines": "bun test ./tools/test-independent-fixtures.mjs ./tools/test-independent-suites.mjs ./tools/test-independent-processes.mjs && bun tools/run-independent-timeout-differential.mjs",
+    "test:runner-deadline-browser": "bun tools/run-independent-browser-timeout.mjs"
   },
   "devDependencies": {
     "@flashwright/test": "0.0.0",

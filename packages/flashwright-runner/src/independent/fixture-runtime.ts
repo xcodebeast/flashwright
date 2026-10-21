@@ -1,4 +1,5 @@
 import { FixtureConfigurationError, FixturePool, type FixtureFunction, type FixtureRegistration, type FixtureScope, type FixtureValues } from './fixture-pool.js';
+import { exhausted, inDeadlineContext, timeSlot, withDeadline, type DeadlineRun, type PhaseBudget, type TimeSlot } from './deadlines.js';
 
 type AutomaticScope = 'test' | 'all-hooks-only' | 'worker';
 export type FixtureRunResult<T> = { ran: true; value: T } | { ran: false };
@@ -15,6 +16,11 @@ interface Instance {
   release: Deferred<void> | undefined;
   completion: Promise<void> | undefined;
   teardownFailure: { error: unknown } | undefined;
+  slot: TimeSlot | undefined;
+  run: DeadlineRun | undefined;
+  setupFailure: unknown;
+  acceptingUse: boolean;
+  retired: boolean;
 }
 type Instances = Map<FixtureRegistration, Instance>;
 type WorkerFixtureContext = <T>(callback: () => T) => T;
@@ -23,31 +29,43 @@ function addErrors(errors: unknown[], error: unknown): void {
   if (error instanceof AggregateError) errors.push(...error.errors);
   else errors.push(error);
 }
-async function retire(instances: Instances): Promise<void> {
+async function retire(instances: Instances, budget?: PhaseBudget): Promise<void> {
   const errors: unknown[] = [];
   // Instances are inserted after their dependencies, so reverse creation order
   // releases every consumer while the values it depends on still exist.
   for (const [registration, instance] of [...instances].reverse()) {
-    instance.release?.resolve();
-    await instance.completion;
-    if (instance.teardownFailure) errors.push(instance.teardownFailure.error);
-    instances.delete(registration);
+    const cleanup = async (run?: DeadlineRun): Promise<void> => {
+      instance.run = run;
+      // A fixture still stuck before use() has no published value to release.
+      // Its original callback remains owned by the retiring process.
+      if (instance.release) { instance.release.resolve(); await instance.completion; }
+      if (instance.teardownFailure) throw instance.teardownFailure.error;
+    };
+    try {
+      if (budget) {
+        const slot = instance.slot ?? budget.slot;
+        if (!exhausted(slot)) await withDeadline(slot, `Fixture "${registration.name}" teardown`, cleanup);
+        else if (instance.teardownFailure) throw instance.teardownFailure.error;
+      } else await cleanup();
+    } catch (error) { errors.push(error); }
+    finally { instance.run = undefined; instance.retired = true; instances.delete(registration); }
   }
   if (errors.length) throw new AggregateError(errors, 'Fixture teardown failed');
 }
 
-/** Owns finite fixture phases. Deadline/cancellation admission belongs to the
- * future process worker; this module neither races away callbacks nor reports
- * their resources closed while those callbacks remain pending. */
+/** Owns fixture phases. Timed-out callbacks cannot publish late fixture values;
+ * they remain in their original process, which must retire before replacement. */
 export class FixtureWorker {
   readonly #pool: FixturePool;
   readonly #info: unknown;
   readonly #runWorkerFixture: WorkerFixtureContext;
+  readonly #projectTimeout: number;
   readonly #instances: Instances = new Map();
   #attempt: FixtureAttempt | undefined;
   #closure: Promise<void> | undefined;
-  constructor(pool: FixturePool, workerInfo: unknown, runWorkerFixture: WorkerFixtureContext = callback => callback()) {
+  constructor(pool: FixturePool, workerInfo: unknown, runWorkerFixture: WorkerFixtureContext = callback => callback(), projectTimeout = 30000) {
     pool.validate(); this.#pool = pool; this.#info = workerInfo; this.#runWorkerFixture = runWorkerFixture;
+    this.#projectTimeout = projectTimeout;
   }
   beginAttempt(info: unknown, pool = this.#pool): FixtureAttempt {
     if (this.#closure) throw new FixtureConfigurationError('Fixture worker is closing');
@@ -59,7 +77,7 @@ export class FixtureWorker {
       let current = pool.resolve(original.name), canonical: FixtureRegistration | undefined = original;
       while (current && canonical) { identities.set(current, canonical); current = current.previous; canonical = canonical.previous; }
     }
-    const attempt = new FixtureAttempt(pool, info, this.#info, this.#instances, identities, this.#runWorkerFixture, () => { if (this.#attempt === attempt) this.#attempt = undefined; });
+    const attempt = new FixtureAttempt(pool, info, this.#info, this.#instances, identities, this.#runWorkerFixture, () => { if (this.#attempt === attempt) this.#attempt = undefined; }, this.#projectTimeout);
     this.#attempt = attempt;
     return attempt;
   }
@@ -67,14 +85,14 @@ export class FixtureWorker {
     pool.validate();
     if (!this.#pool.hasSameWorkerFixtures(pool)) throw new FixtureConfigurationError('Changed worker fixtures require a fresh worker');
   }
-  close(): Promise<void> {
-    if (!this.#closure) this.#closure = this.finish();
+  close(budget?: PhaseBudget): Promise<void> {
+    if (!this.#closure) this.#closure = this.finish(budget);
     return this.#closure;
   }
-  private async finish(): Promise<void> {
+  private async finish(budget?: PhaseBudget): Promise<void> {
     const errors: unknown[] = [];
-    try { await this.#attempt?.close(); } catch (error) { addErrors(errors, error); }
-    try { await retire(this.#instances); } catch (error) { addErrors(errors, error); }
+    try { await this.#attempt?.close(budget); } catch (error) { addErrors(errors, error); }
+    try { await retire(this.#instances, budget); } catch (error) { addErrors(errors, error); }
     if (errors.length) throw new AggregateError(errors, 'Worker fixture teardown failed');
   }
 }
@@ -88,38 +106,40 @@ export class FixtureAttempt {
   readonly #testInstances: Instances = new Map();
   readonly #onClosed: () => void;
   readonly #runWorkerFixture: WorkerFixtureContext;
+  readonly #projectTimeout: number;
   #operation: Promise<unknown> | undefined;
   #closure: Promise<void> | undefined;
-  constructor(pool: FixturePool, testInfo: unknown, workerInfo: unknown, workerInstances: Instances, workerIdentities: ReadonlyMap<FixtureRegistration, FixtureRegistration>, runWorkerFixture: WorkerFixtureContext, onClosed: () => void) {
+  constructor(pool: FixturePool, testInfo: unknown, workerInfo: unknown, workerInstances: Instances, workerIdentities: ReadonlyMap<FixtureRegistration, FixtureRegistration>, runWorkerFixture: WorkerFixtureContext, onClosed: () => void, projectTimeout = 30000) {
     this.#pool = pool; this.#testInfo = testInfo; this.#workerInfo = workerInfo;
     this.#workerInstances = workerInstances; this.#workerIdentities = workerIdentities; this.#onClosed = onClosed;
     this.#runWorkerFixture = runWorkerFixture;
+    this.#projectTimeout = projectTimeout;
   }
-  run<T>(callback: (values: FixtureValues, info: unknown) => T, automatic: AutomaticScope = 'test'): Promise<FixtureRunResult<Awaited<T>>> {
+  run<T>(callback: (values: FixtureValues, info: unknown) => T, automatic: AutomaticScope = 'test', budget?: PhaseBudget): Promise<FixtureRunResult<Awaited<T>>> {
     if (this.#closure) return Promise.reject(new FixtureConfigurationError('Test fixture scope is closing'));
     if (this.#operation) return Promise.reject(new FixtureConfigurationError('Concurrent fixture callbacks require separate test scopes'));
-    const operation = Promise.resolve().then(() => this.invoke(callback, automatic));
+    const operation = Promise.resolve().then(() => this.invoke(callback, automatic, budget));
     this.#operation = operation;
     // Observe both outcomes without replacing the callback's rejection or
     // creating an unhandled finally-promise when the caller fails.
     void operation.then(() => { this.#operation = undefined; }, () => { this.#operation = undefined; });
     return operation;
   }
-  close(): Promise<void> {
-    if (!this.#closure) this.#closure = this.finish();
+  close(budget?: PhaseBudget): Promise<void> {
+    if (!this.#closure) this.#closure = this.finish(budget);
     return this.#closure;
   }
-  private async finish(): Promise<void> {
+  private async finish(budget?: PhaseBudget): Promise<void> {
     try {
       // The caller retains the test/setup error. Cleanup waits for its exact
       // invocation, then reports only cleanup failures through this promise.
       await this.#operation?.catch(() => {});
-      await retire(this.#testInstances);
+      await retire(this.#testInstances, budget);
     } finally { this.#onClosed(); }
   }
   private identity(registration: FixtureRegistration): FixtureRegistration { return registration.scope === 'worker' ? this.#workerIdentities.get(registration)! : registration; }
   private instances(scope: FixtureScope): Instances { return scope === 'worker' ? this.#workerInstances : this.#testInstances; }
-  private async invoke<T>(callback: (values: FixtureValues, info: unknown) => T, automatic: AutomaticScope): Promise<FixtureRunResult<Awaited<T>>> {
+  private async invoke<T>(callback: (values: FixtureValues, info: unknown) => T, automatic: AutomaticScope, budget?: PhaseBudget): Promise<FixtureRunResult<Awaited<T>>> {
     const required = this.#pool.required(callback);
     const autos = this.#pool.registrations().filter(r => r.auto && (automatic === 'test' || r.scope === 'worker' || (automatic === 'all-hooks-only' && r.auto === 'all-hooks-included')));
     autos.sort((a, b) => Number(a.scope === 'test') - Number(b.scope === 'test'));
@@ -130,19 +150,21 @@ export class FixtureAttempt {
       ordered.add(registration);
     };
     for (const registration of [...autos, ...required]) collect(registration);
-    for (const registration of ordered) await this.setup(registration);
+    for (const registration of ordered) await this.setup(registration, budget);
     const values: FixtureValues = Object.create(null) as FixtureValues;
     for (const registration of required) {
       const instance = this.instances(registration.scope).get(this.identity(registration))!;
       if (instance.failed) return { ran: false };
       values[registration.name] = instance.value;
     }
-    return { ran: true, value: await callback(values, this.#testInfo) };
+    const invoke = async (): Promise<Awaited<T>> => await callback(values, this.#testInfo);
+    return { ran: true, value: budget ? await withDeadline(budget.slot, budget.phase, invoke) : await invoke() };
   }
-  private async setup(registration: FixtureRegistration): Promise<void> {
+  private async setup(registration: FixtureRegistration, budget?: PhaseBudget): Promise<void> {
     const instances = this.instances(registration.scope);
     if (instances.has(this.identity(registration))) return;
-    const instance: Instance = { registration, value: registration.value, failed: false, release: undefined, completion: undefined, teardownFailure: undefined };
+    const timeout = registration.timeout ?? (registration.scope === 'worker' ? this.#projectTimeout : undefined);
+    const instance: Instance = { registration, value: registration.value, failed: false, release: undefined, completion: undefined, teardownFailure: undefined, slot: timeout === undefined ? undefined : timeSlot(timeout), run: undefined, setupFailure: undefined, acceptingUse: true, retired: false };
     instances.set(this.identity(registration), instance);
     if (typeof registration.value !== 'function') return;
     const values: FixtureValues = Object.create(null) as FixtureValues;
@@ -155,6 +177,7 @@ export class FixtureAttempt {
     const available = deferred<void>();
     let used = false;
     const use = async (value?: unknown): Promise<void> => {
+      if (!instance.acceptingUse || instance.retired || (budget && !instance.run?.active)) throw instance.setupFailure ?? new FixtureConfigurationError(`Fixture "${registration.name}" setup has ended`);
       if (used) throw new FixtureConfigurationError(`Fixture "${registration.name}" called use() more than once`);
       used = true; instance.value = value; instance.release = deferred<void>();
       available.resolve();
@@ -171,7 +194,16 @@ export class FixtureAttempt {
         else instance.teardownFailure = { error };
       }
     };
-    instance.completion = registration.scope === 'worker' ? this.#runWorkerFixture(run) : run();
-    await available.promise;
+    const setup = async (deadline?: DeadlineRun): Promise<void> => {
+      instance.run = deadline;
+      const execute = (): Promise<void> => inDeadlineContext(() => instance.run, run);
+      instance.completion = registration.scope === 'worker' ? this.#runWorkerFixture(execute) : execute();
+      await available.promise;
+    };
+    try {
+      if (budget) await withDeadline(instance.slot ?? budget.slot, `Fixture "${registration.name}" setup`, setup);
+      else await setup();
+    } catch (error) { instance.failed = true; instance.setupFailure = error; throw error; }
+    finally { instance.acceptingUse = false; instance.run = undefined; }
   }
 }

@@ -10,6 +10,7 @@ export interface FixtureRegistration {
   readonly scope: FixtureScope;
   readonly auto: FixtureAuto;
   readonly option: boolean;
+  readonly timeout: number | undefined;
   readonly dependencies: readonly string[];
   readonly previous: FixtureRegistration | undefined;
   readonly configurationOverride: boolean;
@@ -111,7 +112,7 @@ export class FixturePool {
   hasSameWorkerFixtures(other: FixturePool): boolean {
     const same = (a: FixtureRegistration | undefined, b: FixtureRegistration | undefined): boolean => {
       if (a === b) return true;
-      return !!a && !!b && a.name === b.name && Object.is(a.value, b.value) && a.scope === b.scope && a.auto === b.auto && a.option === b.option && same(a.previous, b.previous);
+      return !!a && !!b && a.name === b.name && Object.is(a.value, b.value) && a.scope === b.scope && a.auto === b.auto && a.option === b.option && a.timeout === b.timeout && same(a.previous, b.previous);
     };
     const workers = this.registrations().filter(r => r.scope === 'worker');
     const incoming = other.registrations().filter(r => r.scope === 'worker');
@@ -132,10 +133,13 @@ export class FixturePool {
       let scope: FixtureScope = previous?.scope ?? 'test';
       let auto: FixtureAuto = previous?.auto ?? false;
       let option = previous?.option ?? false;
+      let timeout = previous?.timeout;
       if (Array.isArray(definition) && typeof definition[1] === 'object') {
         const settings = definition[1] as Record<string, unknown> | null;
         if (!settings || definition.length !== 2) throw new FixtureConfigurationError(`Invalid fixture tuple for "${name}"`);
-        for (const key of Object.keys(settings)) if (!['scope', 'auto', 'option'].includes(key)) throw new FixtureConfigurationError(`Fixture option "${key}" is not implemented by the independent fixture core`);
+        for (const key of Object.keys(settings)) if (!['scope', 'auto', 'option', 'timeout'].includes(key)) throw new FixtureConfigurationError(`Fixture option "${key}" is not implemented by the independent fixture core`);
+        if (settings.timeout !== undefined && (typeof settings.timeout !== 'number' || !Number.isFinite(settings.timeout) || settings.timeout < 0)) throw new FixtureConfigurationError(`Invalid timeout for fixture "${name}"`);
+        timeout = settings.timeout as number | undefined;
         const declaredScope = settings.scope ?? 'test', declaredAuto = settings.auto ?? false;
         if (declaredScope !== 'test' && declaredScope !== 'worker') throw new FixtureConfigurationError(`Unknown scope for fixture "${name}"`);
         if (![true, false, 'all-hooks-included'].includes(declaredAuto as FixtureAuto)) throw new FixtureConfigurationError(`Invalid automatic fixture "${name}"`);
@@ -151,7 +155,7 @@ export class FixturePool {
         value = original.value;
       }
       const dependencies = typeof value === 'function' ? fixtureDependencies(value) : Object.freeze([] as string[]);
-      this.#registrations.set(name, Object.freeze({ name, value, scope, auto, option, dependencies, previous, configurationOverride }));
+      this.#registrations.set(name, Object.freeze({ name, value, scope, auto, option, timeout, dependencies, previous, configurationOverride }));
     }
   }
   validate(): void {
