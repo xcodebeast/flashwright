@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import type { PlannedTest, ExpectedStatus } from './suite-collector.js';
 import type { SuiteGroup } from './suite-groups.js';
-import type { SuiteTestResult, SuiteWorkerInfo, PhaseFailure } from './suite-runtime.js';
+import type { SuiteTestResult, SuiteWorkerInfo, PhaseFailure, FiniteTestInfo } from './suite-runtime.js';
 
 export interface ProcessSuiteModule {
   loadSuite(info: SuiteWorkerInfo): Promise<readonly PlannedTest[]> | readonly PlannedTest[];
+  onBegin?(test: PlannedTest, info: FiniteTestInfo): unknown;
   onResult?(result: SuiteTestResult): unknown;
   onWorkerEnd?(errors: readonly PhaseFailure[]): unknown;
 }

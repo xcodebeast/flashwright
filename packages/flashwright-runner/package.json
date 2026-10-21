@@ -28,7 +28,17 @@
       }
     },
     "./package.json": "./package.json",
-    "./cli": "./cli.cjs"
+    "./cli": "./cli.cjs",
+    "./independent": {
+      "import": {
+        "types": "./dist/esm/independent.d.ts",
+        "default": "./dist/esm/independent.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/independent.d.ts",
+        "default": "./dist/commonjs/independent.js"
+      }
+    }
   },
   "files": [
     "dist",

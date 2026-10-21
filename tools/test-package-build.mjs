@@ -22,7 +22,7 @@ const write = async (name, contents) => {
   await writeFile(join(fixture, name), contents);
 };
 for (const name of ['tsconfig.json', 'package.json', 'compatibility/upstream', ...packages.map(name => `packages/${name}`), 'packages/resident-runtime',
-  'tools/build-packages.mjs', 'tools/build-runner-runtime.mjs', 'tools/incremental-package-build.mjs', 'tools/package-compiler.mjs']) {
+  'tools/build-packages.mjs', 'tools/build-runner-runtime.mjs', 'tools/build-independent-expect.mjs', 'tools/incremental-package-build.mjs', 'tools/package-compiler.mjs']) {
   await cp(join(repository, name), join(fixture, name), { recursive: true, filter: source => !source.split('/').some(part => part === 'dist' || part === 'node_modules') });
 }
 await mkdir(join(fixture, 'node_modules/@flashwright'), { recursive: true });

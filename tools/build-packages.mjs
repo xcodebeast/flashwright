@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, copyFile, writeFile, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { buildIndependentExpect } from './build-independent-expect.mjs';
 import { buildRunnerRuntime } from './build-runner-runtime.mjs';
 import { preparePackageBuild } from './incremental-package-build.mjs';
 
@@ -58,14 +59,18 @@ for (const name of ['flashwright-core', 'flashwright-runner']) {
   }
   await writeModuleFacade(packageDirectory, 'index');
   if (name === 'flashwright-core') await writeModuleFacade(packageDirectory, 'runner-integration');
-  if (name === 'flashwright-runner') await writeModuleFacade(packageDirectory, 'reporter');
+  if (name === 'flashwright-runner') {
+    await buildIndependentExpect(`${destination}/independent`);
+    await writeModuleFacade(packageDirectory, 'reporter');
+    await writeModuleFacade(packageDirectory, 'independent');
+  }
   await writeNotices(packageDirectory);
   await compilation.complete();
 }
 
 /** Aliased public packages are stateless facades over canonical implementation dependencies. */
 for (const [name, implementation, entries] of [
-  ['flashwright-test', '@flashwright/runner', ['index', 'reporter']],
+  ['flashwright-test', '@flashwright/runner', ['index', 'reporter', 'independent']],
   ['flashwright', '@flashwright/core', ['index']],
 ]) {
   const packageDirectory = `packages/${name}`;
