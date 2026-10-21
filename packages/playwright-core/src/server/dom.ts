@@ -99,10 +99,13 @@ export class FrameExecutionContext extends js.ExecutionContext {
       for (const [name, { source }] of selectorsRegistry._engines)
         customEngines.push({ name, source: `(${source})` });
       const sdkLanguage = this.frame._page.browserContext._browser.sdkLanguage();
+      // Flashwright: the source must not vary per frame, so that the browser can reuse the
+      // compiled script for every document; the frame number is set separately when needed.
+      const frameSeq = this.frame.seq;
       const options: InjectedScriptOptions = {
         isUnderTest: isUnderTest(),
         sdkLanguage,
-        frameSeq: this.frame.seq,
+        frameSeq: 0,
         testIdAttributeName: selectorsRegistry.testIdAttributeName(),
         stableRafCount: this.frame._page.delegate.rafCountForStablePosition(),
         browserName: this.frame._page.browserContext._browser.options.name,
@@ -120,8 +123,10 @@ export class FrameExecutionContext extends js.ExecutionContext {
         })();
       `;
       this._injectedScriptPromise = this.rawEvaluateHandle(source)
-          .then(handle => {
+          .then(async handle => {
             handle._setPreview('InjectedScript');
+            if (frameSeq)
+              await handle.evaluate((injected, frameSeq) => injected.setFrameSeq(frameSeq), frameSeq);
             return handle;
           });
     }
