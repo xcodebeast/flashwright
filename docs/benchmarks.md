@@ -43,6 +43,21 @@ No cell meets the prospective 20% reduction in both orders. Reject this composit
 
 Thirty-two source-loader controls, eight selected semantic differential cases and focused caller/error checks pass after tightening fallback rules for TypeScript module extensions and CommonJS export descriptors. An initial caller-test adaptation incorrectly assumed CommonJS within an ESM package; the failed attempt and explicit fixture correction are retained. These controls do not prove complete transform compatibility. All three generated runtime files were restored exactly; no product transform change was adopted. The checkpoint records provenance gaps, sampled-resource limits and every timed observation. The representative 2× objective remains unmet.
 
+## Independent runner and renderer reuse on Linux
+
+The [composition screen](../benchmarks/results/bun-reuse-composition-linux-2026-10-21.json) combines the existing private Bun passing-suite bridge with the native renderer-reuse candidate. Sixteen one-worker launches pass 240 unchanged TodoMVC/SVGOMG tests. The four arms are stock Playwright, the existing Flashwright runner with reuse, the Bun bridge with reuse and its full utility bundle, and the same bridge with only the pinned YAML modules extracted. Ordinary test/context isolation and selected native input remain enabled.
+
+| Application | Stock Playwright / slim composition, first / reverse pair | Existing runner with reuse / slim composition, first / reverse pair |
+| --- | ---: | ---: |
+| TodoMVC | 1.518× / 1.442× | 1.356× / 1.362× |
+| SVGOMG | 1.585× / 1.244× | 2.042× / 1.255× |
+
+Values above one favor the composition. Neither application meets the prospective 1.5× stock-reference threshold in both orders, and no stock-reference pair reaches 2×. Sampled peak RSS is about 18–20% below stock. Removing unrelated utilities is not a consistent source of improvement: TodoMVC changes by −1.2%/+2.3%, and SVGOMG by +7.6%/−22.7%. The combined result cannot be attributed solely to YAML loading or compared by multiplying earlier stage ratios.
+
+Nine selected parser cases and nine bridge controls per utility mode pass. Reservation records verify fresh context transfers and original host/process joins. The original controller finished all runs but then rejected its input check because it had inventoried its own changing stdout log; independent reconstruction excludes exactly that output and verifies every other recorded input unchanged. The reservation verifier was also corrected to use retained raw stderr, where this runner profile emits its diagnostics. No application capture was repeated.
+
+Keep this composition private. The bridge still lacks general fixture/hook semantics, retries, failure worker replacement, timeout cancellation and requested artifacts. This is a useful measurement of combined startup and renderer savings, not a compatible runner release or evidence for the majority-scenario 2× target. Preserve the gap and do not expand the unchanged composition's campaign.
+
 ## Declarative capability experiment on Linux
 
 Selected native omissions work, but the complete per-test capability API remains a private prototype. The [compatible-worker experiment](../benchmarks/results/capability-worker-reuse-linux-2026-10-18.json) passes 360 functional and 720 timed original TodoMVC/SVGOMG test executions across both engines, one/four workers and reversed execution order. Both full and restricted profiles reuse one browser per compatible worker and create a fresh context per test. This removes the earlier prototype's extra browser launch per test from the comparison.
