@@ -24,7 +24,11 @@ function toast(text) { const t = document.createElement('div'); t.className = 't
 function navigate(path) { history.pushState({}, '', path); render(); }
 document.addEventListener('click', e => { const a = e.target.closest('a[data-link]'); if (a) { e.preventDefault(); navigate(a.getAttribute('href')); } });
 window.addEventListener('popstate', render);
+let renderId = 0;
 async function render() {
+  // Navigating while a previous route is still loading must not let the old route win.
+  const id = ++renderId;
+  const stale = () => id !== renderId;
   setCart(cart());
   const path = location.pathname;
   if (path === '/login') {
@@ -40,9 +44,11 @@ async function render() {
   app.innerHTML = '<div class="spinner" aria-label="Loading"></div>';
   let me;
   try { me = await api('/me'); } catch { return; }
+  if (stale()) return;
   document.getElementById('user').textContent = me.email;
   if (path === '/') {
     const stats = await api('/stats');
+    if (stale()) return;
     app.innerHTML = '<h1>Welcome back</h1><p>' + stats.products + ' products in ' + stats.categories + ' categories</p><button id="open-promo">Show offer</button>';
     document.getElementById('open-promo').onclick = () => {
       const m = document.createElement('div'); m.className = 'modal';
@@ -60,6 +66,7 @@ async function render() {
     const load = async () => {
       list.innerHTML = '<div class="spinner" aria-label="Loading"></div>';
       const items = await api('/products?q=' + encodeURIComponent(search.value) + '&category=' + encodeURIComponent(category.value));
+      if (stale()) return;
       list.innerHTML = items.map(p => '<div class="card" data-testid="product"><h3>' + p.name + '</h3><p>' + p.category + ' · $' + p.price + '</p><button data-id="' + p.id + '">Add to cart</button></div>').join('') || '<p>No products found</p>';
       list.querySelectorAll('button').forEach(b => b.onclick = () => { setCart([...cart(), Number(b.dataset.id)]); toast('Added to cart'); });
     };
@@ -69,6 +76,7 @@ async function render() {
   } else if (path === '/cart') {
     const items = cart();
     const all = await api('/products?q=&category=');
+    if (stale()) return;
     const rows = items.map(id => all.find(p => p.id === id));
     app.innerHTML = '<h1>Cart</h1><ul>' + rows.map((p, i) => '<li>' + p.name + ' <button data-index="' + i + '">Remove</button></li>').join('') + '</ul><p id="total">Total: $' + rows.reduce((a, p) => a + p.price, 0) + '</p><button id="checkout"' + (rows.length ? '' : ' disabled') + '>Checkout</button>';
     app.querySelectorAll('li button').forEach(b => b.onclick = () => { const c = cart(); c.splice(Number(b.dataset.index), 1); setCart(c); render(); });

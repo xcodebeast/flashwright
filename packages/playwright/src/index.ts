@@ -17,7 +17,6 @@
 import fs from 'fs';
 import path from 'path';
 
-import * as playwrightLibrary from 'playwright-core';
 import { getActionGroup, renderParamsForCall, renderSubtitleForCall, renderTitleForCall, truncateParam } from '@isomorphic/protocolFormatter';
 import { escapeHTML } from '@isomorphic/stringUtils';
 import { jsonStringifyForceASCII } from '@utils/ascii';
@@ -388,7 +387,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   _setupContextOptions: [async ({ playwright, actionTimeout, navigationTimeout, testIdAttribute }, use, _testInfo) => {
     const testInfo = _testInfo as TestInfoImpl;
     if (testIdAttribute)
-      playwrightLibrary.selectors.setTestIdAttribute(testIdAttribute);
+      (require('playwright-core') as typeof import('playwright-core')).selectors.setTestIdAttribute(testIdAttribute);
     testInfo.snapshotSuffix = process.platform;
     testInfo._onCustomMessageCallback = () => Promise.reject(new Error('Only tests that use default Playwright context or page fixture support test_debug'));
     if (debugMode() === 'inspector')

@@ -55,8 +55,8 @@ export class PipeTransport implements ConnectionTransport {
   send(message: ProtocolRequest) {
     if (this._closed)
       throw new Error('Pipe has been closed');
-    this._pipeWrite.write(JSON.stringify(message));
-    this._pipeWrite.write('\0');
+    // Flashwright: one write per message instead of two.
+    this._pipeWrite.write(JSON.stringify(message) + '\0');
   }
 
   close() {

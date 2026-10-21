@@ -45,7 +45,7 @@ for (const engine of engines) {
     await materializeApplicationTests(corpus, project, adapter);
   }
   const config = { testDir: './tests', workers, retries: 0, fullyParallel: false, timeout: 30000, expect: { timeout: 5000 },
-    reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.HTML_REPORT ? [['html', { open: 'never', outputFolder: join(project, 'html-report') }]] : []), ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')]] : [])],
+    reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.HTML_REPORT ? [['html', { open: 'never', outputFolder: join(project, 'html-report') }]] : []), ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')], [resolve(import.meta.dirname, 'worker-timeline.cjs')]] : [])],
     outputDir: join(project, 'results'),
     use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(workload ? { baseURL: server.url } : {}), ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
   if (shop) {
@@ -66,7 +66,14 @@ async function runOnce(engine) {
   for (const assignment of variant.split('+').filter(Boolean)) { const [k, v = '1'] = assignment.split('='); env[k] = v; }
   env.BENCH_T0 = String(Date.now());
   const started = performance.now();
-  const child = spawn(node, [definition.cli, 'test', '--config', join(project, 'runner.config.mjs')], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] });
+  // BENCH_CPU=1 reports user+sys CPU of the whole process tree (bash `time` waits for all descendants).
+  const command = [node, definition.cli, 'test', '--config', join(project, 'runner.config.mjs')];
+  // BENCH_PROCCPU=1 prints CPU time by process kind (node main/worker, browser, renderer, ...).
+  const child = process.env.BENCH_CPU
+    ? spawn('bash', ['-c', `TIMEFORMAT='CPUTIME %U %S'; time ${command.map(a => `'${a}'`).join(' ')}`], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
+    : process.env.BENCH_PROCCPU
+      ? spawn('python3', [resolve(import.meta.dirname, 'proc-cpu.py'), ...command], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
+      : spawn(command[0], command.slice(1), { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   child.stdout.on('data', c => { output += c; });
   child.stderr.on('data', c => { output += c; });
@@ -75,7 +82,9 @@ async function runOnce(engine) {
   let stats = {};
   try { stats = JSON.parse(await readFile(join(project, 'report.json'), 'utf8')).stats ?? {}; } catch {}
   if (code !== 0 && workload !== 'failure') console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
-  return { elapsed, code, expected: stats.expected, unexpected: stats.unexpected };
+  if (process.env.BENCH_PROCCPU) console.log(`[${engine}] CPU by process kind:\n${output}`);
+  const cpu = /CPUTIME ([\d.]+) ([\d.]+)/.exec(output);
+  return { elapsed, code, expected: stats.expected, unexpected: stats.unexpected, cpu: cpu ? (Number(cpu[1]) + Number(cpu[2])) * 1000 : undefined };
 }
 
 const results = Object.fromEntries(engines.map(e => [e, []]));
@@ -85,7 +94,7 @@ try {
     for (const engine of order) {
       const r = await runOnce(engine);
       results[engine].push(r);
-      console.log(`${app} w${workers} #${i} ${engine.padEnd(28)} ${r.elapsed.toFixed(0).padStart(6)} ms  exit=${r.code} pass=${r.expected} fail=${r.unexpected}`);
+      console.log(`${app} w${workers} #${i} ${engine.padEnd(28)} ${r.elapsed.toFixed(0).padStart(6)} ms  exit=${r.code} pass=${r.expected} fail=${r.unexpected}${r.cpu !== undefined ? `  cpu=${r.cpu.toFixed(0)}ms` : ''}`);
     }
   }
 } finally { await server.close(); }

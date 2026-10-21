@@ -24,6 +24,7 @@ import { monotonicTime } from '@isomorphic/time';
 import { removeFolders } from '@utils/fileUtils';
 
 import { Dispatcher  } from './dispatcher';
+import { ensureStandbys, recordWorkerCount } from './workerStandby';
 import { collectProjectsAndTestFiles, createRootSuite, loadFileSuites, loadGlobalHook, loadTestList } from './loadUtils';
 import { buildDependentProjects, buildTeardownToSetupsMap, filterProjects } from './projectUtils';
 import { applySuggestedRebaselines, clearSuggestedRebaselines } from './rebase';
@@ -418,10 +419,17 @@ function createPhasesTask(): Task<TestRun> {
       }
 
       testRun.config.config.metadata.actualWorkers = Math.min(testRun.config.config.workers, maxConcurrentTestGroups);
+      // Flashwright: the next run of this project pre-spawns this many workers.
+      recordWorkerCount(testRun.config.config.metadata.actualWorkers);
       if (testRun.config.configCLIOverrides.shuffle)
         testRun.config.config.metadata.shuffleSeed = testRun.config.configCLIOverrides.shuffle;
     },
   };
+}
+
+function phaseWorkers(testRun: TestRun, projects: Phase['projects']) {
+  const groups = projects.reduce((sum, { project, testGroups }) => sum + Math.min(project.workers ?? Number.MAX_SAFE_INTEGER, testGroups.length), 0);
+  return Math.min(testRun.config.config.workers, groups);
 }
 
 function createRunTestsTask(): Task<TestRun> {
@@ -432,7 +440,12 @@ function createRunTestsTask(): Task<TestRun> {
       const extraEnvByProjectId: EnvByProjectId = new Map();
       const teardownToSetups = buildTeardownToSetupsMap(testRun.phases.map(phase => phase.projects.map(p => p.project)).flat());
 
-      for (const { dispatcher, projects } of testRun.phases) {
+      for (const [phaseIndex, { dispatcher, projects }] of testRun.phases.entries()) {
+        // Flashwright: workers stop between phases; start the next phase's workers in the meantime,
+        // on top of the ones this phase is about to take.
+        const nextPhase = testRun.phases[phaseIndex + 1];
+        if (nextPhase)
+          ensureStandbys(phaseWorkers(testRun, projects) + phaseWorkers(testRun, nextPhase.projects));
         // Each phase contains dispatcher and a set of test groups.
         // We don't want to run the test groups belonging to the projects
         // that depend on the projects that failed previously.
