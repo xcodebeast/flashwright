@@ -43,6 +43,11 @@ export function currentFiniteTestInfo(): FiniteTestInfo {
 }
 
 export interface SuiteWorkerInfo { workerIndex: number; parallelIndex: number }
+export interface SuiteRunOptions {
+  retries?: ReadonlyMap<string, number>;
+  onBegin?: (test: PlannedTest, info: FiniteTestInfo) => unknown;
+  onResult?: (result: SuiteTestResult) => unknown;
+}
 
 /** A successful group closes its suites, while this owner keeps compatible
  * worker fixtures and imported module state alive until worker retirement. */
@@ -63,18 +68,16 @@ export class SuiteWorker {
       for (const suite of test.suites) for (const hook of suite.hooks) test.pool.required(hook.callback);
     }
   }
-  run(tests: readonly PlannedTest[]): Promise<WorkerGroupResult> {
+  run(tests: readonly PlannedTest[], options: SuiteRunOptions = {}): Promise<WorkerGroupResult> {
     if (this.#operation || this.#closure || this.#stopped) return Promise.reject(new FixtureConfigurationError('Suite worker is busy or retired'));
     try { this.validate(tests); } catch (error) { return Promise.reject(error); }
     const operation = Promise.resolve().then(async () => {
       try {
-        const result = await executeGroup(tests, this.#worker, this.#info, this.#context);
+        const result = await executeGroup(tests, this.#worker, this.#info, this.#context, options);
         this.#stopped = result.workerStopped;
         return result;
       } catch (error) {
         this.#stopped = true;
-        try { await this.#worker.close(); }
-        catch (cleanup) { throw new AggregateError([error, cleanup], 'Suite execution and worker cleanup failed'); }
         throw error;
       }
     });
@@ -108,79 +111,119 @@ export async function runWorkerGroup(tests: readonly PlannedTest[], workerInfo?:
   return Object.freeze({ ...result, teardownErrors });
 }
 
-async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker, workerInfo: SuiteWorkerInfo, owner: WorkerTestContext): Promise<WorkerGroupResult> {
+async function executeGroup(tests: readonly PlannedTest[], worker: FixtureWorker, workerInfo: SuiteWorkerInfo, owner: WorkerTestContext, options: SuiteRunOptions): Promise<WorkerGroupResult> {
   const results: SuiteTestResult[] = [];
   const active = new Set<PlannedSuite>();
   let failedBeforeAll: PlannedSuite | undefined, completed = 0;
   let workerStopped = false;
-  for (let index = 0; index < tests.length; index++) {
-    const test = tests[index]!, errors: PhaseFailure[] = [], executions: CallbackExecution[] = [];
-    const started = performance.now();
-    const info: FiniteTestInfo = { testId: test.id, title: test.title, file: test.file, retry: 0, ...workerInfo, expectedStatus: test.expectedStatus, status: test.expectedStatus === 'skipped' ? 'skipped' : 'passed' };
-    const context = { info, active: true };
-    owner.current = context;
-    let stop = false;
-    try { await executionContext.run(context, async () => {
-      const record = (phase: FailurePhase, cause: unknown, cleanup = false): void => {
-        const causes: unknown[] = cleanup && cause instanceof AggregateError ? cause.errors : [cause];
-        for (const error of causes) errors.push({ phase, error });
-        info.status = 'failed';
-      };
-      const unexpected = (): boolean => info.status !== 'skipped' && info.status !== info.expectedStatus;
-      const allHooks = async (suite: PlannedSuite, type: 'beforeAll' | 'afterAll'): Promise<void> => {
-        for (const hook of suite.hooks.filter(h => h.type === type)) {
-          const scope = worker.beginAttempt(info, test.pool);
-          try { if ((await scope.run(hook.callback, 'all-hooks-only')).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); }
-          catch (error) { record(type, error); }
-          finally { try { await scope.close(); } catch (error) { record(type, error, true); } }
-        }
-      };
-      const eachHooks = async (scope: FixtureAttempt, suites: readonly PlannedSuite[], type: 'beforeEach' | 'afterEach'): Promise<void> => {
-        for (const suite of suites) for (const hook of suite.hooks.filter(h => h.type === type)) {
-          try { if ((await scope.run(hook.callback)).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); } catch (error) { record(type, error); }
-        }
-      };
+  let lastAttempt: { test: PlannedTest; info: FiniteTestInfo } | undefined;
+  try {
+    for (let index = 0; index < tests.length; index++) {
+      const test = tests[index]!, errors: PhaseFailure[] = [], executions: CallbackExecution[] = [];
+      const started = performance.now();
+      const info: FiniteTestInfo = { testId: test.id, title: test.title, file: test.file, retry: options.retries?.get(test.id) ?? 0, ...workerInfo, expectedStatus: test.expectedStatus, status: test.expectedStatus === 'skipped' ? 'skipped' : 'passed' };
+      await options.onBegin?.(test, info);
+      lastAttempt = { test, info };
+      const context = { info, active: true };
+      owner.current = context;
+      let stop = false;
+      try { await executionContext.run(context, async () => {
+        const record = (phase: FailurePhase, cause: unknown, cleanup = false): void => {
+          const causes: unknown[] = cleanup && cause instanceof AggregateError ? cause.errors : [cause];
+          for (const error of causes) errors.push({ phase, error });
+          info.status = 'failed';
+        };
+        const unexpected = (): boolean => info.status !== 'skipped' && info.status !== info.expectedStatus;
+        const allHooks = async (suite: PlannedSuite, type: 'beforeAll' | 'afterAll'): Promise<void> => {
+          for (const hook of suite.hooks.filter(h => h.type === type)) {
+            const scope = worker.beginAttempt(info, test.pool);
+            try { if ((await scope.run(hook.callback, 'all-hooks-only')).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); }
+            catch (error) { record(type, error); }
+            finally { try { await scope.close(); } catch (error) { record(type, error, true); } }
+          }
+        };
+        const eachHooks = async (scope: FixtureAttempt, suites: readonly PlannedSuite[], type: 'beforeEach' | 'afterEach'): Promise<void> => {
+          for (const suite of suites) for (const hook of suite.hooks.filter(h => h.type === type)) {
+            try { if ((await scope.run(hook.callback)).ran) executions.push({ phase: type, callback: hook.callback, finished: performance.now() }); } catch (error) { record(type, error); }
+          }
+        };
 
-      if (info.status !== 'skipped') {
-        let beforeAllFailed = false;
-        for (const suite of test.suites) {
-          if (active.has(suite)) continue;
-          active.add(suite);
-          const before = errors.length;
-          await allHooks(suite, 'beforeAll');
-          if (errors.length !== before) { failedBeforeAll ??= suite; beforeAllFailed = true; break; }
-        }
-        if (!beforeAllFailed) {
-          const scope = worker.beginAttempt(info, test.pool);
-          try {
-            await eachHooks(scope, test.suites, 'beforeEach');
-            if (!errors.length) {
-              try { if ((await scope.run(test.callback)).ran) executions.push({ phase: 'body', callback: test.callback, finished: performance.now() }); } catch (error) { record('body', error); }
+        if (info.status !== 'skipped') {
+          let beforeAllFailed = false;
+          for (const suite of test.suites) {
+            if (active.has(suite)) continue;
+            active.add(suite);
+            const before = errors.length;
+            await allHooks(suite, 'beforeAll');
+            if (errors.length !== before) { failedBeforeAll ??= suite; beforeAllFailed = true; break; }
+          }
+          if (!beforeAllFailed) {
+            const scope = worker.beginAttempt(info, test.pool);
+            try {
+              await eachHooks(scope, test.suites, 'beforeEach');
+              if (!errors.length) {
+                try { if ((await scope.run(test.callback)).ran) executions.push({ phase: 'body', callback: test.callback, finished: performance.now() }); } catch (error) { record('body', error); }
+              }
+            } finally {
+              await eachHooks(scope, [...test.suites].reverse(), 'afterEach');
+              try { await scope.close(); } catch (error) { record('testTeardown', error, true); }
             }
-          } finally {
-            await eachHooks(scope, [...test.suites].reverse(), 'afterEach');
-            try { await scope.close(); } catch (error) { record('testTeardown', error, true); }
           }
         }
-      }
-      const next = tests[index + 1];
+        const next = tests[index + 1];
+        for (const suite of [...active].reverse()) {
+          if (unexpected() || !next?.suites.includes(suite)) {
+            active.delete(suite);
+            await allHooks(suite, 'afterAll');
+          }
+        }
+        stop = unexpected();
+        if (stop) {
+          workerStopped = true;
+          // Failure shutdown belongs to this test; normal shutdown errors below
+          // are separate and cannot retroactively rewrite a successful result.
+          try { await worker.close(); } catch (error) { record('workerTeardown', error, true); }
+        }
+      }); } finally { context.active = false; owner.current = undefined; }
+      const result = Object.freeze({ test, status: info.status, expectedStatus: info.expectedStatus, errors: Object.freeze(errors), executions: Object.freeze(executions), started, finished: performance.now() });
+      results.push(result);
+      await options.onResult?.(result);
+      completed++;
+      if (stop) break;
+    }
+  } catch (error) {
+    const cleanupErrors: unknown[] = [];
+    const retain = (cause: unknown): void => {
+      if (cause instanceof AggregateError) cleanupErrors.push(...cause.errors);
+      else cleanupErrors.push(cause);
+    };
+    const cleanup = async (): Promise<void> => {
       for (const suite of [...active].reverse()) {
-        if (unexpected() || !next?.suites.includes(suite)) {
-          active.delete(suite);
-          await allHooks(suite, 'afterAll');
+        active.delete(suite);
+        for (const hook of suite.hooks.filter(h => h.type === 'afterAll')) {
+          let scope: FixtureAttempt | undefined;
+          try {
+            scope = worker.beginAttempt(owner.current!.info, lastAttempt!.test.pool);
+            await scope.run(hook.callback, 'all-hooks-only');
+          } catch (cause) { cleanupErrors.push(cause); }
+          finally { try { await scope?.close(); } catch (cause) { retain(cause); } }
         }
       }
-      stop = unexpected();
-      if (stop) {
-        workerStopped = true;
-        // Failure shutdown belongs to this test; normal shutdown errors below
-        // are separate and cannot retroactively rewrite a successful result.
-        try { await worker.close(); } catch (error) { record('workerTeardown', error, true); }
+      if (!workerStopped) {
+        try { await worker.close(); } catch (cause) { retain(cause); }
       }
-    }); } finally { context.active = false; owner.current = undefined; }
-    results.push(Object.freeze({ test, status: info.status, expectedStatus: info.expectedStatus, errors: Object.freeze(errors), executions: Object.freeze(executions), started, finished: performance.now() }));
-    completed++;
-    if (stop) break;
+    };
+    // Observer failures can arrive between attempts. Drain entered suites with
+    // the last accepted attempt's pool, before retiring worker dependencies.
+    // A fresh context keeps detached callbacks from that attempt expired.
+    if (lastAttempt) {
+      const context: ActiveTestContext = { info: { ...lastAttempt.info, status: 'failed' }, active: true };
+      owner.current = context;
+      try { await executionContext.run(context, cleanup); }
+      finally { context.active = false; owner.current = undefined; }
+    } else await cleanup();
+    if (cleanupErrors.length) throw new AggregateError([error, ...cleanupErrors], 'Suite execution and cleanup failed');
+    throw error;
   }
   return Object.freeze({ results: Object.freeze(results), pending: Object.freeze(tests.slice(completed)), failedBeforeAll, teardownErrors: Object.freeze([]), workerStopped });
 }

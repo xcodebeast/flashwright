@@ -249,3 +249,63 @@ test('worker fixture teardown observes the failing attempt rather than its setup
   assert.deepEqual(result.results[0].errors.map(e => e.phase), ['body']);
   await worker.close();
 });
+
+for (const phase of ['onBegin', 'onResult']) test(`${phase} rejection drains entered suites before worker cleanup and preserves every error`, async () => {
+  const events = [], observerError = new Error('observer'), innerError = new Error('inner cleanup'), outerError = new Error('outer cleanup'), workerError = new Error('worker cleanup');
+  const tests = await collect(base => {
+    const test = base.extend({ w: [async ({}, use) => {
+      events.push('worker+'); await use(); events.push('worker-:' + currentFiniteTestInfo().title); throw workerError;
+    }, { scope: 'worker', auto: true }] });
+    test.beforeAll(() => events.push('outer+'));
+    test.afterAll(() => { events.push('outer-'); throw outerError; });
+    test.describe('shared', () => {
+      test.beforeAll(() => events.push('inner+'));
+      test.afterAll(() => { events.push('inner-1'); throw innerError; });
+      test.afterAll(() => events.push('inner-2'));
+      test('first', () => events.push('body:first'));
+      test('second', () => events.push('must-not-run'));
+    });
+  });
+  const worker = new SuiteWorker(tests[0].pool);
+  await assert.rejects(worker.run(tests, {
+    [phase]: async value => {
+      const title = phase === 'onBegin' ? value.title : value.test.title;
+      if (title === (phase === 'onBegin' ? 'second' : 'first')) {
+        events.push('observer:' + title); throw observerError;
+      }
+    },
+  }), error => {
+    assert.ok(error instanceof AggregateError);
+    assert.deepEqual(error.errors, [observerError, innerError, outerError, workerError]);
+    return true;
+  });
+  assert.deepEqual(events, ['worker+', 'outer+', 'inner+', 'body:first', 'observer:' + (phase === 'onBegin' ? 'second' : 'first'), 'inner-1', 'inner-2', 'outer-', 'worker-:first']);
+  assert.deepEqual(await worker.close(), [], 'Observer failure already owns cleanup errors');
+  await assert.rejects(worker.run(tests), /retired/);
+  assert.throws(() => currentFiniteTestInfo(), /No active/);
+});
+
+test('observer rejection with successful cleanup retains the original rejection object', async () => {
+  const events = [], observerError = { sentinel: 'observer' };
+  const tests = await collect(test => {
+    test.afterAll(() => events.push('afterAll'));
+    test('first', () => {}); test('second', () => events.push('must-not-run'));
+  });
+  const worker = new SuiteWorker(tests[0].pool);
+  await assert.rejects(worker.run(tests, { onResult: () => { throw observerError; } }), error => error === observerError);
+  assert.deepEqual(events, ['afterAll']);
+  assert.deepEqual(await worker.close(), []);
+});
+
+test('first onBegin rejection does not enter suite hooks or start fixtures', async () => {
+  const events = [], observerError = new Error('observer');
+  const tests = await collect(base => {
+    const test = base.extend({ w: [async ({}, use) => { events.push('worker'); await use(); }, { scope: 'worker', auto: true }] });
+    test.beforeAll(() => events.push('beforeAll')); test.afterAll(() => events.push('afterAll'));
+    test('body', () => events.push('body'));
+  });
+  const worker = new SuiteWorker(tests[0].pool);
+  await assert.rejects(worker.run(tests, { onBegin: () => { throw observerError; } }), error => error === observerError);
+  assert.deepEqual(events, []);
+  assert.deepEqual(await worker.close(), []);
+});

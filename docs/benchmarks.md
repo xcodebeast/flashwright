@@ -538,3 +538,18 @@ The [backend CPU attribution](../benchmarks/results/backend-cpu-attribution-linu
 The subsequent [native browser profile](../benchmarks/results/native-browser-functions-linux-2026-10-17.json) retains eight fresh TodoMVC/SVGOMG launches and 120 passing original tests. The existing custom Chromium binary supplies function symbols without a rebuild. An independent reader recounts 22,786 samples, and LLVM checks 982 sampled/caller address controls against the ELF resolver. TodoMVC's largest recurring native function is V8's scanner: 248/500 and 253/513 of its samples have source-position collection in their captured ancestry, often with console reporting. This is partly stack-location work, so attributing all parsing to initial application compilation would be misleading. SVGOMG has a broader profile including raster work. Truncated callchains, folded aliases, unresolved and external addresses remain explicit. No optimization or speed claim is adopted; earlier unsuccessful cache, compiler-tier and eager-source-position screens remain relevant.
 
 The [eager-compilation screen](../benchmarks/results/eager-compilation-linux-2026-10-17.json) tests a different composition: disabling lazy script, eval and streaming compilation while generating source-position tables eagerly. All 120 original tests pass across eight fresh stock full-Chrome launches. TodoMVC takes about 5–7% less elapsed time, but SVGOMG takes about 18% more in both comparisons. Neither application meets the predeclared 20% reduction gate, so ordinary compilation defaults remain selected. Separate bytecode-output controls confirm that unused network/eval functions compile under the eager policy without being invoked. This is a rejected engineering screen, not a Playwright comparison or an admitted performance result.
+
+## Independent process runner engineering comparison
+
+The [native Linux comparison](../benchmarks/results/independent-process-comparison-linux-2026-10-21.json) retains two opposite-order blocks: 24 complete commands and 360 passing TodoMVC/SVGOMG tests. Both Flashwright arms use the same private renderer-reuse and classic-frame browser composition; their test scheduler differs. The reference uses pinned Playwright and stock headless shell. Every run includes HTTP fixture startup, runner/browser work and shutdown under the same four-core quota and 8 GiB limit.
+
+Each cell shows block 0 / block 1 in seconds. Ratios are Playwright time divided by independent-runner time.
+
+| Application | Workers | Playwright | Existing Flashwright scheduler | Independent process runner | Ratio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | 3.877 / 3.932 | 3.091 / 2.941 | 2.347 / 2.122 | 1.652× / 1.853× |
+| TodoMVC | 4 | 2.827 / 2.768 | 3.330 / 3.589 | 2.270 / 2.278 | 1.245× / 1.215× |
+| SVGOMG | 1 | 2.043 / 1.678 | 1.993 / 2.011 | 1.205 / 1.216 | 1.695× / 1.380× |
+| SVGOMG | 4 | 2.157 / 2.350 | 2.927 / 2.988 | 1.789 / 2.489 | 1.205× / 0.944× |
+
+The candidate takes 16.7–39.5% less time than the existing Flashwright scheduler in these observations. It does **not** meet the 2× objective. The second four-worker SVGOMG run is 5.9% slower than Playwright; it remains in the result. This is a two-application engineering screen with a private adapter, not the final eight-pair campaign, a public runner release, an incremental comparison against the earlier Bun-test bridge, or final resource admission. Public configuration, compatible deadlines and reporter/artifact integration remain open.
