@@ -1,0 +1,119 @@
+--- a/v8/src/inspector/v8-inspector-impl.cc
++++ b/v8/src/inspector/v8-inspector-impl.cc
+@@ -106,6 +106,24 @@
+   return unboundScript->BindToCurrentContext()->Run(context);
+ }
+ 
++bool V8InspectorImpl::lookupFlashwrightLocatorSource(
++    const String16& key, String16* source) {
++  if (key != m_flashwrightLocatorKey) return false;
++  *source = m_flashwrightLocatorSource;
++  return true;
++}
++
++bool V8InspectorImpl::cacheFlashwrightLocatorSource(
++    const String16& key, const String16& source) {
++  // The trusted CDP caller supplies a content identity. Reject inconsistent
++  // re-registration rather than silently aliasing different source bytes.
++  if (key == m_flashwrightLocatorKey && source != m_flashwrightLocatorSource)
++    return false;
++  m_flashwrightLocatorSource = source;
++  m_flashwrightLocatorKey = key;
++  return true;
++}
++
+ v8::MaybeLocal<v8::Script> V8InspectorImpl::compileScript(
+     v8::Local<v8::Context> context, const String16& code,
+     const String16& fileName) {
+--- a/v8/src/inspector/v8-inspector-impl.h
++++ b/v8/src/inspector/v8-inspector-impl.h
+@@ -77,6 +77,8 @@
+   v8::MaybeLocal<v8::Script> compileScript(v8::Local<v8::Context>,
+                                            const String16& code,
+                                            const String16& fileName);
++  bool lookupFlashwrightLocatorSource(const String16& key, String16* source);
++  bool cacheFlashwrightLocatorSource(const String16& key, const String16& source);
+   v8::MaybeLocal<v8::Context> regexContext();
+   v8::MaybeLocal<v8::Context> exceptionMetaDataContext();
+ 
+@@ -179,6 +181,9 @@
+   v8::Isolate* m_isolate;
+   V8InspectorClient* m_client;
+   std::unique_ptr<V8Debugger> m_debugger;
++  // One bounded source entry per inspector/isolate. No JavaScript handles.
++  String16 m_flashwrightLocatorKey;
++  String16 m_flashwrightLocatorSource;
+   v8::Global<v8::Context> m_regexContext;
+   v8::Global<v8::Context> m_exceptionMetaDataContext;
+   v8::Global<v8::debug::EphemeronTable> m_exceptionMetaData;
+--- a/v8/src/inspector/v8-runtime-agent-impl.cc
++++ b/v8/src/inspector/v8-runtime-agent-impl.cc
+@@ -33,6 +33,11 @@
+ #include <inttypes.h>
+ 
+ #include <memory>
++#include <algorithm>
++#include <chrono>
++#include <cstdio>
++#include <cstdlib>
++#include <string_view>
+ 
+ #include "../../third_party/inspector_protocol/crdtp/json.h"
+ #include "include/v8-container.h"
+@@ -412,10 +417,52 @@
+     } else if (disableBreaks.value_or(false)) {
+       mode = v8::debug::EvaluateGlobalMode::kDisableBreaks;
+     }
+-    const v8::Local<v8::String> source =
+-        toV8String(m_inspector->isolate(), expression);
+-    maybeResultValue = v8::debug::EvaluateGlobal(m_inspector->isolate(), source,
+-                                                 mode, replMode);
++    String16 cachedExpression;
++    const String16* evaluationExpression = &expression;
++    const char* cache = std::getenv("FLASHWRIGHT_CACHE_LOCATOR_SCRIPT");
++    const char* audit = std::getenv("FLASHWRIGHT_LOCATOR_CACHE_AUDIT");
++    const bool auditing = audit && std::string_view(audit) == "1";
++    const bool caching = cache && std::string_view(cache) == "1";
++    const std::string group = caching || auditing ? objectGroup.value_or("").utf8() : "";
++    constexpr std::string_view prefix = "flashwright-locator-runtime:";
++    const bool cacheLocator = caching &&
++        group.size() == prefix.size() + 64 &&
++        group.compare(0, prefix.size(), prefix) == 0 &&
++        std::all_of(group.begin() + prefix.size(), group.end(), [](char c) {
++          return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
++        }) && mode == v8::debug::EvaluateGlobalMode::kDefault && !replMode &&
++        !includeCommandLineAPI.value_or(false) && returnByValue.value_or(false);
++    bool missing = false;
++    if (cacheLocator) {
++      if (expression == "/* flashwright:cached-locator-runtime */") {
++        missing = !m_inspector->lookupFlashwrightLocatorSource(
++            objectGroup.value(), &cachedExpression);
++        if (!missing) evaluationExpression = &cachedExpression;
++        if (auditing) std::fprintf(stderr, "flashwright-locator-source-cache %s\n",
++                                  missing ? "miss" : "hit");
++      } else if (expression.length() <= 512 * 1024 &&
++          expression.find("(() => { if (globalThis.__flashwrightLocatorRuntime) return true; const module = {};") == 0) {
++        if (!m_inspector->cacheFlashwrightLocatorSource(objectGroup.value(), expression)) {
++          callback->sendFailure(Response::InvalidParams("Locator source identity conflict"));
++          return;
++        }
++        if (auditing) std::fprintf(stderr, "flashwright-locator-source-cache store\n");
++      }
++    }
++    const auto flashwright_evaluation_started = std::chrono::steady_clock::now();
++    if (missing) {
++      maybeResultValue = v8::False(m_inspector->isolate());
++    } else {
++      const v8::Local<v8::String> source =
++          toV8String(m_inspector->isolate(), *evaluationExpression);
++      maybeResultValue = v8::debug::EvaluateGlobal(m_inspector->isolate(), source,
++                                                   mode, replMode);
++    }
++    if (auditing && group.find("flashwright-locator-runtime") == 0) {
++      std::fprintf(stderr, "flashwright-locator-evaluation %lld\n",
++          static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
++              std::chrono::steady_clock::now() - flashwright_evaluation_started).count()));
++    }
+   }  // Run microtasks before returning result.
+ 
+   // Re-initialize after running client's code, as it could have destroyed
