@@ -4,6 +4,19 @@ Flashwright has not established performance leadership. The [five-engine checkpo
 
 The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its Linux Chrome draft now completes the seven fixture outcome categories, but equivalent-work and comparative measurements remain unadmitted. It has no result in the historical five-engine snapshot. The system-WebKit backend on macOS requires a separate comparison class. See the [outcome checkpoint](../compatibility/evidence/bun-webview-outcome-checkpoint-2026-10-16.json) and [contender configuration](../benchmarks/configurations/competitors.json).
 
+## Renderer reuse experiment on Linux
+
+The [renderer reuse screen](../benchmarks/results/renderer-reuse-linux-2026-10-21.json) records 240 passing unchanged TodoMVC/SVGOMG tests across 16 complete runs. The private browser retains physical renderer compilation state across actual fresh BrowserContexts, after retiring original document, connection and worker ownership. Both modes use the same custom browser, private driver and feature flags; only reservation reuse changes. This is a comparison against reuse disabled, not against Playwright.
+
+| Application | Workers | Complete time saved, first pair | Complete time saved, reverse pair |
+| --- | ---: | ---: | ---: |
+| TodoMVC | 1 | 25.0% | 22.1% |
+| TodoMVC | 4 | 11.2% | 12.7% |
+| SVGOMG | 1 | −18.6% | 19.5% |
+| SVGOMG | 4 | −3.9% | 1.0% |
+
+Negative savings mean slower execution. Time includes fixture and browser startup, preparation, unused final reservations, runner shutdown and observed descendant drain. Sampled peak RSS changes range from −2.6% to +5.0%; they are not exact charged-memory measurements. Only TodoMVC at one worker meets the prospective rule of at least 20% savings in both orders. Continue targeted investigation without enabling reuse by default. The two-pair private screen does not establish broad 2× performance, release acceptance or standalone reproducibility; the checkpoint retains all observations and these limitations.
+
 ## Declarative capability experiment on Linux
 
 Selected native omissions work, but the complete per-test capability API remains a private prototype. The [compatible-worker experiment](../benchmarks/results/capability-worker-reuse-linux-2026-10-18.json) passes 360 functional and 720 timed original TodoMVC/SVGOMG test executions across both engines, one/four workers and reversed execution order. Both full and restricted profiles reuse one browser per compatible worker and create a fresh context per test. This removes the earlier prototype's extra browser launch per test from the comparison.

@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "status": "completed-private-renderer-reuse-direction-screen",
+  "date": "2026-10-21",
+  "sourceCommit": "afb0989923afb80e6a2e92499d9d8b539e8f0888",
+  "mechanism": "Retain the physical renderer and compiled state across actual fresh BrowserContexts, after retiring original document, connection and worker ownership with ordinary bounded collection.",
+  "implementationScope": "Private Chromium and Rust candidate, not integrated or enabled in the product. Native source combines recovered historical files and explicit Linux adaptations; historical final-source equivalence is not established.",
+  "comparison": "Same private Flashwright driver, custom browser and feature flags; renderer reservation disabled versus enabled. Not a Playwright comparison.",
+  "browser": {
+    "distribution": "custom-chromium-headless-shell",
+    "baseVersion": "148.0.7778.96",
+    "bytes": 324286992,
+    "sha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550"
+  },
+  "driver": {
+    "bytes": 14912792,
+    "sha256": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249"
+  },
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2"
+  },
+  "limits": {
+    "cpuQuota": "400%",
+    "memoryMax": "8G",
+    "memorySwapMax": 0,
+    "nice": 10,
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "measurementBoundary": "Watchdog elapsedSeconds includes complete fixture/CLI/browser startup, every teardown, unused final reservation, service closure and observed process drain",
+  "advanceRule": "All original tests and cleanup must pass. Advance a cell only if both opposite-order pairs reduce complete-owner time by at least 20%. Report all cells, memory and regressions. No final 2x claim from this screen.",
+  "workload": {
+    "applications": [
+      "todomvc",
+      "svgomg"
+    ],
+    "workers": [
+      1,
+      4
+    ],
+    "oppositeOrderPairsPerCell": 2,
+    "orderPerCell": [
+      "serial",
+      "reuse",
+      "reuse",
+      "serial"
+    ],
+    "captures": 16,
+    "originalTestExecutions": 240,
+    "testBodyChanges": false,
+    "retries": 0,
+    "skips": 0,
+    "trace": "off",
+    "video": "off",
+    "screenshot": "off"
+  },
+  "samples": [
+    {
+      "name": "00-todomvc-1-serial",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "serial",
+      "pair": 1,
+      "tests": 24,
+      "completeSeconds": 4.638481622001564,
+      "runnerSeconds": 3.767202,
+      "sampledPeakRssBytes": 987131904,
+      "observedCpuSeconds": 5.17,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "8305b8e78c8535d7a6ccecddb3050a6ce0e874e2c486fb0b81833805e4618503",
+        "project/report.json": "4cfcccc7a2c7176132efeeb0ffd4e841045a2ca229a049a23be8a017cbd03137",
+        "owner-report.json": "2999ef0c8d12d2194ea2d3bb2d269213080122462ee402a190a21c53a8a15f52",
+        "resources.json": "37af54cccbcc8032203ab12851fa68d452133f73548cd13f0c1b78b3722993bc",
+        "verification.json": "0b30079c4cb672ffab80b6e9c5f56c5247c43d01c66d5006644423c3fc36a88c"
+      }
+    },
+    {
+      "name": "01-todomvc-1-reuse",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "reuse",
+      "pair": 1,
+      "tests": 24,
+      "completeSeconds": 3.477975351997884,
+      "runnerSeconds": 2.658996,
+      "sampledPeakRssBytes": 1007190016,
+      "observedCpuSeconds": 4.79,
+      "transfers": 24,
+      "claims": 23,
+      "releases": 23,
+      "evidenceSha256": {
+        "prepared.json": "3942a7e2af151cd94690bf3596c75ada403874c8bb32d1587f685eb680f82fc7",
+        "project/report.json": "9d7a151a276fc082ea345220b9a208c9f5bc2f502f7510295c77cc0ba6fd1ac4",
+        "owner-report.json": "c1832fe830267abadce1263effdc65a0ceed90fd5c3fdac6cfde955017bc5c6c",
+        "resources.json": "1bfba827ed57445413b7f72f2397746be9f1d2c483bf55294e297a653535e0c6",
+        "verification.json": "780cca12b05170fe37477b96f0722438b741957a1818fe6a0edcac679b88976b"
+      }
+    },
+    {
+      "name": "02-todomvc-1-reuse",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "reuse",
+      "pair": 2,
+      "tests": 24,
+      "completeSeconds": 3.498332905001007,
+      "runnerSeconds": 2.717044,
+      "sampledPeakRssBytes": 1017360384,
+      "observedCpuSeconds": 4.79,
+      "transfers": 24,
+      "claims": 23,
+      "releases": 23,
+      "evidenceSha256": {
+        "prepared.json": "58fb0805cc1c292e4f2e3321185a2b59a7ca721a85ff6068ae36317973155fe3",
+        "project/report.json": "6814982b422233ff252c363a674aa5e0c75cf69d10569f2112320506f391949a",
+        "owner-report.json": "234166cd5a6d2e05e25eda984cf9fc73935c610b4f6d5927caa6df66b013b318",
+        "resources.json": "14cb8412402febe4799c4f2e6e56cad0068f059532e46876b465514df5ab699b",
+        "verification.json": "c1cd4ef3c924f1389d30cc7740d8c093f16bd044c6d17580f16144bd443fa3bc"
+      }
+    },
+    {
+      "name": "03-todomvc-1-serial",
+      "application": "todomvc",
+      "workers": 1,
+      "mode": "serial",
+      "pair": 2,
+      "tests": 24,
+      "completeSeconds": 4.489991438000288,
+      "runnerSeconds": 3.7601430000000007,
+      "sampledPeakRssBytes": 989769728,
+      "observedCpuSeconds": 5.0200000000000005,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "5e70bcb752fefc402ec1d39a2430f52871befa116ad3ec115f6c4e6f9b9971c7",
+        "project/report.json": "f2be912791a49322c3d4f1e6e6d1ee20bfd66df842bac931e14e49af52d37679",
+        "owner-report.json": "e2ee1d12f798eb73e671d270cfb4a24d8f305a2a2a82d0bc3ce407e0f597d65b",
+        "resources.json": "a54dd71b141c70dc3742e6394b54753d2a97705ba732e920951b0ee39871c51a",
+        "verification.json": "fd9a9d557bd111a4918c7b78e5401d4400b783c4d05e6bc225397a384767f8e3"
+      }
+    },
+    {
+      "name": "04-todomvc-4-serial",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "serial",
+      "pair": 1,
+      "tests": 24,
+      "completeSeconds": 2.6025959420003346,
+      "runnerSeconds": 1.8115320000000001,
+      "sampledPeakRssBytes": 3054825472,
+      "observedCpuSeconds": 7.09,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "9e6aa780b5d109caa7f1429841298d5a27b0bddeb7045d0e5fde464e00723b4d",
+        "project/report.json": "b04de31de9d01f48294235c5c8bcf73d313c4f554a3aefef8a9acc2111982ea3",
+        "owner-report.json": "68563c0ba8e27da50a50f913384af067911d3ce8822c78235357b5470a6193cf",
+        "resources.json": "dc7357cc6a14182c642e7254244fc242157fd50cdc74442c6611553d3f347efb",
+        "verification.json": "f6d75492a648f1606b8f6c9060b3bfdb087cda63c5a71fb5a375139e998ef889"
+      }
+    },
+    {
+      "name": "05-todomvc-4-reuse",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "reuse",
+      "pair": 1,
+      "tests": 24,
+      "completeSeconds": 2.31200434800121,
+      "runnerSeconds": 1.5100169999999997,
+      "sampledPeakRssBytes": 3083444224,
+      "observedCpuSeconds": 6.41,
+      "transfers": 24,
+      "claims": 20,
+      "releases": 20,
+      "evidenceSha256": {
+        "prepared.json": "9ba0a85ef6627f02f4d3b086d08ef1b7c84c37c670b3ccb7bb59c75c3ad81265",
+        "project/report.json": "4f727d3b931fece0d9abc6588b5950e247cf44ee8f69185088efd3445ea766e6",
+        "owner-report.json": "7a8efdbae33faf9e3985249db610e5cccb72f31dabaebb17a15c831687af3954",
+        "resources.json": "41ce20ffe989f97085db905fdfb106ab386aaddd62f1837eb126458ea08b9949",
+        "verification.json": "7bcf47ba55887bf00d7eea045ed69efa8a92f88adbbcaf8112eaa716390adbdd"
+      }
+    },
+    {
+      "name": "06-todomvc-4-reuse",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "reuse",
+      "pair": 2,
+      "tests": 24,
+      "completeSeconds": 2.2857639050052967,
+      "runnerSeconds": 1.4971079999999999,
+      "sampledPeakRssBytes": 3097374720,
+      "observedCpuSeconds": 6.49,
+      "transfers": 24,
+      "claims": 20,
+      "releases": 20,
+      "evidenceSha256": {
+        "prepared.json": "7b42a57749d386fb4fb5bc361e16e63cc1e3c89c0743a1d26f6ea93edcb6ff01",
+        "project/report.json": "3bb205690e0ef3b41634e3041de0e06f14b96bfc7dbc70f2e68104e1c0ef7323",
+        "owner-report.json": "1baaeb09c5839c96f0799b01370c7831de247ad712a7d72e0a8c1780ce34615e",
+        "resources.json": "69913a32c2b4f0e5251fe4c53d8389b61ed2ba2a788e4f6422c71c42ae850dd9",
+        "verification.json": "ee22d70bb2ec34bd650cddee9ec960aa78f14216ae58cc1d25c2ce0f67310d82"
+      }
+    },
+    {
+      "name": "07-todomvc-4-serial",
+      "application": "todomvc",
+      "workers": 4,
+      "mode": "serial",
+      "pair": 2,
+      "tests": 24,
+      "completeSeconds": 2.6172236159982276,
+      "runnerSeconds": 1.8137450000000002,
+      "sampledPeakRssBytes": 3063468032,
+      "observedCpuSeconds": 7.05,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "57be49d3370614bb8da9b57dcbfc33e240113ffef3af7412f1598c073f4a72d5",
+        "project/report.json": "459092d840b8cbdc8593d7befee696e3b9b19b2f72d9d216022e45e4ea3289a1",
+        "owner-report.json": "e5f43636b862ad1441657935fa29ba42aa619a48279a40ab5a09644d79369f4c",
+        "resources.json": "8c90e602d2e48772888943553ddb18a01bea2ed208e327f6e65a1fe67011f543",
+        "verification.json": "5431bd4bda5e5f05e23c20eb32106df979fc259e19ce53611cd93ba5a8ffbe27"
+      }
+    },
+    {
+      "name": "08-svgomg-1-serial",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "serial",
+      "pair": 1,
+      "tests": 6,
+      "completeSeconds": 1.8473944419965846,
+      "runnerSeconds": 1.050348,
+      "sampledPeakRssBytes": 1010724864,
+      "observedCpuSeconds": 2.7399999999999998,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "45312366b677f09bb2ad010efbf0de6f1be62cf448c141cec94b5c0534dd55db",
+        "project/report.json": "1e43208f8e5a6927070067c256fcb3e31d758f45c52250554ae8b8e3e155931b",
+        "owner-report.json": "c6e47e81da7196b58b5cb8d504859c70039a5210c038f84c12f5a88baffbee8d",
+        "resources.json": "853281713fd08a68c317eea99fa89bd49ba52833e1873823a423312cd52de21a",
+        "verification.json": "1bb8abc813043eb2bedc7ce01e294f08f9598110cd3a6bb0b4aa8040c3fd001b"
+      }
+    },
+    {
+      "name": "09-svgomg-1-reuse",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "reuse",
+      "pair": 1,
+      "tests": 6,
+      "completeSeconds": 2.191562726999109,
+      "runnerSeconds": 1.3939990000000002,
+      "sampledPeakRssBytes": 1037770752,
+      "observedCpuSeconds": 3.36,
+      "transfers": 6,
+      "claims": 5,
+      "releases": 5,
+      "evidenceSha256": {
+        "prepared.json": "59b24cc90ead426e4033b0ce2e4067b33dd7ba01376a82ed06804f52756341de",
+        "project/report.json": "26703d9f033036d66347bf03b2b3d3cf0a4095e6ca92e00aa11217fb2e858b26",
+        "owner-report.json": "138ccb53c7315ba5daed02c53dad4e1cbcc6db7fae34e4323b42f940b191b09f",
+        "resources.json": "f16e1f783ecc671e691ef5602bdbe9673ae6484d3bd696ee4309719d6d510534",
+        "verification.json": "4701713b38a50a7a28f2265aa008df5d2c0c2f58f3b8eefdd87aaf63eaf5022e"
+      }
+    },
+    {
+      "name": "10-svgomg-1-reuse",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "reuse",
+      "pair": 2,
+      "tests": 6,
+      "completeSeconds": 1.777191152999876,
+      "runnerSeconds": 1.0415450000000002,
+      "sampledPeakRssBytes": 1019686912,
+      "observedCpuSeconds": 3.13,
+      "transfers": 6,
+      "claims": 5,
+      "releases": 5,
+      "evidenceSha256": {
+        "prepared.json": "09da949edb8637de0e784ce77a15b89083a3eea581977f7a2e26b444a5d7a46b",
+        "project/report.json": "89143b418bf720a8bbdc1a4f5ceb038836697a68aa8d00fb4367b9dcf395d0b2",
+        "owner-report.json": "12b42f052c6b0add75d226cee619b561a091c44a0771dac71b0fd2710673439d",
+        "resources.json": "8a44ab8a76f0ca517ea219c35926291ab0e94c4ec863162e2792275e1786f031",
+        "verification.json": "d0530e98b0866b38c2f91a49676fa20aa4f6ad0b5bd222822d20a6166e6bc8a7"
+      }
+    },
+    {
+      "name": "11-svgomg-1-serial",
+      "application": "svgomg",
+      "workers": 1,
+      "mode": "serial",
+      "pair": 2,
+      "tests": 6,
+      "completeSeconds": 2.2068279110026197,
+      "runnerSeconds": 1.4036199999999999,
+      "sampledPeakRssBytes": 1046466560,
+      "observedCpuSeconds": 3.09,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "1a7fc911790300aa96b69ff03cfc219de731517bdc9ead2d5fee85d05e45f7b5",
+        "project/report.json": "2d95c5e86d3cc4ece3fe15eb5366596e9cb4145a9abac78f3a5e9837dbadc936",
+        "owner-report.json": "139e99a363c864bd010db6b55f38c3a8eca123a254e19e68265e3d6a64ffe11f",
+        "resources.json": "e0e3c597be347f9b0e554e226b2b44fee9f2740824ade78081200694ce32bdd3",
+        "verification.json": "aca141e90ad4812d62495ed0b508055519b363fc5dd6056a9b5f39872cf4fda9"
+      }
+    },
+    {
+      "name": "12-svgomg-4-serial",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "serial",
+      "pair": 1,
+      "tests": 6,
+      "completeSeconds": 1.9714910820039222,
+      "runnerSeconds": 1.237701,
+      "sampledPeakRssBytes": 3098714112,
+      "observedCpuSeconds": 4.55,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "94305623b94ef13705c43dcb4e1c8de24029abca29f4782ef2d8fc9d9821f75e",
+        "project/report.json": "6091f2b2be4c97855e750e1c01dc63bcd639c23803710c44cfcf32e34c5c32e5",
+        "owner-report.json": "0fcecf4a34c5d9e940356b60ff1fc6a877cac304fd3b997592a66b45da371b1d",
+        "resources.json": "6ff4eb6fe91618a624ed8ee11d4330be74f80a8be21980afb10b59db7650cd96",
+        "verification.json": "1d16c1e12376da0ef79f3e20eb7449292e8c23a698dd682b2e496ffa8c0a1bc6"
+      }
+    },
+    {
+      "name": "13-svgomg-4-reuse",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "reuse",
+      "pair": 1,
+      "tests": 6,
+      "completeSeconds": 2.0478763450009865,
+      "runnerSeconds": 1.254029,
+      "sampledPeakRssBytes": 3176632320,
+      "observedCpuSeconds": 4.7299999999999995,
+      "transfers": 6,
+      "claims": 2,
+      "releases": 2,
+      "evidenceSha256": {
+        "prepared.json": "198a94d8ffee723fa27de8d2ccf960294ea76abaca3a486f550e621940e6dfb6",
+        "project/report.json": "b27b2ec3d4637470320f64ab74ea2972d26ddbe8f8042f2f738a2853cd1c3345",
+        "owner-report.json": "576ddf6d82e3071a4bca4ba3ff3f7b3eb213339549ba1e3f9e3df88673a428ec",
+        "resources.json": "b91c1ac2be0d7f76b06d58a74dc15cbc607961443b9cfc920d16f9902ce3b59e",
+        "verification.json": "efbffeeceb531ad51780a5f687a6aa6f16d2aeebcb9f80f3cfc62c5dcb2c1111"
+      }
+    },
+    {
+      "name": "14-svgomg-4-reuse",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "reuse",
+      "pair": 2,
+      "tests": 6,
+      "completeSeconds": 2.0344492079966585,
+      "runnerSeconds": 1.2439229999999997,
+      "sampledPeakRssBytes": 3157684224,
+      "observedCpuSeconds": 4.81,
+      "transfers": 6,
+      "claims": 2,
+      "releases": 2,
+      "evidenceSha256": {
+        "prepared.json": "e902de6233b33a2d196f6ad338b1dcaab9ec1cabac10871d2baf81ad1e275c28",
+        "project/report.json": "1d5151062f8231182f02d0e9e23f15fdda88e8060d6f6dad23817fba7e8168f9",
+        "owner-report.json": "05761e73f754c06272dc716d905e074e0f07df0eeea184e1abb34ea1d38bda04",
+        "resources.json": "9b2f951ca6dbffa5719c12dc2e099f3e462d3a202d0acd519e86f3eb29177681",
+        "verification.json": "06c908b225f7c85ae48a5454e9a1aa42cf2362956e7a71b01de60260017b4f9a"
+      }
+    },
+    {
+      "name": "15-svgomg-4-serial",
+      "application": "svgomg",
+      "workers": 4,
+      "mode": "serial",
+      "pair": 2,
+      "tests": 6,
+      "completeSeconds": 2.0542841300048167,
+      "runnerSeconds": 1.2602090000000001,
+      "sampledPeakRssBytes": 3007365120,
+      "observedCpuSeconds": 4.49,
+      "transfers": 0,
+      "claims": 0,
+      "releases": 0,
+      "evidenceSha256": {
+        "prepared.json": "a0e1becfe99553e8692733a8972c6e8d97c37dfe5acaef5d415c1276c0792854",
+        "project/report.json": "005f3054b1461d96d6922bf0fed4d6a9b3311d28c87a6d60fe390731a10d8ca6",
+        "owner-report.json": "f85d15dc8fadd89cceabed836090772cdd60056eae742358d7e102eb902ae17f",
+        "resources.json": "1f35f0d89ec095733135da0c822df6f024fba364d77f75260a43bb752211e741",
+        "verification.json": "c680ace270fa22e31e6d92cbbddab65694c237fa3f79cae5b368ea76df40d9f4"
+      }
+    }
+  ],
+  "cells": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "pairs": [
+        {
+          "pair": 1,
+          "serialSeconds": 4.638481622001564,
+          "reuseSeconds": 3.477975351997884,
+          "reductionPercent": 25.01909815701515,
+          "sampledRssChangePercent": 2.0319586388325206
+        },
+        {
+          "pair": 2,
+          "serialSeconds": 4.489991438000288,
+          "reuseSeconds": 3.498332905001007,
+          "reductionPercent": 22.085978262821303,
+          "sampledRssChangePercent": 2.7875833357473567
+        }
+      ],
+      "advances": true
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "pairs": [
+        {
+          "pair": 1,
+          "serialSeconds": 2.6025959420003346,
+          "reuseSeconds": 2.31200434800121,
+          "reductionPercent": 11.165451744145049,
+          "sampledRssChangePercent": 0.9368375464429812
+        },
+        {
+          "pair": 2,
+          "serialSeconds": 2.6172236159982276,
+          "reuseSeconds": 2.2857639050052967,
+          "reductionPercent": 12.664554490752211,
+          "sampledRssChangePercent": 1.1068073061583084
+        }
+      ],
+      "advances": false
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "pairs": [
+        {
+          "pair": 1,
+          "serialSeconds": 1.8473944419965846,
+          "reuseSeconds": 2.191562726999109,
+          "reductionPercent": -18.629929655442833,
+          "sampledRssChangePercent": 2.6758902410854324
+        },
+        {
+          "pair": 2,
+          "serialSeconds": 2.2068279110026197,
+          "reuseSeconds": 1.777191152999876,
+          "reductionPercent": 19.46852112304255,
+          "sampledRssChangePercent": -2.5590543476133654
+        }
+      ],
+      "advances": false
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "pairs": [
+        {
+          "pair": 1,
+          "serialSeconds": 1.9714910820039222,
+          "reuseSeconds": 2.0478763450009865,
+          "reductionPercent": -3.874491936297386,
+          "sampledRssChangePercent": 2.5145336156780607
+        },
+        {
+          "pair": 2,
+          "serialSeconds": 2.0542841300048167,
+          "reuseSeconds": 2.0344492079966585,
+          "reductionPercent": 0.9655393681161195,
+          "sampledRssChangePercent": 4.9983656124867215
+        }
+      ],
+      "advances": false
+    }
+  ],
+  "allSelectedInputsUnchanged": true,
+  "selectedInputCount": 926,
+  "privateReceiptSha256": {
+    "plan.json": "5117eb7c0b231951db7cc5ca48410f17c479f4178c25d7493bd3c6ecbc1ffd8c",
+    "inputs.json": "cb8b919384737c1b7081cf19464c9c3e4575038de6bb82f2e023866f15e24163",
+    "summary.json": "dcf9de670604d2bae967f6f45a0ef61c3f73f97f8ececbe60b0aaf0732e97544"
+  },
+  "decision": "Only TodoMVC at one worker meets the prospective 20% complete-time reduction rule in both orders. Continue targeted investigation; do not enable reuse by default or launch the full final campaign based on this result.",
+  "limitations": [
+    "Private raw runs and source candidates remain outside the public repository; this checkpoint is a sanitized result summary, not a standalone reproduction bundle.",
+    "Two pairs do not establish population uncertainty or final eight-pair acceptance.",
+    "Systemd requested common resource limits; sampled RSS and observed CPU are not exact whole-tree charged resources or final resource admission.",
+    "Observed cleanup is not exhaustive process custody.",
+    "Public configuration, failure/retry, diagnostics, longer-term memory, other-platform and full compatibility gates remain open.",
+    "No direct Playwright comparison, broad 2x claim, or default adoption."
+  ],
+  "finalPerformanceAdmission": false,
+  "goalAchieved": false
+}
