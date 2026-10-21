@@ -42,6 +42,7 @@ let workerCount = 0;
 let restartCount = 0;
 let keepSpare = false;
 let cpus = 1;
+let hadHint = false;
 
 // Variables that change how Playwright or Node behave while modules load. A standby worker
 // started with different values cannot be reconfigured after the fact.
@@ -70,6 +71,7 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
   hintKey = workerCountHintKey(argv);
   cpus = os.availableParallelism?.() ?? os.cpus().length;
   const hint = readWorkerCountHints()[hintKey];
+  hadHint = !!hint;
   const count = Math.max(1, Math.min(hint?.workers || 1, cpus));
   keepSpare = !!hint?.restarts && count < cpus;
   for (let i = 0; i < count + (keepSpare ? 1 : 0); i++)
@@ -122,6 +124,13 @@ export function ensureStandbys(count: number) {
     return;
   while (standbys.length < count)
     spawnStandby();
+}
+
+// Called once the config is loaded. Without a hint from a previous run (a first run, or CI), start
+// the configured number of workers now rather than when the first tests are dispatched.
+export function ensureStandbysForConfig(configuredWorkers: number) {
+  if (enabled && !hadHint)
+    ensureStandbys(Math.min(configuredWorkers, cpus));
 }
 
 // Remembers how many workers the run starts, for the next run's pre-spawn.
