@@ -1,0 +1,323 @@
+--- a/cc/scheduler/scheduler_state_machine.cc
++++ b/cc/scheduler/scheduler_state_machine.cc
+@@ -29,6 +29,9 @@
+ namespace cc {
+ 
+ namespace {
++BASE_FEATURE(kFlashwrightDemandDrivenUncappedFrames,
++             base::FEATURE_DISABLED_BY_DEFAULT);
++
+ // Surfaces and CompositorTimingHistory don't support more than 1 pending swap.
+ const int kMaxPendingSubmitFrames = 1;
+ 
+@@ -1184,12 +1187,23 @@
+   if (!visible_)
+     return false;
+ 
++  const bool demand_driven_uncapped =
++      settings_.disable_frame_rate_limit && !settings_.single_threaded_proxy &&
++      !settings_.using_synchronous_renderer_compositor &&
++      !settings_.wait_for_all_pipeline_stages_before_draw &&
++      !base::FeatureList::IsEnabled(features::kSlimScheduler) &&
++      base::FeatureList::IsEnabled(kFlashwrightDemandDrivenUncappedFrames);
++
++  // In the private uncapped probe, actual demand and asynchronous commit /
++  // activation notifications restore observation. Keep frame history intact:
++  // it also controls impl-side invalidation, independently of subscription.
+   // We should proactively request a BeginImplFrame if a commit is pending
+   // because we will want to draw if the commit completes quickly. Do not
+   // request frames when commits are disabled, because the frame requests will
+   // not provide the needed commit (and will wake up the process when it could
+   // stay idle).
+-  if ((begin_main_frame_state_ != BeginMainFrameState::IDLE) &&
++  if (!demand_driven_uncapped &&
++      (begin_main_frame_state_ != BeginMainFrameState::IDLE) &&
+       !defer_begin_main_frame_)
+     return true;
+ 
+@@ -1207,12 +1221,12 @@
+   // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
+   // requests, which may propagate to the BeginImplFrame provider and get
+   // sampled at an inopportune time, delaying the next BeginImplFrame.
+-  if (did_attempt_draw_in_last_frame_)
++  if (!demand_driven_uncapped && did_attempt_draw_in_last_frame_)
+     return true;
+ 
+   // If the last commit was aborted because of early out (no updates), we should
+   // still want a begin frame in case there is a commit coming again.
+-  if (last_commit_had_no_updates_)
++  if (!demand_driven_uncapped && last_commit_had_no_updates_)
+     return true;
+ 
+   // If there is active interaction happening (e.g. scroll/pinch), then keep
+--- a/cc/scheduler/scheduler_state_machine_unittest.cc
++++ b/cc/scheduler/scheduler_state_machine_unittest.cc
+@@ -476,6 +476,50 @@
+   state.IssueNextBeginImplFrame();
+   state.OnBeginImplFrameDeadline();
+   EXPECT_ACTION_UPDATE_STATE(Action::DRAW_IF_POSSIBLE);
++}
++
++TEST(SchedulerStateMachineTest, FlashwrightDemandDrivenPreservesRequiredWork) {
++  base::test::ScopedFeatureList probe;
++  probe.InitFromCommandLine("FlashwrightDemandDrivenUncappedFrames", "");
++  SchedulerSettings settings;
++  settings.disable_frame_rate_limit = true;
++  for (int demand = 0; demand < 8; ++demand) {
++    SCOPED_TRACE(demand);
++    StateMachine state(settings);
++    SET_UP_STATE(state);
++    state.SetBeginMainFrameState(SchedulerStateMachine::BeginMainFrameState::SENT);
++    EXPECT_FALSE(state.ShouldSubscribeToBeginFrames());
++    switch (demand) {
++      case 0: state.SetNeedsRedraw(true); break;
++      case 1: state.SetNeedsOneBeginImplFrame(true); break;
++      case 2: state.SetVideoNeedsBeginFrames(true); break;
++      case 3: state.SetHasPendingTree(true); break;
++      case 4: state.SetNeedsPrepareTiles(); break;
++      case 5: state.SetTreePrioritiesAndScrollState(SMOOTHNESS_TAKES_PRIORITY, true); break;
++      case 6: state.SetNeedsImplSideInvalidation(true); break;
++      case 7: state.SetNeedsBeginMainFrameForTest(true); break;
++    }
++    EXPECT_TRUE(state.ShouldSubscribeToBeginFrames());
++  }
++}
++
++TEST(SchedulerStateMachineTest, FlashwrightDemandDrivenRequiresAllModeGates) {
++  for (int excluded = 0; excluded < 6; ++excluded) {
++    SCOPED_TRACE(excluded);
++    base::test::ScopedFeatureList probe;
++    probe.InitFromCommandLine(excluded == 5 ? "FlashwrightDemandDrivenUncappedFrames,SlimScheduler" :
++                              excluded == 0 ? "" : "FlashwrightDemandDrivenUncappedFrames",
++                              excluded == 0 ? "FlashwrightDemandDrivenUncappedFrames" : "");
++    SchedulerSettings settings;
++    settings.disable_frame_rate_limit = excluded != 1;
++    settings.single_threaded_proxy = excluded == 2;
++    settings.using_synchronous_renderer_compositor = excluded == 3;
++    settings.wait_for_all_pipeline_stages_before_draw = excluded == 4;
++    StateMachine state(settings);
++    SET_UP_STATE(state);
++    state.SetBeginMainFrameState(SchedulerStateMachine::BeginMainFrameState::SENT);
++    EXPECT_TRUE(state.ProactiveBeginFrameWanted());
++  }
+ }
+ 
+ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
+--- a/cc/scheduler/scheduler_unittest.cc
++++ b/cc/scheduler/scheduler_unittest.cc
+@@ -766,6 +766,111 @@
+   client_->Reset();
+ }
+ 
++TEST_P(SchedulerTest, FlashwrightDemandDrivenLateCommitResubscribes) {
++  scheduler_settings_.disable_frame_rate_limit = true;
++  SetUpScheduler(EXTERNAL_BFS);
++  base::test::ScopedFeatureList probe;
++  probe.InitFromCommandLine(
++      "FlashwrightDemandDrivenUncappedFrames,FlashwrightEarlyIdleFrameDeadline",
++      "");
++
++  scheduler_->SetNeedsBeginMainFrame();
++  EXPECT_TRUE(client_->HasAction("AddObserver(this)"));
++  client_->Reset();
++  AdvanceFrame();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
++  client_->Reset();
++  task_runner_->RunPendingTasks();
++  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
++  EXPECT_FALSE(scheduler_->begin_frames_expected());
++  EXPECT_TRUE(client_->HasAction("RemoveObserver(this)"));
++  client_->Reset();
++
++  // The asynchronous commit must restore the subscription itself. Injecting
++  // another frame without checking the observer could hide a lost wakeup.
++  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
++  scheduler_->NotifyReadyToCommit(nullptr);
++  EXPECT_TRUE(client_->HasAction("ScheduledActionCommit"));
++  EXPECT_TRUE(client_->HasAction("ScheduledActionPostCommit"));
++  EXPECT_TRUE(client_->HasAction("AddObserver(this)"));
++  EXPECT_TRUE(scheduler_->begin_frames_expected());
++  client_->Reset();
++  scheduler_->NotifyReadyToActivate();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionActivateSyncTree"));
++  EXPECT_TRUE(scheduler_->begin_frames_expected());
++  client_->Reset();
++  AdvanceFrame();
++  task_runner_->RunPendingTasks();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
++  EXPECT_FALSE(scheduler_->begin_frames_expected());
++  EXPECT_TRUE(client_->HasAction("RemoveObserver(this)"));
++}
++
++TEST_P(SchedulerTest, FlashwrightDemandDrivenPipelinedLateCommitResubscribes) {
++  scheduler_settings_.disable_frame_rate_limit = true;
++  scheduler_settings_.main_frame_before_commit_enabled = true;
++  SetUpScheduler(EXTERNAL_BFS);
++  base::test::ScopedFeatureList probe;
++  probe.InitFromCommandLine(
++      "FlashwrightDemandDrivenUncappedFrames,FlashwrightEarlyIdleFrameDeadline",
++      "");
++
++  scheduler_->SetNeedsBeginMainFrame();
++  EXPECT_TRUE(client_->HasAction("AddObserver(this)"));
++  client_->Reset();
++  AdvanceFrame();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
++  client_->Reset();
++  task_runner_->RunPendingTasks();
++  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
++  EXPECT_FALSE(scheduler_->begin_frames_expected());
++  EXPECT_TRUE(client_->HasAction("RemoveObserver(this)"));
++  client_->Reset();
++
++  // The asynchronous commit must restore the subscription itself. Injecting
++  // another frame without checking the observer could hide a lost wakeup.
++  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
++  scheduler_->NotifyReadyToCommit(nullptr);
++  EXPECT_TRUE(client_->HasAction("ScheduledActionCommit"));
++  EXPECT_TRUE(client_->HasAction("ScheduledActionPostCommit"));
++  EXPECT_TRUE(client_->HasAction("AddObserver(this)"));
++  EXPECT_TRUE(scheduler_->begin_frames_expected());
++  client_->Reset();
++  scheduler_->NotifyReadyToActivate();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionActivateSyncTree"));
++  EXPECT_TRUE(scheduler_->begin_frames_expected());
++  client_->Reset();
++  AdvanceFrame();
++  task_runner_->RunPendingTasks();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
++  EXPECT_FALSE(scheduler_->begin_frames_expected());
++  EXPECT_TRUE(client_->HasAction("RemoveObserver(this)"));
++}
++
++TEST_P(SchedulerTest, FlashwrightDemandDrivenAbortThenNewRequest) {
++  scheduler_settings_.disable_frame_rate_limit = true;
++  SetUpScheduler(EXTERNAL_BFS);
++  base::test::ScopedFeatureList probe;
++  probe.InitFromCommandLine(
++      "FlashwrightDemandDrivenUncappedFrames,FlashwrightEarlyIdleFrameDeadline",
++      "");
++  scheduler_->SetNeedsBeginMainFrame();
++  client_->Reset();
++  AdvanceFrame();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
++  scheduler_->BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
++  task_runner_->RunPendingTasks();
++  EXPECT_FALSE(scheduler_->begin_frames_expected());
++  client_->Reset();
++
++  scheduler_->SetNeedsBeginMainFrame();
++  EXPECT_TRUE(scheduler_->begin_frames_expected());
++  EXPECT_TRUE(client_->HasAction("AddObserver(this)"));
++  client_->Reset();
++  AdvanceFrame();
++  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
++}
++
+ TEST_P(SchedulerTest, RequestCommitAfterSetDeferBeginMainFrame) {
+   SetUpScheduler(EXTERNAL_BFS);
+ 
+@@ -1066,6 +1171,46 @@
+   EXPECT_FALSE(client->needs_begin_frames());
+ }
+ 
++TEST_P(SchedulerTest, FlashwrightDemandDrivenRequestCommitInsideDraw) {
++  SchedulerClientThatSetNeedsBeginMainFrameInsideDraw* client =
++      new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
++  scheduler_settings_.disable_frame_rate_limit = true;
++  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
++  base::test::ScopedFeatureList probe;
++  probe.InitFromCommandLine(
++      "FlashwrightDemandDrivenUncappedFrames,FlashwrightEarlyIdleFrameDeadline",
++      "");
++
++  EXPECT_FALSE(client->needs_begin_frames());
++  scheduler_->SetNeedsRedraw();
++  EXPECT_TRUE(scheduler_->RedrawPending());
++  EXPECT_EQ(0, client->num_draws());
++  EXPECT_TRUE(client->needs_begin_frames());
++
++  client->SetNeedsBeginMainFrameOnNextDraw();
++  EXPECT_SCOPED(AdvanceFrame());
++  client->SetNeedsBeginMainFrameOnNextDraw();
++  task_runner_->RunPendingTasks();  // Run posted deadline.
++  EXPECT_EQ(1, client->num_draws());
++  EXPECT_TRUE(scheduler_->CommitPending());
++  // Reentrant demand was dispatched. Only its speculative wait is removed.
++  EXPECT_TRUE(client->HasAction("ScheduledActionSendBeginMainFrame"));
++  EXPECT_FALSE(client->needs_begin_frames());
++  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
++  scheduler_->NotifyReadyToCommit(nullptr);
++  EXPECT_TRUE(client->HasAction("ScheduledActionCommit"));
++  EXPECT_TRUE(client->needs_begin_frames());
++  scheduler_->NotifyReadyToActivate();
++
++  EXPECT_SCOPED(AdvanceFrame());
++  task_runner_->RunPendingTasks();  // Run posted deadline.
++  EXPECT_EQ(2, client->num_draws());
++
++  EXPECT_FALSE(scheduler_->RedrawPending());
++  EXPECT_FALSE(scheduler_->CommitPending());
++  EXPECT_FALSE(client->needs_begin_frames());
++}
++
+ // Tests that when a draw fails then the pending commit should not be dropped.
+ TEST_P(SchedulerTest, RequestCommitInsideFailedDraw) {
+   SchedulerClientThatsetNeedsDrawInsideDraw* client =
+@@ -1106,6 +1251,56 @@
+   EXPECT_EQ(3, client->num_draws());
+   EXPECT_TRUE(scheduler_->CommitPending());
+   EXPECT_FALSE(scheduler_->RedrawPending());
++  EXPECT_TRUE(client->needs_begin_frames());
++}
++
++TEST_P(SchedulerTest, FlashwrightDemandDrivenRequestCommitInsideFailedDraw) {
++  SchedulerClientThatsetNeedsDrawInsideDraw* client =
++      new SchedulerClientThatsetNeedsDrawInsideDraw;
++  scheduler_settings_.disable_frame_rate_limit = true;
++  SetUpScheduler(EXTERNAL_BFS, base::WrapUnique(client));
++  base::test::ScopedFeatureList probe;
++  probe.InitFromCommandLine(
++      "FlashwrightDemandDrivenUncappedFrames,FlashwrightEarlyIdleFrameDeadline",
++      "");
++
++  client->SetDrawWillHappen(false);
++
++  scheduler_->SetNeedsRedraw();
++  EXPECT_TRUE(scheduler_->RedrawPending());
++  EXPECT_TRUE(client->needs_begin_frames());
++  EXPECT_EQ(0, client->num_draws());
++
++  // Fail the draw.
++  EXPECT_SCOPED(AdvanceFrame());
++  task_runner_->RunPendingTasks();  // Run posted deadline.
++  EXPECT_EQ(1, client->num_draws());
++
++  // We have a commit pending and the draw failed, and we didn't lose the commit
++  // request.
++  EXPECT_TRUE(scheduler_->CommitPending());
++  EXPECT_TRUE(scheduler_->RedrawPending());
++  EXPECT_TRUE(client->needs_begin_frames());
++
++  // Fail the draw again.
++  EXPECT_SCOPED(AdvanceFrame());
++
++  task_runner_->RunPendingTasks();  // Run posted deadline.
++  EXPECT_EQ(2, client->num_draws());
++  EXPECT_TRUE(scheduler_->CommitPending());
++  EXPECT_TRUE(scheduler_->RedrawPending());
++  EXPECT_TRUE(client->needs_begin_frames());
++
++  // Draw successfully.
++  client->SetDrawWillHappen(true);
++  EXPECT_SCOPED(AdvanceFrame());
++  task_runner_->RunPendingTasks();  // Run posted deadline.
++  EXPECT_EQ(3, client->num_draws());
++  EXPECT_TRUE(scheduler_->CommitPending());
++  EXPECT_FALSE(scheduler_->RedrawPending());
++  // Repeated failed draws leave another real main-frame request pending.
++  // Preserve that subscription even after the eventual successful draw.
++  EXPECT_TRUE(client->HasAction("ScheduledActionSendBeginMainFrame"));
+   EXPECT_TRUE(client->needs_begin_frames());
+ }
+ 
