@@ -319,6 +319,10 @@ export class InjectedScript {
     return new Set<Element>(result.map(r => r.element));
   }
 
+  setFrameSeq(frameSeq: number) {
+    this._frameSeq = frameSeq;
+  }
+
   ariaSnapshot(node: Node, options: AriaTreeOptions): string {
     const { json } = this.ariaSnapshotJSON(node, options);
     return renderAriaSnapshotAsYaml(json, { convertStringsToRegex: options.mode === 'codegen' });

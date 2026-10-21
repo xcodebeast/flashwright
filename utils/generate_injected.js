@@ -158,7 +158,12 @@ const inlineCSSPlugin = {
       console.log(message.text);
     const baseName = path.basename(injected);
     const outFileJs = path.join(outdir, baseName.replace('.ts', '.js'));
-    const content = await replaceEsbuildHeader(await fs.promises.readFile(outFileJs, 'utf-8'), outFileJs);
+    let content = await replaceEsbuildHeader(await fs.promises.readFile(outFileJs, 'utf-8'), outFileJs);
+    // Flashwright: the injected script is sent to every new document, so its size is paid on
+    // each navigation. Minifying it as a script keeps top-level names (InjectedScript and the
+    // bundled modules) and only shortens locals and whitespace.
+    if (baseName === 'injectedScript.ts')
+      content = (await esbuild.transform(content, { minify: true, target: 'ES2019' })).code;
     const newContent = `export const source = ${JSON.stringify(content)};`;
     await fs.promises.writeFile(path.join(generatedFolder, baseName.replace('.ts', 'Source.ts')), newContent);
   }

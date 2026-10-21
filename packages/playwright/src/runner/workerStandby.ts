@@ -17,8 +17,10 @@
 // Flashwright: start worker processes while the CLI is still loading its own code, the config
 // and the test files. A standby worker loads Playwright and launches the default browser in
 // parallel, and is configured later through the usual __init__ message. The number of standbys
-// is remembered from the previous run of the same project. Keep this module free of heavy
-// imports: it runs before the rest of the CLI loads.
+// is remembered from the previous run of the same project. Runs with failing tests replace
+// workers, so once a run (or the previous run) had failures, one spare standby is kept ready
+// while CPUs allow. Keep this module free of heavy imports: it runs before the rest of the CLI
+// loads.
 
 import child_process from 'child_process';
 import crypto from 'crypto';
@@ -37,6 +39,9 @@ const standbys: Standby[] = [];
 let enabled = false;
 let hintKey: string | undefined;
 let workerCount = 0;
+let restartCount = 0;
+let keepSpare = false;
+let cpus = 1;
 
 // Variables that change how Playwright or Node behave while modules load. A standby worker
 // started with different values cannot be reconfigured after the fact.
@@ -63,9 +68,11 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
     return;
   enabled = true;
   hintKey = workerCountHintKey(argv);
-  const cpus = os.availableParallelism?.() ?? os.cpus().length;
-  const count = Math.max(1, Math.min(readWorkerCountHint(), cpus));
-  for (let i = 0; i < count; i++)
+  cpus = os.availableParallelism?.() ?? os.cpus().length;
+  const hint = readWorkerCountHints()[hintKey];
+  const count = Math.max(1, Math.min(hint?.workers || 1, cpus));
+  keepSpare = !!hint?.restarts && count < cpus;
+  for (let i = 0; i < count + (keepSpare ? 1 : 0); i++)
     spawnStandby();
   process.once('exit', () => {
     discardStandbys();
@@ -99,9 +106,13 @@ function spawnStandby() {
   (child as any).channel?.unref?.();
 }
 
-// Called when a worker had to be replaced after a failure while tests remain: keep one standby
-// ready so the next replacement does not pay for a cold start.
-export function ensureSpareStandby() {
+// Called when a worker has to be replaced after a failure. Failures tend to repeat, so from now
+// on one standby is kept ready for the next replacement while tests remain.
+export function recordWorkerRestart(moreTestsToRun: boolean) {
+  restartCount++;
+  if (!moreTestsToRun)
+    return;
+  keepSpare = keepSpare || workerCount < cpus;
   ensureStandbys(1);
 }
 
@@ -135,6 +146,8 @@ export async function takeStandby(entryScript: string, env: NodeJS.ProcessEnv): 
   const standby = standbys.shift();
   if (!standby)
     return;
+  if (keepSpare && !standbys.length)
+    spawnStandby();
   const keys = new Set([...Object.keys(env), ...Object.keys(standby.env)]);
   const compatible = standby.entryScript === entryScript && [...keys].every(key => !loadTimeEnvPattern.test(key) || env[key] === standby.env[key]);
   if (!compatible || !await standby.ready) {
@@ -157,7 +170,7 @@ function workerCountHintKey(argv: string[]) {
   return crypto.createHash('sha1').update([process.cwd(), config, workers].join('\0')).digest('hex').slice(0, 16);
 }
 
-function readWorkerCountHints(): Record<string, { workers: number, usedAt: number }> {
+function readWorkerCountHints(): Record<string, { workers: number, restarts?: number, usedAt: number }> {
   try {
     return JSON.parse(fs.readFileSync(hintFile, 'utf8'));
   } catch {
@@ -165,16 +178,12 @@ function readWorkerCountHints(): Record<string, { workers: number, usedAt: numbe
   }
 }
 
-function readWorkerCountHint(): number {
-  return readWorkerCountHints()[hintKey!]?.workers || 1;
-}
-
 function writeWorkerCountHint() {
   if (!workerCount || !hintKey)
     return;
   try {
     const hints = readWorkerCountHints();
-    hints[hintKey] = { workers: workerCount, usedAt: Date.now() };
+    hints[hintKey] = { workers: workerCount, restarts: restartCount, usedAt: Date.now() };
     const recent = Object.entries(hints).sort((a, b) => b[1].usedAt - a[1].usedAt).slice(0, maxHints);
     // Write a sibling file and rename it, so concurrent runs never read a partial file.
     const temporary = `${hintFile}.${process.pid}`;

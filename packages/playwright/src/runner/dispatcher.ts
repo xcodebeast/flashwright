@@ -20,7 +20,7 @@ import { eventsHelper } from '@utils/eventsHelper';
 
 import { addSuggestedRebaseline } from './rebase';
 import { WorkerHost } from './workerHost';
-import { ensureSpareStandby } from './workerStandby';
+import { recordWorkerRestart } from './workerStandby';
 import { ipc, test as testNs } from '../common';
 import { addLocationAndSnippetToError } from '../reporters/internalReporter';
 import { serializeError } from '../util';
@@ -174,8 +174,7 @@ export class Dispatcher {
     if (result.didFail) {
       void worker.stop(true /* didFail */);
       // Flashwright: a failure means a replacement worker; have the next one ready in advance.
-      if (result.remainingJob || this._queue.length)
-        ensureSpareStandby();
+      recordWorkerRestart(!!result.remainingJob || !!this._queue.length);
     }
     else if (this._isWorkerRedundant(worker))
       void worker.stop();
