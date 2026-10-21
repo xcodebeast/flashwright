@@ -28,7 +28,7 @@ import os from 'os';
 import path from 'path';
 import vm from 'vm';
 
-type Role = 'runner' | 'worker';
+type Role = 'runner' | 'worker' | 'cli';
 
 const minimumSize = 32 * 1024;
 const pending: { script: vm.Script, cacheFile: string, staleFiles: string[] }[] = [];
