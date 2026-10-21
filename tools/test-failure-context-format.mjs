@@ -40,7 +40,7 @@ const measuredFilesystem = {
 };
 const scopedRequire = name => {
   if (name === './upstream-runtime.js')
-    return { upstreamRequire };
+    throw new Error('Failure-context formatting must not initialize the upstream runtime');
   if (name === 'node:fs/promises')
     return measuredFilesystem;
   return require(name);
@@ -49,6 +49,7 @@ const module = { exports: {} };
 vm.runInNewContext(compiled.outputText, { exports: module.exports, module, require: scopedRequire, Buffer, process }, { filename: sourcePath });
 const {
   buildFailureContext,
+  parseFailureContextLocation,
   maximumFailureContextBytes,
   maximumFailureContextDiagnosticCharacters,
   maximumFailureContextErrors,
@@ -80,6 +81,23 @@ function assertBounded(markdown) {
 }
 
 try {
+  await check('independent stack locations preserve pinned Node, Bun, file URL, Windows, eval and parenthesized paths', async () => {
+    const { parseErrorStack } = upstreamRequire('playwright-core/lib/coreBundle').iso;
+    for (const [separator, stack] of [
+      ['/', 'Error: failure\n    at callback (/tmp/test.ts:21:9)'],
+      ['/', 'Error: failure\n    at /tmp/test.ts:21:9'],
+      ['/', 'Error: failure\n    at callback (file:///tmp/source%20%CE%BB.ts:21:9)'],
+      ['\\', 'Error: failure\n    at callback (file:///C:/test%20source/spec.ts:21:9)'],
+      ['\\', 'Error: failure\n    at callback (C:\\project\\test.ts:21:9)'],
+      ['/', 'Error: failure\n    at callback (/tmp/folder (copy)/test.ts:21:9)'],
+      ['/', 'Error: failure\n    at callback (eval at compute (/tmp/outer.ts:1:2), /tmp/test.ts:21:9)'],
+      ['/', 'Error: failure\n    at process.nextTick (node:internal/process:10:1)\n    at helper (/tmp/node_modules/helper/index.js:2:3)\n    at callback (/tmp/test.ts:21:9)'],
+      ['/', 'Error: no stack frame'],
+    ]) {
+      const actual = parseFailureContextLocation(stack, separator);
+      assert.deepEqual(actual && JSON.parse(JSON.stringify(actual)), parseErrorStack(stack, separator).location);
+    }
+  });
   const ordinarySource = join(directory, 'ordinary-source.ts');
   await filesystem.writeFile(ordinarySource, Array.from({ length: 350 }, (_, index) => `const value${index + 1} = 'line λ😀 ${index + 1}';`).join('\n'));
 

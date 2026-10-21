@@ -1,4 +1,8 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { resolve } from 'node:path';
+import { getCallSites } from 'node:util';
+import { fileURLToPath } from 'node:url';
+import type { FailureContextLocation } from '../failure-context-format.js';
 import { FixtureConfigurationError, FixturePool, type FixtureCallback, type FixtureValues } from './fixture-pool.js';
 import { currentFiniteTestInfo, type FiniteTestInfo } from './suite-runtime.js';
 import { timeoutValue } from './deadlines.js';
@@ -15,6 +19,7 @@ export interface PlannedSuite {
 export interface PlannedTest {
   readonly id: string;
   readonly file: string;
+  readonly location?: FailureContextLocation | undefined;
   readonly title: string;
   readonly titlePath: readonly string[];
   readonly suites: readonly PlannedSuite[];
@@ -26,6 +31,7 @@ export interface PlannedTest {
 }
 interface TestDeclaration {
   kind: 'test'; title: string; callback: FixtureCallback; pool: FixturePool; expectedStatus: ExpectedStatus;
+  location: FailureContextLocation | undefined;
 }
 interface SuiteDeclaration {
   kind: 'suite'; title: string; hooks: SuiteHook[]; use: FixtureValues[];
@@ -61,6 +67,18 @@ const hookTypes: readonly HookType[] = ['beforeAll', 'beforeEach', 'afterEach', 
 const newSuite = (title: string, skipped = false, parent?: SuiteDeclaration): SuiteDeclaration => ({ kind: 'suite', title, hooks: [], use: [], entries: [], skipped, mode: 'inherit', parent, timeout: undefined, slow: false });
 const error = (message: string): never => { throw new FixtureConfigurationError(message); };
 
+/** Structured call sites preserve mapped declarations without invoking application stack-formatting hooks. */
+function declarationLocation(file: string): FailureContextLocation | undefined {
+  const expected = resolve(file);
+  for (const frame of getCallSites(64, { sourceMap: true })) {
+    let source = frame.scriptName;
+    if (!source || source.length > 32768 || frame.lineNumber < 1) continue;
+    if (source.startsWith('file:')) { try { source = fileURLToPath(source); } catch { continue; } }
+    if (resolve(source) === expected) return Object.freeze({ file, line: frame.lineNumber, column: frame.columnNumber });
+  }
+  return undefined;
+}
+
 /** Collection sessions own their async imports. A late declaration from an old
  * file must never attach itself to a subsequently imported file. */
 export class SuiteCollector {
@@ -73,7 +91,7 @@ export class SuiteCollector {
     const declare = (expectedStatus: ExpectedStatus): DeclareTest => (title, callback) => {
       const suite = this.current();
       if (typeof title !== 'string' || typeof callback !== 'function') error('Test requires a title and callback; runtime modifiers and test details are not implemented');
-      suite.entries.push({ kind: 'test', title, callback, pool, expectedStatus });
+      suite.entries.push({ kind: 'test', title, callback, pool, expectedStatus, location: declarationLocation(this.#scope.getStore()!.session.file) });
     };
     const test = declare('passed') as DeclarationTest;
     test.extend = definitions => this.createTest(pool.extend(definitions));
@@ -153,7 +171,7 @@ export class SuiteCollector {
           const id = JSON.stringify([file, ...titlePath]);
           if (identities.has(id)) error(`Duplicate test title: ${titlePath.join(' › ')}`);
           identities.add(id);
-          tests.push(Object.freeze({ id, file, title: entry.title, titlePath, suites: Object.freeze(planned), pool, callback: entry.callback, expectedStatus: skipped || suite.skipped ? 'skipped' : entry.expectedStatus, timeout: [...lineage].reverse().find(s => s.timeout !== undefined)?.timeout, slow: lineage.some(s => s.slow) }));
+          tests.push(Object.freeze({ id, file, location: entry.location, title: entry.title, titlePath, suites: Object.freeze(planned), pool, callback: entry.callback, expectedStatus: skipped || suite.skipped ? 'skipped' : entry.expectedStatus, timeout: [...lineage].reverse().find(s => s.timeout !== undefined)?.timeout, slow: lineage.some(s => s.slow) }));
         }
       };
       visit(root, [], [], false);

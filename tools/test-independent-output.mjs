@@ -154,11 +154,13 @@ test('failed body retains its original error alongside attached page snapshot in
   assert.equal(context.contentType, 'text/markdown');
   assert.equal(path.basename(context.path), 'error-context.md');
   const document = await readFile(context.path, 'utf8');
-  assert.ok(document.includes(originalError.stack));
+  assert.equal(record.errors[0].stack, originalError.stack);
+  assert.ok(document.includes(originalError.message));
   assert.ok(document.includes(snapshot));
-  assert.match(document, /## Failure/);
-  assert.match(document, /## Page snapshot/);
-  assert.ok(document.includes(tests[0].file));
+  assert.match(document, /# Error details/);
+  assert.match(document, /# Page snapshot/);
+  assert.match(document, /# Test source/);
+  assert.equal(record.location.file, tests[0].file);
 }));
 
 test('nested steps preserve return identity and record original parent indices', async () => fixture(async root => {
@@ -213,7 +215,8 @@ test('nested failed steps retain the original thrown error in the body result', 
     ['outer failure', null, 'failed', String(originalError)], ['inner failure', 0, 'failed', String(originalError)],
   ]);
   const context = record.attachments.find(attachment => attachment.name === 'error-context');
-  assert.ok((await readFile(context.path, 'utf8')).includes(originalError.stack));
+  assert.ok((await readFile(context.path, 'utf8')).includes(originalError.message));
+  assert.equal(record.errors[0].stack, originalError.stack);
 }));
 
 test('defined step options reject before callback effects or step publication', async () => fixture(async root => {

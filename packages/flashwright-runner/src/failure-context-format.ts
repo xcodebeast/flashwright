@@ -2,12 +2,39 @@ import { constants as filesystemConstants } from 'node:fs';
 import { open } from 'node:fs/promises';
 import { isAbsolute, relative, sep } from 'node:path';
 import { StringDecoder } from 'node:string_decoder';
-import { upstreamRequire } from './upstream-runtime.js';
 
-const { parseErrorStack, stripAnsiEscapes } = upstreamRequire('playwright-core/lib/coreBundle').iso as {
-  parseErrorStack(stack: string, separator: string): { location?: FailureContextLocation };
-  stripAnsiEscapes(text: string): string;
-};
+// Adapted from Playwright 1.60.0 isomorphic stackTrace.ts and stringUtils.ts
+// (Microsoft Corporation, Apache-2.0). Keep diagnostics independent of runner/driver initialization.
+const stackFramePattern = /^(?:\s*at )?(?:(new) )?(?:(.*?) \()?(?:eval at ([^ ]+) \((.+?):(\d+):(\d+)\), )?(?:(.+?):(\d+):(\d+)|(native))(\)?)$/;
+const ansiPattern = new RegExp('([\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~])))', 'g');
+const stripAnsiEscapes = (text: string): string => text.replace(ansiPattern, '');
+
+/** Match the pinned first non-node_modules source location, including file URLs and parenthesized paths. */
+export function parseFailureContextLocation(stack: string, separator = sep): FailureContextLocation | undefined {
+  const lines = stack.split('\n');
+  const firstFrame = lines.findIndex(line => line.startsWith('    at '));
+  if (firstFrame === -1) return undefined;
+  for (let index = firstFrame; index < lines.length; index++) {
+    const match = lines[index]!.match(stackFramePattern);
+    let file = match?.[7];
+    if (!match || !file || file.startsWith('internal') || file.startsWith('node:')) continue;
+    if (match[11] === ')') {
+      let closes = 0;
+      for (let position = file.length - 1; position > 0; position--) {
+        if (file[position] === ')') closes++;
+        else if (file[position] === '(' && file[position - 1] === ' ' && --closes === -1) { file = file.slice(position + 1); break; }
+      }
+    }
+    if (file.startsWith('file://')) {
+      file = decodeURIComponent(file.slice(7));
+      if (file.startsWith('/') && /^[a-zA-Z]:/.test(file.slice(1))) file = file.slice(1);
+      file = file.replace(/\//g, separator);
+    }
+    if (file.includes(`${separator}node_modules${separator}`)) continue;
+    return { file, line: Number(match[8] || 0), column: Number(match[9] || 0) };
+  }
+  return undefined;
+}
 
 export const maximumFailureContextBytes = 256 * 1024;
 export const maximumFailureContextDiagnosticCharacters = 32768;
@@ -239,7 +266,7 @@ async function appendSourceFrame(markdown: BoundedMarkdown, error: FailureContex
   }
   let location: FailureContextLocation | undefined;
   try {
-    location = parseErrorStack(stack, sep).location;
+    location = parseFailureContextLocation(stack);
   } catch {
     return;
   }

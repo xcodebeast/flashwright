@@ -2,14 +2,16 @@ import { chromium, request, failure, type Browser, type BrowserContext, type Pag
 import { runnerIntegration } from '@flashwright/core/runner-integration';
 import type { Fixtures } from 'flashwright-upstream-runner/test';
 import { currentIndependentInfo } from './output.js';
+import type { IndependentTracePolicy } from './tracing.js';
 
 export interface NativeWorkerFixtures {
   browser: Browser; browserName: 'chromium'; defaultBrowserType: 'chromium';
   launchOptions: LaunchOptions; headless: boolean;
-  trace: 'off'; screenshot: 'off'; video: 'off';
+  screenshot: 'off'; video: 'off';
   _validateOptions: void;
 }
 export interface NativeTestFixtures {
+  trace: IndependentTracePolicy;
   context: BrowserContext; page: Page; request: APIRequestContext;
   contextOptions: BrowserContextOptions; baseURL: string | undefined;
   viewport: ViewportSize | null; storageState: BrowserContextOptions['storageState'];
@@ -34,12 +36,12 @@ export const nativeFixtures: Fixtures<NativeTestFixtures, NativeWorkerFixtures> 
   browserName: [async ({ defaultBrowserType }, use) => use(defaultBrowserType), { scope: 'worker', option: true }],
   launchOptions: [{}, { scope: 'worker', option: true }],
   headless: [async ({ launchOptions }, use) => use(launchOptions.headless ?? true), { scope: 'worker', option: true }],
-  trace: ['off', { scope: 'worker', option: true }],
+  trace: ['off', { option: true }],
   screenshot: ['off', { scope: 'worker', option: true }],
   video: ['off', { scope: 'worker', option: true }],
-  _validateOptions: [async ({ browserName, defaultBrowserType, trace, screenshot, video }, use) => {
+  _validateOptions: [async ({ browserName, defaultBrowserType, screenshot, video }, use) => {
     if (browserName !== 'chromium' || defaultBrowserType !== 'chromium') throw failure('UnsupportedFeatureError', 'independent.use.browserName', 'only Chromium is implemented');
-    for (const [name, value] of Object.entries({ trace, screenshot, video })) if (value !== 'off') throw failure('UnsupportedFeatureError', `independent.use.${name}`, 'automatic artifacts are not integrated with the independent runner; use the default runner for this policy');
+    for (const [name, value] of Object.entries({ screenshot, video })) if (value !== 'off') throw failure('UnsupportedFeatureError', `independent.use.${name}`, 'automatic artifacts are not integrated with the independent runner; use the default runner for this policy');
     await use();
   }, { scope: 'worker', auto: true }],
   browser: [async ({ _validateOptions, launchOptions, headless }, use) => {
