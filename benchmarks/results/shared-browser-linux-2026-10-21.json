@@ -1,0 +1,910 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "rejected-shared-browser-engineering-screen",
+  "scope": "One suite-owned custom browser with one CDP WebSocket connection per independent driver, compared with direct-pipe browsers per worker. Same original application tests, fresh contexts, renderer reuse, fast frame scheduling and software video policy. No product adoption.",
+  "design": {
+    "ownership": "Workers retain independent Rust drivers and logical browser leases. Browser.close closes only that lease; the suite owner closes and awaits the actual browser after workers exit. CDP contexts retain disposeOnDetach.",
+    "transport": "Private Bun pipe-to-WebSocket shim. The shared native browser uses loopback remote-debugging-port=0 instead of remote-debugging-pipe. Each driver gets a separate CDP session connection.",
+    "clock": "Original watchdog owner launch through complete owner exit, including server, shared browser startup, workers, fixtures and all native browser shutdown. The matched screen overlaps browser startup with ordinary suite discovery.",
+    "policyEvidence": "Shared-native executable/arguments come from shared-browser-launch.json. Per-worker wrapper logs record the requested pipe command before substitution and do not identify another native browser.",
+    "limits": {
+      "cpuCores": 4,
+      "memoryGiB": 8,
+      "swap": 0,
+      "retries": 0
+    }
+  },
+  "advancement": {
+    "rule": "At least 20% lower complete time in both orders for both four-worker applications, with no more than 5% regression at one worker in either order.",
+    "passed": false
+  },
+  "matchedComparisons": [
+    {
+      "block": 0,
+      "application": "todomvc",
+      "workers": 1,
+      "separateMilliseconds": 2008.314776001498,
+      "sharedMilliseconds": 2259.163748996798,
+      "elapsedReductionPercent": -12.49052070884693,
+      "sampledRssReductionPercent": -6.929962544897439
+    },
+    {
+      "block": 0,
+      "application": "todomvc",
+      "workers": 4,
+      "separateMilliseconds": 1665.6867030105786,
+      "sharedMilliseconds": 2269.1684320016066,
+      "elapsedReductionPercent": -36.230206310723936,
+      "sampledRssReductionPercent": 38.85299217424245
+    },
+    {
+      "block": 0,
+      "application": "svgomg",
+      "workers": 1,
+      "separateMilliseconds": 982.0544099929975,
+      "sharedMilliseconds": 1020.0615130015649,
+      "elapsedReductionPercent": -3.8701626530894817,
+      "sampledRssReductionPercent": -7.735313541335831
+    },
+    {
+      "block": 0,
+      "application": "svgomg",
+      "workers": 4,
+      "separateMilliseconds": 1852.455927990377,
+      "sharedMilliseconds": 1251.181705010822,
+      "elapsedReductionPercent": 32.45822013330394,
+      "sampledRssReductionPercent": 42.88534263272146
+    },
+    {
+      "block": 1,
+      "application": "todomvc",
+      "workers": 1,
+      "separateMilliseconds": 1990.8095139981015,
+      "sharedMilliseconds": 2251.9164889963577,
+      "elapsedReductionPercent": -13.115618202661716,
+      "sampledRssReductionPercent": -9.027784932057248
+    },
+    {
+      "block": 1,
+      "application": "todomvc",
+      "workers": 4,
+      "separateMilliseconds": 1774.6195970103145,
+      "sharedMilliseconds": 2356.4039220073028,
+      "elapsedReductionPercent": -32.783607595515974,
+      "sampledRssReductionPercent": 38.77147518363202
+    },
+    {
+      "block": 1,
+      "application": "svgomg",
+      "workers": 1,
+      "separateMilliseconds": 980.5455890018493,
+      "sharedMilliseconds": 1029.6759170014411,
+      "elapsedReductionPercent": -5.01050930733411,
+      "sampledRssReductionPercent": -6.134488387439285
+    },
+    {
+      "block": 1,
+      "application": "svgomg",
+      "workers": 4,
+      "separateMilliseconds": 1338.5391140036518,
+      "sharedMilliseconds": 1151.1497720057378,
+      "elapsedReductionPercent": 13.99954174199819,
+      "sampledRssReductionPercent": 38.96640499322426
+    }
+  ],
+  "captures": [
+    {
+      "batch": "shared-browser-001",
+      "capture": "b0-todomvc-w1-candidate",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 7287.943850999,
+      "wait4CpuSeconds": 2.268631,
+      "sampledPeakRssBytes": 863318016,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "2278c87d0688eeb47dab5d2c580ae667deeca02808a57c750716286bab8766cd",
+        "candidate-report.json": "c59068929c93a29397294bdee59f4d15d7a0176919a1d358ffa2c54b0b9e520e",
+        "resources.json": "d261f2d65aa54e5d4aaf05a5ad0799c598e1504f3cc1a0e16c7e5b4c72eaeb4a",
+        "verified.json": "41803d2dbcfb2842656b65b3853514381011120a8b39424cf4da1b6912e1fed6"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "a0aed22a9c5e22c149685db8c4ea602ecea723a2fd373a8115d2c6497195826c",
+        "shared-browser-exit.json": "508b313cee76dfffca105966bc11c86add0769b04741f866dd925d4928c3dfda",
+        "shared-browser.log": "c14d6792a11dfe1c5fa8e84a1fb609e9427183055d62d8a1e32ed9ed3e468ca7"
+      }
+    },
+    {
+      "batch": "shared-browser-001",
+      "capture": "b0-svgomg-w1-candidate",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 6073.893797991332,
+      "wait4CpuSeconds": 1.020068,
+      "sampledPeakRssBytes": 884756480,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "03cf40601ca55a9ecdd874fba423d087caf69fd47bd5534ace6857878d0cad6c",
+        "candidate-report.json": "a3b870c9ab15335803372912f46297fadecf1430a5fa29c14d4e2cc3fa6278b1",
+        "resources.json": "6661100e84702a6813007aa23856f0a3cec5253b648acce3fef2e4c1e805d304",
+        "verified.json": "b914b93149f311080ab4809b986215a02362ceb4b72e104a5aa1e59bf7bb19bd"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "1ea85144d30ecf00f0843adccdadbf2e4802c91bed3e9245d5df61eeedbda9f8",
+        "shared-browser-exit.json": "110d3f927cf3b14bc8b20238107a20c9b0cc07a8794cf64ccad3d1d500de3edb",
+        "shared-browser.log": "b68bae4b51932d19f4e89ec8abed45b37ad78b6e42d9ff814f82e283bb77f32f"
+      }
+    },
+    {
+      "batch": "shared-browser-001",
+      "capture": "b0-todomvc-w4-candidate",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 7307.617423008196,
+      "wait4CpuSeconds": 2.823056,
+      "sampledPeakRssBytes": 1613598720,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "1c77866a402138d111e7242add8903a428568ed0d8644be6a9a76a111afd337f",
+        "candidate-report.json": "a47f91b6d2af73e48f6adbf694eb615e37ecce0fc4449faa15ab75cb984cd9a6",
+        "resources.json": "0d1765b34266aa0eda7da296d3283935078e59a0a8bedd68626a1fe764516936",
+        "verified.json": "7cb14a21b8173bf501647f3d89a842906e549362f21bd2ba63c7c4a420a09cd7"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "8d8f04c14b3121902e204c592b7973a1f81b4bab80951c48cd140ecd31c471db",
+        "shared-browser-exit.json": "4362b7e2ea65aad73ff14329a0b836fbe0658b60cfbf9803afe537dd029887b3",
+        "shared-browser.log": "40036e6a80d9fec6f31d5a86c683eb765e625162627d96675729b46cb9bd4c82"
+      }
+    },
+    {
+      "batch": "shared-browser-001",
+      "capture": "b0-svgomg-w4-candidate",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 6200.471250995179,
+      "wait4CpuSeconds": 1.5540340000000001,
+      "sampledPeakRssBytes": 1655959552,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "55dbc4baf7248368b57cde43257a61c05a216a87805cfc43602444ad95e12a84",
+        "candidate-report.json": "b52d873aa0d8490412c68917f9b85357d9b7053bca53c607da53edaa9597c097",
+        "resources.json": "1e6e0a49d86219e33663b05394bc0bf75ebd926c5b91d022226f66115b41fb9b",
+        "verified.json": "dff9ec75da84959121ac95d3ee590bd4248caacd6aae38e8012dec9a9702a4eb"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "8665d30c444071ee3f21461845445b198eda928fd25ad7148ff7211a4b7a0a44",
+        "shared-browser-exit.json": "4b36351b70884212a7e1efe82ee9ea9783f523298f63b9302f3aed2f748a8721",
+        "shared-browser.log": "6a68b16d4af308feac50c028d4e97bc1d0136fd2aa3b1ee39a1c9be5f15c5d82"
+      }
+    },
+    {
+      "batch": "shared-browser-002",
+      "capture": "b0-todomvc-w1-candidate",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2281.7995630030055,
+      "wait4CpuSeconds": 2.2486680000000003,
+      "sampledPeakRssBytes": 861917184,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "66e48f99655194427d470c98be7ce2d856895d08a3611af0668075ba3a4959f7",
+        "candidate-report.json": "f42403dbc27ac2d5cc2d6fe073ac0de82677492b68f4cc69e7648528c61f8936",
+        "resources.json": "1e2703de8aa1b222b27c323cc04fa2b440b26cc5519c7cc3354a5144cadfb866",
+        "verified.json": "56e6c7c5ca9f08138aaecf3a1f4cdec14614f3746f3aed1e91a4d452f04f86ea"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "97c3199bedb4a4c829be252d5e5642674712519bff5ebb907300c03eeca7bae6",
+        "shared-browser-exit.json": "2a37071d55180689c11cb6dd655dbe53a002009bce40c4320b822c65fa17fdb1",
+        "shared-browser.log": "f22adb1efc59c2b8cac2c7d38e53713ceb8c564aa6060984f0efd5b16abd9a94"
+      }
+    },
+    {
+      "batch": "shared-browser-002",
+      "capture": "b0-svgomg-w1-candidate",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 1044.5515960018383,
+      "wait4CpuSeconds": 0.9752329999999999,
+      "sampledPeakRssBytes": 883326976,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "8d4d7b40fe1fe9996e37a1007fc2e0d391ff6d9912fed3ac2d7369604c544ef5",
+        "candidate-report.json": "569834e6a1edb1afb69e9cefa5943bf6f3508cbead1be548336c2bba4ce3a1b0",
+        "resources.json": "8d669af579b3489721e0756c42228c130bf219dd1c596f1f385be93b6d087933",
+        "verified.json": "7ac961d61f3626600a683f6a7eba80f1de08c2ecadc161980e8846ce22af2d3b"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "350f1d4bf6e4d823d791603ac33701afaaf3579cf6d6172f9f4c5a7bb178c509",
+        "shared-browser-exit.json": "3eac42f10e5e1cb0eb64b7e53d014e586b6a3b39e431c97c92ca63ca1c29a08e",
+        "shared-browser.log": "767bcb0e5be3a685b98b56d4bd1ca020df5c6c3f612638230c26830faf82bbc5"
+      }
+    },
+    {
+      "batch": "shared-browser-002",
+      "capture": "b0-todomvc-w4-candidate",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2353.727962996345,
+      "wait4CpuSeconds": 2.778473,
+      "sampledPeakRssBytes": 1606369280,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "71bad6fe2f04b840532e29ff94d755fb762eabdaf5bff924192cd4cc8766abbe",
+        "candidate-report.json": "286d63c97b80a548bd737374ca9de175bd3d6a00d449a2e960ebcd59a135e76f",
+        "resources.json": "28e8df10cb228bc9ffdad2a3df4f94e55d0505ddf616ccd629200e8f9b4193e4",
+        "verified.json": "46317b517d5873af2c3fcf4f61e457c57e08ea824013fdf2283a315aecd894a0"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "125ef60150b9557e5b57afed99c5cea488b52b7ee5abfbb2faf982596e24170b",
+        "shared-browser-exit.json": "ef898e9231ae429263a5e67c134ea0f12619a78a420fafa3000f4c023af4a969",
+        "shared-browser.log": "2c8be6bb21e6155a6cd42f0136f5285b3719e87f02d21a057e0fad2ad11ab70f"
+      }
+    },
+    {
+      "batch": "shared-browser-002",
+      "capture": "b0-svgomg-w4-candidate",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 1221.7654790001689,
+      "wait4CpuSeconds": 1.50125,
+      "sampledPeakRssBytes": 1623924736,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "61392a924a76857d7dc2815cc43228a0f3227e7c9f2ef51eb6926a636f1138e8",
+        "candidate-report.json": "cea56715a1c70f0d7d6fadbf5d12435437f2e92a78925f3699d4aa055658eaff",
+        "resources.json": "23862fdc8781ee64752f267a896b58096c7d2fbaf337af1eafe11ee033a5128c",
+        "verified.json": "8a1b921255b9b2039f781a02ff89e5168a0302c413ff963d253656e09e8dbcd8"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "d6550f22cb42136cee9cf7f06b4828338d4f6990f3e88ab3e29e791d70643fa5",
+        "shared-browser-exit.json": "c0f836754aabe741a60a663f8b6def2a0de941297ef2699eae3904079398e9a3",
+        "shared-browser.log": "07f2b659a63f70e1ae1c6f2074a9c0785f02b292652b09e1872adf9da68a6ad5"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-todomvc-w1-separate",
+      "topology": "separate",
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2008.314776001498,
+      "wait4CpuSeconds": 1.7392779999999999,
+      "sampledPeakRssBytes": 799404032,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "5d616e6d888235f71f668f1d5439f0b09f6d9d330005638c10d1efc552643949",
+        "candidate-report.json": "1da1ff98f175abe88dbce93d60d8b9a049f0e28efb0013abd2a14216929d5117",
+        "resources.json": "6d463253c1c60b851ed01797e0594b17472135f0369aa2ab29265c0e28a55197",
+        "verified.json": "39ecc167c61c574ad69fe8f93e728e3ae66a5b79b5d6a5577fd3cb71956d116a"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-todomvc-w1-shared",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2259.163748996798,
+      "wait4CpuSeconds": 2.248844,
+      "sampledPeakRssBytes": 854802432,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "d3951283f198914eba01a85495ac9335024e6928a77a1e5720105fd4e529e250",
+        "candidate-report.json": "54417847ba89ddfa3855595c107fbfb7df7e6d2ef4aece454b2c4625432417bd",
+        "resources.json": "c2877a88056d4b7f96183371db1d2faf7a8c86e71995066e2bc219c969cc178b",
+        "verified.json": "d160f1b98539d1b7dae4b09cffce01701defeb62ad508b3cf7968908ca3ecf73"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "9272e876d7433880373ed691dba7fa74f7a37dc2c223fe33ff41178e94679abc",
+        "shared-browser-exit.json": "7a6292e9327cc3feab9b5cb407d2891dd9cbe9286302d3d9f27ff60ecdfb31c7",
+        "shared-browser.log": "87832a1edfc4ea3361b56d306fb084d7768a6e54785397d6eaf99f76fb3db0e0"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-svgomg-w1-separate",
+      "topology": "separate",
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 982.0544099929975,
+      "wait4CpuSeconds": 0.793947,
+      "sampledPeakRssBytes": 812494848,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "9fc202b03593cd303d3888682da10b5e1de6d553deaa7d4136b295f20144a032",
+        "candidate-report.json": "82bc562a99f3aacc4911169ad38d5340befbc69f27183195e5b2ddd03f02016f",
+        "resources.json": "8b8df1816dcbb80c45d74371fd8ee9f3a16db45fa8d4749836e16dae8edffb47",
+        "verified.json": "e80651c267e7c99343fa0bf3f1fc89e9841d91848d31b22e66901954e410895d"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-svgomg-w1-shared",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 1020.0615130015649,
+      "wait4CpuSeconds": 1.006247,
+      "sampledPeakRssBytes": 875343872,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "ecd0aa24b8d317e5c69645806870741f10f894dfb70ceea1d7b717372e491fcd",
+        "candidate-report.json": "db5dab53f536dbe4665925fe1cb91807255f39444072d91bb44422d4b3e2a84e",
+        "resources.json": "0698bf0ce63de62256cee9be033b1178cc86ee154ffd776e51372bf608a61c73",
+        "verified.json": "e180df55b0baceeb52655de15ec7a3a565bfbf16960de4b8bc8c44362540cdca"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "3c89d270d751dc5d9571921193ac5edf318127bfaafd14a32863f52f230c7ce4",
+        "shared-browser-exit.json": "c8b44c4b4f6c22d63ca5b3cc307569d35e035f02dd6e95261b6fbbfe581ce10e",
+        "shared-browser.log": "ece35704d3f8dcf4a1b38d833cc036015c215dcddf0f632e5593704a2008110a"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-todomvc-w4-separate",
+      "topology": "separate",
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 1665.6867030105786,
+      "wait4CpuSeconds": 2.413361,
+      "sampledPeakRssBytes": 2659917824,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "4c9a9fd49ced073ddd085abaac2a576877d05ecdc8f011e79a664ef45fa4dd8b",
+        "candidate-report.json": "43ae142587c7203e0a1f55b2062fbbf34f09f00074569c8d64b132daaedc329c",
+        "resources.json": "b0cc0a3539057e367752e757e3643ce807e82cf5a5c76f94ad8c9b1f1be1c867",
+        "verified.json": "f1c60354dd8009bf6bf6151c536b5d23bef478c97d3c1314fa4e308a3b556061"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-todomvc-w4-shared",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "tests": 24,
+      "completeMilliseconds": 2269.1684320016066,
+      "wait4CpuSeconds": 2.788744,
+      "sampledPeakRssBytes": 1626460160,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "b41f8a624425196b42318cf83e8338cdfc33a7bf0da8119553f62e57a48882fe",
+        "candidate-report.json": "9e53275d1f3909003567a13097ff58920442d908b3dc7680b8fd6389b470aee3",
+        "resources.json": "21f574ffde14b0c28375498ec38c4b59a86b05dc24027aab8375f4fff3b44d2e",
+        "verified.json": "7cd8ba5509114826b1fcdc453ff91f170aaa205db021b906467c93039faae818"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "348f72b382bab20c27611790122b928642a631c2cb36bd52a75602afcdf04ac0",
+        "shared-browser-exit.json": "37eab65a93de2734d18353a4e0ae2c38f845ac6fa49d4a23994b712a9d6082f5",
+        "shared-browser.log": "864a0edf7555f71d7df18ee72d6c0b38fe24665175a0c5cc131d6cdfe0b14dd2"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-svgomg-w4-separate",
+      "topology": "separate",
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 1852.455927990377,
+      "wait4CpuSeconds": 1.4901090000000001,
+      "sampledPeakRssBytes": 2685038592,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "d402fd566a5bd4e523150db027757be80b66d9d75edc8cf6b24fbc6eeb573668",
+        "candidate-report.json": "65367a0af125f2a7bb6df048f32bc94c746cdd077ff2524e845c5fffa9557096",
+        "resources.json": "7e94eaa2bbe03bae06882109f4674da375806e35c5c886f26acdf43b1e689351",
+        "verified.json": "b208f7ba0473ec991d3ae222b25d9f03fa250c1150b9de5df464028866f100e3"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b0-svgomg-w4-shared",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "tests": 6,
+      "completeMilliseconds": 1251.181705010822,
+      "wait4CpuSeconds": 1.499392,
+      "sampledPeakRssBytes": 1533550592,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "b53ab6333074821b9f3705ff244c72b8656e18fa70c8f9156f24499e712d03cd",
+        "candidate-report.json": "c17438e43c3070b2adc70163eeb9a8939a11f8e5d8a1aa17a0d7aabd558d8db0",
+        "resources.json": "47a110d2762eeb85dcae16a49d97f61c55883a26ade4db7b556d7b13783fb9ad",
+        "verified.json": "d2014a4ca080023a2d49c5765af93780cdb5d6f0059f3fed8cfd78d722e5a69c"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "21443c41886097f6b70f3f907333e8b5a33f95e684b05c92de1cfa9f2cf5f22d",
+        "shared-browser-exit.json": "ab4f99b0d63fa82bfe435087ab7376ee78b8f25a19908d7c84d65ced14df3d06",
+        "shared-browser.log": "b88d3bd6926076018a38ca2f3a3c66e0dac6412d1292b5d0fabe7b5ddc468c5e"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-todomvc-w1-shared",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 1,
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 2251.9164889963577,
+      "wait4CpuSeconds": 2.25696,
+      "sampledPeakRssBytes": 866959360,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "7f36f8b181746510538771b64025b59cc4538f25cfc5697f64172e4704a828d1",
+        "candidate-report.json": "731b979a64859b45ade121d4554b221781b1dfefdd1d56933cebc6c1a954e150",
+        "resources.json": "15380847944e28e30d0a716f41167f67e38a3c7d0512cfa5195b0c8b73297eeb",
+        "verified.json": "b0e2b7ad70e55c5c8c7434707b9d13b3b8106998a92f4f878a918d8042f8f9ec"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "67db990eaaf633db28fc9d6ddb84ffa658cdddafe97960e25b9128568b14d97f",
+        "shared-browser-exit.json": "6d00f228660f5be5aefc0d1123df84391f94dc599c0294587cccb77f66464dc4",
+        "shared-browser.log": "0bfe72236015c00f2ada5661b64771589247683032d07a0fe48d1d26418577c1"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-todomvc-w1-separate",
+      "topology": "separate",
+      "application": "todomvc",
+      "workers": 1,
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 1990.8095139981015,
+      "wait4CpuSeconds": 1.748836,
+      "sampledPeakRssBytes": 795172864,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "4b98e15de747ebc525b0af1c72c430b98ccd6cc9941c097582e21b7bf45c23f3",
+        "candidate-report.json": "3c430ba93071b8aae1c9fc7284d34fa8aacd23d88cc797a94ff53b870b601b20",
+        "resources.json": "c60af5192eb4dfb8723e6490b9243ae4cd4ddc365ebbfca160e2fdbee39d904a",
+        "verified.json": "8a036a656ec466228854f9dd676803557eb19f2eb4f692daabd4acdb4f4864ed"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-svgomg-w1-shared",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 1,
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 1029.6759170014411,
+      "wait4CpuSeconds": 1.020165,
+      "sampledPeakRssBytes": 876187648,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "e248b98c008d82bd285fee1a4682ab90d58b118d3b3a31437e6c98d4a5fc7edb",
+        "candidate-report.json": "2bd089ef0e48ba915b70be9854c1efe7be9b0e5eb592d40cb5c7b2ca1de308ca",
+        "resources.json": "6269ecdc6422777c97edb885851dc48490956445e65ab280c1823ae3fab9320a",
+        "verified.json": "ec63ad3772e6b236645c65ee31f7f435980e0a0fb2f57ef2b7fe8f99e8093b89"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "cbc9f6589bc4f9d75a664e9ab02e39920069cfccde1fc41c548bf85f7b6573e1",
+        "shared-browser-exit.json": "905b57c6c6070036ed8ff3ac660cd500527bd51d60aa3b31e34ce3f2cd92d62d",
+        "shared-browser.log": "cad31c11e86b1b77530b67375d247deeff50c8cce5681d5f4bd348a5c56c6dfa"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-svgomg-w1-separate",
+      "topology": "separate",
+      "application": "svgomg",
+      "workers": 1,
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 980.5455890018493,
+      "wait4CpuSeconds": 0.784912,
+      "sampledPeakRssBytes": 825544704,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "5519d47e2adcbde0a6cceb4bc82a6e23ff402d83f20dad99a077e4f9c6879a00",
+        "candidate-report.json": "e4406e6c04f12eba116a660c431bc664e80eddc0759ff65ece5e313e15157aa1",
+        "resources.json": "0b99bcd2f43ab6e734941f68e62b130a85fc09ff17be49b3f73c103d06498590",
+        "verified.json": "b442c295eea15556f3480e0c5538c717ca0b6e82cfa02cf60163f4d13dfac9ca"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-todomvc-w4-shared",
+      "topology": "shared",
+      "application": "todomvc",
+      "workers": 4,
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 2356.4039220073028,
+      "wait4CpuSeconds": 2.8514359999999996,
+      "sampledPeakRssBytes": 1624879104,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "d95d41c5590de6bdaf06bf00ef5a5100f49784445441a817368fa591f7b13ce4",
+        "candidate-report.json": "75385faaabf4cd7d80badf5b4e38b0ac606f2ef19f435052c82045dd1ac114b9",
+        "resources.json": "36ea6fd2dfcaf7acd3acb97e1c4b00e5c83d0090f3389ce545b09c3c5ff2180e",
+        "verified.json": "befbf92bec47ee09c28a84a3565fcdf5bf669b098bd925148d3a1a692d340d6a"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "86e7d5dae3bf5d794f12ca370d4527c3d7e1bcc5cde083129a840ec49e52357d",
+        "shared-browser-exit.json": "e1a62828ff6ff5f4f71aa34abc1d8e986192e1827c8eb587622d59af824f06da",
+        "shared-browser.log": "30e30dbec0f05d4465eb5a317428e6f79d909ca129d6d0c8dfa65a431e0c68c2"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-todomvc-w4-separate",
+      "topology": "separate",
+      "application": "todomvc",
+      "workers": 4,
+      "block": 1,
+      "tests": 24,
+      "completeMilliseconds": 1774.6195970103145,
+      "wait4CpuSeconds": 2.420572,
+      "sampledPeakRssBytes": 2653794304,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "b1fca1958589e12e9ff1e08ab745e27a700322326e077f33f2e0b9fb2c5c2f8b",
+        "candidate-report.json": "2eecf65f9554d61d7f7cdafd7424354300d25f59f389b622edc7ac353a2e29b7",
+        "resources.json": "d945bc2fe486daae84351526d873808f3485c9fd03aa40ff8c09d2d04cf03af7",
+        "verified.json": "a2a6a94419ce5faa8fa59b8bcee41a588433877133d27be7f92c4d084bbbe803"
+      },
+      "nativeBrowserReceiptHashes": {}
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-svgomg-w4-shared",
+      "topology": "shared",
+      "application": "svgomg",
+      "workers": 4,
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 1151.1497720057378,
+      "wait4CpuSeconds": 1.508614,
+      "sampledPeakRssBytes": 1656602624,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "114db9369c7f4e5795961b151eaaa196535b99f19b20383be3bb8df6cb7e1392",
+        "candidate-report.json": "ec5fbd104bbfb9a2acdbe286371b6b6634099db2ea185ec509461fa5b76908ec",
+        "resources.json": "1afb2a7839bdbd9381dea85ffb693dd0d1736461a5064e9fcc7e3ef1d121fabc",
+        "verified.json": "0b611c21b572b509d63b0b5cde3e802711a92dfd09d96d5e4c887c3443e5f775"
+      },
+      "nativeBrowserReceiptHashes": {
+        "shared-browser-launch.json": "201a53ab46b5f12c1e7d917762a4fe44d9f6484be8531ae82e96f57cfbb02de5",
+        "shared-browser-exit.json": "b1a4312a6c5c1d40dbc332823818724b154ccf27844a89d77264a25d5adb34d5",
+        "shared-browser.log": "84e826e35eb74cecfb5fca5550e283b4f3175a0160a0a716f206ad83954c1bf3"
+      }
+    },
+    {
+      "batch": "shared-browser-comparison-001",
+      "capture": "b1-svgomg-w4-separate",
+      "topology": "separate",
+      "application": "svgomg",
+      "workers": 4,
+      "block": 1,
+      "tests": 6,
+      "completeMilliseconds": 1338.5391140036518,
+      "wait4CpuSeconds": 1.486921,
+      "sampledPeakRssBytes": 2714247168,
+      "cleanup": {
+        "exitCode": 0,
+        "timedOut": false,
+        "interrupted": false,
+        "cleanupSignals": [],
+        "remainingObservedProcesses": []
+      },
+      "rawHashes": {
+        "owner-report.json": "568aa8d2c529637dd9a4fdd27ac7ac0767c6afdba7962911660f3027da467e67",
+        "candidate-report.json": "aa0e3d9cef58d7e00266c2c2e90d82c6432825fef1bd99f930d5513661019d64",
+        "resources.json": "7b57a565de2390ebfca7751653dea092bacf6737167d777220abe4bd100fde45",
+        "verified.json": "65a8e4c06dc01cfb6ad240532b0be2e794527903975101c1b770a6e9fdfd9100"
+      },
+      "nativeBrowserReceiptHashes": {}
+    }
+  ],
+  "testExecutions": 360,
+  "matchedTestExecutions": 240,
+  "isolationControls": {
+    "status": "passed",
+    "checks": [
+      "same-origin state isolated between drivers",
+      "closing one browser lease preserves another driver and trusted input",
+      "abrupt client death disposes its context while survivor stays usable"
+    ],
+    "cleanup": {
+      "exitCode": 0,
+      "timedOut": false,
+      "interrupted": false,
+      "cleanupSignals": [],
+      "remainingObservedProcesses": []
+    },
+    "rawHashes": {
+      "isolation-controls.json": "669554863d778e3596d76fcf5ce2784c6f7b64edf8e9d3419c5e4e6e4b84085b",
+      "resources.json": "a08e661a827f7830a76ce285ea6c502a31507d9935e161192f50d9ba21269590",
+      "shared-browser-exit.json": "fc8f16d24790602cd81894dfb18748476c1a49b56ea3cd2b62cb99baa65ff122",
+      "shared-browser-launch.json": "5158a22cd76a75d0e97e7724e13bf6aefb1d24065cd75bb5bcf12c2f94faba98"
+    }
+  },
+  "retainedFailures": [
+    {
+      "batch": "shared-browser-001",
+      "description": "All 60 original tests passed, but the transport remained alive after WebSocket closure and added about five seconds to complete shutdown. Kept separately from corrected timings."
+    },
+    {
+      "batch": "shared-browser-002/isolation",
+      "description": "The per-worker requested-launch receipt assumed one browser launch per inherited environment directory; two browser objects in one driver collided. The next control used PID-specific receipts. This harness failure is retained."
+    }
+  ],
+  "conclusion": "Do not advance this implementation for general suite speed. Four-worker TodoMVC is 32.8-36.2% slower despite memory savings; four-worker SVGOMG reductions vary from 14.0-32.5%. No cell satisfies the full advancement rule. The result does not rule out every native shared-browser architecture.",
+  "limitations": [
+    "Two applications and two orders; not final nine-scenario eight-pair admission.",
+    "The transport shim changes connection topology and adds work; timing is for this complete implementation, not a pure browser-count causal estimate.",
+    "Sampled RSS is distinct from charged peak memory and final resource custody.",
+    "No complete reporter/trace/artifact, popup, service-worker, crash-recovery or global browser-policy conformance.",
+    "Separate browsers remain selected; no change to the public runner or browser launch policy."
+  ],
+  "finalPerformanceAdmission": false,
+  "selectedInputsUnchanged": true,
+  "harnessHashes": {
+    "linux-shared-browser-001": {
+      "adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+      "aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+      "browser.py": "d1cfab2294579a6bdb40d777a2a27e0f0cf2cbe7a4fac6680400249d414cf812",
+      "campaign.py": "90691942cf2485f215a861763e5f053a3c038cf67824c87715c6ebebfa12a79e",
+      "entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+      "guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+      "matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+      "owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+      "pipe-websocket.mjs": "798d57866de2d56f1600a605c62c2b70f3aa82bd55d76f9625852016c6794850",
+      "prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+      "process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+      "shared-browser.mjs": "f75fda23f456ca3d06630d7872fb45deae1d0ee5cdaf020ed83daad7e03c8f9a",
+      "shared-owner.mjs": "55d1bb8084575fcbf8ebec87c299e634ce87738c8f1df0f525a4a0a781264c4a",
+      "verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+      "yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+      "yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    },
+    "linux-shared-browser-002": {
+      "adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+      "aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+      "browser.py": "d1cfab2294579a6bdb40d777a2a27e0f0cf2cbe7a4fac6680400249d414cf812",
+      "campaign.py": "90691942cf2485f215a861763e5f053a3c038cf67824c87715c6ebebfa12a79e",
+      "entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+      "fault-client.mjs": "a0da3b10acd166421c977199230b7aff4e35457f5b81d54519d375d045632ecd",
+      "guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+      "isolation-controls.mjs": "e3e777786223cb666b5f9ecc868c1c46b2772ba8bbb35a5c3e82c640bd028b2d",
+      "matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+      "owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+      "pipe-websocket.mjs": "430bdcd68e0e02c4c33ffe5c42da7dc618f97e2c068f0dd6dbbec4e692e1e3a3",
+      "prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+      "process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+      "shared-browser.mjs": "f75fda23f456ca3d06630d7872fb45deae1d0ee5cdaf020ed83daad7e03c8f9a",
+      "shared-owner.mjs": "55d1bb8084575fcbf8ebec87c299e634ce87738c8f1df0f525a4a0a781264c4a",
+      "verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+      "yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+      "yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    },
+    "linux-shared-browser-003": {
+      "adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+      "aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+      "browser.py": "da3b225e3459d437452d56bf9fa211b498eb20518774a997be0d0c168bfa40e8",
+      "campaign.py": "90691942cf2485f215a861763e5f053a3c038cf67824c87715c6ebebfa12a79e",
+      "entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+      "fault-client.mjs": "a0da3b10acd166421c977199230b7aff4e35457f5b81d54519d375d045632ecd",
+      "guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+      "isolation-controls.mjs": "e3e777786223cb666b5f9ecc868c1c46b2772ba8bbb35a5c3e82c640bd028b2d",
+      "matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+      "owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+      "pipe-websocket.mjs": "430bdcd68e0e02c4c33ffe5c42da7dc618f97e2c068f0dd6dbbec4e692e1e3a3",
+      "prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+      "process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+      "shared-browser.mjs": "f75fda23f456ca3d06630d7872fb45deae1d0ee5cdaf020ed83daad7e03c8f9a",
+      "shared-owner.mjs": "55d1bb8084575fcbf8ebec87c299e634ce87738c8f1df0f525a4a0a781264c4a",
+      "verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+      "yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+      "yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    },
+    "linux-shared-browser-comparison-001": {
+      "adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+      "aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+      "browser.py": "f11d4587f42ad144c5bef5a4315f91bf11e87b677eb03742e5369fa2548bb2c8",
+      "campaign.py": "fdfaddd6b574523cbfc5edbca50089ad688395a8217f7232edd951393d8d1df8",
+      "entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+      "fault-client.mjs": "a0da3b10acd166421c977199230b7aff4e35457f5b81d54519d375d045632ecd",
+      "guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+      "isolation-controls.mjs": "e3e777786223cb666b5f9ecc868c1c46b2772ba8bbb35a5c3e82c640bd028b2d",
+      "matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+      "owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+      "pipe-websocket.mjs": "b27f3381abb35f09dac49d7a89dfbc5f00061617d2f9ccd95719d3950a75048e",
+      "prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+      "process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+      "shared-browser.mjs": "f75fda23f456ca3d06630d7872fb45deae1d0ee5cdaf020ed83daad7e03c8f9a",
+      "shared-owner.mjs": "df3cdcd0511ecc096fcab134a7b440f5c0d39efae9fd9b598ba7031053024770",
+      "verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+      "yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+      "yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    }
+  }
+}
