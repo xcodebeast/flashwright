@@ -10,22 +10,23 @@ Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64
 
 | Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC (upstream example suite) | 24 | 1 | 3830 ms | 1653 ms | 2.32× |
-| TodoMVC | 24 | 4 | 1947 ms | 1020 ms | 1.91× |
-| SVGOMG (upstream example suite) | 6 | 1 | 1765 ms | 1065 ms | 1.66× |
-| SVGOMG | 6 | 4 | 1332 ms | 891 ms | 1.49× |
-| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6349 ms | 3434 ms | 1.85× |
-| Shop app | 18 | 4 | 2739 ms | 1499 ms | 1.83× |
-| Trivial test | 15 | 1 | 1073 ms | 424 ms | 2.53× |
-| Click + assertion | 15 | 1 | 1682 ms | 720 ms | 2.34× |
-| Assertion on a delayed update | 15 | 1 | 1256 ms | 551 ms | 2.28× |
-| Navigation | 15 | 1 | 1342 ms | 547 ms | 2.45× |
-| Fixture setup only | 15 | 1 | 1233 ms | 487 ms | 2.53× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 2067 ms | 1003 ms | 2.06× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2432 ms | 1070 ms | 2.27× |
-| `page.screenshot()` to a file | 15 | 1 | 1954 ms | 915 ms | 2.14× |
-| Suite with real failures (every third test) | 15 | 1 | 4482 ms | 2465 ms | 1.82× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4804 ms | 4185 ms | 1.15× |
+| TodoMVC (upstream example suite) | 24 | 1 | 3707 ms | 1466 ms | 2.53× |
+| TodoMVC | 24 | 4 | 1782 ms | 894 ms | 1.99× |
+| SVGOMG (upstream example suite) | 6 | 1 | 1746 ms | 724 ms | 2.41× |
+| SVGOMG | 6 | 4 | 1269 ms | 828 ms | 1.53× |
+| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6279 ms | 3336 ms | 1.88× |
+| Shop app | 18 | 4 | 2598 ms | 1449 ms | 1.79× |
+| A single test (an agent re-running one test) | 1 | 1 | 612 ms | 215 ms | 2.85× |
+| Trivial test | 15 | 1 | 1048 ms | 379 ms | 2.77× |
+| Click + assertion | 15 | 1 | 1617 ms | 602 ms | 2.69× |
+| Assertion on a delayed update | 15 | 1 | 1215 ms | 524 ms | 2.32× |
+| Navigation | 15 | 1 | 1278 ms | 503 ms | 2.54× |
+| Fixture setup only | 15 | 1 | 1211 ms | 440 ms | 2.75× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2003 ms | 995 ms | 2.01× |
+| `toHaveScreenshot()` against a baseline | 15 | 1 | 2445 ms | 1055 ms | 2.32× |
+| `page.screenshot()` to a file | 15 | 1 | 1952 ms | 890 ms | 2.19× |
+| Suite with real failures (every third test) | 15 | 1 | 4383 ms | 2423 ms | 1.81× |
+| Expected failures (250 ms timeout each) | 15 | 1 | 4778 ms | 4136 ms | 1.16× |
 
 The single-file workloads run in one worker regardless of the worker setting; their 4-worker numbers match the 1-worker ones. Some scenarios are bounded by time the tests themselves ask for: 15 × 250 ms of assertion timeouts, the shop's ~2.1 s of API latency and debounce timers, SVGOMG's own SVG optimization work. Flashwright removes most of the framework time around them.
 
