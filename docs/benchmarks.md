@@ -15,6 +15,10 @@ The [suite-size diagnostic](../benchmarks/results/suite-size-attribution-linux-2
 
 The advantage shrinks with suite size. Between the 15- and 240-test endpoints, four-worker elapsed time grows by approximately 18 ms per added test in both engines, alongside roughly 71–74 ms of charged CPU. This points investigation toward repeated work rather than startup alone. These are descriptive increments, not causal CPU attribution or guaranteed savings. Larger counts are diagnostic additions; they do not replace the original nine-scenario acceptance matrix or establish final confidence/resource acceptance.
 
+The [repeated-setup CPU profile](../benchmarks/results/repeated-setup-cpu-linux-2026-10-21.json) adds eight same-baseline captures and 1,920 passing test outcomes. Four profiled captures retain 99,324 samples; an independent LLVM check validates 18,223 representative native addresses. Sampling raises observed complete time by 0.8–2.1% at one worker and 2.5–5.7% at four workers.
+
+Across the profiled captures, explicit retirement-collection ancestry appears in 0.9–1.2% of browser-family samples; selected frame-scheduling ancestry appears in 13.5–14.2%, protocol handling/conversion in 18.8–19.8%, and Mojo/IPC dispatch in 37.5–39.7%. These inclusive groups overlap and cannot be added. Anonymous/JIT and external-library leaves remain in the denominator, while kernel instruction attribution is unavailable. The result directs source investigation toward frame demand and communication costs; it neither proves that these costs are removable nor establishes a new optimization or speed claim.
+
 ## Broader comparison status
 
 Flashwright has not established performance leadership. The [five-engine checkpoint](../compatibility/evidence/broad-performance-checkpoint-2026-10-10.json) records 40 passing sampled launches after a 162-group core gate. All 926 recorded source files match commit `70dc299f`. The [complete comparison table](../benchmarks/results/broad-matrix-2026-10-10/evidence/table.md) includes every workload, preparation-inclusive totals, startup, CPU, concurrent memory, uncertainty and recorded semantic differences.
