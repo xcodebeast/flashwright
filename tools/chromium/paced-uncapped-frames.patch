@@ -1,0 +1,27 @@
+--- a/components/viz/common/frame_sinks/begin_frame_source.cc
++++ b/components/viz/common/frame_sinks/begin_frame_source.cc
+@@ -7,7 +7,9 @@
+ #include <stddef.h>
+ 
+ #include <algorithm>
++#include <cstdlib>
+ #include <memory>
++#include <string_view>
+ #include <utility>
+ 
+ #include "base/atomic_sequence_num.h"
+@@ -268,7 +270,13 @@
+   time_source_->SetClient(this);
+   // The time_source_ ticks immediately, so we SetActive(true) for a single
+   // tick when we need it, and keep it as SetActive(false) otherwise.
+-  time_source_->SetTimebaseAndInterval(base::TimeTicks(), base::TimeDelta());
++  const char* paced = std::getenv("FLASHWRIGHT_PACED_UNCAPPED_FRAMES");
++  const bool use_paced_frames = paced && std::string_view(paced) == "1";
++  // Private pacing probe: preserve demand/ack ownership and real timestamps.
++  // DelayBasedTimeSource applies its existing 500us grid-boundary guard.
++  time_source_->SetTimebaseAndInterval(
++      base::TimeTicks(), use_paced_frames ? base::Milliseconds(1)
++                                        : base::TimeDelta());
+ }
+ 
+ BackToBackBeginFrameSource::~BackToBackBeginFrameSource() = default;
