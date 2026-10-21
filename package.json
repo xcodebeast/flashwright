@@ -49,7 +49,8 @@
     "test:package-managers": "bun tools/test-package-managers.mjs",
     "build:release": "bun tools/build-driver.mjs --release && bun tools/build-packages.mjs",
     "test:devices": "bun tools/run-device-tests.mjs",
-    "test:device-runner": "python3 tools/watchdog.py --timeout 180 --report-directory compatibility/evidence/resources -- bun tools/run-device-runner-tests.mjs"
+    "test:device-runner": "python3 tools/watchdog.py --timeout 180 --report-directory compatibility/evidence/resources -- bun tools/run-device-runner-tests.mjs",
+    "test:fixture-core": "bun test ./tools/test-independent-fixtures.mjs && bun tools/run-independent-fixture-differential.mjs"
   },
   "devDependencies": {
     "@flashwright/test": "0.0.0",
