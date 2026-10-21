@@ -1,0 +1,3719 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "completed-negative-affinity-screen-no-policy-change",
+  "sourceCommit": "da477246c990ccaef623f03946780a95baa1f2bc",
+  "reference": "Playwright 1.60.0, Bun 1.4.2, Chromium 148.0.7778.96",
+  "scope": "Worker-startup attribution followed by matched four-CPU versus six-CPU affinity screen under unchanged four-core CPU quota. Current separate-browser native composition; no browser or Rust source changes.",
+  "policy": {
+    "hypothesis": "Four-worker captures report frequent throttled quota periods with six allowed CPUs and a four-core bandwidth limit. Restricting actual affinity to four CPUs may improve complete time without more CPU budget. The exact same policy change applies to Playwright.",
+    "profiles": {
+      "cpu6": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "cpu4": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "invariants": {
+      "cpuQuotaPercent": 400,
+      "memoryMaxGiB": 8,
+      "swapMax": 0,
+      "nice": 10,
+      "workers": 4,
+      "artifacts": "off",
+      "testBodies": "unchanged",
+      "candidate": "preceding native separate-browser baseline; no source cache"
+    },
+    "scope": [
+      "setup",
+      "assertion",
+      "navigation",
+      "todomvc",
+      "svgomg"
+    ],
+    "order": [
+      [
+        "playwright6",
+        "independent6",
+        "playwright4",
+        "independent4"
+      ],
+      [
+        "independent4",
+        "playwright4",
+        "independent6",
+        "playwright6"
+      ]
+    ],
+    "advancement": "At least 10% complete candidate reduction in both real applications in both orders, no more than 5% regression in any targeted controlled family. Reference ratios reported at both affinities. No final benchmark policy change without other worker-count and functional/resource validation.",
+    "controls": "Preflight all five families, four workers, both engines, four-CPU affinity before timings. Existing six-CPU baseline controls remain separately verified.",
+    "limits": "Diagnostic throttled_usec is aggregate cgroup accounting and is not wall-clock time saved. This is a scheduling-policy experiment, not a browser architectural speedup or final eight-pair acceptance."
+  },
+  "captureCount": 40,
+  "passingTimedOutcomes": 600,
+  "preflightCaptures": 10,
+  "passingPreflightOutcomes": 150,
+  "timedBrowserLaunchReceipts": 160,
+  "advancementGatePassed": false,
+  "policyChanged": false,
+  "observations": [
+    {
+      "family": "setup",
+      "block": 0,
+      "fractionOfSixCpuCandidate": 1.0025145928498835,
+      "candidateReductionPercent": -0.25145928498835346,
+      "referenceReductionPercent": 0.08884136894752315,
+      "stockSpeedups": {
+        "4": 1.6289167312722956,
+        "6": 1.6344648746073762
+      },
+      "passes": true
+    },
+    {
+      "family": "setup",
+      "block": 1,
+      "fractionOfSixCpuCandidate": 1.0224788435192285,
+      "candidateReductionPercent": -2.2478843519228464,
+      "referenceReductionPercent": -2.042048118002726,
+      "stockSpeedups": {
+        "4": 1.4650563985656124,
+        "6": 1.468011667468218
+      },
+      "passes": true
+    },
+    {
+      "family": "assertion",
+      "block": 0,
+      "fractionOfSixCpuCandidate": 1.062747027474072,
+      "candidateReductionPercent": -6.2747027474072015,
+      "referenceReductionPercent": 0.09391615459356517,
+      "stockSpeedups": {
+        "4": 1.4862695023457404,
+        "6": 1.5810133225594638
+      },
+      "passes": false
+    },
+    {
+      "family": "assertion",
+      "block": 1,
+      "fractionOfSixCpuCandidate": 0.9904140019523019,
+      "candidateReductionPercent": 0.9585998047698108,
+      "referenceReductionPercent": -1.0939120996348528,
+      "stockSpeedups": {
+        "4": 1.5730986320861222,
+        "6": 1.5411599762155563
+      },
+      "passes": true
+    },
+    {
+      "family": "navigation",
+      "block": 0,
+      "fractionOfSixCpuCandidate": 1.0419517179765685,
+      "candidateReductionPercent": -4.195171797656849,
+      "referenceReductionPercent": -1.372648929446063,
+      "stockSpeedups": {
+        "4": 1.5100166201591059,
+        "6": 1.5520600755367369
+      },
+      "passes": true
+    },
+    {
+      "family": "navigation",
+      "block": 1,
+      "fractionOfSixCpuCandidate": 0.9884833587271477,
+      "candidateReductionPercent": 1.1516641272852346,
+      "referenceReductionPercent": -1.685874067714388,
+      "stockSpeedups": {
+        "4": 1.6705173937718376,
+        "6": 1.6239017064534373
+      },
+      "passes": true
+    },
+    {
+      "family": "todomvc",
+      "block": 0,
+      "fractionOfSixCpuCandidate": 0.9395331296771682,
+      "candidateReductionPercent": 6.046687032283183,
+      "referenceReductionPercent": -5.83654484273417,
+      "stockSpeedups": {
+        "4": 1.7936359097468175,
+        "6": 1.5922480862256458
+      },
+      "passes": false
+    },
+    {
+      "family": "todomvc",
+      "block": 1,
+      "fractionOfSixCpuCandidate": 1.0341737415977974,
+      "candidateReductionPercent": -3.4173741597797402,
+      "referenceReductionPercent": -0.8814368506488757,
+      "stockSpeedups": {
+        "4": 1.649422108358557,
+        "6": 1.6908849502219643
+      },
+      "passes": false
+    },
+    {
+      "family": "svgomg",
+      "block": 0,
+      "fractionOfSixCpuCandidate": 0.7467577815111112,
+      "candidateReductionPercent": 25.324221848888882,
+      "referenceReductionPercent": -0.5014381287216985,
+      "stockSpeedups": {
+        "4": 1.9569087484396224,
+        "6": 1.454045696075299
+      },
+      "passes": true
+    },
+    {
+      "family": "svgomg",
+      "block": 1,
+      "fractionOfSixCpuCandidate": 1.0478596405373712,
+      "candidateReductionPercent": -4.785964053737124,
+      "referenceReductionPercent": -2.316101251235758,
+      "stockSpeedups": {
+        "4": 1.818041929459648,
+        "6": 1.8619286108328394
+      },
+      "passes": false
+    }
+  ],
+  "runs": [
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/assertion-w4-playwright-cpu6",
+      "name": "assertion-w4-playwright-cpu6",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1129.9557519960217,
+      "innerOwnerMilliseconds": 989.2166050000001,
+      "observedPeakRssBytes": 2748772352,
+      "reportSha256": "0e11b8a5fc253d87d817b6505eae78fe008fd64050e384736dd99bcb49b9fb05",
+      "resourcesSha256": "d5e92cbcc1e877c7b638030db7c43fd82e77dadb5dd504c85ba61bb6c66c34a5",
+      "cgroupCpuDelta": {
+        "usage_usec": 3395871,
+        "user_usec": 2085753,
+        "system_usec": 1310118,
+        "nice_usec": 2080811,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 770472,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "80f7d809b754ad042e04db7c9f763d2a25a36bd78f3fc57d638db9abb0ee0c18"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/assertion-w4-independent-cpu6",
+      "name": "assertion-w4-independent-cpu6",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 714.7034979861928,
+      "innerOwnerMilliseconds": 632.562549,
+      "observedPeakRssBytes": 2383986688,
+      "reportSha256": "8fb26996e34476d132b9bce0c10ed9b0c9320becc5781c36712c28fb230e19ce",
+      "resourcesSha256": "e5237e924320580351cbfeabb6cb7ccdc3b77af424bff12d9c94453ac90ce4a1",
+      "cgroupCpuDelta": {
+        "usage_usec": 2365933,
+        "user_usec": 1387165,
+        "system_usec": 978767,
+        "nice_usec": 1378514,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 4,
+        "throttled_usec": 545451,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "5bbddf6eb25cd96ba32aa4342ad334e718124c000099afe407f5ec118190c39a"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/assertion-w4-playwright-cpu4",
+      "name": "assertion-w4-playwright-cpu4",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1128.8945410051383,
+      "innerOwnerMilliseconds": 1047.271382,
+      "observedPeakRssBytes": 2473033728,
+      "reportSha256": "9f39c576f2d8a830c166a31e94053a88b18e3f4277b858a3b3bab081c3219033",
+      "resourcesSha256": "d9715910965dc79f357186707e3032c2628ed4d42f375e4de1fab8aa0cb25b01",
+      "cgroupCpuDelta": {
+        "usage_usec": 3373246,
+        "user_usec": 2082006,
+        "system_usec": 1291240,
+        "nice_usec": 2088457,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "fbfd8b2e797863a0b02adf6e67d5523e22bab8510de86241b8a0d3f7f0135d88"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/assertion-w4-independent-cpu4",
+      "name": "assertion-w4-independent-cpu4",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 759.5490180101478,
+      "innerOwnerMilliseconds": 678.113776,
+      "observedPeakRssBytes": 2347106304,
+      "reportSha256": "716ef28d7f24adccfc9184c2a7d19c29beb1f126166c12204aae709737ac189e",
+      "resourcesSha256": "942a64269d2dda8131fb26bbc8bae5207f3fe7a9eb49c1750c736c88aba0569a",
+      "cgroupCpuDelta": {
+        "usage_usec": 2259368,
+        "user_usec": 1381381,
+        "system_usec": 877987,
+        "nice_usec": 1381319,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "67f433e66284ce5b8c227b83247bce7a1be46fcf4e3564f81463b10e0f147dad"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/navigation-w4-playwright-cpu6",
+      "name": "navigation-w4-playwright-cpu6",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1212.8768429975025,
+      "innerOwnerMilliseconds": 1072.1504300000001,
+      "observedPeakRssBytes": 2599153664,
+      "reportSha256": "062aebe355daaf4bb1bc5eb3a3210f14af4c3fe706f3cae0b67ab41b68a63495",
+      "resourcesSha256": "19124e1a1980c61df46068371745283f49b1318be526c078b76898275d4352f7",
+      "cgroupCpuDelta": {
+        "usage_usec": 3741146,
+        "user_usec": 2304744,
+        "system_usec": 1436401,
+        "nice_usec": 2274110,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 594326,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "5a64fd05df066728c9d2a25dd9c66557f055ffee87b00291dbdcee894ede5f6d"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/navigation-w4-independent-cpu6",
+      "name": "navigation-w4-independent-cpu6",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 781.4625619939761,
+      "innerOwnerMilliseconds": 699.8158589999999,
+      "observedPeakRssBytes": 2431926272,
+      "reportSha256": "15bf68cbe97d4fc515707e17660967ced85536b3b4579a0749057c46d05a045c",
+      "resourcesSha256": "da719fc4801ec836a590bfe1c3c8430e1b4bbe5cdf4fb76f2998bd542e01d8de",
+      "cgroupCpuDelta": {
+        "usage_usec": 2593692,
+        "user_usec": 1582378,
+        "system_usec": 1011314,
+        "nice_usec": 1561686,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 5,
+        "throttled_usec": 587134,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "638840493067b0affcd2d1a647b811d92049767f08d9f7078b705bfd17f343e4"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/navigation-w4-playwright-cpu4",
+      "name": "navigation-w4-playwright-cpu4",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1229.525383998407,
+      "innerOwnerMilliseconds": 1031.971782,
+      "observedPeakRssBytes": 2672795648,
+      "reportSha256": "2d299f0b187d32ab9d9d5c9cb9538a41a5121aae8c8275d3a706d48fcc1159d7",
+      "resourcesSha256": "5a31f704a16e16a2a7ffe4c6addbdfa0d978ef21c87b62a397692248f4590397",
+      "cgroupCpuDelta": {
+        "usage_usec": 3485024,
+        "user_usec": 2215218,
+        "system_usec": 1269806,
+        "nice_usec": 2208362,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "6d36235a48b1727236e225158309e0c15b20b205b5a2222eaa5b6d256fa15f7d"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/navigation-w4-independent-cpu4",
+      "name": "navigation-w4-independent-cpu4",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 814.246259003994,
+      "innerOwnerMilliseconds": 732.4692779999999,
+      "observedPeakRssBytes": 2407608320,
+      "reportSha256": "bdd196d94abf13b6ec94c6007fee3afb9ee01032a01a9708ea3355dcc7c2a28f",
+      "resourcesSha256": "b71e87aef9504d54228d14b8b5515dd0fca3ae6207ca31cdc8f37e1489db8cbe",
+      "cgroupCpuDelta": {
+        "usage_usec": 2586881,
+        "user_usec": 1574451,
+        "system_usec": 1012429,
+        "nice_usec": 1572495,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 8,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "e77230b885c9e23514cc167a53e359872c2415f494493c8fba5d1418ce3efd78"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/setup-w4-playwright-cpu6",
+      "name": "setup-w4-playwright-cpu6",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1164.9212579941377,
+      "innerOwnerMilliseconds": 1023.9946060000001,
+      "observedPeakRssBytes": 2671181824,
+      "reportSha256": "a4aad12bfa0451459a92ac3415b6e551a61efc07d7cdb224622ab60d8e2ba7f1",
+      "resourcesSha256": "eb8dc943984e4d3fa9f56fe7f5c853cfb220ac4e09f0a5625f5b971de75d8276",
+      "cgroupCpuDelta": {
+        "usage_usec": 3473545,
+        "user_usec": 2137443,
+        "system_usec": 1336102,
+        "nice_usec": 2131712,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 726074,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "b0285c1544c426b6fba5bd4c444abb62ca68d62bc4a9552ecc34b11c7f15f222"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/setup-w4-independent-cpu6",
+      "name": "setup-w4-independent-cpu6",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 712.7233359933598,
+      "innerOwnerMilliseconds": 630.625507,
+      "observedPeakRssBytes": 2393993216,
+      "reportSha256": "8f5f915837d81d2a85fc033485582cf1c93277503632af32574987f442d6ab02",
+      "resourcesSha256": "257eef0caa9898407dcaa3d21c0e8e57d7f02ae8b7226ad5ac2a716ca6c3aa7e",
+      "cgroupCpuDelta": {
+        "usage_usec": 2308568,
+        "user_usec": 1355736,
+        "system_usec": 952831,
+        "nice_usec": 1339226,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 4,
+        "throttled_usec": 487644,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "0a1b8e0400e034221cc3d1ac3e4c94b737e1e7bc19e975d3c81bb4e8fc8e232d"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/setup-w4-playwright-cpu4",
+      "name": "setup-w4-playwright-cpu4",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1163.886326001375,
+      "innerOwnerMilliseconds": 1021.5667119999999,
+      "observedPeakRssBytes": 2692775936,
+      "reportSha256": "293a492d0b7d2925505f8bd7f5d9d97def5fc3fbb47a95307639bb2690754cd4",
+      "resourcesSha256": "e38b51194494ddfd773dbb1ddb5c140c57b729317fcba5f5555d1597491625ea",
+      "cgroupCpuDelta": {
+        "usage_usec": 3343180,
+        "user_usec": 2108269,
+        "system_usec": 1234911,
+        "nice_usec": 2100007,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "926294ffff893c46d26301efd16100db45e7efce601870a844dcb6eb033b772d"
+    },
+    {
+      "block": 0,
+      "kind": "controlled",
+      "folder": "block-0-controlled/setup-w4-independent-cpu4",
+      "name": "setup-w4-independent-cpu4",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 714.5155449979939,
+      "innerOwnerMilliseconds": 632.8039990000001,
+      "observedPeakRssBytes": 2328657920,
+      "reportSha256": "a5739bd2ad0e65626843243af47a168357f74c9cb1c8ffb394aac49ad0e04738",
+      "resourcesSha256": "77e30b4138f72ae9fa83677240a6ce66e10791c1be5ec88f19c7cf39cb97d467",
+      "cgroupCpuDelta": {
+        "usage_usec": 2212831,
+        "user_usec": 1291361,
+        "system_usec": 921471,
+        "nice_usec": 1280837,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "fccc4a9cc8c765f178877e36d165da9af84fe774686b29da27605ba1b3ee753e"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-todomvc-playwright-cpu6",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 6,
+      "tests": 24,
+      "completeMilliseconds": 2737.5316440011375,
+      "cgroupCpuDelta": {
+        "usage_usec": 8031557,
+        "user_usec": 4674053,
+        "system_usec": 3357504,
+        "nice_usec": 4535112,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 26,
+        "nr_throttled": 11,
+        "throttled_usec": 745988,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "85eccfa23a9452ca12ac29144f0d944089d4aee2e2d5d6cd18ea7d765274f5e3",
+      "resourcesSha256": "1a22b01e39f40f5324e43baa3e10f9ee369eade4459be9152a76a0408bd95997",
+      "preparedSha256": "2db496a6dfdeec796233ab572c6ff978aeab6e258895167159acbbee7055841e"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-todomvc-independent-cpu6",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 6,
+      "tests": 24,
+      "completeMilliseconds": 1719.2871309962356,
+      "cgroupCpuDelta": {
+        "usage_usec": 5921471,
+        "user_usec": 3936316,
+        "system_usec": 1985154,
+        "nice_usec": 3912364,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 1318904,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "ec18cd049f7d3d7191091660734590e82958c28ec3ccd8e63923fe965870ec98",
+      "resourcesSha256": "945aec80f49e096b21942a9cf30045188bc285b8194dd8b2f53dae68ac80fa2f",
+      "preparedSha256": "2df202747d7425d550ca4fe121d394dc33932f6385cd9986b057531603b2fa57"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-todomvc-playwright-cpu4",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 4,
+      "tests": 24,
+      "completeMilliseconds": 2897.308905987302,
+      "cgroupCpuDelta": {
+        "usage_usec": 8024888,
+        "user_usec": 4641973,
+        "system_usec": 3382914,
+        "nice_usec": 4588490,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 27,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "8f09ea077a66463ef19a694ab68fb81ac6eeb0277ad13b67266531a8ca83cd35",
+      "resourcesSha256": "2d8d07f1bbd039ea8609284a0b3f769bee3c2b4286a1f2a68f59f0c17a1c289c",
+      "preparedSha256": "657c7dd1ff04d7e55c4e049eb92a5681e28097fc3aadc70ec298a489e689eeef"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-todomvc-independent-cpu4",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 4,
+      "tests": 24,
+      "completeMilliseconds": 1615.3272189985728,
+      "cgroupCpuDelta": {
+        "usage_usec": 5619554,
+        "user_usec": 3758730,
+        "system_usec": 1860824,
+        "nice_usec": 3751602,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 16,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "644a81593ff9b381aaf61ed15a2df2c42c630f5884b238428106890a0a5df412",
+      "resourcesSha256": "013031b501f5d33f412371d1a1b8f3e0c13d5790a8fcc8307d9504b334148058",
+      "preparedSha256": "d131819b29436edced924647011ca529ff9eea84eb82aed3bde14e2016f1bfe0"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-svgomg-playwright-cpu6",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 6,
+      "tests": 6,
+      "completeMilliseconds": 2372.160653001629,
+      "cgroupCpuDelta": {
+        "usage_usec": 5524281,
+        "user_usec": 2793896,
+        "system_usec": 2730385,
+        "nice_usec": 2708068,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 6,
+        "throttled_usec": 623425,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "d74ba01ed6e19d9a7890636a91d1515ec2b12c7f97c758a538676b34532f80ce",
+      "resourcesSha256": "bb5aaf770cd06cf5f3dc7ce8155c67323729b222b1a7b42adc8e2bba31cf3ef1",
+      "preparedSha256": "ce7c261ed9eb6140a9b085ed0c94be825bc197f8123c86b73301b9248a9d484b"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-svgomg-independent-cpu6",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 6,
+      "tests": 6,
+      "completeMilliseconds": 1631.420978999813,
+      "cgroupCpuDelta": {
+        "usage_usec": 4558757,
+        "user_usec": 3221662,
+        "system_usec": 1337095,
+        "nice_usec": 3147308,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 7,
+        "throttled_usec": 818266,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "414aecb1e9266876da9f1cb8af5dd786c0997b49b796582f968bf318b5fe52b9",
+      "resourcesSha256": "bad8daab3c19c17a040f717cc2e7c41f5db91bf39e66a7b0e5a7d764aaba20e4",
+      "preparedSha256": "9d8042844f2bdbaef2c1fbd59b8ae62cdcd26aeea3df7845b7c12994907baf5b"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-svgomg-playwright-cpu4",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 4,
+      "tests": 6,
+      "completeMilliseconds": 2384.055570990313,
+      "cgroupCpuDelta": {
+        "usage_usec": 5447816,
+        "user_usec": 2697420,
+        "system_usec": 2750396,
+        "nice_usec": 2664221,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "af702e1d0d570386dbf714d58e01fa5891a4fdf303f95d859d1270f1fbe55b0b",
+      "resourcesSha256": "1f482ca0a9acd9e76225d2e1aaf2d671ac8c719fdcc861f5252ced27eb3bd75e",
+      "preparedSha256": "6f38b3dbdd9704b0aa72a7aef7aa5753df72fabf8ffd1806041a118754967845"
+    },
+    {
+      "block": 0,
+      "kind": "application",
+      "folder": "block-0-svgomg-independent-cpu4",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 4,
+      "tests": 6,
+      "completeMilliseconds": 1218.2763109885855,
+      "cgroupCpuDelta": {
+        "usage_usec": 3633622,
+        "user_usec": 2469483,
+        "system_usec": 1164139,
+        "nice_usec": 2454313,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "a0e0dc6169673ee6feeca6538acb313f2b2a11aa3b369dfbbc13ab55bf3f7b4f",
+      "resourcesSha256": "7eb19cceec2d1f66ce4f8bdc1a275afac662a2de74a3cc8304e73df495048af2",
+      "preparedSha256": "4aed63ddc6aab7543e42b5385c54a3869246bec22d6d01610583048eead05360"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/assertion-w4-independent-cpu4",
+      "name": "assertion-w4-independent-cpu4",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 744.2716840014327,
+      "innerOwnerMilliseconds": 663.0431140000001,
+      "observedPeakRssBytes": 2416029696,
+      "reportSha256": "c1b3353c49d3adf748cdbe6acf54f818b9e053a7fb222cbc681c7c3b1b05c92a",
+      "resourcesSha256": "ffa93609ce7b50fccc223b6573000b6e4315aa969959572e74d32aaaead6c5cd",
+      "cgroupCpuDelta": {
+        "usage_usec": 2299803,
+        "user_usec": 1390600,
+        "system_usec": 909203,
+        "nice_usec": 1385744,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "6722f738da793a72701c40a54aed14e9b6285ccb43ab8293319941b4d989d339"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/assertion-w4-playwright-cpu4",
+      "name": "assertion-w4-playwright-cpu4",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1170.8127680030884,
+      "innerOwnerMilliseconds": 1030.497664,
+      "observedPeakRssBytes": 2440777728,
+      "reportSha256": "a56f7e86449947a8a1a71a57f28480e7642179b904a5a6c6e216019732fba1af",
+      "resourcesSha256": "20d78eaccb8582ea8eea76c79b25891b0e630e92c959405c317525c85538baf9",
+      "cgroupCpuDelta": {
+        "usage_usec": 3343694,
+        "user_usec": 2069783,
+        "system_usec": 1273910,
+        "nice_usec": 2070304,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "634d87617bcb342d4737a199dfacf4da250179d8126f3a4ebff44c40e3744a4b"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/assertion-w4-independent-cpu6",
+      "name": "assertion-w4-independent-cpu6",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 751.4753249997739,
+      "innerOwnerMilliseconds": 669.640584,
+      "observedPeakRssBytes": 2390257664,
+      "reportSha256": "437d86f18ef8b0a89c3867bad9420c68487658804c70a7f90d0850c5c27e3c13",
+      "resourcesSha256": "6952317cde27528c1ac05bf8e4b566cf3b74779b811e62e4bcaca4570bce3131",
+      "cgroupCpuDelta": {
+        "usage_usec": 2415006,
+        "user_usec": 1426740,
+        "system_usec": 988267,
+        "nice_usec": 1396303,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 5,
+        "throttled_usec": 570024,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "a2e772d6fbf1937d2ecd2a896ed6523c94e16a96761c35fba9424eab3cb1db38"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/assertion-w4-playwright-cpu6",
+      "name": "assertion-w4-playwright-cpu6",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1158.143694003229,
+      "innerOwnerMilliseconds": 1015.858604,
+      "observedPeakRssBytes": 2628382720,
+      "reportSha256": "978f3d3e0e8ea33dabcb35ec5b3b787b3d0081594325c0ba6cfdb18091e6c7d1",
+      "resourcesSha256": "8a2ac89d91ff1d9d3e8c2582dd1c006fbdf3291ffa97fa6923d98758efae0842",
+      "cgroupCpuDelta": {
+        "usage_usec": 3437414,
+        "user_usec": 2149026,
+        "system_usec": 1288388,
+        "nice_usec": 2131224,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 822686,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "b491e35ddcc7c2442f420c8aa16cfe81a813c31b7bb13f48ad0d01418faba753"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/navigation-w4-independent-cpu4",
+      "name": "navigation-w4-independent-cpu4",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 728.0539319908712,
+      "innerOwnerMilliseconds": 703.805049,
+      "observedPeakRssBytes": 2417913856,
+      "reportSha256": "554a6995904e1936487390d0047f375e27b80f242fdb496a3e527bb23336c686",
+      "resourcesSha256": "5a652448a45797faf8861c4cc6f16d2bec762ac6633f9b9678909ad764b57cac",
+      "cgroupCpuDelta": {
+        "usage_usec": 2475332,
+        "user_usec": 1508581,
+        "system_usec": 966752,
+        "nice_usec": 1498857,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "cb5b206c2a779044b1792bfd65019acd020bd35fab745e4750b00b5de865397f"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/navigation-w4-playwright-cpu4",
+      "name": "navigation-w4-playwright-cpu4",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1216.226756994729,
+      "innerOwnerMilliseconds": 1017.992762,
+      "observedPeakRssBytes": 2755022848,
+      "reportSha256": "ce3ce010f98b2f24f1d289107768b63e44bf2f9a4071777dfce9a2c924d450a6",
+      "resourcesSha256": "5c6a507fc77fd20c6dbb7593a0966e12f0dfef3ea638a642d7bbff708f9aa4fc",
+      "cgroupCpuDelta": {
+        "usage_usec": 3416295,
+        "user_usec": 2145728,
+        "system_usec": 1270568,
+        "nice_usec": 2145251,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "260bd6bcbfbab8ff7b77a7ee3c19b33fff26ff1f445a166b19370c1ea8b8ae4b"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/navigation-w4-independent-cpu6",
+      "name": "navigation-w4-independent-cpu6",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 736.5363569988403,
+      "innerOwnerMilliseconds": 710.035425,
+      "observedPeakRssBytes": 2417057792,
+      "reportSha256": "1914ed3fd238da7a15db9f230f5759a1c07f65a3138005065f029edd5024420d",
+      "resourcesSha256": "fdfe8e82d2bdfb77a25351dec71bf41f5083f3135fd92517c7896a1a22023148",
+      "cgroupCpuDelta": {
+        "usage_usec": 2608787,
+        "user_usec": 1559578,
+        "system_usec": 1049209,
+        "nice_usec": 1548079,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 5,
+        "throttled_usec": 417569,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "b1605b7d385bd51f589eeec748a2c82527c55f0b744030ca575b56c805cf073e"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/navigation-w4-playwright-cpu6",
+      "name": "navigation-w4-playwright-cpu6",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1196.062646995415,
+      "innerOwnerMilliseconds": 1113.269109,
+      "observedPeakRssBytes": 2619416576,
+      "reportSha256": "aa23fb86c7027a2cf8113e15a27318649d464a4999af5daf8ab9fdc12136b74d",
+      "resourcesSha256": "1c7ad3a861d001ff811331ff4087e83ed0189a23e311f483da5e009f5e8e488d",
+      "cgroupCpuDelta": {
+        "usage_usec": 3737594,
+        "user_usec": 2240425,
+        "system_usec": 1497170,
+        "nice_usec": 2213572,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 8,
+        "throttled_usec": 702165,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "6cb2bc06274652c723855680e709bb455fe7e38b26ba6314b9dc790b582eedc5"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/setup-w4-independent-cpu4",
+      "name": "setup-w4-independent-cpu4",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 753.2058070064522,
+      "innerOwnerMilliseconds": 670.578654,
+      "observedPeakRssBytes": 2405351424,
+      "reportSha256": "f4c6f1053f377ffc7ff23d3cf87c0369895ea9eab6f6a73e43ec1289d3e21e7f",
+      "resourcesSha256": "7274f074898e90cc42519c286511210f7d08d2f4b31cf9b14209d8afcfa22149",
+      "cgroupCpuDelta": {
+        "usage_usec": 2241772,
+        "user_usec": 1336957,
+        "system_usec": 904814,
+        "nice_usec": 1331690,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "f9f5551e71d95212c5781ecd9fbcec1793c5c309b80ff18dc1859d449e4ae01e"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/setup-w4-playwright-cpu4",
+      "name": "setup-w4-playwright-cpu4",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1103.4889869915787,
+      "innerOwnerMilliseconds": 963.7861230000001,
+      "observedPeakRssBytes": 2591956992,
+      "reportSha256": "264d0e9f4fbb3cba7e84c26f6182d2002b5de6a4073cab835f04d9f5966d43bb",
+      "resourcesSha256": "c6922a469ff127933884e6ec0c7607915092df007d83666c11bc4c0093a9e191",
+      "cgroupCpuDelta": {
+        "usage_usec": 3229808,
+        "user_usec": 2124226,
+        "system_usec": 1105582,
+        "nice_usec": 2113096,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "5f9baf9311acc7f7704403d83d2dc8dc9e5fea823b5fe8d92394bd83e534a872"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/setup-w4-independent-cpu6",
+      "name": "setup-w4-independent-cpu6",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 736.6468380059814,
+      "innerOwnerMilliseconds": 654.6691959999999,
+      "observedPeakRssBytes": 2378919936,
+      "reportSha256": "3bb79ef4d04d7dbfe260b776b70bb64135f7d4ea8ac24996354e2dfefd333d07",
+      "resourcesSha256": "cba480220da2eb73324cc473fb293f23ce86a10be1c351b993161884e15f7883",
+      "cgroupCpuDelta": {
+        "usage_usec": 2360050,
+        "user_usec": 1400938,
+        "system_usec": 959112,
+        "nice_usec": 1397579,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 5,
+        "throttled_usec": 372019,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "e9272774b94908995d5df4a8e77bd4014fce73d72f5bd483d680eb9fe9fe6ddc"
+    },
+    {
+      "block": 1,
+      "kind": "controlled",
+      "folder": "block-1-controlled/setup-w4-playwright-cpu6",
+      "name": "setup-w4-playwright-cpu6",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 6,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1081.406152996351,
+      "innerOwnerMilliseconds": 997.952602,
+      "observedPeakRssBytes": 2415374336,
+      "reportSha256": "b251d263ffd39b5768ae69ae89fa18c279170c1f6afc8c7429a8513c8752bbb3",
+      "resourcesSha256": "3771c3290305a9317d2969ee51a050f449d1c8bb41c89716aa25d8a17c58714e",
+      "cgroupCpuDelta": {
+        "usage_usec": 3356519,
+        "user_usec": 2083513,
+        "system_usec": 1273007,
+        "nice_usec": 2059219,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 650905,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "355b082e02823dd4b98f2ea564033bd20453165086b5dd63b0a0370b68cc7c5b"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-todomvc-independent-cpu4",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 4,
+      "tests": 24,
+      "completeMilliseconds": 1712.6367129967548,
+      "cgroupCpuDelta": {
+        "usage_usec": 5712525,
+        "user_usec": 3887995,
+        "system_usec": 1824531,
+        "nice_usec": 3871366,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 16,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "981430c9fdc19dfdea97e15846344b566fe5e23311d6345b65ebd670e3720efd",
+      "resourcesSha256": "8f4aff0da528a00182eb47ec476158529eae5414f9606f8cedf94f9dca21e69a",
+      "preparedSha256": "8a0207d1030b4b27dc962ac2d7a8398acae46c8c7dea976b3fc31cb861b203ad"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-todomvc-playwright-cpu4",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 4,
+      "tests": 24,
+      "completeMilliseconds": 2824.860858003376,
+      "cgroupCpuDelta": {
+        "usage_usec": 7960517,
+        "user_usec": 4576000,
+        "system_usec": 3384518,
+        "nice_usec": 4504467,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 27,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "cb029033255e5583fa062ae9953f5db066f18d1631cb67de23704802db2464f4",
+      "resourcesSha256": "55171c34f3925ffe46e4f94ec0545eac988ca499c35ce9b2298405470e946db6",
+      "preparedSha256": "5f7e39d9e248edbf97bc7ec0f300e0e9360e938b0cd89ecdf65cefc288511dbf"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-todomvc-independent-cpu6",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 6,
+      "tests": 24,
+      "completeMilliseconds": 1656.0435100109316,
+      "cgroupCpuDelta": {
+        "usage_usec": 5753813,
+        "user_usec": 3805707,
+        "system_usec": 1948106,
+        "nice_usec": 3776199,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 1279882,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "7489a57f3eb7115b684624788f9bb1bdc67d81a6eef7e7b82d230b73a38c2f79",
+      "resourcesSha256": "97ca7f3a5610d847024656be603d5e75aade1eaeeffa017bce18601eee1e7bd1",
+      "preparedSha256": "f634a42bc39175046c0961943cb0bf706d329bae3e8f6033ed006a92a666ce50"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-todomvc-playwright-cpu6",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 6,
+      "tests": 24,
+      "completeMilliseconds": 2800.179047990241,
+      "cgroupCpuDelta": {
+        "usage_usec": 8174110,
+        "user_usec": 4642913,
+        "system_usec": 3531197,
+        "nice_usec": 4541184,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 26,
+        "nr_throttled": 11,
+        "throttled_usec": 752264,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "0cd284061109fd900daca58142de1eecc310d63f4ba3d28752464fa3b3fd5bbc",
+      "resourcesSha256": "bf5cac2a18546f7b5c88014997f1dce4b42bf5e88fe4c9ea49463ce7398fa32b",
+      "preparedSha256": "02f43f7d0a169522fd252577c07cd0b9f2846969d4de4744a427b8974a9504d2"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-svgomg-independent-cpu4",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 4,
+      "tests": 6,
+      "completeMilliseconds": 1317.4431849911343,
+      "cgroupCpuDelta": {
+        "usage_usec": 3827795,
+        "user_usec": 2588911,
+        "system_usec": 1238883,
+        "nice_usec": 2566833,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 12,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "8159d78b1fc4b6c136110d8d050ba0f2e277b4e617ecbf4fe7942c996e1f7d1b",
+      "resourcesSha256": "08d1c60bf9797b1ea8a2bfffdab88720d2cfb1fb425f1e73f8f575e22a415d65",
+      "preparedSha256": "950a6f232f9e58af6d101e55f0d50a2c4a88495b4edc0b8e7919b61d24b08397"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-svgomg-playwright-cpu4",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 4,
+      "tests": 6,
+      "completeMilliseconds": 2395.1669499947457,
+      "cgroupCpuDelta": {
+        "usage_usec": 5405878,
+        "user_usec": 2678001,
+        "system_usec": 2727877,
+        "nice_usec": 2624688,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "d74b6b07bde3eab964f5f0314b32705c9c780c872d19004f521dca8d3adfb600",
+      "resourcesSha256": "4a2958b66754476a34e0eef7f03b8a03c4003f43e6b4e25884ad6e45d50c6a5a",
+      "preparedSha256": "f091df8cd6da3e8409abc43ca39e1f79eef3237949be83e06105afd358fcab7b"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-svgomg-independent-cpu6",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 6,
+      "tests": 6,
+      "completeMilliseconds": 1257.270663001691,
+      "cgroupCpuDelta": {
+        "usage_usec": 3990345,
+        "user_usec": 2570880,
+        "system_usec": 1419465,
+        "nice_usec": 2510773,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 8,
+        "throttled_usec": 1047463,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "e84b52f956f6795e268e965eb1bb21a868e917a7e2935f2c2014e95cd77f765e",
+      "resourcesSha256": "99bf92a337a38767ed057bd1279c99519573ff46e15be8422fe95541a265c001",
+      "preparedSha256": "0b75e42efce04029bb6402633d878048e0d6dcb704524ed6c2200550eb52d624"
+    },
+    {
+      "block": 1,
+      "kind": "application",
+      "folder": "block-1-svgomg-playwright-cpu6",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 6,
+      "tests": 6,
+      "completeMilliseconds": 2340.9482190036215,
+      "cgroupCpuDelta": {
+        "usage_usec": 5417169,
+        "user_usec": 2648917,
+        "system_usec": 2768252,
+        "nice_usec": 2563811,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 6,
+        "throttled_usec": 516702,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-5",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "f34cc915636b591f4d484a9814961b2b62934ec569b8fb6f6dc7957b4eb9e3a4",
+      "resourcesSha256": "2a5a519bd69513dfc9eff31ee6a0f8dbb8422cc153d2a8fc14eae6b3ea947e47",
+      "preparedSha256": "428e0993a30c9fe8f03a740a2f1165116e52284444a1940ac67c60f2df52a7d5"
+    }
+  ],
+  "controls": [
+    {
+      "block": -1,
+      "kind": "controlled",
+      "folder": "preflight-controlled/assertion-w4-playwright-cpu4",
+      "name": "assertion-w4-playwright-cpu4",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1150.1778020028723,
+      "innerOwnerMilliseconds": 1003.256694,
+      "observedPeakRssBytes": 2382921728,
+      "reportSha256": "b63bb01a4c701d29af0ae3389d345b186697b6990b8f31912817351504fec0eb",
+      "resourcesSha256": "0886e1c476941d35dee2bd931fbcb4fdf8eab0e3e2041061052890b8e12c673d",
+      "cgroupCpuDelta": {
+        "usage_usec": 3312736,
+        "user_usec": 2146797,
+        "system_usec": 1165938,
+        "nice_usec": 2139951,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "6a0c9098c312cbfb1c310dd74f4c58b897e994694154eeb0a03c92cc3eb58055"
+    },
+    {
+      "block": -1,
+      "kind": "controlled",
+      "folder": "preflight-controlled/assertion-w4-independent-cpu4",
+      "name": "assertion-w4-independent-cpu4",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 712.6958890003152,
+      "innerOwnerMilliseconds": 631.1714079999999,
+      "observedPeakRssBytes": 2318086144,
+      "reportSha256": "2f939bd614d7ba3bd9ad0f6d0c7cff973873a7e64f6704e161dfaf12da36403a",
+      "resourcesSha256": "76daf59e7c4dec8cf1f31f5726f86e1d781216583068043a158efe9fff784d27",
+      "cgroupCpuDelta": {
+        "usage_usec": 2197807,
+        "user_usec": 1326016,
+        "system_usec": 871791,
+        "nice_usec": 1312847,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "c0c839e142c92a66567d97b0e47a4a9f187178a6d9f5e769a7eb70c47ce75b39"
+    },
+    {
+      "block": -1,
+      "kind": "controlled",
+      "folder": "preflight-controlled/navigation-w4-playwright-cpu4",
+      "name": "navigation-w4-playwright-cpu4",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1219.966830991325,
+      "innerOwnerMilliseconds": 1020.383371,
+      "observedPeakRssBytes": 2525523968,
+      "reportSha256": "e890ffbd0d25ebac10b9cb60584c978e4142bfc2008ce673f86e64c221eec20f",
+      "resourcesSha256": "f00adeaa0ef8ff1875fb21bf6db17bcc969407089e578d675a281c96703ab1ae",
+      "cgroupCpuDelta": {
+        "usage_usec": 3450570,
+        "user_usec": 2144241,
+        "system_usec": 1306330,
+        "nice_usec": 2141254,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "a1249b3a6974f001fa910e0934647364e8bdcf7f23e79770db17cb22f2650f02"
+    },
+    {
+      "block": -1,
+      "kind": "controlled",
+      "folder": "preflight-controlled/navigation-w4-independent-cpu4",
+      "name": "navigation-w4-independent-cpu4",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 722.0085580047453,
+      "innerOwnerMilliseconds": 696.613063,
+      "observedPeakRssBytes": 2415321088,
+      "reportSha256": "35f578d81682abf666c55097d2f26563306d971b675e8d59db41de4eba70349b",
+      "resourcesSha256": "a82203ca0537dd9cb5e05c98f1f4e33a9873ee71ea143ceb3a8aa351e5c2420c",
+      "cgroupCpuDelta": {
+        "usage_usec": 2454752,
+        "user_usec": 1456909,
+        "system_usec": 997843,
+        "nice_usec": 1445327,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "d01636649171bc2438d45a06fab11a764f735eebe85a483eb84aaf4443f6c863"
+    },
+    {
+      "block": -1,
+      "kind": "controlled",
+      "folder": "preflight-controlled/setup-w4-playwright-cpu4",
+      "name": "setup-w4-playwright-cpu4",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1081.4795159967616,
+      "innerOwnerMilliseconds": 999.280436,
+      "observedPeakRssBytes": 2397110272,
+      "reportSha256": "540bbf67cb15269865f2f4e6b6170c2bc7e886f871698b9f40ce331a9e36dea9",
+      "resourcesSha256": "b5a19910b07b8646ce9d7041a868af537c42cc1cb9e25946167affa45432c2e4",
+      "cgroupCpuDelta": {
+        "usage_usec": 3272329,
+        "user_usec": 2068458,
+        "system_usec": 1203870,
+        "nice_usec": 2063779,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "60f94b32943b32910e033a8a3b2886cabf09487a0a0a837d4d2e9c920962d994"
+    },
+    {
+      "block": -1,
+      "kind": "controlled",
+      "folder": "preflight-controlled/setup-w4-independent-cpu4",
+      "name": "setup-w4-independent-cpu4",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "cpus": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 758.4833940054523,
+      "innerOwnerMilliseconds": 676.5734719999999,
+      "observedPeakRssBytes": 2412724224,
+      "reportSha256": "5e36203de5837646f3e04f201a6aab21d0488a788c537cde526cccf098f20294",
+      "resourcesSha256": "65fd79300488a2ce9d492829741a8c14f8f9e19de7edf92b2b6dc006e28e5010",
+      "cgroupCpuDelta": {
+        "usage_usec": 2303728,
+        "user_usec": 1350962,
+        "system_usec": 952766,
+        "nice_usec": 1341993,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "preparedSha256": "b50e7cf46b9f5713d05c231a6cca584e3902b3a6db3a41403d728cc7fde47cc4"
+    },
+    {
+      "block": -1,
+      "kind": "application",
+      "folder": "preflight-todomvc-playwright-cpu4",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 4,
+      "tests": 24,
+      "completeMilliseconds": 2772.610234009335,
+      "cgroupCpuDelta": {
+        "usage_usec": 7833010,
+        "user_usec": 4524470,
+        "system_usec": 3308540,
+        "nice_usec": 4447978,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 27,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "b777ca590307e8b71e05546ed9ba194b26015449e8f1defd8df5b162624e8aec",
+      "resourcesSha256": "db1846dc4c14559882a2750de4bfcc2745f09fca289d5fdfc7a5770ea35b5148",
+      "preparedSha256": "48cf4a790e2a0596aeda2ccee5d436ed41a356c583dd4651a827b069fd6138ff"
+    },
+    {
+      "block": -1,
+      "kind": "application",
+      "folder": "preflight-todomvc-independent-cpu4",
+      "family": "todomvc",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 4,
+      "tests": 24,
+      "completeMilliseconds": 1726.4850299980026,
+      "cgroupCpuDelta": {
+        "usage_usec": 5737516,
+        "user_usec": 3833860,
+        "system_usec": 1903655,
+        "nice_usec": 3804120,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 16,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "1b1c688a8540a9f785d345ac7d64a4d20647d26d67d0052866dbe9e6d1803dc2",
+      "resourcesSha256": "b1058d26159c3dcbe657e48cf648c8b321d2328b7906a87aa3910094416123f5",
+      "preparedSha256": "4d4b04191f0836e2adfda27540796ba1bdd8bac80a34bd02dc6eb7d0a3a86ce0"
+    },
+    {
+      "block": -1,
+      "kind": "application",
+      "folder": "preflight-svgomg-playwright-cpu4",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "playwright",
+      "cpus": 4,
+      "tests": 6,
+      "completeMilliseconds": 2412.10755299835,
+      "cgroupCpuDelta": {
+        "usage_usec": 5492847,
+        "user_usec": 2645692,
+        "system_usec": 2847154,
+        "nice_usec": 2591035,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "47c94948cd179b8a228943a10593a36f2ec483294ea34ca03a08586b07ccf565",
+      "resourcesSha256": "dff55d4d482456e2728fb73a633ef07da27d740afd5acb2b38e5c7973a4db5c6",
+      "preparedSha256": "6662ecdc570cf5498aabaed8022e11eec61e9a9760a142f00bbae7b8b2aa89e7"
+    },
+    {
+      "block": -1,
+      "kind": "application",
+      "folder": "preflight-svgomg-independent-cpu4",
+      "family": "svgomg",
+      "workers": 4,
+      "engine": "independent",
+      "cpus": 4,
+      "tests": 6,
+      "completeMilliseconds": 1601.3519580010325,
+      "cgroupCpuDelta": {
+        "usage_usec": 4353364,
+        "user_usec": 3030082,
+        "system_usec": 1323281,
+        "nice_usec": 2994710,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 14,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "actualPolicy": {
+        "affinity": "0-3",
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0"
+      },
+      "reportSha256": "25802b2e666414bc7ca7361e9b5c16604f2577e0647124968f23c2c58a36a30b",
+      "resourcesSha256": "d5abea1459b0a2d941c61c05d3209783c1fe66f8c95d5a2aa715249085dbf35f",
+      "preparedSha256": "222b9b5ea92bd0e1c663f26d492597d9b20deff9bf5eea6950090a8a478bbd16"
+    }
+  ],
+  "startupAttribution": {
+    "captureCount": 12,
+    "passingOriginalOutcomes": 180,
+    "scope": "Diagnostic event logging perturbs execution. Parent collection uses within-process monotonic intervals; cross-process chronology uses UTC milliseconds, not per-process hrtime origins. Operation intervals include downstream work and may overlap; they are not CPU or additive critical-path bounds.",
+    "maxWithinProcessWallMonotonicElapsedDiscrepancyMilliseconds": 0.7673280000000204,
+    "runs": [
+      {
+        "family": "setup",
+        "workers": 1,
+        "block": 0,
+        "originalOutcomes": 15,
+        "completeDiagnosticMilliseconds": 784.1309229988838,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 27,
+            "readyMillisecondsSinceParentFirstMarker": 76,
+            "closeMillisecondsSinceParentFirstMarker": 688,
+            "collectionFromParentSpawnMilliseconds": 49.504708,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 54.476817000000004,
+                "medianMilliseconds": 54.476817000000004,
+                "maxMilliseconds": 54.476817000000004
+              },
+              "context.newPage": {
+                "count": 15,
+                "sumMilliseconds": 90.44762199999992,
+                "medianMilliseconds": 5.121161000000001,
+                "maxMilliseconds": 17.640549000000007
+              },
+              "page.goto": {
+                "count": 15,
+                "sumMilliseconds": 68.99100899999988,
+                "medianMilliseconds": 4.0640459999999905,
+                "maxMilliseconds": 11.950619999999986
+              },
+              "assertion.run": {
+                "count": 15,
+                "sumMilliseconds": 132.51829499999994,
+                "medianMilliseconds": 8.461364000000003,
+                "maxMilliseconds": 14.739667999999995
+              },
+              "context.close": {
+                "count": 15,
+                "sumMilliseconds": 181.4159129999999,
+                "medianMilliseconds": 11.999062000000038,
+                "maxMilliseconds": 13.836966999999987
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.829999000000043,
+                "medianMilliseconds": 14.829999000000043,
+                "maxMilliseconds": 14.829999000000043
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": null,
+        "reportSha256": "7f6cc425beadf24e269369967fc6cd5090f1d1314d8b44df75ddf38e0c2a4fa7",
+        "resourcesSha256": "ca66042c24518cad83326cfb25a1f6f2326ee9cbfbaf26dedc39d459b1352145"
+      },
+      {
+        "family": "setup",
+        "workers": 4,
+        "block": 0,
+        "originalOutcomes": 15,
+        "completeDiagnosticMilliseconds": 728.9503210049588,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 72,
+            "closeMillisecondsSinceParentFirstMarker": 606,
+            "collectionFromParentSpawnMilliseconds": 47.457277,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 59.144627,
+                "medianMilliseconds": 59.144627,
+                "maxMilliseconds": 59.144627
+              },
+              "context.newPage": {
+                "count": 4,
+                "sumMilliseconds": 83.87532000000002,
+                "medianMilliseconds": 16.7928565,
+                "maxMilliseconds": 41.473129
+              },
+              "page.goto": {
+                "count": 4,
+                "sumMilliseconds": 62.12338599999998,
+                "medianMilliseconds": 15.183921499999997,
+                "maxMilliseconds": 20.468141000000003
+              },
+              "assertion.run": {
+                "count": 4,
+                "sumMilliseconds": 70.2778879999999,
+                "medianMilliseconds": 17.04275599999997,
+                "maxMilliseconds": 22.681246999999985
+              },
+              "context.close": {
+                "count": 4,
+                "sumMilliseconds": 183.44176400000003,
+                "medianMilliseconds": 48.187715999999995,
+                "maxMilliseconds": 51.89649400000002
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 20.571146,
+                "medianMilliseconds": 20.571146,
+                "maxMilliseconds": 20.571146
+              }
+            }
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1,
+            "spawnMillisecondsSinceParentFirstMarker": 72,
+            "readyMillisecondsSinceParentFirstMarker": 121,
+            "closeMillisecondsSinceParentFirstMarker": 605,
+            "collectionFromParentSpawnMilliseconds": 48.92634199999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 104.86362700000001,
+                "medianMilliseconds": 104.86362700000001,
+                "maxMilliseconds": 104.86362700000001
+              },
+              "context.newPage": {
+                "count": 3,
+                "sumMilliseconds": 93.31628199999997,
+                "medianMilliseconds": 16.509974999999997,
+                "maxMilliseconds": 65.148742
+              },
+              "page.goto": {
+                "count": 3,
+                "sumMilliseconds": 47.436155000000014,
+                "medianMilliseconds": 14.526393999999982,
+                "maxMilliseconds": 20.619467000000014
+              },
+              "assertion.run": {
+                "count": 3,
+                "sumMilliseconds": 98.72175200000004,
+                "medianMilliseconds": 41.995630000000006,
+                "maxMilliseconds": 43.842922999999985
+              },
+              "context.close": {
+                "count": 3,
+                "sumMilliseconds": 71.75896800000004,
+                "medianMilliseconds": 18.064262999999983,
+                "maxMilliseconds": 36.101575000000025
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 19.711035000000038,
+                "medianMilliseconds": 19.711035000000038,
+                "maxMilliseconds": 19.711035000000038
+              }
+            }
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2,
+            "spawnMillisecondsSinceParentFirstMarker": 73,
+            "readyMillisecondsSinceParentFirstMarker": 127,
+            "closeMillisecondsSinceParentFirstMarker": 631,
+            "collectionFromParentSpawnMilliseconds": 53.896114999999995,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 85.480264,
+                "medianMilliseconds": 85.480264,
+                "maxMilliseconds": 85.480264
+              },
+              "context.newPage": {
+                "count": 4,
+                "sumMilliseconds": 120.49992600000007,
+                "medianMilliseconds": 23.014308500000027,
+                "maxMilliseconds": 64.73989699999998
+              },
+              "page.goto": {
+                "count": 4,
+                "sumMilliseconds": 49.801390999999995,
+                "medianMilliseconds": 11.752343999999994,
+                "maxMilliseconds": 18.07253799999998
+              },
+              "assertion.run": {
+                "count": 4,
+                "sumMilliseconds": 53.006576999999936,
+                "medianMilliseconds": 10.085703499999966,
+                "maxMilliseconds": 23.410849999999982
+              },
+              "context.close": {
+                "count": 4,
+                "sumMilliseconds": 90.42789500000003,
+                "medianMilliseconds": 18.87336650000003,
+                "maxMilliseconds": 39.54637600000001
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.394143999999983,
+                "medianMilliseconds": 14.394143999999983,
+                "maxMilliseconds": 14.394143999999983
+              }
+            }
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3,
+            "spawnMillisecondsSinceParentFirstMarker": 73,
+            "readyMillisecondsSinceParentFirstMarker": 124,
+            "closeMillisecondsSinceParentFirstMarker": 624,
+            "collectionFromParentSpawnMilliseconds": 50.755420000000015,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 83.94124500000001,
+                "medianMilliseconds": 83.94124500000001,
+                "maxMilliseconds": 83.94124500000001
+              },
+              "context.newPage": {
+                "count": 4,
+                "sumMilliseconds": 128.66259399999993,
+                "medianMilliseconds": 28.65012999999996,
+                "maxMilliseconds": 62.20010099999999
+              },
+              "page.goto": {
+                "count": 4,
+                "sumMilliseconds": 38.22572200000005,
+                "medianMilliseconds": 9.381794500000012,
+                "maxMilliseconds": 13.04713000000001
+              },
+              "assertion.run": {
+                "count": 4,
+                "sumMilliseconds": 52.62871100000004,
+                "medianMilliseconds": 13.221199500000012,
+                "maxMilliseconds": 16.775948999999997
+              },
+              "context.close": {
+                "count": 4,
+                "sumMilliseconds": 79.21393100000003,
+                "medianMilliseconds": 19.83572150000002,
+                "maxMilliseconds": 24.732867
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 13.93121599999995,
+                "medianMilliseconds": 13.93121599999995,
+                "maxMilliseconds": 13.93121599999995
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": null,
+        "reportSha256": "9b5e3d60de219fe6a554e797fdcabb5f4b27a17465b5b6f324e0c3dbdae991c5",
+        "resourcesSha256": "0d9eda475fa893332c926dc2bd1175c68c66c84274e8726101c2dbfd09b0ce5e"
+      },
+      {
+        "family": "setup",
+        "workers": 1,
+        "block": 1,
+        "originalOutcomes": 15,
+        "completeDiagnosticMilliseconds": 786.6973409982165,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 72,
+            "closeMillisecondsSinceParentFirstMarker": 692,
+            "collectionFromParentSpawnMilliseconds": 47.870720000000006,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 52.11540899999999,
+                "medianMilliseconds": 52.11540899999999,
+                "maxMilliseconds": 52.11540899999999
+              },
+              "context.newPage": {
+                "count": 15,
+                "sumMilliseconds": 94.79702899999998,
+                "medianMilliseconds": 5.096192999999971,
+                "maxMilliseconds": 18.236177999999995
+              },
+              "page.goto": {
+                "count": 15,
+                "sumMilliseconds": 72.11535300000007,
+                "medianMilliseconds": 4.25784299999998,
+                "maxMilliseconds": 11.35948900000001
+              },
+              "assertion.run": {
+                "count": 15,
+                "sumMilliseconds": 136.12830999999997,
+                "medianMilliseconds": 8.364019000000042,
+                "maxMilliseconds": 15.20107299999998
+              },
+              "context.close": {
+                "count": 15,
+                "sumMilliseconds": 185.1330119999999,
+                "medianMilliseconds": 12.198500000000024,
+                "maxMilliseconds": 13.822689999999994
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 13.646024000000011,
+                "medianMilliseconds": 13.646024000000011,
+                "maxMilliseconds": 13.646024000000011
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": null,
+        "reportSha256": "463376aa952d494f1efc9367dc0adc01578fc7c8615c8de545936819d56a127a",
+        "resourcesSha256": "99f93e35347af4258c41a20f3deafecf45890198229c21643c033caa32589a49"
+      },
+      {
+        "family": "setup",
+        "workers": 4,
+        "block": 1,
+        "originalOutcomes": 15,
+        "completeDiagnosticMilliseconds": 737.8540279896697,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 72,
+            "closeMillisecondsSinceParentFirstMarker": 627,
+            "collectionFromParentSpawnMilliseconds": 48.261953000000005,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 59.538104000000004,
+                "medianMilliseconds": 59.538104000000004,
+                "maxMilliseconds": 59.538104000000004
+              },
+              "context.newPage": {
+                "count": 5,
+                "sumMilliseconds": 81.09003999999999,
+                "medianMilliseconds": 16.134552999999983,
+                "maxMilliseconds": 22.639138000000003
+              },
+              "page.goto": {
+                "count": 5,
+                "sumMilliseconds": 57.9072920000001,
+                "medianMilliseconds": 10.146379000000024,
+                "maxMilliseconds": 17.769664000000006
+              },
+              "assertion.run": {
+                "count": 5,
+                "sumMilliseconds": 123.83691500000003,
+                "medianMilliseconds": 13.996440000000007,
+                "maxMilliseconds": 48.01556499999998
+              },
+              "context.close": {
+                "count": 5,
+                "sumMilliseconds": 140.35861199999997,
+                "medianMilliseconds": 19.440732999999966,
+                "maxMilliseconds": 49.096204
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 30.271109000000024,
+                "medianMilliseconds": 30.271109000000024,
+                "maxMilliseconds": 30.271109000000024
+              }
+            }
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1,
+            "spawnMillisecondsSinceParentFirstMarker": 72,
+            "readyMillisecondsSinceParentFirstMarker": 124,
+            "closeMillisecondsSinceParentFirstMarker": 608,
+            "collectionFromParentSpawnMilliseconds": 51.276689000000005,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 101.54880300000002,
+                "medianMilliseconds": 101.54880300000002,
+                "maxMilliseconds": 101.54880300000002
+              },
+              "context.newPage": {
+                "count": 3,
+                "sumMilliseconds": 123.96985600000005,
+                "medianMilliseconds": 41.90423700000002,
+                "maxMilliseconds": 42.178225999999995
+              },
+              "page.goto": {
+                "count": 3,
+                "sumMilliseconds": 62.053293,
+                "medianMilliseconds": 8.70750099999998,
+                "maxMilliseconds": 45.34230600000001
+              },
+              "assertion.run": {
+                "count": 3,
+                "sumMilliseconds": 55.05397199999999,
+                "medianMilliseconds": 13.649292000000003,
+                "maxMilliseconds": 28.074573999999984
+              },
+              "context.close": {
+                "count": 3,
+                "sumMilliseconds": 62.57747699999999,
+                "medianMilliseconds": 20.126664000000005,
+                "maxMilliseconds": 22.490836
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 22.462000999999987,
+                "medianMilliseconds": 22.462000999999987,
+                "maxMilliseconds": 22.462000999999987
+              }
+            }
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2,
+            "spawnMillisecondsSinceParentFirstMarker": 73,
+            "readyMillisecondsSinceParentFirstMarker": 124,
+            "closeMillisecondsSinceParentFirstMarker": 640,
+            "collectionFromParentSpawnMilliseconds": 50.76088999999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 65.22392500000001,
+                "medianMilliseconds": 65.22392500000001,
+                "maxMilliseconds": 65.22392500000001
+              },
+              "context.newPage": {
+                "count": 4,
+                "sumMilliseconds": 98.82880700000001,
+                "medianMilliseconds": 13.503375000000005,
+                "maxMilliseconds": 62.31762499999999
+              },
+              "page.goto": {
+                "count": 4,
+                "sumMilliseconds": 73.51458500000004,
+                "medianMilliseconds": 11.977616500000025,
+                "maxMilliseconds": 40.07699200000002
+              },
+              "assertion.run": {
+                "count": 4,
+                "sumMilliseconds": 109.93748799999995,
+                "medianMilliseconds": 23.756440999999995,
+                "maxMilliseconds": 51.844374999999985
+              },
+              "context.close": {
+                "count": 4,
+                "sumMilliseconds": 74.46486600000009,
+                "medianMilliseconds": 18.51015800000002,
+                "maxMilliseconds": 20.37145700000002
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 25.180816999999934,
+                "medianMilliseconds": 25.180816999999934,
+                "maxMilliseconds": 25.180816999999934
+              }
+            }
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3,
+            "spawnMillisecondsSinceParentFirstMarker": 73,
+            "readyMillisecondsSinceParentFirstMarker": 124,
+            "closeMillisecondsSinceParentFirstMarker": 608,
+            "collectionFromParentSpawnMilliseconds": 50.615774999999985,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 98.888429,
+                "medianMilliseconds": 98.888429,
+                "maxMilliseconds": 98.888429
+              },
+              "context.newPage": {
+                "count": 3,
+                "sumMilliseconds": 86.80891399999996,
+                "medianMilliseconds": 36.95958200000001,
+                "maxMilliseconds": 39.46168499999999
+              },
+              "page.goto": {
+                "count": 3,
+                "sumMilliseconds": 63.70022599999999,
+                "medianMilliseconds": 9.699813000000006,
+                "maxMilliseconds": 47.114576
+              },
+              "assertion.run": {
+                "count": 3,
+                "sumMilliseconds": 55.54058500000002,
+                "medianMilliseconds": 17.446612000000016,
+                "maxMilliseconds": 23.36667699999998
+              },
+              "context.close": {
+                "count": 3,
+                "sumMilliseconds": 56.55164099999996,
+                "medianMilliseconds": 17.87205899999998,
+                "maxMilliseconds": 23.475371999999993
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 28.334506000000033,
+                "medianMilliseconds": 28.334506000000033,
+                "maxMilliseconds": 28.334506000000033
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": null,
+        "reportSha256": "235c9155d151443944734894f2f8ca38654b18e068b9ee2e08c70a0e36a1934a",
+        "resourcesSha256": "dc5021390824736f239168f5ea61e0122e52aa6c78007f0a514d14b21ec27ba3"
+      },
+      {
+        "family": "todomvc",
+        "workers": 1,
+        "block": 0,
+        "originalOutcomes": 24,
+        "completeDiagnosticMilliseconds": 1955.6909410021035,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 75,
+            "closeMillisecondsSinceParentFirstMarker": 1756,
+            "collectionFromParentSpawnMilliseconds": 50.26235499999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 51.83007800000001,
+                "medianMilliseconds": 51.83007800000001,
+                "maxMilliseconds": 51.83007800000001
+              },
+              "context.newPage": {
+                "count": 24,
+                "sumMilliseconds": 131.24949799999976,
+                "medianMilliseconds": 4.941244499999925,
+                "maxMilliseconds": 18.207123999999993
+              },
+              "page.goto": {
+                "count": 24,
+                "sumMilliseconds": 507.59887800000024,
+                "medianMilliseconds": 19.017524999999978,
+                "maxMilliseconds": 70.002466
+              },
+              "locator.run": {
+                "count": 104,
+                "sumMilliseconds": 439.2431580000005,
+                "medianMilliseconds": 3.5788610000000176,
+                "maxMilliseconds": 16.252376999999996
+              },
+              "assertion.run": {
+                "count": 106,
+                "sumMilliseconds": 137.98390899999995,
+                "medianMilliseconds": 0.8066599999999937,
+                "maxMilliseconds": 9.198721999999975
+              },
+              "context.close": {
+                "count": 24,
+                "sumMilliseconds": 317.8240319999999,
+                "medianMilliseconds": 12.923434499999985,
+                "maxMilliseconds": 16.92735700000003
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 17.473212000000103,
+                "medianMilliseconds": 17.473212000000103,
+                "maxMilliseconds": 17.473212000000103
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 4626329,
+          "user_usec": 3183865,
+          "system_usec": 1442464,
+          "nice_usec": 2836116,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 18,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "935aed76c9e0bf9ed53cdf8dfc14e6f2b2d17ab3fdf5e74fe93e769a43966161",
+        "resourcesSha256": "2c602737341dfbc4c614a2ba7c34caf8db12536e22ebc73f231207ec8b206546"
+      },
+      {
+        "family": "todomvc",
+        "workers": 4,
+        "block": 0,
+        "originalOutcomes": 24,
+        "completeDiagnosticMilliseconds": 1675.622309994651,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 25,
+            "readyMillisecondsSinceParentFirstMarker": 75,
+            "closeMillisecondsSinceParentFirstMarker": 1435,
+            "collectionFromParentSpawnMilliseconds": 50.097213,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 55.741194,
+                "medianMilliseconds": 55.741194,
+                "maxMilliseconds": 55.741194
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 121.4139000000002,
+                "medianMilliseconds": 18.27741149999997,
+                "maxMilliseconds": 37.297893
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 374.310832,
+                "medianMilliseconds": 55.93332800000002,
+                "maxMilliseconds": 133.12984499999996
+              },
+              "locator.run": {
+                "count": 30,
+                "sumMilliseconds": 464.4385700000006,
+                "medianMilliseconds": 10.861791000000096,
+                "maxMilliseconds": 52.52600799999999
+              },
+              "assertion.run": {
+                "count": 30,
+                "sumMilliseconds": 83.6548380000009,
+                "medianMilliseconds": 1.9764380000000301,
+                "maxMilliseconds": 12.964984000000072
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 184.50815600000016,
+                "medianMilliseconds": 23.965682500000042,
+                "maxMilliseconds": 46.54431599999998
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 20.628254999999854,
+                "medianMilliseconds": 20.628254999999854,
+                "maxMilliseconds": 20.628254999999854
+              }
+            }
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1,
+            "spawnMillisecondsSinceParentFirstMarker": 76,
+            "readyMillisecondsSinceParentFirstMarker": 133,
+            "closeMillisecondsSinceParentFirstMarker": 1430,
+            "collectionFromParentSpawnMilliseconds": 57.35223899999998,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 69.311736,
+                "medianMilliseconds": 69.311736,
+                "maxMilliseconds": 69.311736
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 130.76157399999994,
+                "medianMilliseconds": 12.70169900000002,
+                "maxMilliseconds": 67.89072199999998
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 432.4988059999999,
+                "medianMilliseconds": 65.3498735,
+                "maxMilliseconds": 128.12716999999998
+              },
+              "assertion.run": {
+                "count": 22,
+                "sumMilliseconds": 73.60861200000016,
+                "medianMilliseconds": 1.438156999999876,
+                "maxMilliseconds": 17.738515000000007
+              },
+              "locator.run": {
+                "count": 17,
+                "sumMilliseconds": 255.75354999999973,
+                "medianMilliseconds": 9.271399999999971,
+                "maxMilliseconds": 49.62335399999995
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 195.36640600000004,
+                "medianMilliseconds": 26.1134055,
+                "maxMilliseconds": 50.91934100000003
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 29.746353,
+                "medianMilliseconds": 29.746353,
+                "maxMilliseconds": 29.746353
+              }
+            }
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2,
+            "spawnMillisecondsSinceParentFirstMarker": 76,
+            "readyMillisecondsSinceParentFirstMarker": 133,
+            "closeMillisecondsSinceParentFirstMarker": 1475,
+            "collectionFromParentSpawnMilliseconds": 56.733946,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 81.486882,
+                "medianMilliseconds": 81.486882,
+                "maxMilliseconds": 81.486882
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 145.42781399999978,
+                "medianMilliseconds": 16.902399499999973,
+                "maxMilliseconds": 66.69927200000001
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 388.10198100000014,
+                "medianMilliseconds": 58.03879599999999,
+                "maxMilliseconds": 129.63220299999998
+              },
+              "locator.run": {
+                "count": 30,
+                "sumMilliseconds": 371.74396700000005,
+                "medianMilliseconds": 6.60107650000009,
+                "maxMilliseconds": 84.45012100000002
+              },
+              "assertion.run": {
+                "count": 23,
+                "sumMilliseconds": 90.62771499999963,
+                "medianMilliseconds": 1.5544179999999415,
+                "maxMilliseconds": 28.746858999999972
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 195.53500600000007,
+                "medianMilliseconds": 34.19649750000002,
+                "maxMilliseconds": 47.464590000000044
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.680195999999796,
+                "medianMilliseconds": 14.680195999999796,
+                "maxMilliseconds": 14.680195999999796
+              }
+            }
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3,
+            "spawnMillisecondsSinceParentFirstMarker": 76,
+            "readyMillisecondsSinceParentFirstMarker": 131,
+            "closeMillisecondsSinceParentFirstMarker": 1448,
+            "collectionFromParentSpawnMilliseconds": 54.175335000000004,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 90.639075,
+                "medianMilliseconds": 90.639075,
+                "maxMilliseconds": 90.639075
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 201.67572699999968,
+                "medianMilliseconds": 26.379549499999968,
+                "maxMilliseconds": 78.86446900000001
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 351.4555640000002,
+                "medianMilliseconds": 52.07479649999999,
+                "maxMilliseconds": 123.10556699999998
+              },
+              "locator.run": {
+                "count": 27,
+                "sumMilliseconds": 393.9627540000003,
+                "medianMilliseconds": 8.901058000000035,
+                "maxMilliseconds": 57.521720000000016
+              },
+              "assertion.run": {
+                "count": 31,
+                "sumMilliseconds": 68.16314499999993,
+                "medianMilliseconds": 1.8245300000000952,
+                "maxMilliseconds": 9.35245400000008
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 122.44432300000034,
+                "medianMilliseconds": 21.415071500000067,
+                "maxMilliseconds": 26.85196499999995
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.100856999999905,
+                "medianMilliseconds": 14.100856999999905,
+                "maxMilliseconds": 14.100856999999905
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 5758166,
+          "user_usec": 3814098,
+          "system_usec": 1944068,
+          "nice_usec": 3752428,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 16,
+          "nr_throttled": 13,
+          "throttled_usec": 1237945,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "2a30e9c1c0cb28b5c706f57f36a7c4f4d4acd70c459fa2143c0ed52463c5af8c",
+        "resourcesSha256": "1fbb1ad043a6b9bc4d382d0d50847cc962d0395332834f4ac15d8fb4c4a69f9e"
+      },
+      {
+        "family": "svgomg",
+        "workers": 1,
+        "block": 0,
+        "originalOutcomes": 6,
+        "completeDiagnosticMilliseconds": 891.9580120127648,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 72,
+            "closeMillisecondsSinceParentFirstMarker": 762,
+            "collectionFromParentSpawnMilliseconds": 47.29301399999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 53.022529000000006,
+                "medianMilliseconds": 53.022529000000006,
+                "maxMilliseconds": 53.022529000000006
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 41.68468099999998,
+                "medianMilliseconds": 4.96086649999998,
+                "maxMilliseconds": 17.013080000000002
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 86.34196699999991,
+                "medianMilliseconds": 13.69771799999998,
+                "maxMilliseconds": 20.38507299999999
+              },
+              "assertion.run": {
+                "count": 18,
+                "sumMilliseconds": 101.53078,
+                "medianMilliseconds": 1.381188999999992,
+                "maxMilliseconds": 56.86484400000006
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 118.10070600000003,
+                "medianMilliseconds": 16.407811500000008,
+                "maxMilliseconds": 34.26020199999999
+              },
+              "locator.run": {
+                "count": 8,
+                "sumMilliseconds": 192.87619300000006,
+                "medianMilliseconds": 16.875267999999977,
+                "maxMilliseconds": 67.26830100000001
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.930361000000062,
+                "medianMilliseconds": 14.930361000000062,
+                "maxMilliseconds": 14.930361000000062
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 2213972,
+          "user_usec": 1563924,
+          "system_usec": 650047,
+          "nice_usec": 1456471,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 8,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "596fac82b91898dcd18d33020e13d015a4d54441af88001ae97dece53e067669",
+        "resourcesSha256": "80da3cdb7ba31c0f60e6c4af99d52d1d561ac0ff7f79bf71578ee749d8643794"
+      },
+      {
+        "family": "svgomg",
+        "workers": 4,
+        "block": 0,
+        "originalOutcomes": 6,
+        "completeDiagnosticMilliseconds": 1267.1031759964535,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 70,
+            "closeMillisecondsSinceParentFirstMarker": 849,
+            "collectionFromParentSpawnMilliseconds": 46.107377,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 58.819841999999994,
+                "medianMilliseconds": 58.819841999999994,
+                "maxMilliseconds": 58.819841999999994
+              },
+              "context.newPage": {
+                "count": 2,
+                "sumMilliseconds": 38.84185099999999,
+                "medianMilliseconds": 19.420925499999996,
+                "maxMilliseconds": 24.235423999999995
+              },
+              "page.goto": {
+                "count": 2,
+                "sumMilliseconds": 87.815753,
+                "medianMilliseconds": 43.9078765,
+                "maxMilliseconds": 51.55989600000001
+              },
+              "assertion.run": {
+                "count": 2,
+                "sumMilliseconds": 258.482744,
+                "medianMilliseconds": 129.241372,
+                "maxMilliseconds": 216.508444
+              },
+              "context.close": {
+                "count": 2,
+                "sumMilliseconds": 92.59137700000002,
+                "medianMilliseconds": 46.29568850000001,
+                "maxMilliseconds": 65.766323
+              },
+              "locator.run": {
+                "count": 2,
+                "sumMilliseconds": 139.75863299999997,
+                "medianMilliseconds": 69.87931649999999,
+                "maxMilliseconds": 72.25402400000002
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 66.96047699999997,
+                "medianMilliseconds": 66.96047699999997,
+                "maxMilliseconds": 66.96047699999997
+              }
+            }
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1,
+            "spawnMillisecondsSinceParentFirstMarker": 71,
+            "readyMillisecondsSinceParentFirstMarker": 120,
+            "closeMillisecondsSinceParentFirstMarker": 889,
+            "collectionFromParentSpawnMilliseconds": 48.909229999999994,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 84.08045900000002,
+                "medianMilliseconds": 84.08045900000002,
+                "maxMilliseconds": 84.08045900000002
+              },
+              "context.newPage": {
+                "count": 2,
+                "sumMilliseconds": 103.47119799999999,
+                "medianMilliseconds": 51.73559899999999,
+                "maxMilliseconds": 55.11381499999999
+              },
+              "page.goto": {
+                "count": 2,
+                "sumMilliseconds": 117.60952599999999,
+                "medianMilliseconds": 58.804762999999994,
+                "maxMilliseconds": 76.80200900000003
+              },
+              "locator.run": {
+                "count": 2,
+                "sumMilliseconds": 191.38403399999999,
+                "medianMilliseconds": 95.69201699999999,
+                "maxMilliseconds": 105.03572400000002
+              },
+              "assertion.run": {
+                "count": 5,
+                "sumMilliseconds": 26.794555000000003,
+                "medianMilliseconds": 4.573450999999977,
+                "maxMilliseconds": 10.208527000000004
+              },
+              "context.close": {
+                "count": 2,
+                "sumMilliseconds": 85.76702799999998,
+                "medianMilliseconds": 42.88351399999999,
+                "maxMilliseconds": 62.03880600000002
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 16.651554000000033,
+                "medianMilliseconds": 16.651554000000033,
+                "maxMilliseconds": 16.651554000000033
+              }
+            }
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2,
+            "spawnMillisecondsSinceParentFirstMarker": 71,
+            "readyMillisecondsSinceParentFirstMarker": 121,
+            "closeMillisecondsSinceParentFirstMarker": 741,
+            "collectionFromParentSpawnMilliseconds": 49.87057199999998,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 88.88607200000001,
+                "medianMilliseconds": 88.88607200000001,
+                "maxMilliseconds": 88.88607200000001
+              },
+              "context.newPage": {
+                "count": 1,
+                "sumMilliseconds": 48.114953000000014,
+                "medianMilliseconds": 48.114953000000014,
+                "maxMilliseconds": 48.114953000000014
+              },
+              "page.goto": {
+                "count": 1,
+                "sumMilliseconds": 76.04357999999996,
+                "medianMilliseconds": 76.04357999999996,
+                "maxMilliseconds": 76.04357999999996
+              },
+              "locator.run": {
+                "count": 1,
+                "sumMilliseconds": 181.56850199999997,
+                "medianMilliseconds": 181.56850199999997,
+                "maxMilliseconds": 181.56850199999997
+              },
+              "assertion.run": {
+                "count": 9,
+                "sumMilliseconds": 76.51066500000002,
+                "medianMilliseconds": 5.458750000000009,
+                "maxMilliseconds": 33.749274000000014
+              },
+              "context.close": {
+                "count": 1,
+                "sumMilliseconds": 54.069623999999976,
+                "medianMilliseconds": 54.069623999999976,
+                "maxMilliseconds": 54.069623999999976
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 59.69516199999998,
+                "medianMilliseconds": 59.69516199999998,
+                "maxMilliseconds": 59.69516199999998
+              }
+            }
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3,
+            "spawnMillisecondsSinceParentFirstMarker": 71,
+            "readyMillisecondsSinceParentFirstMarker": 121,
+            "closeMillisecondsSinceParentFirstMarker": 1082,
+            "collectionFromParentSpawnMilliseconds": 49.86031299999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 95.06209199999999,
+                "medianMilliseconds": 95.06209199999999,
+                "maxMilliseconds": 95.06209199999999
+              },
+              "context.newPage": {
+                "count": 1,
+                "sumMilliseconds": 35.382930999999985,
+                "medianMilliseconds": 35.382930999999985,
+                "maxMilliseconds": 35.382930999999985
+              },
+              "page.goto": {
+                "count": 1,
+                "sumMilliseconds": 74.657082,
+                "medianMilliseconds": 74.657082,
+                "maxMilliseconds": 74.657082
+              },
+              "locator.run": {
+                "count": 3,
+                "sumMilliseconds": 673.054236,
+                "medianMilliseconds": 239.12719299999998,
+                "maxMilliseconds": 287.263917
+              },
+              "assertion.run": {
+                "count": 2,
+                "sumMilliseconds": 11.097593999999958,
+                "medianMilliseconds": 5.548796999999979,
+                "maxMilliseconds": 9.487409999999954
+              },
+              "context.close": {
+                "count": 1,
+                "sumMilliseconds": 30.948604000000046,
+                "medianMilliseconds": 30.948604000000046,
+                "maxMilliseconds": 30.948604000000046
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 17.15006900000003,
+                "medianMilliseconds": 17.15006900000003,
+                "maxMilliseconds": 17.15006900000003
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 3854526,
+          "user_usec": 2563043,
+          "system_usec": 1291482,
+          "nice_usec": 2546102,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 11,
+          "nr_throttled": 7,
+          "throttled_usec": 620337,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "39ce512cece8d904ea85910e7faa58dc1342c738b1de5627c64b0aa06a3eca8a",
+        "resourcesSha256": "efdb82c8442d12d3e337c242ccc0491679482c95783d782986197339ea4a741a"
+      },
+      {
+        "family": "todomvc",
+        "workers": 1,
+        "block": 1,
+        "originalOutcomes": 24,
+        "completeDiagnosticMilliseconds": 1959.299801994348,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 25,
+            "readyMillisecondsSinceParentFirstMarker": 75,
+            "closeMillisecondsSinceParentFirstMarker": 1754,
+            "collectionFromParentSpawnMilliseconds": 49.955854,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 53.817526,
+                "medianMilliseconds": 53.817526,
+                "maxMilliseconds": 53.817526
+              },
+              "context.newPage": {
+                "count": 24,
+                "sumMilliseconds": 130.82674300000068,
+                "medianMilliseconds": 4.864514000000042,
+                "maxMilliseconds": 17.941901
+              },
+              "page.goto": {
+                "count": 24,
+                "sumMilliseconds": 506.54034900000005,
+                "medianMilliseconds": 19.2734155,
+                "maxMilliseconds": 63.582952999999975
+              },
+              "locator.run": {
+                "count": 104,
+                "sumMilliseconds": 434.61960899999974,
+                "medianMilliseconds": 3.5726585000000455,
+                "maxMilliseconds": 16.408312999999993
+              },
+              "assertion.run": {
+                "count": 106,
+                "sumMilliseconds": 142.17142599999968,
+                "medianMilliseconds": 0.7282459999999418,
+                "maxMilliseconds": 12.813987999999995
+              },
+              "context.close": {
+                "count": 24,
+                "sumMilliseconds": 313.33944399999973,
+                "medianMilliseconds": 12.991959999999949,
+                "maxMilliseconds": 14.322598000000028
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 15.882366000000047,
+                "medianMilliseconds": 15.882366000000047,
+                "maxMilliseconds": 15.882366000000047
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 4566095,
+          "user_usec": 3101740,
+          "system_usec": 1464355,
+          "nice_usec": 2722583,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 18,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "6418dc01a6c5d13e61919f1180cb1886bd71da67154f47b3bb17142a9ec2d010",
+        "resourcesSha256": "160ee3a7cc5c3b4116b3c9f43b011740f2d983d2fc9a17a5cd8949dbcf82a6aa"
+      },
+      {
+        "family": "todomvc",
+        "workers": 4,
+        "block": 1,
+        "originalOutcomes": 24,
+        "completeDiagnosticMilliseconds": 1663.4338260046206,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 25,
+            "readyMillisecondsSinceParentFirstMarker": 76,
+            "closeMillisecondsSinceParentFirstMarker": 1458,
+            "collectionFromParentSpawnMilliseconds": 50.600396,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 59.229669,
+                "medianMilliseconds": 59.229669,
+                "maxMilliseconds": 59.229669
+              },
+              "context.newPage": {
+                "count": 7,
+                "sumMilliseconds": 138.36050199999994,
+                "medianMilliseconds": 15.506122000000005,
+                "maxMilliseconds": 44.227261999999996
+              },
+              "page.goto": {
+                "count": 7,
+                "sumMilliseconds": 505.2423500000001,
+                "medianMilliseconds": 60.075152,
+                "maxMilliseconds": 175.181823
+              },
+              "locator.run": {
+                "count": 24,
+                "sumMilliseconds": 284.28267800000003,
+                "medianMilliseconds": 9.055716500000017,
+                "maxMilliseconds": 46.81373600000006
+              },
+              "assertion.run": {
+                "count": 28,
+                "sumMilliseconds": 102.71581199999997,
+                "medianMilliseconds": 1.7302559999999971,
+                "maxMilliseconds": 31.195361000000048
+              },
+              "context.close": {
+                "count": 7,
+                "sumMilliseconds": 218.12935,
+                "medianMilliseconds": 25.549966999999924,
+                "maxMilliseconds": 50.397351999999955
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 12.954794999999876,
+                "medianMilliseconds": 12.954794999999876,
+                "maxMilliseconds": 12.954794999999876
+              }
+            }
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1,
+            "spawnMillisecondsSinceParentFirstMarker": 76,
+            "readyMillisecondsSinceParentFirstMarker": 132,
+            "closeMillisecondsSinceParentFirstMarker": 1451,
+            "collectionFromParentSpawnMilliseconds": 55.91479299999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 62.464172000000005,
+                "medianMilliseconds": 62.464172000000005,
+                "maxMilliseconds": 62.464172000000005
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 181.5618690000001,
+                "medianMilliseconds": 30.299592500000017,
+                "maxMilliseconds": 53.608239999999995
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 353.716391,
+                "medianMilliseconds": 51.187809999999956,
+                "maxMilliseconds": 125.24369200000001
+              },
+              "assertion.run": {
+                "count": 37,
+                "sumMilliseconds": 87.00719200000032,
+                "medianMilliseconds": 1.4452499999999873,
+                "maxMilliseconds": 17.338356999999974
+              },
+              "locator.run": {
+                "count": 27,
+                "sumMilliseconds": 354.01735499999967,
+                "medianMilliseconds": 10.111192999999957,
+                "maxMilliseconds": 36.95714700000008
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 171.99905699999994,
+                "medianMilliseconds": 20.579311500000017,
+                "maxMilliseconds": 52.62979399999995
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 29.777954000000136,
+                "medianMilliseconds": 29.777954000000136,
+                "maxMilliseconds": 29.777954000000136
+              }
+            }
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2,
+            "spawnMillisecondsSinceParentFirstMarker": 78,
+            "readyMillisecondsSinceParentFirstMarker": 131,
+            "closeMillisecondsSinceParentFirstMarker": 1386,
+            "collectionFromParentSpawnMilliseconds": 53.73006099999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 70.90198199999999,
+                "medianMilliseconds": 70.90198199999999,
+                "maxMilliseconds": 70.90198199999999
+              },
+              "context.newPage": {
+                "count": 5,
+                "sumMilliseconds": 151.83038499999995,
+                "medianMilliseconds": 20.036031999999977,
+                "maxMilliseconds": 51.295293999999984
+              },
+              "page.goto": {
+                "count": 5,
+                "sumMilliseconds": 340.4058240000002,
+                "medianMilliseconds": 65.46880899999996,
+                "maxMilliseconds": 115.27817600000003
+              },
+              "locator.run": {
+                "count": 28,
+                "sumMilliseconds": 406.07159700000005,
+                "medianMilliseconds": 7.319849499999975,
+                "maxMilliseconds": 111.86073500000003
+              },
+              "assertion.run": {
+                "count": 21,
+                "sumMilliseconds": 50.848158000000126,
+                "medianMilliseconds": 1.3824909999998454,
+                "maxMilliseconds": 13.632450000000063
+              },
+              "context.close": {
+                "count": 5,
+                "sumMilliseconds": 153.99929700000007,
+                "medianMilliseconds": 26.979386999999974,
+                "maxMilliseconds": 45.866048999999975
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 25.21332899999993,
+                "medianMilliseconds": 25.21332899999993,
+                "maxMilliseconds": 25.21332899999993
+              }
+            }
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3,
+            "spawnMillisecondsSinceParentFirstMarker": 78,
+            "readyMillisecondsSinceParentFirstMarker": 132,
+            "closeMillisecondsSinceParentFirstMarker": 1417,
+            "collectionFromParentSpawnMilliseconds": 53.571059000000005,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 72.939345,
+                "medianMilliseconds": 72.939345,
+                "maxMilliseconds": 72.939345
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 154.30197400000011,
+                "medianMilliseconds": 18.291143500000032,
+                "maxMilliseconds": 44.30057099999999
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 365.230597,
+                "medianMilliseconds": 56.594447,
+                "maxMilliseconds": 113.31840999999997
+              },
+              "locator.run": {
+                "count": 25,
+                "sumMilliseconds": 293.41573400000016,
+                "medianMilliseconds": 11.655922000000032,
+                "maxMilliseconds": 51.41065299999997
+              },
+              "assertion.run": {
+                "count": 20,
+                "sumMilliseconds": 57.589096999999924,
+                "medianMilliseconds": 2.1409439999999904,
+                "maxMilliseconds": 12.151391000000103
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 202.31727599999988,
+                "medianMilliseconds": 32.15945949999997,
+                "maxMilliseconds": 49.83927300000005
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 18.77010099999984,
+                "medianMilliseconds": 18.77010099999984,
+                "maxMilliseconds": 18.77010099999984
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 5728552,
+          "user_usec": 3848356,
+          "system_usec": 1880196,
+          "nice_usec": 3820942,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 15,
+          "nr_throttled": 13,
+          "throttled_usec": 1412785,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "5603202fc803103f4f076508537c2031448402f3860a488c14238eb53774c899",
+        "resourcesSha256": "8ec775ae2c0b130abc4aa4c7164f0a1c41915adc88873cbbf591b30167073a93"
+      },
+      {
+        "family": "svgomg",
+        "workers": 1,
+        "block": 1,
+        "originalOutcomes": 6,
+        "completeDiagnosticMilliseconds": 962.4542880046647,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 25,
+            "readyMillisecondsSinceParentFirstMarker": 72,
+            "closeMillisecondsSinceParentFirstMarker": 770,
+            "collectionFromParentSpawnMilliseconds": 47.452808000000005,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 55.571662,
+                "medianMilliseconds": 55.571662,
+                "maxMilliseconds": 55.571662
+              },
+              "context.newPage": {
+                "count": 6,
+                "sumMilliseconds": 45.43034300000002,
+                "medianMilliseconds": 5.614711,
+                "maxMilliseconds": 17.715271
+              },
+              "page.goto": {
+                "count": 6,
+                "sumMilliseconds": 93.322666,
+                "medianMilliseconds": 15.250548000000009,
+                "maxMilliseconds": 20.804619000000002
+              },
+              "assertion.run": {
+                "count": 18,
+                "sumMilliseconds": 107.16201499999985,
+                "medianMilliseconds": 1.4926404999999932,
+                "maxMilliseconds": 58.39061799999996
+              },
+              "context.close": {
+                "count": 6,
+                "sumMilliseconds": 120.56435000000008,
+                "medianMilliseconds": 19.17374650000002,
+                "maxMilliseconds": 32.32734800000003
+              },
+              "locator.run": {
+                "count": 8,
+                "sumMilliseconds": 175.74586199999996,
+                "medianMilliseconds": 15.035539499999999,
+                "maxMilliseconds": 63.090899999999976
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.582401000000004,
+                "medianMilliseconds": 14.582401000000004,
+                "maxMilliseconds": 14.582401000000004
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 2203917,
+          "user_usec": 1561826,
+          "system_usec": 642090,
+          "nice_usec": 1448134,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 8,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "b0bacbec2f64a9af1a9e6cd822af2f312bf00e04d50b1faeafa4d303901f9e8d",
+        "resourcesSha256": "1098ba1f3a3b13a8feea66b8d837c5e3a55ae14f6ea77822c9446160c4e34e0a"
+      },
+      {
+        "family": "svgomg",
+        "workers": 4,
+        "block": 1,
+        "originalOutcomes": 6,
+        "completeDiagnosticMilliseconds": 1611.7891939939,
+        "workersObserved": [
+          {
+            "workerIndex": 0,
+            "parallelIndex": 0,
+            "spawnMillisecondsSinceParentFirstMarker": 24,
+            "readyMillisecondsSinceParentFirstMarker": 71,
+            "closeMillisecondsSinceParentFirstMarker": 720,
+            "collectionFromParentSpawnMilliseconds": 46.831981000000006,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 59.574933,
+                "medianMilliseconds": 59.574933,
+                "maxMilliseconds": 59.574933
+              },
+              "context.newPage": {
+                "count": 2,
+                "sumMilliseconds": 51.03518100000002,
+                "medianMilliseconds": 25.51759050000001,
+                "maxMilliseconds": 42.216249000000005
+              },
+              "page.goto": {
+                "count": 2,
+                "sumMilliseconds": 103.62475,
+                "medianMilliseconds": 51.812375,
+                "maxMilliseconds": 52.20325600000001
+              },
+              "assertion.run": {
+                "count": 2,
+                "sumMilliseconds": 178.27941800000005,
+                "medianMilliseconds": 89.13970900000002,
+                "maxMilliseconds": 117.72109000000006
+              },
+              "context.close": {
+                "count": 2,
+                "sumMilliseconds": 56.69878099999994,
+                "medianMilliseconds": 28.34939049999997,
+                "maxMilliseconds": 33.95156799999995
+              },
+              "locator.run": {
+                "count": 2,
+                "sumMilliseconds": 92.82354900000001,
+                "medianMilliseconds": 46.41177450000001,
+                "maxMilliseconds": 54.63278200000002
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 71.20507599999996,
+                "medianMilliseconds": 71.20507599999996,
+                "maxMilliseconds": 71.20507599999996
+              }
+            }
+          },
+          {
+            "workerIndex": 1,
+            "parallelIndex": 1,
+            "spawnMillisecondsSinceParentFirstMarker": 72,
+            "readyMillisecondsSinceParentFirstMarker": 124,
+            "closeMillisecondsSinceParentFirstMarker": 863,
+            "collectionFromParentSpawnMilliseconds": 51.87272899999999,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 89.646173,
+                "medianMilliseconds": 89.646173,
+                "maxMilliseconds": 89.646173
+              },
+              "context.newPage": {
+                "count": 2,
+                "sumMilliseconds": 78.50686100000001,
+                "medianMilliseconds": 39.25343050000001,
+                "maxMilliseconds": 64.03987899999998
+              },
+              "page.goto": {
+                "count": 2,
+                "sumMilliseconds": 86.31729100000001,
+                "medianMilliseconds": 43.158645500000006,
+                "maxMilliseconds": 58.76787300000001
+              },
+              "locator.run": {
+                "count": 2,
+                "sumMilliseconds": 201.7821529999999,
+                "medianMilliseconds": 100.89107649999995,
+                "maxMilliseconds": 174.59714499999998
+              },
+              "assertion.run": {
+                "count": 5,
+                "sumMilliseconds": 38.63862599999999,
+                "medianMilliseconds": 8.270372000000009,
+                "maxMilliseconds": 10.776884999999993
+              },
+              "context.close": {
+                "count": 2,
+                "sumMilliseconds": 100.36390600000004,
+                "medianMilliseconds": 50.18195300000002,
+                "maxMilliseconds": 80.906972
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 20.275855999999976,
+                "medianMilliseconds": 20.275855999999976,
+                "maxMilliseconds": 20.275855999999976
+              }
+            }
+          },
+          {
+            "workerIndex": 2,
+            "parallelIndex": 2,
+            "spawnMillisecondsSinceParentFirstMarker": 73,
+            "readyMillisecondsSinceParentFirstMarker": 122,
+            "closeMillisecondsSinceParentFirstMarker": 718,
+            "collectionFromParentSpawnMilliseconds": 48.984302,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 73.684678,
+                "medianMilliseconds": 73.684678,
+                "maxMilliseconds": 73.684678
+              },
+              "context.newPage": {
+                "count": 1,
+                "sumMilliseconds": 76.14057400000002,
+                "medianMilliseconds": 76.14057400000002,
+                "maxMilliseconds": 76.14057400000002
+              },
+              "page.goto": {
+                "count": 1,
+                "sumMilliseconds": 35.12533399999998,
+                "medianMilliseconds": 35.12533399999998,
+                "maxMilliseconds": 35.12533399999998
+              },
+              "locator.run": {
+                "count": 1,
+                "sumMilliseconds": 199.32297999999997,
+                "medianMilliseconds": 199.32297999999997,
+                "maxMilliseconds": 199.32297999999997
+              },
+              "assertion.run": {
+                "count": 9,
+                "sumMilliseconds": 78.27527300000008,
+                "medianMilliseconds": 4.551339999999982,
+                "maxMilliseconds": 37.612319000000014
+              },
+              "context.close": {
+                "count": 1,
+                "sumMilliseconds": 73.41220099999998,
+                "medianMilliseconds": 73.41220099999998,
+                "maxMilliseconds": 73.41220099999998
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 33.53738099999998,
+                "medianMilliseconds": 33.53738099999998,
+                "maxMilliseconds": 33.53738099999998
+              }
+            }
+          },
+          {
+            "workerIndex": 3,
+            "parallelIndex": 3,
+            "spawnMillisecondsSinceParentFirstMarker": 73,
+            "readyMillisecondsSinceParentFirstMarker": 122,
+            "closeMillisecondsSinceParentFirstMarker": 1428,
+            "collectionFromParentSpawnMilliseconds": 49.082368,
+            "operationIntervals": {
+              "browser.launch": {
+                "count": 1,
+                "sumMilliseconds": 78.572115,
+                "medianMilliseconds": 78.572115,
+                "maxMilliseconds": 78.572115
+              },
+              "context.newPage": {
+                "count": 1,
+                "sumMilliseconds": 70.16703799999999,
+                "medianMilliseconds": 70.16703799999999,
+                "maxMilliseconds": 70.16703799999999
+              },
+              "page.goto": {
+                "count": 1,
+                "sumMilliseconds": 32.67551800000001,
+                "medianMilliseconds": 32.67551800000001,
+                "maxMilliseconds": 32.67551800000001
+              },
+              "locator.run": {
+                "count": 3,
+                "sumMilliseconds": 1057.6508979999999,
+                "medianMilliseconds": 204.42656699999998,
+                "maxMilliseconds": 838.8999999999999
+              },
+              "assertion.run": {
+                "count": 2,
+                "sumMilliseconds": 3.248839000000089,
+                "medianMilliseconds": 1.6244195000000445,
+                "maxMilliseconds": 2.0366109999999935
+              },
+              "context.close": {
+                "count": 1,
+                "sumMilliseconds": 24.348338000000012,
+                "medianMilliseconds": 24.348338000000012,
+                "maxMilliseconds": 24.348338000000012
+              },
+              "browser.close": {
+                "count": 1,
+                "sumMilliseconds": 14.974654999999984,
+                "medianMilliseconds": 14.974654999999984,
+                "maxMilliseconds": 14.974654999999984
+              }
+            }
+          }
+        ],
+        "cgroupCpuDelta": {
+          "usage_usec": 4476674,
+          "user_usec": 3123221,
+          "system_usec": 1353454,
+          "nice_usec": 3054311,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 14,
+          "nr_throttled": 8,
+          "throttled_usec": 743324,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "reportSha256": "8021cc91f69fc15384f22898542bde7e8f4731f485201da7e6b7190996a1bd60",
+        "resourcesSha256": "662593b0f78e75d220cbc7857cbd6c64b2d62c7fa6db2079c08771f8a156f5a7"
+      }
+    ],
+    "sourceReceipts": [
+      {
+        "path": "packages/flashwright-runner/dist/commonjs/independent/cli.js",
+        "beforeSha256": "3a93e4b5f00490672328296d1400f9b0f9e52945ae2a21c58c93196c321b2383",
+        "afterSha256": "69977025d49e9a38121d1004b82d0f36f87f86fb8ccf763883b965747a60902d"
+      },
+      {
+        "path": "packages/flashwright-runner/dist/commonjs/independent/process-runner.js",
+        "beforeSha256": "c3cc17e4659957e6c3d889405aafc6f1c42b5261c861b4e307410a679f6c7667",
+        "afterSha256": "c30addb89681d18304f22effc96ffac2e9b04e8fab958e8a2d46ce6b7c664ffc"
+      },
+      {
+        "path": "packages/flashwright-runner/dist/commonjs/independent/process-worker.js",
+        "beforeSha256": "4b63a346d8d4b12f53fa8787544fc48d3a5c789f79ece8180766fc040bc4864f",
+        "afterSha256": "55adfcd76e02b23ebbeb566aa2d298514d0e8d566fbcbaf4108355064590b18b"
+      },
+      {
+        "path": "packages/flashwright-runner/dist/commonjs/independent/entry-worker.js",
+        "beforeSha256": "65d5a30709b5ac5e6bb19dcb9f7fbbfdc1a118b05de647dc1bffdc68a5e18a9f",
+        "afterSha256": "7154e185a4bdc28fda5ab18fe6db2dd35fd20e279ac35aeb137677e012c6569f"
+      },
+      {
+        "path": "packages/flashwright-core/dist/commonjs/client.js",
+        "beforeSha256": "50a2f6b6a556ab14d270ed38349813d1ce53568807c10b89c4b5605adb9ffdd5",
+        "afterSha256": "2d7a7ab88dd97c8e490ca83b4f4df89a4bc32ba8ccab88a238070508fc66b91f"
+      }
+    ],
+    "generatedModuleRestoration": {
+      "status": "restored",
+      "generatedFiles": [
+        "packages/flashwright-runner/dist/commonjs/independent/cli.js",
+        "packages/flashwright-runner/dist/commonjs/independent/process-runner.js",
+        "packages/flashwright-runner/dist/commonjs/independent/process-worker.js",
+        "packages/flashwright-runner/dist/commonjs/independent/entry-worker.js",
+        "packages/flashwright-core/dist/commonjs/client.js"
+      ]
+    },
+    "earlierClockAttempt": {
+      "completeCaptures": 12,
+      "passingOriginalOutcomes": 180,
+      "limitation": "Pinned Bun hrtime values had process-relative origins. Those earlier records are valid only for within-process intervals and are not used to align worker chronology. Separate corrected-clock captures are used above.",
+      "retainedPrivately": true
+    },
+    "decision": "Worker collection commonly takes about 50 ms in the observed parent intervals, with successor workers starting after the first collection. Framework-only prewarming would require a new explicit assignment/custody boundary; it is not selected as the next large-gain experiment."
+  },
+  "inputs": {
+    "selectedInputsUnchanged": true,
+    "count": 1197,
+    "manifestSha256": "0fb50787c6fbe9844ddfbbd8c75a20473b3da47e5fcfa06a98881bc338714dc1",
+    "controllerSha256": "87013ec45a5097f01a19d3ba1e721aa4cf05fca3a0890191b692da7be85394ab",
+    "harnessSha256": "d1c5cd07be045ac981bdb19120b8cf8e5bf7c3041788e380e5ca272868466f23",
+    "wrapperSha256": "34d7e4ca49f93cdfbc214b07c197dce29852327e36a7c92d170a567e00f08823",
+    "browserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "driverSha256": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249"
+  },
+  "limitations": [
+    "Both application cells must improve at least 10% in both orders and controlled cells must not regress over 5%; the declared gate fails. Do not change benchmark policy or repeat an unchanged larger screen on this basis.",
+    "Quota throttled time is aggregated scheduler accounting, not a measure of recoverable wall-clock time; reduced throttling does not prove faster complete work.",
+    "Actual policy is captured in the original owner; exhaustive per-thread affinity custody and final resource admission remain unverified.",
+    "Four workers only in the matched affinity screen; no new one-worker policy, other-platform or production performance claim.",
+    "Stock and custom browser differences remain explicit. Two observations per cell do not satisfy the final eight-pair confidence gate or majority-scenario objective.",
+    "No browser/Rust/product implementation changed. The five temporarily instrumented generated JavaScript modules were restored byte-for-byte before all affinity captures."
+  ],
+  "finalPerformanceAdmission": false,
+  "fullResourceAdmission": false
+}
