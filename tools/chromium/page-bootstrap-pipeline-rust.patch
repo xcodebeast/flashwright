@@ -1,0 +1,93 @@
+--- a/crates/flashwright-engine/src/lib.rs
++++ b/crates/flashwright-engine/src/lib.rs
+@@ -789,6 +789,14 @@
+             }))
+             .await?;
+         let browser = self.browser(&context.browser_identifier, method)?;
++        let pipelined_bootstrap = std::env::var("FLASHWRIGHT_PIPELINED_PAGE_BOOTSTRAP").as_deref() == Ok("1");
++        let bootstrap_audit = std::env::var("FLASHWRIGHT_PAGE_BOOTSTRAP_AUDIT").as_deref() == Ok("1");
++        let bootstrap_started = std::time::Instant::now();
++        let bootstrap_mark = |phase: &str| {
++            if bootstrap_audit {
++                eprintln!("flashwright-page-bootstrap pipelined={} phase={} elapsed_us={}", pipelined_bootstrap, phase, bootstrap_started.elapsed().as_micros());
++            }
++        };
+         let target_identifier = operation
+             .allocate_while_owner_alive(
+                 browser.as_ref(),
+@@ -798,11 +806,13 @@
+                 context.state.closure(method),
+             )
+             .await?;
++        bootstrap_mark("target-created");
+         let page_identifier = self.identifier("page");
+         let mut retained_page = None;
+         let result = async {
+             let session = operation.wait(context.state.while_alive(method, browser.connection.call("Target.attachToTarget", json!({ "targetId": target_identifier, "flatten": true }), None))).await?;
+             let session_identifier = string_field(&session, "sessionId")?;
++            bootstrap_mark("attached");
+             let mut document = page_state::DocumentState::with_network_budget(self.network_budget.clone());
+             document.initialize_main_frame(&target_identifier, &session_identifier);
+             document.interception = routing_state::RequestInterception::new(self.routing_budget.clone());
+@@ -823,11 +833,34 @@
+                     browser.connection.call(command, parameters, Some(&session_identifier)),
+                 ))
+             };
++            if pipelined_bootstrap {
++                // Preserve admission order; publication still waits for every reply.
++                // Failure leaves dispatched work owned by original-page disposal.
++                let commands = operation.wait(state.while_alive(method, async {
++                let mut commands = Vec::new();
++                for (command, parameters) in [
++                    ("Page.enable", json!({})),
++                    ("Page.setLifecycleEventsEnabled", json!({ "enabled": true })),
++                    ("Network.enable", json!({})),
++                    ("Runtime.enable", json!({})),
++                    ("Log.enable", json!({})),
++                ] {
++                    operation.check()?;
++                    commands.push(browser.connection.start_command(command, parameters, Some(&session_identifier))?);
++                }
++                Ok(commands)
++                })).await?;
++                for mut command in commands {
++                    operation.wait(state.while_alive(method, command.response())).await?;
++                }
++            } else {
+             initialize_command("Page.enable", json!({})).await?;
+             initialize_command("Page.setLifecycleEventsEnabled", json!({ "enabled": true })).await?;
+             initialize_command("Network.enable", json!({})).await?;
+             initialize_command("Runtime.enable", json!({})).await?;
+             initialize_command("Log.enable", json!({})).await?;
++            }
++            bootstrap_mark("domains-enabled");
+             if purpose == PagePurpose::Public {
+                 if context.settings.ignore_https_errors {
+                     initialize_command("Security.setIgnoreCertificateErrors", json!({"ignore":true})).await?;
+@@ -849,13 +882,18 @@
+             if !context.devices.user_agent.is_empty() {
+                 initialize_command("Emulation.setUserAgentOverride", context.devices.user_agent_override()).await?;
+             }
++            bootstrap_mark("settings-applied");
+             if purpose == PagePurpose::Public {
+                 self.configure_page_routing(&page_identifier, &page, &browser, context.state.routing_registered.load(Ordering::Acquire), operation).await?;
++                bootstrap_mark("routing-applied");
+                 self.initialize_renderer_scripts(&page_identifier, &page, &browser, &renderer, operation).await?;
++                bootstrap_mark("scripts-applied");
+                 self.initialize_page_filmstrip(&page_identifier, &page, &context, &browser);
+                 initialize_command("Target.setAutoAttach", renderer_setup::auto_attach_parameters()).await?;
+             }
++            bootstrap_mark("auto-attach-applied");
+             let tree = initialize_command("Page.getFrameTree", json!({})).await?;
++            bootstrap_mark("frame-tree-received");
+             if purpose == PagePurpose::Public {
+                 state.while_alive(method, self.release_renderer_preparation(&browser, &context, operation)).await?;
+             }
+@@ -866,6 +904,7 @@
+             // Page.enable normally supplies the initial frame; getFrameTree covers an idle about:blank.
+             if document.main_frame.is_none() { document.observe_in_session(&session_identifier, "Page.frameNavigated", &json!({ "frame": tree["frameTree"]["frame"] })); }
+             renderer.mark_ready();
++            bootstrap_mark("ready");
+             Ok(json!({ "identifier": page_identifier, "frames": document.frame_snapshot(), "mainFrame": document.main_frame, "navigationSequence":document.sequence }))
+         }.await;
+         if let Err(mut error) = result {
