@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "internal-fixture-core-functional-checkpoint",
+  "baseCommit": "c1fab872",
+  "defaultRunnerChanged": false,
+  "publicRunnerCoverageChanged": false,
+  "performanceAdmission": false,
+  "sourceHashes": {
+    "packages/flashwright-runner/src/independent/fixture-pool.ts": "130821df33bf7a780d4c5dfa28790d52381972cee54bc355822cc15b8ca67719",
+    "packages/flashwright-runner/src/independent/fixture-runtime.ts": "becbb5bb402738b640858a139a33d7e73fe3e20add22ec777db11b26ce8977bf",
+    "compatibility/runner-fixture-core/scenarios.mjs": "610925ecce89bb98563dfc8dd68ac2947ffa6070c648c081042a8327acc97f22",
+    "tools/run-independent-fixture-differential.mjs": "fbe3a6bfcd3346d15110ab093369163a97d3acb65f11c2eebaae911fe070113a",
+    "packages/flashwright-runner/dist/commonjs/independent/fixture-pool.js": "70e2d4dde13f971fc85eb7d22dc637a42d3c24f203dd17ec8b7158abeae455fb",
+    "packages/flashwright-runner/dist/commonjs/independent/fixture-runtime.js": "c763ecbbe62c3d62486fa5085ff7d835349aa5e352d7ea38108b1ebd2094def5"
+  },
+  "implementation": "Independent lazy fixture dependency graph and finite-phase lifecycle core. Configuration validation precedes fixture effects after all extension layers are collected. Exact worker definition identities retain worker instances across equivalent pools; test scopes are recreated. Callback failures remain distinct from every fixture teardown failure. Closure retains the admitted invocation until it settles.",
+  "unitChecks": [
+    {
+      "runtime": "Bun 1.4.2",
+      "passed": 14,
+      "failed": 0,
+      "logSha256": "21b68ec6fb23ffb6992e992764bcda01d6088eb7707b045bf584c569c0bd52b8"
+    },
+    {
+      "runtime": "Node 22.22.0",
+      "passed": 14,
+      "failed": 0,
+      "logSha256": "21578066a44a828d2ec7c49f9966def63fd5247b96a66d8d4a7d8d65a9969077"
+    }
+  ],
+  "differential": [
+    {
+      "runtime": "Bun 1.4.2",
+      "scenarios": 10,
+      "attemptsPerImplementation": 12,
+      "intentionalFailuresPerImplementation": 4,
+      "exactEventSequences": true,
+      "candidateResults": [
+        {
+          "name": "forward-extension",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "diamond-and-auto",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "diamond-and-auto",
+          "attempt": 1,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "override-chain",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "option-reset",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "all-hook-scopes",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "all-hook-scopes",
+          "attempt": 1,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "setup-failure",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [
+            "fixture setup sentinel"
+          ],
+          "cleanupErrors": []
+        },
+        {
+          "name": "body-and-cleanup-errors",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [
+            "body sentinel"
+          ],
+          "cleanupErrors": [
+            "leaf teardown sentinel",
+            "root teardown sentinel"
+          ]
+        },
+        {
+          "name": "missing-use",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [
+            "Fixture \"item\" completed without use()"
+          ],
+          "cleanupErrors": []
+        },
+        {
+          "name": "double-use",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [],
+          "cleanupErrors": [
+            "Fixture \"item\" called use() more than once"
+          ]
+        },
+        {
+          "name": "destructuring-and-values",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        }
+      ],
+      "receiptSha256": "6e5d08825678b0ae803d769b9b89c6a50953de27720f24f5c5ec339e31edc03f",
+      "resourceReceiptSha256": "5e34281017e109997d912572c15a6114d0aec46204ac1440deef10e9d35b30df"
+    },
+    {
+      "runtime": "Node 22.22.0",
+      "scenarios": 10,
+      "attemptsPerImplementation": 12,
+      "intentionalFailuresPerImplementation": 4,
+      "exactEventSequences": true,
+      "candidateResults": [
+        {
+          "name": "forward-extension",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "diamond-and-auto",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "diamond-and-auto",
+          "attempt": 1,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "override-chain",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "option-reset",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "all-hook-scopes",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "all-hook-scopes",
+          "attempt": 1,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        },
+        {
+          "name": "setup-failure",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [
+            "fixture setup sentinel"
+          ],
+          "cleanupErrors": []
+        },
+        {
+          "name": "body-and-cleanup-errors",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [
+            "body sentinel"
+          ],
+          "cleanupErrors": [
+            "leaf teardown sentinel",
+            "root teardown sentinel"
+          ]
+        },
+        {
+          "name": "missing-use",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [
+            "Fixture \"item\" completed without use()"
+          ],
+          "cleanupErrors": []
+        },
+        {
+          "name": "double-use",
+          "attempt": 0,
+          "status": "failed",
+          "bodyErrors": [],
+          "cleanupErrors": [
+            "Fixture \"item\" called use() more than once"
+          ]
+        },
+        {
+          "name": "destructuring-and-values",
+          "attempt": 0,
+          "status": "passed",
+          "bodyErrors": [],
+          "cleanupErrors": []
+        }
+      ],
+      "receiptSha256": "6e5d08825678b0ae803d769b9b89c6a50953de27720f24f5c5ec339e31edc03f",
+      "resourceReceiptSha256": "cac4cf5d10e37ab6f07becf0191d21e67c602f2759ea63a9b60e78fd22184521"
+    }
+  ],
+  "applicationIntegration": {
+    "runtime": "Bun 1.4.2",
+    "runs": [
+      {
+        "application": "todomvc",
+        "testsPassed": 24,
+        "freshContextsClosed": 24,
+        "physicalRendererCount": 1,
+        "transfers": 24,
+        "claimedAndReleased": 23,
+        "originalSourceFixtureEventsAndRequestsVerified": true,
+        "cleanObservedExit": true,
+        "functionalReceiptSha256": "7b6c24637be8971e847bb0401ad000e6f1c604fdecedf9ff3e88c297c7ac3d41",
+        "launchReceiptSha256": "8da280c77969d50991f0ce3a7c4fa0097269fead2028e7406845cfd5fb5f91bb",
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550"
+      },
+      {
+        "application": "svgomg",
+        "testsPassed": 6,
+        "freshContextsClosed": 6,
+        "physicalRendererCount": 1,
+        "transfers": 6,
+        "claimedAndReleased": 5,
+        "originalSourceFixtureEventsAndRequestsVerified": true,
+        "cleanObservedExit": true,
+        "functionalReceiptSha256": "682a54f79056f510239f0c31f8bb1a432f1fa8d07b0a6d2575d3c729d27825aa",
+        "launchReceiptSha256": "c7ce8353e983dca3592bb7dcde1fd34762d96524c8558b1144bdb9d87d834e76",
+        "browserSha256": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550"
+      }
+    ],
+    "selectedInputCount": 1118,
+    "selectedInputsUnchanged": true,
+    "inputManifestSha256": "8e34542741e5beaa21a37f3b271db61713de09b9aa87c81ec21ac811950b6fdd",
+    "scope": "Existing private Bun passing-suite bridge with fixture execution replaced by the internal core, native renderer reuse and classic early idle frame deadline. Original application bodies and fixture events verified. Functional runs only, no new speed comparison."
+  },
+  "reproduction": [
+    "bun tools/build-packages.mjs",
+    "bun run test:fixture-core"
+  ],
+  "limits": [
+    "Internal modules are not public runner exports or a replacement scheduler.",
+    "Fixture deadlines, cancellation, general hook collection, retries, failed-worker replacement and artifacts remain unimplemented in this independent path.",
+    "Unsupported fixture options, including timeout, title and box, reject before fixture effects.",
+    "Closure waits admitted work; this finite-phase core alone does not stop an indefinitely pending callback.",
+    "Shared fixture cases use the actual pinned runner with generated declarations, not its browser backend.",
+    "The application integration remains private and does not establish general fixture type compatibility, release acceptance, complete resource accounting or performance."
+  ],
+  "history": [
+    "Initial source-only differential passed nine scenarios; review then identified forward-extension and equivalent-worker-pool gaps. Both were corrected and added to final checks.",
+    "Initial TypeScript check rejected optional chaining of private identifiers; corrected before the compiled-module checks.",
+    "Earlier application integration passed the same 30 tests before the final prototype-key option correction; final runs use the final verified source/build."
+  ]
+}
