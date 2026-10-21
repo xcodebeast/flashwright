@@ -2,7 +2,7 @@
 
 Flashwright has not established performance leadership. The [five-engine checkpoint](../compatibility/evidence/broad-performance-checkpoint-2026-10-10.json) records 40 passing sampled launches after a 162-group core gate. All 926 recorded source files match commit `70dc299f`. The [complete comparison table](../benchmarks/results/broad-matrix-2026-10-10/evidence/table.md) includes every workload, preparation-inclusive totals, startup, CPU, concurrent memory, uncertainty and recorded semantic differences.
 
-The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its Linux Chrome draft now completes the seven fixture outcome categories, but equivalent-work and comparative measurements remain unadmitted. It has no result in the historical five-engine snapshot. The system-WebKit backend on macOS requires a separate comparison class. See the [outcome checkpoint](../compatibility/evidence/bun-webview-outcome-checkpoint-2026-10-16.json) and [contender configuration](../benchmarks/configurations/competitors.json).
+The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its Linux Chrome adapter now has eight launches of native library timing observations across seven fixture categories, shown separately below. Equivalent-work and comparative measurements remain unadmitted; it has no result in the historical five-engine snapshot. The system-WebKit backend on macOS requires a separate comparison class. See the [native observations](../benchmarks/results/bun-webview-native-linux-2026-10-21.json) and [contender configuration](../benchmarks/configurations/competitors.json).
 
 ## Renderer reuse experiment on Linux
 
@@ -240,7 +240,7 @@ Eight rotated blocks ran on native macOS arm64 with full Chrome 148.0.7778.96. B
 | puppeteer | 25.13.0 | library-flow | 433.1 [386.2, 456.4] | 8695.8 [8409.2, 8806.2] | 8954.7 [8721.0, 9119.4] | 7.90 [7.68, 8.20] | 862.6 [853.6, 865.3] | 865.5 | 0 expected, 0 unexpected |
 | cypress | 16.1.1 | runner-outcome | Not isolated | 17516.8 [16923.2, 18682.0] | 17833.5 [17297.0, 19002.1] | 25.45 [24.13, 26.00] | 1876.1 [1801.5, 1924.9] | 1932.0 | 120 expected, 0 unexpected |
 | webdriverio | 10.0.2 | library-flow | 1824.4 [1670.4, 1911.3] | 53807.8 [53270.8, 55482.8] | 54073.2 [53450.5, 55783.5] | 66.86 [66.36, 69.56] | 2179.1 [2117.4, 2845.5] | 2855.2 | 0 expected, 0 unexpected |
-| Bun.WebView | Bun 1.4.2 | draft outcome probe | Unmeasured | Unmeasured | Unmeasured | Unmeasured | Unmeasured | Unmeasured | Separate probe below |
+| Bun.WebView | Bun 1.4.2 | separate Linux native observations | Unmeasured in this matrix | Unmeasured in this matrix | Unmeasured in this matrix | Unmeasured in this matrix | Unmeasured in this matrix | Unmeasured in this matrix | See native table below |
 
 The Bun.WebView row was added after the historical five-engine run; it supplies no comparative measurements. Its Linux probe retains both the initial text-replacement failure and a subsequent complete outcome run using native Home/Shift+End selection. All seven categories completed twice, with two intended missing-selector failures and two real backend requests. Native input was trusted, but disabled-button clicks returned successfully after pointerdown, duplicate selectors selected the first match, and views shared cookies/localStorage. Fresh-view setup, native click-timeout diagnostics and SIGKILL-based browser shutdown remain distinct from the reference contracts. The process collector also rejected clean custody because it adopted four descendants. These observations cannot support a speed ranking.
 
@@ -249,6 +249,26 @@ The [Bun.WebView close probe](../compatibility/evidence/bun-webview-close-checkp
 The four library-flow rows and Cypress runner-outcome row do not perform equivalent complete work. Puppeteer and WebdriverIO retain different input counts and failure diagnostics; WebdriverIO also retains its native ChromeDriver launch policy. Cypress uses synthetic input, its proxy/runner and per-test storage reset. Its 120 intentional failures remain actual failed tests. The complete table preserves all these distinctions; the numbers do not establish an overall ranking.
 
 This frozen source precedes matcher accessibility diagnostics in `1a49a790`. The measured failure fixture checks method/selector text, not the full error context or automatic failure document. Those newer diagnostics need a fresh measurement after their own acceptance gates. Native Linux, contention and representative matched runner suites remain unverified.
+
+## Bun.WebView native Linux observations
+
+The [native sampling checkpoint](../benchmarks/results/bun-webview-native-linux-2026-10-21.json) adds eight independent Bun 1.4.2 launches using stock Chromium headless shell 148.0.7778.96. Each launch rotates the seven categories and records three warmups and twelve measured operations per category: 672 measured operations and 168 warmups in total. One preceding native control is retained separately. All outcomes, trusted-input assertions and independent HTTP counts pass; every measurement launch makes 36 document requests and 15 backend requests.
+
+| Native category | Median of launch medians, ms | 95% launch-bootstrap interval, ms |
+| --- | ---: | ---: |
+| Evaluate constant | 0.113 | 0.097–0.153 |
+| Click and text assertion | 16.688 | 16.639–16.697 |
+| Delayed text assertion | 8.251 | 8.246–8.256 |
+| Navigation and assertions | 3.783 | 3.736–3.906 |
+| Fresh view, navigation, assertion and close request | 15.130 | 14.858–17.340 |
+| Native text replacement, save and backend assertion | 49.994 | 49.933–50.023 |
+| Missing-selector native click timeout | 33.331 | 33.328–33.335 |
+
+Median complete command time through observed descendant drain is **2788.7 ms [2493.9, 2833.2]**. This includes all categories, warmups, preparation, verification, executable/source checks, fixture startup, report serialization and shutdown. Hashing warms file caches; this is not a cold-start result. Operation samples do not include the other categories or all launch costs. With 96 measured operations per category, the configured tail-sample minimums are not met.
+
+These values belong to a separate native class, not the macOS comparison above. Views share storage, native launch flags and readiness differ, text uses an explicit MutationObserver helper, backend replacement uses native selection keys, and the missing-selector click is not the reference assertion failure. Native `closeAll()` force-kills Chrome. All eight original wrapper exits are zero and descendants drain without collector intervention, but the collector adopts four descendants per launch and rejects strict clean custody. Cgroup charged memory/CPU remain separately labelled observations, not admitted RSS or whole-tree CPU metrics. No cross-engine ratio or leadership claim follows from this table.
+
+The new sampler and verifier are `benchmarks/bun-webview-sampling.mjs` and `tools/verify-bun-webview-sampling.mjs`. Run them with the pinned Bun runtime, an explicitly selected `FLASHWRIGHT_BROWSER_PATH`, a fresh report path and launch index 0–7. The sample verifier checks outcomes and selected source/runtime hashes; the external native collector must independently verify exits and drain. Retained measured source bytes precede one metadata-only correction clarifying that setup samples include their close requests; numeric boundaries were unchanged and no workload was rerun.
 
 ## Paired analysis of the broad blocks
 
