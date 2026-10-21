@@ -129,13 +129,13 @@ export abstract class Browser extends SdkObject {
 
   async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams): Promise<BrowserContext> {
     const hash = BrowserContext.reusableContextHash(params);
-    if (!this._contextForReuse || hash !== this._contextForReuse.hash || !this._contextForReuse.context.canResetForReuse()) {
-      if (this._contextForReuse)
-        await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
-      this._contextForReuse = { context: await this.newContext(progress, params), hash };
-      return this._contextForReuse.context;
+    if (this._contextForReuse && hash === this._contextForReuse.hash && this._contextForReuse.context.canResetForReuse()) {
+      if (await this._contextForReuse.context.resetForReuse(progress, params))
+        return this._contextForReuse.context;
     }
-    await this._contextForReuse.context.resetForReuse(progress, params);
+    if (this._contextForReuse)
+      await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
+    this._contextForReuse = { context: await this.newContext(progress, params), hash };
     return this._contextForReuse.context;
   }
 

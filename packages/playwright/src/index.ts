@@ -29,6 +29,7 @@ import { buildErrorContext } from './errorContext';
 import { config, testType } from './common';
 import * as globals from './globals';
 import { createCustomMessageHandler, runDaemonForContext } from './mcp/test/browserBackend';
+import { takeSpeculativeBrowser } from './speculativeBrowser';
 
 import type { Fixtures, PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, ScreenshotMode, TestInfo, TestType, VideoMode } from '../types/test';
 import type { TestInfoImpl, TestStepInternal } from './worker/testInfo';
@@ -254,7 +255,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       return;
     }
 
-    const browser = await playwright[browserName].launch();
+    const browser = await takeSpeculativeBrowser(browserName, _browserOptions) ?? await playwright[browserName].launch();
     if (process.env.PLAYWRIGHT_DASHBOARD)
       await browser.bind(`worker-${workerInfo.parallelIndex}`);
     await use(browser);

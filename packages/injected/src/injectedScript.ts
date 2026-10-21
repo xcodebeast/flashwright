@@ -731,11 +731,11 @@ export class InjectedScript {
     });
   }
 
-  private _hasPendingAnimations(node: Node): boolean {
+  private _hasActiveAnimations(node: Node): boolean {
     const document = node.ownerDocument;
     if (!document || typeof document.getAnimations !== 'function')
       return true;
-    return document.getAnimations().some(animation => animation.pending);
+    return document.getAnimations().some(animation => animation.pending || animation.playState === 'running');
   }
 
   private async _checkElementIsStable(node: Node): Promise<'error:notconnected' | boolean> {
@@ -783,12 +783,12 @@ export class InjectedScript {
         reject(e);
       }
     };
-    // Flashwright: take the first sample now instead of waiting a frame for it. Running
-    // animations, rAF-driven scripts and smooth scrolling move the element by the next frame,
-    // so comparing against that frame keeps the same guarantee. Animations that have not
-    // produced their first frame yet still sit at their start position on that frame; when
-    // any are pending, sample on two frames like before.
-    if (this._stableRafCount === 1 && !this._hasPendingAnimations(node))
+    // Flashwright: take the first sample now instead of waiting a frame for it. Scripts that
+    // move the element do so in animation frame callbacks and smooth scrolling advances per
+    // frame, so comparing against the next frame keeps the same guarantee. CSS and Web
+    // Animations are different: Blink samples them at a per-task time, so a sample taken now
+    // and one on the next frame can coincide; while any are running, sample on two frames.
+    if (this._stableRafCount === 1 && !this._hasActiveAnimations(node))
       raf();
     else
       this.utils.builtins.requestAnimationFrame(raf);

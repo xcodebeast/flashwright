@@ -327,8 +327,8 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
 
   async _retryAction(progress: Progress, actionName: string, action: (progress: Progress, retry: number) => Promise<PerformActionResult>, options: { trial?: boolean, force?: boolean, skipActionPreChecks?: boolean }): Promise<'error:notconnected' | 'done'> {
     let retry = 0;
-    // We progressively wait longer between retries, up to 100ms. Page changes cut the wait short.
-    const waitTime = [0, 20, 50, 100];
+    // We progressively wait longer between retries, up to 500ms. Page changes cut the wait short.
+    const waitTime = [0, 20, 100, 100, 500];
 
     while (true) {
       if (retry) {

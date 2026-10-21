@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, rm, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { applicationCorpusDirectory, loadApplicationCorpus, materializeApplicationTests, startApplicationServer } from './application-corpus.mjs';
+import { startWorkloadServer, workloadSpec } from './workloads/server.mjs';
 
 const [app = 'todomvc', workersArg = '1', iterationsArg = '3', enginesArg = 'stock,fork'] = process.argv.slice(2);
 const workers = Number(workersArg), iterations = Number(iterationsArg), engines = enginesArg.split(',');
@@ -15,10 +16,12 @@ const engineDefinitions = {
   stock: { pkg: join(stockTest, 'index.mjs'), cli: join(stockTest, 'cli.js') },
   fork: { pkg: join(forkTest, 'index.mjs'), cli: join(forkTest, 'cli.js') },
 };
-const base = resolve('workbench/bench-runs', `${app}-w${workers}`);
+const base = resolve('workbench/bench-runs', `${app.replace(':', '-')}-w${workers}`);
 await rm(base, { recursive: true, force: true });
-const corpus = await loadApplicationCorpus(applicationCorpusDirectory(app));
-const server = await startApplicationServer(corpus);
+// `workload:<name>` runs a generated 15-test suite against the workload fixture; anything else is an app corpus.
+const workload = app.startsWith('workload:') ? app.slice('workload:'.length) : undefined;
+const corpus = workload ? undefined : await loadApplicationCorpus(applicationCorpusDirectory(app));
+const server = workload ? await startWorkloadServer() : await startApplicationServer(corpus);
 
 const projects = {};
 for (const engine of engines) {
@@ -29,11 +32,16 @@ for (const engine of engines) {
   const adapter = join(project, 'adapter.mjs');
   await writeFile(join(project, 'package.json'), JSON.stringify({ type: 'module' }));
   await writeFile(adapter, `export { test, expect, defineConfig } from ${JSON.stringify(definition.pkg)};\n`);
-  await materializeApplicationTests(corpus, project, adapter);
+  if (workload) {
+    await mkdir(join(project, 'tests'), { recursive: true });
+    await writeFile(join(project, 'tests', `${workload}.spec.ts`), workloadSpec(workload, 15));
+  } else {
+    await materializeApplicationTests(corpus, project, adapter);
+  }
   const config = { testDir: './tests', workers, retries: 0, fullyParallel: false, timeout: 30000, expect: { timeout: 5000 },
-    reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')]] : [])],
+    reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')]] : [])],
     outputDir: join(project, 'results'),
-    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
+    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(workload ? { baseURL: server.url } : {}), ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
   await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; export default defineConfig(${JSON.stringify(config)});\n`);
   projects[engine] = { project, definition, variant };
 }
@@ -53,7 +61,7 @@ async function runOnce(engine) {
   const elapsed = performance.now() - started;
   let stats = {};
   try { stats = JSON.parse(await readFile(join(project, 'report.json'), 'utf8')).stats ?? {}; } catch {}
-  if (code !== 0) console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
+  if (code !== 0 && workload !== 'failure') console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
   return { elapsed, code, expected: stats.expected, unexpected: stats.unexpected };
 }
 

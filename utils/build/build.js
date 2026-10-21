@@ -840,6 +840,7 @@ steps.push(new EsbuildStep({
     '../worker/workerProcessEntry.js',
     '../transform/babelBundle',
     '../transform/esmLoader',
+    './workerStandby',
   ],
   // HMR: same flag as coreBundle; enables the html-reporter Vite dev server
   // in watch builds (reporters/html.ts lives in this bundle).
@@ -848,6 +849,14 @@ steps.push(new EsbuildStep({
   },
   plugins: [dynamicImportToRequirePlugin],
 }, [filePath('packages/playwright/src'), ...commonUtilsSrc]));
+
+// playwright/lib/runner/workerStandby.js — Flashwright worker pre-spawn, loaded by the CLI before
+// anything else and shared with the runner bundle, so it must stay a separate, dependency-free file.
+steps.push(new EsbuildStep({
+  bundle: true,
+  entryPoints: [filePath('packages/playwright/src/runner/workerStandby.ts')],
+  outfile: filePath('packages/playwright/lib/runner/workerStandby.js'),
+}, [filePath('packages/playwright/src/runner/workerStandby.ts')]));
 
 // playwright/lib/isomorphic/index.js — bundled isomorphic barrel.
 steps.push(new EsbuildStep({

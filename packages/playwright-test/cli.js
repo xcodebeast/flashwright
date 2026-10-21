@@ -24,5 +24,7 @@ if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
     process.env.NODE_COMPILE_CACHE = directory;
 }
 
+// Flashwright: start the first test worker while the CLI loads.
+require('playwright/lib/runner/workerStandby').prespawnWorkerForTestCommand(process.argv);
 const { program } = require('playwright/lib/program');
 program.parse(process.argv);

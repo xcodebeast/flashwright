@@ -167,6 +167,12 @@ export class DialogManager {
     return [...this._openedDialogs].some(dialog => dialog.page() === page);
   }
 
+  // Flashwright: a dialog left open blocks its renderer, which a recycled context shares with the
+  // next test's page.
+  async dismissAllDialogs() {
+    await Promise.all([...this._openedDialogs].map(dialog => dialog._dismiss().catch(() => {})));
+  }
+
   async closeBeforeUnloadDialogs() {
     await Promise.all([...this._openedDialogs].map(async dialog => {
       if (dialog.type() === 'beforeunload')

@@ -33,11 +33,24 @@ export type StackFrame = {
   function?: string,
 };
 
+// Flashwright: formats the call sites of stacks captured by captureRawStack(). The test runner
+// installs one that source-maps only transformed test files, instead of letting a global
+// prepareStackTrace map every frame of the stack captured for each API call and step.
+let rawStackFormatter: ((error: Error, callSites: NodeJS.CallSite[]) => string) | undefined;
+
+export function setRawStackFormatter(formatter: typeof rawStackFormatter) {
+  rawStackFormatter = formatter;
+}
+
 export function captureRawStack(): RawStack {
   const stackTraceLimit = Error.stackTraceLimit;
   Error.stackTraceLimit = 50;
+  const prepareStackTrace = Error.prepareStackTrace;
+  if (rawStackFormatter)
+    Error.prepareStackTrace = rawStackFormatter;
   const error = new Error();
   const stack = error.stack || '';
+  Error.prepareStackTrace = prepareStackTrace;
   Error.stackTraceLimit = stackTraceLimit;
   return stack.split('\n');
 }
