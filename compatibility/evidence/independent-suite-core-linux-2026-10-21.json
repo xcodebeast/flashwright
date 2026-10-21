@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "scope": "Internal finite default-mode suite collector and worker-group executor",
+  "runtimes": [
+    "Bun 1.4.2",
+    "Node 22.22.0"
+  ],
+  "reference": "Playwright 1.60.0",
+  "checks": {
+    "unitCasesPerRuntime": 28,
+    "suiteDifferentialScenariosPerRuntime": 9,
+    "suiteOutcomesPerImplementationPerRuntime": 19,
+    "unexpectedFailuresPerImplementationPerRuntime": 4,
+    "expectedFailureOutcomesPerImplementationPerRuntime": 2,
+    "skippedOutcomesPerImplementationPerRuntime": 4,
+    "exactLifecycleEventSequences": true,
+    "fixtureRegressionScenariosOnBun": 10,
+    "fixtureRegressionAttemptsPerImplementation": 12,
+    "typecheck": "passed",
+    "packageBuild": "passed",
+    "defaultRunnerIntegration": "passed",
+    "ownedRunnerRuntime": "passed"
+  },
+  "sourceHashes": {
+    "packages/flashwright-runner/src/independent/fixture-pool.ts": "130821df33bf7a780d4c5dfa28790d52381972cee54bc355822cc15b8ca67719",
+    "packages/flashwright-runner/dist/commonjs/independent/fixture-pool.js": "70e2d4dde13f971fc85eb7d22dc637a42d3c24f203dd17ec8b7158abeae455fb",
+    "packages/flashwright-runner/src/independent/fixture-runtime.ts": "fbd264924a5c6aeef2644ccb3fbc3e7647842e59ee4eb6879a1e2593d397b793",
+    "packages/flashwright-runner/dist/commonjs/independent/fixture-runtime.js": "e7d4714bdabef42c72fae55eafbf8127cb74d67550c4961141ba710c612e4c4c",
+    "packages/flashwright-runner/src/independent/suite-collector.ts": "f4f513b712d743d721b0db313a99088675443b4408865ac411b531e02f4b2a00",
+    "packages/flashwright-runner/dist/commonjs/independent/suite-collector.js": "35500726c7bcff3542afbf9b0821967ec0683fe548c7f0285fafc824cb007184",
+    "packages/flashwright-runner/src/independent/suite-runtime.ts": "911bebf3ce47cce60e01a19ec1ecd01cb81a39c3cd1a32e95ff393861d871332",
+    "packages/flashwright-runner/dist/commonjs/independent/suite-runtime.js": "2a85e55f70c26ad46081c60e0b9cff4eba74169ed07b4d548ecf90f859185d70",
+    "compatibility/runner-suite-core/scenarios.mjs": "9de8475095dd2b79e8496f5a8da772d76fd9813193755b7aade3ac1eab289bf9",
+    "tools/run-independent-suite-differential.mjs": "ecf88cc204897e158ca828e7faff9508e81ad5ac822f373cea41b775878cf975"
+  },
+  "retainedCorrections": [
+    "The first comparison script confused callback source locations with collected test-file identity; the original failed comparison and reference report remain private.",
+    "Review found repeated default-mode configuration and expected beforeAll failure handling mismatches. Both were corrected before the final nine-scenario comparisons."
+  ],
+  "limitations": [
+    "Finite internal default-mode groups only; no process scheduler, deadlines, runtime modifiers, retries, artifacts or public API promotion.",
+    "Pending tests are returned to the caller; this differential compares the reference beforeAll-blocked test as skipped without simulating a replacement worker.",
+    "No browser work or performance measurement.",
+    "No new application migration, browser benchmark, full-core refresh or release acceptance is claimed. Default scheduler and public exports remain unchanged."
+  ],
+  "reproduce": [
+    "bun tools/build-packages.mjs",
+    "bun run test:fixture-core",
+    "bun run test:suite-core"
+  ]
+}

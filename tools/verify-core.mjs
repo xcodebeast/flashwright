@@ -148,6 +148,8 @@ const commands = [
   [process.execPath, 'tools/test-runner-integration.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-independent-fixtures.mjs'],
   [process.execPath, 'tools/run-independent-fixture-differential.mjs'],
+  [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-independent-suites.mjs'],
+  [process.execPath, 'tools/run-independent-suite-differential.mjs'],
   [process.execPath, 'tools/run-runner-trace-off-tests.mjs'],
   [process.execPath, 'tools/test-runner-artifact-lifecycle.mjs'],
   [process.execPath, javascriptRuntime.name === 'bun' ? 'test' : '--test', './tools/test-owner-close-failures.mjs'],

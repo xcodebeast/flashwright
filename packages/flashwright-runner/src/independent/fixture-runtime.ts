@@ -54,10 +54,8 @@ export class FixtureWorker {
   beginAttempt(info: unknown, pool = this.#pool): FixtureAttempt {
     if (this.#closure) throw new FixtureConfigurationError('Fixture worker is closing');
     if (this.#attempt) throw new FixtureConfigurationError('Previous test fixture scope has not closed');
-    pool.validate();
+    this.validatePool(pool);
     const workers = this.#pool.registrations().filter(r => r.scope === 'worker');
-    const incoming = pool.registrations().filter(r => r.scope === 'worker');
-    if (workers.length !== incoming.length || workers.some(r => !sameRegistration(pool.resolve(r.name), r))) throw new FixtureConfigurationError('Changed worker fixtures require a fresh worker');
     const identities = new Map<FixtureRegistration, FixtureRegistration>();
     for (const original of workers) {
       let current = pool.resolve(original.name), canonical: FixtureRegistration | undefined = original;
@@ -66,6 +64,12 @@ export class FixtureWorker {
     const attempt = new FixtureAttempt(pool, info, this.#info, this.#instances, identities, () => { if (this.#attempt === attempt) this.#attempt = undefined; });
     this.#attempt = attempt;
     return attempt;
+  }
+  validatePool(pool: FixturePool): void {
+    pool.validate();
+    const workers = this.#pool.registrations().filter(r => r.scope === 'worker');
+    const incoming = pool.registrations().filter(r => r.scope === 'worker');
+    if (workers.length !== incoming.length || workers.some(r => !sameRegistration(pool.resolve(r.name), r))) throw new FixtureConfigurationError('Changed worker fixtures require a fresh worker');
   }
   close(): Promise<void> {
     if (!this.#closure) this.#closure = this.finish();
