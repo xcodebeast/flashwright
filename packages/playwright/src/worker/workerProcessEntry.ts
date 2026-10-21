@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// Flashwright: installs the code cache before the bundles below are compiled; keep it first.
+import '../codeCache';
 import { startProcessRunner } from '../common';
 import { create } from './workerMain';
 import { launchSpeculativeBrowser } from '../speculativeBrowser';

@@ -858,6 +858,14 @@ steps.push(new EsbuildStep({
   outfile: filePath('packages/playwright/lib/runner/workerStandby.js'),
 }, [filePath('packages/playwright/src/runner/workerStandby.ts')]));
 
+// playwright/lib/codeCache.js — Flashwright code cache for the bundles below, loaded first by the
+// test CLI and the worker entry, so it must stay a separate, dependency-free file.
+steps.push(new EsbuildStep({
+  bundle: true,
+  entryPoints: [filePath('packages/playwright/src/codeCache.ts')],
+  outfile: filePath('packages/playwright/lib/codeCache.js'),
+}, [filePath('packages/playwright/src/codeCache.ts')]));
+
 // playwright/lib/isomorphic/index.js — bundled isomorphic barrel.
 steps.push(new EsbuildStep({
   bundle: true,
@@ -895,6 +903,7 @@ steps.push(new EsbuildStep({
   entryPoints: [filePath('packages/playwright/src/worker/workerProcessEntry.ts')],
   outfile: filePath('packages/playwright/lib/worker/workerProcessEntry.js'),
   external: [
+    '../codeCache',
     'playwright-core',
     'playwright-core/*',
     '../common',

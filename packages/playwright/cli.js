@@ -24,6 +24,11 @@ if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
     process.env.NODE_COMPILE_CACHE = directory;
 }
 
+// Flashwright: compile Playwright's bundles with code caches that include their lazily compiled
+// functions (see codeCache.ts).
+if (process.argv[2] === 'test')
+  require('./lib/codeCache').installCodeCache('runner');
+
 // Flashwright: start the first test worker while the CLI loads.
 require('./lib/runner/workerStandby').prespawnWorkerForTestCommand(process.argv);
 const { program } = require('./lib/program');
