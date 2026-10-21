@@ -14,6 +14,14 @@ export interface IndependentConfigOverrides {
   grep?: string;
   files?: string[];
 }
+export interface IndependentProjectsOverrides extends IndependentConfigOverrides {
+  project?: string[];
+}
+export interface IndependentProject {
+  readonly name: string;
+  readonly dependencies: readonly string[];
+  readonly config: IndependentConfig;
+}
 export interface IndependentConfig {
   readonly configFile: string;
   readonly configDir: string;
@@ -28,6 +36,7 @@ export interface IndependentConfig {
   readonly fullyParallel: boolean;
   readonly forbidOnly: boolean;
   readonly use: Readonly<Record<string, unknown>>;
+  readonly metadata: Readonly<Record<string, unknown>>;
   readonly reporter: readonly IndependentReporter[];
   /** CLI paths are resolved from the invocation directory, as ordinary CLI paths are. */
   readonly files: readonly string[];
@@ -37,8 +46,11 @@ export interface IndependentConfig {
 
 function invalid(method: string, message: string): never { throw failure('InvalidArgumentError', method, message); }
 function unsupported(method: string): never {
-  throw failure('UnsupportedFeatureError', method, 'option is not implemented by the independent single-project runner; projects, global setup/teardown and webServer are not available');
+  throw failure('UnsupportedFeatureError', method, 'option is not implemented at this independent runner configuration boundary; global setup/teardown and webServer are not available');
 }
+
+const configFields = ['testDir', 'testMatch', 'testIgnore', 'timeout', 'workers', 'retries', 'fullyParallel', 'forbidOnly', 'outputDir', 'use', 'expect', 'reporter', 'repeatEach', 'maxFailures', 'metadata'];
+const projectFields = ['name', 'dependencies', 'testDir', 'testMatch', 'testIgnore', 'timeout', 'retries', 'fullyParallel', 'outputDir', 'use', 'expect'];
 function object(value: unknown, method: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || ![Object.prototype, null].includes(Object.getPrototypeOf(value))) invalid(method, 'expected a plain object');
   return value as Record<string, unknown>;
@@ -142,7 +154,7 @@ function reporters(value: unknown, configDir: string): IndependentReporter[] {
 /** Validate completely before discovery, test loading or output-directory effects. */
 export function resolveIndependentConfig(value: unknown, configFile: string, overrides: IndependentConfigOverrides = {}): IndependentConfig {
   const input = object(value, 'config');
-  fields(input, ['testDir', 'testMatch', 'testIgnore', 'timeout', 'workers', 'retries', 'fullyParallel', 'forbidOnly', 'outputDir', 'use', 'expect', 'reporter'], 'config');
+  fields(input, configFields, 'config');
   const cli = object(overrides, 'CLI');
   fields(cli, ['workers', 'retries', 'grep', 'files'], 'CLI');
   const absoluteConfigFile = path.resolve(string(configFile, 'configFile'));
@@ -151,6 +163,8 @@ export function resolveIndependentConfig(value: unknown, configFile: string, ove
   fields(expect, ['timeout'], 'config.expect');
   const workers = integer(input.workers, Math.max(1, Math.floor(availableParallelism() / 2)), 1, 'config.workers');
   const retries = integer(input.retries, 0, 0, 'config.retries');
+  if (integer(input.repeatEach, 1, 1, 'config.repeatEach') !== 1) unsupported('config.repeatEach');
+  if (integer(input.maxFailures, 0, 0, 'config.maxFailures') !== 0) unsupported('config.maxFailures');
   if (cli.files !== undefined && !Array.isArray(cli.files)) invalid('CLI.files', 'expected an array of paths');
   return {
     configFile: absoluteConfigFile, configDir,
@@ -165,10 +179,75 @@ export function resolveIndependentConfig(value: unknown, configFile: string, ove
     fullyParallel: boolean(input.fullyParallel, 'config.fullyParallel'),
     forbidOnly: boolean(input.forbidOnly, 'config.forbidOnly'),
     use: input.use === undefined ? {} : { ...object(input.use, 'config.use') },
+    metadata: input.metadata === undefined ? {} : { ...object(input.metadata, 'config.metadata') },
     reporter: reporters(input.reporter, configDir),
     files: ((cli.files ?? []) as unknown[]).map(file => path.resolve(string(file, 'CLI.files'))),
     grep: cli.grep === undefined ? undefined : string(cli.grep, 'CLI.grep'),
   };
+}
+
+/** Resolve and validate the complete graph before selection or test discovery. */
+export function resolveIndependentProjects(value: unknown, configFile: string, overrides: IndependentProjectsOverrides = {}): IndependentProject[] {
+  const input = object(value, 'config');
+  fields(input, [...configFields, 'projects'], 'config');
+  const cli = object(overrides, 'CLI');
+  fields(cli, ['workers', 'retries', 'grep', 'files', 'project'], 'CLI');
+  if (cli.project !== undefined && !Array.isArray(cli.project)) invalid('CLI.project', 'expected an array of project names');
+  const projectName = (value: unknown, method: string): string => {
+    const name = string(value, method);
+    if (!name.trim()) invalid(method, 'expected a nonempty project name');
+    return name;
+  };
+  const selection = ((cli.project ?? []) as unknown[]).map(name => projectName(name, 'CLI.project'));
+  const { projects: declarations, ...root } = input;
+  const { project: _selection, ...commonOverrides } = cli;
+  const rootConfig = resolveIndependentConfig(root, configFile, commonOverrides as IndependentConfigOverrides);
+  if (declarations === undefined) {
+    if (selection.length) invalid('CLI.project', `unknown project: ${selection[0]}`);
+    return [{ name: '', dependencies: [], config: rootConfig }];
+  }
+  if (!Array.isArray(declarations) || declarations.length === 0) invalid('config.projects', 'expected a nonempty array of named projects');
+  const names = new Set<string>();
+  const projects = declarations.map((declaration, index): IndependentProject => {
+    const method = `config.projects[${index}]`;
+    const project = object(declaration, method);
+    fields(project, projectFields, method);
+    const name = projectName(project.name, `${method}.name`);
+    if (names.has(name)) invalid(`${method}.name`, `duplicate project name: ${name}`);
+    names.add(name);
+    if (project.dependencies !== undefined && !Array.isArray(project.dependencies)) invalid(`${method}.dependencies`, 'expected an array of project names');
+    const dependencies = [...new Set(((project.dependencies ?? []) as unknown[]).map(dependency => projectName(dependency, `${method}.dependencies`)))];
+    const merged = { ...root };
+    for (const [field, value] of Object.entries(project)) {
+      if (value === undefined || field === 'name' || field === 'dependencies') continue;
+      if (field === 'use' || field === 'expect') merged[field] = { ...object(root[field] ?? {}, `config.${field}`), ...object(value, `${method}.${field}`) };
+      else merged[field] = value;
+    }
+    return { name, dependencies, config: resolveIndependentConfig(merged, configFile, commonOverrides as IndependentConfigOverrides) };
+  });
+  for (const project of projects) for (const dependency of project.dependencies) {
+    if (!names.has(dependency)) invalid('config.projects.dependencies', `project ${project.name} depends on unknown project: ${dependency}`);
+  }
+  const ordered: IndependentProject[] = [], completed = new Set<string>();
+  while (ordered.length < projects.length) {
+    const next = projects.find(project => !completed.has(project.name) && project.dependencies.every(dependency => completed.has(dependency)));
+    if (!next) invalid('config.projects.dependencies', 'project dependency cycle detected');
+    ordered.push(next);
+    completed.add(next.name);
+  }
+  for (const name of selection) if (!names.has(name)) invalid('CLI.project', `unknown project: ${name}`);
+  const selected = new Set(selection.length ? selection : projects.map(project => project.name));
+  const required = new Set(selected);
+  for (const project of [...ordered].reverse()) {
+    if (required.has(project.name)) for (const dependency of project.dependencies) required.add(dependency);
+  }
+  const dependencies = new Set<string>();
+  for (const project of ordered) {
+    if (required.has(project.name)) for (const dependency of project.dependencies) dependencies.add(dependency);
+  }
+  return ordered.filter(project => required.has(project.name)).map(project => !dependencies.has(project.name) ? project : {
+    ...project, config: { ...project.config, files: [], grep: undefined },
+  });
 }
 
 function within(file: string, directory: string): boolean {
