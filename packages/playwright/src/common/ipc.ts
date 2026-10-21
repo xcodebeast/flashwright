@@ -58,6 +58,9 @@ export type SerializedConfig = {
 
 export type ProcessInitParams = {
   timeOrigin: number;
+  // Set when the process was started ahead of time and must adopt the runner's final environment.
+  env?: Record<string, string | undefined>;
+  cwd?: string;
 };
 
 export type WorkerInitParams = {

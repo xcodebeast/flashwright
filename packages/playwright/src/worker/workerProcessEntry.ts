@@ -16,5 +16,9 @@
 
 import { startProcessRunner } from '../common';
 import { create } from './workerMain';
+import { launchSpeculativeBrowser } from '../speculativeBrowser';
 
+// Flashwright: a worker started ahead of time also starts the default browser right away.
+if (process.env.FLASHWRIGHT_SPECULATIVE_BROWSER)
+  launchSpeculativeBrowser();
 startProcessRunner(create);

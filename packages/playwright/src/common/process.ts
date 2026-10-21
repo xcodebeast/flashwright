@@ -60,7 +60,7 @@ let gracefullyCloseCalled = false;
 let forceExitInitiated = false;
 
 let processRunner: ProcessRunner | undefined;
-const startingEnv = { ...process.env };
+let startingEnv = { ...process.env };
 setBoxedStackPrefixes([packageRoot]);
 
 export function startProcessRunner(create: (params: any) => ProcessRunner) {
@@ -74,6 +74,10 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
     if (message.method === '__init__') {
       const { processParams, runnerParams } = message.params as { processParams: ProcessInitParams, runnerParams: any };
       setTimeOrigin(processParams.timeOrigin);
+      if (processParams.env)
+        adoptEnvironment(processParams.env);
+      if (processParams.cwd && processParams.cwd !== process.cwd())
+        process.chdir(processParams.cwd);
       processRunner = create(runnerParams);
       return;
     }
@@ -98,6 +102,21 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
     if (message.method === '__response__')
       handleResponseFromParent(message.params as ProtocolResponse);
   });
+}
+
+// A process started ahead of time takes the environment the runner computed for it.
+function adoptEnvironment(env: Record<string, string | undefined>) {
+  for (const key of Object.keys(process.env)) {
+    if (!(key in env))
+      delete process.env[key];
+  }
+  for (const [key, value] of Object.entries(env)) {
+    if (value === undefined)
+      delete process.env[key];
+    else if (process.env[key] !== value)
+      process.env[key] = value;
+  }
+  startingEnv = { ...process.env };
 }
 
 const kForceExitTimeout = +(process.env.PWTEST_FORCE_EXIT_TIMEOUT || 30000);

@@ -232,7 +232,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     return JSON.stringify(paramsCopy);
   }
 
-  async resetForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams | null) {
+  // Returns false when the context could not be recycled and should be replaced by a new one.
+  async resetForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams | null): Promise<boolean> {
     await this.tracing.resetForReuse(progress);
     await this.fetchRequest.tracing().resetForReuse(progress);
 
@@ -243,10 +244,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
         this.selectors().setTestIdAttributeName(params.testIdAttributeName);
     }
 
-    if (this.supportsRecycling()) {
-      await this._recycle(progress);
-      return;
-    }
+    if (this.supportsRecycling())
+      return await this._recycle(progress);
 
     // Close extra pages early.
     let page: Page | undefined = this.pages()[0];
@@ -270,19 +269,46 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     await this.setStorageState(progress, this._options.storageState, 'resetForReuse');
 
     await page?.resetForReuse(progress);
+    return true;
   }
 
   // Flashwright: hand a used context to the next test as if it were new. The next test gets a
   // brand-new tab, opened before the previous pages close so the renderer process (and the
   // application code it already compiled) stays warm. Everything the previous test could have
   // changed is put back: options, permissions, cookies, per-origin storage and caches.
-  private async _recycle(progress: Progress) {
+  private async _recycle(progress: Progress): Promise<boolean> {
+    // In a healthy browser this takes a few milliseconds. If the previous test left something that
+    // keeps it from finishing (a hung renderer, a stuck dialog or request), replace the context
+    // instead of waiting on it.
+    const reset = this._resetForRecycle(progress);
+    reset.catch(() => {});
+    if (!await progress.race(Promise.race([reset, new Promise<false>(f => setTimeout(() => f(false), kRecycleTimeout))])))
+      return false;
+
+    const state = this._options.storageState;
+    if (state?.credentials?.length)
+      this.credentials.clear();
+    else
+      await this.credentials.dispose(progress);
+    if (state)
+      await this.setStorageState(progress, state, 'initial');
+    return true;
+  }
+
+  private async _resetForRecycle(progress: Progress): Promise<boolean> {
     Object.assign(this._options, structuredClone(this._recycleBaseline));
     await this.clock.uninstall(progress);
-    await progress.race(this.dialogManager.closeBeforeUnloadDialogs());
+    await progress.race(this.dialogManager.dismissAllDialogs());
 
+    // The new tab shares its renderer with the previous test's pages. If that renderer was left
+    // busy (an endless script, a stuck dialog), the tab cannot come up; replace the whole context
+    // instead, which kills the renderer just like closing the context would.
     const previousPages = this.possiblyUninitializedPages();
-    const page = await this.newPage(progress);
+    const newPage = this.newPage(progress);
+    newPage.catch(() => {});
+    const page = await progress.race(Promise.race([newPage, new Promise<undefined>(f => setTimeout(f, kRecycledPageTimeout))]));
+    if (!page)
+      return false;
     await progress.race(Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {}))));
 
     await progress.race(Promise.all(Array.from(this._downloads).map(download => download.artifact.deleteOnContextClose())));
@@ -300,14 +326,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       this.doClearSiteData(page, origins),
       this.clearCache(),
     ]));
-
-    const state = this._options.storageState;
-    if (state?.credentials?.length)
-      this.credentials.clear();
-    else
-      await this.credentials.dispose(progress);
-    if (state)
-      await this.setStorageState(progress, state, 'initial');
+    return true;
   }
 
   // Recycling needs a backend that can clear all per-origin storage without navigating.
@@ -895,6 +914,11 @@ export function normalizeProxySettings(proxy: types.ProxySettings): types.ProxyS
     bypass = bypass.split(',').map(t => t.trim()).join(',');
   return { ...proxy, server, bypass };
 }
+
+// A new tab in a healthy renderer is ready within a few milliseconds, and the whole reset within
+// tens of milliseconds.
+const kRecycledPageTimeout = 500;
+const kRecycleTimeout = 1500;
 
 const paramsThatAllowContextReuse: (keyof channels.BrowserNewContextForReuseParams)[] = [
   'colorScheme',

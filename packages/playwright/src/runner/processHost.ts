@@ -22,6 +22,7 @@ import { assert } from '@isomorphic/assert';
 import { monotonicTime, timeOrigin } from '@isomorphic/time';
 import { raceAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { killProcessTree } from '@utils/processLauncher';
+import { takeStandby } from './workerStandby';
 
 import type { ipc, processRunner } from '../common';
 
@@ -53,15 +54,19 @@ export class ProcessHost extends EventEmitter {
 
   async startRunner(runnerParams: any, options: { onStdOut?: (chunk: Buffer | string) => void, onStdErr?: (chunk: Buffer | string) => void } = {}): Promise<ProcessExitData | undefined> {
     assert(!this.process, 'Internal error: starting the same process twice');
-    this.process = child_process.fork(this._entryScript, {
+    const env = {
+      ...process.env,
+      ...this._extraEnv,
+    };
+    // Flashwright: reuse a worker process that was started while the CLI was loading.
+    const pipesOutput = !!options.onStdOut && !!options.onStdErr && !process.env.PW_RUNNER_DEBUG;
+    const adopted = pipesOutput ? await takeStandby(this._entryScript, env) : undefined;
+    this.process = adopted ?? child_process.fork(this._entryScript, {
       // Note: we pass detached:false, so that workers are in the same process group.
       // This way Ctrl+C or a kill command can shutdown all workers in case they misbehave.
       // Otherwise user can end up with a bunch of workers stuck in a busy loop without self-destructing.
       detached: false,
-      env: {
-        ...process.env,
-        ...this._extraEnv,
-      },
+      env,
       stdio: [
         'ignore',
         options.onStdOut ? 'pipe' : 'inherit',
@@ -119,16 +124,19 @@ export class ProcessHost extends EventEmitter {
     if (options.onStdErr)
       this.process.stderr?.on('data', options.onStdErr);
 
-    const error = await new Promise<ProcessExitData | undefined>(resolve => {
-      this.process!.once('exit', (code, signal) => resolve({ unexpectedly: true, code, signal }));
-      this.once('ready', () => resolve(undefined));
-    });
+    if (!adopted) {
+      const error = await new Promise<ProcessExitData | undefined>(resolve => {
+        this.process!.once('exit', (code, signal) => resolve({ unexpectedly: true, code, signal }));
+        this.once('ready', () => resolve(undefined));
+      });
 
-    if (error)
-      return error;
+      if (error)
+        return error;
+    }
 
     const processParams: ipc.ProcessInitParams = {
       timeOrigin: timeOrigin(),
+      ...(adopted ? { env, cwd: process.cwd() } : {}),
     };
 
     this.send({

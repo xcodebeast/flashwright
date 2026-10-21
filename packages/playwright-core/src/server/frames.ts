@@ -1141,9 +1141,9 @@ export class Frame extends SdkObject<FrameEventMap> {
   }
 
   async retryWithProgressAndBackoff<R>(progress: Progress, action: (progress: Progress, continuePolling: symbol) => Promise<R | symbol>): Promise<R> {
-    // Flashwright: retries wake up as soon as the page changes (see waitForChangeOrTimeout), so the
-    // backoff only bounds how long a change that emits no DOM mutation or event can go unnoticed.
-    const backoffScale = [20, 50, 100];
+    // Retries also wake up as soon as the page changes (see waitForChangeOrTimeout), so the backoff
+    // only bounds how long a change that emits no DOM mutation or event can go unnoticed.
+    const backoffScale = [20, 50, 100, 100, 500];
     if (progress.timeout) {
       // For small timeouts, cap the large backoff values to produce meaningul retries.
       while (backoffScale.length && backoffScale[backoffScale.length - 1] > progress.timeout / 5)

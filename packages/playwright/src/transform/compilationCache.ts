@@ -20,6 +20,7 @@ import path from 'path';
 
 import sourceMapSupport from 'source-map-support';
 import { calculateSha1 } from '@utils/crypto';
+import { setRawStackFormatter } from '@utils/stackTrace';
 
 import { isWorkerProcess } from '../globals';
 import { packageRoot } from '../package';
@@ -66,6 +67,18 @@ const fileDependencies = new Map<string, Set<string>>();
 
 export function installSourceMapSupport() {
   Error.stackTraceLimit = 200;
+
+  // Stacks captured to locate API calls only need positions in transformed files mapped.
+  setRawStackFormatter((error, callSites) => {
+    const lines = [String(error)];
+    for (const callSite of callSites) {
+      const fileName = callSite.getFileName();
+      const mapped = fileName && sourceMaps.has(fileName) ? sourceMapSupport.wrapCallSite(callSite as any) : callSite;
+      // Match source-map-support's formatting, which has no "async " prefix.
+      lines.push('    at ' + String(mapped).replace(/^async /, ''));
+    }
+    return lines.join('\n');
+  });
 
   sourceMapSupport.install({
     environment: 'node',
