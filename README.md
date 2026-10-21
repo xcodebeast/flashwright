@@ -16,7 +16,7 @@ Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64
 | SVGOMG | 6 | 4 | 1269 ms | 828 ms | 1.53× |
 | Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6279 ms | 3336 ms | 1.88× |
 | Shop app | 18 | 4 | 2598 ms | 1449 ms | 1.79× |
-| A single test (an agent re-running one test) | 1 | 1 | 612 ms | 215 ms | 2.85× |
+| A single test (an agent re-running one test; measured separately) | 1 | 1 | 612 ms | 215 ms | 2.85× |
 | Trivial test | 15 | 1 | 1048 ms | 379 ms | 2.77× |
 | Click + assertion | 15 | 1 | 1617 ms | 602 ms | 2.69× |
 | Assertion on a delayed update | 15 | 1 | 1215 ms | 524 ms | 2.32× |
