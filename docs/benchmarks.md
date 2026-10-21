@@ -58,6 +58,17 @@ Nine selected parser cases and nine bridge controls per utility mode pass. Reser
 
 Keep this composition private. The bridge still lacks general fixture/hook semantics, retries, failure worker replacement, timeout cancellation and requested artifacts. This is a useful measurement of combined startup and renderer savings, not a compatible runner release or evidence for the majority-scenario 2× target. Preserve the gap and do not expand the unchanged composition's campaign.
 
+## Retirement garbage-collection attribution on Linux
+
+The [retirement attribution checkpoint](../benchmarks/results/retirement-gc-attribution-linux-2026-10-21.json) measures the existing native collection policy before investing in another browser build. Four instrumented one-worker runs of the private Bun bridge with renderer reuse pass all 60 original tests. The traces contain 60 nonoverlapping retirement calls, matching the reservation counts and renderer identities.
+
+| Application | Native retirement collection, first / second run | Host context-close total, first / second run |
+| --- | ---: | ---: |
+| TodoMVC, 24 tests | 184.36 / 184.83 ms | 479.74 / 469.45 ms |
+| SVGOMG, 6 tests | 43.76 / 41.27 ms | 144.20 / 134.97 ms |
+
+Do not build the deferred-collection variant now. The measured collection spans are small relative to the roughly 0.7-second TodoMVC gap to 2× in the preceding uninstrumented composition. This is a prioritization decision, not a bound on possible savings: tracing changes scheduling, and collection can have indirect effects. Native spans include nested GC work; host close durations use a separate clock and are not added to them. The deliberate wait for trace publication makes these runs unsuitable for speed comparisons. Original browser exits and observed cleanup pass, selected inputs remain unchanged, and no runtime or native source change was adopted. Compatibility, final resource admission and the representative 2× objective remain open.
+
 ## Declarative capability experiment on Linux
 
 Selected native omissions work, but the complete per-test capability API remains a private prototype. The [compatible-worker experiment](../benchmarks/results/capability-worker-reuse-linux-2026-10-18.json) passes 360 functional and 720 timed original TodoMVC/SVGOMG test executions across both engines, one/four workers and reversed execution order. Both full and restricted profiles reuse one browser per compatible worker and create a fresh context per test. This removes the earlier prototype's extra browser launch per test from the comparison.
