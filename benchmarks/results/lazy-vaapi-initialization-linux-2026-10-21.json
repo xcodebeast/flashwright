@@ -1,0 +1,3252 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "engineering-advancement-gate-passed",
+  "sourceCommit": "b210f5e09fbdeed34fdf8dc1cff2962a517b8013",
+  "reference": "Playwright1.60.0, Bun1.4.2, Chromium148.0.7778.96",
+  "change": "Defer VAAPI driver and profile discovery until the original singleton has an actual consumer. Keep DRM preparation, libva loading, original profile queries and all media paths. Disabled by default and guarded by --no-sandbox.",
+  "patch": "tools/chromium/lazy-vaapi-initialization.patch",
+  "policy": {
+    "blocks": 2,
+    "workerCounts": [
+      1,
+      4
+    ],
+    "cpuQuota": "400%",
+    "memoryMaxGiB": 8,
+    "swapMax": 0,
+    "cpuAffinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "nice": 10,
+    "retries": 0,
+    "maxFailures": 0,
+    "artifacts": "trace/video/screenshot off",
+    "order": "stock Playwright, eager candidate, lazy candidate; reversed in second block",
+    "clock": "Complete supervised owner including HTTP fixture startup, original tests, teardown and observed natural drain",
+    "sameCandidateBinary": true,
+    "sameHardwareDecoderPolicy": true,
+    "freshContextPerTest": true
+  },
+  "captureCount": 24,
+  "passingApplicationTests": 360,
+  "observations": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 3841.4544990082504,
+        "independent-fast": 2077.4460450047627,
+        "independent-lazy": 1953.5134680045303
+      },
+      "candidateReduction": 0.059656219374856656,
+      "playwrightSpeedup": 1.9664335884677617
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent-lazy": 1992.3978250008076,
+        "independent-fast": 2225.323665988981,
+        "playwright": 3903.4072480135364
+      },
+      "candidateReduction": 0.10467054503042639,
+      "playwrightSpeedup": 1.9591505265831908
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2728.980104002403,
+        "independent-fast": 2327.650728999288,
+        "independent-lazy": 1663.6839910061099
+      },
+      "candidateReduction": 0.28525187637521243,
+      "playwrightSpeedup": 1.6403235943576384
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent-lazy": 1698.6053889995674,
+        "independent-fast": 2386.1346439953195,
+        "playwright": 2695.588794987998
+      },
+      "candidateReduction": 0.2881351464075641,
+      "playwrightSpeedup": 1.5869423307173345
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1647.433029997046,
+        "independent-fast": 1219.209653994767,
+        "independent-lazy": 932.0651529997122
+      },
+      "candidateReduction": 0.23551691873027714,
+      "playwrightSpeedup": 1.7675084458366774
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent-lazy": 1115.4197470023064,
+        "independent-fast": 1210.0862889928976,
+        "playwright": 1957.032056991011
+      },
+      "candidateReduction": 0.07823123264158138,
+      "playwrightSpeedup": 1.7545252020600675
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2370.21070800256,
+        "independent-fast": 2531.6767819895176,
+        "independent-lazy": 1233.921894003288
+      },
+      "candidateReduction": 0.5126068608830822,
+      "playwrightSpeedup": 1.920875802205552
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent-lazy": 1270.4873519978719,
+        "independent-fast": 2040.0101300037932,
+        "playwright": 2293.4597249986837
+      },
+      "candidateReduction": 0.3772151749092003,
+      "playwrightSpeedup": 1.805181075901435
+    }
+  ],
+  "runs": [
+    {
+      "name": "b0-todomvc-w1-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 3841.4544990082504,
+      "ownerBodyMilliseconds": 3683.692905,
+      "wait4CpuSeconds": 2.232316,
+      "sampledPeakRssBytes": 902934528,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "b75a3b2d99ed8121d610da58dbcb3b9286291ad35fd789119580370adcfd2d65",
+        "owner-report.json": "c0f5e5c2560089027d4815d40660e6b7667861d4a5e7d5c341b20556321a1e76",
+        "resources.json": "2f8b505ba45774bb87b9cb67b1811a5c1d7b371a820671dcb2dcd11b6a07959f",
+        "report.json": "cf1c9f062d749cc5f2bb8500c5e9417de12fe76144662b764604097449955ff1"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5273228,
+        "user_usec": 3546746,
+        "system_usec": 1726482,
+        "nice_usec": 3345966,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 37,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-todomvc-w1-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2077.4460450047627,
+      "ownerBodyMilliseconds": 1974.5741890000002,
+      "wait4CpuSeconds": 1.707202,
+      "sampledPeakRssBytes": 812666880,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "90ecf16d09b383dc2c4c1e5c37e07042b3c171543707ab3c71df9f645853e6cc",
+        "owner-report.json": "2a3cada4f5875d41a19ea24dafd6b3caadb294798512e8c92a05d8d65aeb90e6",
+        "resources.json": "de6f68fe75985235e0e157290b2095bd9f801f01616fb0b9a81f59c9f184e79d",
+        "report.json": "7da146a9a0bba3e5ba7b2bb9f51908c2520b518ddbd2843b6351d2b451e44b6f"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 4768734,
+        "user_usec": 3106012,
+        "system_usec": 1662722,
+        "nice_usec": 2724008,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-todomvc-w1-independent-lazy",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1953.5134680045303,
+      "ownerBodyMilliseconds": 1795.466991,
+      "wait4CpuSeconds": 1.7304629999999999,
+      "sampledPeakRssBytes": 778207232,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "52938dd29fcd960511285aa661b4989e4b06387d4d3fd85f79cfad6cf43e5106",
+        "owner-report.json": "b085fc5d32569a955c6ebcbf7ed3ea782a3c13804459e1c41a50ffbd25bcf506",
+        "resources.json": "97c568cab6c6f0bfb89a367c448fa8504b5104a98f51b444316238f2b9d0f329",
+        "report.json": "7466b747370d2ac232df25736f79ce2e3f3f7513c6c816c833b51a166b026c19"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 4585277,
+        "user_usec": 3089171,
+        "system_usec": 1496106,
+        "nice_usec": 2732168,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 18,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-svgomg-w1-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1647.433029997046,
+      "ownerBodyMilliseconds": 1490.486187,
+      "wait4CpuSeconds": 1.1898529999999998,
+      "sampledPeakRssBytes": 918130688,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "174fce1c044dbdc483be364394d64affff4d9c0848e931f2bfb8c768a2eb01c6",
+        "owner-report.json": "daf32a586fc851c2a58ade1b7d79fdb29e993fdd6b8352077f072e8220aecb10",
+        "resources.json": "7bd484943699355882ad9e9ab92bc2e63c00795c2b75f4563ab4d772cd016a1e",
+        "report.json": "f603f46deea149b96e62350f551f23f2731db2ee32c1d1b86a579b8296481e53"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 2422474,
+        "user_usec": 1495187,
+        "system_usec": 927287,
+        "nice_usec": 1410794,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-svgomg-w1-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1219.209653994767,
+      "ownerBodyMilliseconds": 1061.5583159999999,
+      "wait4CpuSeconds": 0.784737,
+      "sampledPeakRssBytes": 817393664,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "790b47637133a4e3cd49dbb88a4df8b2be0aaaae133aa5da8220107078389a23",
+        "owner-report.json": "33efc11cdd39afb83f8cd8b08258727f7cf560c53e5852225a96d4a8d9966f7d",
+        "resources.json": "d50d7b031eafd42ff7fc2c46798ec39b621de9375252a88bbcdb132b4e1cee6e",
+        "report.json": "cd7374ae92c1990ac72068a168cdbacf0168721ddd04792a2e7b788952687336"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 2490692,
+        "user_usec": 1541574,
+        "system_usec": 949118,
+        "nice_usec": 1461329,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-svgomg-w1-independent-lazy",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 932.0651529997122,
+      "ownerBodyMilliseconds": 774.4621549999999,
+      "wait4CpuSeconds": 0.770343,
+      "sampledPeakRssBytes": 800313344,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "ce76448b8b5c0d2604b07eceb818f9739a6b1dd79b1dd0f2c2012b8e92fa4af0",
+        "owner-report.json": "c68489483f5e25d7f9da6dfeea8a80236f0a0501e696a8a68eaa0f451b455315",
+        "resources.json": "6c52402e998df4f1e2cee46337279f7b23ec7d3eff04aeb3bdf255c00a669f38",
+        "report.json": "d4f8ce5edca556ff11856a7ee71dbc7c106d39ce477d39a9c619f4785dc8085a"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 2188859,
+        "user_usec": 1560863,
+        "system_usec": 627996,
+        "nice_usec": 1476539,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 8,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-todomvc-w4-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2728.980104002403,
+      "ownerBodyMilliseconds": 2628.321312,
+      "wait4CpuSeconds": 3.5187289999999996,
+      "sampledPeakRssBytes": 3006545920,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "25b0217beefd8648d9e1e25e96a0b09815e5f5db240f9851b835b9b153d80b8b",
+        "owner-report.json": "264ca23516dea2dc4ad4834fe2a37da4b6c85dd5ed139dc5286396eb68280af6",
+        "resources.json": "43282e63aa1245e57f8308dce8983494f5403d941d5c18c146735275ee1e10d0",
+        "report.json": "2c98b237fff8e5ab2bcacbb9e1f26abc4fb309a95d2e7174f1f8c308bce78a4a"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 8155409,
+        "user_usec": 4716474,
+        "system_usec": 3438936,
+        "nice_usec": 4557899,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 26,
+        "nr_throttled": 10,
+        "throttled_usec": 689532,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-todomvc-w4-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2327.650728999288,
+      "ownerBodyMilliseconds": 2168.905495,
+      "wait4CpuSeconds": 2.250534,
+      "sampledPeakRssBytes": 2809303040,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "703552a78c5b2f4b7c38ca423d7055f88a8a0829f651df389d369edd5ebb863b",
+        "owner-report.json": "bdc09713d8275c96e62ed5ba34d77a1791a5976f12387f6c58a2cd3ac8cfd220",
+        "resources.json": "24026f83ac71130475a61f64fce6da32fad297362948ee7a382825eda40d9527",
+        "report.json": "1e8abc5ec1013fc2f4b8a214c174827eda7e9231216332aed376069cc090218d"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 7240934,
+        "user_usec": 3892444,
+        "system_usec": 3348491,
+        "nice_usec": 3779015,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 13,
+        "throttled_usec": 1016379,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-todomvc-w4-independent-lazy",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1663.6839910061099,
+      "ownerBodyMilliseconds": 1563.031079,
+      "wait4CpuSeconds": 2.274241,
+      "sampledPeakRssBytes": 2566529024,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "66ad637fd626717e8298151db46661cf6229ad8c08abed4465ccd967994d5edd",
+        "owner-report.json": "770855543f85994104ee9fa33a868ba5528f3aa162952679b3b3b54ed0553d5a",
+        "resources.json": "ec7b843e4d443461e6de4068cec4e68dbc5510c3c17d3838ae616dde5d7f0914",
+        "report.json": "d0d41e9c1233e0a2d7a1136ec9390714b8652b8170199db90f79b8943d95e7bd"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5928101,
+        "user_usec": 3879411,
+        "system_usec": 2048691,
+        "nice_usec": 3838842,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 16,
+        "nr_throttled": 14,
+        "throttled_usec": 1284101,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-svgomg-w4-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2370.21070800256,
+      "ownerBodyMilliseconds": 2212.897218,
+      "wait4CpuSeconds": 2.221657,
+      "sampledPeakRssBytes": 3000463360,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "4e8154269faf22c70b9e559228cb58d0aa6fe7ec8d60be7c1cc577114960820a",
+        "owner-report.json": "e4a84caa076ae595df7da6a7895016d5f75acff616b14a49d79d31ba0b4ab18a",
+        "resources.json": "67baa1cf23cc56b16020c89c553a2e9d9fcf64019f2dc1d837ea3c0bd08fc12b",
+        "report.json": "d2ffbf17bef7934e4075e88191bcd4f6b6466fd7fdb443e15a0cc837d2baad6d"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5436460,
+        "user_usec": 2699043,
+        "system_usec": 2737418,
+        "nice_usec": 2619973,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 6,
+        "throttled_usec": 616680,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-svgomg-w4-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2531.6767819895176,
+      "ownerBodyMilliseconds": 2374.47397,
+      "wait4CpuSeconds": 1.273432,
+      "sampledPeakRssBytes": 2768302080,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "a5b649b411acc90230aaaeab7026ff3e4014f390767d32144173826ba6b00c42",
+        "owner-report.json": "3162a4cc45b16c610ca334a671b96e7d8bd13b4d3fc5cd4a9eccc7dc0a693f76",
+        "resources.json": "d697de018dd9d888cc6ad6249590f7cb94d33c2560615b46e5c69244995dcc0e",
+        "report.json": "f02b80e49d3603740ba5f4030bbc72e921bf3063728443c107f6e3efda809133"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 6451623,
+        "user_usec": 3631720,
+        "system_usec": 2819903,
+        "nice_usec": 3494910,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 24,
+        "nr_throttled": 7,
+        "throttled_usec": 719207,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b0-svgomg-w4-independent-lazy",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1233.921894003288,
+      "ownerBodyMilliseconds": 1132.347463,
+      "wait4CpuSeconds": 1.2589679999999999,
+      "sampledPeakRssBytes": 2528915456,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "ace8e1d10946a8f575028de620d53534746ad4d818248ef3b9a11cc722233bf4",
+        "owner-report.json": "21d85c2ca007c464e4f91e23e6ae6cdcca9f10d1bb315268c5d670945a285e96",
+        "resources.json": "d593b23a85e8ceaf84cbf596b8159cf501bceaf8140bf20cbf798f9f0ea0ddca",
+        "report.json": "88017f69c2aeac1daa7e2c90c782d29904b57783c33ab52ff1f1a21f7ccbdaa7"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 4018738,
+        "user_usec": 2780052,
+        "system_usec": 1238685,
+        "nice_usec": 2763522,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 12,
+        "nr_throttled": 8,
+        "throttled_usec": 860841,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-todomvc-w1-independent-lazy",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1992.3978250008076,
+      "ownerBodyMilliseconds": 1834.913408,
+      "wait4CpuSeconds": 1.724144,
+      "sampledPeakRssBytes": 770109440,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "9c9964c8a0613bd8802c285c98e1d026172a312db4fd004ce0004fada25ebdda",
+        "owner-report.json": "8ae8dc2ad8ffbb0bfa85436cdfbbbf0da2d204d53d785459d0e5d6a1ca6b7b80",
+        "resources.json": "16051c04b83f2b2852a74307a6d52fac0cb2f2c2b58835a688cef87b68b11822",
+        "report.json": "825913242a02c0413d11090f83d0d8383b514584b4a03ccf3882f9a17908a49c"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 4591835,
+        "user_usec": 3202711,
+        "system_usec": 1389123,
+        "nice_usec": 2826098,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 18,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-todomvc-w1-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2225.323665988981,
+      "ownerBodyMilliseconds": 2067.7561109999997,
+      "wait4CpuSeconds": 1.690544,
+      "sampledPeakRssBytes": 809857024,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "df683a78928dd70b236f9fa434f4b30ef26dd6c9e56f9b36a6094065c7fbec45",
+        "owner-report.json": "7deff0affd69d1306a7ebcc4563253a4fe49c0a1130459a60fa3b19ce02be747",
+        "resources.json": "477b2e86e7a032446a1fd243e31d6a3f5102f361ce5f60cad88d81279ae105e9",
+        "report.json": "20475db612c8c888f0aa30574c8bd018ea971651c06389423d5d9ee49c064d0a"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 4766003,
+        "user_usec": 3130548,
+        "system_usec": 1635455,
+        "nice_usec": 2846850,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 21,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-todomvc-w1-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 3903.4072480135364,
+      "ownerBodyMilliseconds": 3745.32157,
+      "wait4CpuSeconds": 2.2659190000000002,
+      "sampledPeakRssBytes": 904638464,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "43b5035b2c3fcbc102ed606b1b8d881e140b787a27c9890294ee4aba6a7acf1c",
+        "owner-report.json": "d1d883f4df421ec79e2f5a8e9d0b1ad8387529f397210bef04a4093afede7602",
+        "resources.json": "8f5b9005f740647015d88064ffd1a0b5c3531cd0d6c4c66f14d0990a4e609ab5",
+        "report.json": "dc6aba57c1a8a89a58b8df56fc740fa3ea07df68cf073e7e603da0ceb5d1a531"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5316925,
+        "user_usec": 3519638,
+        "system_usec": 1797287,
+        "nice_usec": 3314889,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 38,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-svgomg-w1-independent-lazy",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1115.4197470023064,
+      "ownerBodyMilliseconds": 957.410314,
+      "wait4CpuSeconds": 0.779927,
+      "sampledPeakRssBytes": 788107264,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "41e0f4d47e657e5b529f087952b440b2b0260d21656ed1690c63b97cd174979a",
+        "owner-report.json": "bed4c94b628b55c838fea50afb4add19641011ac13ef1125ef31440a7f959b47",
+        "resources.json": "c3f56886d5d3616a9a28fda8ddc464ce344c246ed46ef63d6e0bf9507ed53ab9",
+        "report.json": "ba19e2545718e9824338af92ba76b9c93de4a1bffdc3d34322c4dcf0263be7c5"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 2216660,
+        "user_usec": 1559832,
+        "system_usec": 656829,
+        "nice_usec": 1490312,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 9,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-svgomg-w1-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1210.0862889928976,
+      "ownerBodyMilliseconds": 1104.232064,
+      "wait4CpuSeconds": 0.781701,
+      "sampledPeakRssBytes": 822403072,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "58558bcdd4308f3b0b89aef8f3471f47045c5c330f4ace92ad447f45c31c6fe8",
+        "owner-report.json": "e40e470c122c9aafd61d9493c3343fa86e892fc6eb7c762a1719d8bba229241b",
+        "resources.json": "1c18dd2b7d306de3207c327a64e7f39932a8f983804d4cf9711d3ff93ea834af",
+        "report.json": "14d70a34e756ca8ac4c2254a38415c5c974adac6586e9eb41008db02ddaf7bb0"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 2522090,
+        "user_usec": 1571807,
+        "system_usec": 950284,
+        "nice_usec": 1477647,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-svgomg-w1-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1957.032056991011,
+      "ownerBodyMilliseconds": 1800.349917,
+      "wait4CpuSeconds": 1.181416,
+      "sampledPeakRssBytes": 939028480,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "db888bd38c59d127e2fcae1d2c1d526d3e7bb2834697e64e6e4dd9f8fdfa11db",
+        "owner-report.json": "981a469936f19ffeb3d7a4cb4f98471ade6cd84c9b67a23c3b4ec07d5f11a472",
+        "resources.json": "ffbe1b8e9d2218213afa79e8f94eef3e05824cdbd9b22b319f2f98de24f045b9",
+        "report.json": "1d92c3ba23eb94ca454b4f72eed2fd7cded6fceb33d6843c6abcb33b70d8a3b6"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 2478078,
+        "user_usec": 1589035,
+        "system_usec": 889043,
+        "nice_usec": 1512918,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 18,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-todomvc-w4-independent-lazy",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1698.6053889995674,
+      "ownerBodyMilliseconds": 1539.1644809999998,
+      "wait4CpuSeconds": 2.266294,
+      "sampledPeakRssBytes": 2570829824,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "dcbeddabf1bd1833d7f7f95722b54c5655a04845777b815719e3393289fbf471",
+        "owner-report.json": "348e1c2457aa90b9a8ca825109315e6a49f2cbbfcc4edeee21ffd5ea924735f6",
+        "resources.json": "d0421af8abc7559b59cc4665aa9acf0b7b84f0e1fee345b2586c90b02e7ea6c9",
+        "report.json": "0dfa3982eebb3a04704c4ea97e6911dc590cefdbcc9dccbb06e50d8b8b114257"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5828385,
+        "user_usec": 3823980,
+        "system_usec": 2004405,
+        "nice_usec": 3748044,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 1190079,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-todomvc-w4-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2386.1346439953195,
+      "ownerBodyMilliseconds": 2227.5559099999996,
+      "wait4CpuSeconds": 2.277589,
+      "sampledPeakRssBytes": 2814136320,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "e885b65e79d140132000e337e66b278ad157fe9ac989de1894d03a63de205462",
+        "owner-report.json": "2601178eec1b48c86e5a98ce26c51ce9c1fe887226cd1e9d86251d2db544f6a0",
+        "resources.json": "6e436dda89c087878e6b793d7ae7eeb03fee1b4c80c8cfc65b669f5d1ecc5c53",
+        "report.json": "f5802a89a0d11881a88d93911915fa3fc375678aca60e8a01e0f97235aa596fd"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 7326720,
+        "user_usec": 3939017,
+        "system_usec": 3387702,
+        "nice_usec": 3840699,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23,
+        "nr_throttled": 13,
+        "throttled_usec": 1122835,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-todomvc-w4-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2695.588794987998,
+      "ownerBodyMilliseconds": 2589.0625849999997,
+      "wait4CpuSeconds": 3.49079,
+      "sampledPeakRssBytes": 3010461696,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "06a7665100792a3830b519892c6976d3a10d51262661167bbc9964d623faea9a",
+        "owner-report.json": "8c455c99871b2b6fbe22e85fc3b0dd63a6e15b879ee1c3c6fb4677dc1f436c91",
+        "resources.json": "7217fd3d950522214cae1c01358b3e426accbfa0350ed13857bbd79156ef9969",
+        "report.json": "2e1a4e6c6d821ece769abb5c19a32f2b12b6e40ca5f8731e399d9cee56f11d57"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 8115478,
+        "user_usec": 4657867,
+        "system_usec": 3457612,
+        "nice_usec": 4539486,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 26,
+        "nr_throttled": 12,
+        "throttled_usec": 804491,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-svgomg-w4-independent-lazy",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-lazy",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1270.4873519978719,
+      "ownerBodyMilliseconds": 1112.023603,
+      "wait4CpuSeconds": 1.253496,
+      "sampledPeakRssBytes": 2607697920,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "88f005bbdf1171c662d3693712551a1f4c67ad0efe0d7ea5e3b73c4b6533df0c",
+        "owner-report.json": "38fe329e41ad2a45304489f64928aeb3b329c3be2b432e4bf0c73280b2b40d8e",
+        "resources.json": "8afee01ff1ea5e002a9f16bafa12e4d9e81ef2d129d98374c2ec12a6cd981364",
+        "report.json": "1791b811983e015ce506eaf13d404823c6ad7f2678f6d3dfeb4b4f10607bc457"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 3905736,
+        "user_usec": 2699597,
+        "system_usec": 1206139,
+        "nice_usec": 2691605,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 7,
+        "throttled_usec": 751459,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-svgomg-w4-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2040.0101300037932,
+      "ownerBodyMilliseconds": 1882.460434,
+      "wait4CpuSeconds": 1.2618989999999999,
+      "sampledPeakRssBytes": 2768818176,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "2e1304fd105c7fe5441878883339e1f5ec87878800b659640e587028fae75cfb",
+        "owner-report.json": "09774eb056b536a478484bf0d0ad053f44697fc6d266584f02c6dcd3f494d1fc",
+        "resources.json": "662acb4699f14402729e2a8ab2645b56c4f7c02709a595d37fa561ed28647894",
+        "report.json": "f3adf5e3ccc7e6c0e8bab39470613cf3e48321b0a028cf5b88b2865603097ad9"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5569527,
+        "user_usec": 2836135,
+        "system_usec": 2733392,
+        "nice_usec": 2748715,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 5,
+        "throttled_usec": 319863,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    },
+    {
+      "name": "b1-svgomg-w4-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2293.4597249986837,
+      "ownerBodyMilliseconds": 2135.836438,
+      "wait4CpuSeconds": 2.226966,
+      "sampledPeakRssBytes": 2985992192,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "5f7b0d748172c6e869ad2119eaac5db082d2358d63cbb934f95b12468f2d9b01",
+        "owner-report.json": "5b5540eb146efe67ae54326a298cfa1e30078160c3ba8febf4052305d5122a20",
+        "resources.json": "4e8ee942bd521d84617354bb9600b51fdf8180f91f544897e129ee42d7bdbca5",
+        "report.json": "81861a087864b91c079e3efda6efd6fee1df6bc34991969c6cb375cdcc3d1a21"
+      },
+      "cgroupOwnerCpuDelta": {
+        "usage_usec": 5399535,
+        "user_usec": 2713523,
+        "system_usec": 2686012,
+        "nice_usec": 2617281,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 6,
+        "throttled_usec": 460822,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "ownerCpuScope": "cpu.stat deltas from immediately before fixture startup through fixture shutdown inside the same transient cgroup; not final resource admission"
+    }
+  ],
+  "functionalControls": [
+    {
+      "campaign": "lazy-vaapi-controls-001",
+      "name": "no-media-eager",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 1,
+      "nativeDeferrals": 0,
+      "initializationMilliseconds": [
+        284.389
+      ],
+      "idleCpuCores": 0.07443107551427533,
+      "capabilities": [],
+      "reportSha256": "e36987381f9bf4867d81ce9d5a98db18a52d8319ca1b12b49ae7b058ed88365b",
+      "nativeTraceSha256": "542d896c4b1de295840007ec7f1c66d348ff670d22d62e787e28802d81bd3a50",
+      "resourcesSha256": "c01efbf744073ca5e2d870e363b9c28f4493a0c4338196889e187c30c5f28bc8"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-001",
+      "name": "no-media-lazy",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 0,
+      "nativeDeferrals": 1,
+      "initializationMilliseconds": [],
+      "idleCpuCores": 0.08261648326590566,
+      "capabilities": [],
+      "reportSha256": "725f68365993969cd41243ca2beead7d7d43032d4aceca96ec0b0f966fc0536d",
+      "nativeTraceSha256": "077c5bdbdac0b62915c63c06a4afe8a5b9eb50f7f4b1b80493661d54e9156fe0",
+      "resourcesSha256": "2e8a1e6408053e8805999835bce16339c413282836a197bdaccc7f3eaa6ae4d2"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-002",
+      "name": "media-eager",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 1,
+      "nativeDeferrals": 0,
+      "initializationMilliseconds": [
+        289.38
+      ],
+      "idleCpuCores": 0.07524751281967054,
+      "capabilities": [
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        }
+      ],
+      "reportSha256": "b2de2b0245cb4421ff5aa04619ef916db690691a93214e429e60f5f7a31dca30",
+      "nativeTraceSha256": "3f37a8226173e3ac8f7381e4d594d0376300c53b4706a1b832a1ee45d7333ebd",
+      "resourcesSha256": "f4317857679610342053b7820766a344819b71fc366fb704d0e138f234d8022d"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-002",
+      "name": "media-lazy",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 0,
+      "nativeDeferrals": 1,
+      "initializationMilliseconds": [],
+      "idleCpuCores": 0.07345335138111202,
+      "capabilities": [
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        }
+      ],
+      "reportSha256": "9b95c33f8a31f011f497c8534752886d7e3855f837d3839bb97f5e18475c4e66",
+      "nativeTraceSha256": "3794a266fe6cc76725f6f0ee83b009f7b7f894751ac027044057115afa637e3f",
+      "resourcesSha256": "f772474fa01d6314a6b8378099f55142a01a853f50a125a8eb3ff65696986fb2"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-003",
+      "name": "media-eager",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 1,
+      "nativeDeferrals": 0,
+      "initializationMilliseconds": [
+        289.628
+      ],
+      "idleCpuCores": 0.07130834695676916,
+      "capabilities": [
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        }
+      ],
+      "reportSha256": "144d2a212de28fc208a77a43e1dd1eac84cb4bbea437ded4043c724e3707bd60",
+      "nativeTraceSha256": "ab83b214f944a2a4ecff81449b8a4b94ef9ec1f50fb5daa68b7e9075e27ef31a",
+      "resourcesSha256": "42dc40965649b4c8ce8333e1cd62f71843fc9c8d45107da97bdb4bd9ee7ba016"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-003",
+      "name": "media-lazy",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 0,
+      "nativeDeferrals": 1,
+      "initializationMilliseconds": [],
+      "idleCpuCores": 0.07196470783304382,
+      "capabilities": [
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        }
+      ],
+      "reportSha256": "c4740add4b495af4c4de8892fcb3b65840efbab9712d4863b21cfdcad8739cca",
+      "nativeTraceSha256": "b6a40085b447c99388c0e53e524b3cea094106851a5cdd49a97905b0f4a4e63c",
+      "resourcesSha256": "322f5e1b5509a0638b5e8c48cf5b17c730fa6bf05f6441fc098accab9c3c7a9e"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-005",
+      "name": "media-eager",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 1,
+      "nativeDeferrals": 0,
+      "initializationMilliseconds": [
+        283.866
+      ],
+      "idleCpuCores": 0.07028843346735607,
+      "capabilities": [
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "encoders": [
+            {
+              "config": {
+                "codec": "vp8",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "encoders": [
+            {
+              "config": {
+                "codec": "vp8",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "encoders": [
+            {
+              "config": {
+                "codec": "vp8",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        }
+      ],
+      "reportSha256": "aabbe629c54f59d86980c342cce5ebf9a9c7a048d89b76d45282efce590c280f",
+      "nativeTraceSha256": "eef8029c16d39306838c780ffea6328b2e5e572c03916fd207daa1990093d3f4",
+      "resourcesSha256": "751098acd346bc66cb5cffb5d4e29ca09b263c1dbdde67ea88227e879571171a"
+    },
+    {
+      "campaign": "lazy-vaapi-controls-005",
+      "name": "media-lazy",
+      "cases": 3,
+      "status": "passed-selected-controls",
+      "nativeInitializations": 0,
+      "nativeDeferrals": 1,
+      "initializationMilliseconds": [],
+      "idleCpuCores": 0.07072767451558881,
+      "capabilities": [
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "encoders": [
+            {
+              "config": {
+                "codec": "vp8",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "encoders": [
+            {
+              "config": {
+                "codec": "vp8",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        },
+        {
+          "codecs": [
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp8",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "no-preference",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-hardware",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "hardwareAcceleration": "prefer-software",
+                "codedWidth": 32,
+                "codedHeight": 32
+              },
+              "supported": true
+            }
+          ],
+          "encoders": [
+            {
+              "config": {
+                "codec": "vp8",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "vp09.00.10.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            },
+            {
+              "config": {
+                "codec": "av01.0.04M.08",
+                "width": 64,
+                "height": 64,
+                "hardwareAcceleration": "prefer-hardware"
+              },
+              "supported": false
+            }
+          ],
+          "decoding": {
+            "powerEfficient": false,
+            "smooth": true,
+            "supported": true,
+            "keySystemAccess": null
+          },
+          "canPlayType": "probably"
+        }
+      ],
+      "reportSha256": "dcb39285357468ba1bc17761ab6775d8004642c3dfdff667350e5e67c1171e43",
+      "nativeTraceSha256": "53b6564420b24e04de7ca34fe4f44bda806e23f586fab103874cc19f6c85e232",
+      "resourcesSha256": "8550afee2660e3f0c9c3a58b6346a0beb8986166caeed652d71b936180622057"
+    }
+  ],
+  "instrumentedAttribution": {
+    "status": "verified-instrumented-attribution",
+    "runs": [
+      {
+        "name": "b0-todomvc-w1-independent-stock",
+        "wallMilliseconds": 3392.157488007797,
+        "cgroupCpuDelta": {
+          "usage_usec": 4408106,
+          "user_usec": 2702927,
+          "system_usec": 1705180,
+          "nice_usec": 2530266,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 32,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 142.78034799999995
+          }
+        ]
+      },
+      {
+        "name": "b0-todomvc-w1-independent-fast",
+        "wallMilliseconds": 2324.64675999654,
+        "cgroupCpuDelta": {
+          "usage_usec": 4761956,
+          "user_usec": 2957829,
+          "system_usec": 1804126,
+          "nice_usec": 2633359,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 21,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 190.159219
+          }
+        ]
+      },
+      {
+        "name": "b0-svgomg-w1-independent-stock",
+        "wallMilliseconds": 1669.8253250069683,
+        "cgroupCpuDelta": {
+          "usage_usec": 1957706,
+          "user_usec": 1070424,
+          "system_usec": 887281,
+          "nice_usec": 996566,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 15,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 309.39186400000006
+          }
+        ]
+      },
+      {
+        "name": "b0-svgomg-w1-independent-fast",
+        "wallMilliseconds": 1203.059620995191,
+        "cgroupCpuDelta": {
+          "usage_usec": 2498474,
+          "user_usec": 1585968,
+          "system_usec": 912506,
+          "nice_usec": 1506358,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 10,
+          "nr_throttled": 0,
+          "throttled_usec": 0,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 288.222199
+          }
+        ]
+      },
+      {
+        "name": "b0-todomvc-w4-independent-stock",
+        "wallMilliseconds": 2276.3672880100785,
+        "cgroupCpuDelta": {
+          "usage_usec": 6550245,
+          "user_usec": 3299391,
+          "system_usec": 3250855,
+          "nice_usec": 3183116,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 21,
+          "nr_throttled": 10,
+          "throttled_usec": 405090,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 721.409177
+          },
+          {
+            "worker": 1,
+            "firstClickMilliseconds": 735.169729
+          },
+          {
+            "worker": 2,
+            "firstClickMilliseconds": 914.6751439999998
+          },
+          {
+            "worker": 3,
+            "firstClickMilliseconds": 711.6634660000001
+          }
+        ]
+      },
+      {
+        "name": "b0-todomvc-w4-independent-fast",
+        "wallMilliseconds": 2305.4093170067063,
+        "cgroupCpuDelta": {
+          "usage_usec": 7174369,
+          "user_usec": 3843655,
+          "system_usec": 3330715,
+          "nice_usec": 3782432,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 21,
+          "nr_throttled": 12,
+          "throttled_usec": 1066914,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 650.602412
+          },
+          {
+            "worker": 1,
+            "firstClickMilliseconds": 739.612451
+          },
+          {
+            "worker": 2,
+            "firstClickMilliseconds": 899.641425
+          },
+          {
+            "worker": 3,
+            "firstClickMilliseconds": 784.821193
+          }
+        ]
+      },
+      {
+        "name": "b0-svgomg-w4-independent-stock",
+        "wallMilliseconds": 1925.058615001035,
+        "cgroupCpuDelta": {
+          "usage_usec": 4106738,
+          "user_usec": 1617078,
+          "system_usec": 2489660,
+          "nice_usec": 1562446,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 17,
+          "nr_throttled": 3,
+          "throttled_usec": 252762,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 809.2946979999999
+          },
+          {
+            "worker": 1,
+            "firstClickMilliseconds": 969.4787790000001
+          },
+          {
+            "worker": 2,
+            "firstClickMilliseconds": 935.8439400000001
+          },
+          {
+            "worker": 3,
+            "firstClickMilliseconds": 946.7732120000001
+          }
+        ]
+      },
+      {
+        "name": "b0-svgomg-w4-independent-fast",
+        "wallMilliseconds": 2360.3189599962207,
+        "cgroupCpuDelta": {
+          "usage_usec": 6370382,
+          "user_usec": 3516580,
+          "system_usec": 2853803,
+          "nice_usec": 3397127,
+          "core_sched.force_idle_usec": 0,
+          "nr_periods": 23,
+          "nr_throttled": 8,
+          "throttled_usec": 755527,
+          "nr_bursts": 0,
+          "burst_usec": 0
+        },
+        "firstClicks": [
+          {
+            "worker": 0,
+            "firstClickMilliseconds": 752.1242300000001
+          },
+          {
+            "worker": 1,
+            "firstClickMilliseconds": 932.1969270000001
+          },
+          {
+            "worker": 2,
+            "firstClickMilliseconds": 1030.029331
+          },
+          {
+            "worker": 3,
+            "firstClickMilliseconds": 1006.9546940000001
+          }
+        ]
+      }
+    ],
+    "limitations": [
+      "Instrumented operation durations are elapsed spans including browser, queueing and scheduling, not CPU attribution.",
+      "Cgroup cpu.stat covers owner interval; throttled_usec is a scheduler counter, not directly subtractable wall-time savings."
+    ]
+  },
+  "selectedInputsUnchanged": true,
+  "sourceBinding": {
+    "status": "private-experiment",
+    "scope": "Defer the original VA driver/profile singleton initialization until its first ordinary consumer. Preserve DRM preparation, stub loading, original hardware results and all media consumer paths. Feature defaults off and requires no-sandbox. Same-binary feature off/on comparison.",
+    "baselineSourceSha256": "c4b9f41b2145363b2519d24f854f5ad511fef1ed7456b8af13cbfd217f44168d",
+    "candidateSourceSha256": "bef61b948e397a16bfeee31d2aab007275995b81111ce66ad780be7b2ddf2e34",
+    "baselineBrowserSha256": "d281066bfd100da94daca926c897b36c4e8df7ba6fc063d8f0f13b5152bdbe08",
+    "functionalGate": [
+      "real original application tests",
+      "first-media hardware capability query",
+      "software video pixels and ended state",
+      "fresh-context media isolation and idle CPU",
+      "native trace proves no profile construction before media and original initialization on demand"
+    ],
+    "advancement": "At least 20% lower complete time in both orders for four-worker applications, no semantic failures. Final 2x acceptance remains separate."
+  },
+  "nativeBuild": {
+    "exitCode": 0,
+    "logSha256": "bfc16bc16598003a8f8fec6bc25da4eefaab6026643cf7a36a20ebe66b0d863c",
+    "browserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "sourceSha256": "bef61b948e397a16bfeee31d2aab007275995b81111ce66ad780be7b2ddf2e34"
+  },
+  "harnessHashes": {
+    "campaign.py": "a32b4905f4be5180a0c763875a58a84c5cb6951b73b05dae4f948ef80a1f5026",
+    "prepare.mjs": "6153756c95640dc848174250e90db8ccf741883cc00659159f9f47feb90994d2",
+    "owner.mjs": "371f66e107e2ee20f770b0505df97146e9a0171c7c40e53b688d08a03cb7d514",
+    "browser.py": "81707a5389eac7702e108253a14629edd26ced7e59643aa776dfa434cc5a6e54",
+    "verify-run.mjs": "b38e3c66ee55fccf13eb115b40643e197ea884d7bd6bf52d9536420055eac46e",
+    "inputs.json": "2fad9e226e4b26b951b6fb4d675c7d545341287c6f827e2774e02d196121c9ae",
+    "completion.json": "c66fd35471c1b839989e1568dfc5e9d6599c992cb8e2605cfb85d5cef601148c"
+  },
+  "sourceReview": {
+    "scope": "Read-only source review of static initialization, cached lock policy, copied workarounds, disabled path and GPU child no-sandbox propagation",
+    "blockingIssueFound": false,
+    "runtimeHardwareValidation": false
+  },
+  "retainedFailures": [
+    "Initial media marker returned unsupported PerformanceMark through evaluation codec; corrected to return undefined, media assertions unchanged.",
+    "Diagnostic native ANGLE OpenGL control failed on the original eager baseline GPU initialization; candidate not run under that rejected policy.",
+    "Default, decoder-feature and encoder-feature queries on this host never reached deferred hardware initialization. Equal answers and software playback do not prove hardware playback preservation."
+  ],
+  "decision": {
+    "fourWorkerAdvancementThresholdPassed": true,
+    "threshold": "At least20% lower complete time in both orders for both four-worker applications; no more than5% one-worker regression",
+    "majorityScenario2xGoalMet": false,
+    "finalPerformanceAdmission": false,
+    "defaultPromoted": false,
+    "next": "Keep as an experimental composition candidate; validate first-use hardware initialization on a reachable hardware/native path and address remaining complete-suite time before the final matrix."
+  },
+  "limitations": [
+    "Two applications and two opposite-order blocks; not the final nine-scenario eight-pair confidence gate.",
+    "All tested hardware decoder answers were false. Native traces prove eager omission, not successful deferred hardware initialization.",
+    "AcceleratedVideoEncoder/driver-blocklist diagnostic controls are separate from default-policy performance captures.",
+    "Feature requires --no-sandbox; sandboxed operation remains eager.",
+    "First hardware-use latency and watchdog behavior remain open.",
+    "Instrumented request spans include waiting and scheduling; cgroup throttled time is not subtractable wall savings.",
+    "No release or public default profile adoption."
+  ]
+}
