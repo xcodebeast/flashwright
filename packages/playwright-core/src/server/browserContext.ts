@@ -677,11 +677,14 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   }
 
   async newPage(progress: Progress, forStorageState?: boolean): Promise<Page> {
-    const heldPage = this._heldPage;
-    this._heldPage = undefined;
-    if (!forStorageState && heldPage && !heldPage.isClosedOrClosingOrCrashed()) {
-      heldPage.revealHeldPage();
-      return heldPage;
+    // Pages created to restore storage state must leave the recycled page for the test.
+    const heldPage = forStorageState ? undefined : this._heldPage;
+    if (heldPage) {
+      this._heldPage = undefined;
+      if (!heldPage.isClosedOrClosingOrCrashed()) {
+        heldPage.revealHeldPage();
+        return heldPage;
+      }
     }
     let page: Page | undefined;
     try {
