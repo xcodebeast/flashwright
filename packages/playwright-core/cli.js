@@ -24,8 +24,13 @@ if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
     process.env.NODE_COMPILE_CACHE = directory;
 }
 
-const { libCli, libCliTestStub } = require('./lib/coreBundle');
-const { program } = require('./lib/utilsBundle');
-libCli.decorateProgram(program);
-libCliTestStub.decorateProgram(program);
-program.parse(process.argv);
+// Flashwright: `cli` commands only forward to a browser session; skip loading every command.
+if (process.argv[2] === 'cli') {
+  require('./lib/coreBundle').runCliClient();
+} else {
+  const { libCli, libCliTestStub } = require('./lib/coreBundle');
+  const { program } = require('./lib/utilsBundle');
+  libCli.decorateProgram(program);
+  libCliTestStub.decorateProgram(program);
+  program.parse(process.argv);
+}
