@@ -807,3 +807,22 @@ The application screen passes another 540 original outcomes, including 180 prefl
 | SVGOMG | 4 | 2.88% | 22.02% | 1.75% | 14.09% |
 
 The prospective gate required at least 10% elapsed improvement for four-worker SVGOMG in both orders and no elapsed or CPU regression over 5% in any cell. It fails. Keep the [private patch](../tools/chromium/bounded-unstable-retry.md) unadopted; favorable individual observations do not justify a larger unchanged campaign. Original source and the byte-identical rebuilt baseline driver are restored, with the native browser unchanged. Final confidence, resource, majority-scenario and release gates remain open.
+
+## Shared browser, source cache and scheduling composition
+
+The [combined-runtime screen](../benchmarks/results/shared-runtime-composition-linux-2026-10-21.json) tests one suite-owned browser with independent worker connections and context-scoped renderer reuse, bounded locator source references, the one-millisecond uncapped frame grid and the earlier first retirement check. Both native arms use identical binaries. Stock Playwright remains the reference. All applications use the same fixed feature policy at one and four workers; test bodies, fresh contexts, request contracts and native input remain unchanged.
+
+Twelve selected control captures and 33 Rust transport/connection tests pass. The application campaign passes all 540 original outcomes: 180 preflight and 360 timed. The complete clock includes fixture/browser/runner startup, unused final reservations and natural drain. CPU below covers the outer owner, including shared-browser startup/shutdown but excluding its module imports, final reporting and watchdog drain.
+
+| Application | Workers | Playwright / combination, forward / reverse | Elapsed reduction versus separate baseline | Outer-owner CPU reduction |
+| --- | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | 2.394× / 2.281× | 15.44% / 14.53% | 28.93% / 27.39% |
+| TodoMVC | 4 | 2.452× / 2.380× | 33.43% / 31.57% | 32.18% / 33.43% |
+| SVGOMG | 1 | 1.816× / 2.310× | 17.05% / 7.05% | 22.22% / 15.52% |
+| SVGOMG | 4 | 2.374× / 2.087× | 41.30% / 21.23% | 40.07% / 31.38% |
+
+This is a substantial combined improvement over the separate-browser baseline, with seven of eight comparisons exceeding 2× stock Playwright. It still fails the prospective engineering gate, which required both applications to exceed 2× at both worker counts in both orders, with no elapsed or CPU regression over 5%. Single-worker SVGOMG misses once; all regression bounds pass. Two reversed blocks are not confidence intervals, and these two applications do not establish the nine-scenario majority requirement.
+
+Independent verification joins 180 reported renderer transfers and 150 successor claims to their original context/host/process identities, checks 60 native worker PIDs against the runtime guard and confirms cache auditing is absent during timing. Sixteen media screenshots retain the expected CSS and decoded-video pixels. Keep the report-loader filename failure and the corrected cache-hit location assertion: both were verifier mistakes, and no completed browser capture was rerun. Broader native race, frame/GPU, callback and resource admission remain open.
+
+The [composition notes](../tools/chromium/shared-runtime-composition.md) identify the six exact patches and policy. Original sources and byte-identical rebuilt baseline executables are restored. Keep the experiment unadopted; do not repeat an unchanged larger campaign or multiply component gains. No final performance or release claim follows.
