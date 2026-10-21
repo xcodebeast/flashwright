@@ -1,0 +1,339 @@
+/**
+ * Copyright (c) Microsoft Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import fs from 'fs';
+
+import { chromium } from 'playwright';
+
+import { test, expect, formatLog } from './fixtures';
+
+test('test reopen browser', async ({ startClient, server }) => {
+  const { client, stderr } = await startClient({
+    env: {
+      DEBUG: 'pw:mcp:test',
+    }
+  });
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_close',
+  })).toHaveResponse({
+    code: `await page.close()`,
+  });
+
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`- generic [active] [ref=e1]: Hello, world!`),
+  });
+
+  await expect.poll(() => formatLog(stderr()), { timeout: 0 }).toEqual({
+    'create browser (persistent)': 2,
+    'create context': 2,
+    'close browser': 1,
+  });
+});
+
+test('executable path', async ({ startClient, server }) => {
+  const { client } = await startClient({ args: [`--executable-path=bogus`] });
+  const response = await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  });
+  expect(response).toHaveResponse({
+    error: expect.stringContaining(`executable doesn't exist`),
+    isError: true,
+  });
+});
+
+test('surfaces the missing browser executable path so a version mismatch is diagnosable', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/41871' },
+}, async ({ startClient, server, mcpBrowser }, testInfo) => {
+  test.skip(mcpBrowser === 'chrome' || mcpBrowser === 'msedge', 'Channel browsers use system-installed binaries, which are unaffected by PLAYWRIGHT_BROWSERS_PATH');
+
+  const emptyBrowsersPath = testInfo.outputPath('empty-browsers');
+  await fs.promises.mkdir(emptyBrowsersPath, { recursive: true });
+
+  const { client } = await startClient({
+    env: { PLAYWRIGHT_BROWSERS_PATH: emptyBrowsersPath },
+  });
+
+  const response = await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  });
+  // The surfaced path must include the version-specific browser directory
+  // (e.g. chromium-1234) — that's the detail that reveals a version mismatch,
+  // as opposed to a generic "not installed".
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  expect.soft(response).toHaveResponse({
+    isError: true,
+    error: expect.stringContaining('is not installed'),
+  });
+  expect.soft(response).toHaveResponse({
+    isError: true,
+    error: expect.stringMatching(new RegExp(escapeRegExp(emptyBrowsersPath) + String.raw`[\\/][\w.]+-\d+[\\/]`)),
+  });
+});
+
+test('persistent context', async ({ startClient, server }, testInfo) => {
+  server.setContent('/', `
+    <body>
+    </body>
+    <script>
+      document.body.textContent = localStorage.getItem('test') ? 'Storage: YES' : 'Storage: NO';
+      localStorage.setItem('test', 'test');
+    </script>
+  `, 'text/html');
+
+  const { client } = await startClient({
+    args: [`--user-data-dir=${testInfo.outputPath('user-data-dir')}`],
+  });
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Storage: NO`),
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
+  await client.callTool({
+    name: 'browser_close',
+  });
+
+  const { client: client2 } = await startClient({
+    args: [`--user-data-dir=${testInfo.outputPath('user-data-dir')}`],
+  });
+  expect(await client2.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Storage: YES`),
+  });
+});
+
+test('isolated context', async ({ startClient, server }) => {
+  server.setContent('/', `
+    <body>
+    </body>
+    <script>
+      document.body.textContent = localStorage.getItem('test') ? 'Storage: YES' : 'Storage: NO';
+      localStorage.setItem('test', 'test');
+    </script>
+  `, 'text/html');
+
+  const { client: client1 } = await startClient({ args: [`--isolated`] });
+  expect(await client1.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Storage: NO`),
+  });
+
+  await client1.callTool({
+    name: 'browser_close',
+  });
+
+  const { client: client2 } = await startClient({ args: [`--isolated`] });
+  expect(await client2.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Storage: NO`),
+  });
+});
+
+test('isolated context relaunches the browser after it dies', async ({ startClient, server, mcpBrowser }, testInfo) => {
+  test.skip(!['chrome', 'msedge', 'chromium'].includes(mcpBrowser!), 'The test kills the browser over CDP');
+
+  // The CDP port lets the test kill the browser from the outside.
+  const port = 9300 + testInfo.workerIndex;
+  const { client, stderr } = await startClient({
+    args: [`--isolated`],
+    config: { browser: { launchOptions: { args: [`--remote-debugging-port=${port}`] } } },
+    env: { DEBUG: 'pw:mcp:backend' },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Hello, world!`),
+  });
+
+  // Kill the browser, as if it crashed.
+  const cdpBrowser = await chromium.connectOverCDP(`http://localhost:${port}`);
+  const session = await cdpBrowser.newBrowserCDPSession();
+  await session.send('Browser.close').catch(() => {});
+  await expect.poll(() => stderr()).toContain('browser disconnected');
+
+  // The very next tool call must relaunch the browser, with no failed call
+  // in between.
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Hello, world!`),
+  });
+});
+
+test('isolated context with storage state', async ({ startClient, server }, testInfo) => {
+  const storageStatePath = testInfo.outputPath('storage-state.json');
+  await fs.promises.writeFile(storageStatePath, JSON.stringify({
+    origins: [
+      {
+        origin: server.PREFIX,
+        localStorage: [{ name: 'test', value: 'session-value' }],
+      },
+    ],
+  }));
+
+  server.setContent('/', `
+    <body>
+    </body>
+    <script>
+      document.body.textContent = 'Storage: ' + localStorage.getItem('test');
+    </script>
+  `, 'text/html');
+
+  const { client } = await startClient({ args: [
+    `--isolated`,
+    `--storage-state=${storageStatePath}`,
+  ] });
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`Storage: session-value`),
+  });
+});
+
+test('--proxy-server routes browser traffic through the proxy', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/40204' },
+}, async ({ startClient, server }) => {
+  server.setRoute('/target.html', (_req, res) => {
+    res.end('<html><title>Served by the proxy</title></html>');
+  });
+  const { client } = await startClient({
+    args: [`--proxy-server=${server.HOST}`],
+  });
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: 'http://non-existent.com/target.html' },
+  })).toHaveResponse({
+    page: expect.stringContaining('Served by the proxy'),
+  });
+});
+
+test('--proxy-server overrides contextOptions.proxy from config file', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/40204' },
+}, async ({ startClient, server }) => {
+  server.setRoute('/target.html', (_req, res) => {
+    res.end('<html><title>Served by CLI proxy</title></html>');
+  });
+  const { client } = await startClient({
+    config: {
+      browser: {
+        contextOptions: { proxy: { server: 'http://unreachable-config-proxy:1' } },
+      },
+    },
+    args: [`--proxy-server=${server.HOST}`],
+  });
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: 'http://non-existent.com/target.html' },
+  })).toHaveResponse({
+    page: expect.stringContaining('Served by CLI proxy'),
+  });
+});
+
+test('--proxy-server should use credentials from the url', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43048' },
+}, async ({ startClient, server }) => {
+  server.setRoute('/target.html', (req, res) => {
+    const auth = req.headers['proxy-authorization'];
+    if (!auth) {
+      res.writeHead(407, 'Proxy Authentication Required', {
+        'Proxy-Authenticate': 'Basic realm="Access to internal site"'
+      });
+      res.end();
+    } else {
+      res.end(`<html><title>${auth}</title></html>`);
+    }
+  });
+  const { client } = await startClient({
+    args: [`--proxy-server=http://user:se%40cret@${server.HOST}`],
+  });
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: 'http://non-existent.com/target.html' },
+  })).toHaveResponse({
+    page: expect.stringContaining('Basic ' + Buffer.from('user:se@cret').toString('base64')),
+  });
+});
+
+test('proper launch error message for broken browser and persistent context', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright-mcp/issues/1305' }
+}, async ({ startClient, server, mcpBrowser }, testInfo) => {
+  test.skip(process.platform === 'win32', 'Skipping on Windows because we need /bin/sh.');
+  const scriptPath = testInfo.outputPath('launcher.sh');
+  const scriptContent = `#!/bin/sh
+echo "Bogus browser script"
+exit 1
+`;
+  await fs.promises.writeFile(scriptPath, scriptContent, { mode: 0o755 });
+
+  const { client } = await startClient({
+    args: [`--executable-path=${scriptPath}`],
+  });
+  const result = await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  });
+  expect.soft(result).toHaveResponse({
+    isError: true,
+    error: expect.stringContaining(`Bogus browser script`),
+  });
+  expect.soft(result).toHaveResponse({
+    isError: true,
+    error: expect.not.stringContaining(`Browser is already in use`),
+  });
+});
+
+test('should gracefully close the browser once on stdin end', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43098' }
+}, async ({ startClient, server }, testInfo) => {
+  const { client, stderr } = await startClient({
+    args: [`--user-data-dir=${testInfo.outputPath('user-data-dir')}`],
+    env: { DEBUG: 'pw:browser' },
+  });
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.HELLO_WORLD },
+  });
+
+  await client.close();
+
+  await expect.poll(() => stderr()).toContain('<gracefully close end>');
+  expect(stderr()).toContain('<gracefully close start>');
+  expect(stderr()).not.toContain('<forcefully close>');
+  expect(stderr()).not.toContain('<will force kill>');
+});
