@@ -1,5 +1,22 @@
 # Benchmark comparison status
 
+## Current repeated-work attribution
+
+The [suite-size diagnostic](../benchmarks/results/suite-size-attribution-linux-2026-10-21.json) scales one unchanged setup test body using its existing configuration. Four preflight captures pass 60 tests; 24 timed captures pass another 2,520. Both engines use the same four-core quota, six allowed CPUs, 8 GiB limit, zero swap and ordinary fresh contexts. All 70 browser-launch receipts and natural process drain are retained. Every test, including those labelled warmup, remains in complete time.
+
+| Setup tests | Workers | Playwright / Flashwright, first / reverse order |
+| --- | ---: | ---: |
+| 15 | 1 | 1.465× / 1.401× |
+| 15 | 4 | 1.623× / 1.511× |
+| 60 | 1 | 1.219× / 1.219× |
+| 60 | 4 | 1.351× / 1.380× |
+| 240 | 1 | 1.183× / 1.133× |
+| 240 | 4 | 1.085× / 1.106× |
+
+The advantage shrinks with suite size. Between the 15- and 240-test endpoints, four-worker elapsed time grows by approximately 18 ms per added test in both engines, alongside roughly 71–74 ms of charged CPU. This points investigation toward repeated work rather than startup alone. These are descriptive increments, not causal CPU attribution or guaranteed savings. Larger counts are diagnostic additions; they do not replace the original nine-scenario acceptance matrix or establish final confidence/resource acceptance.
+
+## Broader comparison status
+
 Flashwright has not established performance leadership. The [five-engine checkpoint](../compatibility/evidence/broad-performance-checkpoint-2026-10-10.json) records 40 passing sampled launches after a 162-group core gate. All 926 recorded source files match commit `70dc299f`. The [complete comparison table](../benchmarks/results/broad-matrix-2026-10-10/evidence/table.md) includes every workload, preparation-inclusive totals, startup, CPU, concurrent memory, uncertainty and recorded semantic differences.
 
 The current contender set also includes **Bun.WebView**, pinned initially to Bun 1.4.2. Its Linux Chrome adapter now has eight launches of native library timing observations across seven fixture categories, shown separately below. Equivalent-work and comparative measurements remain unadmitted; it has no result in the historical five-engine snapshot. The system-WebKit backend on macOS requires a separate comparison class. See the [native observations](../benchmarks/results/bun-webview-native-linux-2026-10-21.json) and [contender configuration](../benchmarks/configurations/competitors.json).

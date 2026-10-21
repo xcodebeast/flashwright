@@ -1,0 +1,1484 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "sourceCommit": "40aff631",
+  "plan": {
+    "question": "Does current complete-suite cost remain dominated by fixed runner/owner work, or repeated per-test work, as suite size increases?",
+    "matrix": {
+      "family": "setup",
+      "totalTests": [
+        15,
+        60,
+        240
+      ],
+      "workers": [
+        1,
+        4
+      ],
+      "engines": [
+        "playwright",
+        "independent"
+      ],
+      "reversedBlocks": 2
+    },
+    "scope": "Diagnostic scaling of one unchanged controlled body through existing configuration counts; not original acceptance scenario observations at larger sizes. Preserve the original nine-scenario final matrix.",
+    "preflight": "Four 15-test captures, both engines and both workers, before timing.",
+    "controls": "Exact original workload bytes; dynamic expected title set, count, original storage/trusted-event/view/focus/version observations, distinct fresh context reports, worker process/slot stability, native launch receipts, fixture request counts and natural drain.",
+    "budget": {
+      "cpuQuotaPercent": 400,
+      "cpuAffinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "memoryMaxGiB": 8,
+      "swap": 0,
+      "nice": 10
+    },
+    "analysis": "Report each capture and each size ratio. A descriptive affine fit can suggest fixed/repeated cost; intercept is not an independently measured startup interval or guaranteed removable work. No acceptance threshold and no final performance claim.",
+    "baselineDriverSha256": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249",
+    "baselineBrowserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "workloadSha256": "46895fff89e7ab4d4c774ad7941fbaa718eccdd7d1d209b28f53d5abbc968a31"
+  },
+  "status": "completed-suite-size-attribution",
+  "timedCaptures": 24,
+  "passingTimedTests": 2520,
+  "preflightCaptures": 4,
+  "passingPreflightTests": 60,
+  "browserLaunchReceipts": 70,
+  "observations": [
+    {
+      "totalTests": 15,
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1128.7233229959384,
+        "independent": 770.5728539876873
+      },
+      "speedup": 1.4647846951197867
+    },
+    {
+      "totalTests": 15,
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 811.445127998013,
+        "playwright": 1136.528665010701
+      },
+      "speedup": 1.4006229451580168
+    },
+    {
+      "totalTests": 15,
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1148.640900006285,
+        "independent": 707.7881269942736
+      },
+      "speedup": 1.622859802528982
+    },
+    {
+      "totalTests": 15,
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 746.0512539983029,
+        "playwright": 1127.1852680074517
+      },
+      "speedup": 1.510868404773187
+    },
+    {
+      "totalTests": 60,
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2768.4139249904547,
+        "independent": 2271.310067997547
+      },
+      "speedup": 1.2188621729798297
+    },
+    {
+      "totalTests": 60,
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 2276.6867989994353,
+        "playwright": 2776.1404160119127
+      },
+      "speedup": 1.2193773940411912
+    },
+    {
+      "totalTests": 60,
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2120.889805999468,
+        "independent": 1569.506543004536
+      },
+      "speedup": 1.351309948628445
+    },
+    {
+      "totalTests": 60,
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 1548.8648809987353,
+        "playwright": 2137.7900799998315
+      },
+      "speedup": 1.3802301971114141
+    },
+    {
+      "totalTests": 240,
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 9522.728768992238,
+        "independent": 8052.447868991294
+      },
+      "speedup": 1.1825880681156302
+    },
+    {
+      "totalTests": 240,
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 8080.422703991644,
+        "playwright": 9151.387386009446
+      },
+      "speedup": 1.132538200196972
+    },
+    {
+      "totalTests": 240,
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 5208.5029919981025,
+        "independent": 4800.4836839972995
+      },
+      "speedup": 1.0849954577204293
+    },
+    {
+      "totalTests": 240,
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 4748.6585849983385,
+        "playwright": 5251.405538991094
+      },
+      "speedup": 1.1058713624055858
+    }
+  ],
+  "runs": [
+    {
+      "block": 0,
+      "name": "setup-n15-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 2024618,
+        "user_usec": 1185713,
+        "system_usec": 838905,
+        "nice_usec": 1134455,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 313769984,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1128.7233229959384,
+      "innerOwnerMilliseconds": 1046.5252269999999,
+      "observedPeakRssBytes": 819470336,
+      "reportSha256": "55b572876be06c6224d7ba8d0a4349d5afda7ad79cbe3e1b4f9fc60e8a6fcc86",
+      "resourcesSha256": "afd89416d5983b8ec13c7bb2461506016d82acae1905cf2e56225685d6962573",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "88db61bcaab0a95bcbc5d18352ad6bbf233eab1fa053fe78defb4f224293f75e",
+      "browserLaunchReceiptSha256": [
+        "34a849405753f0aa5ef0ee6fa471d12bea2ea40d36f5907783c993eb1a8375cf"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n15-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 1374078,
+        "user_usec": 895319,
+        "system_usec": 478759,
+        "nice_usec": 796339,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 153808896,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 770.5728539876873,
+      "innerOwnerMilliseconds": 688.1489670000001,
+      "observedPeakRssBytes": 670564352,
+      "reportSha256": "582128f9ad351f1c8759e10cef6511c9f68aa5e531f27fefeb402f955fbb01ac",
+      "resourcesSha256": "43576d2d647bf2f0a1b76fbc0339b3a2bc4a408e3905402b08d5bf22cfe25ac3",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "5bb25652174c77b9aaa045c95aadf2b5b2db6da89dd7009061e0d5248ca798b7",
+      "browserLaunchReceiptSha256": [
+        "0aa1b07efd6c9dc2d607be04d23da57bbcd708a0445578692e29be3900d28806"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n15-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 3420878,
+        "user_usec": 2092116,
+        "system_usec": 1328762,
+        "nice_usec": 2077003,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 6,
+        "throttled_usec": 600234,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 799068160,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1148.640900006285,
+      "innerOwnerMilliseconds": 1008.967078,
+      "observedPeakRssBytes": 2519621632,
+      "reportSha256": "94b8b89ec456fb488918ac38da41ce8e83f86966484e39982105ebdf88ea0312",
+      "resourcesSha256": "945ffbce65543cbfe0f42ed6080dbcd3fe9f8eefe093f0700f47dec3b590b89f",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "0747caefaf11053796a2cfd029044f1900e8cd439909f36f4f8166e9a4fc3e7b",
+      "browserLaunchReceiptSha256": [
+        "337f953fb197ec07e53877bda21f51d82864681d9d25b33acd1b7eb24fd93013",
+        "7e22cf450f29bfe790dff871bf97a66c948130e24aaca96ebead6c054ec8714b",
+        "3ea7491c8cb30b60bdc470b94ee8b3e8f9ff3247ce498af24c65260af7873ae6",
+        "2064a6321d6ad9f3399aca9087957348a84f496d6dd87507ac12aed4e1070f7d"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n15-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 2289988,
+        "user_usec": 1320067,
+        "system_usec": 969922,
+        "nice_usec": 1288966,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 4,
+        "throttled_usec": 473735,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 453492736,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 707.7881269942736,
+      "innerOwnerMilliseconds": 624.874992,
+      "observedPeakRssBytes": 2374127616,
+      "reportSha256": "2bc61806f776c853e6640cb82e3bb89cb016ec17fe7149511839ef5df2678e0c",
+      "resourcesSha256": "f1b28368e713870057191cf4e5f39800f4e80aab85e8578c4f597e7c8fa8ae0b",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "8e66d2e56d53b3e39bfc4419691db604ad327d32f1ad70e38ef4aa0a11d53354",
+      "browserLaunchReceiptSha256": [
+        "5dffbd053ff7c7b89dd8e69e2f4f5e70a19796c0690bc1971f512d0a9bd1ee8f",
+        "8bc4a784b16905bc36a8d33b22fe7de28c68a3a24cb3e6bb30d4c638e0a028cf",
+        "248231811ae60ad08b980d63ac94404b4d8af613322cca0a64b4a0cfac03e16e",
+        "33fc08de87962d5adb6f440344f75bf168fdc9e06bad815dd0d50751bee8b4fc"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n60-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 5016090,
+        "user_usec": 3075278,
+        "system_usec": 1940811,
+        "nice_usec": 2874835,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 27,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 343678976,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2768.4139249904547,
+      "innerOwnerMilliseconds": 2681.936749,
+      "observedPeakRssBytes": 868548608,
+      "reportSha256": "3330beff99dbbac44dcfbd6b7fd6dcdb1b21275cd5c5162ee954e709db3c97af",
+      "resourcesSha256": "0a8908f87c76951cb991e45fb2f3a1f27f1c05e76ab8aa96e1c2fa3085f4cadd",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "faafd82702a43d2552f3f5d8e05c14ba1322b8732f48cb1fd8c50f2f557c8727",
+      "browserLaunchReceiptSha256": [
+        "14415e82d3c97758fc837b24a9782a93bcf3b34c8104ad356f6ba8c1084ee995"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n60-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 4506055,
+        "user_usec": 3004067,
+        "system_usec": 1501987,
+        "nice_usec": 2576388,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 22,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 167579648,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2271.310067997547,
+      "innerOwnerMilliseconds": 2187.6759770000003,
+      "observedPeakRssBytes": 697528320,
+      "reportSha256": "8b356bdb14d92dd752dd06af817b9af594a581ab5463aa093ec4b2087f24cb28",
+      "resourcesSha256": "d24bd4e8a1450be3a740cc75906be1804afd61d06e891e20bea0f3961eb6801a",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "6bc245c823aad5330b2bd42ad019e45bceb9a81b075250888773cac0477438b8",
+      "browserLaunchReceiptSha256": [
+        "5e3f58fc2497c7e8146552758056977261229693d51410f755d047acd525bb8a"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n60-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 7151658,
+        "user_usec": 4162633,
+        "system_usec": 2989024,
+        "nice_usec": 4113364,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 16,
+        "throttled_usec": 1797846,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 1018019840,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2120.889805999468,
+      "innerOwnerMilliseconds": 1918.118195,
+      "observedPeakRssBytes": 2965823488,
+      "reportSha256": "714024e89e64078def5c4ac77ce827ecb9c61b6f712a3660d4a9a3cdbf4e01a3",
+      "resourcesSha256": "cf087a7b4ac6b71cd8dfebf9c1d45d35bba4872bd4540722bf61220dde2b20ea",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "122b72283bbcd6151c0f0af4c5af17df8a342dcd2e8bb57bbd0b3f1f32ec119e",
+      "browserLaunchReceiptSha256": [
+        "f012db3722b39c63394c51f89aad7f77ced3bcd3a412503a9758fda52bd60c7e",
+        "acfaf4d8d30732a3e201524f55b9f50df80104d18eb7955d5fc2554dcc516269",
+        "0435cf12a0dcbd58a26f4c14d432903b8c62ccc3bd8bf0427436b974c02c470e",
+        "a91975d17530c8e74b18247099befa434ae7f305a598257ba6db7968800abab3"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n60-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 5690988,
+        "user_usec": 3612791,
+        "system_usec": 2078198,
+        "nice_usec": 3546659,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 14,
+        "throttled_usec": 1017924,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 492904448,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1569.506543004536,
+      "innerOwnerMilliseconds": 1486.585044,
+      "observedPeakRssBytes": 2431074304,
+      "reportSha256": "938ca3e9c12b734d17ee2377aa7b4dfec03aa16d462d3f68e97d3b7bc52c913f",
+      "resourcesSha256": "f73d616830e9a065867f9f69b54cba9800a9dbe29163b0242dffbaf872823c7e",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "bdf7b47efb87ba8d4922b22fb1b83b07b9589c6de6ef0e15cf4df5d4e3e40444",
+      "browserLaunchReceiptSha256": [
+        "12c31f7f148d015538617465766a1778ad461726c763c7b05eaa61eabe88bf53",
+        "8493546ca8e82eff2ddfb3f8cdf26216bcf5e0cc841d4316967ebf2417704432",
+        "7f3e2ba9b7421623a733507a9649815093883e962356633c3131ac8ea235d5fb",
+        "e244a69e5f06f845b7bf9bed1de7fc2c2c7255f88ab849eea44f29b3b92eee89"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n240-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 16871341,
+        "user_usec": 10483107,
+        "system_usec": 6388234,
+        "nice_usec": 9668472,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 95,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 393617408,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 9522.728768992238,
+      "innerOwnerMilliseconds": 9496.946925,
+      "observedPeakRssBytes": 899837952,
+      "reportSha256": "b7893fd71b1ca23bd000a7bf8550e19819f198331551356019af5d79aab92be4",
+      "resourcesSha256": "288c9880cec84163eb0dac7dde416182c1a462d48ba6a302fe95ade516aefb54",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "8592ebaf9c3fafc817c106ac81c6d4fefb339aafbf8f295cf33372b7cebeca68",
+      "browserLaunchReceiptSha256": [
+        "93b1c7935a07643c72c4d5d8dd00fa6f4ddba5f08116966ca4482170b01725ea"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n240-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 16810266,
+        "user_usec": 11201142,
+        "system_usec": 5609125,
+        "nice_usec": 9414050,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 80,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 191569920,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 8052.447868991294,
+      "innerOwnerMilliseconds": 8026.821901,
+      "observedPeakRssBytes": 721977344,
+      "reportSha256": "99a500b6727fad9f25a40619288592ed028ce78affedc8dd9600f4b927f1530a",
+      "resourcesSha256": "012d85ef4ce2061e51701d7895a83061f80dab699d8ad0d497455f3f6a61a3a8",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "2fa48b18cacb007c0fb0e8be477db9be11051895c3582811a7eacdacee16b9ab",
+      "browserLaunchReceiptSha256": [
+        "d7ef3eedc13bfa97fc987718e2350dc81a6d8bd408e824605f3cd7a2fea8f1f1"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n240-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 19826820,
+        "user_usec": 12113916,
+        "system_usec": 7712903,
+        "nice_usec": 12016638,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 51,
+        "nr_throttled": 48,
+        "throttled_usec": 3386247,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 1043537920,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 5208.5029919981025,
+      "innerOwnerMilliseconds": 5124.558081,
+      "observedPeakRssBytes": 3053236224,
+      "reportSha256": "896034c7d8a2124ce30b764f3bc259a27796bb3c0e182de4f4d532795b9adba8",
+      "resourcesSha256": "ce0c3e3113b6d6ee575024ce0fda7c0fce52f67ecb50a4f8270f7953a3550a29",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "e5ea4aeadea8afb7db251d33b4c49e4f9051db4d9d1aafa7706f25a7a4ed69ff",
+      "browserLaunchReceiptSha256": [
+        "299a2f794cb28792cb73806e5ca87f2cd10ef07f29fffc1e71909aff410ae6ef",
+        "a8a28272e76ab9ba46f010ac3d271bf6f460db6a740427a605a4c0c799b61690",
+        "491fc50b4109dfadb35a69ffc01eac957e87b8d63566dde8d8d36d32742f697b",
+        "0ccfa04f64d9022f5deeb8514697b0975adaef56181c5ea85bbcb8da578c0113"
+      ]
+    },
+    {
+      "block": 0,
+      "name": "setup-n240-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 18443184,
+        "user_usec": 12234643,
+        "system_usec": 6208541,
+        "nice_usec": 11882195,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 47,
+        "nr_throttled": 43,
+        "throttled_usec": 2212538,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 553234432,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 4800.4836839972995,
+      "innerOwnerMilliseconds": 4717.524846,
+      "observedPeakRssBytes": 2509283328,
+      "reportSha256": "791094fae67723b2cee8c7eadfd9b4925386bf21f7bdde6f83dcbbb27510cec7",
+      "resourcesSha256": "480e7296b49cceab3655d48ff2b3da5aa5cdd3ccc6e065f13c8db1f62bc7bf31",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "c20fac64e17fd02c6f3b93c640a3c68877f41e805aac4efaa7f39e9f0bd8956f",
+      "browserLaunchReceiptSha256": [
+        "f51259c7f2868b3e8e7ab433e6d3bb3fb6d2da2a23a3c6440cc14136a4e80cde",
+        "568398c3e08c793ffcfb2df2981c1cb5619d54e13fd635f3dfa1989dd82a5bf6",
+        "3c783efa5938bf134ef13b4c97276b072a0821a14fd080ea03556c1c3ad022df",
+        "3bce1aa932aa5e5e79be08bb0c79d85465583005b459852b50e4f8c7183d0bec"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n240-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 16656306,
+        "user_usec": 11274600,
+        "system_usec": 5381707,
+        "nice_usec": 9565213,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 80,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 194076672,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 8080.422703991644,
+      "innerOwnerMilliseconds": 7996.9794170000005,
+      "observedPeakRssBytes": 719446016,
+      "reportSha256": "28cc60df0b9ce07bfdf1d414128ab64ce7200227a01b5db579a30129e39eaaa4",
+      "resourcesSha256": "3c18f5ebf5eaac39ef221a5ba95c5a12f59212cee8288e88fd66ce4b950e090d",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "688b50b503dc602deabcf6237c4ffe6c039799b610834602a428c8891202d078",
+      "browserLaunchReceiptSha256": [
+        "6a71f5264982de9898d27e580ce39a19bc9849713059ed35faa8409b1efd5b6c"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n240-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 16628387,
+        "user_usec": 10233427,
+        "system_usec": 6394960,
+        "nice_usec": 9363039,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 91,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 395915264,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 9151.387386009446,
+      "innerOwnerMilliseconds": 9125.262603,
+      "observedPeakRssBytes": 902361088,
+      "reportSha256": "5bafd1a46a5a470824ba6923b1d9b7f3b554394879aa32095a23bae7af564259",
+      "resourcesSha256": "dfeb3e36a64824d2d76c1c4a85ebb2f340ba5d3279a28055cfb94ae9e8cf719f",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "097bd3fca0cdc89f353feb3282156828fbc1793899519d9eb020c209554165e4",
+      "browserLaunchReceiptSha256": [
+        "81f3e4a0e63707f660cec813d2890d072ceefd71884f8579aeadf195401c55fb"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n240-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 18374370,
+        "user_usec": 12157038,
+        "system_usec": 6217331,
+        "nice_usec": 11904350,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 47,
+        "nr_throttled": 43,
+        "throttled_usec": 2349297,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 559521792,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 4748.6585849983385,
+      "innerOwnerMilliseconds": 4665.342029,
+      "observedPeakRssBytes": 2509258752,
+      "reportSha256": "2eb526d5b3fe2e5e8485c3db1790c5440dc9411286560f82f7cc3cac81e828e0",
+      "resourcesSha256": "b5659e21a4a16de3399c92baaa8eeb7ed11aaa48dff68f62a8bcfd4778e82828",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "d088650b83ca419f069890ab36cf28cece58b6be29ee704eb8e4b0333c5872d9",
+      "browserLaunchReceiptSha256": [
+        "10303c3be9169aa1b83464d239e0758492f9965491fd112ce8d563efb2df6ea8",
+        "86e6f9dc01eab74256ec56ab49b2bed0454d83fb35c36a1b80ba80ba7e575f18",
+        "e7d165daa863f66e9b18d07bdc54364a359b228d3f43ce9e91a9e542830fc686",
+        "2d4a77e5bd1627b6fbcbacf39429747fc15e3b9d035593852f6ec0bb01912dd4"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n240-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 19971174,
+        "user_usec": 12185193,
+        "system_usec": 7785981,
+        "nice_usec": 11979555,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 52,
+        "nr_throttled": 47,
+        "throttled_usec": 2992190,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 1036435456,
+      "totalTests": 240,
+      "tests": 240,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 5251.405538991094,
+      "innerOwnerMilliseconds": 5167.196821,
+      "observedPeakRssBytes": 2994712576,
+      "reportSha256": "51dd40ae682465bef2fd2b6b4acf45c27f33545c8f818df21dd984d52d64b2a2",
+      "resourcesSha256": "517e579d974d4f01bffa8a3f207e7d446c56335977480a6ba52dc8430297df4c",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "2665bf32d2d1b9275f9a6332b843f11a372ce02300e7ba6bd2f1d484e3fcbbdf",
+      "browserLaunchReceiptSha256": [
+        "dac9d66ab85157dbd80e77fe24cf74e9c79f5aff40a9ae4f7f72ccbf524c7c8d",
+        "f01dc3004ee42eed6de260a93b21a7c9cba139f63309d5973a43d0d897d53c7e",
+        "4d1df1e83eb3ad00257bd75a53de9b288363af152d7bc5015eb2c17841255844",
+        "854f9c2c1e2de3dbf7fa3a480fbeba6e71aa9871622996795bbca09bbed7f8e2"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n60-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 4548216,
+        "user_usec": 2973010,
+        "system_usec": 1575205,
+        "nice_usec": 2562947,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 21,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 167215104,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2276.6867989994353,
+      "innerOwnerMilliseconds": 2193.706741,
+      "observedPeakRssBytes": 693837824,
+      "reportSha256": "b834ff6d2864546ccd1ee876242909673a376c9bc4d41ff1cb8a541154a423dd",
+      "resourcesSha256": "0aec705e85b1dcb85ae018f0d6f7c6d4eee3aa2b9f3c1019e520383b28b8afb2",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "4c92ee56790dffbf3d1af65a7da4e2ba6cba0babd95a8613dd1bc7a635cbbefb",
+      "browserLaunchReceiptSha256": [
+        "16e9e1fcc4db11581e2eae69af430e2cb3ccb6774c0bfaf5175c6de53597454b"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n60-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 5067750,
+        "user_usec": 3087777,
+        "system_usec": 1979973,
+        "nice_usec": 2858709,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 27,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 335220736,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2776.1404160119127,
+      "innerOwnerMilliseconds": 2693.897017,
+      "observedPeakRssBytes": 853204992,
+      "reportSha256": "f1f4ba88191d86418197fd2fccf9abf6d00f5d074861a245d1f30ad88260c6a3",
+      "resourcesSha256": "b0e59df0537d1e49e25c36582bdf0b855e681ebc3c92dcef3a73b6e2455fe682",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "cfc5d151a09e72f8e0e33ba1de1bb539e858e7aa21055a21e6a07dbfe611d986",
+      "browserLaunchReceiptSha256": [
+        "1809b592a4cf5a6b4fdedfce3ff3c97d531886d323da6ed3fb0e4fa0d726c63a"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n60-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 5606661,
+        "user_usec": 3529720,
+        "system_usec": 2076940,
+        "nice_usec": 3451523,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 15,
+        "nr_throttled": 13,
+        "throttled_usec": 926754,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 496144384,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1548.8648809987353,
+      "innerOwnerMilliseconds": 1467.150385,
+      "observedPeakRssBytes": 2437218304,
+      "reportSha256": "2df744c35eaabbdc6d832e989db7a7bea3356f39d72e298565bdd25b397319d7",
+      "resourcesSha256": "ecbce562abeb6d4a606a873ed633cbfb6770b0a3d9dfad5a9dd2038699deea17",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "9be4df884ed697e46f60da5bd61681a1eb162008b3f8a7f26a8a8d6b31c39452",
+      "browserLaunchReceiptSha256": [
+        "f288d367f7953b83a7f601842d10bb7193dc6b84b0e339e2ff8a4ae4ffa8fcf3",
+        "c5ccf37501882b785434a76de27465ad7623873e6c93d9b75a6c1338e3e702f2",
+        "a134b3c6bed889fe15e25665400d1cd92607b94423ccd275b72253a84a83176d",
+        "80810c99908e535794c552b3cf2731536ed186fb246529d67deed0fae4bbe6f8"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n60-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 7117495,
+        "user_usec": 4247735,
+        "system_usec": 2869760,
+        "nice_usec": 4220198,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 19,
+        "nr_throttled": 16,
+        "throttled_usec": 1557511,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 1014988800,
+      "totalTests": 60,
+      "tests": 60,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2137.7900799998315,
+      "innerOwnerMilliseconds": 1909.163597,
+      "observedPeakRssBytes": 3047792640,
+      "reportSha256": "0485a215c764354dcce95d84b7a8a845960602f2c4a1c58c5ff6429bc895acdb",
+      "resourcesSha256": "f2c97c1085ad98e6b6c1438e29c36794f2e3544cfc4f717ea3b5647d6f10db98",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "b531bd5a40fb253a6eee641a08d74f94d1f88656dadf013d855209bf887f08c0",
+      "browserLaunchReceiptSha256": [
+        "9a638d79ac27235934b94f3ed344ac4b9b54be9100bffade44412c1b797dabc7",
+        "7e1313900d7b0d010634945cb76be383130090f2363109cdbdbec8c0d039140d",
+        "9d230fabd54b3f83fdf08b18110ffc9fa86315c50dae3c78c5cfc755a3e2d4d0",
+        "a2824335b85e2d58eea6c2e9a4a14c043bd83ba61083d8a2590170751bca5612"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n15-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 1416505,
+        "user_usec": 927040,
+        "system_usec": 489465,
+        "nice_usec": 831297,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 8,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 153948160,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 811.445127998013,
+      "innerOwnerMilliseconds": 728.3297739999999,
+      "observedPeakRssBytes": 671391744,
+      "reportSha256": "18da89f41d3579aade06f377336b950c5f8eb799027047d0c8488cb963d3866b",
+      "resourcesSha256": "27b129b103d10fd3a625c7876231249deb63ee74399985ae8fcf4857e92d9450",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "905f9b9b8e5bf019eba564fdcad9387c414c096f8df6ab7a0a5aadfe36d05adb",
+      "browserLaunchReceiptSha256": [
+        "efd76194350edc6dbbdc355e8674c4eb3d16eb156b5b4bebc3d0dfbaeb1bf535"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n15-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 2025725,
+        "user_usec": 1194005,
+        "system_usec": 831720,
+        "nice_usec": 1130547,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 310108160,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1136.528665010701,
+      "innerOwnerMilliseconds": 1050.883843,
+      "observedPeakRssBytes": 858562560,
+      "reportSha256": "2f6ca2e1464caa494e5a89580b6b223d087ea03953af85188b39c8fd0d22ecc6",
+      "resourcesSha256": "ec19d37c00abad31b0f4774709fd3f8d361d8e078af32ec430210c76c9f65250",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "eebd1684dcb90cf7c9d942df3fc7e350cb6787d7fa0939145a8e1f91637343b0",
+      "browserLaunchReceiptSha256": [
+        "cf07698bcdb779cb09033d2ee68755638484812cfc342f6979da5340a8c7825e"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n15-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 2321412,
+        "user_usec": 1365324,
+        "system_usec": 956088,
+        "nice_usec": 1353400,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 4,
+        "throttled_usec": 390471,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 451559424,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 746.0512539983029,
+      "innerOwnerMilliseconds": 663.13601,
+      "observedPeakRssBytes": 2382135296,
+      "reportSha256": "b302ee436f23476174c6cea15d68acc0364f4c85eac7f9080be36d352ed590ea",
+      "resourcesSha256": "b3f3c636d201feecd01997ab8077e5206701d631d5fff8e7d9e9867979bf9e17",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "da49bb7fde03cc0835120f6174b47d319c130620b09d9349d7ced00cc39ae81d",
+      "browserLaunchReceiptSha256": [
+        "7aec35c2bf1592d9552861d9e3ff73155dbafe9211ee7f813213c4f568ebc635",
+        "e2766877f1ec477dcf5b14ea35f6d2a1969da7ac05f573c372eb12c56114b172",
+        "6b0d7f3b696687fbf75b42971ce6a9fa6a929256994a0be751901871a26b9cde",
+        "734104bb5a2138e33e81f2ba7ce25ac1760a3d63d799efc8731e2b246dfb3534"
+      ]
+    },
+    {
+      "block": 1,
+      "name": "setup-n15-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 3399753,
+        "user_usec": 2126989,
+        "system_usec": 1272765,
+        "nice_usec": 2113753,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 749297,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 796643328,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1127.1852680074517,
+      "innerOwnerMilliseconds": 986.064659,
+      "observedPeakRssBytes": 2494562304,
+      "reportSha256": "b965db9036902f8ba7012d5c829591beb2b079fcdcf2104005ae9617e203e803",
+      "resourcesSha256": "2ee7d6fdae300f8cb519b070762a39b95e06b52ae8290d067777b80a16331e96",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "2f1de6a762c3a6a7a4cf2ee78f684ffa8c2ae4c6cde78aec15466fcc3f8dd58c",
+      "browserLaunchReceiptSha256": [
+        "5ccaa84b85eadd50452d6f4d41bed39b489bcf66aa2fca6cc7c64160f79c256c",
+        "2958287ebdd47631d5fbb5f0a70ad21304e3da9021bdc664092e6927def85489",
+        "a05735114ac9a762b3806365f8187e3579e1075aa504c1ff705b7cc108844960",
+        "369f55ee36fc2f5b1f63a781f205aa9c02856a172013a52e9ff8571a07a630cd"
+      ]
+    }
+  ],
+  "preflight": [
+    {
+      "block": -1,
+      "name": "setup-n15-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 2041148,
+        "user_usec": 1201395,
+        "system_usec": 839753,
+        "nice_usec": 1167746,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 11,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 312225792,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1162.2500249941368,
+      "innerOwnerMilliseconds": 1078.041643,
+      "observedPeakRssBytes": 860524544,
+      "reportSha256": "9e796747c4a2e6992c5480c66d63cbeea1c5feb156f4846f0b328c3035823805",
+      "resourcesSha256": "0c2e11996d8a16ff83a3d5b69746d766d29567cd96d539f0824a7c836ac2de5f",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "e7db8ff9dc7240ccc31370d4277de0528e8726061fcbd832b981d5388034a5a2",
+      "browserLaunchReceiptSha256": [
+        "aa93bc63737d1ed8c972a5d518ea1818251948614e0cdb6a87894e5a2559e797"
+      ]
+    },
+    {
+      "block": -1,
+      "name": "setup-n15-w1-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 1,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 1404918,
+        "user_usec": 909616,
+        "system_usec": 495303,
+        "nice_usec": 806531,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 7,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 154824704,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 780.5987980100326,
+      "innerOwnerMilliseconds": 698.320889,
+      "observedPeakRssBytes": 677515264,
+      "reportSha256": "1faa1981a14975ae29db81e0753b918bdfde1fb4050407c9fb052c29a88fafc9",
+      "resourcesSha256": "787a8f39411646d2ad46aeec7b16a7b2fb4212e5a59747b4f6d2875f21f4c215",
+      "launchReceipts": 1,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "c135a77bc02aee6b2c996244e88dcb554a756a5e33935f69e631839e012e2a42",
+      "browserLaunchReceiptSha256": [
+        "ae7b9e5d62a194ac564cadc1c8bbe71b6fa516cab0c4d4bbeaa657ebfa1efcca"
+      ]
+    },
+    {
+      "block": -1,
+      "name": "setup-n15-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 3387461,
+        "user_usec": 2073761,
+        "system_usec": 1313701,
+        "nice_usec": 2046348,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 10,
+        "nr_throttled": 7,
+        "throttled_usec": 673626,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 795037696,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1151.4286720048403,
+      "innerOwnerMilliseconds": 1009.629889,
+      "observedPeakRssBytes": 2580815872,
+      "reportSha256": "e5cc7142c808e0c5cfd3239cf0a30743c33247e8456dfeffd6fddfbb64d13422",
+      "resourcesSha256": "112b74f3262791db3fd7774b5f8d650993df34bdfa1d6c4051f4903abd5715c7",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "4aadeb3975005d06d697407e1da065f576be1a00d5c5e379a0b26ccc689a4ea6",
+      "browserLaunchReceiptSha256": [
+        "2a7550a0092b68cd60431292a6bba8b432e56926261ebee80a5943bc7a8226d5",
+        "065c6503659c37d5941c41ade0538b81ac446be2a7d8cab49decc14c34aafa42",
+        "f4aba7151cc1e4936a941052ed4ba31fb4980924be8033e1bfc2cbe657465085",
+        "393e9b19f27916e351615f0418cafc16f79718275de5ca345d2d4710600fd763"
+      ]
+    },
+    {
+      "block": -1,
+      "name": "setup-n15-w4-independent-off",
+      "family": "setup",
+      "engine": "independent",
+      "cache": false,
+      "workers": 4,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 2321572,
+        "user_usec": 1361326,
+        "system_usec": 960245,
+        "nice_usec": 1335188,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 6,
+        "nr_throttled": 5,
+        "throttled_usec": 470964,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 457019392,
+      "totalTests": 15,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 715.3942690056283,
+      "innerOwnerMilliseconds": 633.4667649999999,
+      "observedPeakRssBytes": 2347548672,
+      "reportSha256": "8b99c25248b2bf36414197bd3b72c250f6be1f544017b8ac652cdf115c6e3515",
+      "resourcesSha256": "8b82179972b9a04a9fea9c6e17ae19683add32c2f316e3b532a05cb74fce515f",
+      "launchReceipts": 4,
+      "originalWorkloadBytesVerified": true,
+      "naturalDrain": true,
+      "ownerSha256": "75b35d5cf4d12090b4b87f9498c04696ec00e1da59bb696e2207a9de90b38ded",
+      "browserLaunchReceiptSha256": [
+        "dab726797a3f17e249733c6573fd738431b59f92c183308031772d2b0ac40b6a",
+        "0cef8a30f7c0d03978eca7ecb883b8acf07ae8d3eeb46d87576165945b9eaf94",
+        "da7438344c194374c95f37991214b5346e41b4f8d1f987b435acc720eb531a5f",
+        "a7ecd5a8d23f31b938761d25f06cd703025076dd81376932ed275423ae0557c8"
+      ]
+    }
+  ],
+  "descriptiveEndpointModels": [
+    {
+      "workers": 1,
+      "block": 0,
+      "engine": "playwright",
+      "endpointIncrementMillisecondsPerAdditionalTest": 37.306690871094666,
+      "endpointExtrapolatedInterceptMilliseconds": 569.1229599295184,
+      "middleSizeResidualMilliseconds": -39.11048720474355,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 65.98543555555555
+    },
+    {
+      "workers": 1,
+      "block": 0,
+      "engine": "independent",
+      "endpointIncrementMillisecondsPerAdditionalTest": 32.36388895557158,
+      "endpointExtrapolatedInterceptMilliseconds": 285.11451965411356,
+      "middleSizeResidualMilliseconds": 44.362211009138264,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 68.60528
+    },
+    {
+      "workers": 1,
+      "block": 1,
+      "engine": "playwright",
+      "endpointIncrementMillisecondsPerAdditionalTest": 35.62159431554998,
+      "endpointExtrapolatedInterceptMilliseconds": 602.2047502774512,
+      "middleSizeResidualMilliseconds": 36.64000680146273,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 64.90072
+    },
+    {
+      "workers": 1,
+      "block": 1,
+      "engine": "independent",
+      "endpointIncrementMillisecondsPerAdditionalTest": 32.30656700441614,
+      "endpointExtrapolatedInterceptMilliseconds": 326.846622931771,
+      "middleSizeResidualMilliseconds": 11.446155802696012,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 67.73244888888888
+    },
+    {
+      "workers": 4,
+      "block": 0,
+      "engine": "playwright",
+      "endpointIncrementMillisecondsPerAdditionalTest": 18.043831519963632,
+      "endpointExtrapolatedInterceptMilliseconds": 877.9834272068305,
+      "middleSizeResidualMilliseconds": 160.27648759481963,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 72.91529777777777
+    },
+    {
+      "workers": 4,
+      "block": 0,
+      "engine": "independent",
+      "endpointIncrementMillisecondsPerAdditionalTest": 18.18975803112456,
+      "endpointExtrapolatedInterceptMilliseconds": 434.94175652740523,
+      "middleSizeResidualMilliseconds": 43.179304609657265,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 71.79198222222223
+    },
+    {
+      "workers": 4,
+      "block": 1,
+      "engine": "playwright",
+      "endpointIncrementMillisecondsPerAdditionalTest": 18.32986787103841,
+      "endpointExtrapolatedInterceptMilliseconds": 852.2372499418755,
+      "middleSizeResidualMilliseconds": 185.76075779565144,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 73.65075999999999
+    },
+    {
+      "workers": 4,
+      "block": 1,
+      "engine": "independent",
+      "endpointIncrementMillisecondsPerAdditionalTest": 17.789365915555713,
+      "endpointExtrapolatedInterceptMilliseconds": 479.21076526496716,
+      "middleSizeResidualMilliseconds": 2.2921608004253358,
+      "endpointIncrementCgroupCpuMillisecondsPerAdditionalTest": 71.34648
+    }
+  ],
+  "sourceInputsUnchanged": true,
+  "limitations": [
+    "Only the setup family is scaled through the existing configuration; test body bytes are unchanged. Larger counts are additional diagnostic workloads, not replacements for original acceptance scenarios.",
+    "Two reversed blocks provide observations, not eight-pair confidence acceptance.",
+    "Endpoint slopes and extrapolated intercepts are descriptive; they do not isolate CPU subsystems, directly measure startup, or estimate guaranteed removable work.",
+    "Cgroup CPU deltas and memory peak cover the enclosing diagnostic service interval; full final resource custody is not established.",
+    "Warmup-labelled tests remain counted in complete work. No test or capture is discarded."
+  ],
+  "decision": {
+    "startupOnlyPriority": "deprioritized",
+    "reason": "Relative advantage shrinks as test count grows; repeated per-test work must fall substantially. At four workers, endpoint CPU increments divided by four nearly match elapsed increments.",
+    "nextDirection": "Evaluate combined repeated initialization and retirement cost removal rather than repeat startup-only tuning.",
+    "finalPerformanceAdmission": false
+  }
+}
