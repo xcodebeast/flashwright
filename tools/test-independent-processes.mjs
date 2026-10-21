@@ -70,6 +70,14 @@ test('normal worker teardown errors fail the run without rewriting successful te
   assert.deepEqual(result.workerErrors.map(e => [e.phase,e.message]), [['workerTeardown','worker cleanup sentinel']]);
 });
 
+test('phase deadline recovers a blocked event loop without the whole-test watchdog', async () => {
+  const { result } = await run('hang', { retries: 1, timeoutMs: 100, shutdownTimeoutMs: 100, testWatchdogMs: 0 });
+  assert.equal(result.status, 'passed'); assert.deepEqual(result.workerErrors, []);
+  assert.deepEqual(result.results.map(r => [title(r), r.retry, r.status]), [['A',0,'passed'],['B',0,'timedOut'],['B',1,'passed'],['C',0,'passed']]);
+  assert.equal(result.workers[0].forcedTermination, true);
+  assert.match(result.results[1].errors[0].message, /timed body/);
+});
+
 test('a worker failure after its final done cannot turn into a passed suite', async () => {
   const { result } = await run('fatal-after-done');
   assert.equal(result.status, 'failed'); assert.ok(result.results.every(r => r.status === 'passed'));

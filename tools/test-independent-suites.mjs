@@ -29,7 +29,7 @@ test('invalid declarations and all fixture pools validate before any effects', a
   const pool = new FixturePool({ auto: [async ({}, use) => { effects++; await use(); }, { auto: true }] });
   await assert.rejects(collect(test => { test('first', () => {}); test('invalid', ({ missing }) => {}); }, pool), /unknown fixture/);
   await assert.rejects(collect(test => { test('same', () => {}); test('same', () => {}); }), /Duplicate/);
-  for (const declaration of [test => test.describe.serial('p', () => {}), test => test.describe.configure({ mode: 'serial' }), test => test.describe.configure({ retries: 1 }), test => test.skip(true), test => test.setTimeout(100)]) await assert.rejects(collect(declaration), /not implement|requires/);
+  for (const declaration of [test => test.describe.serial('p', () => {}), test => test.describe.configure({ mode: 'serial' }), test => test.describe.configure({ retries: 1 }), test => test.skip(true), test => test.setTimeout(-1)]) await assert.rejects(collect(declaration), /not implement|requires|Timeout|supports only/);
   assert.equal(effects, 0);
   await assert.rejects(collect(test => { test.describe.configure({ mode: 'default' }); test.describe.configure({ mode: 'default' }); }), /already assigned/);
 });

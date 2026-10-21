@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { FixtureConfigurationError, FixturePool, type FixtureCallback, type FixtureValues } from './fixture-pool.js';
+import { currentFiniteTestInfo, type FiniteTestInfo } from './suite-runtime.js';
+import { timeoutValue } from './deadlines.js';
 
 export type HookType = 'beforeAll' | 'beforeEach' | 'afterEach' | 'afterAll';
 export type ExpectedStatus = 'passed' | 'failed' | 'skipped';
@@ -19,6 +21,8 @@ export interface PlannedTest {
   readonly pool: FixturePool;
   readonly callback: FixtureCallback;
   readonly expectedStatus: ExpectedStatus;
+  readonly timeout: number | undefined;
+  readonly slow: boolean;
 }
 interface TestDeclaration {
   kind: 'test'; title: string; callback: FixtureCallback; pool: FixturePool; expectedStatus: ExpectedStatus;
@@ -27,6 +31,8 @@ interface SuiteDeclaration {
   kind: 'suite'; title: string; hooks: SuiteHook[]; use: FixtureValues[];
   entries: (SuiteDeclaration | TestDeclaration)[]; skipped: boolean; mode: SuiteMode;
   parent: SuiteDeclaration | undefined;
+  timeout: number | undefined;
+  slow: boolean;
 }
 interface CollectionSession { file: string; open: boolean; failed: boolean }
 interface CollectionScope { session: CollectionSession; suite: SuiteDeclaration; open: boolean }
@@ -35,7 +41,7 @@ interface Describe {
   (title: string, body: () => void): void;
   skip(title: string, body: () => void): void;
   parallel(title: string, body: () => void): void;
-  configure(options: { mode: 'default' | 'parallel' }): void;
+  configure(options: { mode?: 'default' | 'parallel'; timeout?: number }): void;
 }
 export interface DeclarationTest extends DeclareTest {
   extend(definitions: FixtureValues): DeclarationTest;
@@ -43,13 +49,16 @@ export interface DeclarationTest extends DeclareTest {
   describe: Describe;
   skip: DeclareTest;
   fail: DeclareTest;
+  setTimeout(timeout: number): void;
+  slow(condition?: boolean, description?: string): void;
+  info(): FiniteTestInfo;
   beforeAll(callback: FixtureCallback): void;
   beforeEach(callback: FixtureCallback): void;
   afterEach(callback: FixtureCallback): void;
   afterAll(callback: FixtureCallback): void;
 }
 const hookTypes: readonly HookType[] = ['beforeAll', 'beforeEach', 'afterEach', 'afterAll'];
-const newSuite = (title: string, skipped = false, parent?: SuiteDeclaration): SuiteDeclaration => ({ kind: 'suite', title, hooks: [], use: [], entries: [], skipped, mode: 'inherit', parent });
+const newSuite = (title: string, skipped = false, parent?: SuiteDeclaration): SuiteDeclaration => ({ kind: 'suite', title, hooks: [], use: [], entries: [], skipped, mode: 'inherit', parent, timeout: undefined, slow: false });
 const error = (message: string): never => { throw new FixtureConfigurationError(message); };
 
 /** Collection sessions own their async imports. A late declaration from an old
@@ -74,14 +83,29 @@ export class SuiteCollector {
       suite.use.push(Object.freeze({ ...values }));
     };
     test.skip = declare('skipped'); test.fail = declare('failed');
+    test.info = currentFiniteTestInfo;
+    test.setTimeout = timeout => {
+      timeoutValue(timeout);
+      if (this.#scope.getStore()) this.current().timeout = timeout;
+      else currentFiniteTestInfo().setTimeout(timeout);
+    };
+    test.slow = (condition = true) => {
+      if (typeof condition !== 'boolean') error('Fixture-dependent slow modifiers are not implemented');
+      if (this.#scope.getStore()) { if (condition) this.current().slow = true; }
+      else currentFiniteTestInfo().slow(condition);
+    };
     const describe = ((title: string, body: () => void) => this.describe(title, body, false)) as Describe;
     describe.skip = (title, body) => this.describe(title, body, true);
     describe.parallel = (title, body) => this.describe(title, body, false, 'parallel');
     describe.configure = options => {
       const suite = this.current();
-      if (!options || Object.keys(options).length !== 1 || !['default', 'parallel'].includes(options.mode)) error('Independent suite collection does not implement serial grouping, retries or timeout configuration');
-      if (suite.mode !== 'inherit') error('Suite mode is already assigned');
-      this.setMode(suite, options.mode);
+      if (!options || !Object.keys(options).length || Object.keys(options).some(key => !['mode', 'timeout'].includes(key))) error('Independent suite collection supports only mode and timeout configuration');
+      if (options.mode !== undefined) {
+        if (!['default', 'parallel'].includes(options.mode)) error('Independent suite collection does not implement serial grouping');
+        if (suite.mode !== 'inherit') error('Suite mode is already assigned');
+        this.setMode(suite, options.mode);
+      }
+      if (options.timeout !== undefined) suite.timeout = timeoutValue(options.timeout);
     };
     test.describe = describe;
     for (const type of hookTypes) test[type] = callback => {
@@ -90,7 +114,7 @@ export class SuiteCollector {
       suite.hooks.push(Object.freeze({ type, callback }));
     };
     // Unsupported public spellings fail during collection, before fixture work.
-    for (const name of ['only', 'fixme', 'slow', 'setTimeout', 'step', 'info']) Object.defineProperty(test, name, { value: () => error(`test.${name} is not implemented by the independent suite core`) });
+    for (const name of ['only', 'fixme', 'step']) Object.defineProperty(test, name, { value: () => error(`test.${name} is not implemented by the independent suite core`) });
     for (const name of ['only', 'serial', 'fixme']) Object.defineProperty(describe, name, { value: () => error(`describe.${name} is not implemented by the independent suite core`) });
     return test;
   }
@@ -129,7 +153,7 @@ export class SuiteCollector {
           const id = JSON.stringify([file, ...titlePath]);
           if (identities.has(id)) error(`Duplicate test title: ${titlePath.join(' › ')}`);
           identities.add(id);
-          tests.push(Object.freeze({ id, file, title: entry.title, titlePath, suites: Object.freeze(planned), pool, callback: entry.callback, expectedStatus: skipped || suite.skipped ? 'skipped' : entry.expectedStatus }));
+          tests.push(Object.freeze({ id, file, title: entry.title, titlePath, suites: Object.freeze(planned), pool, callback: entry.callback, expectedStatus: skipped || suite.skipped ? 'skipped' : entry.expectedStatus, timeout: [...lineage].reverse().find(s => s.timeout !== undefined)?.timeout, slow: lineage.some(s => s.slow) }));
         }
       };
       visit(root, [], [], false);
