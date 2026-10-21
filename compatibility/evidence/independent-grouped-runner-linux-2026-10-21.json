@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "scope": "Internal parallel grouping, reusable finite suite workers, and standalone one-worker application integration",
+  "runtimes": [
+    "Bun 1.4.2",
+    "Node 22.22.0"
+  ],
+  "reference": "Playwright 1.60.0",
+  "checks": {
+    "unitCasesPerRuntime": 35,
+    "suiteDifferentialScenariosPerRuntime": 13,
+    "suiteOutcomesPerImplementationPerRuntime": 30,
+    "unexpectedFailuresPerImplementationPerRuntime": 5,
+    "exactLifecycleEventSequences": true,
+    "fixtureRegressionScenariosOnBun": 10,
+    "fixtureRegressionAttemptsPerImplementation": 12,
+    "packageBuild": "passed",
+    "typecheck": "passed",
+    "defaultRunnerIntegration": "passed",
+    "ownedRunnerRuntime": "passed"
+  },
+  "applicationIntegration": {
+    "runtime": "Bun 1.4.2",
+    "workers": 1,
+    "applications": {
+      "TodoMVC": 24,
+      "SVGOMG": 6
+    },
+    "unchangedOriginalTests": true,
+    "nativeBunTestSchedulerUsed": false,
+    "freshContextPerTest": true,
+    "oneBrowserPerApplication": true,
+    "originalCallbacksAndFixtureHooksVerified": true,
+    "originalHttpRequestContractVerified": true,
+    "selectedInputsUnchanged": true,
+    "originalSupervisorIntervention": false,
+    "failureControl": {
+      "status": "passed",
+      "originalExitCode": 1,
+      "originalBodyErrorPreserved": true,
+      "afterEachAndAfterAllCompleted": true,
+      "pendingTestNotExecuted": true,
+      "contextClosed": true,
+      "browserClosed": true,
+      "finalReportWritten": true,
+      "originalSupervisorIntervention": false,
+      "selectedInputsUnchanged": true
+    }
+  },
+  "sourceHashes": {
+    "packages/flashwright-runner/src/independent/fixture-pool.ts": "4f44f3daf87cb3b91ace0654b70627039a5b4a7f905642560751a6c60e121a6a",
+    "packages/flashwright-runner/dist/commonjs/independent/fixture-pool.js": "50d0e5b60caf784d3c2bf32a1998ff404c9eb8c6d0027550dc09d4feca3ceb12",
+    "packages/flashwright-runner/src/independent/fixture-runtime.ts": "c5b6e700c856a5c10058938091389a06290c75ee4bf7188c05510925b0decdc8",
+    "packages/flashwright-runner/dist/commonjs/independent/fixture-runtime.js": "50361a588e514b0500e4924d38786cec7d1c5e1138b6b084278d0490e7d9eac9",
+    "packages/flashwright-runner/src/independent/suite-collector.ts": "dd5541283f56d5b6e0bac0092285018c69d180973a4f03577e078460c51ab3d5",
+    "packages/flashwright-runner/dist/commonjs/independent/suite-collector.js": "cc3a7a2921f910458399dd426e362875b27c4cb70d8d34dffeb7fc84213c21c9",
+    "packages/flashwright-runner/src/independent/suite-runtime.ts": "83d15dda9d1060869b2bb9638173a314b446f7ef2fa3b4d486d55edfbb359845",
+    "packages/flashwright-runner/dist/commonjs/independent/suite-runtime.js": "1361a1d0e3270a430c289061e6da45ed20c439e954d1b4127e7096ea126b8f67",
+    "packages/flashwright-runner/src/independent/suite-groups.ts": "d26966c4df79dddaaeed6fc25b6ea62df436f2229cf39a50a1191478b117ea10",
+    "packages/flashwright-runner/dist/commonjs/independent/suite-groups.js": "3a658bb54babe9f3670a01b547514c4432036600946b52b74a74c49e19df2327",
+    "compatibility/runner-suite-core/scenarios.mjs": "1759fe6fdbe2a53db92208f5073b8a1e8e6155c13f0b10d7b6f47e4e6eae5e9e",
+    "tools/run-independent-suite-differential.mjs": "7610e24635ed3015843a1e03b170d4eb8ddf25714f9bcb3954cd8d3339b89ef2"
+  },
+  "retainedCorrections": [
+    "Initial standalone import failed before browser allocation. A separate reproduction showed Bun dynamic import losing AsyncLocalStorage context; the private application loader uses synchronous require.",
+    "Review found retirement becoming nonterminal when worker cleanup changed an unexpected pass into an expected failure, and worker fixture teardown retaining the first test context. Both are fixed and covered by final tests and shared scenarios.",
+    "Earlier functional runs precede those review fixes and remain separate from the final application integration."
+  ],
+  "limitations": [
+    "Concurrent process dispatch, replacement workers, serial failure/retry policy, deadlines, retries, public reporter/artifact integration and public runner promotion remain open.",
+    "One/four-worker group planning is checked; actual standalone application dispatch here uses one worker only.",
+    "Bun asynchronous module loading requires a supported collection boundary; top-level asynchronous modules are not admitted by the private synchronous loader.",
+    "These are functional runs with no new comparative performance claim, full-core refresh or final resource/release admission."
+  ],
+  "reproduce": [
+    "bun tools/build-packages.mjs",
+    "bun run test:fixture-core",
+    "bun run test:suite-core"
+  ]
+}

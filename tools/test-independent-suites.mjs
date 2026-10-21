@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { FixturePool } from '../packages/flashwright-runner/dist/commonjs/independent/fixture-pool.js';
 import { SuiteCollector } from '../packages/flashwright-runner/dist/commonjs/independent/suite-collector.js';
-import { runWorkerGroup } from '../packages/flashwright-runner/dist/commonjs/independent/suite-runtime.js';
+import { SuiteWorker, currentFiniteTestInfo, runWorkerGroup } from '../packages/flashwright-runner/dist/commonjs/independent/suite-runtime.js';
+import { groupTests } from '../packages/flashwright-runner/dist/commonjs/independent/suite-groups.js';
 import { suiteScenarios } from '../compatibility/runner-suite-core/scenarios.mjs';
 
 const collect = async (declare, pool) => {
@@ -12,7 +13,7 @@ const collect = async (declare, pool) => {
 };
 
 test('collection seals late declarations, depth-first order and nested fixture overrides', async () => {
-  const events = [], scenario = suiteScenarios((name, event) => events.push(event))[0];
+  const events = [], scenario = suiteScenarios((name, event) => events.push(event)).find(s => s.name === 'late-nested-declarations');
   const tests = await collect(scenario.declare);
   assert.deepEqual(tests.map(t => t.titlePath), [['first'], ['nested', 'nested-test'], ['last']]);
   assert.ok(Object.isFrozen(tests) && Object.isFrozen(tests[0]) && Object.isFrozen(tests[0].suites[0].hooks));
@@ -28,7 +29,7 @@ test('invalid declarations and all fixture pools validate before any effects', a
   const pool = new FixturePool({ auto: [async ({}, use) => { effects++; await use(); }, { auto: true }] });
   await assert.rejects(collect(test => { test('first', () => {}); test('invalid', ({ missing }) => {}); }, pool), /unknown fixture/);
   await assert.rejects(collect(test => { test('same', () => {}); test('same', () => {}); }), /Duplicate/);
-  for (const declaration of [test => test.describe.parallel('p', () => {}), test => test.describe.configure({ mode: 'serial' }), test => test.describe.configure({ retries: 1 }), test => test.skip(true), test => test.setTimeout(100)]) await assert.rejects(collect(declaration), /not implement|requires/);
+  for (const declaration of [test => test.describe.serial('p', () => {}), test => test.describe.configure({ mode: 'serial' }), test => test.describe.configure({ retries: 1 }), test => test.skip(true), test => test.setTimeout(100)]) await assert.rejects(collect(declaration), /not implement|requires/);
   assert.equal(effects, 0);
   await assert.rejects(collect(test => { test.describe.configure({ mode: 'default' }); test.describe.configure({ mode: 'default' }); }), /already assigned/);
 });
@@ -146,4 +147,105 @@ test('an ancestor hook cannot acquire a fixture introduced only by child use', a
     test.beforeEach(({ childOnly }) => {});
     test.describe('child', () => { test.use({ childOnly: 1 }); test('body', () => {}); });
   }), /unknown fixture/);
+});
+
+test('parallel groups preserve sequential islands and balance all-hook chunks', async () => {
+  const tests = await collect(test => {
+    test.describe.parallel('parallel', () => {
+      test.beforeAll(() => {});
+      for (let i = 0; i < 8; i++) test('p' + i, () => {});
+      test.describe('default', () => {
+        test.describe.configure({ mode: 'default' });
+        test('s1', () => {}); test('s2', () => {});
+      });
+    });
+    test('general', () => {});
+  });
+  assert.deepEqual(groupTests(tests, 1).map(g => g.tests.map(t => t.title)), [['general'], ['s1', 's2'], ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']]);
+  assert.deepEqual(groupTests(tests, 4).map(g => g.tests.map(t => t.title)), [['general'], ['s1', 's2'], ['p0', 'p1'], ['p2', 'p3'], ['p4', 'p5'], ['p6', 'p7']]);
+  await assert.rejects(collect(test => { test.describe.configure({ mode: 'default' }); test.describe.parallel('bad', () => {}); }), /cannot be nested/);
+  for (const workers of [0, -1, NaN, 1.5]) assert.throws(() => groupTests(tests, workers), /positive integer/);
+});
+
+test('successful groups reuse worker fixtures and reenter all-hooks', async () => {
+  const events = [];
+  const tests = await collect(base => {
+    const test = base.extend({ w: [async ({}, use) => { events.push('setup'); await use(7); events.push('teardown'); }, { scope: 'worker' }] });
+    test.beforeAll(({ w }) => events.push('before:' + w));
+    test.afterAll(({ w }) => events.push('after:' + w));
+    test('general', ({ w }) => events.push('general:' + w));
+    test.describe.parallel('p', () => { test('parallel', ({ w }) => events.push('parallel:' + w)); });
+  });
+  const groups = groupTests(tests, 1), worker = new SuiteWorker(tests[0].pool);
+  for (const group of groups) assert.ok((await worker.run(group.tests)).results.every(r => r.status === 'passed'));
+  assert.deepEqual(events, ['setup', 'before:7', 'general:7', 'after:7', 'before:7', 'parallel:7', 'after:7']);
+  assert.deepEqual(await worker.close(), []); assert.equal(events.at(-1), 'teardown');
+  await assert.rejects(worker.run(groups[0].tests), /retired/);
+});
+
+test('close owns pending group callbacks and retired workers reject reuse', async () => {
+  let release; const pending = new Promise(resolve => release = resolve), events = [];
+  const tests = await collect(test => test('held', async () => { events.push('start'); await pending; events.push('end'); }));
+  const worker = new SuiteWorker(tests[0].pool), run = worker.run(tests);
+  while (!events.length) await Promise.resolve();
+  await assert.rejects(worker.run(tests), /busy/);
+  const close = worker.close(); assert.equal(close, worker.close());
+  let closed = false; void close.then(() => closed = true);
+  await Promise.resolve(); assert.equal(closed, false);
+  release(); await run; await close; assert.deepEqual(events, ['start', 'end']);
+  const failedTests = await collect(test => test('failure', () => { throw new Error('fail'); }));
+  const failed = new SuiteWorker(failedTests[0].pool);
+  assert.equal((await failed.run(failedTests)).results[0].status, 'failed');
+  await assert.rejects(failed.run(failedTests), /retired/); await failed.close();
+});
+
+test('test context follows callbacks and rejects late work from a prior attempt', async () => {
+  let release, late;
+  const pending = new Promise(resolve => release = resolve);
+  const tests = await collect(test => {
+    test('first', () => { assert.equal(currentFiniteTestInfo().title, 'first'); late = pending.then(() => currentFiniteTestInfo()); });
+    test('second', async () => { release(); await assert.rejects(late, /No active/); assert.equal(currentFiniteTestInfo().title, 'second'); });
+  });
+  const result = await runWorkerGroup(tests);
+  assert.deepEqual(result.results.map(r => r.status), ['passed', 'passed']);
+  assert.throws(() => currentFiniteTestInfo(), /No active/);
+});
+
+test('group partition uses worker value identity and retains file boundaries', async () => {
+  const collector = new SuiteCollector(), base = collector.createTest();
+  const a = base.extend({ w: [{ x: 1 }, { scope: 'worker' }] }), b = base.extend({ w: [{ x: 1 }, { scope: 'worker' }] });
+  await collector.collect('a', () => { a('a1', () => {}); b('b1', () => {}); a('a2', () => {}); });
+  await collector.collect('b', () => a('a3', () => {}));
+  assert.deepEqual(groupTests(collector.seal(), 4).map(g => [g.file, ...g.tests.map(t => t.title)]), [['a', 'a1', 'a2'], ['b', 'a3'], ['a', 'b1']]);
+});
+
+test('retirement remains sticky when teardown changes an unexpected pass into an expected failure', async () => {
+  const tests = await collect(base => {
+    const test = base.extend({ w: [async ({}, use) => { await use(); throw new Error('worker cleanup'); }, { scope: 'worker', auto: true }] });
+    test.fail('unexpected pass', () => {});
+  });
+  const worker = new SuiteWorker(tests[0].pool), result = await worker.run(tests);
+  assert.equal(result.results[0].status, 'failed'); assert.equal(result.results[0].expectedStatus, 'failed');
+  assert.equal(result.workerStopped, true);
+  await assert.rejects(worker.run(tests), /retired/);
+  assert.deepEqual(await worker.close(), [], 'Failure cleanup errors belong only to the original result');
+});
+
+test('worker fixture teardown observes the failing attempt rather than its setup attempt', async () => {
+  const events = [];
+  const tests = await collect(base => {
+    const test = base.extend({ w: [async ({}, use) => {
+      events.push('setup:' + currentFiniteTestInfo().title); await use();
+      events.push('teardown:' + currentFiniteTestInfo().title);
+    }, { scope: 'worker', auto: true }] });
+    test.describe.parallel('p', () => {
+      test('first', () => {}); test('second', () => { throw new Error('body'); });
+    });
+  });
+  const worker = new SuiteWorker(tests[0].pool), groups = groupTests(tests, 1);
+  await worker.run(groups[0].tests);
+  const result = await worker.run(groups[1].tests);
+  assert.deepEqual(events, ['setup:first', 'teardown:second']);
+  assert.deepEqual(result.results[0].errors.map(e => e.phase), ['body']);
+  await worker.close();
 });

@@ -6,7 +6,8 @@ import { dirname, resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { SuiteCollector } from '../packages/flashwright-runner/dist/commonjs/independent/suite-collector.js';
-import { runWorkerGroup } from '../packages/flashwright-runner/dist/commonjs/independent/suite-runtime.js';
+import { SuiteWorker, currentFiniteTestInfo } from '../packages/flashwright-runner/dist/commonjs/independent/suite-runtime.js';
+import { groupTests } from '../packages/flashwright-runner/dist/commonjs/independent/suite-groups.js';
 import { suiteScenarios } from '../compatibility/runner-suite-core/scenarios.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -17,7 +18,7 @@ const project = join(destination, 'reference'); await mkdir(project);
 const source = resolve(root, 'compatibility/runner-suite-core/scenarios.mjs');
 const eventFile = join(destination, 'reference-events.jsonl');
 const paths = [
-  ...['fixture-pool', 'fixture-runtime', 'suite-collector', 'suite-runtime'].flatMap(name => [`packages/flashwright-runner/src/independent/${name}.ts`, `packages/flashwright-runner/dist/commonjs/independent/${name}.js`]),
+  ...['fixture-pool', 'fixture-runtime', 'suite-collector', 'suite-runtime', 'suite-groups'].flatMap(name => [`packages/flashwright-runner/src/independent/${name}.ts`, `packages/flashwright-runner/dist/commonjs/independent/${name}.js`]),
   'compatibility/runner-suite-core/scenarios.mjs', 'tools/run-independent-suite-differential.mjs',
 ];
 const digest = async path => createHash('sha256').update(await readFile(join(root, path))).digest('hex');
@@ -37,7 +38,7 @@ const child = spawn('python3', args, { cwd: root, stdio: ['ignore', 'pipe', 'pip
 let stdout = '', stderr = ''; child.stdout.on('data', b => stdout += b); child.stderr.on('data', b => stderr += b);
 const exitCode = await new Promise((resolve, reject) => { child.once('error', reject); child.once('close', resolve); });
 await writeFile(join(destination, 'reference-stdout.txt'), stdout); await writeFile(join(destination, 'reference-stderr.txt'), stderr);
-assert.equal(exitCode, 1, 'Four intentional unexpected failures should fail the reference run');
+assert.equal(exitCode, 1, 'Five intentional unexpected failures should fail the reference run');
 const resource = JSON.parse(await readFile(join(destination, 'resources.json')));
 assert.equal(resource.exitCode, 1); assert.equal(resource.timedOut, false); assert.equal(resource.interrupted, false);
 assert.deepEqual(resource.cleanupSignals, []); assert.deepEqual(resource.remainingObservedProcesses, []);
@@ -55,11 +56,19 @@ function collect(suites, titles = [], file) {
 collect(reference.suites);
 const recorded = (await readFile(eventFile, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
 const events = [], actual = [];
-for (const scenario of suiteScenarios((name, event) => events.push({ name, event }))) {
+for (const scenario of suiteScenarios((name, event) => events.push({ name, event }), currentFiniteTestInfo)) {
   const collector = new SuiteCollector(), test = collector.createTest();
   await collector.collect(scenario.name + '.spec.mjs', () => scenario.declare(test));
-  const tests = collector.seal(), group = await runWorkerGroup(tests);
-  assert.deepEqual(group.teardownErrors, []);
+  const tests = collector.seal(), worker = new SuiteWorker(tests[0].pool);
+  const group = { results: [], pending: [] };
+  worker.validate(tests);
+  try {
+    for (const planned of groupTests(tests, 1)) {
+      const result = await worker.run(planned.tests);
+      group.results.push(...result.results); group.pending.push(...result.pending);
+      if (result.workerStopped) break;
+    }
+  } finally { assert.deepEqual(await worker.close(), []); }
   if (group.pending.length) assert.equal(scenario.name, 'before-all-errors');
   for (const test of tests) {
     const result = group.results.find(r => r.test === test);
@@ -76,8 +85,8 @@ for (const scenario of suiteScenarios((name, event) => events.push({ name, event
 await writeFile(join(destination, 'candidate-events.json'), JSON.stringify(events, null, 2));
 await writeFile(join(destination, 'candidate-results.json'), JSON.stringify(actual, null, 2));
 assert.equal(actual.length, specs.length);
-assert.equal(reference.stats.unexpected, 4); assert.equal(reference.stats.flaky, 0); assert.equal(reference.stats.skipped, 4);
+assert.equal(reference.stats.unexpected, 5); assert.equal(reference.stats.flaky, 0); assert.equal(reference.stats.skipped, 4);
 for (const [path, hash] of Object.entries(sourceHashes)) assert.equal(await digest(path), hash, path);
-const report = { status: 'passed', scenarios: definitions.length, outcomesPerImplementation: specs.length, unexpectedFailuresPerImplementation: 4, exactLifecycleEventSequences: true, sourceHashes, limitations: ['Finite internal default-mode groups only; no process scheduler, deadlines, runtime modifiers, retries, artifacts or public API promotion.', 'Pending tests are returned to the caller; this differential compares the reference beforeAll-blocked test as skipped without simulating a replacement worker.', 'No browser work or performance measurement.'] };
+const report = { status: 'passed', scenarios: definitions.length, outcomesPerImplementation: specs.length, unexpectedFailuresPerImplementation: 5, exactLifecycleEventSequences: true, sourceHashes, limitations: ['Finite internal groups with one worker; no concurrent process scheduler, serial retry policy, deadlines, runtime modifiers, retries, artifacts or public API promotion.', 'Pending tests are returned to the caller; this differential compares the reference beforeAll-blocked test as skipped without simulating a replacement worker.', 'No browser work or performance measurement.'] };
 await writeFile(join(destination, 'verified.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify({ destination, ...report }));

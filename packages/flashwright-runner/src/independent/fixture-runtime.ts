@@ -17,12 +17,7 @@ interface Instance {
   teardownFailure: { error: unknown } | undefined;
 }
 type Instances = Map<FixtureRegistration, Instance>;
-
-function sameRegistration(a: FixtureRegistration | undefined, b: FixtureRegistration | undefined): boolean {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  return a.name === b.name && Object.is(a.value, b.value) && a.scope === b.scope && a.auto === b.auto && a.option === b.option && sameRegistration(a.previous, b.previous);
-}
+type WorkerFixtureContext = <T>(callback: () => T) => T;
 
 function addErrors(errors: unknown[], error: unknown): void {
   if (error instanceof AggregateError) errors.push(...error.errors);
@@ -47,10 +42,13 @@ async function retire(instances: Instances): Promise<void> {
 export class FixtureWorker {
   readonly #pool: FixturePool;
   readonly #info: unknown;
+  readonly #runWorkerFixture: WorkerFixtureContext;
   readonly #instances: Instances = new Map();
   #attempt: FixtureAttempt | undefined;
   #closure: Promise<void> | undefined;
-  constructor(pool: FixturePool, workerInfo: unknown) { pool.validate(); this.#pool = pool; this.#info = workerInfo; }
+  constructor(pool: FixturePool, workerInfo: unknown, runWorkerFixture: WorkerFixtureContext = callback => callback()) {
+    pool.validate(); this.#pool = pool; this.#info = workerInfo; this.#runWorkerFixture = runWorkerFixture;
+  }
   beginAttempt(info: unknown, pool = this.#pool): FixtureAttempt {
     if (this.#closure) throw new FixtureConfigurationError('Fixture worker is closing');
     if (this.#attempt) throw new FixtureConfigurationError('Previous test fixture scope has not closed');
@@ -61,15 +59,13 @@ export class FixtureWorker {
       let current = pool.resolve(original.name), canonical: FixtureRegistration | undefined = original;
       while (current && canonical) { identities.set(current, canonical); current = current.previous; canonical = canonical.previous; }
     }
-    const attempt = new FixtureAttempt(pool, info, this.#info, this.#instances, identities, () => { if (this.#attempt === attempt) this.#attempt = undefined; });
+    const attempt = new FixtureAttempt(pool, info, this.#info, this.#instances, identities, this.#runWorkerFixture, () => { if (this.#attempt === attempt) this.#attempt = undefined; });
     this.#attempt = attempt;
     return attempt;
   }
   validatePool(pool: FixturePool): void {
     pool.validate();
-    const workers = this.#pool.registrations().filter(r => r.scope === 'worker');
-    const incoming = pool.registrations().filter(r => r.scope === 'worker');
-    if (workers.length !== incoming.length || workers.some(r => !sameRegistration(pool.resolve(r.name), r))) throw new FixtureConfigurationError('Changed worker fixtures require a fresh worker');
+    if (!this.#pool.hasSameWorkerFixtures(pool)) throw new FixtureConfigurationError('Changed worker fixtures require a fresh worker');
   }
   close(): Promise<void> {
     if (!this.#closure) this.#closure = this.finish();
@@ -91,11 +87,13 @@ export class FixtureAttempt {
   readonly #workerIdentities: ReadonlyMap<FixtureRegistration, FixtureRegistration>;
   readonly #testInstances: Instances = new Map();
   readonly #onClosed: () => void;
+  readonly #runWorkerFixture: WorkerFixtureContext;
   #operation: Promise<unknown> | undefined;
   #closure: Promise<void> | undefined;
-  constructor(pool: FixturePool, testInfo: unknown, workerInfo: unknown, workerInstances: Instances, workerIdentities: ReadonlyMap<FixtureRegistration, FixtureRegistration>, onClosed: () => void) {
+  constructor(pool: FixturePool, testInfo: unknown, workerInfo: unknown, workerInstances: Instances, workerIdentities: ReadonlyMap<FixtureRegistration, FixtureRegistration>, runWorkerFixture: WorkerFixtureContext, onClosed: () => void) {
     this.#pool = pool; this.#testInfo = testInfo; this.#workerInfo = workerInfo;
     this.#workerInstances = workerInstances; this.#workerIdentities = workerIdentities; this.#onClosed = onClosed;
+    this.#runWorkerFixture = runWorkerFixture;
   }
   run<T>(callback: (values: FixtureValues, info: unknown) => T, automatic: AutomaticScope = 'test'): Promise<FixtureRunResult<Awaited<T>>> {
     if (this.#closure) return Promise.reject(new FixtureConfigurationError('Test fixture scope is closing'));
@@ -163,7 +161,7 @@ export class FixtureAttempt {
       await instance.release.promise;
     };
     const info = registration.scope === 'worker' ? this.#workerInfo : this.#testInfo;
-    instance.completion = (async () => {
+    const run = async (): Promise<void> => {
       try {
         await (registration.value as FixtureFunction)(values, use, info);
         if (!used) throw new FixtureConfigurationError(`Fixture "${registration.name}" completed without use()`);
@@ -172,7 +170,8 @@ export class FixtureAttempt {
         if (!used) available.reject(error);
         else instance.teardownFailure = { error };
       }
-    })();
+    };
+    instance.completion = registration.scope === 'worker' ? this.#runWorkerFixture(run) : run();
     await available.promise;
   }
 }

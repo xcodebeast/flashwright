@@ -3,10 +3,12 @@ import { FixtureConfigurationError, FixturePool, type FixtureCallback, type Fixt
 
 export type HookType = 'beforeAll' | 'beforeEach' | 'afterEach' | 'afterAll';
 export type ExpectedStatus = 'passed' | 'failed' | 'skipped';
+export type SuiteMode = 'inherit' | 'default' | 'parallel';
 export interface SuiteHook { readonly type: HookType; readonly callback: FixtureCallback }
 export interface PlannedSuite {
   readonly title: string;
   readonly hooks: readonly SuiteHook[];
+  readonly mode: SuiteMode;
 }
 export interface PlannedTest {
   readonly id: string;
@@ -23,7 +25,8 @@ interface TestDeclaration {
 }
 interface SuiteDeclaration {
   kind: 'suite'; title: string; hooks: SuiteHook[]; use: FixtureValues[];
-  entries: (SuiteDeclaration | TestDeclaration)[]; skipped: boolean; configured: boolean;
+  entries: (SuiteDeclaration | TestDeclaration)[]; skipped: boolean; mode: SuiteMode;
+  parent: SuiteDeclaration | undefined;
 }
 interface CollectionSession { file: string; open: boolean; failed: boolean }
 interface CollectionScope { session: CollectionSession; suite: SuiteDeclaration; open: boolean }
@@ -31,7 +34,8 @@ type DeclareTest = (title: string, callback: FixtureCallback) => void;
 interface Describe {
   (title: string, body: () => void): void;
   skip(title: string, body: () => void): void;
-  configure(options: { mode: 'default' }): void;
+  parallel(title: string, body: () => void): void;
+  configure(options: { mode: 'default' | 'parallel' }): void;
 }
 export interface DeclarationTest extends DeclareTest {
   extend(definitions: FixtureValues): DeclarationTest;
@@ -45,7 +49,7 @@ export interface DeclarationTest extends DeclareTest {
   afterAll(callback: FixtureCallback): void;
 }
 const hookTypes: readonly HookType[] = ['beforeAll', 'beforeEach', 'afterEach', 'afterAll'];
-const newSuite = (title: string, skipped = false): SuiteDeclaration => ({ kind: 'suite', title, hooks: [], use: [], entries: [], skipped, configured: false });
+const newSuite = (title: string, skipped = false, parent?: SuiteDeclaration): SuiteDeclaration => ({ kind: 'suite', title, hooks: [], use: [], entries: [], skipped, mode: 'inherit', parent });
 const error = (message: string): never => { throw new FixtureConfigurationError(message); };
 
 /** Collection sessions own their async imports. A late declaration from an old
@@ -72,11 +76,12 @@ export class SuiteCollector {
     test.skip = declare('skipped'); test.fail = declare('failed');
     const describe = ((title: string, body: () => void) => this.describe(title, body, false)) as Describe;
     describe.skip = (title, body) => this.describe(title, body, true);
+    describe.parallel = (title, body) => this.describe(title, body, false, 'parallel');
     describe.configure = options => {
       const suite = this.current();
-      if (!options || Object.keys(options).length !== 1 || options.mode !== 'default') error('Independent suite collection does not implement parallel/serial grouping, retries or timeout configuration');
-      if (suite.configured) error('Suite mode is already assigned');
-      suite.configured = true;
+      if (!options || Object.keys(options).length !== 1 || !['default', 'parallel'].includes(options.mode)) error('Independent suite collection does not implement serial grouping, retries or timeout configuration');
+      if (suite.mode !== 'inherit') error('Suite mode is already assigned');
+      this.setMode(suite, options.mode);
     };
     test.describe = describe;
     for (const type of hookTypes) test[type] = callback => {
@@ -86,7 +91,7 @@ export class SuiteCollector {
     };
     // Unsupported public spellings fail during collection, before fixture work.
     for (const name of ['only', 'fixme', 'slow', 'setTimeout', 'step', 'info']) Object.defineProperty(test, name, { value: () => error(`test.${name} is not implemented by the independent suite core`) });
-    for (const name of ['only', 'parallel', 'serial', 'fixme']) Object.defineProperty(describe, name, { value: () => error(`describe.${name} is not implemented by the independent suite core`) });
+    for (const name of ['only', 'serial', 'fixme']) Object.defineProperty(describe, name, { value: () => error(`describe.${name} is not implemented by the independent suite core`) });
     return test;
   }
 
@@ -110,7 +115,7 @@ export class SuiteCollector {
     for (const { file, root } of this.#files) {
       const visit = (suite: SuiteDeclaration, ancestors: readonly SuiteDeclaration[], plannedAncestors: readonly PlannedSuite[], skipped: boolean): void => {
         const lineage = [...ancestors, suite];
-        const planned = [...plannedAncestors, Object.freeze({ title: suite.title, hooks: Object.freeze([...suite.hooks]) })];
+        const planned = [...plannedAncestors, Object.freeze({ title: suite.title, mode: suite.mode, hooks: Object.freeze([...suite.hooks]) })];
         for (const entry of suite.entries) {
           if (entry.kind === 'suite') { visit(entry, lineage, planned, skipped || suite.skipped); continue; }
           let pool = entry.pool;
@@ -138,10 +143,17 @@ export class SuiteCollector {
     if (!scope || !scope.open || !scope.session.open || this.#sealed) error('Test declarations require an active file or synchronous describe callback');
     return scope!.suite;
   }
-  private describe(title: string, body: () => void, skipped: boolean): void {
+  private setMode(suite: SuiteDeclaration, mode: 'default' | 'parallel'): void {
+    for (let parent = suite.parent; parent; parent = parent.parent) {
+      if (mode === 'parallel' && parent.mode === 'default') error('Parallel suite cannot be nested inside an explicitly default suite');
+    }
+    suite.mode = mode;
+  }
+  private describe(title: string, body: () => void, skipped: boolean, mode?: 'parallel'): void {
     const parent = this.current(), owner = this.#scope.getStore()!;
     if (typeof title !== 'string' || typeof body !== 'function') error('describe requires a title and synchronous callback');
-    const suite = newSuite(title, skipped), scope = { session: owner.session, suite, open: true };
+    const suite = newSuite(title, skipped, parent), scope = { session: owner.session, suite, open: true };
+    if (mode) this.setMode(suite, mode);
     parent.entries.push(suite);
     try {
       const result: unknown = this.#scope.run(scope, body);
