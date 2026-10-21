@@ -1,0 +1,2655 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "completed-engineering-screen-not-final-admission",
+  "sourceCommit": "14680eb5bd210327302282305f84c5dbac6e6ca8",
+  "scope": "Current independent runner plus private renderer reuse, classic uncapped frame scheduling and lazy VAAPI discovery, compared against stock Playwright on all six original controlled scenario families. No product or original test-body edits.",
+  "reference": "Playwright 1.60.0, Bun 1.4.2, Chromium 148.0.7778.96",
+  "policy": {
+    "scope": "Extend current separate-browser native composition to all six unchanged controlled scenario families before final matrix work. Functional preflight followed by two reversed-order matched blocks. No product edits or test-body changes.",
+    "families": [
+      "interaction",
+      "assertion",
+      "navigation",
+      "setup",
+      "backend",
+      "failure"
+    ],
+    "workers": [
+      1,
+      4
+    ],
+    "engines": [
+      "stock Playwright",
+      "native Flashwright independent runner"
+    ],
+    "preflightCaptures": 24,
+    "matchedCaptures": 48,
+    "testsPerCapture": 15,
+    "resourcePolicy": {
+      "cpuQuota": "400%",
+      "memoryMax": "8G",
+      "swapMax": 0,
+      "cpuAffinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "nice": 10
+    },
+    "clock": "Watchdog complete owner interval includes HTTP startup, browser/runner startup, all original callbacks, failure diagnostics, shutdown and natural process drain.",
+    "decision": "Locate which declared scenario families meet an observed 2x in both worker counts and reversed blocks; failures stay visible and prevent that family from qualifying. No change to final 9 scenario / 8 pair confidence gate or minimum two real application wins.",
+    "limitations": [
+      "Engineering screen, not final resource or performance admission.",
+      "Intentional failure 250ms waits and worker replacement remain unchanged.",
+      "Sampled memory and observed CPU are not kernel charged resource totals."
+    ]
+  },
+  "captureCount": 48,
+  "originalOutcomes": 720,
+  "passingOutcomes": 600,
+  "intentionalFailures": 120,
+  "originalBrowserLaunchReceipts": 220,
+  "observations": [
+    {
+      "family": "interaction",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1886.4084430097137,
+        "independent": 890.3734780033119
+      },
+      "speedup": 2.1186709730393574
+    },
+    {
+      "family": "interaction",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 893.2631210045656,
+        "playwright": 1884.09101999423
+      },
+      "speedup": 2.109222888184813
+    },
+    {
+      "family": "interaction",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2007.0685549871996,
+        "independent": 716.1683900048956
+      },
+      "speedup": 2.8025092743530324
+    },
+    {
+      "family": "interaction",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 804.0200719988206,
+        "playwright": 1922.8603980009211
+      },
+      "speedup": 2.3915577047978744
+    },
+    {
+      "family": "assertion",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1136.809916002676,
+        "independent": 801.1159320012666
+      },
+      "speedup": 1.4190329646332367
+    },
+    {
+      "family": "assertion",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 795.6720590009354,
+        "playwright": 1146.539028006373
+      },
+      "speedup": 1.4409693227709848
+    },
+    {
+      "family": "assertion",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1125.7205839938251,
+        "independent": 729.0398519980954
+      },
+      "speedup": 1.5441139203961733
+    },
+    {
+      "family": "assertion",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 716.790063001099,
+        "playwright": 1128.6248520045774
+      },
+      "speedup": 1.5745542666693566
+    },
+    {
+      "family": "navigation",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1216.6804269945715,
+        "independent": 850.0490970036481
+      },
+      "speedup": 1.4313060637123998
+    },
+    {
+      "family": "navigation",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 882.5259639997967,
+        "playwright": 1211.1541049962398
+      },
+      "speedup": 1.3723722070532973
+    },
+    {
+      "family": "navigation",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1162.633182000718,
+        "independent": 723.2045540004037
+      },
+      "speedup": 1.6076131926570654
+    },
+    {
+      "family": "navigation",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 795.8658870047657,
+        "playwright": 1151.9046830071602
+      },
+      "speedup": 1.4473602925014708
+    },
+    {
+      "family": "setup",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1157.8997939941473,
+        "independent": 772.7624849940185
+      },
+      "speedup": 1.4983902770630875
+    },
+    {
+      "family": "setup",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 820.2083429932827,
+        "playwright": 1112.6932760089403
+      },
+      "speedup": 1.3565983393295635
+    },
+    {
+      "family": "setup",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 1122.6224080019165,
+        "independent": 707.659520994639
+      },
+      "speedup": 1.586387767982028
+    },
+    {
+      "family": "setup",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 719.1255910001928,
+        "playwright": 1139.8812080005882
+      },
+      "speedup": 1.5850933720981746
+    },
+    {
+      "family": "backend",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2086.085693008499,
+        "independent": 1218.8480970071396
+      },
+      "speedup": 1.7115222956255554
+    },
+    {
+      "family": "backend",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 1302.6636290014721,
+        "playwright": 2193.3184800000163
+      },
+      "speedup": 1.6837182148712142
+    },
+    {
+      "family": "backend",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2060.253757997998,
+        "independent": 796.9289379980182
+      },
+      "speedup": 2.5852414936438426
+    },
+    {
+      "family": "backend",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 846.1839070077986,
+        "playwright": 1995.3301759960596
+      },
+      "speedup": 2.3580337081235347
+    },
+    {
+      "family": "failure",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 8162.367157012341,
+        "independent": 6627.361974999076
+      },
+      "speedup": 1.231616318499561
+    },
+    {
+      "family": "failure",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent": 6539.445795991924,
+        "playwright": 8184.727654006565
+      },
+      "speedup": 1.2515934697437276
+    },
+    {
+      "family": "failure",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 3149.104449999868,
+        "independent": 2232.267076993594
+      },
+      "speedup": 1.4107202863203385
+    },
+    {
+      "family": "failure",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent": 2317.9668660013704,
+        "playwright": 3122.731002004002
+      },
+      "speedup": 1.347185349284521
+    }
+  ],
+  "observedBothWorkerBothOrder2xFamilies": [
+    "interaction"
+  ],
+  "runs": [
+    {
+      "block": 0,
+      "name": "interaction-w1-playwright",
+      "family": "interaction",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1886.4084430097137,
+      "innerOwnerMilliseconds": 1803.792403,
+      "observedPeakRssBytes": 848814080,
+      "reportSha256": "5be48b46e6ebc7b4dfd87b3e1ffe04ef6f3617641a34c63876c8031890b6d9bf",
+      "resourcesSha256": "59141ab1fd164ca88b96897e2da7c9a16703ef97288ac15e0c49d28fc48a636d"
+    },
+    {
+      "block": 0,
+      "name": "interaction-w1-independent",
+      "family": "interaction",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 890.3734780033119,
+      "innerOwnerMilliseconds": 806.0153740000001,
+      "observedPeakRssBytes": 683986944,
+      "reportSha256": "9dcab7fc793c3d6f267186d616d4c9ba853e2ea1d05d60bfdc1739122c9b55c0",
+      "resourcesSha256": "92a601ade58118a079e18e53e7ab126718ec1751715810536c1720fa59394b4b"
+    },
+    {
+      "block": 0,
+      "name": "interaction-w4-playwright",
+      "family": "interaction",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2007.0685549871996,
+      "innerOwnerMilliseconds": 1915.615505,
+      "observedPeakRssBytes": 2850910208,
+      "reportSha256": "59cf56b0be1e421d586c1fc5fbdca5a544727ed0568513b618e09093e3abd7fe",
+      "resourcesSha256": "a097d04aa02d64d25eba7f654dee2642a5569068b8f86605e536329e814bc1a8"
+    },
+    {
+      "block": 0,
+      "name": "interaction-w4-independent",
+      "family": "interaction",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 716.1683900048956,
+      "innerOwnerMilliseconds": 692.014551,
+      "observedPeakRssBytes": 2422988800,
+      "reportSha256": "89496ec1eee12fb7fab9a0bc4f8d7c4ccda986d0b1aeac0bccd2f3e0bbd7c811",
+      "resourcesSha256": "9f814a1e2bc61f09bace9b19c9e4464f9a7e5fb4cdd6d32557e4ee3768d98e1f"
+    },
+    {
+      "block": 0,
+      "name": "assertion-w1-playwright",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1136.809916002676,
+      "innerOwnerMilliseconds": 1053.972237,
+      "observedPeakRssBytes": 852815872,
+      "reportSha256": "f4814e265b0d4bb8a13da6f26bcd95e43852eae6ff37c8527d8cb8e7cfec2a91",
+      "resourcesSha256": "5c47b9af6cb3f6f50130aceb3e4030edec3f328cc2be61744930308e4ac9b035"
+    },
+    {
+      "block": 0,
+      "name": "assertion-w1-independent",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 801.1159320012666,
+      "innerOwnerMilliseconds": 717.9409519999999,
+      "observedPeakRssBytes": 689299456,
+      "reportSha256": "ac7d4b867d52bebc6a109c6c7edb77264fa43def1e1f820ab02ec31997eb5ca0",
+      "resourcesSha256": "321f27fe9ee1a8c03a06d6f6525b09d7b1dcca3919ec6a75d10c68012689e330"
+    },
+    {
+      "block": 0,
+      "name": "assertion-w4-playwright",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1125.7205839938251,
+      "innerOwnerMilliseconds": 985.172781,
+      "observedPeakRssBytes": 2603327488,
+      "reportSha256": "87c09c9695e62f9cc749c4e34b32cb2da6b4b5c28ffb45cb05b186e9cacaf9af",
+      "resourcesSha256": "3de0fcba838f7ab967441573c4e6faf68da4b24ef0dde7d1cac252fd86967366"
+    },
+    {
+      "block": 0,
+      "name": "assertion-w4-independent",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 729.0398519980954,
+      "innerOwnerMilliseconds": 646.19544,
+      "observedPeakRssBytes": 2425974784,
+      "reportSha256": "d198dc49b13405c9e7dcfeac5b1561755b9191c93a88798244ccbad8cd96ef1b",
+      "resourcesSha256": "2abc89e58a2d16cd207b74387827f195f3003a81f9c8ffebdf72545602bd86cd"
+    },
+    {
+      "block": 0,
+      "name": "navigation-w1-playwright",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1216.6804269945715,
+      "innerOwnerMilliseconds": 1135.170296,
+      "observedPeakRssBytes": 835895296,
+      "reportSha256": "6097b655691892acea194c4423375a778a6b8442c9897c1485f3c1dd3c125635",
+      "resourcesSha256": "e3818cb8d63b86e435333fba56bc14e94fd59465ad33f6e2dd8ee05af2a6fb8b"
+    },
+    {
+      "block": 0,
+      "name": "navigation-w1-independent",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 850.0490970036481,
+      "innerOwnerMilliseconds": 768.6318319999999,
+      "observedPeakRssBytes": 679407616,
+      "reportSha256": "740abf60285f74358cf6a87b40b74cad68700db5b58648f5869bc563a76be7d8",
+      "resourcesSha256": "1c7c7c5b4a6a6eeb558a755d338306a791e80f0ce8491e1c0e2c40ce81a5a645"
+    },
+    {
+      "block": 0,
+      "name": "navigation-w4-playwright",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1162.633182000718,
+      "innerOwnerMilliseconds": 1080.584548,
+      "observedPeakRssBytes": 2646712320,
+      "reportSha256": "5bdd3e85b7d0bc7dfe6cd323206e98e197e20b0da29e492f317072034a2c8dc1",
+      "resourcesSha256": "2a473e89bbffb2b39da859be3658cafc0e3a27fba89d34f0c878044298aeec65"
+    },
+    {
+      "block": 0,
+      "name": "navigation-w4-independent",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 723.2045540004037,
+      "innerOwnerMilliseconds": 696.34353,
+      "observedPeakRssBytes": 2423578624,
+      "reportSha256": "ce09c79ba36ce1aa6140b594e7a38d5b460ae753e969340b46c5ad1baaf80dd5",
+      "resourcesSha256": "0399c834a09efc2cbcf8e4aa08c13f785fb087ff4adbedc9dfe655b31e1873a6"
+    },
+    {
+      "block": 0,
+      "name": "setup-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1157.8997939941473,
+      "innerOwnerMilliseconds": 1075.333849,
+      "observedPeakRssBytes": 837263360,
+      "reportSha256": "19c31adf6a9b9680376b7b4753f2ee57fc00e199de7d258b74e20c0757b1b23a",
+      "resourcesSha256": "f8623d76e244117c6834fee0cbac8d56e8134133e6255219f25f6b0fc1285034"
+    },
+    {
+      "block": 0,
+      "name": "setup-w1-independent",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 772.7624849940185,
+      "innerOwnerMilliseconds": 690.697752,
+      "observedPeakRssBytes": 683077632,
+      "reportSha256": "d387b437ff78dc9e06cd3e4d5935b1a34feef1d5c4d339aa8991b59787dfce70",
+      "resourcesSha256": "e3ba20cc059e371417d60b5fe40dbbefc0f7bd77ce886663ac8184defd2d5501"
+    },
+    {
+      "block": 0,
+      "name": "setup-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1122.6224080019165,
+      "innerOwnerMilliseconds": 980.107775,
+      "observedPeakRssBytes": 2739281920,
+      "reportSha256": "09c3b31ef8fc86ed854967043c16c7167a01cbc886f2e341ffc9112f1228a718",
+      "resourcesSha256": "c249b063a52821a417d8495c47f542b70ec56756cc68974c479af8ded545e4fd"
+    },
+    {
+      "block": 0,
+      "name": "setup-w4-independent",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 707.659520994639,
+      "innerOwnerMilliseconds": 626.285939,
+      "observedPeakRssBytes": 2396356608,
+      "reportSha256": "b4f54cec9a35f03b88d38735f0a21f9bd25c7e077490dacba391653f19cfee12",
+      "resourcesSha256": "b614bd44a8e64ed83debe2962d9e36fafd758c3d1cb8dd6cd649a7c634c2ed62"
+    },
+    {
+      "block": 0,
+      "name": "backend-w1-playwright",
+      "family": "backend",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2086.085693008499,
+      "innerOwnerMilliseconds": 2060.7340299999996,
+      "observedPeakRssBytes": 843796480,
+      "reportSha256": "4a99b7410b8c1c05c518fc639121f20b8e6896ddbfc3b1a3a8b2d67b70c3b580",
+      "resourcesSha256": "d92f73a9ef9185c4f568b0e62eb690db14302feb59a2568ef81b794b644c8cf7"
+    },
+    {
+      "block": 0,
+      "name": "backend-w1-independent",
+      "family": "backend",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1218.8480970071396,
+      "innerOwnerMilliseconds": 1137.291397,
+      "observedPeakRssBytes": 693895168,
+      "reportSha256": "8cdc43275671baff64d425c63ab3ef4291389ba5517a47a4cdcb91252522fb94",
+      "resourcesSha256": "7cb4ae0d972e56993601fa43478bf1575c17a3f2782320b41abe1b46627326e4"
+    },
+    {
+      "block": 0,
+      "name": "backend-w4-playwright",
+      "family": "backend",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2060.253757997998,
+      "innerOwnerMilliseconds": 1977.9614230000002,
+      "observedPeakRssBytes": 2875691008,
+      "reportSha256": "cd8c872e1b09cb3e39853fec74064be62a596429e07e9d89129fa0aadb6c771b",
+      "resourcesSha256": "1b922da9e50e8797f4bb8245962eb84ca4952a76b2fef4123d9fb2d3d090ce8d"
+    },
+    {
+      "block": 0,
+      "name": "backend-w4-independent",
+      "family": "backend",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 796.9289379980182,
+      "innerOwnerMilliseconds": 771.7622269999999,
+      "observedPeakRssBytes": 2439098368,
+      "reportSha256": "84a3aa9b5ee8f6eb110db046189a39d5b47e0f6662f1a0100d786a510289905b",
+      "resourcesSha256": "d3034e73f01a27e0830a5ede69fcf16764f9be1e15743f80834d329ef6789868"
+    },
+    {
+      "block": 0,
+      "name": "failure-w1-playwright",
+      "family": "failure",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 8162.367157012341,
+      "innerOwnerMilliseconds": 8016.372386,
+      "observedPeakRssBytes": 846823424,
+      "reportSha256": "7b8131dda822a7918094b2b7c945b7e3b8b38c26dcc358dc7bb341c3d81c89d7",
+      "resourcesSha256": "936e8d5e0fb0d2262fa150f6c8428ae2ad5be0d2d327c1407c4c89811de2bd77"
+    },
+    {
+      "block": 0,
+      "name": "failure-w1-independent",
+      "family": "failure",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 6627.361974999076,
+      "innerOwnerMilliseconds": 6544.428604000001,
+      "observedPeakRssBytes": 676208640,
+      "reportSha256": "004729256bdefbc56d7b64edb1d283374c99d2dbb3462cc254843f6e51338469",
+      "resourcesSha256": "d24b2af20fde14869046c380087a8a498aa24676d587f4666d5ba3c734a3f81d"
+    },
+    {
+      "block": 0,
+      "name": "failure-w4-playwright",
+      "family": "failure",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 3149.104449999868,
+      "innerOwnerMilliseconds": 3009.893234,
+      "observedPeakRssBytes": 2693672960,
+      "reportSha256": "8a2eebed799cd20945b39d203501a2b4955c764d1a3a014a9593d4226f680c11",
+      "resourcesSha256": "bac9da305f978557d85033fe52cdd359fa59eaf54e3b1dfe4a305ff996dc620f"
+    },
+    {
+      "block": 0,
+      "name": "failure-w4-independent",
+      "family": "failure",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 2232.267076993594,
+      "innerOwnerMilliseconds": 2150.345255,
+      "observedPeakRssBytes": 2387324928,
+      "reportSha256": "8ef56af3feabd4176a1f835854fb58757c27997261ed38e255c4bfb5d9a925b4",
+      "resourcesSha256": "8ad6fdf8a4a48b980dcbcd8adb969b95cd292f44897ab6801b0f9d7d7aa3bbef"
+    },
+    {
+      "block": 1,
+      "name": "interaction-w1-independent",
+      "family": "interaction",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 893.2631210045656,
+      "innerOwnerMilliseconds": 811.915518,
+      "observedPeakRssBytes": 680677376,
+      "reportSha256": "b849aab0fabc0488b8613ee2522c6cfe9e1880391b5fa9017ef55484b5d0052d",
+      "resourcesSha256": "7954b1668e97a856f0e15f88d1eccc38fde463e49babaf8104438a2988305c66"
+    },
+    {
+      "block": 1,
+      "name": "interaction-w1-playwright",
+      "family": "interaction",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1884.09101999423,
+      "innerOwnerMilliseconds": 1802.267645,
+      "observedPeakRssBytes": 836694016,
+      "reportSha256": "10545f294c586b83ed559216d60df313c37a6c4aec7eb5079b247f43fb21b617",
+      "resourcesSha256": "1a6205a57b3d562f6f55d5aa045038d738c3ef5eca26023819666f4233bb55a1"
+    },
+    {
+      "block": 1,
+      "name": "interaction-w4-independent",
+      "family": "interaction",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 804.0200719988206,
+      "innerOwnerMilliseconds": 722.621183,
+      "observedPeakRssBytes": 2411110400,
+      "reportSha256": "70d2142b01f590a14dc2f44a69026a7f7a30433ee60bcb1b7136375bec68715f",
+      "resourcesSha256": "a099466307c6c4fd466a6833348b674342c5b786b3fbb26b06ebb3a77bc9a472"
+    },
+    {
+      "block": 1,
+      "name": "interaction-w4-playwright",
+      "family": "interaction",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1922.8603980009211,
+      "innerOwnerMilliseconds": 1839.4695700000002,
+      "observedPeakRssBytes": 2856079360,
+      "reportSha256": "465d4318b1b194514b94678a736d613d78b2461228ba4d300ede36b0f2a7563d",
+      "resourcesSha256": "c3c9a4cb8f2a83c0919563bc0e0c95f0ec8560ff456f223e19241ad452c28392"
+    },
+    {
+      "block": 1,
+      "name": "assertion-w1-independent",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 795.6720590009354,
+      "innerOwnerMilliseconds": 770.978526,
+      "observedPeakRssBytes": 681926656,
+      "reportSha256": "01b8f005a2695eba32622a62b3a219905dd935e8a440d0a05a784ef17e9ae293",
+      "resourcesSha256": "b593d7281c81812901811182fbeef690058aafcc72d894b9105efbc2b3880a69"
+    },
+    {
+      "block": 1,
+      "name": "assertion-w1-playwright",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1146.539028006373,
+      "innerOwnerMilliseconds": 1063.523051,
+      "observedPeakRssBytes": 852250624,
+      "reportSha256": "07400168cca8c4d615821248cc7beeff4e1794e4df527bb888d37c970d815075",
+      "resourcesSha256": "32e664795fa74490d4eb15ac43e690b41be2fde2e2a2b99bca473a8ae510cfce"
+    },
+    {
+      "block": 1,
+      "name": "assertion-w4-independent",
+      "family": "assertion",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 716.790063001099,
+      "innerOwnerMilliseconds": 688.4724659999999,
+      "observedPeakRssBytes": 2419503104,
+      "reportSha256": "c730798122ed50f522939dc3d290464485fa8d91acd797c3762632c7ddfae30e",
+      "resourcesSha256": "e4e9b3ba6ae32689995a56f28a83c94fc8b14c0e1cf58b563df36d3da5b28658"
+    },
+    {
+      "block": 1,
+      "name": "assertion-w4-playwright",
+      "family": "assertion",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1128.6248520045774,
+      "innerOwnerMilliseconds": 988.234491,
+      "observedPeakRssBytes": 2605748224,
+      "reportSha256": "6d3c5cc9a850cb93fdd9f32f4d1075662ac5b0ee8aa287b807fd90f3bbab7577",
+      "resourcesSha256": "0a7fab547325059b70fb114408c6bdf5ce8bd18f593770dfef8733646a517b43"
+    },
+    {
+      "block": 1,
+      "name": "navigation-w1-independent",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 882.5259639997967,
+      "innerOwnerMilliseconds": 800.842735,
+      "observedPeakRssBytes": 689348608,
+      "reportSha256": "8b20be7c18cdcfce8d84ce86ba1c4d4010011b693b4e2d76a5d0d2350236cd65",
+      "resourcesSha256": "b1967242934d90736b5883ec7f7fb018cc01d02e2b60b2d51971a64cb790d209"
+    },
+    {
+      "block": 1,
+      "name": "navigation-w1-playwright",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1211.1541049962398,
+      "innerOwnerMilliseconds": 1129.020612,
+      "observedPeakRssBytes": 845844480,
+      "reportSha256": "84d340095f2bcde20c74b94c9d82f3257304bad831445432565c2e3b88be4879",
+      "resourcesSha256": "a274098d80635555865158aabe21962847694f40e1022a5dae59afc973295fd3"
+    },
+    {
+      "block": 1,
+      "name": "navigation-w4-independent",
+      "family": "navigation",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 795.8658870047657,
+      "innerOwnerMilliseconds": 715.0966099999999,
+      "observedPeakRssBytes": 2423701504,
+      "reportSha256": "d808b08f18143a75c40cffd0962a38ff4ea4d7799a9794e935a909332bfd1ba8",
+      "resourcesSha256": "35e6435113f29ac8202c6b76c69f992710424339485f13cb4ce1df88a0b99d2c"
+    },
+    {
+      "block": 1,
+      "name": "navigation-w4-playwright",
+      "family": "navigation",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1151.9046830071602,
+      "innerOwnerMilliseconds": 1013.038532,
+      "observedPeakRssBytes": 2409738240,
+      "reportSha256": "6ceef8bec751c08c45ed92a209cfc45af1758aa248f612561ca23f84d00ac1d4",
+      "resourcesSha256": "8d172af80d737602f7bade07ef35a39ef339fb0bfdeee2c66bf54f6da64e9436"
+    },
+    {
+      "block": 1,
+      "name": "setup-w1-independent",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 820.2083429932827,
+      "innerOwnerMilliseconds": 737.9995779999999,
+      "observedPeakRssBytes": 681869312,
+      "reportSha256": "19e132340d944cba3e0037050e38672f49b294047bf405fb77ac9fd195706240",
+      "resourcesSha256": "d6cffcdf41fd5af05fc53baffd0bebaee3796b92aee2c84b415559671f669f5c"
+    },
+    {
+      "block": 1,
+      "name": "setup-w1-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1112.6932760089403,
+      "innerOwnerMilliseconds": 1031.090128,
+      "observedPeakRssBytes": 829018112,
+      "reportSha256": "a86b0597eeb5da42dc0e4d0a60de4c7def47d2b6e0212e8819d559d2dd880821",
+      "resourcesSha256": "9a687f9abb4959fe2ef4758f65894e03ddbd2d070662d48d184162e79730dd22"
+    },
+    {
+      "block": 1,
+      "name": "setup-w4-independent",
+      "family": "setup",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 719.1255910001928,
+      "innerOwnerMilliseconds": 636.589605,
+      "observedPeakRssBytes": 2400751616,
+      "reportSha256": "aa24b8d0919b22c38f6d19fcfa927b3c91651f42505cded9bae3d0ac92c0fe03",
+      "resourcesSha256": "8d05bfee9759b1e05d57d0ddc967d726163dd85172143fe9c5c7a8cc24e49101"
+    },
+    {
+      "block": 1,
+      "name": "setup-w4-playwright",
+      "family": "setup",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1139.8812080005882,
+      "innerOwnerMilliseconds": 998.6902180000001,
+      "observedPeakRssBytes": 2618589184,
+      "reportSha256": "34085cbfcb172cd78918a1e840df1a9ce1175da39f19c0854a5ee641605b62d5",
+      "resourcesSha256": "d41f59c84f661cd401d4a8b976546f0dbfe1968a0a9c781970683dd553f514fe"
+    },
+    {
+      "block": 1,
+      "name": "backend-w1-independent",
+      "family": "backend",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1302.6636290014721,
+      "innerOwnerMilliseconds": 1220.102895,
+      "observedPeakRssBytes": 689016832,
+      "reportSha256": "853495b386872058394038378b771762026a66734f152a7f9ec04324a0968754",
+      "resourcesSha256": "a103784f4de834fbde18ece9947276e30e456f41630d7d1457cc14b793120811"
+    },
+    {
+      "block": 1,
+      "name": "backend-w1-playwright",
+      "family": "backend",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 2193.3184800000163,
+      "innerOwnerMilliseconds": 2110.6790969999997,
+      "observedPeakRssBytes": 839708672,
+      "reportSha256": "412ed034db897a44d7ae3bf5b190055b33b4358ed899840f24676fd1bfd51d38",
+      "resourcesSha256": "38ab403cf156e0914335c040efe039e661d0cb3dde53707733d51e861c740a0e"
+    },
+    {
+      "block": 1,
+      "name": "backend-w4-independent",
+      "family": "backend",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 846.1839070077986,
+      "innerOwnerMilliseconds": 765.196468,
+      "observedPeakRssBytes": 2428121088,
+      "reportSha256": "865d1273acc7c212602e94da0ab1573c5fbd4e9155acdcdb27084cc7c538e7e0",
+      "resourcesSha256": "4bd2d1d77c3600d591765f4e21272bf861d5cd87a4f1e91d2ba0bd40fe2d7bab"
+    },
+    {
+      "block": 1,
+      "name": "backend-w4-playwright",
+      "family": "backend",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 0,
+      "completeMilliseconds": 1995.3301759960596,
+      "innerOwnerMilliseconds": 1968.448132,
+      "observedPeakRssBytes": 2879250432,
+      "reportSha256": "8256fda76f0e2b17dbf705266f028333a8f462d16839c04072db8f9430764456",
+      "resourcesSha256": "1668fd7c309fd738b75bd7a8948cbcafccaaf1ab39b4f6b2f3e12a813b1fae5b"
+    },
+    {
+      "block": 1,
+      "name": "failure-w1-independent",
+      "family": "failure",
+      "engine": "independent",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 6539.445795991924,
+      "innerOwnerMilliseconds": 6515.362249,
+      "observedPeakRssBytes": 675606528,
+      "reportSha256": "5e87e986eec2597f8c417938201bd757bdc32fc3ea20ebfe88ce2356c82811b0",
+      "resourcesSha256": "e5aa1fda3556a0b450dc1fae896932eb64e7e89a3786d8c1b32becf1e694977c"
+    },
+    {
+      "block": 1,
+      "name": "failure-w1-playwright",
+      "family": "failure",
+      "engine": "playwright",
+      "workers": 1,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 8184.727654006565,
+      "innerOwnerMilliseconds": 8044.305823,
+      "observedPeakRssBytes": 847814656,
+      "reportSha256": "40963d2b633edefa9d7d2e05cd7f83b7d10042a95fbc44b9a7a6c2d5e0d25d0c",
+      "resourcesSha256": "efaf909ac6f3cc432c0e287c9e3b4bc1658f25d96897c1037ada8f86aa173cfd"
+    },
+    {
+      "block": 1,
+      "name": "failure-w4-independent",
+      "family": "failure",
+      "engine": "independent",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 2317.9668660013704,
+      "innerOwnerMilliseconds": 2233.210579,
+      "observedPeakRssBytes": 2397474816,
+      "reportSha256": "67816139a09ac2d30115f47a85c369fb1868a7dcf678c68cb45761baa82d1c1f",
+      "resourcesSha256": "16ce5ee845a8b7499e6278a0445902f633be90fc6b9858a8afe0700592a2a3e3"
+    },
+    {
+      "block": 1,
+      "name": "failure-w4-playwright",
+      "family": "failure",
+      "engine": "playwright",
+      "workers": 4,
+      "tests": 15,
+      "intentionalFailures": 15,
+      "completeMilliseconds": 3122.731002004002,
+      "innerOwnerMilliseconds": 2982.037597,
+      "observedPeakRssBytes": 2716176384,
+      "reportSha256": "a9c1f77b798d64ac52da43ce18828c53719f5edea5fd2b35af73dc27d101b06f",
+      "resourcesSha256": "c897446970276761f8d10e334d3a26f550cca537b266e869524f6a21313e8f79"
+    }
+  ],
+  "nativeReuse": [
+    {
+      "block": 0,
+      "family": "interaction",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "interaction",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "assertion",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "assertion",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "navigation",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "navigation",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "setup",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "setup",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "backend",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "backend",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "failure",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 0,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 0,
+      "family": "failure",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 0,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "interaction",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "interaction",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "assertion",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "assertion",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "navigation",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "navigation",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "setup",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "setup",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "backend",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 14,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "backend",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 11,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "failure",
+      "workers": 1,
+      "counts": {
+        "transferred": 15,
+        "claimed": 0,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    },
+    {
+      "block": 1,
+      "family": "failure",
+      "workers": 4,
+      "counts": {
+        "transferred": 15,
+        "claimed": 0,
+        "released": 0,
+        "failed": 0,
+        "timed-out": 0
+      }
+    }
+  ],
+  "inputs": {
+    "selectedInputsUnchanged": true,
+    "rawManifestSha256": "c1e1770159d828c385179c7169040377a057f6125d026092cd4943d8fcb9f799",
+    "originalWorkloadSha256": "46895fff89e7ab4d4c774ad7941fbaa718eccdd7d1d209b28f53d5abbc968a31",
+    "harnessSha256": "bf94a250093d6e7b427409d18aaba6b6289d0ecc5ba890d6b1ab9d3464f1b922",
+    "wrapperSha256": "34d7e4ca49f93cdfbc214b07c197dce29852327e36a7c92d170a567e00f08823",
+    "campaignSha256": "1dda5d9d067d97fe0557dfccda756127b4f45aa04e37faad9a95b0c9f353eded",
+    "candidateBrowserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "candidateDriverSha256": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249"
+  },
+  "preflight": {
+    "completeCaptures": 24,
+    "originalOutcomes": 360,
+    "intentionalFailures": 60,
+    "failedAttempts": {
+      "status": "failed-harness-identity-check",
+      "capturesBeforeFailure": 2,
+      "reason": "Stock version was incorrectly required for the custom browser. Its declared exact native version suffix is now read from the existing private driver admission contract and frozen in generated configuration. Original test bodies unchanged.",
+      "actualVersion": "148.0.7778.96-flashwright-idea02-v8-core-linux-os-001-flashwright-idea02-site-policy-001-flashwright-idea02-site-enforcement-001-flashwright-idea02-v8-checks-001-flashwright-native-action-channel-001-pointer-preparation-001-driver-transport-001-init-recovery-001-native-ack-001-routed-input-001-exact-callbacks-001-navigation-boundary-001-pointer-controller-001-pointer-owner-001-pointer-pipeline-001",
+      "rerunPolicy": "New complete preflight directory; no failed attempt deleted or timing promoted.",
+      "failedAttempts": [
+        "preflight",
+        "preflight-002"
+      ],
+      "secondFailure": "Version extraction chose the stock alternative in the driver admission list. Select the unique custom alternative and verify it against the retained actual browser identity before rerunning."
+    }
+  },
+  "diagnosticPhases": {
+    "scope": "Two separate sequential library runs, 15 fresh contexts each; an extra repeated assertion is explicitly added. Intervals include scheduling and all work below each API call. They are attribution, not original runner performance, isolated browser CPU or a bound on achievable gains.",
+    "runs": [
+      {
+        "block": 0,
+        "warmContexts": {
+          "context-create": {
+            "count": 14,
+            "medianMilliseconds": 0.27059350000000393,
+            "sumMilliseconds": 4.018782000000044
+          },
+          "page-create": {
+            "count": 14,
+            "medianMilliseconds": 6.60424549999999,
+            "sumMilliseconds": 90.21090399999994
+          },
+          "goto": {
+            "count": 14,
+            "medianMilliseconds": 4.40935749999997,
+            "sumMilliseconds": 63.32657299999988
+          },
+          "storage-evaluate": {
+            "count": 14,
+            "medianMilliseconds": 1.2862445000000378,
+            "sumMilliseconds": 21.234011000000038
+          },
+          "first-assertion": {
+            "count": 14,
+            "medianMilliseconds": 8.693457999999993,
+            "sumMilliseconds": 123.30229000000011
+          },
+          "repeat-assertion": {
+            "count": 14,
+            "medianMilliseconds": 0.6793079999999918,
+            "sumMilliseconds": 10.180927999999852
+          },
+          "observation-evaluate": {
+            "count": 14,
+            "medianMilliseconds": 0.4300154999999819,
+            "sumMilliseconds": 6.775780999999796
+          },
+          "context-close": {
+            "count": 14,
+            "medianMilliseconds": 12.022216000000014,
+            "sumMilliseconds": 174.0308090000001
+          }
+        },
+        "rows": [
+          {
+            "context": -1,
+            "name": "server",
+            "milliseconds": 1.6364930000000015
+          },
+          {
+            "context": -1,
+            "name": "browser",
+            "milliseconds": 58.65461200000001
+          },
+          {
+            "context": 0,
+            "name": "context-create",
+            "milliseconds": 1.741382999999999
+          },
+          {
+            "context": 0,
+            "name": "page-create",
+            "milliseconds": 29.012192999999996
+          },
+          {
+            "context": 0,
+            "name": "goto",
+            "milliseconds": 11.277458999999993
+          },
+          {
+            "context": 0,
+            "name": "storage-evaluate",
+            "milliseconds": 3.191383000000002
+          },
+          {
+            "context": 0,
+            "name": "first-assertion",
+            "milliseconds": 16.718508000000014
+          },
+          {
+            "context": 0,
+            "name": "repeat-assertion",
+            "milliseconds": 2.1791729999999916
+          },
+          {
+            "context": 0,
+            "name": "observation-evaluate",
+            "milliseconds": 0.6595409999999902
+          },
+          {
+            "context": 0,
+            "name": "context-close",
+            "milliseconds": 14.369894000000016
+          },
+          {
+            "context": 1,
+            "name": "context-create",
+            "milliseconds": 0.39910699999998656
+          },
+          {
+            "context": 1,
+            "name": "page-create",
+            "milliseconds": 6.403144000000026
+          },
+          {
+            "context": 1,
+            "name": "goto",
+            "milliseconds": 4.314803000000012
+          },
+          {
+            "context": 1,
+            "name": "storage-evaluate",
+            "milliseconds": 2.73796200000001
+          },
+          {
+            "context": 1,
+            "name": "first-assertion",
+            "milliseconds": 9.339393000000001
+          },
+          {
+            "context": 1,
+            "name": "repeat-assertion",
+            "milliseconds": 0.7223299999999995
+          },
+          {
+            "context": 1,
+            "name": "observation-evaluate",
+            "milliseconds": 0.43315099999998097
+          },
+          {
+            "context": 1,
+            "name": "context-close",
+            "milliseconds": 13.265017999999998
+          },
+          {
+            "context": 2,
+            "name": "context-create",
+            "milliseconds": 0.31229200000001356
+          },
+          {
+            "context": 2,
+            "name": "page-create",
+            "milliseconds": 7.449618999999984
+          },
+          {
+            "context": 2,
+            "name": "goto",
+            "milliseconds": 4.676929999999999
+          },
+          {
+            "context": 2,
+            "name": "storage-evaluate",
+            "milliseconds": 1.4372960000000035
+          },
+          {
+            "context": 2,
+            "name": "first-assertion",
+            "milliseconds": 8.331300999999996
+          },
+          {
+            "context": 2,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6294240000000002
+          },
+          {
+            "context": 2,
+            "name": "observation-evaluate",
+            "milliseconds": 0.42415399999998726
+          },
+          {
+            "context": 2,
+            "name": "context-close",
+            "milliseconds": 11.993165999999974
+          },
+          {
+            "context": 3,
+            "name": "context-create",
+            "milliseconds": 0.27043299999999704
+          },
+          {
+            "context": 3,
+            "name": "page-create",
+            "milliseconds": 4.851931999999977
+          },
+          {
+            "context": 3,
+            "name": "goto",
+            "milliseconds": 3.868707000000029
+          },
+          {
+            "context": 3,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2730750000000057
+          },
+          {
+            "context": 3,
+            "name": "first-assertion",
+            "milliseconds": 8.132182999999998
+          },
+          {
+            "context": 3,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6453429999999685
+          },
+          {
+            "context": 3,
+            "name": "observation-evaluate",
+            "milliseconds": 0.46108499999996866
+          },
+          {
+            "context": 3,
+            "name": "context-close",
+            "milliseconds": 11.838563000000022
+          },
+          {
+            "context": 4,
+            "name": "context-create",
+            "milliseconds": 0.33973399999996445
+          },
+          {
+            "context": 4,
+            "name": "page-create",
+            "milliseconds": 6.7242539999999735
+          },
+          {
+            "context": 4,
+            "name": "goto",
+            "milliseconds": 5.012055999999973
+          },
+          {
+            "context": 4,
+            "name": "storage-evaluate",
+            "milliseconds": 1.423861000000045
+          },
+          {
+            "context": 4,
+            "name": "first-assertion",
+            "milliseconds": 8.933071999999981
+          },
+          {
+            "context": 4,
+            "name": "repeat-assertion",
+            "milliseconds": 0.7117999999999824
+          },
+          {
+            "context": 4,
+            "name": "observation-evaluate",
+            "milliseconds": 0.535505999999998
+          },
+          {
+            "context": 4,
+            "name": "context-close",
+            "milliseconds": 12.822257999999977
+          },
+          {
+            "context": 5,
+            "name": "context-create",
+            "milliseconds": 0.3613849999999843
+          },
+          {
+            "context": 5,
+            "name": "page-create",
+            "milliseconds": 7.3282689999999775
+          },
+          {
+            "context": 5,
+            "name": "goto",
+            "milliseconds": 5.950675999999987
+          },
+          {
+            "context": 5,
+            "name": "storage-evaluate",
+            "milliseconds": 1.8727419999999597
+          },
+          {
+            "context": 5,
+            "name": "first-assertion",
+            "milliseconds": 9.330506000000014
+          },
+          {
+            "context": 5,
+            "name": "repeat-assertion",
+            "milliseconds": 0.8801290000000108
+          },
+          {
+            "context": 5,
+            "name": "observation-evaluate",
+            "milliseconds": 0.5189639999999827
+          },
+          {
+            "context": 5,
+            "name": "context-close",
+            "milliseconds": 13.325192000000015
+          },
+          {
+            "context": 6,
+            "name": "context-create",
+            "milliseconds": 0.2803210000000149
+          },
+          {
+            "context": 6,
+            "name": "page-create",
+            "milliseconds": 6.484237000000007
+          },
+          {
+            "context": 6,
+            "name": "goto",
+            "milliseconds": 4.359528000000012
+          },
+          {
+            "context": 6,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2791460000000257
+          },
+          {
+            "context": 6,
+            "name": "first-assertion",
+            "milliseconds": 10.52842800000002
+          },
+          {
+            "context": 6,
+            "name": "repeat-assertion",
+            "milliseconds": 1.1227289999999925
+          },
+          {
+            "context": 6,
+            "name": "observation-evaluate",
+            "milliseconds": 0.9894259999999804
+          },
+          {
+            "context": 6,
+            "name": "context-close",
+            "milliseconds": 13.073714999999993
+          },
+          {
+            "context": 7,
+            "name": "context-create",
+            "milliseconds": 0.2574079999999981
+          },
+          {
+            "context": 7,
+            "name": "page-create",
+            "milliseconds": 8.420930999999996
+          },
+          {
+            "context": 7,
+            "name": "goto",
+            "milliseconds": 4.836613
+          },
+          {
+            "context": 7,
+            "name": "storage-evaluate",
+            "milliseconds": 1.6041819999999802
+          },
+          {
+            "context": 7,
+            "name": "first-assertion",
+            "milliseconds": 9.041046999999992
+          },
+          {
+            "context": 7,
+            "name": "repeat-assertion",
+            "milliseconds": 0.8579969999999548
+          },
+          {
+            "context": 7,
+            "name": "observation-evaluate",
+            "milliseconds": 0.501039999999989
+          },
+          {
+            "context": 7,
+            "name": "context-close",
+            "milliseconds": 14.057470999999964
+          },
+          {
+            "context": 8,
+            "name": "context-create",
+            "milliseconds": 0.3179129999999759
+          },
+          {
+            "context": 8,
+            "name": "page-create",
+            "milliseconds": 7.150461000000007
+          },
+          {
+            "context": 8,
+            "name": "goto",
+            "milliseconds": 4.707968999999991
+          },
+          {
+            "context": 8,
+            "name": "storage-evaluate",
+            "milliseconds": 2.596885000000043
+          },
+          {
+            "context": 8,
+            "name": "first-assertion",
+            "milliseconds": 8.734215000000006
+          },
+          {
+            "context": 8,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6636990000000083
+          },
+          {
+            "context": 8,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4980249999999842
+          },
+          {
+            "context": 8,
+            "name": "context-close",
+            "milliseconds": 13.512617000000034
+          },
+          {
+            "context": 9,
+            "name": "context-create",
+            "milliseconds": 0.2707540000000108
+          },
+          {
+            "context": 9,
+            "name": "page-create",
+            "milliseconds": 8.800309999999968
+          },
+          {
+            "context": 9,
+            "name": "goto",
+            "milliseconds": 4.601627000000008
+          },
+          {
+            "context": 9,
+            "name": "storage-evaluate",
+            "milliseconds": 1.1617930000000456
+          },
+          {
+            "context": 9,
+            "name": "first-assertion",
+            "milliseconds": 8.935968000000003
+          },
+          {
+            "context": 9,
+            "name": "repeat-assertion",
+            "milliseconds": 0.7057690000000321
+          },
+          {
+            "context": 9,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4078839999999673
+          },
+          {
+            "context": 9,
+            "name": "context-close",
+            "milliseconds": 11.981503000000032
+          },
+          {
+            "context": 10,
+            "name": "context-create",
+            "milliseconds": 0.2479199999999082
+          },
+          {
+            "context": 10,
+            "name": "page-create",
+            "milliseconds": 4.946712000000048
+          },
+          {
+            "context": 10,
+            "name": "goto",
+            "milliseconds": 4.459186999999929
+          },
+          {
+            "context": 10,
+            "name": "storage-evaluate",
+            "milliseconds": 1.097460999999953
+          },
+          {
+            "context": 10,
+            "name": "first-assertion",
+            "milliseconds": 8.200262000000066
+          },
+          {
+            "context": 10,
+            "name": "repeat-assertion",
+            "milliseconds": 0.5878250000000662
+          },
+          {
+            "context": 10,
+            "name": "observation-evaluate",
+            "milliseconds": 0.42687999999998283
+          },
+          {
+            "context": 10,
+            "name": "context-close",
+            "milliseconds": 11.847389000000021
+          },
+          {
+            "context": 11,
+            "name": "context-create",
+            "milliseconds": 0.2568180000000666
+          },
+          {
+            "context": 11,
+            "name": "page-create",
+            "milliseconds": 5.2340670000000955
+          },
+          {
+            "context": 11,
+            "name": "goto",
+            "milliseconds": 4.06579099999999
+          },
+          {
+            "context": 11,
+            "name": "storage-evaluate",
+            "milliseconds": 1.160951999999952
+          },
+          {
+            "context": 11,
+            "name": "first-assertion",
+            "milliseconds": 7.966919000000075
+          },
+          {
+            "context": 11,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6829950000000053
+          },
+          {
+            "context": 11,
+            "name": "observation-evaluate",
+            "milliseconds": 0.3933759999999893
+          },
+          {
+            "context": 11,
+            "name": "context-close",
+            "milliseconds": 12.051266000000055
+          },
+          {
+            "context": 12,
+            "name": "context-create",
+            "milliseconds": 0.24225999999998749
+          },
+          {
+            "context": 12,
+            "name": "page-create",
+            "milliseconds": 4.547284999999988
+          },
+          {
+            "context": 12,
+            "name": "goto",
+            "milliseconds": 4.03460199999995
+          },
+          {
+            "context": 12,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2933430000000499
+          },
+          {
+            "context": 12,
+            "name": "first-assertion",
+            "milliseconds": 8.630037000000016
+          },
+          {
+            "context": 12,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6756209999999783
+          },
+          {
+            "context": 12,
+            "name": "observation-evaluate",
+            "milliseconds": 0.3897789999999759
+          },
+          {
+            "context": 12,
+            "name": "context-close",
+            "milliseconds": 10.712906999999973
+          },
+          {
+            "context": 13,
+            "name": "context-create",
+            "milliseconds": 0.21902600000009897
+          },
+          {
+            "context": 13,
+            "name": "page-create",
+            "milliseconds": 4.792569999999955
+          },
+          {
+            "context": 13,
+            "name": "goto",
+            "milliseconds": 4.323329999999942
+          },
+          {
+            "context": 13,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2746570000000474
+          },
+          {
+            "context": 13,
+            "name": "first-assertion",
+            "milliseconds": 8.652700999999979
+          },
+          {
+            "context": 13,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6596109999999271
+          },
+          {
+            "context": 13,
+            "name": "observation-evaluate",
+            "milliseconds": 0.379729999999995
+          },
+          {
+            "context": 13,
+            "name": "context-close",
+            "milliseconds": 11.612353999999982
+          },
+          {
+            "context": 14,
+            "name": "context-create",
+            "milliseconds": 0.24341100000003735
+          },
+          {
+            "context": 14,
+            "name": "page-create",
+            "milliseconds": 7.07711299999994
+          },
+          {
+            "context": 14,
+            "name": "goto",
+            "milliseconds": 4.114754000000062
+          },
+          {
+            "context": 14,
+            "name": "storage-evaluate",
+            "milliseconds": 1.0206559999999172
+          },
+          {
+            "context": 14,
+            "name": "first-assertion",
+            "milliseconds": 8.546257999999966
+          },
+          {
+            "context": 14,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6356559999999263
+          },
+          {
+            "context": 14,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4167810000000145
+          },
+          {
+            "context": 14,
+            "name": "context-close",
+            "milliseconds": 11.93739000000005
+          },
+          {
+            "context": -1,
+            "name": "browser-close",
+            "milliseconds": 16.220121999999947
+          },
+          {
+            "context": -1,
+            "name": "server-close",
+            "milliseconds": 0.08353899999997338
+          }
+        ],
+        "reportSha256": "0572b71d75c6b42e5fb578536b8140a18d228d89771f842d3d41a113a8ca743d",
+        "resourcesSha256": "f07e704b255d0036aee477a06fdd1af0c9f0c0753d793fc3317c624b9a93e0a5"
+      },
+      {
+        "block": 1,
+        "warmContexts": {
+          "context-create": {
+            "count": 14,
+            "medianMilliseconds": 0.2690499999999929,
+            "sumMilliseconds": 4.161473999999885
+          },
+          "page-create": {
+            "count": 14,
+            "medianMilliseconds": 5.083029999999994,
+            "sumMilliseconds": 75.86328100000003
+          },
+          "goto": {
+            "count": 14,
+            "medianMilliseconds": 4.233047999999968,
+            "sumMilliseconds": 59.191469999999896
+          },
+          "storage-evaluate": {
+            "count": 14,
+            "medianMilliseconds": 1.193608499999982,
+            "sumMilliseconds": 17.006732999999997
+          },
+          "first-assertion": {
+            "count": 14,
+            "medianMilliseconds": 8.640527500000019,
+            "sumMilliseconds": 120.20620999999997
+          },
+          "repeat-assertion": {
+            "count": 14,
+            "medianMilliseconds": 0.6337719999999933,
+            "sumMilliseconds": 9.088676999999961
+          },
+          "observation-evaluate": {
+            "count": 14,
+            "medianMilliseconds": 0.422721499999966,
+            "sumMilliseconds": 6.075279999999907
+          },
+          "context-close": {
+            "count": 14,
+            "medianMilliseconds": 11.97298699999999,
+            "sumMilliseconds": 170.69973300000007
+          }
+        },
+        "rows": [
+          {
+            "context": -1,
+            "name": "server",
+            "milliseconds": 1.655189
+          },
+          {
+            "context": -1,
+            "name": "browser",
+            "milliseconds": 57.381727999999995
+          },
+          {
+            "context": 0,
+            "name": "context-create",
+            "milliseconds": 1.7295699999999954
+          },
+          {
+            "context": 0,
+            "name": "page-create",
+            "milliseconds": 19.275587
+          },
+          {
+            "context": 0,
+            "name": "goto",
+            "milliseconds": 11.609156999999996
+          },
+          {
+            "context": 0,
+            "name": "storage-evaluate",
+            "milliseconds": 2.873911000000021
+          },
+          {
+            "context": 0,
+            "name": "first-assertion",
+            "milliseconds": 16.123338999999987
+          },
+          {
+            "context": 0,
+            "name": "repeat-assertion",
+            "milliseconds": 0.8177000000000021
+          },
+          {
+            "context": 0,
+            "name": "observation-evaluate",
+            "milliseconds": 0.5543810000000065
+          },
+          {
+            "context": 0,
+            "name": "context-close",
+            "milliseconds": 13.494583000000006
+          },
+          {
+            "context": 1,
+            "name": "context-create",
+            "milliseconds": 0.2875760000000014
+          },
+          {
+            "context": 1,
+            "name": "page-create",
+            "milliseconds": 4.1245429999999885
+          },
+          {
+            "context": 1,
+            "name": "goto",
+            "milliseconds": 4.564936999999986
+          },
+          {
+            "context": 1,
+            "name": "storage-evaluate",
+            "milliseconds": 1.230273000000011
+          },
+          {
+            "context": 1,
+            "name": "first-assertion",
+            "milliseconds": 9.240576000000004
+          },
+          {
+            "context": 1,
+            "name": "repeat-assertion",
+            "milliseconds": 0.7911200000000065
+          },
+          {
+            "context": 1,
+            "name": "observation-evaluate",
+            "milliseconds": 0.5412660000000074
+          },
+          {
+            "context": 1,
+            "name": "context-close",
+            "milliseconds": 12.848878000000013
+          },
+          {
+            "context": 2,
+            "name": "context-create",
+            "milliseconds": 0.45554399999997486
+          },
+          {
+            "context": 2,
+            "name": "page-create",
+            "milliseconds": 4.226475999999991
+          },
+          {
+            "context": 2,
+            "name": "goto",
+            "milliseconds": 3.9544400000000053
+          },
+          {
+            "context": 2,
+            "name": "storage-evaluate",
+            "milliseconds": 1.1266669999999976
+          },
+          {
+            "context": 2,
+            "name": "first-assertion",
+            "milliseconds": 8.767919000000006
+          },
+          {
+            "context": 2,
+            "name": "repeat-assertion",
+            "milliseconds": 0.8024920000000009
+          },
+          {
+            "context": 2,
+            "name": "observation-evaluate",
+            "milliseconds": 0.49336499999998296
+          },
+          {
+            "context": 2,
+            "name": "context-close",
+            "milliseconds": 14.292326000000003
+          },
+          {
+            "context": 3,
+            "name": "context-create",
+            "milliseconds": 0.2898500000000013
+          },
+          {
+            "context": 3,
+            "name": "page-create",
+            "milliseconds": 5.132754000000006
+          },
+          {
+            "context": 3,
+            "name": "goto",
+            "milliseconds": 4.463284999999985
+          },
+          {
+            "context": 3,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2118380000000002
+          },
+          {
+            "context": 3,
+            "name": "first-assertion",
+            "milliseconds": 8.470875999999976
+          },
+          {
+            "context": 3,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6028729999999882
+          },
+          {
+            "context": 3,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4103979999999865
+          },
+          {
+            "context": 3,
+            "name": "context-close",
+            "milliseconds": 13.35180299999999
+          },
+          {
+            "context": 4,
+            "name": "context-create",
+            "milliseconds": 0.5081230000000119
+          },
+          {
+            "context": 4,
+            "name": "page-create",
+            "milliseconds": 6.641075000000001
+          },
+          {
+            "context": 4,
+            "name": "goto",
+            "milliseconds": 5.027285000000006
+          },
+          {
+            "context": 4,
+            "name": "storage-evaluate",
+            "milliseconds": 1.478654000000006
+          },
+          {
+            "context": 4,
+            "name": "first-assertion",
+            "milliseconds": 8.765042999999991
+          },
+          {
+            "context": 4,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6889060000000313
+          },
+          {
+            "context": 4,
+            "name": "observation-evaluate",
+            "milliseconds": 0.49395700000002307
+          },
+          {
+            "context": 4,
+            "name": "context-close",
+            "milliseconds": 12.131729000000007
+          },
+          {
+            "context": 5,
+            "name": "context-create",
+            "milliseconds": 0.25885099999999284
+          },
+          {
+            "context": 5,
+            "name": "page-create",
+            "milliseconds": 5.033305999999982
+          },
+          {
+            "context": 5,
+            "name": "goto",
+            "milliseconds": 4.2886740000000145
+          },
+          {
+            "context": 5,
+            "name": "storage-evaluate",
+            "milliseconds": 1.1000169999999798
+          },
+          {
+            "context": 5,
+            "name": "first-assertion",
+            "milliseconds": 8.550436999999988
+          },
+          {
+            "context": 5,
+            "name": "repeat-assertion",
+            "milliseconds": 0.5837569999999914
+          },
+          {
+            "context": 5,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4021329999999921
+          },
+          {
+            "context": 5,
+            "name": "context-close",
+            "milliseconds": 11.829484999999977
+          },
+          {
+            "context": 6,
+            "name": "context-create",
+            "milliseconds": 0.2577190000000087
+          },
+          {
+            "context": 6,
+            "name": "page-create",
+            "milliseconds": 8.440787999999998
+          },
+          {
+            "context": 6,
+            "name": "goto",
+            "milliseconds": 3.855322000000001
+          },
+          {
+            "context": 6,
+            "name": "storage-evaluate",
+            "milliseconds": 1.1835949999999684
+          },
+          {
+            "context": 6,
+            "name": "first-assertion",
+            "milliseconds": 8.657058000000006
+          },
+          {
+            "context": 6,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6459050000000275
+          },
+          {
+            "context": 6,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4279119999999921
+          },
+          {
+            "context": 6,
+            "name": "context-close",
+            "milliseconds": 11.771997000000056
+          },
+          {
+            "context": 7,
+            "name": "context-create",
+            "milliseconds": 0.25413199999997005
+          },
+          {
+            "context": 7,
+            "name": "page-create",
+            "milliseconds": 6.646845999999982
+          },
+          {
+            "context": 7,
+            "name": "goto",
+            "milliseconds": 4.246723999999972
+          },
+          {
+            "context": 7,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2868599999999901
+          },
+          {
+            "context": 7,
+            "name": "first-assertion",
+            "milliseconds": 8.576566000000014
+          },
+          {
+            "context": 7,
+            "name": "repeat-assertion",
+            "milliseconds": 0.5750210000000493
+          },
+          {
+            "context": 7,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4040059999999812
+          },
+          {
+            "context": 7,
+            "name": "context-close",
+            "milliseconds": 11.84329200000002
+          },
+          {
+            "context": 8,
+            "name": "context-create",
+            "milliseconds": 0.266255000000001
+          },
+          {
+            "context": 8,
+            "name": "page-create",
+            "milliseconds": 4.831794000000002
+          },
+          {
+            "context": 8,
+            "name": "goto",
+            "milliseconds": 3.9145540000000096
+          },
+          {
+            "context": 8,
+            "name": "storage-evaluate",
+            "milliseconds": 1.263085999999987
+          },
+          {
+            "context": 8,
+            "name": "first-assertion",
+            "milliseconds": 8.196745999999962
+          },
+          {
+            "context": 8,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6206369999999879
+          },
+          {
+            "context": 8,
+            "name": "observation-evaluate",
+            "milliseconds": 0.432549999999992
+          },
+          {
+            "context": 8,
+            "name": "context-close",
+            "milliseconds": 11.992344000000003
+          },
+          {
+            "context": 9,
+            "name": "context-create",
+            "milliseconds": 0.23101900000000342
+          },
+          {
+            "context": 9,
+            "name": "page-create",
+            "milliseconds": 4.760038000000009
+          },
+          {
+            "context": 9,
+            "name": "goto",
+            "milliseconds": 4.39030600000001
+          },
+          {
+            "context": 9,
+            "name": "storage-evaluate",
+            "milliseconds": 1.1453730000000064
+          },
+          {
+            "context": 9,
+            "name": "first-assertion",
+            "milliseconds": 8.746618999999953
+          },
+          {
+            "context": 9,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6428589999999872
+          },
+          {
+            "context": 9,
+            "name": "observation-evaluate",
+            "milliseconds": 0.40159099999999626
+          },
+          {
+            "context": 9,
+            "name": "context-close",
+            "milliseconds": 11.953629999999976
+          },
+          {
+            "context": 10,
+            "name": "context-create",
+            "milliseconds": 0.2865939999999796
+          },
+          {
+            "context": 10,
+            "name": "page-create",
+            "milliseconds": 5.714989000000003
+          },
+          {
+            "context": 10,
+            "name": "goto",
+            "milliseconds": 4.219371999999964
+          },
+          {
+            "context": 10,
+            "name": "storage-evaluate",
+            "milliseconds": 1.1663920000000303
+          },
+          {
+            "context": 10,
+            "name": "first-assertion",
+            "milliseconds": 8.236941999999999
+          },
+          {
+            "context": 10,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6648309999999924
+          },
+          {
+            "context": 10,
+            "name": "observation-evaluate",
+            "milliseconds": 0.4178819999999632
+          },
+          {
+            "context": 10,
+            "name": "context-close",
+            "milliseconds": 12.034444000000008
+          },
+          {
+            "context": 11,
+            "name": "context-create",
+            "milliseconds": 0.2676969999999983
+          },
+          {
+            "context": 11,
+            "name": "page-create",
+            "milliseconds": 4.534941000000003
+          },
+          {
+            "context": 11,
+            "name": "goto",
+            "milliseconds": 3.8125409999999533
+          },
+          {
+            "context": 11,
+            "name": "storage-evaluate",
+            "milliseconds": 1.0702989999999772
+          },
+          {
+            "context": 11,
+            "name": "first-assertion",
+            "milliseconds": 8.833462999999995
+          },
+          {
+            "context": 11,
+            "name": "repeat-assertion",
+            "milliseconds": 0.5921129999999266
+          },
+          {
+            "context": 11,
+            "name": "observation-evaluate",
+            "milliseconds": 0.42756099999996877
+          },
+          {
+            "context": 11,
+            "name": "context-close",
+            "milliseconds": 11.784950999999978
+          },
+          {
+            "context": 12,
+            "name": "context-create",
+            "milliseconds": 0.2362990000000309
+          },
+          {
+            "context": 12,
+            "name": "page-create",
+            "milliseconds": 4.625593000000094
+          },
+          {
+            "context": 12,
+            "name": "goto",
+            "milliseconds": 3.883055000000013
+          },
+          {
+            "context": 12,
+            "name": "storage-evaluate",
+            "milliseconds": 1.4794960000000401
+          },
+          {
+            "context": 12,
+            "name": "first-assertion",
+            "milliseconds": 8.631800999999996
+          },
+          {
+            "context": 12,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6003989999999249
+          },
+          {
+            "context": 12,
+            "name": "observation-evaluate",
+            "milliseconds": 0.43109800000001997
+          },
+          {
+            "context": 12,
+            "name": "context-close",
+            "milliseconds": 12.116660000000024
+          },
+          {
+            "context": 13,
+            "name": "context-create",
+            "milliseconds": 0.2704029999999875
+          },
+          {
+            "context": 13,
+            "name": "page-create",
+            "milliseconds": 5.691073999999958
+          },
+          {
+            "context": 13,
+            "name": "goto",
+            "milliseconds": 4.415202999999906
+          },
+          {
+            "context": 13,
+            "name": "storage-evaluate",
+            "milliseconds": 1.2036219999999958
+          },
+          {
+            "context": 13,
+            "name": "first-assertion",
+            "milliseconds": 8.649254000000042
+          },
+          {
+            "context": 13,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6246849999999995
+          },
+          {
+            "context": 13,
+            "name": "observation-evaluate",
+            "milliseconds": 0.3910409999999729
+          },
+          {
+            "context": 13,
+            "name": "context-close",
+            "milliseconds": 11.872377000000029
+          },
+          {
+            "context": 14,
+            "name": "context-create",
+            "milliseconds": 0.29141199999992295
+          },
+          {
+            "context": 14,
+            "name": "page-create",
+            "milliseconds": 5.459064000000012
+          },
+          {
+            "context": 14,
+            "name": "goto",
+            "milliseconds": 4.15577200000007
+          },
+          {
+            "context": 14,
+            "name": "storage-evaluate",
+            "milliseconds": 1.060561000000007
+          },
+          {
+            "context": 14,
+            "name": "first-assertion",
+            "milliseconds": 7.882910000000038
+          },
+          {
+            "context": 14,
+            "name": "repeat-assertion",
+            "milliseconds": 0.6530790000000479
+          },
+          {
+            "context": 14,
+            "name": "observation-evaluate",
+            "milliseconds": 0.40052000000002863
+          },
+          {
+            "context": 14,
+            "name": "context-close",
+            "milliseconds": 10.875816999999984
+          },
+          {
+            "context": -1,
+            "name": "browser-close",
+            "milliseconds": 15.087976000000026
+          },
+          {
+            "context": -1,
+            "name": "server-close",
+            "milliseconds": 0.08494100000007165
+          }
+        ],
+        "reportSha256": "1215cf2fbc7e1c65e041c369da7e16ae4a6fbae20458aebc81ec0a75f1cade5e",
+        "resourcesSha256": "ad51206d1066c2c9bcfad765a0baba7b91c38f992b215bc9a8ae8033218f4312"
+      }
+    ],
+    "failedAttempts": [
+      "First attempt could not resolve the internal core package from the workspace root.",
+      "Second attempt used a nonexistent dist entrypoint.",
+      "Both failures occurred before browser/server work; final runs use the public flashwright facade."
+    ],
+    "sourceFindings": [
+      "The first locator assertion creates an isolated world, evaluates a combined 373154-byte runtime, then calls its resident assertion.",
+      "Every fresh document rebuilds and sends the full runtime; subsequent same-document assertions reuse it.",
+      "Renderer transfer performs serial inventory, hold, page drain, prepare, detach, allocation and adoption operations. Context-close timing includes this work; it does not isolate GC."
+    ]
+  },
+  "limitations": [
+    "Only interaction clears observed 2x in both worker counts and both reversed blocks. No majority-scenario or confidence acceptance.",
+    "Two applications and real backend remain separate; minimum two real application wins is unchanged.",
+    "Failure documents preserve selected content checks; this is not full diagnostic or callback/native ownership admission.",
+    "Original supervision observes natural drain without interventions; final cgroup resource custody remains unadmitted.",
+    "Sampled concurrent RSS is distinct from charged memory."
+  ],
+  "finalPerformanceAdmission": false,
+  "fullResourceAdmission": false
+}
