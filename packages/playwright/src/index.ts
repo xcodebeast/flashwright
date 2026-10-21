@@ -407,7 +407,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   _contextFactory: [async ({ browser, video, _reuseContext, _combinedContextOptions /** mitigate dep-via-auto lack of traceability */ }, use, testInfo) => {
     const testInfoImpl = testInfo as TestInfoImpl;
     const videoMode = normalizeVideoMode(video);
-    const captureVideo = shouldCaptureVideo(videoMode, testInfo) && !_reuseContext;
+    // Flashwright: reused contexts never record video; recycled ones are only used for tests that
+    // do not record it (see `context` below).
+    const captureVideo = shouldCaptureVideo(videoMode, testInfo);
     const contexts = new Map<BrowserContext, { close: () => Promise<void>, pagesWithVideo: Page[] }>();
     let counter = 0;
 
@@ -467,7 +469,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     let mode = _optionContextReuseMode;
     if (process.env.PW_TEST_REUSE_CONTEXT || reuseContext)
       mode = 'when-possible';
-    const reuse = (mode === 'when-possible' || _recycleContext) && normalizeVideoMode(video) === 'off';
+    const reuse = (mode === 'when-possible' && normalizeVideoMode(video) === 'off') || _recycleContext;
     await use(reuse);
   }, { scope: 'worker',  title: 'context', box: true }],
 
@@ -477,7 +479,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   _recycleContext: [async ({ video, _optionContextReuseMode, reuseContext }, use) => {
     const explicitReuse = !!process.env.PW_TEST_REUSE_CONTEXT || reuseContext || _optionContextReuseMode === 'when-possible';
     const debugging = !!process.env.PWDEBUG || !!(globals.currentTestInfo() as TestInfoImpl | null)?._configInternal.configCLIOverrides.debug;
-    await use(!explicitReuse && !debugging && process.env.FLASHWRIGHT_ISOLATION !== 'strict' && normalizeVideoMode(video) === 'off');
+    await use(!explicitReuse && !debugging && process.env.FLASHWRIGHT_ISOLATION !== 'strict' && kRecyclingVideoModes.has(normalizeVideoMode(video)));
   }, { scope: 'worker', box: true }],
 
   context: async ({ browser, video, _reuseContext, _recycleContext, _contextFactory }, use, testInfoPublic) => {
@@ -485,7 +487,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     const testInfo = testInfoPublic as TestInfoImpl;
     const show = typeof video === 'string' ? undefined : video.show;
     attachConnectedHeaderIfNeeded(testInfo, browserImpl);
-    if (!_reuseContext) {
+    // Flashwright: with video on retries only, first attempts use the recycled context and the
+    // attempts that record video get a new one.
+    if (!_reuseContext || shouldCaptureVideo(normalizeVideoMode(video), testInfo)) {
       const { context, close } = await _contextFactory();
       await installScreencastTitleUpdater(testInfo, context, show?.test);
       await use(context);
@@ -556,6 +560,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
 });
 
 type ScreenshotOption = PlaywrightWorkerOptions['screenshot'] | undefined;
+
+// Flashwright: video modes in which some attempts record no video, so their tests can recycle contexts.
+const kRecyclingVideoModes = new Set<VideoMode>(['off', 'on-first-retry', 'on-all-retries']);
 
 function normalizeVideoMode(video: VideoMode | 'retry-with-video' | { mode: VideoMode } | undefined): VideoMode {
   if (!video)
