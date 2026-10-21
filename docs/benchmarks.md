@@ -17,6 +17,17 @@ The [renderer reuse screen](../benchmarks/results/renderer-reuse-linux-2026-10-2
 
 Negative savings mean slower execution. Time includes fixture and browser startup, preparation, unused final reservations, runner shutdown and observed descendant drain. Sampled peak RSS changes range from −2.6% to +5.0%; they are not exact charged-memory measurements. Only TodoMVC at one worker meets the prospective rule of at least 20% savings in both orders. Continue targeted investigation without enabling reuse by default. The two-pair private screen does not establish broad 2× performance, release acceptance or standalone reproducibility; the checkpoint retains all observations and these limitations.
 
+A subsequent direct comparison runs another 360 unchanged tests across 24 complete launches. It includes Playwright 1.60.0 on the pinned stock headless shell and on the same custom browser. All tests and requested common launch-argument checks pass; no capture is retried or discarded. The ratios below divide Playwright time by candidate time, so values above 1 favor Flashwright.
+
+| Application | Workers | Stock Playwright / candidate, first / reverse pair | Custom Playwright / candidate, first / reverse pair |
+| --- | ---: | ---: | ---: |
+| TodoMVC | 1 | 1.088× / 1.120× | 1.186× / 1.237× |
+| TodoMVC | 4 | 0.879× / 0.896× | 0.982× / 1.020× |
+| SVGOMG | 1 | 0.931× / 0.788× | 0.980× / 0.847× |
+| SVGOMG | 4 | 0.695× / 0.745× | 0.786× / 0.787× |
+
+No cell reaches 2×. The candidate beats stock Playwright only for one-worker TodoMVC, and sampled peak RSS is about 15–23% higher than stock in every pair. Do not adopt this composition based on its improvement over reuse disabled. Four separate instrumented runs pass another 60 tests and place about 0.8–0.9 seconds before the first engine operation. Pointer actions, navigation and context retirement dominate the observed operation intervals; those intervals include waiting and are not CPU costs or guaranteed savings. Startup investigation remains separate from the timed comparison. The result file preserves the attribution controller's initial verifier-invocation failure and continuation without rerunning the completed workload.
+
 ## Declarative capability experiment on Linux
 
 Selected native omissions work, but the complete per-test capability API remains a private prototype. The [compatible-worker experiment](../benchmarks/results/capability-worker-reuse-linux-2026-10-18.json) passes 360 functional and 720 timed original TodoMVC/SVGOMG test executions across both engines, one/four workers and reversed execution order. Both full and restricted profiles reuse one browser per compatible worker and create a fresh context per test. This removes the earlier prototype's extra browser launch per test from the comparison.
