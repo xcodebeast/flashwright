@@ -61,7 +61,19 @@ npx playwright install chromium
 
 `bench/consumer-test.mjs` packs the packages and runs an unmodified upstream example suite against them in a fresh project, as a drop-in replacement for `@playwright/test`.
 
-The upstream suites are the compatibility bar, compared against pristine Playwright v1.64.1 on the same machine. On Chromium, `tests/page` passes 2610/2610 (including the recycling isolation tests). `tests/library` matches pristine except for two checks that inspect Playwright's internal bookkeeping (the server-side list of contexts and the CDP session map, which include the recycled context between tests). `tests/playwright-test` fails exactly the tests that pristine Playwright fails in this environment (branded Chrome and WebKit dependencies are missing here), apart from one timing-sensitive test that assumes two workers start at the same instant.
+The upstream suites are the compatibility bar, compared against pristine Playwright v1.64.1 on the same machine (Chromium):
+
+| Suite | Result |
+| --- | --- |
+| `tests/page` | 2610/2610, including the recycling isolation tests |
+| `tests/playwright-test` | same failures as pristine (branded Chrome and WebKit dependencies are missing here) |
+| `tests/library` | same as pristine, except two checks that read Playwright's internal bookkeeping (the server-side context list and CDP session map, which include the recycled context between tests) |
+| `tests/mcp` | same as pristine |
+| `tests/electron` | same as pristine apart from screenshot tests that are flaky under Electron here in both |
+| `tests/stress` | 1100/1100 (23 s vs 49 s) |
+| `tests/extension` | 41/41 |
+
+A few timing-sensitive tests can differ run to run in both; one (`worker-index.spec.ts`, "should respect project.workers=1 on startup") assumes two workers start at the same instant, which a pre-started worker can break.
 
 ## Repository layout
 
