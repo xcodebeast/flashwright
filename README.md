@@ -1,318 +1,64 @@
-# 🎭 Playwright
+# Flashwright
 
-[![npm version](https://img.shields.io/npm/v/playwright.svg)](https://www.npmjs.com/package/playwright) <!-- GEN:chromium-version-badge -->[![Chromium version](https://img.shields.io/badge/chromium-156.0.8078.4-blue.svg?logo=google-chrome)](https://www.chromium.org/Home)<!-- GEN:stop --> <!-- GEN:firefox-version-badge -->[![Firefox version](https://img.shields.io/badge/firefox-157.0-blue.svg?logo=firefoxbrowser)](https://www.mozilla.org/en-US/firefox/new/)<!-- GEN:stop --> <!-- GEN:webkit-version-badge -->[![WebKit version](https://img.shields.io/badge/webkit-27.2-blue.svg?logo=safari)](https://webkit.org/)<!-- GEN:stop --> [![Join Discord](https://img.shields.io/badge/join-discord-informational)](https://aka.ms/playwright/discord)
+Flashwright is a faster [Playwright](https://playwright.dev). It is a fork of Playwright v1.64.1 with the same API, test runner, reporters, trace viewer and browsers, changed only where time is spent. Existing Playwright suites run unmodified and finish in about half the time.
 
-## [Documentation](https://playwright.dev) | [API reference](https://playwright.dev/docs/api/class-playwright)
+The fork follows upstream closely: Playwright's own test suites are the regression bar, and every Flashwright change is a small, documented patch that can be carried to new Playwright releases.
 
-Playwright is a framework for web automation and testing. It drives Chromium, Firefox, and WebKit with a single API — in your tests, in your scripts, and as a tool for AI agents.
+## How much faster
 
-## Get Started
+Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64.1, same machine, same Chromium (headless shell 156), median of 3 alternating runs. Reproduce with `node bench/matrix.mjs`.
 
-Choose the path that fits your workflow:
+| Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC (upstream example suite) | 24 | 1 | 3742 ms | 1841 ms | 2.03× |
+| TodoMVC | 24 | 4 | 1780 ms | 1109 ms | 1.61× |
+| SVGOMG (upstream example suite) | 6 | 1 | 1707 ms | 1093 ms | 1.56× |
+| SVGOMG | 6 | 4 | 1282 ms | 1008 ms | 1.27× |
+| Trivial test | 15 | 1 | 1049 ms | 440 ms | 2.38× |
+| Click + assertion | 15 | 1 | 1630 ms | 768 ms | 2.12× |
+| Assertion on a delayed update | 15 | 1 | 1220 ms | 568 ms | 2.15× |
+| Navigation | 15 | 1 | 1295 ms | 585 ms | 2.21× |
+| Fixture setup only | 15 | 1 | 1214 ms | 545 ms | 2.23× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2015 ms | 1051 ms | 1.92× |
+| Failing assertions (250 ms timeout each) | 15 | 1 | 4775 ms | 4208 ms | 1.13× |
 
-| | Best for | Install |
-|---|---|---|
-| **[Playwright Test](#playwright-test)** | End-to-end testing | `npm init playwright@latest` |
-| **[Playwright CLI](#playwright-cli)** | Coding agents (Claude Code, Copilot) | `npm i -g @playwright/cli@latest` |
-| **[Playwright MCP](#playwright-mcp)** | AI agents and LLM-driven automation | `npx @playwright/mcp@latest` |
-| **[Playwright Library](#playwright-library)** | Browser automation scripts | `npm i playwright` |
-| **[VS Code Extension](#vs-code-extension)** | Test authoring and debugging in VS Code | [Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) |
+The failure scenario is bounded by the timeouts the tests ask for: 15 × 250 ms of waiting cannot get faster without changing what the tests mean.
 
----
+## What changed
 
-## Playwright Test
+Each item keeps Playwright's observable behavior; the differences that remain are listed below.
 
-Playwright Test is a full-featured test runner built for end-to-end testing. It runs tests across Chromium, Firefox, and WebKit with full browser isolation, auto-waiting, and web-first assertions.
+- **Warm renderers through context recycling.** Recompiling the application's JavaScript in a fresh renderer for every test dominates many suites (47 ms of a 60 ms TodoMVC setup). Flashwright keeps one browser context per worker and gives each test a brand-new tab in it, opened next to the old one so it lands in the already-warm renderer. Between tests it resets everything a test can change: context options, permissions, cookies, every visited origin's storage (local, session, IndexedDB, Cache Storage, service workers, ...), the HTTP and memory caches, routes, init scripts, bindings, downloads and clock. A renderer left hung or busy by the previous test is detected and the context is replaced. See `tests/page/recycle-isolation.spec.ts`.
+- **Retries react to changes instead of sleeping.** Auto-waiting assertions and actions re-check as soon as the page mutates or fires input/focus/scroll/animation/navigation events, rather than after Playwright's fixed 20–500 ms backoff.
+- **One-frame stability check.** When no CSS or Web Animations are running, actionability's "stable" check compares the element's box now and on the next frame, instead of on two future frames. Clicks drop from ~30 ms to ~13 ms.
+- **Faster startup.** The first worker process and its browser start while the CLI is still loading config and tests; Node's compile cache is enabled for all processes; heavy modules (MCP, trace tools, vendored packages) load only when used.
+- **Less work per API call.** Call-site stacks captured for every step are source-mapped only for test files, not for every frame.
 
-### Install
+## Differences from Playwright
 
-```bash
-npm init playwright@latest
-```
+- Contexts are recycled by default (Chromium). Tests see a fresh context, but internal "Create context"/"Close context" steps no longer appear in reports, and a test that leaves a request in flight at its end gets up to 50 ms for it to settle. Set `FLASHWRIGHT_ISOLATION=strict` to create a new context for every test, exactly like Playwright.
+- Chromium is launched with `--renderer-process-limit=1`, so a context's pages share one renderer process (cross-site frames still get their own).
+- Firefox and WebKit keep Playwright's behavior.
 
-Or add manually:
+## Status
 
-```bash
-npm i -D @playwright/test
-npx playwright install
-```
-
-### Write a test
-
-```TypeScript
-import { test, expect } from '@playwright/test';
-
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-  await expect(page).toHaveTitle(/Playwright/);
-});
-
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-  await page.getByRole('link', { name: 'Get started' }).click();
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
-```
-
-### Run tests
+Flashwright is not published to npm yet. Today it builds from this repository:
 
 ```bash
-npx playwright test
+npm ci
+npm run build
+npx playwright install chromium
 ```
 
-Tests run in parallel across all configured browsers, in headless mode by default. Each test gets a fresh browser context — full isolation with near-zero overhead.
+The upstream suites are the compatibility bar: `tests/page` passes 2608/2608 on Chromium (including the recycling isolation tests), matching pristine Playwright v1.64.1 on the same machine.
 
-### Key capabilities
+## Repository layout
 
-**Auto-wait and web-first assertions.** No artificial timeouts. Playwright waits for elements to be actionable, and assertions automatically retry until conditions are met.
+- `packages/`, `tests/`, `utils/`, `docs/`: Playwright v1.64.1 with Flashwright's patches. Pristine upstream snapshots live on the `upstream/playwright` branch; merge new releases from there.
+- `bench/`: the complete-suite benchmark (`run.mjs`, `matrix.mjs`) and the app corpora it uses.
+- `README.playwright.md`: the upstream README.
+- The previous experimental Rust engine is preserved at the `archive/swarm-rust-engine` tag.
 
-**Locators.** Find elements with resilient locators that mirror how users see the page:
+## License
 
-```TypeScript
-page.getByRole('button', { name: 'Submit' })
-page.getByLabel('Email')
-page.getByPlaceholder('Search...')
-page.getByTestId('login-form')
-```
-
-**Test isolation.** Each test runs in its own browser context — equivalent to a fresh browser profile. Save authentication state once and reuse it across tests:
-
-```TypeScript
-// Save state after login
-await page.context().storageState({ path: 'auth.json' });
-
-// Reuse in other tests
-test.use({ storageState: 'auth.json' });
-```
-
-**Tracing.** Capture execution traces, screenshots, and videos on failure. Inspect every action, DOM snapshot, network request, and console message in the [Trace Viewer](https://playwright.dev/docs/trace-viewer):
-
-```TypeScript
-// playwright.config.ts
-export default defineConfig({
-  use: {
-    trace: 'on-first-retry',
-  },
-});
-```
-
-```bash
-npx playwright show-trace trace.zip
-```
-
-<!-- TODO: screenshot of trace viewer -->
-
-**Parallelism.** Tests run in parallel by default across all configured browsers.
-
-[Full testing documentation](https://playwright.dev/docs/intro)
-
----
-
-## Playwright CLI
-
-[Playwright CLI](https://github.com/microsoft/playwright-cli) is a command-line interface for browser automation designed for coding agents. It's more token-efficient than MCP — commands avoid loading large tool schemas and accessibility trees into the model context.
-
-### Install
-
-```bash
-npm install -g @playwright/cli@latest
-```
-
-Optionally install skills for richer agent integration:
-
-```bash
-playwright-cli install --skills
-```
-
-### Usage
-
-Point your coding agent at a task:
-
-```
-Test the "add todo" flow on https://demo.playwright.dev/todomvc using playwright-cli.
-Take screenshots for all successful and failing scenarios.
-```
-
-Or run commands directly:
-
-```bash
-playwright-cli open https://demo.playwright.dev/todomvc/ --headed
-playwright-cli type "Buy groceries"
-playwright-cli press Enter
-playwright-cli screenshot
-```
-
-### Session monitoring
-
-Use `playwright-cli show` to open a visual dashboard with live screencast previews of all running browser sessions. Click any session to zoom in and take remote control.
-
-```bash
-playwright-cli show
-```
-
-<!-- TODO: screenshot of playwright-cli show dashboard -->
-
-[Full CLI documentation](https://playwright.dev/agent-cli/introduction) | [GitHub](https://github.com/microsoft/playwright-cli)
-
----
-
-## Playwright MCP
-
-The [Playwright MCP server](https://github.com/microsoft/playwright-mcp) gives AI agents full browser control through the [Model Context Protocol](https://modelcontextprotocol.io). Agents interact with pages using structured accessibility snapshots — no vision models or screenshots required.
-
-### Setup
-
-Add to your MCP client (VS Code, Cursor, Claude Desktop, Windsurf, etc.):
-
-```json
-{
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"]
-    }
-  }
-}
-```
-
-**One-click install for VS Code:**
-
-[<img src="https://img.shields.io/badge/VS_Code-VS_Code?style=flat-square&label=Install%20MCP%20Server&color=0098FF" alt="Install in VS Code" />](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522playwright%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522%2540playwright%252Fmcp%2540latest%2522%255D%257D)
-
-**For Claude Code:**
-
-```bash
-claude mcp add playwright npx @playwright/mcp@latest
-```
-
-### How it works
-
-Ask your AI assistant to interact with any web page:
-
-```
-Navigate to https://demo.playwright.dev/todomvc and add a few todo items.
-```
-
-The agent sees the page as a structured accessibility tree:
-
-```
-- heading "todos" [level=1]
-- textbox "What needs to be done?" [ref=e5]
-- listitem:
-  - checkbox "Toggle Todo" [ref=e10]
-  - text: "Buy groceries"
-```
-
-It uses element refs like `e5` and `e10` to click, type, and interact — deterministically and without visual ambiguity. Tools cover navigation, form filling, screenshots, network mocking, storage management, and more.
-
-[Full MCP documentation](https://playwright.dev/mcp/introduction) | [GitHub](https://github.com/microsoft/playwright-mcp)
-
----
-
-## Playwright Library
-
-Use `playwright` as a library for browser automation scripts — web scraping, PDF generation, screenshot capture, and any workflow that needs programmatic browser control without a test runner.
-
-### Install
-
-```bash
-npm i playwright
-```
-
-### Examples
-
-**Take a screenshot:**
-
-```TypeScript
-import { chromium } from 'playwright';
-
-const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.goto('https://playwright.dev/');
-await page.screenshot({ path: 'screenshot.png' });
-await browser.close();
-```
-
-**Generate a PDF:**
-
-```TypeScript
-import { chromium } from 'playwright';
-
-const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.goto('https://playwright.dev/');
-await page.pdf({ path: 'page.pdf', format: 'A4' });
-await browser.close();
-```
-
-**Emulate a mobile device:**
-
-```TypeScript
-import { chromium, devices } from 'playwright';
-
-const browser = await chromium.launch();
-const context = await browser.newContext(devices['iPhone 15']);
-const page = await context.newPage();
-await page.goto('https://playwright.dev/');
-await page.screenshot({ path: 'mobile.png' });
-await browser.close();
-```
-
-**Intercept network requests:**
-
-```TypeScript
-import { chromium } from 'playwright';
-
-const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.route('**/*.{png,jpg,jpeg}', route => route.abort());
-await page.goto('https://playwright.dev/');
-await browser.close();
-```
-
-[Library documentation](https://playwright.dev/docs/library) | [API reference](https://playwright.dev/docs/api/class-playwright)
-
----
-
-## VS Code Extension
-
-The [Playwright VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) brings test running, debugging, and code generation directly into your editor.
-
-<!-- TODO: hero screenshot of VS Code with Playwright sidebar -->
-
-**Run and debug tests** from the editor with a single click. Set breakpoints, inspect variables, and step through test execution with a live browser view.
-
-**Generate tests with CodeGen.** Click "Record new" to open a browser — navigate and interact with your app while Playwright writes the test code for you.
-
-**Pick locators.** Hover over any element in the browser to see the best available locator, then click to copy it to your clipboard.
-
-**Trace Viewer integration.** Enable "Show Trace Viewer" in the sidebar to get a full execution trace after each test run — DOM snapshots, network requests, console logs, and screenshots at every step.
-
-[Install the extension](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) | [VS Code guide](https://playwright.dev/docs/getting-started-vscode)
-
----
-
-## Cross-Browser Support
-
-|          | Linux | macOS | Windows |
-|   :---   | :---: | :---: | :---:   |
-| Chromium<sup>1</sup> <!-- GEN:chromium-version -->156.0.8078.4<!-- GEN:stop --> | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| WebKit <!-- GEN:webkit-version -->27.2<!-- GEN:stop --> | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Firefox <!-- GEN:firefox-version -->157.0<!-- GEN:stop --> | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-
-Headless and headed execution on all platforms. <sup>1</sup> Uses [Chrome for Testing](https://developer.chrome.com/blog/chrome-for-testing) by default.
-
-## Other Languages
-
-Playwright is also available for [Python](https://playwright.dev/python/docs/intro), [.NET](https://playwright.dev/dotnet/docs/intro), and [Java](https://playwright.dev/java/docs/intro).
-
-## Resources
-
-* [Documentation](https://playwright.dev)
-* [API reference](https://playwright.dev/docs/api/class-playwright)
-* [MCP server](https://github.com/microsoft/playwright-mcp)
-* [CLI for coding agents](https://github.com/microsoft/playwright-cli)
-* [VS Code extension](https://github.com/microsoft/playwright-vscode)
-* [Contribution guide](CONTRIBUTING.md)
-* [Changelog](https://github.com/microsoft/playwright/releases)
-* [Discord](https://aka.ms/playwright/discord)
+Apache-2.0, like Playwright. Flashwright is an independent fork and is not affiliated with Microsoft.

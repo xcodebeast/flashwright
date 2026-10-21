@@ -131,3 +131,21 @@ it('gets a working page after beforeunload', async ({ page }) => {
   await page.setContent('<div>ok</div>');
   await expect(page.locator('div')).toHaveText('ok');
 });
+
+it('leaves a script writing storage', async ({ page, server }) => {
+  await page.goto(server.EMPTY_PAGE);
+  page.evaluate(async () => {
+    while (true) {
+      localStorage.setItem('late', 'write');
+      document.cookie = 'late=write';
+      await new Promise(f => setTimeout(f, 0));
+    }
+  }).catch(() => {});
+  await page.waitForFunction(() => localStorage.getItem('late') === 'write');
+});
+
+it('sees none of the late writes', async ({ page, context, server }) => {
+  await page.goto(server.EMPTY_PAGE);
+  expect(await page.evaluate(() => localStorage.getItem('late'))).toBe(null);
+  expect(await context.cookies()).toEqual([]);
+});

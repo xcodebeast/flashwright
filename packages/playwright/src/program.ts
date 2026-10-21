@@ -22,6 +22,7 @@ import { libCli, tools } from 'playwright-core/lib/coreBundle';
 import { program } from 'commander';
 import { setBoxedStackPrefixes } from '@utils/stackTrace';
 import { gracefullyProcessExitDoNotHang } from '@utils/processLauncher';
+import { getPackageManagerExecCommand } from '@utils/env';
 import { builtInReporters, config, configLoader } from './common';
 import { runTests, clearCache, runTestServerAction } from './cli/testActions';
 import { packageRoot, packageJSON } from './package';
@@ -36,6 +37,8 @@ setBoxedStackPrefixes([packageRoot]);
 // implementations (trace tools, MCP servers, reports, agents) unless they are requested.
 if (process.argv[2] !== 'test')
   libCli.decorateProgram(program);
+else
+  program.name(`${getPackageManagerExecCommand()} playwright`);
 
 const reportActions = () => require('./cli/reportActions') as typeof import('./cli/reportActions');
 const testBackend = () => require('./mcp/test/testBackend') as typeof import('./mcp/test/testBackend');

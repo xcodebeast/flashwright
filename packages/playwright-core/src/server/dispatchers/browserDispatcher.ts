@@ -87,6 +87,13 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
   async disconnectFromReusedContext(params: channels.BrowserDisconnectFromReusedContextParams, progress: Progress): Promise<void> {
     const context = this._object.contextForReuse();
     const contextDispatcher = context ? this.connection.existingDispatcher<BrowserContextDispatcher>(context) : undefined;
+    // Flashwright: a context that cannot be recycled (e.g. it was paused for debugging) closes now,
+    // as it would without reuse. Closing also settles any call that is still waiting on it.
+    if (context && !context.canResetForReuse()) {
+      // The context dispatcher disposes itself when the context closes.
+      await context.close(progress, { reason: params.reason });
+      return;
+    }
     if (contextDispatcher) {
       await progress.race(contextDispatcher.stopPendingOperations(new Error(params.reason), 50));
       contextDispatcher._dispose();

@@ -61,6 +61,9 @@ interface RecorderEventSink {
   signalAdded?(page: Page, signal: actions.Signal, code: string): void;
 }
 
+// Flashwright: marks a newContext()/close() call made by the test runner for a recycled context.
+const kRecycleContext = Symbol.for('flashwright.recycleContext');
+
 export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel> implements api.BrowserContext {
   _pages = new Set<Page>();
   _routes: network.RouteHandler[] = [];
@@ -521,8 +524,16 @@ export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel>
     await this.request.dispose(options);
     await this._instrumentation.runBeforeCloseBrowserContext(this);
     const harError = await this.tracing._exportAllHars().catch(e => e);
-    await this._channel.close(options, kNoTimeout);
-    await this._closedPromise;
+    if (this._forReuse && (options as any)[kRecycleContext]) {
+      // Flashwright: a recycled context closes for this test while the browser keeps it for the next.
+      for (const page of this.pages())
+        page._onClose();
+      this._onClose();
+      await this._browser!._channel.disconnectFromReusedContext({ reason: options.reason ?? '' }, kNoTimeout);
+    } else {
+      await this._channel.close(options, kNoTimeout);
+      await this._closedPromise;
+    }
     if (harError)
       throw harError;
   }

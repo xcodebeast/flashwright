@@ -35,16 +35,23 @@ function lazy(name: string, load: () => unknown) {
   });
 }
 
+// The server modules form import cycles that only initialize correctly from the in-process
+// entry point, which is also what the playwright-core package loads first.
+const withServer = (load: () => unknown) => () => {
+  require('./inprocess');
+  return load();
+};
+
 lazy('iso', () => require('@isomorphic/index'));
 lazy('utils', () => require('@utils/index'));
 lazy('clientEventEmitter', () => require('./client/eventEmitter').EventEmitter);
-lazy('libCli', () => require('./cli/program'));
-lazy('libCliTestStub', () => require('./cli/programWithTestStub'));
+lazy('libCli', withServer(() => require('./cli/program')));
+lazy('libCliTestStub', withServer(() => require('./cli/programWithTestStub')));
 lazy('inprocess', () => require('./inprocess'));
-lazy('oop', () => require('./outofprocess'));
-lazy('remote', () => require('./remote/playwrightServer'));
-lazy('registry', () => require('./server/registry/index'));
-lazy('server', () => require('./server/index'));
-lazy('tools', () => require('./tools'));
+lazy('oop', withServer(() => require('./outofprocess')));
+lazy('remote', withServer(() => require('./remote/playwrightServer')));
+lazy('registry', withServer(() => require('./server/registry/index')));
+lazy('server', withServer(() => require('./server/index')));
+lazy('tools', withServer(() => require('./tools')));
 lazy('getUserAgent', () => require('./server/userAgent').getUserAgent);
 lazy('getPlaywrightVersion', () => require('./server/userAgent').getPlaywrightVersion);

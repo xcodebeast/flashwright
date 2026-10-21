@@ -255,7 +255,10 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       return;
     }
 
-    const browser = await takeSpeculativeBrowser(browserName, _browserOptions) ?? await playwright[browserName].launch();
+    const speculativeBrowser = await takeSpeculativeBrowser(browserName, _browserOptions);
+    if (speculativeBrowser)
+      reportAdoptedLaunch(_browserOptions);
+    const browser = speculativeBrowser ?? await playwright[browserName].launch();
     if (process.env.PLAYWRIGHT_DASHBOARD)
       await browser.bind(`worker-${workerInfo.parallelIndex}`);
     await use(browser);
@@ -406,14 +409,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     let counter = 0;
 
     await use(async options => {
-      const hook = testInfoImpl._currentHookType();
-      if (hook === 'beforeAll' || hook === 'afterAll') {
-        throw new Error([
-          `"context" and "page" fixtures are not supported in "${hook}" since they are created on a per-test basis.`,
-          `If you would like to reuse a single page between tests, create context manually with browser.newContext(). See https://aka.ms/playwright/reuse-page for details.`,
-          `If you would like to configure your page before each test, do that in beforeEach hook instead.`,
-        ].join('\n'));
-      }
+      throwIfInAllHook(testInfoImpl);
       const show = typeof video === 'string' ? undefined : video.show;
       const videoOptions: BrowserContextOptions = captureVideo ? {
         recordVideo: {
@@ -488,24 +484,19 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       return;
     }
 
-    const context = await browserImpl._wrapApiCall(() => browserImpl._newContextForReuse(), { internal: true });
+    // Flashwright: a recycled context is created and closed through the public methods, so the
+    // calls are logged, traced and reported like a fresh context.
+    throwIfInAllHook(testInfo);
+    const context = await browser.newContext({ [kRecycleContext]: true } as BrowserContextOptions) as BrowserContextImpl;
     await installScreencastTitleUpdater(testInfo, context, show?.test);
     await use(context);
     const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';
-    await browserImpl._wrapApiCall(() => browserImpl._disconnectFromReusedContext(closeReason), { internal: true });
+    await context.close({ reason: closeReason, [kRecycleContext]: true } as { reason: string });
   },
 
-  page: async ({ context, _reuseContext }, use) => {
-    if (!_reuseContext) {
-      await use(await context.newPage());
-      return;
-    }
-
-    // First time we are reusing the context, we should create the page.
-    let [page] = context.pages();
-    if (!page)
-      page = await context.newPage();
-    await use(page);
+  page: async ({ context }, use) => {
+    // Flashwright: a recycled context hands out the tab it prepared for this test.
+    await use(await context.newPage());
   },
 
   mount: async ({ page, baseURL }, use) => {
@@ -617,6 +608,35 @@ function resolveClientCerticates(clientCertificates: ClientCertificates): Client
 }
 
 const kTracingStarted = Symbol('kTracingStarted');
+
+// Flashwright: a browser launched ahead of time still shows up as the "Launch browser" step.
+function reportAdoptedLaunch(options: LaunchOptions) {
+  const testInfo = globals.currentTestInfo();
+  if (!testInfo)
+    return;
+  const channel = { type: 'BrowserType', method: 'launch', params: options as Record<string, any> };
+  testInfo._addStep({
+    category: 'pw:api',
+    title: renderTitle(channel.type, channel.method, channel.params, undefined),
+    subtitle: renderSubtitle(channel.type, channel.method, channel.params),
+    params: renderParamsForCall(channel),
+    group: getActionGroup(channel),
+  }).complete({});
+}
+
+function throwIfInAllHook(testInfo: TestInfoImpl) {
+  const hook = testInfo._currentHookType();
+  if (hook === 'beforeAll' || hook === 'afterAll') {
+    throw new Error([
+      `"context" and "page" fixtures are not supported in "${hook}" since they are created on a per-test basis.`,
+      `If you would like to reuse a single page between tests, create context manually with browser.newContext(). See https://aka.ms/playwright/reuse-page for details.`,
+      `If you would like to configure your page before each test, do that in beforeEach hook instead.`,
+    ].join('\n'));
+  }
+}
+
+// Flashwright: marks a newContext()/close() call made by the test runner for a recycled context.
+const kRecycleContext = Symbol.for('flashwright.recycleContext');
 
 function connectOptionsFromEnv() {
   const wsEndpoint = process.env.PW_TEST_CONNECT_WS_ENDPOINT;

@@ -5,6 +5,8 @@ import { mkdir, rm, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { applicationCorpusDirectory, loadApplicationCorpus, materializeApplicationTests, startApplicationServer } from './application-corpus.mjs';
 import { startWorkloadServer, workloadSpec } from './workloads/server.mjs';
+import { startShopServer } from './apps/shop/server.mjs';
+import { cp } from 'node:fs/promises';
 
 const [app = 'todomvc', workersArg = '1', iterationsArg = '3', enginesArg = 'stock,fork'] = process.argv.slice(2);
 const workers = Number(workersArg), iterations = Number(iterationsArg), engines = enginesArg.split(',');
@@ -20,8 +22,10 @@ const base = resolve('workbench/bench-runs', `${app.replace(':', '-')}-w${worker
 await rm(base, { recursive: true, force: true });
 // `workload:<name>` runs a generated 15-test suite against the workload fixture; anything else is an app corpus.
 const workload = app.startsWith('workload:') ? app.slice('workload:'.length) : undefined;
-const corpus = workload ? undefined : await loadApplicationCorpus(applicationCorpusDirectory(app));
-const server = workload ? await startWorkloadServer() : await startApplicationServer(corpus);
+// `shop` is a realistic app suite: setup project with saved auth, fullyParallel, API latency.
+const shop = app === 'shop';
+const corpus = workload || shop ? undefined : await loadApplicationCorpus(applicationCorpusDirectory(app));
+const server = shop ? await startShopServer() : workload ? await startWorkloadServer() : await startApplicationServer(corpus);
 
 const projects = {};
 for (const engine of engines) {
@@ -32,17 +36,26 @@ for (const engine of engines) {
   const adapter = join(project, 'adapter.mjs');
   await writeFile(join(project, 'package.json'), JSON.stringify({ type: 'module' }));
   await writeFile(adapter, `export { test, expect, defineConfig } from ${JSON.stringify(definition.pkg)};\n`);
-  if (workload) {
+  if (shop) {
+    await cp(join(import.meta.dirname, 'apps/shop/tests'), join(project, 'tests'), { recursive: true });
+  } else if (workload) {
     await mkdir(join(project, 'tests'), { recursive: true });
     await writeFile(join(project, 'tests', `${workload}.spec.ts`), workloadSpec(workload, 15));
   } else {
     await materializeApplicationTests(corpus, project, adapter);
   }
   const config = { testDir: './tests', workers, retries: 0, fullyParallel: false, timeout: 30000, expect: { timeout: 5000 },
-    reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')]] : [])],
+    reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.HTML_REPORT ? [['html', { open: 'never', outputFolder: join(project, 'html-report') }]] : []), ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')]] : [])],
     outputDir: join(project, 'results'),
     use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(workload ? { baseURL: server.url } : {}), ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
-  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; export default defineConfig(${JSON.stringify(config)});\n`);
+  if (shop) {
+    Object.assign(config, { fullyParallel: true, projects: [
+      { name: 'setup', testMatch: /.*\.setup\.ts/.source },
+      { name: 'chromium', dependencies: ['setup'], use: { storageState: 'auth.json' } },
+    ] });
+    config.use.baseURL = server.url;
+  }
+  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); export default defineConfig(config);\n`);
   projects[engine] = { project, definition, variant };
 }
 

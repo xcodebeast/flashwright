@@ -122,6 +122,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   // Options that context methods can change after creation, restored when the context is recycled.
   private _recycleBaseline: Pick<types.BrowserContextOptions, 'geolocation' | 'extraHTTPHeaders' | 'offline' | 'httpCredentials'>;
   private _recyclingPrevented = false;
+  private _preparingRecycledPage = false;
+  // The next test's tab, opened during recycling and handed out by the first newPage() call.
+  private _heldPage: Page | undefined;
 
   constructor(browser: Browser, options: types.BrowserContextOptions, browserContextId: string | undefined) {
     super(browser, 'browser-context');
@@ -162,6 +165,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
     // When paused, show inspector.
     const shouldEnableDebugger = !this.attribution.playwright.options.isServer && (isUnderTest() || !!this._browser.options.headful);
+    // Flashwright: a context that was paused for debugging is closed at the end of its test.
+    this._debugger.on(Debugger.Events.PausedStateChanged, () => this.preventRecycling());
+
     if (shouldEnableDebugger) {
       this._debugger.setPauseAt();
       this._debugger.on(Debugger.Events.PausedStateChanged, () => {
@@ -304,11 +310,19 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // busy (an endless script, a stuck dialog), the tab cannot come up; replace the whole context
     // instead, which kills the renderer just like closing the context would.
     const previousPages = this.possiblyUninitializedPages();
+    this._heldPage = undefined;
+    this._preparingRecycledPage = true;
     const newPage = this.newPage(progress);
     newPage.catch(() => {});
-    const page = await progress.race(Promise.race([newPage, new Promise<undefined>(f => setTimeout(f, kRecycledPageTimeout))]));
+    const page = await progress.race(Promise.race([newPage, new Promise<undefined>(f => setTimeout(f, kRecycledPageTimeout))])).finally(() => {
+      this._preparingRecycledPage = false;
+    });
     if (!page)
       return false;
+    this._heldPage = page;
+    // Pages being closed can still run scripts for a moment and write storage after it was cleared;
+    // stop them first. Writes they already sent reach storage before the clearing below.
+    await progress.race(this.doFreezePages(previousPages));
     await progress.race(Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {}))));
 
     await progress.race(Promise.all(Array.from(this._downloads).map(download => download.artifact.deleteOnContextClose())));
@@ -335,6 +349,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   }
 
   protected async doClearSiteData(page: Page, origins: string[]): Promise<void> {
+  }
+
+  protected async doFreezePages(pages: Page[]): Promise<void> {
   }
 
   browserClosed() {
@@ -660,6 +677,12 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   }
 
   async newPage(progress: Progress, forStorageState?: boolean): Promise<Page> {
+    const heldPage = this._heldPage;
+    this._heldPage = undefined;
+    if (!forStorageState && heldPage && !heldPage.isClosedOrClosingOrCrashed()) {
+      heldPage.revealHeldPage();
+      return heldPage;
+    }
     let page: Page | undefined;
     try {
       this._creatingStorageStatePage = !!forStorageState;
@@ -748,6 +771,10 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   isCreatingStorageStatePage(): boolean {
     return this._creatingStorageStatePage;
+  }
+
+  isPreparingRecycledPage(): boolean {
+    return this._preparingRecycledPage;
   }
 
   async setStorageState(progress: Progress, state: channels.BrowserNewContextParams['storageState'], mode: 'initial' | 'resetForReuse' | 'api') {

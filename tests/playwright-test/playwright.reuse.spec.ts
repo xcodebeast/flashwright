@@ -90,6 +90,7 @@ test('should not reuse context with video if mode=when-possible', async ({ runIn
   expect(fs.existsSync(testInfo.outputPath('test-results', 'reuse-two', 'video.webm'))).toBeFalsy();
 });
 
+// Flashwright: recycled contexts report the same steps as new ones.
 test('should reuse context with trace if mode=when-possible', async ({ runInlineTest }, testInfo) => {
   const result = await runInlineTest(withReuseContext({
     'playwright.config.ts': `
@@ -136,6 +137,7 @@ test('should reuse context with trace if mode=when-possible', async ({ runInline
     '  Fixture "browser"',
     '    Launch browser',
     '  Fixture "context"',
+    '    Create context',
     '  Fixture "page"',
     '    Create page',
     'Set content',
@@ -143,6 +145,7 @@ test('should reuse context with trace if mode=when-possible', async ({ runInline
     'After Hooks',
     '  Fixture "page"',
     '  Fixture "context"',
+    '    Close context',
   ]);
   expect(trace1.snapshots.snapshotsForTest().length).toBeGreaterThan(0);
   expect(fs.existsSync(testInfo.outputPath('test-results', 'reuse-one', 'trace-1.zip'))).toBe(false);
@@ -151,7 +154,9 @@ test('should reuse context with trace if mode=when-possible', async ({ runInline
   expect(trace2.model.renderActionTree()).toEqual([
     'Before Hooks',
     '  Fixture "context"',
+    '    Create context',
     '  Fixture "page"',
+    '    Create page',
     'Expect "toBe"',
     'Set content',
     `Fill "value" locator('input')`,
@@ -159,6 +164,7 @@ test('should reuse context with trace if mode=when-possible', async ({ runInline
     'After Hooks',
     '  Fixture "page"',
     '  Fixture "context"',
+    '    Close context',
     '  afterAll hook',
   ]);
   expect(trace2.snapshots.snapshotsForTest().length).toBeGreaterThan(0);
