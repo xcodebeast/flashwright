@@ -1,0 +1,2030 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "classification": "diagnostic-native-linux-repeated-setup-cpu",
+  "sourceCommit": "88a33145",
+  "status": "1920-original-setup-outcomes-passed",
+  "performanceAccepted": false,
+  "resourceAdmission": false,
+  "optimizationAdopted": false,
+  "browserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+  "driverSha256": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249",
+  "runtime": "Bun 1.4.2",
+  "scope": {
+    "captures": 8,
+    "profiledCaptures": 4,
+    "testsPerCapture": 240,
+    "totalTestOutcomes": 1920,
+    "workers": [
+      1,
+      4
+    ],
+    "blocks": 2,
+    "workload": "Unchanged original setup body, three warmup-labelled and 237 measured-labelled tests. Complete command includes all 240, fixture startup, runner, browser and observed shutdown.",
+    "comparison": "Same Flashwright/native baseline with sampling on/off; no Playwright capture or optimization in this diagnostic.",
+    "browserPolicy": "Existing renderer reuse, classic uncapped frames, early idle deadline and lazy VAAPI discovery. Locator source cache and native script cache off. Original public launch arguments retained before explicit private feature additions.",
+    "sampling": "500000 ns inherited user-mode task-clock sampling, user IP/callchains capped at 64 stack entries plus context marker; six opening affinity CPUs, four-core quota, 8 GiB memory, no swap, Nice10.",
+    "resourceScope": "Owner cgroup deltas include sampler cost; sampled descendants exclude the sampler parent. Original watchdog confirms exit without cleanup signals or surviving observed descendants."
+  },
+  "samplingOverheadObservations": [
+    {
+      "workers": 1,
+      "block": 0,
+      "sampledToControlElapsedRatio": 1.0083360630444225,
+      "sampledToControlChargedCpuRatio": 1.0162083742900196
+    },
+    {
+      "workers": 1,
+      "block": 1,
+      "sampledToControlElapsedRatio": 1.0212654559804297,
+      "sampledToControlChargedCpuRatio": 1.0302585302602882
+    },
+    {
+      "workers": 4,
+      "block": 0,
+      "sampledToControlElapsedRatio": 1.0565727469554753,
+      "sampledToControlChargedCpuRatio": 1.055325833323676
+    },
+    {
+      "workers": 4,
+      "block": 1,
+      "sampledToControlElapsedRatio": 1.024732960057513,
+      "sampledToControlChargedCpuRatio": 1.0300850387639606
+    }
+  ],
+  "runs": [
+    {
+      "name": "00-w1-control",
+      "workers": 1,
+      "sampling": false,
+      "block": 0,
+      "tests": 240,
+      "completeMilliseconds": 8171.0991919972,
+      "innerOwnerMilliseconds": 8076.907252999999,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 16804338,
+        "user_usec": 11286622,
+        "system_usec": 5517716,
+        "nice_usec": 9450558,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 81,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 192077824,
+      "browserLaunchReceipts": 1,
+      "receipts": [
+        {
+          "file": "00-w1-control/report.json",
+          "bytes": 688413,
+          "sha256": "039fccef814b60aca5d69a2af36c1e3eadffa8ff6080c3a209f72a4b11058763"
+        },
+        {
+          "file": "00-w1-control/resources.json",
+          "bytes": 222501,
+          "sha256": "4237221628bb0379ef02b57a627a6738a12d5087fee0b55fc1fe97ec707013b6"
+        },
+        {
+          "file": "00-w1-control/verified.json",
+          "bytes": 787,
+          "sha256": "fcbf78b80ef88905ed43c59b8d4a8bc640c9e2a45eca706bb0802f29667746b1"
+        },
+        {
+          "file": "00-w1-control/owner.json",
+          "bytes": 674,
+          "sha256": "ff7f83a5d463a9fe8f563189cdea7668496b431d821659c7e505be0859cf9af7"
+        }
+      ]
+    },
+    {
+      "name": "01-w1-sampled",
+      "workers": 1,
+      "sampling": true,
+      "block": 0,
+      "tests": 240,
+      "completeMilliseconds": 8239.213990003918,
+      "innerOwnerMilliseconds": 8155.82854,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 17076709,
+        "user_usec": 11189990,
+        "system_usec": 5886719,
+        "nice_usec": 10138948,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 81,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 238043136,
+      "browserLaunchReceipts": 1,
+      "receipts": [
+        {
+          "file": "01-w1-sampled/report.json",
+          "bytes": 688424,
+          "sha256": "adebe65f6fbc33545708739a8afe6ab48d890af86c53303220e6eda92d28bc57"
+        },
+        {
+          "file": "01-w1-sampled/resources.json",
+          "bytes": 225447,
+          "sha256": "5d24e217917d4cef076fba0dc722ff5b127275994ad77b9d826a631f8a9d214c"
+        },
+        {
+          "file": "01-w1-sampled/verified.json",
+          "bytes": 783,
+          "sha256": "474ab885e67b870261ec51b7e00b996a747ffff5ff6d3d4a5d05cf2c570b5caa"
+        },
+        {
+          "file": "01-w1-sampled/owner.json",
+          "bytes": 668,
+          "sha256": "e2551a06f5a7d086a2a0f8ea0b0a850bd00a4802b33187598a0adf1a78b5fcc2"
+        }
+      ],
+      "samples": 24091,
+      "sampleCountsByFamily": {
+        "observer": 854,
+        "runtime": 1755,
+        "driver": 968,
+        "browser": 20514
+      },
+      "browserSampleModules": {
+        "module:ld-linux-x86-64.so.2": 41,
+        "module:libglib-2.0.so.0.8800.3": 111,
+        "headless_shell": 17763,
+        "module:libc.so.6": 2081,
+        "module:libnvidia-gpucomp.so.610.57.04": 2,
+        "module:libnvidia-glcore.so.610.57.04": 15,
+        "module:libX11.so.6.4.0": 1,
+        "module:libnvidia-glsi.so.610.57.04": 2,
+        "module:libm.so.6": 9,
+        "module:libdbus-1.so.3.38.3": 1,
+        "anonymous": 478,
+        "module:libLLVM.so.22.1": 1,
+        "module:libexpat.so.1.12.4": 1,
+        "module:libvk_swiftshader.so": 2,
+        "module:libGLESv2.so": 5,
+        "module:libEGL.so": 1
+      },
+      "resolvedNativeLeafSamples": 17743,
+      "unresolvedNativeLeafSamples": 20,
+      "threadSamples": {
+        "headless_shell": 9920,
+        "ThreadPoolForeg": 846,
+        "ThreadPoolSingl": 2,
+        "exe": 6,
+        "Chrome_ChildIOT": 2492,
+        "Chrome_IOThread": 1933,
+        "DevToolsPipeHan": 884,
+        "Compositor": 1649,
+        "VizCompositorTh": 2781,
+        "ThreadPoolServi": 1
+      },
+      "callchainDepths": {
+        "9": 65,
+        "10": 150,
+        "8": 22,
+        "7": 15,
+        "15": 458,
+        "29": 490,
+        "13": 400,
+        "32": 722,
+        "16": 432,
+        "14": 1073,
+        "28": 452,
+        "21": 645,
+        "35": 800,
+        "31": 534,
+        "22": 737,
+        "34": 535,
+        "23": 613,
+        "42": 222,
+        "40": 291,
+        "33": 421,
+        "41": 286,
+        "43": 238,
+        "4": 15,
+        "47": 252,
+        "2": 8,
+        "18": 486,
+        "26": 665,
+        "3": 61,
+        "59": 66,
+        "27": 681,
+        "65": 456,
+        "60": 66,
+        "63": 51,
+        "20": 655,
+        "30": 431,
+        "5": 4,
+        "56": 139,
+        "64": 54,
+        "36": 345,
+        "45": 214,
+        "52": 194,
+        "61": 69,
+        "25": 589,
+        "44": 235,
+        "38": 312,
+        "55": 118,
+        "12": 570,
+        "62": 78,
+        "51": 182,
+        "24": 652,
+        "39": 317,
+        "6": 2,
+        "53": 207,
+        "46": 212,
+        "37": 316,
+        "49": 179,
+        "57": 93,
+        "17": 423,
+        "50": 216,
+        "19": 546,
+        "48": 246,
+        "58": 103,
+        "54": 130,
+        "11": 275
+      },
+      "callchainsAt65EntryCap": 456,
+      "callerFrameCounts": {
+        "context-markers": 20514,
+        "module:ld-linux-x86-64.so.2": 325,
+        "native": 523651,
+        "module:libc.so.6": 40747,
+        "module:libnvidia-gpucomp.so.610.57.04": 1,
+        "module:libvulkan.so.1": 95,
+        "module:libglib-2.0.so.0.8800.3": 9616,
+        "module:libnvidia-glcore.so.610.57.04": 19,
+        "module:libX11.so.6.4.0": 1,
+        "unmapped": 71,
+        "module:libGLX_nvidia.so.610.57.04": 1,
+        "module:libdbus-1.so.3.38.3": 9,
+        "module:libLLVM.so.22.1": 3,
+        "module:libexpat.so.1.12.4": 5,
+        "module:libvulkan_radeon.so": 9,
+        "module:libVkLayer_MESA_device_select.so": 2,
+        "module:libvk_swiftshader.so": 10,
+        "module:libGLESv2.so": 65,
+        "anonymous": 44
+      },
+      "rawRecordTypes": {
+        "14": 1168026,
+        "3": 108,
+        "7": 105,
+        "9": 24091,
+        "10": 309,
+        "4": 106
+      },
+      "rings": [
+        {
+          "cpu": 0,
+          "records": 192760,
+          "bytes": 7301440,
+          "sha256": "a3638d3f4477905e03c98a55ab08b5e2663e8c421c61cec397558801c2d4c5ec"
+        },
+        {
+          "cpu": 1,
+          "records": 209510,
+          "bytes": 7745984,
+          "sha256": "47ec50afaa4b33b1ea344190cb2eb6e4f4a0afaa739201b689f5130bbfe8935a"
+        },
+        {
+          "cpu": 2,
+          "records": 182300,
+          "bytes": 7034760,
+          "sha256": "41be0066c1e7785cfa444b71b67ef3c0429e581132ec4e4c6478df670103953e"
+        },
+        {
+          "cpu": 3,
+          "records": 180659,
+          "bytes": 7036320,
+          "sha256": "586b50b709ffe8f8650f9549108c9126dc4e3a15f9c7710814820676c9432210"
+        },
+        {
+          "cpu": 4,
+          "records": 214555,
+          "bytes": 7535872,
+          "sha256": "4de57a140ef691a32e04ebce27f892b95b62544d7b5bb11678c21e95e387caf3"
+        },
+        {
+          "cpu": 5,
+          "records": 212961,
+          "bytes": 7628008,
+          "sha256": "81364476bc6df5aa8440c802d7ede8159795df0c13d3ad8204c35474b1726b4c"
+        }
+      ],
+      "topLeafSamples": [
+        {
+          "samples": 2081,
+          "functions": [
+            "module:libc.so.6"
+          ]
+        },
+        {
+          "samples": 744,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::FreeWithSize(void*, unsigned long, void*)"
+          ]
+        },
+        {
+          "samples": 587,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)",
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)6>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)"
+          ]
+        },
+        {
+          "samples": 478,
+          "functions": [
+            "anonymous"
+          ]
+        },
+        {
+          "samples": 425,
+          "functions": [
+            "v8_inspector::UTF8ToUTF16(char const*, unsigned long)"
+          ]
+        },
+        {
+          "samples": 421,
+          "functions": [
+            "content::(anonymous namespace)::PipeReaderASCIIZ::ReadLoopInternal()"
+          ]
+        },
+        {
+          "samples": 284,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::DecodeString(unsigned char const*, unsigned char const*, std::__Cr::vector<unsigned short, std::__Cr::allocator<unsigned short> >*)"
+          ]
+        },
+        {
+          "samples": 208,
+          "functions": [
+            "partition_alloc::SlotAddressAndSize::From(unsigned long, partition_alloc::internal::pool_handle)"
+          ]
+        },
+        {
+          "samples": 207,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::ParseToken(unsigned char const*, unsigned char const*, unsigned char const**, unsigned char const**)"
+          ]
+        },
+        {
+          "samples": 179,
+          "functions": [
+            "erms::rect_memset32(unsigned int*, unsigned int, int, unsigned long, int)"
+          ]
+        },
+        {
+          "samples": 168,
+          "functions": [
+            "net::GrowableIOBuffer::span_before_offset()"
+          ]
+        },
+        {
+          "samples": 166,
+          "functions": [
+            "partition_alloc::internal::FreelistEntry::CheckFreeListForThreadCache(unsigned long) const"
+          ]
+        },
+        {
+          "samples": 148,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Free(void*, void*)",
+            "void partition_alloc::PartitionRoot::FreeInUnknownRoot<(partition_alloc::internal::FreeFlags)2>(void*)"
+          ]
+        },
+        {
+          "samples": 142,
+          "functions": [
+            "partition_alloc::ThreadCache::FillBucket(unsigned long)"
+          ]
+        },
+        {
+          "samples": 137,
+          "functions": [
+            "base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*)"
+          ]
+        },
+        {
+          "samples": 111,
+          "functions": [
+            "module:libglib-2.0.so.0.8800.3"
+          ]
+        },
+        {
+          "samples": 98,
+          "functions": [
+            "base::internal::BindStateHolder::~BindStateHolder()",
+            "base::internal::BindStateHolder::~BindStateHolder()"
+          ]
+        },
+        {
+          "samples": 94,
+          "functions": [
+            "_ZN4base4spanIaLm18446744073709551615EPaE9copy_fromENS0_IKaLm18446744073709551615EPS3_EEQntsr3stdE10is_const_vIT_E",
+            "_ZN4base4spanIcLm18446744073709551615EPcE9copy_fromENS0_IKcLm18446744073709551615EPS3_EEQntsr3stdE10is_const_vIT_E",
+            "_ZN4base4spanIhLm18446744073709551615EPhE9copy_fromENS0_IKhLm18446744073709551615EPS3_EEQntsr3stdE10is_const_vIT_E"
+          ]
+        },
+        {
+          "samples": 92,
+          "functions": [
+            "int v8::internal::Deserializer<v8::internal::Isolate>::ReadSingleBytecodeData<v8::internal::SlotAccessorForHeapObject>(unsigned char, v8::internal::SlotAccessorForHeapObject)"
+          ]
+        },
+        {
+          "samples": 92,
+          "functions": [
+            "ipcz::Router::Flush(ipcz::Router::FlushBehavior)"
+          ]
+        }
+      ],
+      "inclusiveAncestrySamples": {
+        "frameScheduling": 2778,
+        "mojoOrIpcDispatch": 8077,
+        "protocolDispatchOrConversion": 4069,
+        "explicitRetirementCollection": 194,
+        "v8OrCppgcCollectionAndSweeping": 339,
+        "newWindowContext": 483,
+        "scriptCompilation": 69,
+        "drawOrRaster": 446
+      },
+      "selectedNamedAncestorSamples": {
+        "viz::BackToBackBeginFrameSource::OnTimerTick(": 989,
+        "cc::Scheduler::SendDidNotProduceFrame(": 710,
+        "v8::CollectGarbageAfterContextRetirement(": 194,
+        "blink::LocalWindowProxy::CreateContext(": 483,
+        "content::PipeReaderBase::ReadLoop(": 723,
+        "crdtp::json::ConvertJSONToCBOR(": 707,
+        "v8_inspector::UTF8ToUTF16(": 430
+      },
+      "ancestryOverlapSamples": {
+        "frameScheduling & mojoOrIpcDispatch": 642,
+        "frameScheduling & protocolDispatchOrConversion": 8,
+        "frameScheduling & explicitRetirementCollection": 0,
+        "frameScheduling & v8OrCppgcCollectionAndSweeping": 0,
+        "frameScheduling & newWindowContext": 0,
+        "frameScheduling & scriptCompilation": 0,
+        "frameScheduling & drawOrRaster": 353,
+        "mojoOrIpcDispatch & protocolDispatchOrConversion": 1825,
+        "mojoOrIpcDispatch & explicitRetirementCollection": 0,
+        "mojoOrIpcDispatch & v8OrCppgcCollectionAndSweeping": 0,
+        "mojoOrIpcDispatch & newWindowContext": 480,
+        "mojoOrIpcDispatch & scriptCompilation": 67,
+        "mojoOrIpcDispatch & drawOrRaster": 0,
+        "protocolDispatchOrConversion & explicitRetirementCollection": 0,
+        "protocolDispatchOrConversion & v8OrCppgcCollectionAndSweeping": 0,
+        "protocolDispatchOrConversion & newWindowContext": 326,
+        "protocolDispatchOrConversion & scriptCompilation": 67,
+        "protocolDispatchOrConversion & drawOrRaster": 0,
+        "explicitRetirementCollection & v8OrCppgcCollectionAndSweeping": 193,
+        "explicitRetirementCollection & newWindowContext": 0,
+        "explicitRetirementCollection & scriptCompilation": 0,
+        "explicitRetirementCollection & drawOrRaster": 0,
+        "v8OrCppgcCollectionAndSweeping & newWindowContext": 0,
+        "v8OrCppgcCollectionAndSweeping & scriptCompilation": 0,
+        "v8OrCppgcCollectionAndSweeping & drawOrRaster": 0,
+        "newWindowContext & scriptCompilation": 0,
+        "newWindowContext & drawOrRaster": 0,
+        "scriptCompilation & drawOrRaster": 0
+      }
+    },
+    {
+      "name": "02-w4-sampled",
+      "workers": 4,
+      "sampling": true,
+      "block": 0,
+      "tests": 240,
+      "completeMilliseconds": 5024.491317002685,
+      "innerOwnerMilliseconds": 4937.419435,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 19396301,
+        "user_usec": 12682397,
+        "system_usec": 6713903,
+        "nice_usec": 12546305,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 50,
+        "nr_throttled": 48,
+        "throttled_usec": 2661210,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 605822976,
+      "browserLaunchReceipts": 4,
+      "receipts": [
+        {
+          "file": "02-w4-sampled/report.json",
+          "bytes": 714545,
+          "sha256": "0849ca2afec27659e63d86185115892bac7d56320779d6ea53ddd2866ed08a60"
+        },
+        {
+          "file": "02-w4-sampled/resources.json",
+          "bytes": 399686,
+          "sha256": "d27cd4497b49e5d2a5bb612b8abc8959de32b1894bedff489b7d5585b5d99f9b"
+        },
+        {
+          "file": "02-w4-sampled/verified.json",
+          "bytes": 791,
+          "sha256": "abd2e1fa88f893937b18373fed28ba230ec9de0056d633efcfec8d5d76007eb4"
+        },
+        {
+          "file": "02-w4-sampled/owner.json",
+          "bytes": 676,
+          "sha256": "edd2cf060ed891b7e234109401b8c5345dedaacf4377da361d9b789e5d31ed9a"
+        }
+      ],
+      "samples": 25476,
+      "sampleCountsByFamily": {
+        "observer": 649,
+        "runtime": 2507,
+        "browser": 21432,
+        "driver": 888
+      },
+      "browserSampleModules": {
+        "module:ld-linux-x86-64.so.2": 167,
+        "headless_shell": 18371,
+        "module:libc.so.6": 2231,
+        "module:libnvidia-gpucomp.so.610.57.04": 13,
+        "module:libdbus-1.so.3.38.3": 4,
+        "module:libnvidia-glcore.so.610.57.04": 44,
+        "module:libm.so.6": 18,
+        "module:libnvidia-glsi.so.610.57.04": 6,
+        "module:libLLVM.so.22.1": 5,
+        "module:libexpat.so.1.12.4": 3,
+        "module:libvulkan_radeon.so": 2,
+        "anonymous": 415,
+        "module:libvulkan.so.1": 5,
+        "module:libGLESv2.so": 7,
+        "module:libglib-2.0.so.0.8800.3": 135,
+        "module:libX11.so.6.4.0": 1,
+        "module:libxshmfence.so.1.0.0": 1,
+        "module:libvk_swiftshader.so": 4
+      },
+      "resolvedNativeLeafSamples": 18345,
+      "unresolvedNativeLeafSamples": 26,
+      "threadSamples": {
+        "headless_shell": 10445,
+        "ThreadPoolForeg": 776,
+        "exe": 25,
+        "ThreadPoolSingl": 7,
+        "Chrome_IOThread": 1696,
+        "Chrome_ChildIOT": 2449,
+        "Compositor": 2762,
+        "DevToolsPipeHan": 850,
+        "VizCompositorTh": 2422
+      },
+      "callchainDepths": {
+        "10": 241,
+        "9": 95,
+        "26": 761,
+        "7": 40,
+        "15": 456,
+        "30": 459,
+        "17": 518,
+        "22": 721,
+        "28": 420,
+        "21": 661,
+        "23": 587,
+        "32": 714,
+        "20": 699,
+        "38": 309,
+        "41": 298,
+        "37": 299,
+        "42": 237,
+        "39": 323,
+        "6": 13,
+        "4": 78,
+        "45": 216,
+        "27": 643,
+        "2": 39,
+        "29": 487,
+        "46": 255,
+        "59": 86,
+        "54": 145,
+        "62": 95,
+        "25": 528,
+        "24": 675,
+        "31": 437,
+        "12": 587,
+        "3": 57,
+        "35": 774,
+        "34": 522,
+        "65": 548,
+        "40": 269,
+        "8": 35,
+        "36": 392,
+        "16": 472,
+        "44": 259,
+        "14": 1144,
+        "33": 446,
+        "63": 49,
+        "61": 64,
+        "19": 545,
+        "43": 275,
+        "18": 506,
+        "60": 79,
+        "56": 167,
+        "5": 10,
+        "48": 261,
+        "47": 252,
+        "52": 186,
+        "49": 202,
+        "64": 58,
+        "58": 112,
+        "57": 106,
+        "53": 162,
+        "11": 277,
+        "51": 196,
+        "13": 523,
+        "50": 215,
+        "55": 147
+      },
+      "callchainsAt65EntryCap": 548,
+      "callerFrameCounts": {
+        "context-markers": 21433,
+        "module:ld-linux-x86-64.so.2": 1304,
+        "native": 541734,
+        "module:libc.so.6": 42288,
+        "module:libvulkan.so.1": 416,
+        "module:libnvidia-gpucomp.so.610.57.04": 5,
+        "module:libnvidia-glcore.so.610.57.04": 94,
+        "module:libglib-2.0.so.0.8800.3": 10387,
+        "module:libdbus-1.so.3.38.3": 21,
+        "unmapped": 164,
+        "module:libLLVM.so.22.1": 3,
+        "module:libGLESv2.so": 199,
+        "module:libnvidia-glvkspirv.so.610.57.04": 1,
+        "module:libexpat.so.1.12.4": 26,
+        "module:libvulkan_radeon.so": 55,
+        "module:libVkLayer_MESA_device_select.so": 18,
+        "module:libdrm.so.2.134.0": 16,
+        "module:libvk_swiftshader.so": 23,
+        "module:libGLX_nvidia.so.610.57.04": 1,
+        "module:libdrm_amdgpu.so.1.134.0": 1,
+        "module:libnvidia-glsi.so.610.57.04": 1,
+        "anonymous": 57
+      },
+      "rawRecordTypes": {
+        "14": 1269162,
+        "3": 376,
+        "9": 25476,
+        "10": 1101,
+        "7": 367,
+        "4": 368
+      },
+      "rings": [
+        {
+          "cpu": 0,
+          "records": 213598,
+          "bytes": 7931888,
+          "sha256": "8c7052f4d22b44794cee1069f21a3262a052d95e6fc0ff6de726d664eafd5128"
+        },
+        {
+          "cpu": 1,
+          "records": 220893,
+          "bytes": 8199784,
+          "sha256": "f6f96f99976036d2243420879de411e0104fa676ea3dadf741b88ff518059952"
+        },
+        {
+          "cpu": 2,
+          "records": 202862,
+          "bytes": 7682256,
+          "sha256": "2c45b8d55ce590857094044ab18b10beac6470c50cfc80f42d35cdce6e45d753"
+        },
+        {
+          "cpu": 3,
+          "records": 214695,
+          "bytes": 7974704,
+          "sha256": "6ba62896de6b01632d4be3d1e5c7af712c2cd9efc39b059f915eb94fbc91c6ef"
+        },
+        {
+          "cpu": 4,
+          "records": 221976,
+          "bytes": 8151712,
+          "sha256": "b0fbb2a0e4ecad7e3ce6751d7251b8cfd6a57b0d202a04c2eaede86bb753bf36"
+        },
+        {
+          "cpu": 5,
+          "records": 222826,
+          "bytes": 8211464,
+          "sha256": "ac5780184ec96ff9362ad3c390f482dcd396674f9642dd6201efc24684696cbb"
+        }
+      ],
+      "topLeafSamples": [
+        {
+          "samples": 2231,
+          "functions": [
+            "module:libc.so.6"
+          ]
+        },
+        {
+          "samples": 720,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::FreeWithSize(void*, unsigned long, void*)"
+          ]
+        },
+        {
+          "samples": 605,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)",
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)6>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)"
+          ]
+        },
+        {
+          "samples": 415,
+          "functions": [
+            "anonymous"
+          ]
+        },
+        {
+          "samples": 392,
+          "functions": [
+            "content::(anonymous namespace)::PipeReaderASCIIZ::ReadLoopInternal()"
+          ]
+        },
+        {
+          "samples": 360,
+          "functions": [
+            "v8_inspector::UTF8ToUTF16(char const*, unsigned long)"
+          ]
+        },
+        {
+          "samples": 282,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::DecodeString(unsigned char const*, unsigned char const*, std::__Cr::vector<unsigned short, std::__Cr::allocator<unsigned short> >*)"
+          ]
+        },
+        {
+          "samples": 239,
+          "functions": [
+            "partition_alloc::ThreadCache::FillBucket(unsigned long)"
+          ]
+        },
+        {
+          "samples": 197,
+          "functions": [
+            "erms::rect_memset32(unsigned int*, unsigned int, int, unsigned long, int)"
+          ]
+        },
+        {
+          "samples": 189,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::ParseToken(unsigned char const*, unsigned char const*, unsigned char const**, unsigned char const**)"
+          ]
+        },
+        {
+          "samples": 185,
+          "functions": [
+            "partition_alloc::SlotAddressAndSize::From(unsigned long, partition_alloc::internal::pool_handle)"
+          ]
+        },
+        {
+          "samples": 167,
+          "functions": [
+            "module:ld-linux-x86-64.so.2"
+          ]
+        },
+        {
+          "samples": 163,
+          "functions": [
+            "net::GrowableIOBuffer::span_before_offset()"
+          ]
+        },
+        {
+          "samples": 158,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Free(void*, void*)",
+            "void partition_alloc::PartitionRoot::FreeInUnknownRoot<(partition_alloc::internal::FreeFlags)2>(void*)"
+          ]
+        },
+        {
+          "samples": 139,
+          "functions": [
+            "partition_alloc::internal::FreelistEntry::CheckFreeListForThreadCache(unsigned long) const"
+          ]
+        },
+        {
+          "samples": 135,
+          "functions": [
+            "module:libglib-2.0.so.0.8800.3"
+          ]
+        },
+        {
+          "samples": 131,
+          "functions": [
+            "base::internal::BindStateHolder::~BindStateHolder()",
+            "base::internal::BindStateHolder::~BindStateHolder()"
+          ]
+        },
+        {
+          "samples": 118,
+          "functions": [
+            "base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*)"
+          ]
+        },
+        {
+          "samples": 110,
+          "functions": [
+            "avx::rect_memset32(unsigned int*, unsigned int, int, unsigned long, int)"
+          ]
+        },
+        {
+          "samples": 102,
+          "functions": [
+            "int v8::internal::Deserializer<v8::internal::Isolate>::ReadSingleBytecodeData<v8::internal::SlotAccessorForHeapObject>(unsigned char, v8::internal::SlotAccessorForHeapObject)"
+          ]
+        }
+      ],
+      "inclusiveAncestrySamples": {
+        "frameScheduling": 3029,
+        "mojoOrIpcDispatch": 8041,
+        "protocolDispatchOrConversion": 4024,
+        "explicitRetirementCollection": 256,
+        "v8OrCppgcCollectionAndSweeping": 404,
+        "newWindowContext": 540,
+        "scriptCompilation": 107,
+        "drawOrRaster": 546
+      },
+      "selectedNamedAncestorSamples": {
+        "viz::BackToBackBeginFrameSource::OnTimerTick(": 787,
+        "cc::Scheduler::SendDidNotProduceFrame(": 961,
+        "v8::CollectGarbageAfterContextRetirement(": 256,
+        "blink::LocalWindowProxy::CreateContext(": 540,
+        "content::PipeReaderBase::ReadLoop(": 704,
+        "crdtp::json::ConvertJSONToCBOR(": 659,
+        "v8_inspector::UTF8ToUTF16(": 366
+      },
+      "ancestryOverlapSamples": {
+        "frameScheduling & mojoOrIpcDispatch": 529,
+        "frameScheduling & protocolDispatchOrConversion": 4,
+        "frameScheduling & explicitRetirementCollection": 0,
+        "frameScheduling & v8OrCppgcCollectionAndSweeping": 0,
+        "frameScheduling & newWindowContext": 0,
+        "frameScheduling & scriptCompilation": 0,
+        "frameScheduling & drawOrRaster": 464,
+        "mojoOrIpcDispatch & protocolDispatchOrConversion": 1864,
+        "mojoOrIpcDispatch & explicitRetirementCollection": 12,
+        "mojoOrIpcDispatch & v8OrCppgcCollectionAndSweeping": 13,
+        "mojoOrIpcDispatch & newWindowContext": 535,
+        "mojoOrIpcDispatch & scriptCompilation": 105,
+        "mojoOrIpcDispatch & drawOrRaster": 0,
+        "protocolDispatchOrConversion & explicitRetirementCollection": 0,
+        "protocolDispatchOrConversion & v8OrCppgcCollectionAndSweeping": 0,
+        "protocolDispatchOrConversion & newWindowContext": 355,
+        "protocolDispatchOrConversion & scriptCompilation": 105,
+        "protocolDispatchOrConversion & drawOrRaster": 0,
+        "explicitRetirementCollection & v8OrCppgcCollectionAndSweeping": 255,
+        "explicitRetirementCollection & newWindowContext": 0,
+        "explicitRetirementCollection & scriptCompilation": 0,
+        "explicitRetirementCollection & drawOrRaster": 0,
+        "v8OrCppgcCollectionAndSweeping & newWindowContext": 0,
+        "v8OrCppgcCollectionAndSweeping & scriptCompilation": 0,
+        "v8OrCppgcCollectionAndSweeping & drawOrRaster": 0,
+        "newWindowContext & scriptCompilation": 0,
+        "newWindowContext & drawOrRaster": 0,
+        "scriptCompilation & drawOrRaster": 0
+      }
+    },
+    {
+      "name": "03-w4-control",
+      "workers": 4,
+      "sampling": false,
+      "block": 0,
+      "tests": 240,
+      "completeMilliseconds": 4755.461781009217,
+      "innerOwnerMilliseconds": 4672.050182,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 18379443,
+        "user_usec": 12247466,
+        "system_usec": 6131977,
+        "nice_usec": 11936180,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 46,
+        "nr_throttled": 44,
+        "throttled_usec": 2412558,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 548143104,
+      "browserLaunchReceipts": 4,
+      "receipts": [
+        {
+          "file": "03-w4-control/report.json",
+          "bytes": 714672,
+          "sha256": "0df12f6a1e78384c6f4f78247e337853d03f9b6c2be6a6b7fd1f30d020444f58"
+        },
+        {
+          "file": "03-w4-control/resources.json",
+          "bytes": 379064,
+          "sha256": "0ae6a76bec54d6fbb3f98305bc23591dd6a84dc2ed0b258d1a92579265fdcc07"
+        },
+        {
+          "file": "03-w4-control/verified.json",
+          "bytes": 791,
+          "sha256": "6051e009c228dd10f4fd062ff3a186fee8873e332a361782841b0f9c2a1cf7f2"
+        },
+        {
+          "file": "03-w4-control/owner.json",
+          "bytes": 676,
+          "sha256": "6364dfcc7762a693e50a9e34cf4497873e20f06bb019f69efd9aeb10ae539bd5"
+        }
+      ]
+    },
+    {
+      "name": "04-w4-control",
+      "workers": 4,
+      "sampling": false,
+      "block": 1,
+      "tests": 240,
+      "completeMilliseconds": 4845.859117995133,
+      "innerOwnerMilliseconds": 4762.023636,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 18623742,
+        "user_usec": 12308832,
+        "system_usec": 6314910,
+        "nice_usec": 12073137,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 47,
+        "nr_throttled": 42,
+        "throttled_usec": 2327328,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 558546944,
+      "browserLaunchReceipts": 4,
+      "receipts": [
+        {
+          "file": "04-w4-control/report.json",
+          "bytes": 714579,
+          "sha256": "05b896cf0a54e3365584ef99fbcdedf17f0d6f73563124886c3fe77f394da5cc"
+        },
+        {
+          "file": "04-w4-control/resources.json",
+          "bytes": 384596,
+          "sha256": "1cae114bb7236866ea90068204ea9856229ddd2d481f7f0932b45880dcd6702b"
+        },
+        {
+          "file": "04-w4-control/verified.json",
+          "bytes": 791,
+          "sha256": "32631dd7718da9536fa7ed08310245f9f7fa6ee5e678bdec37c94f213acb8c9b"
+        },
+        {
+          "file": "04-w4-control/owner.json",
+          "bytes": 676,
+          "sha256": "45679d4212c9273c8706d22e8f31c858f50640de5d82c9ce162a69622f088d88"
+        }
+      ]
+    },
+    {
+      "name": "05-w4-sampled",
+      "workers": 4,
+      "sampling": true,
+      "block": 1,
+      "tests": 240,
+      "completeMilliseconds": 4965.711558004841,
+      "innerOwnerMilliseconds": 4880.180419,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 19184038,
+        "user_usec": 12522900,
+        "system_usec": 6661137,
+        "nice_usec": 12328454,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 49,
+        "nr_throttled": 47,
+        "throttled_usec": 2709207,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 603070464,
+      "browserLaunchReceipts": 4,
+      "receipts": [
+        {
+          "file": "05-w4-sampled/report.json",
+          "bytes": 714576,
+          "sha256": "274a561d4b335ee0f78e846df005617da8af6c5ed4e85b57af3a6b17b55acdaf"
+        },
+        {
+          "file": "05-w4-sampled/resources.json",
+          "bytes": 392349,
+          "sha256": "d505af8e2ec44a2d141caf35e2841e88c6c6e9f19c13166287fa03332d28bc5e"
+        },
+        {
+          "file": "05-w4-sampled/verified.json",
+          "bytes": 791,
+          "sha256": "5ea1084952f54a8935e1a9c1fe7fa71b1a1eb8dc8d1b3b0156b988724bae4271"
+        },
+        {
+          "file": "05-w4-sampled/owner.json",
+          "bytes": 676,
+          "sha256": "b1a7b597229fa69db3af6434c262ba2180258f88a8bc2e44b6f6a3bba6c4990a"
+        }
+      ],
+      "samples": 25352,
+      "sampleCountsByFamily": {
+        "observer": 646,
+        "runtime": 2616,
+        "driver": 888,
+        "browser": 21202
+      },
+      "browserSampleModules": {
+        "module:ld-linux-x86-64.so.2": 168,
+        "module:libc.so.6": 2336,
+        "headless_shell": 18055,
+        "module:libvulkan.so.1": 4,
+        "module:libnvidia-gpucomp.so.610.57.04": 13,
+        "module:libnvidia-glcore.so.610.57.04": 40,
+        "module:libX11.so.6.4.0": 3,
+        "anonymous": 406,
+        "module:libnvidia-glsi.so.610.57.04": 10,
+        "module:libLLVM.so.22.1": 2,
+        "module:libVkLayer_MESA_device_select.so": 1,
+        "module:libexpat.so.1.12.4": 3,
+        "module:libGLX_nvidia.so.610.57.04": 2,
+        "module:libvulkan_radeon.so": 1,
+        "module:libdrm.so.2.134.0": 1,
+        "module:libvk_swiftshader.so": 3,
+        "module:libGLESv2.so": 8,
+        "module:libglib-2.0.so.0.8800.3": 137,
+        "module:libm.so.6": 9
+      },
+      "resolvedNativeLeafSamples": 18023,
+      "unresolvedNativeLeafSamples": 32,
+      "threadSamples": {
+        "headless_shell": 10299,
+        "ThreadPoolForeg": 787,
+        "Chrome_IOThread": 1754,
+        "ThreadPoolSingl": 5,
+        "exe": 28,
+        "Chrome_ChildIOT": 2465,
+        "DevToolsPipeHan": 847,
+        "PerfettoTrace": 1,
+        "Compositor": 2666,
+        "VizCompositorTh": 2350
+      },
+      "callchainDepths": {
+        "9": 77,
+        "7": 49,
+        "8": 29,
+        "15": 498,
+        "10": 207,
+        "30": 429,
+        "21": 682,
+        "16": 459,
+        "12": 592,
+        "29": 447,
+        "20": 695,
+        "14": 1186,
+        "23": 582,
+        "33": 398,
+        "35": 751,
+        "27": 597,
+        "22": 699,
+        "25": 543,
+        "26": 739,
+        "42": 249,
+        "40": 285,
+        "39": 310,
+        "41": 296,
+        "43": 244,
+        "44": 240,
+        "47": 228,
+        "2": 44,
+        "49": 183,
+        "58": 104,
+        "60": 91,
+        "17": 544,
+        "3": 65,
+        "38": 290,
+        "11": 285,
+        "4": 84,
+        "65": 534,
+        "53": 197,
+        "31": 451,
+        "13": 515,
+        "32": 706,
+        "19": 536,
+        "24": 690,
+        "64": 85,
+        "34": 490,
+        "18": 461,
+        "51": 187,
+        "36": 382,
+        "6": 8,
+        "45": 213,
+        "54": 140,
+        "28": 426,
+        "48": 275,
+        "63": 60,
+        "5": 9,
+        "46": 241,
+        "50": 251,
+        "56": 171,
+        "52": 178,
+        "57": 121,
+        "62": 84,
+        "59": 72,
+        "37": 308,
+        "55": 146,
+        "61": 64
+      },
+      "callchainsAt65EntryCap": 534,
+      "callerFrameCounts": {
+        "context-markers": 21202,
+        "module:ld-linux-x86-64.so.2": 1300,
+        "module:libc.so.6": 41802,
+        "native": 535705,
+        "module:libvulkan.so.1": 412,
+        "module:libglib-2.0.so.0.8800.3": 10213,
+        "module:libdbus-1.so.3.38.3": 29,
+        "module:libnvidia-gpucomp.so.610.57.04": 4,
+        "unmapped": 108,
+        "module:libnvidia-glcore.so.610.57.04": 98,
+        "module:libGLX_nvidia.so.610.57.04": 6,
+        "module:libxcb.so.1.1.0": 1,
+        "module:libnvidia-glsi.so.610.57.04": 2,
+        "module:libLLVM.so.22.1": 10,
+        "module:libexpat.so.1.12.4": 18,
+        "module:libvulkan_radeon.so": 29,
+        "module:libVkLayer_MESA_device_select.so": 12,
+        "module:libxcb-keysyms.so.1.0.0": 1,
+        "module:libGLESv2.so": 245,
+        "module:libvk_swiftshader.so": 32,
+        "module:libdrm.so.2.134.0": 5,
+        "module:libwayland-client.so.0.26.0": 1,
+        "anonymous": 49
+      },
+      "rawRecordTypes": {
+        "14": 1233545,
+        "3": 371,
+        "7": 362,
+        "9": 25352,
+        "10": 1101,
+        "4": 363
+      },
+      "rings": [
+        {
+          "cpu": 0,
+          "records": 207293,
+          "bytes": 7744816,
+          "sha256": "4e896548dc98d415f15c10cf991d2094f14bf48928269eff9e59be3c040da449"
+        },
+        {
+          "cpu": 1,
+          "records": 217553,
+          "bytes": 8070760,
+          "sha256": "316da5b98c1dc23bf026f65d8351a36d357b3f08d3ec2e0a1fb76abec9607ad7"
+        },
+        {
+          "cpu": 2,
+          "records": 203419,
+          "bytes": 7588032,
+          "sha256": "b97374ab0853ea2608ee9cbd2a673b29664e3d5da40b33dfbe6f435979c787ca"
+        },
+        {
+          "cpu": 3,
+          "records": 215182,
+          "bytes": 8161936,
+          "sha256": "d1b56f0cd8778e76171c0b875483421ff46d478ea45a340f5dee3d1f69cf026f"
+        },
+        {
+          "cpu": 4,
+          "records": 205035,
+          "bytes": 7518656,
+          "sha256": "eb5393e7fdf2a7125e659829cfea49ff3303a8ee4b0b31efd586387d288f5ed3"
+        },
+        {
+          "cpu": 5,
+          "records": 212612,
+          "bytes": 7880552,
+          "sha256": "03caba150ae13df570f0f6797d5fca5d10034653362141dc447d6b8d0754f7db"
+        }
+      ],
+      "topLeafSamples": [
+        {
+          "samples": 2336,
+          "functions": [
+            "module:libc.so.6"
+          ]
+        },
+        {
+          "samples": 678,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::FreeWithSize(void*, unsigned long, void*)"
+          ]
+        },
+        {
+          "samples": 634,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)",
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)6>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)"
+          ]
+        },
+        {
+          "samples": 406,
+          "functions": [
+            "anonymous"
+          ]
+        },
+        {
+          "samples": 400,
+          "functions": [
+            "content::(anonymous namespace)::PipeReaderASCIIZ::ReadLoopInternal()"
+          ]
+        },
+        {
+          "samples": 367,
+          "functions": [
+            "v8_inspector::UTF8ToUTF16(char const*, unsigned long)"
+          ]
+        },
+        {
+          "samples": 266,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::DecodeString(unsigned char const*, unsigned char const*, std::__Cr::vector<unsigned short, std::__Cr::allocator<unsigned short> >*)"
+          ]
+        },
+        {
+          "samples": 242,
+          "functions": [
+            "partition_alloc::ThreadCache::FillBucket(unsigned long)"
+          ]
+        },
+        {
+          "samples": 207,
+          "functions": [
+            "erms::rect_memset32(unsigned int*, unsigned int, int, unsigned long, int)"
+          ]
+        },
+        {
+          "samples": 184,
+          "functions": [
+            "partition_alloc::internal::FreelistEntry::CheckFreeListForThreadCache(unsigned long) const"
+          ]
+        },
+        {
+          "samples": 182,
+          "functions": [
+            "partition_alloc::SlotAddressAndSize::From(unsigned long, partition_alloc::internal::pool_handle)"
+          ]
+        },
+        {
+          "samples": 174,
+          "functions": [
+            "net::GrowableIOBuffer::span_before_offset()"
+          ]
+        },
+        {
+          "samples": 173,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::ParseToken(unsigned char const*, unsigned char const*, unsigned char const**, unsigned char const**)"
+          ]
+        },
+        {
+          "samples": 168,
+          "functions": [
+            "module:ld-linux-x86-64.so.2"
+          ]
+        },
+        {
+          "samples": 156,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Free(void*, void*)",
+            "void partition_alloc::PartitionRoot::FreeInUnknownRoot<(partition_alloc::internal::FreeFlags)2>(void*)"
+          ]
+        },
+        {
+          "samples": 137,
+          "functions": [
+            "module:libglib-2.0.so.0.8800.3"
+          ]
+        },
+        {
+          "samples": 115,
+          "functions": [
+            "int v8::internal::Deserializer<v8::internal::Isolate>::ReadSingleBytecodeData<v8::internal::SlotAccessorForHeapObject>(unsigned char, v8::internal::SlotAccessorForHeapObject)"
+          ]
+        },
+        {
+          "samples": 109,
+          "functions": [
+            "avx::rect_memset32(unsigned int*, unsigned int, int, unsigned long, int)"
+          ]
+        },
+        {
+          "samples": 103,
+          "functions": [
+            "base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*)"
+          ]
+        },
+        {
+          "samples": 99,
+          "functions": [
+            "base::internal::BindStateHolder::~BindStateHolder()",
+            "base::internal::BindStateHolder::~BindStateHolder()"
+          ]
+        }
+      ],
+      "inclusiveAncestrySamples": {
+        "frameScheduling": 2932,
+        "mojoOrIpcDispatch": 7945,
+        "protocolDispatchOrConversion": 3986,
+        "explicitRetirementCollection": 235,
+        "v8OrCppgcCollectionAndSweeping": 382,
+        "newWindowContext": 545,
+        "scriptCompilation": 107,
+        "drawOrRaster": 528
+      },
+      "selectedNamedAncestorSamples": {
+        "viz::BackToBackBeginFrameSource::OnTimerTick(": 769,
+        "cc::Scheduler::SendDidNotProduceFrame(": 881,
+        "v8::CollectGarbageAfterContextRetirement(": 235,
+        "blink::LocalWindowProxy::CreateContext(": 545,
+        "content::PipeReaderBase::ReadLoop(": 694,
+        "crdtp::json::ConvertJSONToCBOR(": 612,
+        "v8_inspector::UTF8ToUTF16(": 373
+      },
+      "ancestryOverlapSamples": {
+        "frameScheduling & mojoOrIpcDispatch": 508,
+        "frameScheduling & protocolDispatchOrConversion": 4,
+        "frameScheduling & explicitRetirementCollection": 0,
+        "frameScheduling & v8OrCppgcCollectionAndSweeping": 0,
+        "frameScheduling & newWindowContext": 0,
+        "frameScheduling & scriptCompilation": 0,
+        "frameScheduling & drawOrRaster": 440,
+        "mojoOrIpcDispatch & protocolDispatchOrConversion": 1868,
+        "mojoOrIpcDispatch & explicitRetirementCollection": 21,
+        "mojoOrIpcDispatch & v8OrCppgcCollectionAndSweeping": 21,
+        "mojoOrIpcDispatch & newWindowContext": 543,
+        "mojoOrIpcDispatch & scriptCompilation": 105,
+        "mojoOrIpcDispatch & drawOrRaster": 0,
+        "protocolDispatchOrConversion & explicitRetirementCollection": 0,
+        "protocolDispatchOrConversion & v8OrCppgcCollectionAndSweeping": 0,
+        "protocolDispatchOrConversion & newWindowContext": 353,
+        "protocolDispatchOrConversion & scriptCompilation": 104,
+        "protocolDispatchOrConversion & drawOrRaster": 0,
+        "explicitRetirementCollection & v8OrCppgcCollectionAndSweeping": 233,
+        "explicitRetirementCollection & newWindowContext": 0,
+        "explicitRetirementCollection & scriptCompilation": 0,
+        "explicitRetirementCollection & drawOrRaster": 0,
+        "v8OrCppgcCollectionAndSweeping & newWindowContext": 0,
+        "v8OrCppgcCollectionAndSweeping & scriptCompilation": 0,
+        "v8OrCppgcCollectionAndSweeping & drawOrRaster": 0,
+        "newWindowContext & scriptCompilation": 0,
+        "newWindowContext & drawOrRaster": 0,
+        "scriptCompilation & drawOrRaster": 0
+      }
+    },
+    {
+      "name": "06-w1-sampled",
+      "workers": 1,
+      "sampling": true,
+      "block": 1,
+      "tests": 240,
+      "completeMilliseconds": 8251.072995000868,
+      "innerOwnerMilliseconds": 8166.5826609999995,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 17288823,
+        "user_usec": 11323335,
+        "system_usec": 5965487,
+        "nice_usec": 10267470,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 82,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 238792704,
+      "browserLaunchReceipts": 1,
+      "receipts": [
+        {
+          "file": "06-w1-sampled/report.json",
+          "bytes": 688367,
+          "sha256": "ab26bd9d5de53a9212d4554683ffeb97b630f27ce92fa4ee94cf9b64543b9da2"
+        },
+        {
+          "file": "06-w1-sampled/resources.json",
+          "bytes": 225419,
+          "sha256": "2ed398c31fda4c7692d0ad050540cfbe95177f48e1e4fc1f59fc25da4f3b1135"
+        },
+        {
+          "file": "06-w1-sampled/verified.json",
+          "bytes": 791,
+          "sha256": "ad43471e34ba7d877093b98daf4c12d30e80acd666c544d0ad24467456d8713f"
+        },
+        {
+          "file": "06-w1-sampled/owner.json",
+          "bytes": 676,
+          "sha256": "3986b0f2295a6f018783466b7f4a5caa65605e0a75418196bec23ff0dca15017"
+        }
+      ],
+      "samples": 24405,
+      "sampleCountsByFamily": {
+        "observer": 850,
+        "runtime": 1734,
+        "browser": 20831,
+        "driver": 990
+      },
+      "browserSampleModules": {
+        "module:ld-linux-x86-64.so.2": 41,
+        "headless_shell": 18045,
+        "module:libc.so.6": 2053,
+        "module:libnvidia-glcore.so.610.57.04": 13,
+        "module:libnvidia-gpucomp.so.610.57.04": 2,
+        "module:libnvidia-glsi.so.610.57.04": 2,
+        "module:libLLVM.so.22.1": 2,
+        "module:libexpat.so.1.12.4": 1,
+        "module:libvulkan.so.1": 1,
+        "module:libglib-2.0.so.0.8800.3": 132,
+        "module:libvk_swiftshader.so": 1,
+        "anonymous": 526,
+        "module:libm.so.6": 12
+      },
+      "resolvedNativeLeafSamples": 18023,
+      "unresolvedNativeLeafSamples": 22,
+      "threadSamples": {
+        "headless_shell": 10137,
+        "ThreadPoolForeg": 848,
+        "exe": 4,
+        "Chrome_IOThread": 1912,
+        "Chrome_ChildIOT": 2543,
+        "DevToolsPipeHan": 875,
+        "headles:disk$0": 1,
+        "Compositor": 1690,
+        "VizCompositorTh": 2820,
+        "ThreadPoolServi": 1
+      },
+      "callchainDepths": {
+        "9": 49,
+        "7": 11,
+        "29": 503,
+        "11": 294,
+        "10": 163,
+        "14": 1131,
+        "19": 516,
+        "16": 443,
+        "26": 765,
+        "33": 443,
+        "21": 645,
+        "28": 454,
+        "23": 595,
+        "24": 653,
+        "25": 601,
+        "31": 580,
+        "43": 278,
+        "41": 265,
+        "34": 529,
+        "49": 192,
+        "22": 731,
+        "38": 309,
+        "5": 2,
+        "40": 286,
+        "8": 23,
+        "37": 362,
+        "3": 49,
+        "2": 7,
+        "46": 227,
+        "44": 239,
+        "18": 456,
+        "4": 14,
+        "36": 371,
+        "39": 302,
+        "30": 462,
+        "13": 439,
+        "12": 557,
+        "56": 134,
+        "65": 447,
+        "58": 101,
+        "42": 245,
+        "35": 828,
+        "55": 134,
+        "47": 228,
+        "57": 99,
+        "63": 47,
+        "32": 751,
+        "59": 93,
+        "61": 78,
+        "51": 180,
+        "50": 201,
+        "27": 672,
+        "45": 219,
+        "20": 658,
+        "52": 214,
+        "17": 421,
+        "15": 433,
+        "60": 65,
+        "48": 227,
+        "62": 70,
+        "6": 1,
+        "54": 128,
+        "53": 160,
+        "64": 51
+      },
+      "callchainsAt65EntryCap": 447,
+      "callerFrameCounts": {
+        "context-markers": 20831,
+        "module:ld-linux-x86-64.so.2": 318,
+        "native": 531712,
+        "module:libc.so.6": 41437,
+        "module:libvulkan.so.1": 117,
+        "unmapped": 60,
+        "module:libnvidia-gpucomp.so.610.57.04": 1,
+        "module:libglib-2.0.so.0.8800.3": 9836,
+        "module:libnvidia-glcore.so.610.57.04": 11,
+        "module:libnvidia-glsi.so.610.57.04": 1,
+        "module:libexpat.so.1.12.4": 11,
+        "module:libvulkan_radeon.so": 14,
+        "module:libVkLayer_MESA_device_select.so": 2,
+        "module:libGLESv2.so": 44,
+        "module:libvk_swiftshader.so": 2,
+        "anonymous": 49
+      },
+      "rawRecordTypes": {
+        "14": 1179612,
+        "9": 24405,
+        "3": 108,
+        "10": 309,
+        "7": 105,
+        "4": 106
+      },
+      "rings": [
+        {
+          "cpu": 0,
+          "records": 190905,
+          "bytes": 7250248,
+          "sha256": "be83840b3cc6240e4da8af21dab300cc8f48ae550fe32d09333aa2049c012585"
+        },
+        {
+          "cpu": 1,
+          "records": 216535,
+          "bytes": 7945248,
+          "sha256": "328ae55f1aaa59325f0935d1face1a853b068eeb090f26cb453f0e9b90636fba"
+        },
+        {
+          "cpu": 2,
+          "records": 186883,
+          "bytes": 7293584,
+          "sha256": "0c0f33b8abd501081e2d49e58fb3f95464547cd339d03efe8a2d0bcaa2c27aa4"
+        },
+        {
+          "cpu": 3,
+          "records": 178394,
+          "bytes": 6899448,
+          "sha256": "fb97f01dd1845e84b8327512fc6c6dd6d1f438f489c095774454c1e314a278ee"
+        },
+        {
+          "cpu": 4,
+          "records": 214938,
+          "bytes": 7546056,
+          "sha256": "eb7a11b8e0695483f7a24100364d789751e337c0ce2c05fcacf7376c687a3e0b"
+        },
+        {
+          "cpu": 5,
+          "records": 216990,
+          "bytes": 7794080,
+          "sha256": "aec9cfeac042b7a06fd175830615cc8d1887e7ade3a99a60c5f9317cd5edb8fb"
+        }
+      ],
+      "topLeafSamples": [
+        {
+          "samples": 2053,
+          "functions": [
+            "module:libc.so.6"
+          ]
+        },
+        {
+          "samples": 743,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::FreeWithSize(void*, unsigned long, void*)"
+          ]
+        },
+        {
+          "samples": 626,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)",
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)6>::Malloc(unsigned long, partition_alloc::internal::base::StrongAlias<AllocTokenTag, unsigned long>, void*)"
+          ]
+        },
+        {
+          "samples": 526,
+          "functions": [
+            "anonymous"
+          ]
+        },
+        {
+          "samples": 429,
+          "functions": [
+            "content::(anonymous namespace)::PipeReaderASCIIZ::ReadLoopInternal()"
+          ]
+        },
+        {
+          "samples": 401,
+          "functions": [
+            "v8_inspector::UTF8ToUTF16(char const*, unsigned long)"
+          ]
+        },
+        {
+          "samples": 276,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::DecodeString(unsigned char const*, unsigned char const*, std::__Cr::vector<unsigned short, std::__Cr::allocator<unsigned short> >*)"
+          ]
+        },
+        {
+          "samples": 207,
+          "functions": [
+            "erms::rect_memset32(unsigned int*, unsigned int, int, unsigned long, int)"
+          ]
+        },
+        {
+          "samples": 204,
+          "functions": [
+            "crdtp::json::(anonymous namespace)::JsonParser<unsigned char>::ParseToken(unsigned char const*, unsigned char const*, unsigned char const**, unsigned char const**)"
+          ]
+        },
+        {
+          "samples": 193,
+          "functions": [
+            "partition_alloc::SlotAddressAndSize::From(unsigned long, partition_alloc::internal::pool_handle)"
+          ]
+        },
+        {
+          "samples": 176,
+          "functions": [
+            "net::GrowableIOBuffer::span_before_offset()"
+          ]
+        },
+        {
+          "samples": 162,
+          "functions": [
+            "allocator_shim::internal::PartitionAllocFunctionsInternal<(partition_alloc::internal::AllocFlags)16, (partition_alloc::internal::FreeFlags)2>::Free(void*, void*)",
+            "void partition_alloc::PartitionRoot::FreeInUnknownRoot<(partition_alloc::internal::FreeFlags)2>(void*)"
+          ]
+        },
+        {
+          "samples": 132,
+          "functions": [
+            "module:libglib-2.0.so.0.8800.3"
+          ]
+        },
+        {
+          "samples": 127,
+          "functions": [
+            "partition_alloc::internal::FreelistEntry::CheckFreeListForThreadCache(unsigned long) const"
+          ]
+        },
+        {
+          "samples": 124,
+          "functions": [
+            "base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*)"
+          ]
+        },
+        {
+          "samples": 121,
+          "functions": [
+            "partition_alloc::ThreadCache::FillBucket(unsigned long)"
+          ]
+        },
+        {
+          "samples": 103,
+          "functions": [
+            "int v8::internal::Deserializer<v8::internal::Isolate>::ReadSingleBytecodeData<v8::internal::SlotAccessorForHeapObject>(unsigned char, v8::internal::SlotAccessorForHeapObject)"
+          ]
+        },
+        {
+          "samples": 99,
+          "functions": [
+            "base::internal::BindStateHolder::~BindStateHolder()",
+            "base::internal::BindStateHolder::~BindStateHolder()"
+          ]
+        },
+        {
+          "samples": 93,
+          "functions": [
+            "absl::Mutex::lock()"
+          ]
+        },
+        {
+          "samples": 92,
+          "functions": [
+            "base::internal::RawPtrBackupRefImpl<false>::ReleaseInternal(unsigned long)",
+            "base::internal::RawPtrBackupRefImpl<true>::ReleaseInternal(unsigned long)"
+          ]
+        }
+      ],
+      "inclusiveAncestrySamples": {
+        "frameScheduling": 2965,
+        "mojoOrIpcDispatch": 8279,
+        "protocolDispatchOrConversion": 3990,
+        "explicitRetirementCollection": 199,
+        "v8OrCppgcCollectionAndSweeping": 328,
+        "newWindowContext": 495,
+        "scriptCompilation": 58,
+        "drawOrRaster": 483
+      },
+      "selectedNamedAncestorSamples": {
+        "viz::BackToBackBeginFrameSource::OnTimerTick(": 1032,
+        "cc::Scheduler::SendDidNotProduceFrame(": 789,
+        "v8::CollectGarbageAfterContextRetirement(": 199,
+        "blink::LocalWindowProxy::CreateContext(": 495,
+        "content::PipeReaderBase::ReadLoop(": 722,
+        "crdtp::json::ConvertJSONToCBOR(": 689,
+        "v8_inspector::UTF8ToUTF16(": 402
+      },
+      "ancestryOverlapSamples": {
+        "frameScheduling & mojoOrIpcDispatch": 726,
+        "frameScheduling & protocolDispatchOrConversion": 5,
+        "frameScheduling & explicitRetirementCollection": 0,
+        "frameScheduling & v8OrCppgcCollectionAndSweeping": 0,
+        "frameScheduling & newWindowContext": 0,
+        "frameScheduling & scriptCompilation": 0,
+        "frameScheduling & drawOrRaster": 393,
+        "mojoOrIpcDispatch & protocolDispatchOrConversion": 1788,
+        "mojoOrIpcDispatch & explicitRetirementCollection": 0,
+        "mojoOrIpcDispatch & v8OrCppgcCollectionAndSweeping": 1,
+        "mojoOrIpcDispatch & newWindowContext": 495,
+        "mojoOrIpcDispatch & scriptCompilation": 56,
+        "mojoOrIpcDispatch & drawOrRaster": 0,
+        "protocolDispatchOrConversion & explicitRetirementCollection": 0,
+        "protocolDispatchOrConversion & v8OrCppgcCollectionAndSweeping": 0,
+        "protocolDispatchOrConversion & newWindowContext": 316,
+        "protocolDispatchOrConversion & scriptCompilation": 56,
+        "protocolDispatchOrConversion & drawOrRaster": 0,
+        "explicitRetirementCollection & v8OrCppgcCollectionAndSweeping": 198,
+        "explicitRetirementCollection & newWindowContext": 0,
+        "explicitRetirementCollection & scriptCompilation": 0,
+        "explicitRetirementCollection & drawOrRaster": 0,
+        "v8OrCppgcCollectionAndSweeping & newWindowContext": 0,
+        "v8OrCppgcCollectionAndSweeping & scriptCompilation": 0,
+        "v8OrCppgcCollectionAndSweeping & drawOrRaster": 0,
+        "newWindowContext & scriptCompilation": 1,
+        "newWindowContext & drawOrRaster": 0,
+        "scriptCompilation & drawOrRaster": 0
+      }
+    },
+    {
+      "name": "07-w1-control",
+      "workers": 1,
+      "sampling": false,
+      "block": 1,
+      "tests": 240,
+      "completeMilliseconds": 8079.263767009252,
+      "innerOwnerMilliseconds": 7995.259876,
+      "actualPolicy": {
+        "cpuMax": "400000 100000",
+        "memoryMax": "8589934592",
+        "swapMax": "0",
+        "affinity": "0-5"
+      },
+      "cgroupCpuDelta": {
+        "usage_usec": 16781053,
+        "user_usec": 11347051,
+        "system_usec": 5434002,
+        "nice_usec": 9600903,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 80,
+        "nr_throttled": 0,
+        "throttled_usec": 0,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cgroupMemoryPeak": 191373312,
+      "browserLaunchReceipts": 1,
+      "receipts": [
+        {
+          "file": "07-w1-control/report.json",
+          "bytes": 688444,
+          "sha256": "b750e829be421081bf08408f11f3f332fb4c26cbd89aca688d1e7f736b7d4570"
+        },
+        {
+          "file": "07-w1-control/resources.json",
+          "bytes": 219825,
+          "sha256": "c5e4b6ddd0d47c8bd46406d835bdfd57930d184a7c5d1bc6ad9e2bf4dd4621d0"
+        },
+        {
+          "file": "07-w1-control/verified.json",
+          "bytes": 783,
+          "sha256": "26d580829f542e3ae60aa0fffca1555e16c40d0c5d5d7ac2880d5e99139c578c"
+        },
+        {
+          "file": "07-w1-control/owner.json",
+          "bytes": 668,
+          "sha256": "c50c8b8f5baaf510c9cfabe53fec855968bdcd32ca410c70f0f6d9252c46bf05"
+        }
+      ]
+    }
+  ],
+  "ancestryRules": {
+    "frameScheduling": [
+      "viz::BackToBackBeginFrameSource::",
+      "cc::Scheduler::",
+      "viz::DisplayScheduler::",
+      "viz::CompositorFrameSinkSupport::OnBeginFrame(",
+      "cc::mojo_embedder::AsyncLayerTreeFrameSink::OnBeginFrame("
+    ],
+    "mojoOrIpcDispatch": [
+      "mojo::MessageDispatcher::Accept(",
+      "mojo::Connector::DispatchMessage(",
+      "mojo::core::Channel::TryDispatchMessage(",
+      "IPC::ChannelAssociatedGroupController::AcceptOnEndpointThread("
+    ],
+    "protocolDispatchOrConversion": [
+      "content::DevToolsSession::DispatchProtocolMessage",
+      "blink::DevToolsSession::DispatchProtocolCommandImpl(",
+      "v8_inspector::UTF8ToUTF16(",
+      "crdtp::json::ConvertJSONToCBOR(",
+      "content::PipeReaderBase::ReadLoop("
+    ],
+    "explicitRetirementCollection": [
+      "v8::CollectGarbageAfterContextRetirement("
+    ],
+    "v8OrCppgcCollectionAndSweeping": [
+      "v8::internal::Heap::CollectGarbage(",
+      "v8::internal::MarkCompactCollector::",
+      "cppgc::internal::Sweeper::"
+    ],
+    "newWindowContext": [
+      "blink::LocalWindowProxy::CreateContext("
+    ],
+    "scriptCompilation": [
+      "v8::internal::Compiler::",
+      "v8::internal::Scanner::",
+      "v8::internal::Parser::",
+      "v8::internal::PreParser::"
+    ],
+    "drawOrRaster": [
+      "viz::Display::DrawAndSwap(",
+      "cc::RasterBufferProvider::PlaybackToMemory(",
+      "cc::DisplayItemList::Raster("
+    ]
+  },
+  "symbolVerification": {
+    "status": "passed-independent-llvm-symbol-check",
+    "addresses": 18223,
+    "browserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "symbolizerSha256": "55f88a197b5137e34afe02e569fb6bf07904e6d247abf0151f5bcef403b568f7",
+    "scope": "One sampled address per nonempty ELF symbol alias group, including caller frames; not every address or an independent unwind check."
+  },
+  "method": {
+    "mapping": "Fresh read/execute mmap control binds hashed binary to its actual mapped device and inode; no mapped bytes executed. Original perf fork/exec/mmap records, latest covering mapping, ELF executable PT_LOAD offsets, sized STT_FUNC/IFUNC ranges.",
+    "aliases": "Keep all overlapping/folded aliases. A category matches only if every alias in that symbol group matches one of its terms; one sample counts at most once per category. Categories overlap and must not be summed.",
+    "instructionAddresses": "Leaf IP unchanged; caller return addresses minus one. First duplicated leaf frame omitted. Perf context markers preserved as counts.",
+    "denominator": "Every browser-family sample remains accounted, including anonymous/JIT, external libraries and unresolved native ranges. Ancestry may include native callers of external/anonymous leaves. Thread names are kernel COMM labels, not unique process roles.",
+    "independentSymbolCheck": "One actual sampled address per resolved symbol group, leaf or caller, checked against LLVM; not all addresses or independent unwind validity."
+  },
+  "decisions": [
+    "Explicit retirement-collection ancestry is a small part of sampled browser CPU in this setup workload. Prioritize other repeated costs before further GC-policy experiments. This is not an upper bound on GC or proof of finalizer drainage.",
+    "Frame scheduling, including callbacks that report no produced frame, and protocol transport/conversion recur across both worker counts and blocks. Investigate their source ownership before selecting a new mechanism; named ancestry does not prove the work is unnecessary.",
+    "Do not change final acceptance workloads or claim a new speedup. The prior suite-size result still shows startup-only tuning is insufficient."
+  ],
+  "limitations": [
+    "Four profiled captures and four controls, two reversed blocks; no confidence interval or final performance/resource acceptance.",
+    "Fixed software sampling excludes kernel instruction attribution and can miss short-lived tasks. Nominal sample-period sums are not exact CPU time.",
+    "Callchains are bounded and may stop early; missing ancestors are not evidence of absence. Positive categories can overlap.",
+    "Mapping reconstruction does not observe unmaps or model PID generations. Later recorded replacement mappings override earlier ones; stale unrecorded ranges remain a limitation.",
+    "No JIT symbol names, JS URL attribution, native debug inlining, application-operation windows, exclusive request ownership or critical-path decomposition.",
+    "Opening affinity was fixed and launch policy verified; sampler does not dynamically follow affinity expansion.",
+    "Initial analysis stopped before decoding because Python mmap defaults to shared while the control expected private. Corrected to explicit MAP_PRIVATE; no workload rerun or excluded capture."
+  ],
+  "retainedFiles": [
+    {
+      "file": "plan.json",
+      "bytes": 1896,
+      "sha256": "7fb6dda655b9ca5d1fc15c22f93c63e5dcedc02bccc776ba28ba230f0d5016b1"
+    },
+    {
+      "file": "completion.json",
+      "bytes": 8899,
+      "sha256": "b0cbc508e95cc9b4811ffc29b77bbddc5dcfb3df9144584f48637204c88e74f9"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 95174,
+      "sha256": "18af6c1d6a8feadf2fdf4301eeceb8cd5c3a982fb840502ae23249bf61e1a9e1"
+    },
+    {
+      "file": "run.py",
+      "bytes": 3784,
+      "sha256": "76bd94ae8968dc929df8b7be2fb14841d1922ed0451c3014b3496872ed81571a"
+    },
+    {
+      "file": "capture",
+      "bytes": 22320,
+      "sha256": "3dc4ec400bdbf739a63ec06fb6a92eb3338852997ecd05a49aa287223af6f80b"
+    },
+    {
+      "file": "capture.c",
+      "bytes": 6529,
+      "sha256": "01cc7f4d75220b9bdd97f0083f753fdc04c95f3b1870f5208ce2cf61da5661d0"
+    },
+    {
+      "file": "decode.py",
+      "bytes": 1686,
+      "sha256": "2b2bd2df63b707e39c8c605b566a9eb9dd61772c4dbc3ca8c052c46c471ac950"
+    },
+    {
+      "file": "owner.mjs",
+      "bytes": 14372,
+      "sha256": "c800c71269421b72cd9194032494e82227964a63b57ce2f20c3219e3afc75650"
+    },
+    {
+      "file": "browser.py",
+      "bytes": 1847,
+      "sha256": "188571db970caa1f95b7c387e6d269639aed42b3dd78cbaa621c05e1607195d2"
+    },
+    {
+      "file": "verify.mjs",
+      "bytes": 5854,
+      "sha256": "a7b9f9d804455202edf1983ea6741e4c26a693840eb42ce07a8ad8c81add3d24"
+    },
+    {
+      "file": "analyze.py",
+      "bytes": 8171,
+      "sha256": "468f07d06f78c366565bd784a20de0015d01cc309a600880b8752c768d61224b"
+    },
+    {
+      "file": "analysis.json",
+      "bytes": 76426421,
+      "sha256": "7c42d200d3689be32231e4a0e2afaad4a33eb8543079c09c112f43311a099ddd"
+    },
+    {
+      "file": "analysis-correction.json",
+      "bytes": 220,
+      "sha256": "0c7765472cc37b52bd197cff4205da625d174a801a45d05fa17ae53b1715274d"
+    },
+    {
+      "file": "analysis-initial-failure.log",
+      "bytes": 324,
+      "sha256": "2d112b7640f5d23c04a12b631c67e129031f8b09003253cae36ecfd92d58953e"
+    },
+    {
+      "file": "native-mapping-control.json",
+      "bytes": 345,
+      "sha256": "94b9d2f59edbd5a8b6fa9566f8aadd48286fd943294edb7892b95610618184de"
+    },
+    {
+      "file": "symbol-spots.json",
+      "bytes": 13995183,
+      "sha256": "da2885ee17c49cd501567ae1f06b2c984146fb6f6a54fb267cdacd2efa7b9663"
+    },
+    {
+      "file": "llvm-symbolizer.jsonl",
+      "bytes": 7410034,
+      "sha256": "788fe1751a5aef1319b3e8c42761df87a1fff7bdcf05af17fd658f4361288dcc"
+    },
+    {
+      "file": "check-symbols.py",
+      "bytes": 1327,
+      "sha256": "39cfe545ec4c9f1029e6383f954357972d2946ed23c5e38f67e3364f3881aa6c"
+    },
+    {
+      "file": "symbol-verification.json",
+      "bytes": 400,
+      "sha256": "b864f84b01f3cf27709ea1ceb03b657bf1aa398dde6be71f09a6471da27e121e"
+    }
+  ]
+}
