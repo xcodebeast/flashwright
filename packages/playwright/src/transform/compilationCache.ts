@@ -20,7 +20,7 @@ import path from 'path';
 
 import sourceMapSupport from 'source-map-support';
 import { calculateSha1 } from '@utils/crypto';
-import { setRawStackFormatter } from '@utils/stackTrace';
+import { setRawStackFormatter, showInternalStackFrames } from '@utils/stackTrace';
 
 import { isWorkerProcess } from '../globals';
 import { packageRoot } from '../package';
@@ -69,10 +69,19 @@ export function installSourceMapSupport() {
   Error.stackTraceLimit = 200;
 
   // Stacks captured to locate API calls only need positions in transformed files mapped.
+  // The runner's own frames are filtered out of every stack it reports and only their position
+  // matters, so they skip the costly formatting. (The separator keeps playwright-core's frames,
+  // whose function names name the API call, out of this prefix.)
+  const runnerFramePrefix = packageRoot + path.sep;
+  const formatRunnerFrames = showInternalStackFrames();
   setRawStackFormatter((error, callSites) => {
     const lines = [String(error)];
     for (const callSite of callSites) {
       const fileName = callSite.getFileName();
+      if (fileName && !formatRunnerFrames && fileName.startsWith(runnerFramePrefix)) {
+        lines.push(`    at ${fileName}:${callSite.getLineNumber()}:${callSite.getColumnNumber()}`);
+        continue;
+      }
       const mapped = fileName && sourceMaps.has(fileName) ? sourceMapSupport.wrapCallSite(callSite as any) : callSite;
       // Match source-map-support's formatting, which has no "async " prefix.
       lines.push('    at ' + String(mapped).replace(/^async /, ''));

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { withShallowStack } from '@utils/stackTrace';
 import { ManualPromise } from '@isomorphic/manualPromise';
 import { assert } from '@isomorphic/assert';
 import { monotonicTime } from '@isomorphic/time';
@@ -133,7 +134,7 @@ export class ProgressController {
     };
 
     if (deadline) {
-      const timeoutError = new TimeoutError(`Timeout ${timeout}ms exceeded.`);
+      const timeoutError = withShallowStack(() => new TimeoutError(`Timeout ${timeout}ms exceeded.`));
       timer = setTimeout(() => {
         // TODO: migrate this to "progress.disableTimeout()".
         if (this.metadata.pauseStartTime && !this.metadata.pauseEndTime)
