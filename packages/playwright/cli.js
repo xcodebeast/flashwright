@@ -20,7 +20,7 @@
 const nodeModule = require('module');
 if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
   const { directory } = nodeModule.enableCompileCache();
-  if (directory)
+  if (directory && !process.env.NODE_COMPILE_CACHE)
     process.env.NODE_COMPILE_CACHE = directory;
 }
 
