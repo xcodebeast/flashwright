@@ -1,0 +1,339 @@
+/**
+ * Copyright (c) Microsoft Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import fs from 'fs';
+
+import { test, expect } from './fixtures';
+
+const listPage = `
+  <h1>Groceries</h1>
+  <ul>
+    <li>Apples</li>
+    <li>Bananas</li>
+    <li>Cherries</li>
+  </ul>
+  <button>Add to cart</button>
+`;
+
+test('browser_find by text', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  const response = await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Bananas' },
+  });
+  expect(response).toHaveResponse({
+    result: expect.stringContaining(`Found 1 match for "Bananas":`),
+  });
+  // The 3-line context window includes the neighbouring list items.
+  expect(response).toHaveResponse({
+    result: expect.stringContaining('Apples'),
+  });
+  expect(response).toHaveResponse({
+    result: expect.stringContaining('Cherries'),
+  });
+});
+
+const nestedPage = `
+  <main>
+    <section aria-label="Sidebar">
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="/home">Home</a></li>
+          <li><a href="/products">Products</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/careers">Careers</a></li>
+          <li><a href="/target">Deep Target Link</a></li>
+        </ul>
+      </nav>
+    </section>
+  </main>
+`;
+
+test('browser_find shows the path from the root to the match', async ({ client, server }) => {
+  server.setContent('/', nestedPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  const response = await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Deep Target Link' },
+  });
+
+  // The ancestor path is prepended even though it is far above the 3-line
+  // context window, so the matched node is shown in its place in the tree. The
+  // jump from the path down to the context window is implied, so it is not
+  // marked with an ellipsis.
+  expect(response).toHaveResponse({
+    result: expect.stringContaining(`Found 1 match for "Deep Target Link":
+
+- main [ref=e2]:
+  - region "Sidebar" [ref=e3]:
+    - navigation "Primary" [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e14]:`),
+  });
+  expect(response).toHaveResponse({
+    result: expect.stringContaining(`        - listitem [ref=e16]:
+          - link "Deep Target Link" [ref=e17]`),
+  });
+  // The preceding sibling still appears as surrounding context.
+  expect(response).toHaveResponse({
+    result: expect.stringContaining('Careers'),
+  });
+});
+
+const toolbarPage = `
+  <main>
+    <div role="group" aria-label="Toolbar">
+      <button>One</button>
+      <button>Two</button>
+      <button>Three</button>
+      <button>Four</button>
+    </div>
+    <div role="group" aria-label="Content">
+      <button>Target Button</button>
+    </div>
+  </main>
+`;
+
+test('browser_find marks gaps within off-path context with an ellipsis', async ({ client, server }) => {
+  server.setContent('/', toolbarPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  // The match sits under "Content"; the "Toolbar" group is off-path context
+  // whose truncated buttons are marked with an ellipsis, while the path down to
+  // the match stays unmarked.
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Target Button' },
+  })).toHaveResponse({
+    result: expect.stringContaining(`Found 1 match for "Target Button":
+
+- main [ref=e2]:
+  - group "Toolbar" [ref=e3]:
+    ...
+    - button "Three" [ref=e6]
+    - button "Four" [ref=e7]
+  - group "Content" [ref=e8]:
+    - button "Target Button" [ref=e9]`),
+  });
+});
+
+test('browser_find is case-insensitive for text', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'apples' },
+  })).toHaveResponse({
+    result: expect.stringContaining('Apples'),
+  });
+});
+
+test('browser_find by regex', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { regex: 'Bananas|Cherries' },
+  })).toHaveResponse({
+    result: expect.stringContaining(`Found 2 matches for /Bananas|Cherries/:`),
+  });
+});
+
+test('browser_find regex is case-sensitive by default', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { regex: 'apples' },
+  })).toHaveResponse({
+    result: `No matches found for /apples/.`,
+  });
+});
+
+test('browser_find regex honors /i flag', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { regex: '/apples/i' },
+  })).toHaveResponse({
+    result: expect.stringContaining(`Found 1 match for /apples/i:`),
+  });
+});
+
+test('browser_find reports no matches', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Pineapples' },
+  })).toHaveResponse({
+    result: `No matches found for "Pineapples".`,
+  });
+});
+
+test('browser_find requires text or regex', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: {},
+  })).toHaveResponse({
+    error: expect.stringContaining('Provide either "text" or "regex" to search for.'),
+    isError: true,
+  });
+});
+
+test('browser_find rejects both text and regex', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Apples', regex: 'Apples' },
+  })).toHaveResponse({
+    error: expect.stringContaining('Provide only one of "text" or "regex", not both.'),
+    isError: true,
+  });
+});
+
+test('browser_find rejects invalid regex', async ({ client, server }) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { regex: '(' },
+  })).toHaveResponse({
+    isError: true,
+  });
+});
+
+test('browser_find saves results to file', async ({ client, server }, testInfo) => {
+  server.setContent('/', listPage, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  const response = await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Bananas', filename: 'find.md' },
+  });
+  expect(response).toHaveTextResponse(expect.stringContaining('find.md'));
+  expect(response).toHaveTextResponse(expect.not.stringContaining('Apples'));
+
+  const content = await fs.promises.readFile(testInfo.outputPath('find.md'), 'utf8');
+  expect(content).toContain('Found 1 match for "Bananas":');
+  expect(content).toContain('Apples');
+});
+
+test('browser_find maxResults option', async ({ client, server }) => {
+  server.setContent('/', `
+    <section aria-label="First Section">
+      <ul>
+        <li>Fruit: Apples</li>
+        <li>Fruit: Bananas</li>
+        <li>Spacer 1</li>
+        <li>Spacer 2</li>
+        <li>Spacer 3</li>
+        <li>Spacer 4</li>
+      </ul>
+    </section>
+    <section aria-label="Second Section">
+      <ul>
+        <li>Fruit: Cherries</li>
+      </ul>
+    </section>
+  `, 'text/html');
+  await client.callTool({ name: 'browser_navigate', arguments: { url: server.PREFIX } });
+
+  // Case 1: maxResults truncates output.
+  // With maxResults=2 and 3 matches (Apples, Bananas, Cherries):
+  // - header shows "Found 3 matches ... (showing first 2)"
+  // - output contains Apples and Bananas (first 2 matches)
+  // - output contains ancestor path of rendered matches ("First Section")
+  // - output does NOT contain Cherries (the truncated 3rd match)
+  // - output does NOT contain the truncated match's ancestor path ("Second Section")
+  const truncated = await client.callTool({
+    name: 'browser_find',
+    arguments: { regex: 'Fruit', maxResults: 2 },
+  });
+  expect(truncated).toHaveResponse({
+    result: expect.stringContaining('Found 3 matches for /Fruit/ (showing first 2):'),
+  });
+  expect(truncated).toHaveResponse({
+    result: expect.stringContaining('Apples'),
+  });
+  expect(truncated).toHaveResponse({
+    result: expect.stringContaining('Bananas'),
+  });
+  expect(truncated).toHaveResponse({
+    result: expect.stringContaining('First Section'),
+  });
+  expect(truncated).toHaveResponse({
+    result: expect.not.stringContaining('Cherries'),
+  });
+  expect(truncated).toHaveResponse({
+    result: expect.not.stringContaining('Second Section'),
+  });
+
+  // Case 2: maxResults >= total matches → no truncation suffix.
+  const notTruncated = await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Bananas', maxResults: 5 },
+  });
+  expect(notTruncated).toHaveResponse({
+    result: expect.stringContaining('Found 1 match for "Bananas":'),
+  });
+  expect(notTruncated).toHaveResponse({
+    result: expect.not.stringContaining('(showing first'),
+  });
+
+  // Case 3: maxResults=0 → validation error.
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Apples', maxResults: 0 },
+  })).toHaveResponse({
+    error: expect.stringContaining('"maxResults" must be a positive integer.'),
+    isError: true,
+  });
+
+  // Case 4: maxResults=-1 → validation error.
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Apples', maxResults: -1 },
+  })).toHaveResponse({
+    error: expect.stringContaining('"maxResults" must be a positive integer.'),
+    isError: true,
+  });
+
+  // Case 5: maxResults=1.5 (non-integer) → validation error.
+  expect(await client.callTool({
+    name: 'browser_find',
+    arguments: { text: 'Apples', maxResults: 1.5 },
+  })).toHaveResponse({
+    error: expect.stringContaining('"maxResults" must be a positive integer.'),
+    isError: true,
+  });
+});

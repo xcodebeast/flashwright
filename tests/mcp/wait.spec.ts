@@ -1,0 +1,202 @@
+/**
+ * Copyright (c) Microsoft Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { test, expect } from './fixtures';
+
+test('browser_wait_for(text)', async ({ client, server }) => {
+  server.setContent('/', `
+    <script>
+      function update() {
+        setTimeout(() => {
+          document.querySelector('div').textContent = 'Text to appear';
+        }, 1000);
+      }
+    </script>
+    <body>
+      <button onclick="update()">Click me</button>
+      <div>Text to disappear</div>
+    </body>
+  `, 'text/html');
+
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`- generic [ref=e3]: Text to disappear`),
+  });
+
+  await client.callTool({
+    name: 'browser_click',
+    arguments: {
+      element: 'Click me',
+      target: 'e2',
+    },
+  });
+
+  await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { text: 'Text to appear' },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_snapshot',
+  })).toHaveResponse({
+    inlineSnapshot: expect.stringContaining(`- generic [ref=e3]: Text to appear`),
+  });
+});
+
+test('browser_wait_for(textGone)', async ({ client, server }) => {
+  server.setContent('/', `
+    <script>
+      function update() {
+        setTimeout(() => {
+          document.querySelector('div').textContent = 'Text to appear';
+        }, 1000);
+      }
+    </script>
+    <body>
+      <button onclick="update()">Click me</button>
+      <div>Text to disappear</div>
+    </body>
+  `, 'text/html');
+
+  expect(await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  })).toHaveResponse({
+    snapshot: expect.stringContaining(`- generic [ref=e3]: Text to disappear`),
+  });
+
+  await client.callTool({
+    name: 'browser_click',
+    arguments: {
+      element: 'Click me',
+      target: 'e2',
+    },
+  });
+
+  await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { textGone: 'Text to disappear' },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_snapshot',
+  })).toHaveResponse({
+    inlineSnapshot: expect.stringContaining(`- generic [ref=e3]: Text to appear`),
+  });
+});
+
+test('browser_wait_for(time)', async ({ client, server }) => {
+  server.setContent('/', `<body><div>Hello World</div></body>`, 'text/html');
+
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { time: 1 },
+  })).toHaveResponse({
+    result: `Waited for 1 seconds`,
+    code: `await new Promise(f => setTimeout(f, 1 * 1000));`,
+  });
+});
+
+test('browser_wait_for(time) reports capped time', async ({ client, server }) => {
+  test.slow();
+  server.setContent('/', `<body><div>Hello World</div></body>`, 'text/html');
+
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { time: 70 },
+  })).toHaveResponse({
+    result: `Waited for 30 seconds (requested 70, maximum is 30)`,
+    code: `await new Promise(f => setTimeout(f, 30 * 1000));`,
+  });
+});
+
+test('browser_wait_for(time, text) uses time as a timeout', async ({ startClient, server }) => {
+  const { client } = await startClient({ args: [`--timeout-action=500`] });
+  server.setContent('/', `
+    <body>
+      <div>Loading</div>
+      <script>
+        setTimeout(() => document.querySelector('div').textContent = 'Text to appear', 2000);
+      </script>
+    </body>
+  `, 'text/html');
+
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { text: 'Text to appear', time: 20 },
+  })).toHaveResponse({
+    result: `Waited for Text to appear`,
+    code: `await page.getByText("Text to appear").first().waitFor({ state: 'visible' });`,
+  });
+});
+
+test('browser_wait_for(time, text) fails when time passes', async ({ client, server }) => {
+  server.setContent('/', `<body><div>Hello World</div></body>`, 'text/html');
+
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { text: 'This text will never appear', time: 1 },
+  })).toHaveResponse({
+    error: expect.stringContaining(`Timeout 1000ms exceeded.`),
+    isError: true,
+  });
+});
+
+test('browser_wait_for(text, textGone) waits for the first one', async ({ client, server }) => {
+  server.setContent('/', `
+    <body>
+      <div>Text to disappear</div>
+      <script>
+        setTimeout(() => document.querySelector('div').textContent = 'Something else', 1000);
+      </script>
+    </body>
+  `, 'text/html');
+
+  await client.callTool({
+    name: 'browser_navigate',
+    arguments: { url: server.PREFIX },
+  });
+
+  expect(await client.callTool({
+    name: 'browser_wait_for',
+    arguments: { text: 'This text will never appear', textGone: 'Text to disappear' },
+  })).toHaveResponse({
+    result: `Waited for Text to disappear`,
+    code: `await page.getByText("Text to disappear").first().waitFor({ state: 'hidden' });`,
+  });
+});
