@@ -1,0 +1,87 @@
+--- a/content/browser/devtools/protocol/system_info_handler.cc
++++ b/content/browser/devtools/protocol/system_info_handler.cc
+@@ -878,8 +878,12 @@
+ 
+ void SystemInfoHandler::GetFlashwrightRendererState(
+     int process_id,
+-    const String& action,
++    const String& requested_action,
+     std::unique_ptr<GetFlashwrightRendererStateCallback> callback) {
++  const bool retain_context = requested_action.starts_with("retain-context:");
++  const String original_context = retain_context
++      ? requested_action.substr(sizeof("retain-context:") - 1) : String();
++  const String action = retain_context ? "retain" : requested_action;
+   if (!is_browser_session_ ||
+       base::Environment::Create()->GetVar(
+           "FLASHWRIGHT_RENDERER_RETIREMENT_PROBE") != "1") {
+@@ -936,18 +940,39 @@
+          ((physical_control || action == "release" || action == "inspect") &&
+           host->IsInitializedAndNotDead())) &&
+         host->GetProcess().IsValid() &&
+-        host->GetProcess().Pid() == process_id &&
+         !host->AreRefCountsDisabled() && host->GetBrowserContext() &&
+-        host->GetBrowserContext()->IsOffTheRecord()) {
++        host->GetBrowserContext()->IsOffTheRecord() &&
++        (retain_context
++             ? (!host->GetBrowserContext()->ShutdownStarted() &&
++                host->GetBrowserContext()->UniqueId() == original_context)
++             : host->GetProcess().Pid() == process_id)) {
++      if (selected_host) {
++        auto state = std::make_unique<base::DictValue>();
++        state->Set("eligible", false);
++        state->Set("reason", "multiple-context-renderers");
++        callback->sendSuccess(std::move(state));
++        return;
++      }
+       selected_host = host;
+-      break;
+-    }
++      if (!retain_context)
++        break;
++    }
++  }
++  if (!selected_host && retain_context) {
++    auto state = std::make_unique<base::DictValue>();
++    state->Set("eligible", false);
++    state->Set("reason", "no-ready-context-renderer");
++    callback->sendSuccess(std::move(state));
++    return;
+   }
+   if (!selected_host) {
+     callback->sendFailure(
+         Response::ServerError("Live private renderer absent"));
+     return;
+   }
++  // Selection and hold admission occur on the UI sequence without yielding.
++  // Never retain a globally selected PID on behalf of a different context.
++  process_id = selected_host->GetProcess().Pid();
+   const int host_id = selected_host->GetDeprecatedID();
+   if (physical_control) {
+     if (!flashwright_retained_host_ids_.contains(host_id)) {
+@@ -1068,6 +1093,7 @@
+               [](std::unique_ptr<GetFlashwrightRendererStateCallback>
+                      completion,
+                  int host_id, int process_id, bool retained,
++                 String context_id,
+                  mojom::FlashwrightRendererStatePtr observed) {
+                 if (!observed) {
+                   completion->sendFailure(Response::ServerError(
+@@ -1077,6 +1103,8 @@
+                 auto state = std::make_unique<base::DictValue>();
+                 state->Set("hostId", host_id);
+                 state->Set("processId", process_id);
++                state->Set("browserContextId", context_id);
++                state->Set("eligible", true);
+                 state->Set("retained", retained);
+                 state->Set("frames", static_cast<int>(observed->frames));
+                 state->Set("views", static_cast<int>(observed->views));
+@@ -1086,7 +1114,8 @@
+                 completion->sendSuccess(std::move(state));
+               },
+               std::move(callback), host_id, process_id,
+-              flashwright_retained_host_ids_.contains(host_id)),
++              flashwright_retained_host_ids_.contains(host_id),
++              selected_host->GetBrowserContext()->UniqueId()),
+           mojom::FlashwrightRendererStatePtr()));
+ }
+ 

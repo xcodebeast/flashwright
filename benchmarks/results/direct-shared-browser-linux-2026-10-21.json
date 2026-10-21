@@ -1,0 +1,856 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "engineering-advancement-gate-failed",
+  "sourceCommit": "16f53af8441a1105f1541ad3bc43e55c0aa82ebb",
+  "reference": "Playwright 1.60.0, Bun 1.4.2, Chromium 148.0.7778.96",
+  "change": "One suite-owned browser with direct Rust WebSocket connections and atomic context-scoped renderer retention. Fresh context per test and original retirement/adoption fences retained. Both Flashwright arms use lazy VAAPI discovery and identical native/driver binaries.",
+  "patches": [
+    {
+      "path": "tools/chromium/direct-shared-browser-native.patch",
+      "sha256": "e2783fd13419d4b085e2c13be228de1304fcdb0122b2f7929b50dbde4649a610"
+    },
+    {
+      "path": "tools/chromium/direct-shared-browser-rust.patch",
+      "sha256": "723610b5fa671a236a6034bcd8297ea9f7d882d7ee05bc7f1710eaa26fd8b489"
+    }
+  ],
+  "sourceBindings": [
+    {
+      "scope": "rust",
+      "path": "Cargo.lock",
+      "beforeSha256": "09a5486897ee684dd91f9a5a8bd286eb5572ebb009a5e487c717b32a9810aeb5",
+      "afterSha256": "7efce0dfc379be33f158dbc5c622249754ae44c3e4ef4d8493c44065be44b9c7"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-browser/Cargo.toml",
+      "beforeSha256": "03bb413052cd536ba24faa5017a0705bcfe2d4cb558b529c0289e5e16e9a1219",
+      "afterSha256": "3615bed81197727ec3d79bf083a1aeb2b33fcd7117f81bde659a94ec16370f6a"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-browser/src/chromium.rs",
+      "beforeSha256": "0fd5814c03610bd3b04adf9e8a9879aeb21b4721d019dd8d219d26ca04cad126",
+      "afterSha256": "44b889f28b2b11434a7c7706448aec0003f0e21dae5cb03eff90bd718a5a385e"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-browser/src/connection/incoming.rs",
+      "beforeSha256": "3b653565ae4b0404b09e9bbe1450aeb3f75fcdd3f110a16a7d0f07b6b2df3e0b",
+      "afterSha256": "efab82a7142033f4a0257f80b46b4392b9d5b52d5d8cda87f61f95d464532727"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-browser/src/connection.rs",
+      "beforeSha256": "a6a847a40f1d994209d1db645e4e1d2af1bd2aaf3e06cb591dd4db937b359e73",
+      "afterSha256": "3b5913300fdaa9fa6ec8a87f63f7ce9fb8df2823f44f7aa995b447d74d2ebbd4"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-engine/src/lib.rs",
+      "beforeSha256": "85a2565a78379cb26b53f1caefd8b316fef757b81d49091846bd721df43457f0",
+      "afterSha256": "ed6ff5fc80f5c9e73f04c478b59930728a4cddb61abfa3b90a2ba03c628a33fd"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-engine/src/renderer_reservation.rs",
+      "beforeSha256": "55fd82df7f044a32d2ebf8d0ffa659886762280998d4fb837f5a4e41a8d32d66",
+      "afterSha256": "b7526aab0a3b7928b431fd5c2ac1b9b5b242bbc2853d8dac58b796eba6d14e7c"
+    },
+    {
+      "scope": "native",
+      "path": "content/browser/devtools/protocol/system_info_handler.cc",
+      "beforeSha256": "f9d271dfd985c43011eb058ea63c662951dcf1d85dd83a2fbff4554b3923dbaa",
+      "afterSha256": "af7f0859410fce90dc81f6febba0e17b7c61d5ed035399accafabd5d6bc0f7ef"
+    },
+    {
+      "scope": "rust",
+      "path": "crates/flashwright-browser/tests/direct_websocket.rs",
+      "beforeSha256": null,
+      "afterSha256": "4e7893ac32c4845756aa8bde03b278cf8834740062bc0965687bc9c44d77841c"
+    }
+  ],
+  "recoveryCheckpoint": "tools/chromium/recovered-linux-2026-10-21/manifest.json",
+  "binaries": {
+    "candidate-browser": "f9798099b9ed97eade99e428c4fba16efd62e0081ae3ec9948210cd4d288098b",
+    "candidate-driver": "bf11ac34670313030d8a515bd812c49d35634eedcd4142391ed77f7145c46d3f",
+    "baseline-driver": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249"
+  },
+  "policy": {
+    "blocks": 2,
+    "workers": [
+      1,
+      4
+    ],
+    "cpuQuota": "400%",
+    "memoryMaxGiB": 8,
+    "swapMax": 0,
+    "cpuAffinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "nice": 10,
+    "retries": 0,
+    "timedArtifacts": "off",
+    "clock": "Complete outer supervisor clock includes shared browser startup, HTTP fixture startup, original test callbacks, teardown, native exit and artifact cleanup; startup overlaps ordinary discovery.",
+    "order": "Playwright, separate browsers, shared browser; reversed in second block",
+    "advance": "At least 20% lower complete time for both four-worker applications in both orders, no more than 5% one-worker regression, no isolation/resource failures."
+  },
+  "captureCount": 24,
+  "passingApplicationTests": 360,
+  "selectedInputsUnchanged": true,
+  "observations": [
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 3819.6865009958856,
+        "independent-fast": 1967.3183350096224,
+        "independent-shared": 1951.154859008966
+      },
+      "sharedElapsedReduction": 0.008215994185088116,
+      "playwrightSpeedup": 1.9576541981583089,
+      "sharedToSeparateSampledRss": 1.0167718015396894
+    },
+    {
+      "application": "todomvc",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent-shared": 1945.3045169939287,
+        "independent-fast": 1973.3726090053096,
+        "playwright": 3848.090230007074
+      },
+      "sharedElapsedReduction": 0.014223412184447448,
+      "playwrightSpeedup": 1.978142854442919,
+      "sharedToSeparateSampledRss": 1.0074924558720184
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2826.0899290035013,
+        "independent-fast": 1732.3211430048104,
+        "independent-shared": 1507.399723996059
+      },
+      "sharedElapsedReduction": 0.12983817689750776,
+      "playwrightSpeedup": 1.874811228909904,
+      "sharedToSeparateSampledRss": 0.5549911151931775
+    },
+    {
+      "application": "todomvc",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent-shared": 1516.0284529993078,
+        "independent-fast": 1684.305159986252,
+        "playwright": 2731.044585001655
+      },
+      "sharedElapsedReduction": 0.0999086810304124,
+      "playwrightSpeedup": 1.801446786568261,
+      "sharedToSeparateSampledRss": 0.548237670278043
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2008.807459991658,
+        "independent-fast": 894.4952000019839,
+        "independent-shared": 880.0816649891203
+      },
+      "sharedElapsedReduction": 0.0161135968229138,
+      "playwrightSpeedup": 2.282523929204333,
+      "sharedToSeparateSampledRss": 1.0150253249831582
+    },
+    {
+      "application": "svgomg",
+      "workers": 1,
+      "block": 1,
+      "milliseconds": {
+        "independent-shared": 897.855821007397,
+        "independent-fast": 966.7493809974985,
+        "playwright": 1992.1175869967556
+      },
+      "sharedElapsedReduction": 0.0712631022520197,
+      "playwrightSpeedup": 2.2187499823318997,
+      "sharedToSeparateSampledRss": 1.0092158755081733
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "block": 0,
+      "milliseconds": {
+        "playwright": 2378.796123986831,
+        "independent-fast": 1237.0433939940995,
+        "independent-shared": 1008.3519860054366
+      },
+      "sharedElapsedReduction": 0.18486934985382875,
+      "playwrightSpeedup": 2.3590930121637164,
+      "sharedToSeparateSampledRss": 0.5495962684347236
+    },
+    {
+      "application": "svgomg",
+      "workers": 4,
+      "block": 1,
+      "milliseconds": {
+        "independent-shared": 1083.751962010865,
+        "independent-fast": 1290.1188890100457,
+        "playwright": 2427.1176969923545
+      },
+      "sharedElapsedReduction": 0.15995961981266182,
+      "playwrightSpeedup": 2.239550913927685,
+      "sharedToSeparateSampledRss": 0.5480537887059986
+    }
+  ],
+  "runs": [
+    {
+      "name": "b0-todomvc-w1-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 3819.6865009958856,
+      "ownerBodyMilliseconds": 3710.591414,
+      "wait4CpuSeconds": 2.2463159999999998,
+      "sampledPeakRssBytes": 928903168,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "e81c982a57ca0085210d6e2ca40b5b1598fc7fb38f454c8d9a439c3ee542f0dc",
+        "owner-report.json": "985b9aa21b9bdf2c8fc149bae6485177108054b17a320e3aadc25f00b32fc0b0",
+        "resources.json": "2ae3880a4b26d5a119f280e368388093d48487479afe38d3c4ffb3360e50a24c",
+        "report.json": "54af64471a344c67482bac3b393faf12934421f1a16f1edd16077ab5741f67d4"
+      }
+    },
+    {
+      "name": "b0-todomvc-w1-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1967.3183350096224,
+      "ownerBodyMilliseconds": 1800.584673,
+      "wait4CpuSeconds": 1.703726,
+      "sampledPeakRssBytes": 795422720,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "d046d0ff98ddbe8462dc1a3a10054cb583934225504caa08901d1f79d81bbfc7",
+        "owner-report.json": "770c415cfbc96457770cbd7ca1f3ef6dd555beb5686ba4447bf09b9b641c21f8",
+        "resources.json": "51f8df79b05a1d67ee3390062d4eb6af90eb0145340f3dd5784218e2e711d51b",
+        "report.json": "817a0d10996cda4e12805c1723b0a8a22dda32f95a9694772afbd8eccfe3c5f7"
+      }
+    },
+    {
+      "name": "b0-todomvc-w1-independent-shared",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1951.154859008966,
+      "ownerBodyMilliseconds": 1771.721712,
+      "wait4CpuSeconds": 1.787504,
+      "sampledPeakRssBytes": 808763392,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "75472f1112c49599a8991b2f2528b57ed77220346fc80abb29171425d6642f3d",
+        "owner-report.json": "3d9658221ad3110021b0173e119d4223abb3399aa6859aca7f3f3e0a857a2d74",
+        "resources.json": "d637634b348599a9fd002e1e84258c3fabba0dd0c4848823e048091ce000ea4d",
+        "report.json": "27907e77d2b002c51a6261b857521e1904227a92e6be6794275c3156d4246559"
+      }
+    },
+    {
+      "name": "b0-svgomg-w1-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2008.807459991658,
+      "ownerBodyMilliseconds": 1842.624092,
+      "wait4CpuSeconds": 1.20939,
+      "sampledPeakRssBytes": 964812800,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "a49764cc93373610b649db9aac76970fb467e7953aadb68cf529b50e34581ba9",
+        "owner-report.json": "65c4ec03cfa2bc8a8fb369622a67cc289d5f75a23d2dfa435fedc93f67e61004",
+        "resources.json": "0047e07ffc6d392fc0a7cdfbbfa13b121d61bcbb30a95c9693ca235753df985d",
+        "report.json": "423b19069e5695c7fe539217389d765727128deb6f3dcf3822c6fc9f42a53d51"
+      }
+    },
+    {
+      "name": "b0-svgomg-w1-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 894.4952000019839,
+      "ownerBodyMilliseconds": 786.5009829999999,
+      "wait4CpuSeconds": 0.7849869999999999,
+      "sampledPeakRssBytes": 820817920,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "66ebb1c9a61356c8e61ccfb1666e610e62d41304e8a1c8e0b5c0262320177f80",
+        "owner-report.json": "16ea688e2509ff6670f3f2313cdfd1f28753e279628caa7bd23254ae6bdddb0c",
+        "resources.json": "39f907f01f8bed37e15437cdbfaff88a72a9d8db87557e17132e44b2ea0d36f5",
+        "report.json": "e9826b1beaaa554207552c555d56b50c0b1a8390b1ba1d9c9eba33a180a4c2aa"
+      }
+    },
+    {
+      "name": "b0-svgomg-w1-independent-shared",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 1,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 880.0816649891203,
+      "ownerBodyMilliseconds": 697.9647679999999,
+      "wait4CpuSeconds": 0.811433,
+      "sampledPeakRssBytes": 833150976,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "215d678fc49f8d494f29d2890f1a78d9e030960ff72cea152f05a097eb1e1b45",
+        "owner-report.json": "07f6f15e9986ea46ad26714adcfa5302b38270b00ce9bef58869b8c1b9c0959e",
+        "resources.json": "e06f8a7ade93e963c760419e51cd44f69944c90f698dc8818da79ffcd57df513",
+        "report.json": "6c6e4bd5120a9b83d8b815a412ad4301763758c25cb4ee8eb769ff25248b46ba"
+      }
+    },
+    {
+      "name": "b0-todomvc-w4-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2826.0899290035013,
+      "ownerBodyMilliseconds": 2658.568504,
+      "wait4CpuSeconds": 3.511552,
+      "sampledPeakRssBytes": 3031777280,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "197d929950ef26de02de9d61e47415a2b89cf76c33223cd02f34d7b8dc430fc4",
+        "owner-report.json": "9d95340617f92e53f3541829f86873c1fbe6b2d3fec57b240e70e9c0533bf3b8",
+        "resources.json": "5d9c4907b29092c7a1533ebfdde1ab39616e0f6341978bb1a6697611a1dd6f55",
+        "report.json": "b3b15b9e4bc2bc1b68ba60780e010b8250aac44bae1fcf6060c4ee52da5573fd"
+      }
+    },
+    {
+      "name": "b0-todomvc-w4-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1732.3211430048104,
+      "ownerBodyMilliseconds": 1566.9358690000001,
+      "wait4CpuSeconds": 2.285488,
+      "sampledPeakRssBytes": 2595495936,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "98df0066b85376e6a84789f7b0adb9d937ae7e74e5b9ff510b62750db2e68723",
+        "owner-report.json": "35b909cbc5acfa83fb90d5fcfe775b710b04f5c5a661249cc4db93d8d3d727d0",
+        "resources.json": "efb3dc7124c11172803a5cb45879577f31ef9a23cc500217f2fb512d342c9896",
+        "report.json": "9812ebdb20d7e51f18d90642df5174a01f69283efa4be6c85fd06338ed035ce7"
+      }
+    },
+    {
+      "name": "b0-todomvc-w4-independent-shared",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1507.399723996059,
+      "ownerBodyMilliseconds": 1330.5919860000001,
+      "wait4CpuSeconds": 1.846326,
+      "sampledPeakRssBytes": 1440477184,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "ac7ccdcb7a8744088d0496b4f8580abd20af4eb252cc76dbf6f3e9bfdad2f1b2",
+        "owner-report.json": "a861bea49303542c4d4eb7754c9d670614ccc8bdd3719104ff8d73a6b075f2b6",
+        "resources.json": "950e6798c3b01eb33ad5ecee5175134ba58a1db6019a80dafa208050224bbd25",
+        "report.json": "fe7b98f75cdde740ea9f5fddfcb2def4690e0337713a9de3bf10a1ca57842bf6"
+      }
+    },
+    {
+      "name": "b0-svgomg-w4-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2378.796123986831,
+      "ownerBodyMilliseconds": 2212.06072,
+      "wait4CpuSeconds": 2.236489,
+      "sampledPeakRssBytes": 3004874752,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "278ba40d74bd748ee5992706eb11f33988b27eedd4d2d616cbfcc5d630ed2f38",
+        "owner-report.json": "ba6ac6d2f37b8f4672218830dfbe14a2a01c433a3999e804f09f68ef5f7f03c9",
+        "resources.json": "c8ef5dfeea515392c0b06488536757d33c00b6dd240fac611d45a1d1292eb59d",
+        "report.json": "321a6e50a8dc4959e454aa2727412d56bdf24dd7af45d5d8ce96103a5a75cc19"
+      }
+    },
+    {
+      "name": "b0-svgomg-w4-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1237.0433939940995,
+      "ownerBodyMilliseconds": 1072.304636,
+      "wait4CpuSeconds": 1.301486,
+      "sampledPeakRssBytes": 2671271936,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "1a92763022d0e30212a6dad3bb14533169bcb16edf6f173e32cbf5b33156df84",
+        "owner-report.json": "d20903651ccb6f6ebbc2476fc730c8219469181d9e87d21080db4e447c8d62bd",
+        "resources.json": "68b99dcc1feafd7288135e2e8a54e717a5d59baac5dc2dcb42e43a62753793f6",
+        "report.json": "482570492e85c9ef7626e99e65c9c23ea58bce87fc0ac4b20dac0dfc93bc3ed8"
+      }
+    },
+    {
+      "name": "b0-svgomg-w4-independent-shared",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 4,
+      "block": 0,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1008.3519860054366,
+      "ownerBodyMilliseconds": 822.403602,
+      "wait4CpuSeconds": 0.989413,
+      "sampledPeakRssBytes": 1468121088,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "93a87def4d99e77a56fd5acda4b70181ea7513270b0db2178128ceae734d257a",
+        "owner-report.json": "485fc48d561696c35492130bedca11e5c3b1f2a1af9ecc83ef3a8cb220e24428",
+        "resources.json": "824ff6f1e28e051403f62eefb094889ea060bebc770c4f02e51620a0542e9f94",
+        "report.json": "c5562962ba9ed4619ac62ac29409f517632947964e1669a87bf6cda98b5aeb0a"
+      }
+    },
+    {
+      "name": "b1-todomvc-w1-independent-shared",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1945.3045169939287,
+      "ownerBodyMilliseconds": 1766.322626,
+      "wait4CpuSeconds": 1.7631100000000002,
+      "sampledPeakRssBytes": 798629888,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "60a504dc31139bda74032ecdd024a0683f89ce39191a8626ca5e7e76e06ee956",
+        "owner-report.json": "b760656ee32dc4c4e1a5afcef21e654bc61aead828dcffe5166296731806f19e",
+        "resources.json": "4271379862441f99f646dc9f457d470c9f174d652d67427c8b7974959081c30c",
+        "report.json": "f70a93d466407b2fe1f9c8498288dc676314eeca478cf21688e89be8b40df075"
+      }
+    },
+    {
+      "name": "b1-todomvc-w1-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1973.3726090053096,
+      "ownerBodyMilliseconds": 1866.02164,
+      "wait4CpuSeconds": 1.753768,
+      "sampledPeakRssBytes": 792690688,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "b4fe6c4186af6ba54601099ca124e16da246a5751323e9fafc64cfa9425459a8",
+        "owner-report.json": "c7eb76d345dc47b6977a16a8d9c63eebf44e9359f28224accb620a8357c48b0c",
+        "resources.json": "d57a32eb7d2d7d8dfeac064546a21969936953c8c4acfe2bf5303ae440f7d790",
+        "report.json": "788463d414e28501852e255ff955b5bfe779d4f4bdb403a06202feb04088c77d"
+      }
+    },
+    {
+      "name": "b1-todomvc-w1-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 3848.090230007074,
+      "ownerBodyMilliseconds": 3680.745069,
+      "wait4CpuSeconds": 2.258257,
+      "sampledPeakRssBytes": 928759808,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "db489272f8a701f2210beb170aa0897477d1a751b32a358fe71f682debe3041b",
+        "owner-report.json": "12d3a07854c48db406f5230a3b556b13be53f453f6da002a4c9e8d5f251f703f",
+        "resources.json": "2894f7b0f7312c8e88455e0fd5c895899096c57f1360d7d678369455bc4e97d4",
+        "report.json": "04dfad4ff436dc3b80a8090aee7371529cb9366d6457aa675b5aed980401cfcd"
+      }
+    },
+    {
+      "name": "b1-svgomg-w1-independent-shared",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 897.855821007397,
+      "ownerBodyMilliseconds": 717.225725,
+      "wait4CpuSeconds": 0.8087789999999999,
+      "sampledPeakRssBytes": 826671104,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "5962a9c65a749beb1830fd217b3fd79bb601c9e070a735f63c6866988b3fd797",
+        "owner-report.json": "2c25bfba84f457841af7dbb18523f7a706ce2e511402b52e676f5c3d2856e050",
+        "resources.json": "b20bd4ffe8a5ab647755643c907aa568c827ad3bbffbbf28646542f78e2ac123",
+        "report.json": "6464afa18d64ef3b134d69a76bb56c45b76a9b6204c71475169e532651997c01"
+      }
+    },
+    {
+      "name": "b1-svgomg-w1-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 966.7493809974985,
+      "ownerBodyMilliseconds": 798.529772,
+      "wait4CpuSeconds": 0.782195,
+      "sampledPeakRssBytes": 819122176,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "a9fea8442f3d857771d41a9af0887756cb4add5771aa6788cc3946fd7387e4c7",
+        "owner-report.json": "6474b79c124874c188077abb03637da6c7ce401af71f4c87d0e2e0eae0824ae3",
+        "resources.json": "4662ae15e61226bfef8018246fb987623112bb68dc3bd9290f54f67080665550",
+        "report.json": "5961b4323d9e53cffe641fc99d2855367ac9d223d61679884e55c4a5e1555181"
+      }
+    },
+    {
+      "name": "b1-svgomg-w1-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 1,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1992.1175869967556,
+      "ownerBodyMilliseconds": 1828.052197,
+      "wait4CpuSeconds": 1.2021169999999999,
+      "sampledPeakRssBytes": 957267968,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "5f16c1af3d6c5425d3126240cbc5edefab1f1caf7baf79ba87c9bd0c944ca98d",
+        "owner-report.json": "1fb5d2178ee8a2bbb3808c6f16295e7f36ffda20888bb3bff0246179e034641f",
+        "resources.json": "6cb0ff7dec70b94a893b6514a6a5b6ee37526492584401cbef354a814683ffca",
+        "report.json": "6b5c622f32ce34c7b68d4085d76f7762c9c99716e7e167248bb21f7bb87f9f5c"
+      }
+    },
+    {
+      "name": "b1-todomvc-w4-independent-shared",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1516.0284529993078,
+      "ownerBodyMilliseconds": 1333.594736,
+      "wait4CpuSeconds": 1.8719329999999998,
+      "sampledPeakRssBytes": 1432023040,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "5babe52193bafbd3ce498d4348471f0d99cf5b5c8cdc321f6f5fe92eab6d1aef",
+        "owner-report.json": "c9d1a3e4c234ce8b050301fb2464d876eddfaf96d07d7115e65a1a96d3833a9b",
+        "resources.json": "29622f03c11df006f3092358cd05044c9592bc6516fa0a98be21a883ce55be57",
+        "report.json": "86854a8def7c7527dd616241907cbf0f810763431a95941a02b6a6a7dd6ae4b5"
+      }
+    },
+    {
+      "name": "b1-todomvc-w4-independent-fast",
+      "application": "todomvc",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 1684.305159986252,
+      "ownerBodyMilliseconds": 1520.293641,
+      "wait4CpuSeconds": 2.24185,
+      "sampledPeakRssBytes": 2612047872,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "5e3fa2136e6ecf76ce99a3d02ddb63b0b5060f546d95c6c6e545517e49e759bb",
+        "owner-report.json": "2b7d025a5704a296fe41ef7f8be72b7e4c2f8aacba2c249d8883c62b31e0b185",
+        "resources.json": "d885a5272f5524a99756c483f25512e0865bd25a3062a844d69e900b9a75e848",
+        "report.json": "faa58de21388a7ce4b4eed011266469b3604dbafaf7631fead5e3a8f260c41e2"
+      }
+    },
+    {
+      "name": "b1-todomvc-w4-playwright",
+      "application": "todomvc",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 24,
+      "completeMilliseconds": 2731.044585001655,
+      "ownerBodyMilliseconds": 2566.073788,
+      "wait4CpuSeconds": 3.5353269999999997,
+      "sampledPeakRssBytes": 3048579072,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "6123efa34f0d69a7fe7bbd4f13adc14eab495315653ba7bd0b3659ae76f51a34",
+        "owner-report.json": "d7568d8b2b4c0985cfd7f1f331e1dc5f50e1e1ce300f978086e825cb86cb4240",
+        "resources.json": "304f343cf31b8627b31915ea999ea1bb83c18ad05f159ecb2bfa40eba2f3531d",
+        "report.json": "740b4faa4c00e07446ea1d65530c99574ee6bd9abed460344406736cb024b8ad"
+      }
+    },
+    {
+      "name": "b1-svgomg-w4-independent-shared",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-shared",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1083.751962010865,
+      "ownerBodyMilliseconds": 903.832444,
+      "wait4CpuSeconds": 1.038958,
+      "sampledPeakRssBytes": 1434988544,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "907243f19e6e6d3813fe90ee30a14689d2558e86eae9f9dde6efacbc30be47b4",
+        "owner-report.json": "0eb99218cf23304f0d79f9d49126fd915f767d55ec7db79d4488fc901ae4b096",
+        "resources.json": "211ed4c25979b819ed214ab3f749069259b9189d10cf0c3cb21ed7bbe4e28676",
+        "report.json": "9a02f32fa0a7b8e547bf36ff97f1089718397d535472578d87ce20de1ab6fa02"
+      }
+    },
+    {
+      "name": "b1-svgomg-w4-independent-fast",
+      "application": "svgomg",
+      "arm": "candidate-fast",
+      "mode": "independent-fast",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 1290.1188890100457,
+      "ownerBodyMilliseconds": 1125.417433,
+      "wait4CpuSeconds": 1.245855,
+      "sampledPeakRssBytes": 2618335232,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "3edb8ffc068b042b13d9f0eb9b8315d2e066414856be1e5069f7a8d7aa1bdab0",
+        "owner-report.json": "5d98174c1cb8001bbe14852abc147dca49d936111dfe4850dd6b17517bf5220e",
+        "resources.json": "77d9825d66fa05e3e29fa1678540a7beaeafe8a8956e3ced7f49d33a21605fc0",
+        "report.json": "8d6e20fc6171f19741b76be71a29aee4b2909b7cd8aa169c87637af243669a6f"
+      }
+    },
+    {
+      "name": "b1-svgomg-w4-playwright",
+      "application": "svgomg",
+      "arm": "stock",
+      "mode": "playwright",
+      "workers": 4,
+      "block": 1,
+      "status": "passed-private-application-admission",
+      "tests": 6,
+      "completeMilliseconds": 2427.1176969923545,
+      "ownerBodyMilliseconds": 2261.261961,
+      "wait4CpuSeconds": 2.265172,
+      "sampledPeakRssBytes": 3002834944,
+      "performanceAdmission": false,
+      "fullResourceAdmission": false,
+      "scope": "Complete original passing corpus, generated source identities, original test outcomes, request contract and observed cleanup. No general runner equivalence.",
+      "files": {
+        "prepared.json": "392334096a470e7edddbf9b0ac33bfb53df8a146ee011a850eb27364b688c79e",
+        "owner-report.json": "aee82b86e2c8e99904bb010d3be8195b3ee7e98350f149be3d196f5a352a8c44",
+        "resources.json": "2e9145d232094c372bba085fb71ae654d1d7feaa20ab16eac0b2d3af84ac2918",
+        "report.json": "6f1c37a4c569b622508500e0dee9ce566fee534b0b3e684d97569cc47534c4fa"
+      }
+    }
+  ],
+  "controls": {
+    "connectionTests": {
+      "passed": 24,
+      "initialFailure": "Immediate WebSocket EOF overtook buffered terminal replies. Added a 1000-event plus terminal-reply test; parser now owns EOF publication after buffered input drains.",
+      "beforeLogSha256": "4bbe69e76a984ae4e5f99727b45d954ee8afacf3e80201da13a4110644a86de7",
+      "afterLogSha256": "34ce21b9ac987ec58255cabda528aeaf37eac9ce8098859ced4a854a87f16c74"
+    },
+    "isolationAndLifetime": {
+      "status": "passed",
+      "checks": [
+        "fresh same-origin storage across concurrent contexts",
+        "separate Rust drivers, peer survives lease closure",
+        "same-name downloads retain distinct bytes and artifact directories",
+        "JavaScript process death with unused reservation",
+        "Rust process death during pending evaluation rejects outstanding operation",
+        "client detachment while adoption attach and initialization are held",
+        "normal native browser exit, no remaining contexts or artifact directories"
+      ]
+    },
+    "media": {
+      "contexts": 8,
+      "checks": [
+        "Canvas2D and WebGL1/2",
+        "software video decoded and actual screenshot video pixels",
+        "fresh storage and trusted input on moving targets",
+        "post-retirement idle CPU below 0.25 mean core"
+      ],
+      "hardwareFirstConsumerVerified": false
+    },
+    "receiptCorrection": {
+      "initialIssue": "Shared stderr interleaved concurrent Rust log records; post-control receipt count failed despite runtime controls passing. Retained failed receipt check.",
+      "correction": "Separate stderr files per worker; reran worker controls after timed campaign with unchanged native and Rust binaries.",
+      "verified": {
+        "status": "passed",
+        "contextTransfers": 10,
+        "claimedSuccessors": 8,
+        "atomicContextHostProcessJoins": 10,
+        "separateWorkerLogs": true,
+        "removedArtifactRootsAfterDriverDeath": 1
+      }
+    }
+  },
+  "priorSharedComparisonCorrection": {
+    "fourWorkerTodoMVCPerRun": {
+      "ineligibleNativeContexts": 23,
+      "transfers": 1
+    },
+    "newFourWorkerTodoMVCPerRun": {
+      "atomicRetentions": 24,
+      "transfers": 24,
+      "claimedSuccessors": 20,
+      "releases": 20
+    },
+    "newFourWorkerSVGOMGPerRun": {
+      "atomicRetentions": 6,
+      "transfers": 6,
+      "claimedSuccessors": 2,
+      "releases": 2
+    },
+    "interpretation": "Old browser-global admission guards suppressed reuse with concurrent workers. This comparison changes transport and retention eligibility together; it does not isolate transport cost."
+  },
+  "limitations": [
+    "Two reversed engineering observations per cell, not the final nine-scenario eight-pair confidence gate.",
+    "Sampled RSS is not charged peak memory.",
+    "Inner owner cgroup CPU interval excludes some outer shared browser startup and shutdown; no complete charged CPU reduction claim.",
+    "Selected controls do not establish every adoption failure, hardware decoder, graphics backend or runner compatibility path.",
+    "Candidate remains experimental and is not a public default."
+  ],
+  "finalPerformanceAdmission": false,
+  "fullResourceAdmission": false,
+  "restoration": {
+    "status": "restored-preceding-experimental-baseline",
+    "sourcePathsVerified": 9,
+    "candidateAndBaselinePatchReconstructionVerified": true,
+    "nativeBuildTasks": 2,
+    "browserByteIdentical": true,
+    "browserSha256": "b85ea591cb4fa4d05318a2af055078d1759199ff7498e8e034e3cc181821038a",
+    "rustReleaseRebuild": "passed; rebuilt binary differs from preserved preceding binary",
+    "rebuiltDriverSha256": "24879e0874d0865586f1816484f6fe572e9ffd5b5cf2798549fe3fd84176ac38",
+    "selectedDriver": "preserved preceding binary restored after successful source rebuild",
+    "selectedDriverSha256": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249",
+    "candidateBrowserRetained": true,
+    "candidateDriverRetained": true
+  },
+  "preliminaryRuns": {
+    "applicationTests": 30,
+    "scope": "Application preflight used final native context selector but preceded the WebSocket EOF fix. Excluded from the 24 final captures and all reported timing ratios."
+  }
+}

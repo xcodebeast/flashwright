@@ -1,0 +1,1121 @@
+diff --git c/BUILD.gn w/BUILD.gn
+index 382c7d3e..a3bf459a 100644
+--- c/BUILD.gn
++++ w/BUILD.gn
+@@ -15,6 +15,7 @@ import("//build_overrides/build.gni")
+ import("//third_party/icu/config.gni")
+ 
+ import("gni/cluster_build.gni")
++import("gni/flashwright-protection-removal.gni")
+ import("gni/snapshot_toolchain.gni")
+ import("gni/v8.gni")
+ 
+@@ -715,6 +716,31 @@ if (v8_enable_sandbox == "") {
+                       v8_enable_external_code_space && target_os != "fuchsia"
+ }
+ 
++# Private Idea 02 stage 1: preserve non-sandbox memory and compiler policy.
++if (flashwright_remove_v8_sandbox) {
++  assert(!v8_enable_sandbox, "Idea 02 requires v8_enable_sandbox=false.")
++  assert(
++      !v8_enable_sandbox_hardware_support && !v8_enable_memory_corruption_api,
++      "Idea 02 must omit sandbox hardware and testing support.")
++  assert(v8_enable_pointer_compression &&
++             v8_enable_pointer_compression_shared_cage &&
++             v8_enable_external_code_space,
++         "Do not conflate the V8 sandbox with pointer compression/code space.")
++  assert(!v8_jitless && v8_enable_sparkplug && v8_enable_maglev &&
++             v8_enable_turbofan && v8_enable_webassembly,
++         "Idea 02 retains the ordinary compiler tiers and WebAssembly.")
++  assert(!v8_disable_write_barriers && !v8_enable_single_generation &&
++             v8_enable_concurrent_marking,
++         "Idea 02 retains generational GC, barriers and concurrent marking.")
++  assert(v8_embedder_string == "-flashwright-idea02-v8-core-001",
++         "Idea 02 requires an explicit custom V8 version identity.")
++}
++
++if (flashwright_remove_v8_sandbox_checks) {
++  assert(!v8_enable_verification_features && !v8_dcheck_always_on,
++         "The check experiment requires the release CHECK operand path.")
++}
++
+ if (v8_enable_static_roots == "") {
+   # Static roots are only valid for builds with pointer compression and a
+   # shared read-only heap.
+@@ -1239,6 +1265,10 @@ config("features") {
+     "V8_LOGGING_LEVEL=${v8_logging_level}",
+   ]
+ 
++  if (flashwright_remove_v8_sandbox_checks) {
++    defines += [ "V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS" ]
++  }
++
+   configs = [
+     ":v8_header_features",
+     ":cppgc_header_features",
+@@ -5792,6 +5822,24 @@ group("v8_tracing") {
+   }
+ }
+ 
++# Embedder-only retirement implementation; keep snapshot build tools independent.
++if (!is_component_build) {
++  v8_source_set("v8_context_retirement") {
++    visibility = [ "//content/renderer" ]
++    sources = [ "src/api/context-retirement.cc" ]
++    configs = [
++      ":internal_config",
++      ":cppgc_base_config",
++    ]
++    deps = [
++      ":v8_headers",
++      ":v8_internal_headers",
++      ":v8_libbase",
++      ":v8_tracing",
++    ]
++  }
++}
++
+ v8_cluster_source_set("v8_base_without_compiler") {
+   # Only targets in this file and gcmole can depend on this.
+   visibility = [
+@@ -6037,7 +6085,6 @@ v8_cluster_source_set("v8_base_without_compiler") {
+     "src/heap/stress-scavenge-observer.cc",
+     "src/heap/sweeper.cc",
+     "src/heap/traced-handles-marking-visitor.cc",
+-    "src/heap/trusted-range.cc",
+     "src/heap/visit-object.cc",
+     "src/heap/weak-object-worklists.cc",
+     "src/heap/zapping.cc",
+@@ -6245,17 +6292,10 @@ v8_cluster_source_set("v8_base_without_compiler") {
+     "src/runtime/runtime-weak-refs.cc",
+     "src/runtime/runtime.cc",
+     "src/sandbox/bytecode-verifier.cc",
+-    "src/sandbox/code-pointer-table.cc",
+     "src/sandbox/cppheap-pointer-table.cc",
+     "src/sandbox/external-pointer-table.cc",
+-    "src/sandbox/external-strings-cage.cc",
+-    "src/sandbox/hardware-support.cc",
+     "src/sandbox/js-dispatch-table.cc",
+-    "src/sandbox/sandbox.cc",
+     "src/sandbox/sandboxable-thread.cc",
+-    "src/sandbox/testing.cc",
+-    "src/sandbox/trusted-pointer-scope.cc",
+-    "src/sandbox/trusted-pointer-table.cc",
+     "src/snapshot/code-serializer.cc",
+     "src/snapshot/context-deserializer.cc",
+     "src/snapshot/context-serializer.cc",
+@@ -6308,6 +6348,26 @@ v8_cluster_source_set("v8_base_without_compiler") {
+     "third_party/siphash/halfsiphash.cc",
+   ]
+ 
++  # No live sandbox CPT instance exists in the selected no-sandbox profile.
++  # Keep this extra TU omission scoped to the remaining-check experiment.
++  if (!flashwright_remove_v8_sandbox_checks) {
++    sources += [ "src/sandbox/code-pointer-table.cc" ]
++  }
++
++  # These units contain sandbox-only definitions. Keep shared pointer tables,
++  # bytecode verification, JS dispatch/tiering and SandboxableThread::Run alive.
++  if (!flashwright_remove_v8_sandbox) {
++    sources += [
++      "src/heap/trusted-range.cc",
++      "src/sandbox/external-strings-cage.cc",
++      "src/sandbox/hardware-support.cc",
++      "src/sandbox/sandbox.cc",
++      "src/sandbox/testing.cc",
++      "src/sandbox/trusted-pointer-scope.cc",
++      "src/sandbox/trusted-pointer-table.cc",
++    ]
++  }
++
+   if (v8_enable_snapshot_compression) {
+     sources += [ "src/snapshot/snapshot-compression.cc" ]
+   }
+@@ -6763,6 +6823,10 @@ v8_cluster_source_set("v8_base_without_compiler") {
+     ]
+   }
+ 
++  if (is_component_build) {
++    sources += [ "src/api/context-retirement.cc" ]
++  }
++
+   # Architecture independent but platform-specific sources
+   if (is_win) {
+     if (v8_enable_etw_stack_walking) {
+diff --git c/src/builtins/generate-bytecodes-builtins-list.cc w/src/builtins/generate-bytecodes-builtins-list.cc
+index 4af31d73..84944014 100644
+--- c/src/builtins/generate-bytecodes-builtins-list.cc
++++ w/src/builtins/generate-bytecodes-builtins-list.cc
+@@ -4,6 +4,9 @@
+ 
+ #include <fstream>
+ #include <iostream>
++#include <iterator>
++#include <sstream>
++#include <string>
+ 
+ #include "src/interpreter/bytecodes.h"
+ 
+@@ -14,9 +17,13 @@ namespace interpreter {
+ const int kIllegalBytecodeHandler = -1;
+ const int kIllegalBytecodeHandlerEncoding = 255;
+ 
+-void WriteBytecode(std::ofstream& out, Bytecode bytecode,
+-                   OperandScale operand_scale, int* count, int offset_table[],
+-                   int table_index, bool has_tsa_version) {
++void WriteBytecode(std::ostream& out,
++                   Bytecode bytecode,
++                   OperandScale operand_scale,
++                   int* count,
++                   int offset_table[],
++                   int table_index,
++                   bool has_tsa_version) {
+   DCHECK_NOT_NULL(count);
+   if (Bytecodes::BytecodeHasHandler(bytecode, operand_scale)) {
+     std::string name = Bytecodes::ToString(bytecode, operand_scale, "");
+@@ -42,9 +49,7 @@ void WriteBytecode(std::ofstream& out, Bytecode bytecode,
+   }
+ }
+ 
+-void WriteHeader(const char* header_filename) {
+-  std::ofstream out(header_filename);
+-
++void GenerateHeader(std::ostream& out) {
+   out << "// Automatically generated from interpreter/bytecodes.h\n"
+       << "// The following list macro is used to populate the builtins list\n"
+       << "// with the bytecode handlers\n\n"
+@@ -110,6 +115,29 @@ void WriteHeader(const char* header_filename) {
+       << "#endif  // V8_BUILTINS_GENERATED_BYTECODES_BUILTINS_LIST\n";
+ }
+ 
++// Preserve the timestamp when relinking the generator leaves its output
++// unchanged, so Ninja can avoid rebuilding every consumer of this header.
++bool WriteHeaderIfChanged(const char* header_filename) {
++  std::ostringstream generated_header;
++  GenerateHeader(generated_header);
++  const std::string contents = generated_header.str();
++  {
++    std::ifstream existing_header(header_filename);
++    if (existing_header) {
++      const std::string existing_contents(
++          (std::istreambuf_iterator<char>(existing_header)),
++          std::istreambuf_iterator<char>());
++      if (!existing_header.bad() && existing_contents == contents) {
++        return true;
++      }
++    }
++  }
++  std::ofstream output(header_filename);
++  output << contents;
++  output.close();
++  return output.good();
++}
++
+ }  // namespace interpreter
+ }  // namespace internal
+ }  // namespace v8
+@@ -120,7 +148,10 @@ int main(int argc, const char* argv[]) {
+     std::exit(1);
+   }
+ 
+-  v8::internal::interpreter::WriteHeader(argv[1]);
++  if (!v8::internal::interpreter::WriteHeaderIfChanged(argv[1])) {
++    std::cerr << "Unable to write generated header: " << argv[1] << "\n";
++    return 1;
++  }
+ 
+   return 0;
+ }
+diff --git c/src/codegen/code-stub-assembler.h w/src/codegen/code-stub-assembler.h
+index 5e118fcf..f6b634ec 100644
+--- c/src/codegen/code-stub-assembler.h
++++ w/src/codegen/code-stub-assembler.h
+@@ -690,6 +690,14 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
+ 
+   void FastCheck(TNode<BoolT> condition);
+ 
++#ifdef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++  // Match FastCheck's parameter type and receiver-call evaluation semantics.
++  // Predicate construction has already happened; emit no check graph nodes.
++  void FlashwrightEvaluateSandboxCheck(TNode<BoolT> condition) {
++    USE(condition);
++  }
++#endif
++
+   TNode<RawPtrT> LoadCodeInstructionStart(TNode<Code> code,
+                                           CodeEntrypointTag tag);
+   TNode<BoolT> IsMarkedForDeoptimization(TNode<Code> code);
+diff --git c/src/codegen/define-code-stub-assembler-macros.inc w/src/codegen/define-code-stub-assembler-macros.inc
+index 3d089ba9..b80ece16 100644
+--- c/src/codegen/define-code-stub-assembler-macros.inc
++++ w/src/codegen/define-code-stub-assembler-macros.inc
+@@ -89,4 +89,11 @@
+ #endif
+ 
+ // Similar to SBXCHECK in C++.
++#ifdef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++// Retain receiver evaluation, parameter conversion and predicate construction.
++// The selected method adds no branch, trap or other graph nodes.
++#define CSA_SBXCHECK(csa, ...) \
++  (csa)->FlashwrightEvaluateSandboxCheck(__VA_ARGS__)
++#else
+ #define CSA_SBXCHECK(csa, ...) CSA_CHECK(csa, __VA_ARGS__)
++#endif
+diff --git c/src/codegen/x64/macro-assembler-x64.cc w/src/codegen/x64/macro-assembler-x64.cc
+index 2dd76289..e2a1ee7b 100644
+--- c/src/codegen/x64/macro-assembler-x64.cc
++++ w/src/codegen/x64/macro-assembler-x64.cc
+@@ -1364,7 +1364,12 @@ void MacroAssembler::Check(Condition cc, AbortReason reason) {
+ }
+ 
+ void MacroAssembler::SbxCheck(Condition cc, AbortReason reason) {
++#ifdef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++  // Caller comparisons, argument evaluation and surrounding code stay intact.
++  USE(cc, reason);
++#else
+   Check(cc, reason);
++#endif
+ }
+ 
+ void MacroAssembler::CheckStackAlignment() {
+diff --git c/src/sandbox/check.h w/src/sandbox/check.h
+index 6899cf73..445d09ca 100644
+--- c/src/sandbox/check.h
++++ w/src/sandbox/check.h
+@@ -9,6 +9,14 @@
+ 
+ #include "src/sandbox/hardware-support.h"
+ 
++#ifdef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++#include "src/base/logging.h"
++
++#if defined(V8_ENABLE_SANDBOX) || defined(DEBUG)
++#error "The Flashwright check experiment requires no-sandbox release V8."
++#endif
++#endif
++
+ // An SBXCHECK behaves like a CHECK, but indicates that the check is required
+ // for the sandbox, i.e. prevents a sandbox bypass.
+ //
+@@ -21,7 +29,37 @@
+ // corruption outside of the sandbox and document that there is a
+ // security-critical invariant that may be violated when an attacker can
+ // corrupt memory inside the sandbox, but otherwise holds true.
+-#ifdef V8_ENABLE_SANDBOX
++#if defined(V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS)
++// Keep CHECK's condition evaluation, including contextual boolean conversion
++// and overloaded negation. Only its failure action is absent. The empty body
++// intentionally provides the same condition context without a fatal path.
++#define SBXCHECK(condition)                    \
++  do {                                         \
++    if (V8_UNLIKELY(!(condition))) {            \
++    }                                          \
++  } while (false)
++
++// Use the original release comparison helpers and passing policy. Evaluating
++// operands separately would lose comparison overloads and signedness handling.
++#define V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(name, lhs, rhs)                \
++  do {                                                                    \
++    static_cast<void>(::v8::base::Cmp##name##Impl<                        \
++        typename ::v8::base::pass_value_or_ref<decltype(lhs)>::type,     \
++        typename ::v8::base::pass_value_or_ref<decltype(rhs)>::type>(    \
++        (lhs), (rhs)));                                                  \
++  } while (false)
++#define SBXCHECK_EQ(lhs, rhs) V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(EQ, lhs, rhs)
++#define SBXCHECK_NE(lhs, rhs) V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(NE, lhs, rhs)
++#define SBXCHECK_GT(lhs, rhs) V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(GT, lhs, rhs)
++#define SBXCHECK_GE(lhs, rhs) V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(GE, lhs, rhs)
++#define SBXCHECK_LT(lhs, rhs) V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(LT, lhs, rhs)
++#define SBXCHECK_LE(lhs, rhs) V8_FLASHWRIGHT_EVALUATE_SBXCHECK_OP(LE, lhs, rhs)
++#define SBXCHECK_BOUNDS(index, limit)                                  \
++  SBXCHECK_LT(                                                        \
++      static_cast<std::make_unsigned_t<decltype(index)>>(index),       \
++      static_cast<std::make_unsigned_t<decltype(limit)>>(limit))
++#define SBXCHECK_IMPLIES(when, then) SBXCHECK(!(when) || (then))
++#elif defined(V8_ENABLE_SANDBOX)
+ 
+ // It's unsafe to access sandbox memory during a SBXCHECK since such an access
+ // will be inherently racy as we need to assume an attacker can modify the value
+@@ -70,6 +108,6 @@
+ #define SBXCHECK_LE(lhs, rhs) CHECK_LE(lhs, rhs)
+ #define SBXCHECK_BOUNDS(index, limit) CHECK_BOUNDS(index, limit)
+ #define SBXCHECK_IMPLIES(when, then) CHECK_IMPLIES(when, then)
+-#endif  // V8_ENABLE_SANDBOX
++#endif  // V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS / V8_ENABLE_SANDBOX
+ 
+ #endif  // V8_SANDBOX_CHECK_H_
+diff --git c/test/unittests/BUILD.gn w/test/unittests/BUILD.gn
+index 9a53d5cd..5e551842 100644
+--- c/test/unittests/BUILD.gn
++++ w/test/unittests/BUILD.gn
+@@ -3,6 +3,7 @@
+ # found in the LICENSE file.
+ 
+ import("../../gni/cluster_build.gni")
++import("../../gni/flashwright-protection-removal.gni")
+ import("../../gni/v8.gni")
+ 
+ if (v8_enable_webassembly) {
+@@ -251,6 +252,10 @@ v8_executable("v8_unittests") {
+     deps += [ ":cppgc_unittests_sources" ]
+   }
+ 
++  if (flashwright_remove_v8_sandbox) {
++    deps += [ ":flashwright_protection_removal_unittests_sources" ]
++  }
++
+   data_deps = [ "../../tools:v8_testrunner" ]
+ 
+   data = [
+@@ -1049,3 +1054,36 @@ if (v8_enable_fuzztest && use_centipede) {
+     deps = [ ":v8_gen_fuzztest_configs" ]
+   }
+ }
++
++# Keep this experiment's dependencies out of the existing test source set.
++if (flashwright_remove_v8_sandbox) {
++  v8_executable("flashwright_protection_removal_unittests") {
++    testonly = true
++    configs = [
++      "../..:external_config",
++      "../..:internal_config_base",
++    ]
++    deps = [
++      ":flashwright_protection_removal_unittests_sources",
++      "../..:v8_for_testing",
++      "//testing/gtest:gtest_main",
++    ]
++  }
++
++  v8_source_set("flashwright_protection_removal_unittests_sources") {
++    testonly = true
++    sources = [ "flashwright/protection-removal-unittest.cc" ]
++    if (flashwright_remove_v8_sandbox_checks) {
++      sources += [ "flashwright/sandbox-check-removal-unittest.cc" ]
++    }
++    configs = [
++      "../..:external_config",
++      "../..:internal_config_base",
++    ]
++    deps = [
++      "../..:v8_for_testing",
++      "../..:v8_shared_internal_headers",
++      "//testing/gtest",
++    ]
++  }
++}
+diff --git c/test/unittests/assembler/macro-assembler-x64-unittest.cc w/test/unittests/assembler/macro-assembler-x64-unittest.cc
+index a57d1fc7..0f4a21a9 100644
+--- c/test/unittests/assembler/macro-assembler-x64-unittest.cc
++++ w/test/unittests/assembler/macro-assembler-x64-unittest.cc
+@@ -109,6 +109,33 @@ TEST_F(MacroAssemblerX64Test, TestCheck) {
+       { f.Call(17); }, v8_flags.debug_code ? "abort: no reason" : "");
+ }
+ 
++
++#ifdef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++TEST_F(MacroAssemblerX64Test, FlashwrightSbxCheckKeepsCompareWithoutAbort) {
++  auto buffer = AllocateAssemblerBuffer();
++  MacroAssembler masm(isolate(), AssemblerOptions{}, CodeObjectRequired::kNo,
++                      buffer->CreateView());
++  __ set_root_array_available(false);
++  __ set_abort_hard(true);
++  __ movl(rax, Immediate(17));
++  const int before_compare = masm.pc_offset();
++  __ cmpl(rax, kCArgRegs[0]);
++  const int after_compare = masm.pc_offset();
++  EXPECT_GT(after_compare, before_compare);
++  __ SbxCheck(Condition::not_equal, AbortReason::kNoReason);
++  EXPECT_EQ(masm.pc_offset(), after_compare);
++  __ movl(rax, Immediate(42));
++  __ ret(0);
++
++  CodeDesc desc;
++  masm.GetCode(isolate(), &desc);
++  buffer->MakeExecutable();
++  auto f = GeneratedCode<int, int>::FromBuffer(isolate(), buffer->start());
++  EXPECT_EQ(f.Call(0), 42);
++  EXPECT_EQ(f.Call(17), 42);
++}
++#endif
++
+ #undef __
+ 
+ namespace test_macro_assembler_x64 {
+diff --git c/test/unittests/codegen/code-stub-assembler-unittest.cc w/test/unittests/codegen/code-stub-assembler-unittest.cc
+index 14ece88d..25e589c7 100644
+--- c/test/unittests/codegen/code-stub-assembler-unittest.cc
++++ w/test/unittests/codegen/code-stub-assembler-unittest.cc
+@@ -161,5 +161,36 @@ TARGET_TEST_F(CodeStubAssemblerTest, ArrayListElementsEquivalent) {
+   }
+ }
+ 
++
++#ifdef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++#include "src/codegen/define-code-stub-assembler-macros.inc"
++TARGET_TEST_F(CodeStubAssemblerTest,
++              FlashwrightFalseSandboxPredicateStillConstructs) {
++  compiler::CodeAssemblerTester tester(i_isolate(), JSParameterCount(0));
++  CodeStubAssembler assembler(tester.state());
++  int step = 0;
++  int receiver_step = 0;
++  int predicate_step = 0;
++  auto receiver = [&]() {
++    receiver_step = ++step;
++    return &assembler;
++  };
++  auto predicate = [&]() {
++    predicate_step = ++step;
++    return assembler.Word32Equal(assembler.Int32Constant(0),
++                                  assembler.Int32Constant(1));
++  };
++  CSA_SBXCHECK(receiver(), predicate());
++  EXPECT_EQ(receiver_step, 1);
++  EXPECT_EQ(predicate_step, 2);
++  EXPECT_EQ(step, 2);
++  assembler.Return(assembler.SmiConstant(42));
++  DirectHandle<Code> code = tester.GenerateCodeCloseAndEscape();
++  compiler::FunctionTester ft(i_isolate(), code, 0);
++  ft.CheckCall(ft.NewNumber(42));
++}
++#include "src/codegen/undef-code-stub-assembler-macros.inc"
++#endif
++
+ }  // namespace internal
+ }  // namespace v8
+diff --git c/third_party/inspector_protocol/code_generator.py w/third_party/inspector_protocol/code_generator.py
+index 49952dda..0526ef13 100755
+--- c/third_party/inspector_protocol/code_generator.py
++++ w/third_party/inspector_protocol/code_generator.py
+@@ -610,6 +610,26 @@ class Protocol(object):
+     return domain in self.generate_domains or domain in self.imported_domains
+ 
+ 
++def write_if_changed(file_name, content):
++  # Keep Ninja restat effective without suppressing case-only output renames.
++  exact_name_exists = os.path.basename(file_name) in os.listdir(
++      os.path.dirname(file_name) or ".")
++  if exact_name_exists:
++    try:
++      with open(file_name, "r", newline="") as existing:
++        if existing.read() == content.replace("\n", os.linesep):
++          return
++    except (OSError, UnicodeError):
++      pass
++  # Remove output file first to account for potential case changes.
++  try:
++    os.remove(file_name)
++  except OSError:
++    pass
++  with open(file_name, "w") as output:
++    output.write(content)
++
++
+ def main():
+   jinja_dir, config_file, config, deps_filename, stamp_filename = read_config()
+ 
+@@ -733,18 +753,15 @@ def main():
+           os.path.join(config.lib.output, to_file_name(config, "Protocol.cpp")),
+           protocol_cpp_templates)
+ 
+-  if stamp_filename:
++  # GN may use the first generated source as the depfile target. Do not
++  # truncate that output before comparing its contents below.
++  stamp_is_output = stamp_filename and any(
++      os.path.abspath(stamp_filename) == os.path.abspath(name) for name in outputs)
++  if stamp_filename and not stamp_is_output:
+     with open(stamp_filename, "w"):
+       pass
+   for file_name, content in outputs.items():
+-    # Remove output file first to account for potential case changes.
+-    try:
+-      os.remove(file_name)
+-    except OSError:
+-      pass
+-    out_file = open(file_name, "w")
+-    out_file.write(content)
+-    out_file.close()
++    write_if_changed(file_name, content)
+ 
+   if deps_filename:
+     assert stamp_filename
+diff --git 1/flashwright_fork_probe/BUILD.gn 2/flashwright_fork_probe/BUILD.gn
+new file mode 100644
+index 00000000..4ba6315a
+--- /dev/null
++++ 2/flashwright_fork_probe/BUILD.gn
+@@ -0,0 +1,12 @@
++import("//v8/gni/v8.gni")
++v8_source_set("repair") {
++  sources = [ "repair.cc", "platform.cc" ]
++  configs = [ "//v8:internal_config" ]
++  deps = [ "//v8:v8_internal_headers", "//v8:v8_abseil" ]
++}
++
++v8_source_set("donor") {
++  sources = [ "compiler-defer.cc" ]
++  configs = [ "//v8:internal_config" ]
++  deps = [ "//v8:v8_internal_headers", "//v8:v8_abseil" ]
++}
+diff --git 1/flashwright_fork_probe/compiler-defer.cc 2/flashwright_fork_probe/compiler-defer.cc
+new file mode 100644
+index 00000000..39dc996c
+--- /dev/null
++++ 2/flashwright_fork_probe/compiler-defer.cc
+@@ -0,0 +1,10 @@
++// Private non-LTO Linux executable wrapper. Keep virgin donors free of compiler
++// jobs; ordinary child startup initializes the actual configured worker count.
++#include "src/compiler-dispatcher/optimizing-compile-dispatcher.h"
++bool FlashwrightDeferCompilerForDonor();
++extern "C" void __real__ZN2v88internal29OptimizingCompileTaskExecutor13EnsureStartedEv(
++    v8::internal::OptimizingCompileTaskExecutor*);
++extern "C" void __wrap__ZN2v88internal29OptimizingCompileTaskExecutor13EnsureStartedEv(
++    v8::internal::OptimizingCompileTaskExecutor* executor) {
++  if (!FlashwrightDeferCompilerForDonor()) __real__ZN2v88internal29OptimizingCompileTaskExecutor13EnsureStartedEv(executor);
++}
+diff --git 1/flashwright_fork_probe/platform.cc 2/flashwright_fork_probe/platform.cc
+new file mode 100644
+index 00000000..43083ddd
+--- /dev/null
++++ 2/flashwright_fork_probe/platform.cc
+@@ -0,0 +1,42 @@
++// Copyright 2023 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "src/base/platform/platform.h"
++
++namespace v8 {
++namespace base {
++
++namespace {
++
++// A pointer to current thread's stack beginning.
++thread_local void* thread_stack_start = nullptr;
++thread_local int thread_id = 0;
++
++}  // namespace
++
++// static
++Stack::StackSlot Stack::GetStackStartUnchecked() {
++  if (!thread_stack_start) {
++    thread_stack_start = ObtainCurrentThreadStackStart();
++  }
++  return thread_stack_start;
++}
++
++// static
++Stack::StackSlot Stack::GetStackStart() { return GetStackStartUnchecked(); }
++
++// static
++int OS::GetCurrentThreadId() {
++  if (!thread_id) thread_id = GetCurrentThreadIdInternal();
++  return thread_id;
++}
++
++// Private Linux fork feasibility hook. No scheduler/heap repair is implied.
++V8_BASE_EXPORT void FlashwrightInvalidateThreadIdAfterFork() {
++  thread_id = 0;
++  thread_stack_start = nullptr;
++}
++
++}  // namespace base
++}  // namespace v8
+diff --git 1/flashwright_fork_probe/repair.cc 2/flashwright_fork_probe/repair.cc
+new file mode 100644
+index 00000000..62e3a89c
+--- /dev/null
++++ 2/flashwright_fork_probe/repair.cc
+@@ -0,0 +1,84 @@
++// Private component repair; not a general V8/Blink post-fork API.
++#include "include/v8-isolate.h"
++#include "src/init/isolate-group.h"
++#include "src/compiler-dispatcher/optimizing-compile-dispatcher.h"
++#include "src/base/utils/random-number-generator.h"
++#include "src/execution/isolate.h"
++#include "src/flags/flags.h"
++#include "src/heap/cppgc-js/cpp-heap.h"
++#include "src/heap/incremental-marking.h"
++#include "src/heap/heap.h"
++#include "src/heap/gc-tracer-inl.h"
++
++namespace v8::base {
++void FlashwrightInvalidateThreadIdAfterFork();
++}
++
++int ForkV8ThreadId() { return v8::base::OS::GetCurrentThreadId(); }
++
++void InvalidateForkThreadCache() {
++  v8::base::FlashwrightInvalidateThreadIdAfterFork();
++}
++
++void CheckForkHeapQuiescence(v8::Isolate* isolate) {
++  auto* internal = reinterpret_cast<v8::internal::Isolate*>(isolate);
++  auto* heap = internal->heap();
++  auto* cpp_heap = v8::internal::CppHeap::From(isolate->GetCppHeap());
++  CHECK(!heap->IsInGC());
++  CHECK(!heap->incremental_marking()->IsMarking());
++  CHECK(!heap->sweeping_in_progress());
++  // This feasibility probe accepts only a virgin donor. Requiring no prior
++  // collection or started tracer cycle avoids outstanding GC accounting; the
++  // tracer's direct state predicates exist only in DEBUG builds.
++  CHECK_EQ(heap->gc_count().value(), v8::internal::kInitialGCEpoch.value());
++  CHECK_EQ(heap->tracer()->CurrentEpoch(), 0u);
++  CHECK(!cpp_heap->in_atomic_pause());
++  CHECK(!cpp_heap->is_incremental_marking_in_progress());
++  CHECK(!cpp_heap->sweeper().IsSweepingInProgress());
++}
++
++void RebindForkHeap(v8::Isolate* isolate) {
++  CheckForkHeapQuiescence(isolate);
++  auto* internal = reinterpret_cast<v8::internal::Isolate*>(isolate);
++  auto* cpp_heap = v8::internal::CppHeap::From(isolate->GetCppHeap());
++  // Preserve the same C++ heap and its existing references. No GC is permitted
++  // in the detached interval. StartDetaching records the fresh kernel TID.
++  cpp_heap->StartDetachingIsolate();
++  cpp_heap->DetachIsolate();
++  cpp_heap->AttachIsolate(internal);
++  internal->heap()->SetStackStart();
++  CHECK(cpp_heap->CurrentThreadIsHeapThread());
++}
++
++bool ForkHeapThreadMatches(v8::Isolate* isolate) {
++  auto* heap = isolate->GetCppHeap();
++  CHECK_NOT_NULL(heap);
++  return v8::internal::CppHeap::From(heap)->CurrentThreadIsHeapThread();
++}
++
++void RepairForkRandomness(v8::Isolate* isolate, int64_t seed, int64_t fuzz_seed) {
++  auto* internal = reinterpret_cast<v8::internal::Isolate*>(isolate);
++  // Explicit deterministic seeds continue to mean deterministic execution.
++  if (!v8::internal::v8_flags.random_seed)
++    internal->random_number_generator()->SetSeed(seed);
++  if (!v8::internal::v8_flags.fuzzer_random_seed &&
++      !v8::internal::v8_flags.random_seed)
++    internal->fuzzer_rng()->SetSeed(fuzz_seed);
++}
++
++void ForceForkProbeGC(v8::Isolate* isolate) {
++  auto* heap = reinterpret_cast<v8::internal::Isolate*>(isolate)->heap();
++  v8::internal::EmbedderStackStateScope stack(
++      heap, v8::internal::EmbedderStackStateOrigin::kExplicitInvocation,
++      cppgc::EmbedderStackState::kNoHeapPointers);
++  heap->PreciseCollectAllGarbage(v8::internal::GCFlag::kNoFlags,
++      v8::internal::GarbageCollectionReason::kTesting, v8::kGCCallbackFlagForced);
++  heap->EnsureSweepingCompleted(
++      v8::internal::Heap::SweepingForcedFinalizationMode::kUnifiedHeap,
++      v8::internal::CompleteSweepingReason::kTesting);
++}
++
++void StartForkCompilerExecutor(v8::Isolate* isolate) {
++  auto* internal = reinterpret_cast<v8::internal::Isolate*>(isolate);
++  internal->isolate_group()->optimizing_compile_task_executor()->EnsureStarted();
++}
+diff --git 1/gni/flashwright-protection-removal.gni 2/gni/flashwright-protection-removal.gni
+new file mode 100644
+index 00000000..145ca677
+--- /dev/null
++++ 2/gni/flashwright-protection-removal.gni
+@@ -0,0 +1,29 @@
++# Copyright 2026 The Chromium Authors
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++declare_args() {
++  # Private custom build, stage 1 only. OS/site isolation are still present.
++  flashwright_remove_v8_sandbox = false
++
++  # Private remaining-check experiment; never select this implicitly.
++  flashwright_remove_v8_sandbox_checks = false
++}
++
++if (flashwright_remove_v8_sandbox) {
++  assert(is_linux && target_os == "linux" && target_cpu == "x64" &&
++             current_cpu == "x64",
++         "Idea 02 stage 1 is prepared only for native Linux x64.")
++  assert(!is_component_build,
++         "Idea 02 stage 1 does not support component builds.")
++}
++
++if (flashwright_remove_v8_sandbox_checks) {
++  assert(flashwright_remove_v8_sandbox,
++         "Check omission requires the existing V8 core-removal profile.")
++  assert(is_linux && target_os == "linux" && target_cpu == "x64" &&
++             current_cpu == "x64",
++         "Check omission is prepared only for native Linux x64.")
++  assert(!is_component_build && !is_debug,
++         "Check omission requires a noncomponent release build.")
++}
+diff --git 1/include/v8-context-retirement.h 2/include/v8-context-retirement.h
+new file mode 100644
+index 00000000..f3675b0e
+--- /dev/null
++++ 2/include/v8-context-retirement.h
+@@ -0,0 +1,23 @@
++// Copyright 2026 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef INCLUDE_V8_CONTEXT_RETIREMENT_H_
++#define INCLUDE_V8_CONTEXT_RETIREMENT_H_
++
++#include "v8config.h"
++
++namespace v8 {
++class Isolate;
++
++// Private embedder experiment: run one or two complete collections after retiring
++// every document and worker using this isolate. The caller must already deny
++// further access to retired contexts; garbage collection is not that fence.
++// Pending incremental marking may require an additional collection. This does
++// not invoke emergency cache eviction, but ordinary GC may flush unused code.
++// Only call on the isolate's owning thread, outside JavaScript execution.
++V8_EXPORT void CollectGarbageAfterContextRetirement(Isolate* isolate,
++                                                    int collection_count);
++}  // namespace v8
++
++#endif  // INCLUDE_V8_CONTEXT_RETIREMENT_H_
+diff --git 1/src/api/context-retirement.cc 2/src/api/context-retirement.cc
+new file mode 100644
+index 00000000..736257a6
+--- /dev/null
++++ 2/src/api/context-retirement.cc
+@@ -0,0 +1,37 @@
++// Copyright 2026 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "include/v8-context-retirement.h"
++
++#include "include/v8-isolate.h"
++#include "src/base/logging.h"
++#include "src/execution/isolate.h"
++#include "src/heap/heap.h"
++#include "src/tracing/trace-event.h"
++
++namespace v8 {
++namespace i = internal;
++
++void CollectGarbageAfterContextRetirement(Isolate* isolate,
++                                          int collection_count) {
++  CHECK_GE(collection_count, 1);
++  CHECK_LE(collection_count, 2);
++  CHECK_NOT_NULL(isolate);
++  Isolate::Scope isolate_scope(isolate);
++  auto* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
++  TRACE_EVENT0("v8", "V8.CollectGarbageAfterContextRetirement");
++  // A later pass can collect objects released by the first pass's weak
++  // callbacks. Memory reduction releases unused allocator pages; omitting the
++  // forced callback flag keeps normal bytecode aging enabled.
++  for (int collection = 0; collection < collection_count; ++collection) {
++    // Honor actual pressure before an ordinary collection resets its state.
++    internal_isolate->heap()->CheckMemoryPressure();
++    internal_isolate->heap()->PreciseCollectAllGarbage(
++        i::GCFlag::kReduceMemoryFootprint,
++        i::GarbageCollectionReason::kContextDisposal,
++        kNoGCCallbackFlags);
++  }
++}
++
++}  // namespace v8
+diff --git 1/test/unittests/flashwright/protection-removal-unittest.cc 2/test/unittests/flashwright/protection-removal-unittest.cc
+new file mode 100644
+index 00000000..22dac166
+--- /dev/null
++++ 2/test/unittests/flashwright/protection-removal-unittest.cc
+@@ -0,0 +1,61 @@
++// Copyright 2026 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include <limits>
++
++#include "src/sandbox/bounded-size-inl.h"
++#include "src/sandbox/external-pointer-inl.h"
++#include "src/sandbox/sandboxed-pointer-inl.h"
++#include "testing/gtest/include/gtest/gtest.h"
++
++#ifdef V8_ENABLE_SANDBOX
++#error "This test target requires native V8 sandbox omission."
++#endif
++#ifndef V8_COMPRESS_POINTERS
++#error "Pointer compression must remain enabled in the stage 1 experiment."
++#endif
++
++namespace v8::internal {
++
++TEST(FlashwrightProtectionRemovalTest, BufferPointerIsStoredDirectly) {
++  Address storage = 0;
++  int target = 0;
++  const Address field = reinterpret_cast<Address>(&storage);
++  const Address pointer = reinterpret_cast<Address>(&target);
++  WriteSandboxedPointerField(field, PtrComprCageBase(kNullAddress), pointer);
++  EXPECT_EQ(storage, pointer);
++  EXPECT_EQ(ReadSandboxedPointerField(field, PtrComprCageBase(kNullAddress)),
++            pointer);
++}
++
++TEST(FlashwrightProtectionRemovalTest, SizeFieldHasNoSandboxShift) {
++  size_t storage = 0;
++  const Address field = reinterpret_cast<Address>(&storage);
++  const size_t value = std::numeric_limits<size_t>::max() >> 1;
++  WriteBoundedSizeField(field, value);
++  EXPECT_EQ(storage, value);
++  EXPECT_EQ(ReadBoundedSizeField(field), value);
++}
++
++TEST(FlashwrightProtectionRemovalTest, ExternalPointerNeedsNoTable) {
++  Address storage = 0;
++  int first = 0;
++  int second = 0;
++  const Address field = reinterpret_cast<Address>(&storage);
++  const Address first_pointer = reinterpret_cast<Address>(&first);
++  const Address second_pointer = reinterpret_cast<Address>(&second);
++  constexpr auto tag = kNativeContextMicrotaskQueueTag;
++  constexpr ExternalPointerTagRange range(tag, tag);
++  InitExternalPointerField<tag>(kNullAddress, field, IsolateForSandbox{},
++                                first_pointer);
++  EXPECT_EQ(storage, first_pointer);
++  EXPECT_EQ(ReadExternalPointerField<range>(field, IsolateForSandbox{}),
++            first_pointer);
++  WriteExternalPointerField<tag>(field, IsolateForSandbox{}, second_pointer);
++  EXPECT_EQ(storage, second_pointer);
++  EXPECT_EQ(ReadExternalPointerField<range>(field, IsolateForSandbox{}),
++            second_pointer);
++}
++
++}  // namespace v8::internal
+diff --git 1/test/unittests/flashwright/sandbox-check-removal-unittest.cc 2/test/unittests/flashwright/sandbox-check-removal-unittest.cc
+new file mode 100644
+index 00000000..a02711d6
+--- /dev/null
++++ 2/test/unittests/flashwright/sandbox-check-removal-unittest.cc
+@@ -0,0 +1,228 @@
++// Copyright 2026 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "src/base/logging.h"
++#include "src/codegen/tnode.h"
++#include "src/sandbox/check.h"
++#include "testing/gtest/include/gtest/gtest.h"
++
++#ifndef V8_FLASHWRIGHT_REMOVE_SANDBOX_CHECKS
++#error "These controls require the explicitly selected check experiment."
++#endif
++#if defined(V8_ENABLE_SANDBOX) || defined(DEBUG)
++#error "These controls require the no-sandbox release operand path."
++#endif
++
++namespace v8::internal {
++namespace {
++
++struct BooleanProbe {
++  bool value;
++  int* conversions;
++  explicit operator bool() const {
++    ++*conversions;
++    return value;
++  }
++};
++
++struct NegationProbe {
++  int* negations;
++  bool operator!() const {
++    ++*negations;
++    return true;
++  }
++};
++
++class ComparisonProbe {
++ public:
++  ComparisonProbe(int value, int* comparisons)
++      : value_(value), comparisons_(comparisons) {}
++  ComparisonProbe(const ComparisonProbe&) = delete;
++
++#define DEFINE_COMPARISON(op)                            \
++  bool operator op(const ComparisonProbe& other) const { \
++    ++*comparisons_;                                     \
++    return value_ op other.value_;                       \
++  }
++  DEFINE_COMPARISON(==)
++  DEFINE_COMPARISON(!=)
++  DEFINE_COMPARISON(>)
++  DEFINE_COMPARISON(>=)
++  DEFINE_COMPARISON(<)
++  DEFINE_COMPARISON(<=)
++#undef DEFINE_COMPARISON
++
++ private:
++  int value_;
++  int* comparisons_;
++};
++
++class TemporaryConversionProbe {
++ public:
++  TemporaryConversionProbe(int value, int* conversions, int* destructions)
++      : value_(value),
++        conversions_(conversions),
++        destructions_(destructions) {}
++  TemporaryConversionProbe(const TemporaryConversionProbe&) = delete;
++  ~TemporaryConversionProbe() { ++*destructions_; }
++  operator int() const {
++    ++*conversions_;
++    return value_;
++  }
++
++ private:
++  int value_;
++  int* conversions_;
++  int* destructions_;
++};
++
++constexpr bool FalseChecksRemainConstantEvaluable() {
++  SBXCHECK(false);
++  SBXCHECK_EQ(1, 2);
++  SBXCHECK_BOUNDS(-1, 1);
++  SBXCHECK_IMPLIES(true, false);
++  return true;
++}
++static_assert(FalseChecksRemainConstantEvaluable());
++
++}  // namespace
++
++TEST(FlashwrightSandboxCheckRemovalTest, BooleanConversionAndNegation) {
++  int conversions = 0;
++  SBXCHECK((BooleanProbe{false, &conversions}));
++  EXPECT_EQ(conversions, 1);
++
++  int negations = 0;
++  // This type deliberately has operator! but no conversion to bool.
++  SBXCHECK((NegationProbe{&negations}));
++  EXPECT_EQ(negations, 1);
++}
++
++TEST(FlashwrightSandboxCheckRemovalTest,
++     AllComparisonOverloadsAndOperandsAreEvaluatedOnce) {
++  int lhs_calls = 0;
++  int rhs_calls = 0;
++  int comparisons = 0;
++  ComparisonProbe left(1, &comparisons);
++  ComparisonProbe right(2, &comparisons);
++  auto lhs = [&]() -> const ComparisonProbe& {
++    ++lhs_calls;
++    return left;
++  };
++  auto rhs = [&]() -> const ComparisonProbe& {
++    ++rhs_calls;
++    return right;
++  };
++  SBXCHECK_EQ(lhs(), rhs());
++  SBXCHECK_NE(lhs(), rhs());
++  SBXCHECK_GT(lhs(), rhs());
++  SBXCHECK_GE(lhs(), rhs());
++  SBXCHECK_LT(lhs(), rhs());
++  SBXCHECK_LE(lhs(), rhs());
++  EXPECT_EQ(lhs_calls, 6);
++  EXPECT_EQ(rhs_calls, 6);
++  EXPECT_EQ(comparisons, 6);
++}
++
++TEST(FlashwrightSandboxCheckRemovalTest,
++     ComparisonConversionsAndTemporaryLifetimes) {
++  int operand_calls = 0;
++  int conversions = 0;
++  int destructions = 0;
++  auto operand = [&](int value) {
++    ++operand_calls;
++    return TemporaryConversionProbe(value, &conversions, &destructions);
++  };
++  SBXCHECK_EQ(operand(1), operand(2));
++  EXPECT_EQ(operand_calls, 2);
++  EXPECT_EQ(conversions, 2);
++  EXPECT_EQ(destructions, 2);
++}
++
++TEST(FlashwrightSandboxCheckRemovalTest, BoundsOperandsAreEvaluatedOnce) {
++  int index_calls = 0;
++  int limit_calls = 0;
++  auto index = [&]() {
++    ++index_calls;
++    return -1;
++  };
++  auto limit = [&]() {
++    ++limit_calls;
++    return 1;
++  };
++  // Original CHECK_BOUNDS rejects -1 via unsigned conversion. The selected
++  // experiment evaluates the same converted comparison without terminating.
++  SBXCHECK_BOUNDS(index(), limit());
++  EXPECT_EQ(index_calls, 1);
++  EXPECT_EQ(limit_calls, 1);
++}
++
++TEST(FlashwrightSandboxCheckRemovalTest,
++     ImpliesPreservesBooleanConversionAndShortCircuit) {
++  int lhs_conversions = 0;
++  int rhs_calls = 0;
++  int rhs_conversions = 0;
++  auto rhs = [&]() {
++    ++rhs_calls;
++    return BooleanProbe{false, &rhs_conversions};
++  };
++  SBXCHECK_IMPLIES((BooleanProbe{false, &lhs_conversions}), rhs());
++  EXPECT_EQ(lhs_conversions, 1);
++  EXPECT_EQ(rhs_calls, 0);
++  EXPECT_EQ(rhs_conversions, 0);
++
++  SBXCHECK_IMPLIES((BooleanProbe{true, &lhs_conversions}), rhs());
++  EXPECT_EQ(lhs_conversions, 2);
++  EXPECT_EQ(rhs_calls, 1);
++  EXPECT_EQ(rhs_conversions, 1);
++}
++
++// Exercise the macro's C++ receiver/argument semantics independently of a
++// graph fixture. Actual graph node preservation is a separate execution gate.
++#include "src/codegen/define-code-stub-assembler-macros.inc"
++TEST(FlashwrightSandboxCheckRemovalTest,
++     CsaReceiverPredicateAndImplicitConversionRemain) {
++  int step = 0;
++  int receiver_step = 0;
++  int predicate_step = 0;
++  int conversion_step = 0;
++  int consume_step = 0;
++  struct ConditionProxy {
++    int* step;
++    int* conversion_step;
++    operator TNode<BoolT>() const {
++      *conversion_step = ++*step;
++      return {};
++    }
++  };
++  struct Receiver {
++    int* step;
++    int* consume_step;
++    void FlashwrightEvaluateSandboxCheck(TNode<BoolT> condition) {
++      USE(condition);
++      *consume_step = ++*step;
++    }
++  } recorder{&step, &consume_step};
++  auto receiver = [&]() {
++    receiver_step = ++step;
++    return &recorder;
++  };
++  auto predicate = [&]() {
++    predicate_step = ++step;
++    return ConditionProxy{&step, &conversion_step};
++  };
++  CSA_SBXCHECK(receiver(), predicate());
++  EXPECT_EQ(receiver_step, 1);
++  EXPECT_EQ(predicate_step, 2);
++  EXPECT_EQ(conversion_step, 3);
++  EXPECT_EQ(consume_step, 4);
++  EXPECT_EQ(step, 4);
++}
++#include "src/codegen/undef-code-stub-assembler-macros.inc"
++
++TEST(FlashwrightSandboxCheckRemovalTest, OrdinaryCheckStillTerminates) {
++  EXPECT_DEATH_IF_SUPPORTED({ CHECK(false); }, "");
++}
++
++}  // namespace v8::internal
