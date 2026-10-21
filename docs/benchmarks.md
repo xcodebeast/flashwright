@@ -553,3 +553,22 @@ Each cell shows block 0 / block 1 in seconds. Ratios are Playwright time divided
 | SVGOMG | 4 | 2.157 / 2.350 | 2.927 / 2.988 | 1.789 / 2.489 | 1.205× / 0.944× |
 
 The candidate takes 16.7–39.5% less time than the existing Flashwright scheduler in these observations. It does **not** meet the 2× objective. The second four-worker SVGOMG run is 5.9% slower than Playwright; it remains in the result. This is a two-application engineering screen with a private adapter, not the final eight-pair campaign, a public runner release, an incremental comparison against the earlier Bun-test bridge, or final resource admission. Public configuration, compatible deadlines and reporter/artifact integration remain open.
+
+## Video decoder initialization and renderer retirement
+
+The [Linux startup comparison](../benchmarks/results/video-initialization-linux-2026-10-21.json) records two separate 32-command, 480-test screens. Appending `--disable-gpu` did not consistently improve complete Flashwright runs. GPU startup traces instead localized a long pause to pre-sandbox initialization, whose Linux path initializes hardware video decoding. With `--disable-accelerated-video-decode`, instrumented GPU initialization fell from 1.05–1.10 seconds to 0.19–0.24 seconds. These diagnostic spans are separate from complete-command timing.
+
+The second screen applies that decoder setting equally to Playwright and Flashwright, preserving software decoding. Each cell below shows block 0 / block 1 in seconds. The ratio compares the two engines with the **same changed setting**, including their original service startup and teardown.
+
+| Application | Workers | Flashwright default | Flashwright software decoding | Playwright software decoding | Matched ratio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | 2.088 / 2.163 | 1.963 / 1.991 | 3.809 / 3.787 | 1.940× / 1.902× |
+| TodoMVC | 4 | 2.298 / 2.339 | 1.766 / 1.733 | 2.049 / 2.057 | 1.160× / 1.187× |
+| SVGOMG | 1 | 1.251 / 1.208 | 0.974 / 1.016 | 1.736 / 1.731 | 1.781× / 1.704× |
+| SVGOMG | 4 | 1.794 / 2.058 | 1.348 / 1.327 | 1.371 / 1.494 | 1.017× / 1.126× |
+
+Flashwright takes 6.0–35.5% less time in these observations. Playwright also improves, and no cell reaches 2× in both blocks. These two-application engineering screens do not replace the final nine-scenario, eight-pair campaign or establish a public runner release.
+
+Selected controls retain Canvas 2D/WebGL pixels, software video playback, screenshots, fresh storage and trusted input on moving targets. They also expose a **renderer-retirement resource failure**: after video-bearing contexts retire, the private reuse composition consumes roughly 9.7 CPU-seconds in a three-second idle window. Disabling the custom deadline change and frame uncapping does not resolve it. Disabling renderer reservation while retaining the fast scheduling and software-decoder settings reduces the same window to 0.21 CPU-seconds. The exact native loop remains unproved; source inspection identifies video paths that fail to retain their original broker authority and assumes a stable physical client ID across logical reuse.
+
+Neither private composition is admitted for public adoption. Preserve these failed controls alongside the speed measurements; an inner functional report does not override its controller's failed idle-resource check. Default public launch policy remains unchanged, and graphics/codec coverage beyond the selected controls remains open.
