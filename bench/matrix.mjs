@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 
 const [iterations = '3', workersArg = '1,4', scenariosArg] = process.argv.slice(2);
-const scenarios = scenariosArg?.split(',') ?? ['todomvc', 'svgomg', 'shop', ...['noop', 'interaction', 'assertion', 'navigation', 'setup', 'backend', 'failure'].map(w => `workload:${w}`)];
+const scenarios = scenariosArg?.split(',') ?? ['todomvc', 'svgomg', 'shop', ...['noop', 'interaction', 'assertion', 'navigation', 'setup', 'backend', 'failure', 'broken', 'screenshot', 'capture'].map(w => `workload:${w}`)];
 const rows = [];
 for (const scenario of scenarios) {
   for (const workers of workersArg.split(',')) {

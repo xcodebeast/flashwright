@@ -92,6 +92,8 @@ render();
 
 export async function startShopServer({ latency = 40 } = {}) {
   let orders = 0;
+  // Wall time with at least one API request waiting on latency: the floor a sequential run can't beat.
+  let inFlight = 0, busySince = 0, busy = 0;
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, 'http://localhost');
     const json = (status, body, headers = {}) => { response.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers }); response.end(JSON.stringify(body)); };
@@ -104,7 +106,11 @@ export async function startShopServer({ latency = 40 } = {}) {
     const chunks = [];
     for await (const chunk of request)
       chunks.push(chunk);
+    if (!inFlight++)
+      busySince = performance.now();
     await sleep(latency);
+    if (!--inFlight)
+      busy += performance.now() - busySince;
     if (url.pathname === '/api/login') {
       const { email, password } = JSON.parse(Buffer.concat(chunks).toString() || '{}');
       if (password !== 'secret')
@@ -126,5 +132,5 @@ export async function startShopServer({ latency = 40 } = {}) {
     json(404, {});
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { url: `http://127.0.0.1:${server.address().port}`, close: () => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); }) };
+  return { url: `http://127.0.0.1:${server.address().port}`, takeBusyTime: () => { const value = busy; busy = 0; return value; }, close: () => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); }) };
 }
