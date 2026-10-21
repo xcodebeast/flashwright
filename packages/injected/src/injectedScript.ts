@@ -89,6 +89,9 @@ export type InjectedScriptOptions = {
   customEngines: { name: string, source: string }[];
 };
 
+// CSS properties (as transition names or camelCase keyframe keys) that never change an element's box.
+const kBoxPreservingProperty = /^(color|opacity|visibility|filter|backdrop-?filter|caret-?color|accent-?color|fill|stroke|stop-?color|flood-?color|lighting-?color|(background|border|outline|text-?decoration|column-?rule)(-?(top|right|bottom|left|inline|block)(-?(start|end))?)?-?color|background-?(image|position|size)?|(box|text)-?shadow)$/i;
+
 export class InjectedScript {
   private _engines: Map<string, SelectorEngine>;
   readonly _evaluator: SelectorEvaluatorImpl;
@@ -735,7 +738,27 @@ export class InjectedScript {
     const document = node.ownerDocument;
     if (!document || typeof document.getAnimations !== 'function')
       return true;
-    return document.getAnimations().some(animation => animation.pending || animation.playState === 'running');
+    return document.getAnimations().some(animation => (animation.pending || animation.playState === 'running') && this._animationMayMoveElements(animation));
+  }
+
+  // Animations that only change colors, opacity, shadows or filters cannot change any element's
+  // box; anything else (or anything we cannot inspect) counts as possibly moving elements.
+  private _animationMayMoveElements(animation: Animation): boolean {
+    const properties: string[] = [];
+    if ('transitionProperty' in animation) {
+      properties.push(String((animation as any).transitionProperty));
+    } else {
+      const effect = animation.effect as KeyframeEffect | null;
+      if (!effect || typeof effect.getKeyframes !== 'function')
+        return true;
+      for (const keyframe of effect.getKeyframes()) {
+        for (const property of Object.keys(keyframe)) {
+          if (!['offset', 'computedOffset', 'easing', 'composite'].includes(property))
+            properties.push(property);
+        }
+      }
+    }
+    return properties.some(property => !kBoxPreservingProperty.test(property));
   }
 
   private async _checkElementIsStable(node: Node): Promise<'error:notconnected' | boolean> {
