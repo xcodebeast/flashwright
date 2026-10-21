@@ -788,3 +788,22 @@ The application gate required at least one application to improve 10% in both wo
 Retained reports identify `reset settings` as SVGOMG's longest test. Its enabled four-worker duration changes from 1344.19 to 835.62 ms between blocks, accounting for much of the overall variation. Reports contain no step timings, so this does not prove a cause. The existing pointer retry schedule includes a 500 ms pause, but matching that magnitude is only an attribution lead; earlier negative readiness-hint screens remain relevant. Preserve fresh stability and original target ownership in any follow-up.
 
 The [composition notes](../tools/chromium/paced-retirement-combination.md) retain source identities and remaining native timer, worker-race and artifact coverage. Original sources and the exact rebuilt baseline browser are restored. No public default, final confidence/resource admission or release claim changes.
+
+## Pointer-wait attribution and bounded instability retry
+
+The [pointer-wait screen](../benchmarks/results/bounded-unstable-retry-linux-2026-10-21.json) instruments the ordinary Rust pointer path without changing its schedule. Eight complete SVGOMG captures pass 48 original outcomes with audit off/on at one/four workers in reversed order. Every audited suite records eight completed pointer actions. No action takes a 500 ms retry pause, so those captures do not explain the preceding half-second variation.
+
+In both audited four-worker runs, “Reset all” spends 225.71 / 224.35 ms in pauses after `error:unstable`, using the original 0/20/100/100 ms schedule. Preparation and cleanup account for additional time; the complete actions take 278.44 / 268.05 ms. One single-worker run needs no retry. These observations identify waiting, not how much of it can safely be removed.
+
+A distinct candidate caps the first 32 unstable, undispatched retry pauses at 16 ms. It preserves fresh stability, original target ownership, cleanup, input-lock release and deadlines. Other reasons and later attempts retain their original delays. The existing readiness-hint experiment stays disabled. Both policies pass the pointer differential on a common custom browser and focused perpetual-motion timeout, concurrent-stop and original-page-close controls. One perpetual-motion audit truncates its bounded event buffer; the functional outcome passes, but the log does not prove the later fallback cadence.
+
+The application screen passes another 540 original outcomes, including 180 preflight outcomes. Timing disables auditing. Positive reductions mean less complete time; CPU is measured over the owner interval, excluding initial imports and final watchdog drain.
+
+| Application | Workers | Elapsed reduction, block 0 | Elapsed reduction, block 1 | CPU reduction, block 0 | CPU reduction, block 1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | -0.70% | -0.18% | -0.29% | 1.37% |
+| TodoMVC | 4 | -1.84% | 0.41% | -1.60% | 0.76% |
+| SVGOMG | 1 | 10.60% | -2.19% | 6.19% | -8.76% |
+| SVGOMG | 4 | 2.88% | 22.02% | 1.75% | 14.09% |
+
+The prospective gate required at least 10% elapsed improvement for four-worker SVGOMG in both orders and no elapsed or CPU regression over 5% in any cell. It fails. Keep the [private patch](../tools/chromium/bounded-unstable-retry.md) unadopted; favorable individual observations do not justify a larger unchanged campaign. Original source and the byte-identical rebuilt baseline driver are restored, with the native browser unchanged. Final confidence, resource, majority-scenario and release gates remain open.
