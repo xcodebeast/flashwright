@@ -108,6 +108,15 @@ export class FixturePool {
     return consumer?.name === name ? consumer.previous : this.#registrations.get(name);
   }
   registrations(): readonly FixtureRegistration[] { return [...this.#registrations.values()]; }
+  hasSameWorkerFixtures(other: FixturePool): boolean {
+    const same = (a: FixtureRegistration | undefined, b: FixtureRegistration | undefined): boolean => {
+      if (a === b) return true;
+      return !!a && !!b && a.name === b.name && Object.is(a.value, b.value) && a.scope === b.scope && a.auto === b.auto && a.option === b.option && same(a.previous, b.previous);
+    };
+    const workers = this.registrations().filter(r => r.scope === 'worker');
+    const incoming = other.registrations().filter(r => r.scope === 'worker');
+    return workers.length === incoming.length && workers.every(r => same(r, other.resolve(r.name)));
+  }
   required(fn: Function): readonly FixtureRegistration[] {
     this.validate();
     return fixtureDependencies(fn).map(name => {

@@ -1,7 +1,45 @@
 // Both engines execute these same declarations and callbacks.
-export function suiteScenarios(record) {
+export function suiteScenarios(record, currentInfo) {
   const scenario = (name, declare) => ({ name, declare: test => declare(test, event => record(name, event)) });
   return [
+    scenario('worker-tail-current-test', (base, emit) => {
+      const info = () => currentInfo ? currentInfo() : base.info();
+      const test = base.extend({ worker: [async ({}, use) => {
+        emit('setup:' + info().title); await use(1); emit('teardown:' + info().title);
+      }, { scope: 'worker', auto: true }] });
+      test.describe.parallel('parallel', () => {
+        test('first', () => emit('first'));
+        test('second', () => { emit('second'); throw new Error('later body sentinel'); });
+      });
+    }),
+    scenario('unexpected-pass-worker-cleanup', (base, emit) => {
+      const test = base.extend({ worker: [async ({}, use) => {
+        emit('setup'); await use(1); emit('teardown'); throw new Error('worker cleanup sentinel');
+      }, { scope: 'worker', auto: true }] });
+      test.fail('unexpected pass', () => emit('body'));
+    }),
+    scenario('parallel-group-reentry', (base, emit) => {
+      const test = base.extend({ worker: [async ({}, use) => { emit('worker-setup'); await use(1); emit('worker-teardown'); }, { scope: 'worker' }] });
+      test.beforeAll(({ worker }) => emit('beforeAll:' + worker));
+      test.afterAll(({ worker }) => emit('afterAll:' + worker));
+      test.describe.parallel('parallel', () => {
+        test('parallel-first', () => emit('parallel-first'));
+        test.describe('sequential', () => {
+          test.describe.configure({ mode: 'default' });
+          test('island-first', () => emit('island-first'));
+          test('island-last', () => emit('island-last'));
+        });
+        test.describe('inherited', () => test('parallel-last', () => emit('parallel-last')));
+      });
+      test('general', () => emit('general'));
+    }),
+    scenario('parallel-without-all-hooks', (test, emit) => {
+      test.describe.configure({ mode: 'parallel' });
+      test.beforeEach(() => emit('beforeEach'));
+      test('first', () => emit('first'));
+      test.describe('inherited', () => { test('second', () => emit('second')); test('third', () => emit('third')); });
+      test.afterEach(() => emit('afterEach'));
+    }),
     scenario('late-nested-declarations', (base, emit) => {
       const test = base.extend({
         option: ['default', { option: true }],
