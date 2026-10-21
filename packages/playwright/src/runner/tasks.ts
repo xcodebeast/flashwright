@@ -24,7 +24,7 @@ import { monotonicTime } from '@isomorphic/time';
 import { removeFolders } from '@utils/fileUtils';
 
 import { Dispatcher  } from './dispatcher';
-import { ensureStandbys, recordWorkerCount } from './workerStandby';
+import { ensureStandbys, ensureStandbysForConfig, recordWorkerCount } from './workerStandby';
 import { collectProjectsAndTestFiles, createRootSuite, loadFileSuites, loadGlobalHook, loadTestList } from './loadUtils';
 import { buildDependentProjects, buildTeardownToSetupsMap, filterProjects } from './projectUtils';
 import { applySuggestedRebaselines, clearSuggestedRebaselines } from './rebase';
@@ -163,6 +163,7 @@ export function createGlobalSetupTasks(config: FullConfigInternal) {
 }
 
 export function createRunTestsTasks(config: FullConfigInternal) {
+  ensureStandbysForConfig(config.config.workers);
   return [
     createPhasesTask(),
     createReportBeginTask(),
