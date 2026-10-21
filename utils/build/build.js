@@ -673,11 +673,20 @@ steps.push(new EsbuildStep({
 const playwrightCoreSrc = filePath('packages/playwright-core/src');
 const commonUtilsSrc = [filePath('packages/protocol/src'), filePath('packages/utils'), filePath('packages/isomorphic')];
 
+// Flashwright: coreBundle and utilsBundle define their exports as lazy getters, which Node cannot
+// see when an ES module imports them. Annotate the names the way esbuild does for CommonJS output
+// (`0 && (module.exports = { a, b })`), taken from the lazy('name', ...) declarations.
+function lazyExportsFooter(sourceFile) {
+  const names = [...fs.readFileSync(sourceFile, 'utf8').matchAll(/^lazy\('(\w+)'/gm)].map(match => match[1]);
+  return { js: `// Annotate the CommonJS export names for ESM import in node:\n0 && (module.exports = { ${names.join(', ')} });` };
+}
+
 // playwright-core/lib/utilsBundle.js — bundled npm utilities barrel.
 steps.push(new EsbuildStep({
   bundle: true,
   entryPoints: [filePath('packages/playwright-core/src/utilsBundle.ts')],
   outfile: filePath('packages/playwright-core/lib/utilsBundle.js'),
+  footer: lazyExportsFooter(filePath('packages/playwright-core/src/utilsBundle.ts')),
   external: ['express', '@anthropic-ai/sdk'],
   alias: {
     'raw-body': filePath('utils/build/raw-body.ts'),
@@ -690,6 +699,7 @@ steps.push(new EsbuildStep({
   // coreBundle.ts carries the types; coreBundleRuntime.ts exposes the same names lazily.
   entryPoints: [filePath('packages/playwright-core/src/coreBundleRuntime.ts')],
   outfile: filePath('packages/playwright-core/lib/coreBundle.js'),
+  footer: lazyExportsFooter(filePath('packages/playwright-core/src/coreBundleRuntime.ts')),
   external: [
     '../../api.json',
     './help.json',
