@@ -274,6 +274,10 @@ export async function requireOrImport(file: string) {
     // will need source maps. To make sure source maps have arrived, we insert a task
     // that will be processed after compilation cache and guarantee that
     // source maps are available, before `error.stack` is accessed.
+    // Flashwright: the synchronous loader has already populated the cache, so there is
+    // nothing to wait for.
+    if (!loaderChannel)
+      return await esmImport();
     return await esmImport().finally(nextTask);
   }
   const result = require(file);
