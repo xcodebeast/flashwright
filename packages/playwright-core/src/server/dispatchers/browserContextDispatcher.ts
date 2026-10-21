@@ -101,10 +101,8 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
     // Note: when launching persistent context, or connecting to an existing browser,
     // dispatcher is created very late, so we can already have pages, videos and everything else.
 
-    for (const page of context.pages()) {
-      if (!page.isHeldForRecycle())
-        this._dispatchEvent('page', { page: PageDispatcher.from(this, page) });
-    }
+    for (const page of context.announcedPages())
+      this._dispatchEvent('page', { page: PageDispatcher.from(this, page) });
     this.addObjectListener(BrowserContext.Events.Page, page => {
       this._dispatchEvent('page', { page: PageDispatcher.from(this, page) });
     });

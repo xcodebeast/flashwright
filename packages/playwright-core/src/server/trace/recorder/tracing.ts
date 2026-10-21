@@ -232,7 +232,7 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
         eventsHelper.addEventListener(this._context, BrowserContext.Events.PageError, this._onPageError.bind(this)),
     );
     if (this._context instanceof BrowserContext) {
-      for (const page of this._context.pages())
+      for (const page of this._context.announcedPages())
         this.onPageOpen(page);
     }
     if (this._state.options.screencast)
@@ -299,7 +299,7 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
   private _startScreencast() {
     if (!(this._context instanceof BrowserContext))
       return;
-    for (const page of this._context.pages())
+    for (const page of this._context.announcedPages())
       this._startScreencastInPage(page);
     this._screencastListeners.push(
         eventsHelper.addEventListener(this._context, BrowserContext.Events.Page, this._startScreencastInPage.bind(this)),

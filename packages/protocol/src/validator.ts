@@ -613,6 +613,89 @@ scheme.BrowserDisconnectFromReusedContextParams = tObject({
   reason: tString,
 });
 scheme.BrowserDisconnectFromReusedContextResult = tOptional(tObject({}));
+scheme.BrowserNewContextForRecycleParams = tObject({
+  noDefaultViewport: tOptional(tBoolean),
+  viewport: tOptional(tObject({
+    width: tInt,
+    height: tInt,
+  })),
+  screen: tOptional(tObject({
+    width: tInt,
+    height: tInt,
+  })),
+  ignoreHTTPSErrors: tOptional(tBoolean),
+  clientCertificates: tOptional(tArray(tObject({
+    origin: tString,
+    cert: tOptional(tBinary),
+    key: tOptional(tBinary),
+    passphrase: tOptional(tString),
+    pfx: tOptional(tBinary),
+  }))),
+  javaScriptEnabled: tOptional(tBoolean),
+  bypassCSP: tOptional(tBoolean),
+  userAgent: tOptional(tString),
+  locale: tOptional(tString),
+  timezoneId: tOptional(tString),
+  geolocation: tOptional(tObject({
+    longitude: tFloat,
+    latitude: tFloat,
+    accuracy: tOptional(tFloat),
+  })),
+  permissions: tOptional(tArray(tString)),
+  extraHTTPHeaders: tOptional(tArray(tType('NameValue'))),
+  offline: tOptional(tBoolean),
+  httpCredentials: tOptional(tArray(tType('HttpCredentials'))),
+  deviceScaleFactor: tOptional(tFloat),
+  isMobile: tOptional(tBoolean),
+  hasTouch: tOptional(tBoolean),
+  colorScheme: tOptional(tEnum(['dark', 'light', 'no-preference', 'no-override'])),
+  reducedMotion: tOptional(tEnum(['reduce', 'no-preference', 'no-override'])),
+  forcedColors: tOptional(tEnum(['active', 'none', 'no-override'])),
+  acceptDownloads: tOptional(tEnum(['accept', 'deny', 'internal-browser-default'])),
+  contrast: tOptional(tEnum(['no-preference', 'more', 'no-override'])),
+  baseURL: tOptional(tString),
+  recordVideo: tOptional(tObject({
+    dir: tOptional(tString),
+    size: tOptional(tObject({
+      width: tInt,
+      height: tInt,
+    })),
+    fps: tOptional(tInt),
+    showActions: tOptional(tObject({
+      duration: tOptional(tFloat),
+      position: tOptional(tEnum(['top-left', 'top', 'top-right', 'bottom-left', 'bottom', 'bottom-right'])),
+      fontSize: tOptional(tInt),
+      cursor: tOptional(tEnum(['none', 'pointer'])),
+      style: tOptional(tObject({
+        point: tOptional(tString),
+        highlight: tOptional(tString),
+        title: tOptional(tString),
+      })),
+    })),
+  })),
+  strictSelectors: tOptional(tBoolean),
+  serviceWorkers: tOptional(tEnum(['allow', 'block'])),
+  selectorEngines: tOptional(tArray(tType('SelectorEngine'))),
+  testIdAttributeName: tOptional(tString),
+  proxy: tOptional(tObject({
+    server: tString,
+    bypass: tOptional(tString),
+    username: tOptional(tString),
+    password: tOptional(tString),
+  })),
+  storageState: tOptional(tObject({
+    cookies: tOptional(tArray(tType('SetNetworkCookie'))),
+    origins: tOptional(tArray(tType('SetOriginStorage'))),
+    credentials: tOptional(tArray(tType('SetVirtualCredential'))),
+  })),
+});
+scheme.BrowserNewContextForRecycleResult = tObject({
+  context: tChannel(['BrowserContext']),
+});
+scheme.BrowserCloseRecycledContextParams = tObject({
+  reason: tString,
+});
+scheme.BrowserCloseRecycledContextResult = tOptional(tObject({}));
 scheme.BrowserNewBrowserCDPSessionParams = tOptional(tObject({}));
 scheme.BrowserNewBrowserCDPSessionResult = tObject({
   session: tChannel(['CDPSession']),
@@ -1008,6 +1091,7 @@ scheme.BrowserTypeLaunchParams = tObject({
   downloadsPath: tOptional(tString),
   tracesDir: tOptional(tString),
   artifactsDir: tOptional(tString),
+  recycleContexts: tOptional(tBoolean),
   chromiumSandbox: tOptional(tBoolean),
   firefoxUserPrefs: tOptional(tAny),
   cdpPort: tOptional(tInt),
@@ -1036,6 +1120,7 @@ scheme.BrowserTypeLaunchPersistentContextParams = tObject({
   downloadsPath: tOptional(tString),
   tracesDir: tOptional(tString),
   artifactsDir: tOptional(tString),
+  recycleContexts: tOptional(tBoolean),
   chromiumSandbox: tOptional(tBoolean),
   firefoxUserPrefs: tOptional(tAny),
   cdpPort: tOptional(tInt),

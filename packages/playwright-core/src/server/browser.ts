@@ -127,16 +127,19 @@ export abstract class Browser extends SdkObject {
     }
   }
 
-  async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams): Promise<BrowserContext> {
-    const hash = BrowserContext.reusableContextHash(params);
+  async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false): Promise<BrowserContext> {
+    // Flashwright: recycled contexts (see BrowserContext.setRecycleMode) never stand in for reused ones.
+    const hash = BrowserContext.reusableContextHash(params) + (recycle ? ':recycle' : '');
     if (this._contextForReuse && hash === this._contextForReuse.hash && this._contextForReuse.context.canResetForReuse()) {
       if (await this._contextForReuse.context.resetForReuse(progress, params))
         return this._contextForReuse.context;
     }
     if (this._contextForReuse)
       await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
-    this._contextForReuse = { context: await this.newContext(progress, params), hash };
-    return this._contextForReuse.context;
+    const context = await this.newContext(progress, params);
+    context.setRecycleMode(recycle);
+    this._contextForReuse = { context, hash };
+    return context;
   }
 
   contextForReuse() {

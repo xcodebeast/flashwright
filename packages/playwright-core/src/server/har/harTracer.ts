@@ -117,7 +117,7 @@ export class HarTracer {
           eventsHelper.addEventListener(this._context, BrowserContext.Events.RequestContinued, request => this._onRequestContinued(request)),
           eventsHelper.addEventListener(this._context, BrowserContext.Events.WebSocket, (webSocket: network.WebSocket, page: Page) => this._onWebSocket(page, webSocket)),
       );
-      for (const page of this._context.pages())
+      for (const page of this._context.announcedPages())
         this._createPageEntryIfNeeded(page);
     }
     if (this._context instanceof APIRequestContext) {

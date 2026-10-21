@@ -296,7 +296,7 @@ export class Page extends SdkObject<PageEventMap> {
   }
 
   emitOnContext<K extends keyof BrowserContextEventMap>(event: K, ...args: BrowserContextEventMap[K]) {
-    if (this.isStorageStatePage)
+    if (this.isStorageStatePage || this._heldForRecycle)
       return;
     this.browserContext.emit(event, ...args as any);
   }
@@ -333,9 +333,12 @@ export class Page extends SdkObject<PageEventMap> {
     this._lifecycle = 'closed';
     this._didDisconnect(new TargetClosedError(this.closeReason()));
     this.emit(Page.Events.Close);
-    this.browserContext.emit(BrowserContext.Events.PageClosed, this);
+    // Flashwright: a tab held for a recycled context's next test that closes before being handed
+    // out was never reported, so its closing is not reported either.
+    if (!this._heldForRecycle)
+      this.browserContext.emit(BrowserContext.Events.PageClosed, this);
     this.closedPromise.resolve();
-    if (!this.isStorageStatePage)
+    if (!this.isStorageStatePage && !this._heldForRecycle)
       this.instrumentation.onPageDidClose(this);
   }
 

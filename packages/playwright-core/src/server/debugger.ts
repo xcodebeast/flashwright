@@ -85,6 +85,8 @@ export class Debugger extends SdkObject<DebuggerEventMap> implements Instrumenta
   }
 
   requestPause(progress: Progress) {
+    // Flashwright: debugger state lives with the context; never hand it to another test.
+    this._context.preventRecycling();
     if (this.isPaused())
       throw new Error('Debugger is already paused');
     this.setPauseBeforeWaitingActions();
@@ -174,6 +176,7 @@ export class Debugger extends SdkObject<DebuggerEventMap> implements Instrumenta
   }
 
   enableApiCalls() {
+    this._context.preventRecycling();
     if (this._apiCallsEnabled)
       return;
     this._apiCallsEnabled = true;

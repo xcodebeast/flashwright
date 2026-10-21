@@ -125,6 +125,10 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _preparingRecycledPage = false;
   // The next test's tab, opened during recycling and handed out by the first newPage() call.
   private _heldPage: Page | undefined;
+  private _heldPageInitScripts: InitScript[] = [];
+  private _heldPageEmulation = '';
+  private _recycleMode = false;
+  private _pendingRecycle: Promise<boolean> | undefined;
 
   constructor(browser: Browser, options: types.BrowserContextOptions, browserContextId: string | undefined) {
     super(browser, 'browser-context');
@@ -213,12 +217,29 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   canResetForReuse(): boolean {
     if (this._closedStatus !== 'open')
       return false;
-    return !this._recyclingPrevented;
+    return !this._recycleMode || !this._recyclingPrevented;
   }
 
   // Called when a test leaves state that a recycle cannot reliably clear, e.g. file: origins.
   preventRecycling() {
     this._recyclingPrevented = true;
+  }
+
+  // Flashwright: recycled contexts (the test runner's) hand out a new tab per test; contexts
+  // reused through Playwright's own reuse API (VS Code, debug controller) keep their page.
+  setRecycleMode(recycle: boolean) {
+    this._recycleMode = recycle;
+  }
+
+  isRecycleMode(): boolean {
+    return this._recycleMode;
+  }
+
+  // Called when the test using a recycled context ends: its pages close and the context is reset
+  // right away, while the runner moves on to the next test, which then only waits for the rest.
+  startRecycle() {
+    this._pendingRecycle = this._recycle(nullProgress);
+    this._pendingRecycle.catch(() => {});
   }
 
   static reusableContextHash(params: channels.BrowserNewContextForReuseParams): string {
@@ -240,6 +261,13 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   // Returns false when the context could not be recycled and should be replaced by a new one.
   async resetForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams | null): Promise<boolean> {
+    // A recycle started when the previous test ended must finish before this test's options apply.
+    const recycling = this._recycleMode && this.supportsRecycling();
+    const pendingRecycle = recycling ? this._pendingRecycle : undefined;
+    this._pendingRecycle = undefined;
+    if (pendingRecycle && !await progress.race(pendingRecycle))
+      return false;
+
     await this.tracing.resetForReuse(progress);
     await this.fetchRequest.tracing().resetForReuse(progress);
 
@@ -250,8 +278,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
         this.selectors().setTestIdAttributeName(params.testIdAttributeName);
     }
 
-    if (this.supportsRecycling())
-      return await this._recycle(progress);
+    if (recycling)
+      return pendingRecycle ? true : await this._recycle(progress);
 
     // Close extra pages early.
     let page: Page | undefined = this.pages()[0];
@@ -288,7 +316,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // instead of waiting on it.
     const reset = this._resetForRecycle(progress);
     reset.catch(() => {});
-    if (!await progress.race(Promise.race([reset, new Promise<false>(f => setTimeout(() => f(false), kRecycleTimeout))])))
+    if (!await progress.race(raceWithTimeout(reset, kRecycleTimeout, false)))
       return false;
 
     const state = this._options.storageState;
@@ -314,12 +342,17 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     this._preparingRecycledPage = true;
     const newPage = this.newPage(progress);
     newPage.catch(() => {});
-    const page = await progress.race(Promise.race([newPage, new Promise<undefined>(f => setTimeout(f, kRecycledPageTimeout))])).finally(() => {
+    let page: Page | undefined;
+    try {
+      page = await progress.race(raceWithTimeout(newPage, kRecycledPageTimeout, undefined));
+    } finally {
       this._preparingRecycledPage = false;
-    });
+    }
     if (!page)
       return false;
     this._heldPage = page;
+    this._heldPageInitScripts = [...this.initScripts];
+    this._heldPageEmulation = this._pageEmulationKey();
     // Pages being closed can still run scripts for a moment and write storage after it was cleared;
     // stop them first. Writes they already sent reach storage before the clearing below.
     await progress.race(this.doFreezePages(previousPages));
@@ -376,6 +409,13 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   pages(): Page[] {
     return this.possiblyUninitializedPages().filter(page => page.initializedOrUndefined());
+  }
+
+  // Flashwright: pages the context has announced. The tab a recycled context prepares for the next
+  // test receives context state like any page, but observers that also listen for new pages only
+  // see it once that test asks for a page.
+  announcedPages(): Page[] {
+    return this.pages().filter(page => !page.isHeldForRecycle());
   }
 
   // BrowserContext methods.
@@ -679,13 +719,33 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   async newPage(progress: Progress, forStorageState?: boolean): Promise<Page> {
     // Pages created to restore storage state must leave the recycled page for the test.
     const heldPage = forStorageState ? undefined : this._heldPage;
+    let staleHeldPage: Page | undefined;
     if (heldPage) {
       this._heldPage = undefined;
-      if (!heldPage.isClosedOrClosingOrCrashed()) {
+      const sameInitScripts = this._heldPageInitScripts.length === this.initScripts.length && this._heldPageInitScripts.every((script, i) => script === this.initScripts[i]);
+      if (!heldPage.isClosedOrClosingOrCrashed() && sameInitScripts && this._heldPageEmulation === this._pageEmulationKey()) {
         heldPage.revealHeldPage();
         return heldPage;
       }
+      // Init scripts added since the page was prepared did not run in its first document, and
+      // options the next test may change (viewport, media, user agent) were applied as they were.
+      // Replace it, opening the new tab first to keep the renderer warm.
+      staleHeldPage = heldPage;
     }
+    try {
+      return await this._createNewPage(progress, forStorageState);
+    } finally {
+      if (staleHeldPage)
+        await staleHeldPage.close(progress, { reason: 'Replaced by a new page' }).catch(() => {});
+    }
+  }
+
+  private _pageEmulationKey(): string {
+    const { colorScheme, forcedColors, reducedMotion, contrast, screen, userAgent, viewport } = this._options;
+    return JSON.stringify([colorScheme, forcedColors, reducedMotion, contrast, screen, userAgent, viewport]);
+  }
+
+  private async _createNewPage(progress: Progress, forStorageState?: boolean): Promise<Page> {
     let page: Page | undefined;
     try {
       this._creatingStorageStatePage = !!forStorageState;
@@ -846,7 +906,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       return Promise.all(page.frames().map(installInFrame));
     };
     this.on(BrowserContext.Events.Page, installInPage);
-    return Promise.all(this.pages().map(installInPage));
+    return Promise.all(this.announcedPages().map(installInPage));
   }
 
   async safeNonStallingEvaluateInAllFrames(expression: string, world: types.World, options: { throwOnJSErrors?: boolean } = {}) {
@@ -949,6 +1009,14 @@ export function normalizeProxySettings(proxy: types.ProxySettings): types.ProxyS
 // tens of milliseconds.
 const kRecycledPageTimeout = 500;
 const kRecycleTimeout = 1500;
+
+// Resolves with `timeoutValue` if `promise` takes longer than `timeout`. The timer is cleared as
+// soon as the promise settles, so it does not keep the recycled context's old pages reachable.
+function raceWithTimeout<T, V>(promise: Promise<T>, timeout: number, timeoutValue: V): Promise<T | V> {
+  let timer: NodeJS.Timeout | undefined;
+  const timedOut = new Promise<V>(f => timer = setTimeout(() => f(timeoutValue), timeout));
+  return Promise.race([promise, timedOut]).finally(() => clearTimeout(timer));
+}
 
 const paramsThatAllowContextReuse: (keyof channels.BrowserNewContextForReuseParams)[] = [
   'colorScheme',
