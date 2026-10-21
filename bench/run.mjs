@@ -60,7 +60,7 @@ for (const engine of engines) {
   projects[engine] = { project, definition, variant };
 }
 
-async function runOnce(engine) {
+async function runOnce(engine, extraArgs = []) {
   const { project, definition, variant } = projects[engine];
   await rm(join(project, 'report.json'), { force: true });
   const env = { ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
@@ -68,7 +68,7 @@ async function runOnce(engine) {
   env.BENCH_T0 = String(Date.now());
   const started = performance.now();
   // BENCH_CPU=1 reports user+sys CPU of the whole process tree (bash `time` waits for all descendants).
-  const command = [node, definition.cli, 'test', '--config', join(project, 'runner.config.mjs')];
+  const command = [node, definition.cli, 'test', '--config', join(project, 'runner.config.mjs'), ...extraArgs];
   // BENCH_PROCCPU=1 prints CPU time by process kind (node main/worker, browser, renderer, ...).
   const child = process.env.BENCH_CPU
     ? spawn('bash', ['-c', `TIMEFORMAT='CPUTIME %U %S'; time ${command.map(a => `'${a}'`).join(' ')}`], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
@@ -82,7 +82,7 @@ async function runOnce(engine) {
   const elapsed = performance.now() - started;
   let stats = {};
   try { stats = JSON.parse(await readFile(join(project, 'report.json'), 'utf8')).stats ?? {}; } catch {}
-  if (code !== 0 && workload !== 'failure') console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
+  if (code !== 0 && workload !== 'failure' && workload !== 'broken') console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
   if (process.env.BENCH_PROCCPU) console.log(`[${engine}] CPU by process kind:\n${output}`);
   const cpu = /CPUTIME ([\d.]+) ([\d.]+)/.exec(output);
   return { elapsed, code, expected: stats.expected, unexpected: stats.unexpected, cpu: cpu ? (Number(cpu[1]) + Number(cpu[2])) * 1000 : undefined };
@@ -90,12 +90,21 @@ async function runOnce(engine) {
 
 const results = Object.fromEntries(engines.map(e => [e, []]));
 try {
+  // Visual baselines come from the first engine, untimed, and every engine compares against
+  // the same files, as a project switching engines would.
+  if (workload === 'screenshot') {
+    const first = projects[engines[0]].project;
+    await runOnce(engines[0], ['--update-snapshots']);
+    for (const engine of engines.slice(1))
+      await cp(join(first, 'tests', 'screenshot.spec.ts-snapshots'), join(projects[engine].project, 'tests', 'screenshot.spec.ts-snapshots'), { recursive: true });
+  }
   for (let i = 0; i < iterations; i++) {
     const order = i % 2 ? [...engines].reverse() : engines;
     for (const engine of order) {
       const r = await runOnce(engine);
       results[engine].push(r);
-      console.log(`${app} w${workers} #${i} ${engine.padEnd(28)} ${r.elapsed.toFixed(0).padStart(6)} ms  exit=${r.code} pass=${r.expected} fail=${r.unexpected}${r.cpu !== undefined ? `  cpu=${r.cpu.toFixed(0)}ms` : ''}`);
+      const busy = server.takeBusyTime?.();
+      console.log(`${app} w${workers} #${i} ${engine.padEnd(28)} ${r.elapsed.toFixed(0).padStart(6)} ms  exit=${r.code} pass=${r.expected} fail=${r.unexpected}${r.cpu !== undefined ? `  cpu=${r.cpu.toFixed(0)}ms` : ''}${busy !== undefined ? `  api-busy=${busy.toFixed(0)}ms` : ''}`);
     }
   }
 } finally { await server.close(); }

@@ -79,7 +79,7 @@ export interface PageDelegate {
   bringToFront(): Promise<void>;
 
   setBackgroundColor(color?: { r: number; g: number; b: number; a: number; }): Promise<void>;
-  takeScreenshot(progress: Progress, format: string, documentRect: types.Rect | undefined, viewportRect: types.Rect | undefined, quality: number | undefined, fitsViewport: boolean, scale: 'css' | 'device'): Promise<Buffer>;
+  takeScreenshot(progress: Progress, format: string, documentRect: types.Rect | undefined, viewportRect: types.Rect | undefined, quality: number | undefined, fitsViewport: boolean, scale: 'css' | 'device', optimizeForSpeed?: boolean): Promise<Buffer>;
 
   adoptElementHandle<T extends Node>(handle: dom.ElementHandle<T>, to: dom.FrameExecutionContext): Promise<dom.ElementHandle<T>>;
   getContentFrame(handle: dom.ElementHandle): Promise<frames.Frame | null>;  // Only called for frame owner elements.
@@ -738,12 +738,14 @@ export class Page extends SdkObject<PageEventMap> {
 
   async expectScreenshot(progress: Progress, options: ExpectScreenshotOptions): Promise<{ actual?: Buffer }> {
     const locator = options.locator;
-    const rafrafScreenshot = locator ? async (progress: Progress, timeout: number) => {
-      return await locator.frame.rafrafTimeoutScreenshotElementWithProgress(progress, locator.selector, timeout, options || {});
-    } : async (progress: Progress, timeout: number) => {
+    // Only the first capture checked against an existing baseline is encoded for speed; every
+    // capture that can be returned as the actual image keeps the default encoding.
+    const rafrafScreenshot = locator ? async (progress: Progress, timeout: number, defaultEncoding: boolean) => {
+      return await locator.frame.rafrafTimeoutScreenshotElementWithProgress(progress, locator.selector, timeout, { ...options, defaultEncoding });
+    } : async (progress: Progress, timeout: number, defaultEncoding: boolean) => {
       await this.performActionPreChecks(progress);
       await this.mainFrame().rafrafTimeout(progress, timeout);
-      return await this.screenshotter.screenshotPage(progress, options || {});
+      return await this.screenshotter.screenshotPage(progress, { ...options, defaultEncoding });
     };
 
     let intermediateResult: {
@@ -781,7 +783,7 @@ export class Page extends SdkObject<PageEventMap> {
         if (screenshotTimeout)
           progress.log(`waiting ${screenshotTimeout}ms before taking screenshot`);
         previous = actual;
-        actual = await rafrafScreenshot(progress, screenshotTimeout).catch(e => {
+        actual = await rafrafScreenshot(progress, screenshotTimeout, !(options.expected && isFirstIteration)).catch(e => {
           if (this.mainFrame().isNonRetriableError(e))
             throw e;
           progress.log(`failed to take screenshot - ` + e.message);

@@ -23,6 +23,7 @@ import { padImageToSize } from '@isomorphic/imageUtils';
 // @ts-ignore
 import pixelmatch from './third_party/pixelmatch';
 import { compare } from './image_tools/compare';
+import { decodeSimplePng } from './image_tools/png';
 import { decodeWebp } from './webp/webp';
 
 import type { ImageData } from '@isomorphic/imageUtils';
@@ -59,16 +60,23 @@ function compareImages(mimeType: string, actualBuffer: Buffer | string, expected
   if (!actualBuffer || !(actualBuffer instanceof Buffer))
     return { errorMessage: 'Actual result should be a Buffer.' };
   validateBuffer(expectedBuffer, mimeType);
+  // Identical encodings are identical images; the browser encodes the same pixels the same way,
+  // so a matching screenshot usually skips decoding and diffing entirely.
+  if (actualBuffer.equals(expectedBuffer))
+    return null;
 
   const decode = (buffer: Buffer): ImageData => {
     if (mimeType === 'image/png')
-      return PNG.sync.read(buffer);
+      return decodeSimplePng(buffer) ?? PNG.sync.read(buffer);
     if (mimeType === 'image/webp')
       return decodeWebp(buffer);
     return jpegjs.decode(buffer, { maxMemoryUsageInMB: JPEG_JS_MAX_BUFFER_SIZE_IN_MB });
   };
   let actual: ImageData = decode(actualBuffer);
   let expected: ImageData = decode(expectedBuffer);
+  // Same pixels in different encodings: nothing to diff.
+  if (actual.width === expected.width && actual.height === expected.height && !Buffer.compare(actual.data, expected.data))
+    return null;
   const size = { width: Math.max(expected.width, actual.width), height: Math.max(expected.height, actual.height) };
   let sizesMismatchError = '';
   if (expected.width !== actual.width || expected.height !== actual.height) {
