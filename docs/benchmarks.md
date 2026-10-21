@@ -762,3 +762,29 @@ Complete timing disables audit logs and runs the unchanged setup body 240 times 
 | 4 | 1 | 4722.0 | 4747.9 | -0.55% | 1.61% |
 
 The all-worker 10% advancement gate fails, so this standalone candidate is not adopted or expanded to applications. Keep the single-worker gain as evidence when designing a distinct combination with CPU-reducing changes; their benefits cannot be added or multiplied without measuring that combination. The [patch notes](../tools/chromium/early-retirement-recheck.md) preserve the implementation and remaining lifecycle gaps. Original source and the exact baseline browser are restored. No final confidence, resource, majority-scenario or release gate is closed.
+
+## Combined frame pacing and retirement recheck
+
+The [combined screen](../benchmarks/results/paced-retirement-combination-linux-2026-10-21.json) measures both retained changes together. It does not infer a combined result from their separate ratios. Both arms pass 28 worker/successor contexts and six motion, trusted-input and screenshot-pixel contexts. All 1,980 unchanged setup outcomes pass, including preflight.
+
+| Workers | Complete-time reduction, blocks 0 / 1 | Owner-interval CPU reduction, blocks 0 / 1 |
+| --- | ---: | ---: |
+| 1 | 15.99% / 17.23% | 27.23% / 28.37% |
+| 4 | 22.75% / 20.95% | 23.96% / 23.28% |
+
+This passes the prospective setup gate. A separately declared application screen then passes 180 preflight and 360 timed original TodoMVC/SVGOMG outcomes across stock Playwright and custom off/on arms. Complete elapsed includes service/runner/browser startup and natural observed shutdown. CPU is charged inside the owner interval; it excludes initial module imports and final report/watchdog drain. Original corpus bytes are separately validated against manifest hashes during preparation, serving and verification; the flat input list covers selected other inputs.
+
+Positive reductions mean less complete time than the custom baseline. Negative values remain included as regressions.
+
+| Application | Workers | Reduction, block 0 | Reduction, block 1 | Playwright / candidate, block 0 | Playwright / candidate, block 1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | -2.04% | 9.82% | 1.901× | 2.222× |
+| TodoMVC | 4 | 15.58% | 16.72% | 1.923× | 1.947× |
+| SVGOMG | 1 | -5.18% | 0.38% | 2.100× | 2.245× |
+| SVGOMG | 4 | -8.27% | 29.87% | 1.396× | 1.935× |
+
+The application gate required at least one application to improve 10% in both worker counts and both orders, with no elapsed or CPU regression above 5% anywhere. It fails. No application meets the improvement requirement, and two SVGOMG observations exceed the elapsed regression bound. Setup and four-worker TodoMVC gains are useful measured results, but do not establish general adoption or the 2× objective.
+
+Retained reports identify `reset settings` as SVGOMG's longest test. Its enabled four-worker duration changes from 1344.19 to 835.62 ms between blocks, accounting for much of the overall variation. Reports contain no step timings, so this does not prove a cause. The existing pointer retry schedule includes a 500 ms pause, but matching that magnitude is only an attribution lead; earlier negative readiness-hint screens remain relevant. Preserve fresh stability and original target ownership in any follow-up.
+
+The [composition notes](../tools/chromium/paced-retirement-combination.md) retain source identities and remaining native timer, worker-race and artifact coverage. Original sources and the exact rebuilt baseline browser are restored. No public default, final confidence/resource admission or release claim changes.
