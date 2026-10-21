@@ -25,10 +25,12 @@ import { program } from '../tools/cli-client/program';
 export function runCliClient() {
   process.argv.splice(process.argv.indexOf('cli'), 1);
   program().catch((e: Error) => {
+    /* eslint-disable no-console */
     if (process.env.PWDEBUGIMPL)
       console.error(e);
     else
       console.error(e.name + ': ' + e.message);
+    /* eslint-enable no-console */
     gracefullyProcessExitDoNotHang(1);
   });
 }
