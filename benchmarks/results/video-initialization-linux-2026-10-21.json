@@ -1,0 +1,4027 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "platform": "linux-x64",
+  "status": "engineering-screen-only-adoption-blocked",
+  "reference": "Playwright 1.60.0 / Chromium headless shell 148.0.7778.96",
+  "runtime": "Bun 1.4.2",
+  "candidate": "Independent process scheduler plus private renderer reuse, retirement collection and classic frame scheduling",
+  "profiles": {
+    "default": "Unmodified pinned headless launch policy, plus existing private native composition on candidate",
+    "disable-gpu": "Append --disable-gpu to each engine",
+    "software-video": "Append --disable-accelerated-video-decode to each engine; software video playback remains available"
+  },
+  "policy": {
+    "blocks": 2,
+    "order": "Default Playwright, default candidate, changed Playwright, changed candidate; reverse in block 1",
+    "workers": [
+      1,
+      4
+    ],
+    "cpuQuota": "400%",
+    "memoryMaxGiB": 8,
+    "swapMax": 0,
+    "retries": 0,
+    "trace": "off",
+    "videoRecording": "off",
+    "screenshots": "off",
+    "freshContextPerTest": true,
+    "originalTestsUnchanged": true,
+    "clock": "Complete original supervised owner command including HTTP service startup, execution, shutdown and observed natural process drain"
+  },
+  "negativeGraphicsScreen": {
+    "changedProfile": "disable-gpu",
+    "captures": 32,
+    "passingTests": 480,
+    "selectedInputsUnchanged": true,
+    "observations": [
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 3837.115321002784,
+            "disable-gpu": 3826.593381993007
+          },
+          "candidate": {
+            "default": 2156.863943004282,
+            "disable-gpu": 2160.3520040080184
+          }
+        },
+        "candidateReduction": -0.0016171910217377405,
+        "matchedPlaywrightRatio": 1.7712823534746536
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 4014.1291019972414,
+            "disable-gpu": 3849.7111100004986
+          },
+          "candidate": {
+            "default": 2081.677417998435,
+            "disable-gpu": 2094.001710996963
+          }
+        },
+        "candidateReduction": -0.00592036637952198,
+        "matchedPlaywrightRatio": 1.8384469744141876
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 2723.9004080038285,
+            "disable-gpu": 2685.8176620007725
+          },
+          "candidate": {
+            "default": 2300.5659129994456,
+            "disable-gpu": 2288.3902229950763
+          }
+        },
+        "candidateReduction": 0.005292476053639694,
+        "matchedPlaywrightRatio": 1.1736711837920448
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 2705.2246389939683,
+            "disable-gpu": 2676.8436769925756
+          },
+          "candidate": {
+            "default": 2312.8502440085867,
+            "disable-gpu": 2339.4760959927225
+          }
+        },
+        "candidateReduction": -0.011512138346661205,
+        "matchedPlaywrightRatio": 1.1442064663869524
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 1973.8117859960767,
+            "disable-gpu": 1614.960102000623
+          },
+          "candidate": {
+            "default": 1209.1502230032347,
+            "disable-gpu": 1209.7244409960695
+          }
+        },
+        "candidateReduction": -0.0004748938402447944,
+        "matchedPlaywrightRatio": 1.3349817919450222
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 1946.8517170025734,
+            "disable-gpu": 1952.3428039974533
+          },
+          "candidate": {
+            "default": 1216.8428389995825,
+            "disable-gpu": 1306.7427650094032
+          }
+        },
+        "candidateReduction": -0.07387965243213435,
+        "matchedPlaywrightRatio": 1.494052889578007
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 2336.67723700637,
+            "disable-gpu": 2195.1977889984846
+          },
+          "candidate": {
+            "default": 2057.141502999002,
+            "disable-gpu": 2027.2237199969823
+          }
+        },
+        "candidateReduction": 0.014543376310479528,
+        "matchedPlaywrightRatio": 1.0828591671183447
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 2107.0125159894815,
+            "disable-gpu": 2337.3368280008435
+          },
+          "candidate": {
+            "default": 2608.6089680029545,
+            "disable-gpu": 2558.8613459985936
+          }
+        },
+        "candidateReduction": 0.01907055546253289,
+        "matchedPlaywrightRatio": 0.9134284792944495
+      }
+    ],
+    "runs": [
+      {
+        "name": "b0-todomvc-w1-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 3837.115321002784,
+        "ownerBodyMilliseconds": 3681.1435699999997,
+        "wait4CpuSeconds": 2.222367,
+        "sampledPeakRssBytes": 889683968,
+        "files": {
+          "prepared.json": "dbe88c65c6a78e5c2d1ca577cffc92531f2842aaad7895480d874df34f810923",
+          "owner-report.json": "cfdeb3f7f93bd1aa68ec2469f4aff8c767a348848b04fb504fd877672092349e",
+          "resources.json": "136ef4b20b4b21e978bcf42b390215054e23b81e771e83da2b74a9eb5645f3b6",
+          "upstream-report.json": "fa3a7c13f5c7d8ee5ca44e906c385d47472c47f6f4070ae318dc4a125003d48f"
+        }
+      },
+      {
+        "name": "b0-todomvc-w1-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2156.863943004282,
+        "ownerBodyMilliseconds": 1999.8775469999998,
+        "wait4CpuSeconds": 1.690508,
+        "sampledPeakRssBytes": 816844800,
+        "files": {
+          "prepared.json": "6bf2b6d6d78eacc0e564318afde42226a509f86c5a552cbe3211459af66e5163",
+          "owner-report.json": "3e60dfbf3367cad334f50c178bad311c9d7029297204c8ceea32ee8e3dab6e5c",
+          "resources.json": "c02c88912641e322be0dc0b9addd0ed3f9d143cc5cd227888c7326e569e6eb1b",
+          "candidate-report.json": "99fbc1ab7a15533a91113cad3387932e6183c27919da372e37ed09b69992e663"
+        }
+      },
+      {
+        "name": "b0-todomvc-w1-playwright-disable-gpu",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 3826.593381993007,
+        "ownerBodyMilliseconds": 3726.2954609999997,
+        "wait4CpuSeconds": 2.26437,
+        "sampledPeakRssBytes": 908021760,
+        "files": {
+          "prepared.json": "4133f2a4e4c14fa65d781ef772db4213b1ab93f5be844b8c72de9991f21d7541",
+          "owner-report.json": "52c8040f3c3dfc17834f4ecd75148a3595e9b55b4dfa244e33bbfcd21dac28d6",
+          "resources.json": "56ab7079c9d7208d7f1c550270b438f72d9ba88e6eb41f5bd7f65d2a3bfa673c",
+          "upstream-report.json": "954513b9d8de8eaa4a52aa1c5cdb3b0dd40f28375f0a7a16c6caac2b65981e47"
+        }
+      },
+      {
+        "name": "b0-todomvc-w1-candidate-disable-gpu",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2160.3520040080184,
+        "ownerBodyMilliseconds": 2006.098914,
+        "wait4CpuSeconds": 1.728054,
+        "sampledPeakRssBytes": 815841280,
+        "files": {
+          "prepared.json": "18e5f1de0e33580b646d69d39527006aef6ed31ac388ea308e1bdf6726d3033e",
+          "owner-report.json": "ecb9e21c9e42611ca334822f49f5257a4076f9c4dea0fe239f21a96b06185c56",
+          "resources.json": "2f61366ff89f2be209b7c519515baae170b4ba50be2a810720c29e42103441f8",
+          "candidate-report.json": "af3ccc8aa1f5dd795d0de53b23037adbfeef7db4f1098b8a058e738224843ceb"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1973.8117859960767,
+        "ownerBodyMilliseconds": 1816.182462,
+        "wait4CpuSeconds": 1.186512,
+        "sampledPeakRssBytes": 937054208,
+        "files": {
+          "prepared.json": "3e51e6854210c19cab846d23b577310055c84c27ea0ed692add20bc5579d50c0",
+          "owner-report.json": "92d0b567228d88e56595e0a48851656bd89cc15e1cb113247a91890a8e9b62f7",
+          "resources.json": "2f47db5b62ad0b8336394bde2aab193470399c60bd8b149a5c4ede9debb8eb3d",
+          "upstream-report.json": "666bd68386d3f2c7d8ddde42fd4f5da96e09dc11a1945326caa6a3349b3cf1a6"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1209.1502230032347,
+        "ownerBodyMilliseconds": 1105.5799459999998,
+        "wait4CpuSeconds": 0.7892139999999999,
+        "sampledPeakRssBytes": 818601984,
+        "files": {
+          "prepared.json": "292a048f8ed7db81b58d1765d4dd6f753d6dc249ad17dce9ec9d1e8d89747bad",
+          "owner-report.json": "1004d64ca2873e71fab7497f5d2d7b9767a2fdfcc69de21580f8172fe7f53f0e",
+          "resources.json": "af316250efd9462caefae8da7e249a6490f6fd6d006d3a369f7d0f18c628cbb2",
+          "candidate-report.json": "54d9d92c264f6115367641fa31c05cf6e1f8e99099c1544a36ebe1f42f2d4373"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-playwright-disable-gpu",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1614.960102000623,
+        "ownerBodyMilliseconds": 1458.221527,
+        "wait4CpuSeconds": 1.1801629999999999,
+        "sampledPeakRssBytes": 919252992,
+        "files": {
+          "prepared.json": "e09f105ab642da23e81f88bb48127fa5c6490eed56c93fc0849aa610dd3f885f",
+          "owner-report.json": "ac99791a4c5baa35042e761182228cc440e4d5167ba1157956e635d3a6eea8e4",
+          "resources.json": "64cae4d442610985e8395c086f7bef4ad858e2ef3df02b189c5a5f7e813153c8",
+          "upstream-report.json": "ee829573ac6d3b3256201afab492b9c5b78c2a4f761be48715f77703daa5accc"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-candidate-disable-gpu",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1209.7244409960695,
+        "ownerBodyMilliseconds": 1103.6088359999999,
+        "wait4CpuSeconds": 0.794665,
+        "sampledPeakRssBytes": 828956672,
+        "files": {
+          "prepared.json": "1dcdd0ff6da988860fa58541847640bb7228c25be5e060775b663fce2087707e",
+          "owner-report.json": "411d53ae0770eb01b216981c4afb62ef0da6ff6867cbfccd12f2bb85403a99e2",
+          "resources.json": "4e76e1ff9d13e0e3069de03791ee6bca10857406908799ff13d7d60554a867da",
+          "candidate-report.json": "4f5ae46f0afbd39264100ecffa821cf8ae207607bc0a686505e47a80396c3703"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2723.9004080038285,
+        "ownerBodyMilliseconds": 2566.3969319999997,
+        "wait4CpuSeconds": 3.496137,
+        "sampledPeakRssBytes": 3030065152,
+        "files": {
+          "prepared.json": "9cd636c1325896d40bc219405b193e5f2f0d8cda3c7e695e49947659228bb79b",
+          "owner-report.json": "e2438e00d4620ad97039a0df5f56158e1b9b2186b3aa189419cd591e08d58913",
+          "resources.json": "3bee8c2052f985e7be247cb9bbff45811e4aefd8819d3ed06d2f3a0b4eedb13f",
+          "upstream-report.json": "8290341b8962c081481d9edc23a82870b64bb4824217ff5204577acef144ab29"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2300.5659129994456,
+        "ownerBodyMilliseconds": 2145.989631,
+        "wait4CpuSeconds": 2.406938,
+        "sampledPeakRssBytes": 2863841280,
+        "files": {
+          "prepared.json": "320acba4cd0d1cb4f14022f5af5ded182b46e8a14771deac0c3219283e739264",
+          "owner-report.json": "b0fbbf2be68de7644f26832af24140519524aac0cbe2cb756dba4fa893f9fcf0",
+          "resources.json": "06efefc9a3979b756fb2b7f35f84d6edc76382e0b460d3bbc4249252e1b37020",
+          "candidate-report.json": "b9990aa9b5b8a09895be8a929229cff19726a6d6db3b76d1e7879a861ffd246f"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-playwright-disable-gpu",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2685.8176620007725,
+        "ownerBodyMilliseconds": 2583.5001119999997,
+        "wait4CpuSeconds": 3.5052299999999996,
+        "sampledPeakRssBytes": 3023949824,
+        "files": {
+          "prepared.json": "f46d21cc6bb1db6e320cb8fc2ce63920ab1ac13ddd8b51424d517fb0d97a6423",
+          "owner-report.json": "75d739124e95daf41095b03fc5b582f3a4103f20cf82e41dda4b0926f01da3ab",
+          "resources.json": "1c5479c4fad948f9c538836cd69dd85b8266f28b41ac1ef8fd43914d45690816",
+          "upstream-report.json": "3e93873e8a861d2b3ca47ae1ccf2b2a796e4484b8152fd44c9a3babbe6ddb74c"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-candidate-disable-gpu",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2288.3902229950763,
+        "ownerBodyMilliseconds": 2133.252375,
+        "wait4CpuSeconds": 2.385534,
+        "sampledPeakRssBytes": 2868199424,
+        "files": {
+          "prepared.json": "420b99b530aa6259f3db28996445282e27212fbc0b7d72f82ff5bac039f8173e",
+          "owner-report.json": "aedbe8d076601d9156d1a49ea216e41064d650c3e0226ad26a291967b2444309",
+          "resources.json": "9387fcc6ceba80aa1132e41cb3d940ff440b16617b7dab912f3ea2a8c551b9a3",
+          "candidate-report.json": "272e5c3a872de70f2567c0f2de86dff86daf61f1f2eb7395e53480f003202a12"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 2336.67723700637,
+        "ownerBodyMilliseconds": 2179.908477,
+        "wait4CpuSeconds": 2.1981070000000003,
+        "sampledPeakRssBytes": 2984312832,
+        "files": {
+          "prepared.json": "73bf85054be63b54294d2d213a6bef3532a3a00e9ceb03b8ebbea6e1199ac38d",
+          "owner-report.json": "20b3901f6f18c3bf21c6a1620a3142bf5e0d054eee00719a8b4d9a8f666284da",
+          "resources.json": "227f488ccc7692466114b79eb124baf8b4c6cc29ca4fcb9ae58c765f1ce8dda0",
+          "upstream-report.json": "9f5e529b601c27c2fa512ef042b20219dd98ecd2a45ee437e983594147cc3a43"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 2057.141502999002,
+        "ownerBodyMilliseconds": 1899.763117,
+        "wait4CpuSeconds": 1.4769990000000002,
+        "sampledPeakRssBytes": 2836033536,
+        "files": {
+          "prepared.json": "820ebf28e58210e75177583e7619dcec7b83cf3e5ef423b3dc8ec3d41b6fa146",
+          "owner-report.json": "0ebe73a021ec191749a58f1d4741ebb0540e42a1eb8c9df06a771b5c19173eb4",
+          "resources.json": "03c2e167d380f2f3e69a5410b435544671eb0bf7223a0c9a5184b68093bb4b5c",
+          "candidate-report.json": "70fd8d1f563e0aa9483a5811cf774f8031013a3801a994ac8a159b3d5835a706"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-playwright-disable-gpu",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 2195.1977889984846,
+        "ownerBodyMilliseconds": 2038.1428450000003,
+        "wait4CpuSeconds": 2.2288059999999996,
+        "sampledPeakRssBytes": 2983690240,
+        "files": {
+          "prepared.json": "3b779095c42792a77c6bbbfbe035c0f467df1b99756cf45991775008f2fc7def",
+          "owner-report.json": "96884e46b86f0a694d78856098a667dba34df85233ab7db0b3bfe04bd835afaa",
+          "resources.json": "91d9ebc00f8b12da5e4ec8e1241dfb2bf66b450b1de79523f63ca50318e00304",
+          "upstream-report.json": "444083041aaf3e4aed5b8c383452a2ebb0978f4fa3233f8058fadb1181f5e0d1"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-candidate-disable-gpu",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 2027.2237199969823,
+        "ownerBodyMilliseconds": 1928.498184,
+        "wait4CpuSeconds": 1.4856019999999999,
+        "sampledPeakRssBytes": 2832838656,
+        "files": {
+          "prepared.json": "d6a759986e0f1810c4d8b90692a427d67845aecfd2b27d17eaecf7cf32d51ae2",
+          "owner-report.json": "b444593a96f09305f933452b3bda4af0e88e16cd8d0c733f7c44a41ca45021d7",
+          "resources.json": "3d38e59dd23bf4be3db96b1d5d1c7eb6d8f810891b5fb604bb0d0b60cfab12bd",
+          "candidate-report.json": "642d7da2e64f8d2598d0e9ef0a06c172f79b031dc80408c72a7e14edf319e504"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-candidate-disable-gpu",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2094.001710996963,
+        "ownerBodyMilliseconds": 1937.830524,
+        "wait4CpuSeconds": 1.7003650000000001,
+        "sampledPeakRssBytes": 817840128,
+        "files": {
+          "prepared.json": "255e71feb4cfde7e4dee197dc705bb37f66facc616cb6a5770f3f45ecbd3fa3b",
+          "owner-report.json": "b710762cadb38bf27057c048f4228646f22850159d62b7f917569096e185df47",
+          "resources.json": "17366b0b18d346c27d67098ed132e12afdf216430b7854f987e8ef0a06fd52cf",
+          "candidate-report.json": "23ed67be84e289b8a77bb417d1b163f39b82cea9568df0fa3de4c4162d696cc5"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-playwright-disable-gpu",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 3849.7111100004986,
+        "ownerBodyMilliseconds": 3693.456034,
+        "wait4CpuSeconds": 2.241556,
+        "sampledPeakRssBytes": 899801088,
+        "files": {
+          "prepared.json": "9fcb5352fc7893c19db39db5826a178100a57aec278f989a1ce84bf01a9304f8",
+          "owner-report.json": "a5a0670ea593dbb36ba55b253b3918b9fe73df511650e5ade2dabd9b4c98f999",
+          "resources.json": "1b27c8c1a2e7038bd0661470452426cf307a93cc9073e58185d67bbd8d5a4f24",
+          "upstream-report.json": "12b4bedd6a653a7bac156266a4a30e0e5dc716893e50428170f1d838843a1822"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2081.677417998435,
+        "ownerBodyMilliseconds": 1982.664107,
+        "wait4CpuSeconds": 1.693122,
+        "sampledPeakRssBytes": 816832512,
+        "files": {
+          "prepared.json": "ab4a6ee794154b90aa52af5039258f47d181071741f3094e2b407c51eb4a424c",
+          "owner-report.json": "26da6a1c1f6ad75e1b6c0355d1992b1b62ee9942947c9ca91597486fe9543b29",
+          "resources.json": "aa91102786c5f96dec2840b1f6f4d70d07c8fe8d1dfc5d6ce2398b28acbc742c",
+          "candidate-report.json": "65c138c600a4fba38dc7b31c75ab88a2a8ae2d80566081d8f62ee0e84e56b34a"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 4014.1291019972414,
+        "ownerBodyMilliseconds": 3857.364429,
+        "wait4CpuSeconds": 2.270581,
+        "sampledPeakRssBytes": 900128768,
+        "files": {
+          "prepared.json": "856840f348453f331341379f21a86e3c1872a6f2c46a2d8ffbb59f2920dec833",
+          "owner-report.json": "d5bf685c8f35839371c5896187b7f23113db208677309fdc93afffdb7e26b79b",
+          "resources.json": "55f049b9580e98804233bc4d037674e0d34c9dd1a97a8e72fb90b6f0b43a511d",
+          "upstream-report.json": "34bb7fa66a9b81ef8b4385c2f66038a9498dd9be7800e310e195fcd6d65db3f0"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-candidate-disable-gpu",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1306.7427650094032,
+        "ownerBodyMilliseconds": 1150.41472,
+        "wait4CpuSeconds": 0.782195,
+        "sampledPeakRssBytes": 824872960,
+        "files": {
+          "prepared.json": "25862c0f60a9596837aabd540812190597db928b1449f0760da5a6784e6362e4",
+          "owner-report.json": "ffdc27accbabeb792ead04f393d8bf1b439b63436abc9c18b61864d6027b2327",
+          "resources.json": "fc9b7ef7e608a63a096e5773e74f82c5bf60f27930b15373c4b82af2394c9508",
+          "candidate-report.json": "90a198315f63ca5a8cd875d461ac1ce57cbc818d60e5f0db3b712da08346a968"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-playwright-disable-gpu",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1952.3428039974533,
+        "ownerBodyMilliseconds": 1796.291465,
+        "wait4CpuSeconds": 1.190923,
+        "sampledPeakRssBytes": 939786240,
+        "files": {
+          "prepared.json": "2b670856d13df4138eab31cdee2423b4ba995c6a23dc7fc9b703116bfb1de1d0",
+          "owner-report.json": "19c80fabdba93b145a25077f8d7115be19594a2df9c60c790215bef754a72587",
+          "resources.json": "f482da74d8fe969b3224a5135319beebaf6e1d8f896959e4c473bb39e22170c5",
+          "upstream-report.json": "7045590bc948f754fdd452d4f87f099fd7dba5a7bcb39889a6720d2e1d1373bf"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1216.8428389995825,
+        "ownerBodyMilliseconds": 1060.720215,
+        "wait4CpuSeconds": 0.776921,
+        "sampledPeakRssBytes": 830111744,
+        "files": {
+          "prepared.json": "f22f3cdbe3b1da28d8dcef7a614d197a83578771fb74886140a8d3b4df4683c7",
+          "owner-report.json": "47292a438ed27a614eac1e50829a13aa7903867897d2356186237922b8c374a1",
+          "resources.json": "08ce154ad6e69f0ca7f4e3e42cdada8e942b125114cae4b896916cdf3e2bbb2c",
+          "candidate-report.json": "32eb549f433a0d83334e364fa179d79b3af2dd32a1bda4b02937a22d399209f2"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1946.8517170025734,
+        "ownerBodyMilliseconds": 1788.929799,
+        "wait4CpuSeconds": 1.193795,
+        "sampledPeakRssBytes": 942587904,
+        "files": {
+          "prepared.json": "919b57ba20bc55162bec01d739fdd4f46642c6e0c125bdfa77083e32a2d7ecf2",
+          "owner-report.json": "453907a9ff4e2c8819a472cc7536a80b70c2c88989d8b11989781987026e9176",
+          "resources.json": "5df1136d7f44b46fd81bf843978a9ca8aaa14d5f7cc8e6ba82bd45d74e3c45ed",
+          "upstream-report.json": "59d96de9e59eb44f3c93ada0bff49bea8e521f6150d08243522eacd2159a7d74"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-candidate-disable-gpu",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2339.4760959927225,
+        "ownerBodyMilliseconds": 2172.0877809999997,
+        "wait4CpuSeconds": 2.3853809999999998,
+        "sampledPeakRssBytes": 2868826112,
+        "files": {
+          "prepared.json": "42a1bf73fbad6b30e8b3737aae08373893851c9a1398201d6855b9b8ce68b606",
+          "owner-report.json": "5cfde2d110a646d8256372886b738ade5abd0d26982213645bb24ec2eec1d3be",
+          "resources.json": "253be5d74c6515ccae797700438f467c16035a93c5d49d307d13a28dd7e16d04",
+          "candidate-report.json": "524aed0d9f69a66b3182ad86a8a0315598468386af722c42ceb1eb71635daa60"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-playwright-disable-gpu",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2676.8436769925756,
+        "ownerBodyMilliseconds": 2576.9709949999997,
+        "wait4CpuSeconds": 3.472504,
+        "sampledPeakRssBytes": 3021885440,
+        "files": {
+          "prepared.json": "4271a74172c03174d483ac3c99a41081c609b2a49994aacc2650260dc0618f47",
+          "owner-report.json": "ca9cf0c7d76e1b60737e654eaebba28ed1c50b32660b8eb3e4f89880951cf141",
+          "resources.json": "e716b24e1568cfc3542a38bf98d61f979385886964dd51a17f29397be58de3a4",
+          "upstream-report.json": "1a94359166a8bf9a6283761dfc346dbfdc2a66d75ba5cf2bee8f3cc651fc292f"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2312.8502440085867,
+        "ownerBodyMilliseconds": 2157.343328,
+        "wait4CpuSeconds": 2.3709749999999996,
+        "sampledPeakRssBytes": 2875924480,
+        "files": {
+          "prepared.json": "19259738c293d8fbf20492b2dd030a2482a41a9056a44c048d2f71e3b01c7d7b",
+          "owner-report.json": "4c9dc1f79f62a09279aab18dbb3e313c14e4c6702c7384dd7a3a057b0187e57f",
+          "resources.json": "abc9e7232b6a4ade2c62fca8047b2fce2e3f08708157492b19b3bcb8f1d266d9",
+          "candidate-report.json": "424ea7585379060d6251ea5c1081889756a805aa87f1e290b769c768832fc1ce"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2705.2246389939683,
+        "ownerBodyMilliseconds": 2605.928281,
+        "wait4CpuSeconds": 3.530086,
+        "sampledPeakRssBytes": 3017777152,
+        "files": {
+          "prepared.json": "4e7088f0643a7218cfc2dd4ddcfb3117ee1ae45bb7f533bcb1a126c493648a35",
+          "owner-report.json": "fe40910db1acb222f96efb6de102b4ba0a98f495f99ad4b4adf52f02ed97616f",
+          "resources.json": "a4922d535d371e03e206bc6f00618390acaf8ed65afdf406f5858879957efec7",
+          "upstream-report.json": "e009e79b3f08c05b9fc2974ef54bf3c527afbfaeba2079d627b2df67abfcc390"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-candidate-disable-gpu",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 2558.8613459985936,
+        "ownerBodyMilliseconds": 2403.294838,
+        "wait4CpuSeconds": 1.498102,
+        "sampledPeakRssBytes": 2833915904,
+        "files": {
+          "prepared.json": "6cfcd680fc99b227da4e024ca00e18bc553285c53c63b83124bebc0c19aa53d4",
+          "owner-report.json": "8cf975b8d93dc5448c408153c6976124602147ae11210f9716eaff290af9cc56",
+          "resources.json": "8c3c4f3158fee577d15599dae85d00bdca4d636279d803f2478e1c087aec5332",
+          "candidate-report.json": "31439c0e1590f38c53769f1f6439adf1bb61470c8a26676d89a7974bb54e74ae"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-playwright-disable-gpu",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "disable-gpu",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 2337.3368280008435,
+        "ownerBodyMilliseconds": 2181.1576880000002,
+        "wait4CpuSeconds": 2.2410039999999998,
+        "sampledPeakRssBytes": 2987536384,
+        "files": {
+          "prepared.json": "9ded392bb4a628532d83df44ade6bc59acec845e22c547b8ba1af5a6dc348c0e",
+          "owner-report.json": "3deefad24802779b2bec43b86c1cb0b5038acd90a34af84304649d6dce965c56",
+          "resources.json": "f4035f0d6e77393c0ad4db0bf8959f66759ed82bc9292c3b6794b83c27988177",
+          "upstream-report.json": "22c42bd9b6ac4e2ad3ec7ebec48c045bd4e104d4eda4cd535aa8f0a5b04372b1"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 2608.6089680029545,
+        "ownerBodyMilliseconds": 2450.7461040000003,
+        "wait4CpuSeconds": 1.496674,
+        "sampledPeakRssBytes": 2837524480,
+        "files": {
+          "prepared.json": "e2381ff25ba0967731e5775b8bd142c2fab3a70ce483c2aac9115db53da1cf22",
+          "owner-report.json": "a8c18e5ea2b246fc6074ee91c02a5394e48706e620f1d4ea6eb1649a80897602",
+          "resources.json": "62397f1408b57152e70d96aee7d3637dcc0b43a446e3de6768f1f17639086c85",
+          "candidate-report.json": "9ae0e2664787cc5e2aea75053f8fbf4cd5e4becc9b96750412bf3587b5cf6ba6"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 2107.0125159894815,
+        "ownerBodyMilliseconds": 1948.496263,
+        "wait4CpuSeconds": 2.215331,
+        "sampledPeakRssBytes": 3000553472,
+        "files": {
+          "prepared.json": "aaca007c64f3b0df6a83c50448f663e94aa77b038fa34491476d037ddffa3c32",
+          "owner-report.json": "bebce2b39b7ce1085ba57f5badab41eab15b372d5394cc55564cd95afa4f3566",
+          "resources.json": "7004713c46c4a2c6630081f0ec8273cfe14ba4e43a9d8dde0f572f92bd2631be",
+          "upstream-report.json": "8bf54fbd01b47e2f9b4b4cddcd4834edd726927bffc89a50751e6633e7932380"
+        }
+      }
+    ],
+    "planSha256": "5ed036ac1d50e129b0334c4f27ced04bfe958ac8ec77ba9d4d708091ef1159ee"
+  },
+  "softwareVideoScreen": {
+    "changedProfile": "software-video",
+    "captures": 32,
+    "passingTests": 480,
+    "selectedInputsUnchanged": true,
+    "observations": [
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 3801.404215002549,
+            "software-video": 3808.8440829887986
+          },
+          "candidate": {
+            "default": 2088.3480659977067,
+            "software-video": 1962.8838350035949
+          }
+        },
+        "candidateReduction": 0.06007821829938653,
+        "matchedPlaywrightRatio": 1.9404327525993523
+      },
+      {
+        "application": "todomvc",
+        "workers": 1,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 3854.313017000095,
+            "software-video": 3787.415556013002
+          },
+          "candidate": {
+            "default": 2162.5760909955716,
+            "software-video": 1990.9638000099221
+          }
+        },
+        "candidateReduction": 0.07935549259986752,
+        "matchedPlaywrightRatio": 1.902302571244202
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 2879.041963999043,
+            "software-video": 2048.54211199563
+          },
+          "candidate": {
+            "default": 2298.176402997342,
+            "software-video": 1765.7888780086068
+          }
+        },
+        "candidateReduction": 0.23165651004613108,
+        "matchedPlaywrightRatio": 1.1601285620882957
+      },
+      {
+        "application": "todomvc",
+        "workers": 4,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 2693.6709720030194,
+            "software-video": 2057.0377870026277
+          },
+          "candidate": {
+            "default": 2338.620524998987,
+            "software-video": 1732.824200997129
+          }
+        },
+        "candidateReduction": 0.2590400270270956,
+        "matchedPlaywrightRatio": 1.1871012569070392
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 1635.0636249990202,
+            "software-video": 1735.8771540020825
+          },
+          "candidate": {
+            "default": 1250.5829190049553,
+            "software-video": 974.4433509913506
+          }
+        },
+        "candidateReduction": 0.2208086835484041,
+        "matchedPlaywrightRatio": 1.781403867383452
+      },
+      {
+        "application": "svgomg",
+        "workers": 1,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 1976.4384720037924,
+            "software-video": 1730.9455789945787
+          },
+          "candidate": {
+            "default": 1207.5802010076586,
+            "software-video": 1015.5947940074839
+          }
+        },
+        "candidateReduction": 0.15898356634199007,
+        "matchedPlaywrightRatio": 1.7043663370549174
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "block": 0,
+        "milliseconds": {
+          "playwright": {
+            "default": 2308.3707180048805,
+            "software-video": 1371.3392530044075
+          },
+          "candidate": {
+            "default": 1794.4803110003704,
+            "software-video": 1347.808107995661
+          }
+        },
+        "candidateReduction": 0.2489145187420322,
+        "matchedPlaywrightRatio": 1.0174588243453588
+      },
+      {
+        "application": "svgomg",
+        "workers": 4,
+        "block": 1,
+        "milliseconds": {
+          "playwright": {
+            "default": 2332.1309429884423,
+            "software-video": 1493.9939830073854
+          },
+          "candidate": {
+            "default": 2057.72411498765,
+            "software-video": 1326.6494760027854
+          }
+        },
+        "candidateReduction": 0.35528311772215015,
+        "matchedPlaywrightRatio": 1.1261407101360426
+      }
+    ],
+    "runs": [
+      {
+        "name": "b0-todomvc-w1-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 3801.404215002549,
+        "ownerBodyMilliseconds": 3644.73726,
+        "wait4CpuSeconds": 2.2226179999999998,
+        "sampledPeakRssBytes": 906424320,
+        "files": {
+          "prepared.json": "33e544550cbc995b0eeba20ddb206e6d00e21d8ceb5806164a204e57b214e33a",
+          "owner-report.json": "1b33e4b2d204c94f1d1c4bfffad88aa2cc3933d8c2dea34e72d646c3c14b4919",
+          "resources.json": "0a043deb6f4a4f201c915677802dd8b7937aad0053f08b8f4d0058ef7b8b2644",
+          "upstream-report.json": "494b4858f52855eae82391dc3d79aa54c5613278a4c181f10ff3a9309db8aa59"
+        }
+      },
+      {
+        "name": "b0-todomvc-w1-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2088.3480659977067,
+        "ownerBodyMilliseconds": 1988.928389,
+        "wait4CpuSeconds": 1.69614,
+        "sampledPeakRssBytes": 817569792,
+        "files": {
+          "prepared.json": "af610b1de6ab0b9a636b99353e15dcc52477ef675de4824d04f6a724eb0785d7",
+          "owner-report.json": "98f81929f63dbefce83f7e59d8a403d22be3eda9012fe9d36d27e9d16a528e38",
+          "resources.json": "341b5beea9c8c467562b1a40ba5f59ef26c14487f425a093c1f19356cedbe0cf",
+          "candidate-report.json": "63aad8ea37ee04597e54cea4a6515b82135c2477a9f9337f2eb73555a11205a7"
+        }
+      },
+      {
+        "name": "b0-todomvc-w1-playwright-software-video",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 3808.8440829887986,
+        "ownerBodyMilliseconds": 3651.862282,
+        "wait4CpuSeconds": 2.244828,
+        "sampledPeakRssBytes": 853852160,
+        "files": {
+          "prepared.json": "c249fba712e29982d9910287fdc5b6556fed6f3fe5f2fc22b4a06dd362c198be",
+          "owner-report.json": "1b54405efbdf9c05afeb709c43619f9a54d318444785186af7f1f74769cfa13f",
+          "resources.json": "946a902da301d9654177bf509d78fdc72c9dc7ecc794cdd84d8276660856e554",
+          "upstream-report.json": "e4071f8206589e88fe8149f381acf80f3e239642efe2c2d06ef5c79543ba343f"
+        }
+      },
+      {
+        "name": "b0-todomvc-w1-candidate-software-video",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 1962.8838350035949,
+        "ownerBodyMilliseconds": 1808.114439,
+        "wait4CpuSeconds": 1.722163,
+        "sampledPeakRssBytes": 774508544,
+        "files": {
+          "prepared.json": "80063fe6a319bbb603841696a50feb8a5caca187a54c7b5fc4a07e6c884ef6c5",
+          "owner-report.json": "8898ec695f09b20ab11cc381294e316e07d31faa72ed6f6cb8194b139af1e999",
+          "resources.json": "1a552b46fa0be367b69a6f42388b1f93e8d3f463f62a8afccc44a62fb81de551",
+          "candidate-report.json": "122e8a3fd8bd9870995d59fc6970078fb7ff818a9c73a6890a440069f8997c1c"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1635.0636249990202,
+        "ownerBodyMilliseconds": 1479.314241,
+        "wait4CpuSeconds": 1.1903389999999998,
+        "sampledPeakRssBytes": 918433792,
+        "files": {
+          "prepared.json": "edb64c2d7e483679d1e2982291324aa5ff2fea0816e9760e80877754e61ea793",
+          "owner-report.json": "b3de216bd955114a5d4f084714c449d98965066f225d7cd104fc217fa6752d83",
+          "resources.json": "bd98246a0e19166e13c2f8e3f3898bbc99a954c0fc1adade629ac2bd34522452",
+          "upstream-report.json": "9d0d9b55bf4ecee337aec191c9a2f13125306bd987fb3dbb5837918b505b1ce6"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1250.5829190049553,
+        "ownerBodyMilliseconds": 1093.7709889999999,
+        "wait4CpuSeconds": 0.7768679999999999,
+        "sampledPeakRssBytes": 832532480,
+        "files": {
+          "prepared.json": "cf98d393153410a5eea65222e69bb3a099a21e060f35b1f34a2df3923b19d5b0",
+          "owner-report.json": "f7bd1acba6a5cd3b8a29550bf96f235c12ceb9259d662e59637827bcbc231132",
+          "resources.json": "fa0df499e03539a26eb2181a44be2f675df09d4383a613f461400050d2d5060e",
+          "candidate-report.json": "0b0bdd498f84486049e3b3954b0878e4e989bf11b4e6cd5fe1d46fdbbfb0ad72"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-playwright-software-video",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1735.8771540020825,
+        "ownerBodyMilliseconds": 1580.532026,
+        "wait4CpuSeconds": 1.1908059999999998,
+        "sampledPeakRssBytes": 877236224,
+        "files": {
+          "prepared.json": "737c1d6ef6b26a629b0781b05c95a5e26579497ba3789525278e17b749174bd5",
+          "owner-report.json": "26e88e0354e5831de0243d4dac8e0679de1c2ecb1bf91e023aca8c8ebf376a5d",
+          "resources.json": "e3444ae59f0464ed42180258a674932150b16033d1b33389a755197c2fefe87d",
+          "upstream-report.json": "9cd245be834f7044ffd34eddf3577f58930dfb54ec8acf0c716f1637a7570c2c"
+        }
+      },
+      {
+        "name": "b0-svgomg-w1-candidate-software-video",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 974.4433509913506,
+        "ownerBodyMilliseconds": 817.33534,
+        "wait4CpuSeconds": 0.7763789999999999,
+        "sampledPeakRssBytes": 779759616,
+        "files": {
+          "prepared.json": "0468cf4ba2cd08467daaaa1a9bed036f6e55208bed58e53c8fab05aa98a3d539",
+          "owner-report.json": "81f606feb362881acb0847c6bc5b21771ecf358980237911908090ee4840bd38",
+          "resources.json": "e2b43d71e8845e6e1ddbd3e7277c95d2398c26bda38ea2ea011d9b4a6df59365",
+          "candidate-report.json": "b9305674a85d7da57e83d5ee6e2dd8113abff9abe67c186b23d53c7aea0a303b"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2879.041963999043,
+        "ownerBodyMilliseconds": 2781.44706,
+        "wait4CpuSeconds": 3.543849,
+        "sampledPeakRssBytes": 3023933440,
+        "files": {
+          "prepared.json": "437417ded605d24a48149e0bcc0b4bf91a219212e816b6ceb9f105350fbd4ded",
+          "owner-report.json": "3dd65b175e0da41b521e857db41e6a2f49c2cff87a08e1f00b647d65b92d5f9e",
+          "resources.json": "2508dabe22b7ea835d86b8ef7c8d541a415d56c83ca2c58f69383908b982a13a",
+          "upstream-report.json": "1adee38f5d508cf78855ca0359ca68a7e77256b8c47967952d8f1d13bf4afb81"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2298.176402997342,
+        "ownerBodyMilliseconds": 2142.140676,
+        "wait4CpuSeconds": 2.391889,
+        "sampledPeakRssBytes": 2869248000,
+        "files": {
+          "prepared.json": "cca82a4ad8559b06f33457f372c28a0c911193ac0fdb81ca6b6e193b9c8bbabf",
+          "owner-report.json": "1558a68accfb5ae7b02800da11d5e97e09af9f0fdd5864570632e3710fc39194",
+          "resources.json": "6c98819d67767c023fed08508c2faf6d378d624323f95f923420847869aab534",
+          "candidate-report.json": "2aa62d8137632458f35b8339c53c9d196bd5b6da33304d78d45be1a45dc56e6b"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-playwright-software-video",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 2048.54211199563,
+        "ownerBodyMilliseconds": 1889.9992690000001,
+        "wait4CpuSeconds": 3.508301,
+        "sampledPeakRssBytes": 2606645248,
+        "files": {
+          "prepared.json": "c222da942a2d60b3622b860e8d19ddef2d6f640e6e7d9600627c996640a8bab8",
+          "owner-report.json": "16f6b96284a74dbbd2a269d8c5b98776b6cde7610c714ea7533037f5b6b0c3e6",
+          "resources.json": "89226cfd7674aa990a3ebfd286cec074dfd087a14e032ae579ba271876e15a5b",
+          "upstream-report.json": "29ae48f980a89e3498c5187ef02223f87e3be9c5fe8506bd95ba2111395cab4c"
+        }
+      },
+      {
+        "name": "b0-todomvc-w4-candidate-software-video",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 0,
+        "tests": 24,
+        "completeMilliseconds": 1765.7888780086068,
+        "ownerBodyMilliseconds": 1610.2360469999999,
+        "wait4CpuSeconds": 2.407831,
+        "sampledPeakRssBytes": 2612801536,
+        "files": {
+          "prepared.json": "be76133088aff8f93ae11c23a14612c71655d43466c9a7ee3cadd12813ee30e0",
+          "owner-report.json": "c3adcf4c5442643d5546751f9a0fd538f096f92e93e3b1da5e756a1172d22514",
+          "resources.json": "2c28ace721adad3ae1a4a5b87f00cae593842ed50d3e2ac1e63dbe5ea7db5108",
+          "candidate-report.json": "472cc39695dd2fd127dc4053d4ad35961f38bf8ae9ca446832c7b9e9a61ce942"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 2308.3707180048805,
+        "ownerBodyMilliseconds": 2153.024058,
+        "wait4CpuSeconds": 2.238006,
+        "sampledPeakRssBytes": 2979356672,
+        "files": {
+          "prepared.json": "a9decbe6a63672e5d4f94905405c1b50b71ccc9eca14866a3a6678782e0dd450",
+          "owner-report.json": "507ca014be6549d3ac4e19a70f91814cb9234d2889fb94e27c9322cb935f2eb9",
+          "resources.json": "abe9664ca9dab338ae76526e3b4efc60d11aab2e2d3ab3a8aa57732f305db69d",
+          "upstream-report.json": "5b4d71f6c609e2d89c963559cbf43deae69a70793c30c772279977b74e4f6f54"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1794.4803110003704,
+        "ownerBodyMilliseconds": 1638.605158,
+        "wait4CpuSeconds": 1.476077,
+        "sampledPeakRssBytes": 2836496384,
+        "files": {
+          "prepared.json": "11f17fdf59faabd814ec3bc80319de3944c735622115d59e25c488349b2af100",
+          "owner-report.json": "e3982840dacdb96b1a7adeca658060d48ffea2fa284bedec0312bf73f1d2e98a",
+          "resources.json": "0bdd6384cf0ad9ae6f91b5b1781afcc64e61d58ef732a9ce76e762d7c027f9bc",
+          "candidate-report.json": "0da7ec9a869f67b47994ef528f89f53ae791b1b3d7a8bfd71f45c914f1d4cf83"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-playwright-software-video",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1371.3392530044075,
+        "ownerBodyMilliseconds": 1270.8958570000002,
+        "wait4CpuSeconds": 2.184179,
+        "sampledPeakRssBytes": 2572767232,
+        "files": {
+          "prepared.json": "ed27d540b9fb3c25740f0aaab79acd6d394b09365b928453c41aad8bac49c89b",
+          "owner-report.json": "f2adc766c35ff6533130a3c845eac00de8208c80b46b16b0507ef5bd3337efe5",
+          "resources.json": "c36e4376d9d8803e19dbc87a397694bd50895943cbe4b9ddd8a6d2de7c90c323",
+          "upstream-report.json": "1e9f2083343bfafdac87d2f09c9e1ad54f2ecee3e9c211e80c4bf66131bb6396"
+        }
+      },
+      {
+        "name": "b0-svgomg-w4-candidate-software-video",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 0,
+        "tests": 6,
+        "completeMilliseconds": 1347.808107995661,
+        "ownerBodyMilliseconds": 1187.641835,
+        "wait4CpuSeconds": 1.4889549999999998,
+        "sampledPeakRssBytes": 2665582592,
+        "files": {
+          "prepared.json": "813a778c8398caff6a0ec53e966c3c9fbad3945e6ddea7e10646b0341b10feac",
+          "owner-report.json": "b3d324a14dd6353cf91a727987ab3d2708bd6c989f62995c239290609a51fa08",
+          "resources.json": "6e6c2791fddc2b3bb71a05b03d1a1f1479b4b68d832623c2e335fe3d68eba564",
+          "candidate-report.json": "6cbbfc3f9a01cb372a67c53e95062753a5b04eb5514803abf31bc0f9634d4e82"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-candidate-software-video",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 1990.9638000099221,
+        "ownerBodyMilliseconds": 1837.0417419999999,
+        "wait4CpuSeconds": 1.703151,
+        "sampledPeakRssBytes": 771133440,
+        "files": {
+          "prepared.json": "3b1e607ae00032e172784b37082eb1ff087465a2cccedddee6ebd452316be02e",
+          "owner-report.json": "824f1529ffa043f32ca77f18d1ffbb4b87640279946512e4b40eb46777dfe2e1",
+          "resources.json": "26d3970771b68779e7ad889c6af66f7ddf9dede864a3ed8639af4f6da06254ed",
+          "candidate-report.json": "adbad2d4e3387d8e90f3c6f0272d39676dc1c0ee9e926a6b95a89d150c5d32e2"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-playwright-software-video",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 3787.415556013002,
+        "ownerBodyMilliseconds": 3630.796322,
+        "wait4CpuSeconds": 2.23641,
+        "sampledPeakRssBytes": 852742144,
+        "files": {
+          "prepared.json": "34a6d1c0a5d978b671b286ffaabbbcb6a362215b1209b0dd4d03cc27573d79b3",
+          "owner-report.json": "3fa09c211b36a6aa69b89f81cce4b7a2060b90a581b3c6c2cf46eee0ac40e26d",
+          "resources.json": "fa90f15ea243126dc69efe25de7ec39d88dc81a40ee1a951f550d3f70fe2acd5",
+          "upstream-report.json": "5599f147edf2af18bbdf6a775f1148d55da94037138295221856082fd5f4816a"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2162.5760909955716,
+        "ownerBodyMilliseconds": 2007.9463610000003,
+        "wait4CpuSeconds": 1.697484,
+        "sampledPeakRssBytes": 818335744,
+        "files": {
+          "prepared.json": "83a48c5ee2294fe764800963e043e30a485695ab6aa5f2ed215c3b797dc43993",
+          "owner-report.json": "bf4c54ac530d750ea05d502ae4fc1500bdabe92af01324c11541b2a58650cec7",
+          "resources.json": "6c5711b77d3f12646b545c54a0b66d54c913ad6700aa4e336b65b2a4798d3f09",
+          "candidate-report.json": "4df62615ca0b7962264f40415a800be749741666bbf6d480e205d4862354dbdf"
+        }
+      },
+      {
+        "name": "b1-todomvc-w1-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 3854.313017000095,
+        "ownerBodyMilliseconds": 3696.736548,
+        "wait4CpuSeconds": 2.2369329999999996,
+        "sampledPeakRssBytes": 900448256,
+        "files": {
+          "prepared.json": "e8125082676e0d8b742e6364ea863830ac41a49b142bea75af7fe447ad9e74cd",
+          "owner-report.json": "1a21feb29a0c141fa763f23701f81d3d75773c35311df0b391f0d4df3d922578",
+          "resources.json": "fe7c3bcbee9d53692feed0f22d1bc04129dfe45652b997478ca4d10701193952",
+          "upstream-report.json": "0d0a86fa01797f0210ee46ec7514fb1d8e96ec1f5d88776aeb9eeeaa37d82000"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-candidate-software-video",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1015.5947940074839,
+        "ownerBodyMilliseconds": 857.597086,
+        "wait4CpuSeconds": 0.7768629999999999,
+        "sampledPeakRssBytes": 793931776,
+        "files": {
+          "prepared.json": "9aeb4735b5d8d0da7967bc0587961a8388078c23dc6bd6bd213fae725201a276",
+          "owner-report.json": "bb23e149844ea5133267c0dccb57c975240d5815c9085d1994180bfe2c71b54e",
+          "resources.json": "ed7a077b17a9ea769a461ae95ef57284fcebf045adb02dbfbfa8e73af356a180",
+          "candidate-report.json": "023cfb8f356d459724258643212289287478454a2281c6eac92ea8f61a97a272"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-playwright-software-video",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1730.9455789945787,
+        "ownerBodyMilliseconds": 1572.279072,
+        "wait4CpuSeconds": 1.188227,
+        "sampledPeakRssBytes": 875847680,
+        "files": {
+          "prepared.json": "4f95c00df9b1f9e5209b8c56ba4b32b973184fee73a37b64461063f6df362e20",
+          "owner-report.json": "cc98932db7327db702a17b015eaeb453dc04c693365bcd85e193a611c448deef",
+          "resources.json": "db98f1b085b2dabf042146a800f095988948d8fc60cb0a1998427acd8fbd0b08",
+          "upstream-report.json": "6c941f261202ccf12dfbc9f0f487da6f6dc6585f42b41a7de280e750969a1f04"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1207.5802010076586,
+        "ownerBodyMilliseconds": 1102.436089,
+        "wait4CpuSeconds": 0.7933139999999999,
+        "sampledPeakRssBytes": 826195968,
+        "files": {
+          "prepared.json": "88e5fb739e602b0e27abeb41255d3026db6b2adba74e1edea3298ef541d9c413",
+          "owner-report.json": "05c05c7470feb6887fb27dbecc8d4c166fce87a4cf1674ef461fa698188d13e9",
+          "resources.json": "dc4c8ff38ed8c78f540ad8c6550a586e4e612835447e4b3fde38a8a18c0ce40d",
+          "candidate-report.json": "1cc1adb9b4a7d211fbde109e48b1e8a551e277a5f0ce3d638762f4f48040f711"
+        }
+      },
+      {
+        "name": "b1-svgomg-w1-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 1,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1976.4384720037924,
+        "ownerBodyMilliseconds": 1819.559035,
+        "wait4CpuSeconds": 1.200922,
+        "sampledPeakRssBytes": 946442240,
+        "files": {
+          "prepared.json": "285f3a133d0d351f98b360feb7419a548e8727e6419936c85bb52e2f6926c1f6",
+          "owner-report.json": "00560f698cc4e174edee079da6b18b14e4571e31d6d40418b6caefbd2f71a75d",
+          "resources.json": "5f0757fcbb2fb9d0a8514fa4dd26218309eb75717a805c3619da11d12e88b81f",
+          "upstream-report.json": "eedcc4af9d33e02a259f43916abfda743d215025371c0e98334d02e1a065d0ee"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-candidate-software-video",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 1732.824200997129,
+        "ownerBodyMilliseconds": 1576.8204449999998,
+        "wait4CpuSeconds": 2.40593,
+        "sampledPeakRssBytes": 2617827328,
+        "files": {
+          "prepared.json": "9a76482e54f77228e0c711a636db0cc650500bf2d260f389c1a37018206a3a21",
+          "owner-report.json": "dafc182f495c7a8c10737b84d4e4d10e2774004ee47dfe6b83fc244464cb6046",
+          "resources.json": "db140fd9fee3c8238268833dc30b463821c4b48231fd8096f732a78cb5df8d87",
+          "candidate-report.json": "e16fed1189bcb94c5e57b7a18af1ebbc9a747cccef50cfd73a1de4bda644afe3"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-playwright-software-video",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2057.0377870026277,
+        "ownerBodyMilliseconds": 1899.298768,
+        "wait4CpuSeconds": 3.5115549999999995,
+        "sampledPeakRssBytes": 2623275008,
+        "files": {
+          "prepared.json": "7b2f4ce8b141f740f82dc41e9761ca58f238029632f7917cd34374c6a44d0cd5",
+          "owner-report.json": "463a79938e15ba5f550b8d905d4ba41567ed25e1c690bc17ffd8b7a640f91742",
+          "resources.json": "1fb456de3fa794121e94eca10e7808798b5eb93af251ad9aec114542e47755c9",
+          "upstream-report.json": "a846766ec3c351112958e85c4701af856c16a89a06429014a2840c3815b52d50"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-candidate-default",
+        "application": "todomvc",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2338.620524998987,
+        "ownerBodyMilliseconds": 2180.6516429999997,
+        "wait4CpuSeconds": 2.391393,
+        "sampledPeakRssBytes": 2862964736,
+        "files": {
+          "prepared.json": "5b61a98c8c1ae75ac57c6acc20be7fda71865d0eb71249b2920259a6b593c0fb",
+          "owner-report.json": "07ed943a48ae7e80ccd2ad03e73a014bba2c053a3bc13e8e3c8a231d8b73da6b",
+          "resources.json": "eca58f5b5aa901a82eebfb3aa7c3413be5d8c9a34b55b354cb51acf0b0c74f02",
+          "candidate-report.json": "2b5c59e27881a81cb1a513ba0538bcfbd73f9d0dd4cdde4cd6644ff02acc0976"
+        }
+      },
+      {
+        "name": "b1-todomvc-w4-playwright-default",
+        "application": "todomvc",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 24,
+        "completeMilliseconds": 2693.6709720030194,
+        "ownerBodyMilliseconds": 2588.56406,
+        "wait4CpuSeconds": 3.513165,
+        "sampledPeakRssBytes": 3022663680,
+        "files": {
+          "prepared.json": "8eafb2ba938bef232d710acb2c3e3632f91fb5f3d415d36e09ca8e6b0e067982",
+          "owner-report.json": "528c87bfd137d862348bc90f7754872e5415e9c6c0526b3cf7bbe78328358cf1",
+          "resources.json": "bee53fb6fbe10f4a606a0eaa86b933f9453ae792f445bc17e19c1440fab38c95",
+          "upstream-report.json": "792bc75687f246d39d6574a6aba082b9535f8ae4a75f38636063b2d699987f36"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-candidate-software-video",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1326.6494760027854,
+        "ownerBodyMilliseconds": 1167.390426,
+        "wait4CpuSeconds": 1.47494,
+        "sampledPeakRssBytes": 2676887552,
+        "files": {
+          "prepared.json": "98f6e363c4c44e4a228e9cec09358fa58ec71e5aacd68d728e6c7f5bb791354c",
+          "owner-report.json": "44cdde88f173c2548cc55847b03f281a0df4f7010f4f0039dca4d3e17a007071",
+          "resources.json": "2b8f5701b589a2602b741b6d75441e5b548ea810a03dcf2272f5ce8873d95009",
+          "candidate-report.json": "15765d4f1f9a572b0a0d193cdc405416d22b07c0e7980cbad700ac20823f7021"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-playwright-software-video",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "software-video",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 1493.9939830073854,
+        "ownerBodyMilliseconds": 1337.2074420000001,
+        "wait4CpuSeconds": 2.221018,
+        "sampledPeakRssBytes": 2598166528,
+        "files": {
+          "prepared.json": "569888a6fc807a8350b1422d5efc437414c7323c2c957cfcf508864c4014121b",
+          "owner-report.json": "8957aaf43d4f3bb2d23029eda9e38938ebc4a1e2b267a1e5909a84dc26901eb6",
+          "resources.json": "286c5a8af650992485b96833cc1891d852987cb0469a625a9742d00320e5d61e",
+          "upstream-report.json": "a2269060b629fa8b669e33d004ad0828a7b1b44f6c8923f77e07d57c5f312c8b"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-candidate-default",
+        "application": "svgomg",
+        "mode": "candidate",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 2057.72411498765,
+        "ownerBodyMilliseconds": 1959.979727,
+        "wait4CpuSeconds": 1.478348,
+        "sampledPeakRssBytes": 2833293312,
+        "files": {
+          "prepared.json": "6beecbbe8564fc21ff67a7fd8b3eaa71458833374271f54d8e7478ddb3cd56d9",
+          "owner-report.json": "6a6df50304599084c4b37a93cc06097f9439694d39c5819cbb46094cec450814",
+          "resources.json": "6a858f3708e8943f6c09f5e486311f6884a51383b6e75251dfe89c53eb80baed",
+          "candidate-report.json": "24817397dc52ad675969f36c8b95f180c5429662377f4a0f9cd1afd1133b4dd1"
+        }
+      },
+      {
+        "name": "b1-svgomg-w4-playwright-default",
+        "application": "svgomg",
+        "mode": "playwright",
+        "graphics": "default",
+        "workers": 4,
+        "block": 1,
+        "tests": 6,
+        "completeMilliseconds": 2332.1309429884423,
+        "ownerBodyMilliseconds": 2176.265409,
+        "wait4CpuSeconds": 2.203071,
+        "sampledPeakRssBytes": 2983653376,
+        "files": {
+          "prepared.json": "ab334439854ff38abfcfe430468ee1cfa71d0dcd69882ac438d6247a6bf626a4",
+          "owner-report.json": "ca179ed276fdc5c1cabffe9c5e3832533fde696d90fe2098ae9bec112164ff40",
+          "resources.json": "afcca7f8386e52d5069b0ecc0ffbdad652cb260f75849d293429b019a5a1d7dd",
+          "upstream-report.json": "b0034188ec85c074b676fe99806fbce1351d6e75bb6785144a5bb11753977624"
+        }
+      }
+    ],
+    "planSha256": "69bb0e05fe849abe1309426c4b31609142bde9d178648e4d92294c38d587197e"
+  },
+  "instrumentedStartup": {
+    "scope": "Separate GPU/startup trace and isolated-world rAF wrapper instrumentation; each capture includes deliberate 3.2-second pre-close wait. No timing ratio or achievable saving inferred from these instrumented complete durations.",
+    "observations": [
+      {
+        "profile": "default",
+        "worker": "worker-0",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 1050.837,
+          "gpu_main::PreSandboxStartup": 875.595,
+          "angle::GetSystemInfoVulkan": 125.836
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          781.7999999970198,
+          3.699999988079071
+        ],
+        "nativeTraceSha256": "cace09e89aa75889d8680ae5e5edfb11325a51e0aa9459de8009fd3646b1e32e"
+      },
+      {
+        "profile": "default",
+        "worker": "worker-1",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 1096.772,
+          "gpu_main::PreSandboxStartup": 820.422,
+          "angle::GetSystemInfoVulkan": 216.628
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          899.8000000119209,
+          3.0999999940395355
+        ],
+        "nativeTraceSha256": "8ddab6ab4c0cd8ecc17e0ad735045228deba068288c978c52e6b491581087b0d"
+      },
+      {
+        "profile": "default",
+        "worker": "worker-2",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 1077.647,
+          "gpu_main::PreSandboxStartup": 811.596,
+          "angle::GetSystemInfoVulkan": 199.186
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          870.6999999880791,
+          8.600000008940697
+        ],
+        "nativeTraceSha256": "04b6e2ff71bcae415a61437134307d502acc9469816fbea3eed31386687d2c32"
+      },
+      {
+        "profile": "default",
+        "worker": "worker-3",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 1082.27,
+          "gpu_main::PreSandboxStartup": 820.074,
+          "angle::GetSystemInfoVulkan": 208.079
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          880.4000000059605,
+          13.700000002980232
+        ],
+        "nativeTraceSha256": "7a7590e6154301954379d65548dc18f945bb965b0c53009ee8d2c57f63f27df9"
+      },
+      {
+        "profile": "software-video",
+        "worker": "worker-0",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 194.473,
+          "gpu_main::PreSandboxStartup": 0.004,
+          "angle::GetSystemInfoVulkan": 129.77
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          1.1000000089406967,
+          1.2000000029802322
+        ],
+        "nativeTraceSha256": "9953b79894ffca62698d2a3efe5522982fa31a7eb479eba6d33ee07e614bb5f8"
+      },
+      {
+        "profile": "software-video",
+        "worker": "worker-1",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 227.003,
+          "gpu_main::PreSandboxStartup": 0.004,
+          "angle::GetSystemInfoVulkan": 181.241
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          24.0,
+          2.5999999940395355
+        ],
+        "nativeTraceSha256": "2fa413f0154246fefb776acbccc1d27cd2a37346c2bf28d87f8729f02c3b4025"
+      },
+      {
+        "profile": "software-video",
+        "worker": "worker-2",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 241.306,
+          "gpu_main::PreSandboxStartup": 1.019,
+          "angle::GetSystemInfoVulkan": 190.429
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          38.29999999701977,
+          9.899999991059303
+        ],
+        "nativeTraceSha256": "610b82a042553922c4e513048b3a8e5d0487aa7ccb436ead53b7221b55512475"
+      },
+      {
+        "profile": "software-video",
+        "worker": "worker-3",
+        "milliseconds": {
+          "gpu::GpuInit::InitializeAndStartSandbox": 214.767,
+          "gpu_main::PreSandboxStartup": 0.004,
+          "angle::GetSystemInfoVulkan": 165.638
+        },
+        "firstPointerFrameWaitMilliseconds": [
+          17.099999994039536,
+          4.700000002980232
+        ],
+        "nativeTraceSha256": "5960409d5d44fb368d9ce37a67dfcfaca33f74b09a99720d6f08f5099b8c47e1"
+      }
+    ]
+  },
+  "controls": [
+    {
+      "campaign": "linux-graphics-startup-001",
+      "profile": "control-stock-default",
+      "status": "functional-failed",
+      "caseCount": 1,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        }
+      ],
+      "idle": null,
+      "endedVideoIdle": null,
+      "idleCpuCores": null,
+      "originalExitCode": 1,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "993e18bef3b25bc5d89395ff8ef2ea646ef93a5e017018d79b081a1f4ba9d5f0"
+    },
+    {
+      "campaign": "linux-graphics-startup-002",
+      "profile": "control-candidate-fast-default",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3001.0761350000002,
+        "cgroupCpuMicroseconds": 212103,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 0.07067564782057753,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "7109626126c24ce3089cc2ee3a957adde4a0535be056afd1f5e642339980f11f"
+    },
+    {
+      "campaign": "linux-graphics-startup-002",
+      "profile": "control-candidate-fast-disable-gpu",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3000.9804599999998,
+        "cgroupCpuMicroseconds": 217166,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 0.07236501633202903,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "fcbfe0f47d66babdfd42264619366d0b3363e10bf4e748dd47f36b6f400ee040"
+    },
+    {
+      "campaign": "linux-graphics-startup-002",
+      "profile": "control-stock-default",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3004.38418,
+        "cgroupCpuMicroseconds": 211518,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 0.07040311335949052,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "8372b4ebcb5bcc80c04e1e5e6f933da3bbcb20b6ee827fbb1173837bfdc4408e"
+    },
+    {
+      "campaign": "linux-graphics-startup-002",
+      "profile": "control-stock-disable-gpu",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3002.5985689999998,
+        "cgroupCpuMicroseconds": 202286,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 0.06737031119926574,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "98b1b5df975b8ccb1145b970e223c5130842ce2cf7dfe4e41d4d689b141cdf16"
+    },
+    {
+      "campaign": "linux-video-startup-001",
+      "profile": "control-candidate-fast-default",
+      "status": "functional-passed-resource-failed",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3001.053512,
+        "cgroupCpuMicroseconds": 7365755,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 2.4543897569794484,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "5e43f7b9a39a6194c26047b4aa6d88233771f00e033dba580c2f4af8613b6301"
+    },
+    {
+      "campaign": "linux-video-startup-001",
+      "profile": "control-stock-default",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3005.1525790000005,
+        "cgroupCpuMicroseconds": 204786,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 0.06814495923802476,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "2b189a3b6e98f99cb2a0b8b85674239127b85080977092b296000118e88e465b"
+    },
+    {
+      "campaign": "linux-video-startup-001",
+      "profile": "control-stock-software-video",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3003.1372760000004,
+        "cgroupCpuMicroseconds": 213215,
+        "ticks": 60
+      },
+      "endedVideoIdle": null,
+      "idleCpuCores": 0.070997420498869,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "2f9b32044c5c049a6f92c6ca7775d3a298caf19d4137b6a529ae7168f684f891"
+    },
+    {
+      "campaign": "linux-video-startup-002",
+      "profile": "control-candidate-fast-default",
+      "status": "functional-passed-resource-failed",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3000.681933,
+        "cgroupCpuMicroseconds": 9851238,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1003.6452949999998,
+        "cgroupCpuMicroseconds": 2408383
+      },
+      "idleCpuCores": 3.282999738046545,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "0dd20d486187dea55e0a0fcdd37720d4762d41060c6a18011960218fc60924e2"
+    },
+    {
+      "campaign": "linux-video-startup-002",
+      "profile": "control-stock-default",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3004.889137,
+        "cgroupCpuMicroseconds": 218362,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1003.7918260000001,
+        "cgroupCpuMicroseconds": 75293
+      },
+      "idleCpuCores": 0.07266890392435799,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "635f8047c04050f24c4af5a2844b28aaac5aa7d2dc2ddd2ece2165433f26a727"
+    },
+    {
+      "campaign": "linux-video-startup-002",
+      "profile": "control-stock-software-video",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3002.8828330000006,
+        "cgroupCpuMicroseconds": 210834,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1002.724119,
+        "cgroupCpuMicroseconds": 65749
+      },
+      "idleCpuCores": 0.07021053158753063,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "cc4673bfd536b36a2f0b1a6e9646676cf194e676bf58519fc5336f6fa580e0e4"
+    },
+    {
+      "campaign": "linux-video-startup-003",
+      "profile": "control-candidate-fast-software-video",
+      "status": "functional-passed-resource-failed",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3003.2683230000002,
+        "cgroupCpuMicroseconds": 9650803,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1002.4854030000001,
+        "cgroupCpuMicroseconds": 2289927
+      },
+      "idleCpuCores": 3.213433487141668,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "f2a1e59497603d19f1fed9fd5df480f9088948aede34bd3cda236d2a76a7243b"
+    },
+    {
+      "campaign": "linux-video-idle-control-001",
+      "profile": "control-candidate-fast-software-video",
+      "status": "functional-passed-resource-failed",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3004.3073400000003,
+        "cgroupCpuMicroseconds": 9725737,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1003.289824,
+        "cgroupCpuMicroseconds": 2509097
+      },
+      "idleCpuCores": 3.237264333947937,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "e8fd057ce158e8d8bce3c93c13965d1fb2a29077ef5e674790f01395f9fbaa5c"
+    },
+    {
+      "campaign": "linux-video-idle-control-002",
+      "profile": "control-candidate-fast-software-video",
+      "status": "functional-passed-resource-failed",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3004.0058740000004,
+        "cgroupCpuMicroseconds": 9854658,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1002.2776449999997,
+        "cgroupCpuMicroseconds": 2495473
+      },
+      "idleCpuCores": 3.280505569344302,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "45f8aedabc6ea746c32c9bee33b0ebfebae1bca0c0f4cf75956c830bbbde90c8"
+    },
+    {
+      "campaign": "linux-video-idle-control-003",
+      "profile": "control-candidate-fast-software-video",
+      "status": "passed-selected-controls",
+      "caseCount": 3,
+      "canvasWebGLVideoObservations": [
+        {
+          "index": 0,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "graphics": {
+            "canvas2d": [
+              18,
+              52,
+              86,
+              255
+            ],
+            "webgl": [
+              {
+                "type": "webgl",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              },
+              {
+                "type": "webgl2",
+                "available": true,
+                "pixels": [
+                  255,
+                  0,
+                  0,
+                  255
+                ],
+                "error": 0
+              }
+            ]
+          },
+          "video": {
+            "width": 32,
+            "height": 32,
+            "time": 1,
+            "frames": 30,
+            "pixel": [
+              254,
+              0,
+              0,
+              255
+            ]
+          }
+        }
+      ],
+      "idle": {
+        "milliseconds": 3003.9409990000004,
+        "cgroupCpuMicroseconds": 210297,
+        "ticks": 60
+      },
+      "endedVideoIdle": {
+        "milliseconds": 1002.469462,
+        "cgroupCpuMicroseconds": 91627
+      },
+      "idleCpuCores": 0.07000703411618504,
+      "originalExitCode": 0,
+      "cleanupSignals": 0,
+      "observedSurvivors": 0,
+      "reportSha256": "d89a932930f33c051a30396b311c4043b895f22fc7dd53e440f282147128f4bf"
+    }
+  ],
+  "retainedFailures": [
+    "Initial graphics-control setup used custom renderer reservation against stock Chromium; its first context closure failed on an unavailable private protocol method. Corrected before comparisons.",
+    "Video controls pass selected API, pixel, trusted-input and isolation assertions but fail the independently enforced idle CPU bound when renderer reservation is enabled. Their inner functional status is not whole-campaign success.",
+    "Turning off only custom early-idle deadlines, then additionally frame uncapping, did not remove the high CPU behavior.",
+    "Disabling renderer reservation and its diagnostic probe while keeping candidate-fast flags and software decoding passes the same three-context controls and idle bound. The exact native causal loop is not yet proved."
+  ],
+  "decision": "Software decoder initialization materially improves these complete candidate runs, but matched Playwright also benefits. No cell reaches 2x in both blocks. Do not promote either private profile: renderer-retirement media cleanup remains a correctness/resource blocker. The default public launch policy is unchanged.",
+  "limitations": [
+    "Two applications and two opposite-order blocks only, not the final nine-scenario eight-pair campaign.",
+    "Selected graphics/video checks do not prove all codecs, WebCodecs, accelerated decoding, browser graphics, or scheduler behavior.",
+    "One Linux machine; GPU initialization costs depend on hardware and installed drivers.",
+    "CPU idle observations are charged cgroup windows, not final resource admission. Root wait CPU and sampled RSS in application runs retain their original separate meanings.",
+    "No public capability-contract or package release is established. Prior renderer reuse evidence must be read with the newly discovered media boundary."
+  ],
+  "binaryHashes": {
+    "stockBrowser": "7b8e92dca0acf9c24b5974507b3031d6bd18cc009cd431c2595e521430ea747a",
+    "bun": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c",
+    "customBrowser": "0dff8758bfa9c2e2a315850fd1e26069cac742da33baae1b90cc76dab7d1d550",
+    "flashwright-driver": "6858cf66d9655c42c30c24cf8487a45632f3512aa6a1f741440d413026be7249"
+  },
+  "experimentScriptHashes": {
+    "linux-graphics-comparison-001/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-graphics-comparison-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-graphics-comparison-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-graphics-comparison-001/campaign.py": "cd3592832f495d4096f38aae250e59d374f35efd209f1402dcac9421a639cae9",
+    "linux-graphics-comparison-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-graphics-comparison-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-graphics-comparison-001/browser.py": "8adbb3370ee707089ffab38506360f07e451e57896fa8b0bde664edd05b43fef",
+    "linux-graphics-comparison-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-graphics-comparison-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-graphics-comparison-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-graphics-comparison-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-graphics-comparison-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-graphics-comparison-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-comparison-001/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-comparison-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-comparison-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-comparison-001/campaign.py": "5de7a2e15bdae470aa301fa210cdf7c44c19ce6bf85ed3f663cd7a93fcbdd0b4",
+    "linux-video-comparison-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-comparison-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-comparison-001/browser.py": "a141d237007f56fa03eeb6475aaca56d36d998c394e50b2bd51eac41359aa86c",
+    "linux-video-comparison-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-comparison-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-comparison-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-comparison-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-comparison-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-comparison-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-independent-pointer-gpu-001/adapter.mjs": "897a57cba6a66dd63aebdb447365b9860b3f2e398b799d570900bc8ea8db5f2b",
+    "linux-independent-pointer-gpu-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-independent-pointer-gpu-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-independent-pointer-gpu-001/campaign.py": "04502bdb6818bded8fe03621ead664fc33a7013362262a6b4e35ea93b541f2f1",
+    "linux-independent-pointer-gpu-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-independent-pointer-gpu-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-independent-pointer-gpu-001/browser.py": "a6d06e9b0e9968d81af031e2211ad4c697fe97d9f0e76a8659d2168296211cdc",
+    "linux-independent-pointer-gpu-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-independent-pointer-gpu-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-independent-pointer-gpu-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-independent-pointer-gpu-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-independent-pointer-gpu-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-independent-pointer-gpu-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-independent-pointer-gpu-001/proxy.py": "57685bd88dcadcb9d662c4c8fcdd4d63f3066038a4531050c5156c6f6842a1aa",
+    "linux-independent-pointer-video-001/adapter.mjs": "897a57cba6a66dd63aebdb447365b9860b3f2e398b799d570900bc8ea8db5f2b",
+    "linux-independent-pointer-video-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-independent-pointer-video-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-independent-pointer-video-001/campaign.py": "64b25d9d3aa8dc749bb0b33f638b2c2f516586b6834de895c8c2d1cfed721799",
+    "linux-independent-pointer-video-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-independent-pointer-video-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-independent-pointer-video-001/browser.py": "414df26983600bb064f37c498ac283754271693ee1962f08b305403920b7b45f",
+    "linux-independent-pointer-video-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-independent-pointer-video-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-independent-pointer-video-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-independent-pointer-video-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-independent-pointer-video-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-independent-pointer-video-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-independent-pointer-video-001/proxy.py": "57685bd88dcadcb9d662c4c8fcdd4d63f3066038a4531050c5156c6f6842a1aa",
+    "linux-graphics-startup-001/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-graphics-startup-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-graphics-startup-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-graphics-startup-001/campaign.py": "565d9b8b534538c68381592e6b2db905a14a8338a199ccb724ad30005d6dca9e",
+    "linux-graphics-startup-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-graphics-startup-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-graphics-startup-001/browser.py": "8adbb3370ee707089ffab38506360f07e451e57896fa8b0bde664edd05b43fef",
+    "linux-graphics-startup-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-graphics-startup-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-graphics-startup-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-graphics-startup-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-graphics-startup-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-graphics-startup-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-graphics-startup-001/frame-controls.mjs": "309e39ca6dd2022b5864fe47133c60332f81caec31b05b707acbf01b453fd366",
+    "linux-graphics-startup-002/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-graphics-startup-002/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-graphics-startup-002/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-graphics-startup-002/campaign.py": "a1706e8dd7a73819c5704507a417d32bb9af96d55895c87cfc113ddfa86f864a",
+    "linux-graphics-startup-002/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-graphics-startup-002/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-graphics-startup-002/browser.py": "8adbb3370ee707089ffab38506360f07e451e57896fa8b0bde664edd05b43fef",
+    "linux-graphics-startup-002/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-graphics-startup-002/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-graphics-startup-002/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-graphics-startup-002/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-graphics-startup-002/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-graphics-startup-002/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-graphics-startup-002/frame-controls.mjs": "309e39ca6dd2022b5864fe47133c60332f81caec31b05b707acbf01b453fd366",
+    "linux-video-startup-001/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-startup-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-startup-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-startup-001/campaign.py": "f529da0bd5b15954cddc87fdd6f1b1d21a695c339773ee0390f97fb843638874",
+    "linux-video-startup-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-startup-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-startup-001/browser.py": "a141d237007f56fa03eeb6475aaca56d36d998c394e50b2bd51eac41359aa86c",
+    "linux-video-startup-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-startup-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-startup-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-startup-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-startup-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-startup-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-startup-001/frame-controls.mjs": "f117ae1513e2da6921ef81631a9743de95cb86ad47183b16bcbe2b7023882286",
+    "linux-video-startup-002/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-startup-002/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-startup-002/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-startup-002/campaign.py": "327e199a361d01849d64d9a4bcb88dc94a55f9b7e8d89d894975817dcc565cac",
+    "linux-video-startup-002/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-startup-002/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-startup-002/browser.py": "a141d237007f56fa03eeb6475aaca56d36d998c394e50b2bd51eac41359aa86c",
+    "linux-video-startup-002/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-startup-002/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-startup-002/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-startup-002/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-startup-002/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-startup-002/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-startup-002/frame-controls.mjs": "dcb19155e41023fe5d085555136511c73b7e1906a947ee4f624b02ef2c84a6f2",
+    "linux-video-startup-003/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-startup-003/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-startup-003/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-startup-003/campaign.py": "98bfc9c95dc3d676188c0c5827c8566a6b475d03f469cebaa22165b02b137773",
+    "linux-video-startup-003/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-startup-003/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-startup-003/browser.py": "a141d237007f56fa03eeb6475aaca56d36d998c394e50b2bd51eac41359aa86c",
+    "linux-video-startup-003/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-startup-003/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-startup-003/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-startup-003/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-startup-003/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-startup-003/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-startup-003/frame-controls.mjs": "dcb19155e41023fe5d085555136511c73b7e1906a947ee4f624b02ef2c84a6f2",
+    "linux-video-idle-control-001/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-idle-control-001/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-idle-control-001/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-idle-control-001/campaign.py": "f3582a3e5663794dee8d533ecc151a1d745e985e4113365b1f8130189cef50ce",
+    "linux-video-idle-control-001/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-idle-control-001/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-idle-control-001/browser.py": "9f310ee9cba52a3a2e5d3f191d65136f9d8e4b72f67c013c8088ad294e505a49",
+    "linux-video-idle-control-001/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-idle-control-001/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-idle-control-001/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-idle-control-001/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-idle-control-001/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-idle-control-001/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-idle-control-001/frame-controls.mjs": "dcb19155e41023fe5d085555136511c73b7e1906a947ee4f624b02ef2c84a6f2",
+    "linux-video-idle-control-002/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-idle-control-002/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-idle-control-002/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-idle-control-002/campaign.py": "6a651099f260cd363aaaa9718761cfdd3fcde7ffd61aded2ffa344b7275a3f2f",
+    "linux-video-idle-control-002/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-idle-control-002/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-idle-control-002/browser.py": "640ba912d820752e9171f187bd32ab8d73c59dfda359c1724250bb9c73d40700",
+    "linux-video-idle-control-002/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-idle-control-002/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-idle-control-002/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-idle-control-002/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-idle-control-002/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-idle-control-002/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-idle-control-002/frame-controls.mjs": "dcb19155e41023fe5d085555136511c73b7e1906a947ee4f624b02ef2c84a6f2",
+    "linux-video-idle-control-003/adapter.mjs": "b45bf51b28f684614bcffa409a58fb3a1047dd4012a4a2911944f8549eaa0b15",
+    "linux-video-idle-control-003/matchers.mjs": "ac34aa3e21bb43409e200d5a216afbe8b2f620f9b4beeaba799a67b84e1631e9",
+    "linux-video-idle-control-003/prepare.mjs": "0534f0bdbc98539b1d6c0247219c8d340640d6d3ee1b2cde1afbd83c52a2ebbc",
+    "linux-video-idle-control-003/campaign.py": "7463ed549e296394a523cd873997f1c82d315e2ac41226f0a0fe6f15031ec6e4",
+    "linux-video-idle-control-003/owner.mjs": "9a21f58238f6ec4c53936b85b975ff5ced072a18afbea30fa4d7996faf3f1b63",
+    "linux-video-idle-control-003/verify-run.mjs": "6bda6de084b354a05b4210769b52196684571d0f315d8cb89b626db5214f0079",
+    "linux-video-idle-control-003/browser.py": "a141d237007f56fa03eeb6475aaca56d36d998c394e50b2bd51eac41359aa86c",
+    "linux-video-idle-control-003/guard.mjs": "b3542be20923ba2c76669a3a5b7c8c6e3da9659656d440e46913c4ac107d0cd2",
+    "linux-video-idle-control-003/aria-parser.cjs": "ae6a9d7edb1e20a19662f1578cc5cf141b982f2c892fe35223538f2af03121c4",
+    "linux-video-idle-control-003/yaml-utils.cjs": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "linux-video-idle-control-003/yaml-only.cjs": "704050ac3a3c30248215c63c75839c439551959d2f32a1413bf2758d8949152d",
+    "linux-video-idle-control-003/process-module.cjs": "8d9f2f7857d51c85b42ab95d851b9657fa8e912c96151935f0a36ca9f1a73eb7",
+    "linux-video-idle-control-003/entry.mjs": "d813d2ff75231598755a34c2cd113cdff21a6ceb8ceaf5481f54584248f65be1",
+    "linux-video-idle-control-003/frame-controls.mjs": "dcb19155e41023fe5d085555136511c73b7e1906a947ee4f624b02ef2c84a6f2"
+  },
+  "sourceHashes": {
+    "crates/flashwright-browser/src/chromium-launch-policy.json": "391f562e7e1972bcff4a446af2cb456f81df4bfd97c4132dd8271b934ae25314",
+    "packages/flashwright-runner/src/independent/fixture-pool.ts": "4f44f3daf87cb3b91ace0654b70627039a5b4a7f905642560751a6c60e121a6a",
+    "packages/flashwright-runner/src/independent/fixture-runtime.ts": "c5b6e700c856a5c10058938091389a06290c75ee4bf7188c05510925b0decdc8",
+    "packages/flashwright-runner/src/independent/process-protocol.ts": "3f7011237c2e949ec737a867572b3b93946382fc851d8742166d634076fb1406",
+    "packages/flashwright-runner/src/independent/process-runner.ts": "9c8ee0e4af48cef098338539242c10abe0dea1a212e84486e9a121efb9d273a1",
+    "packages/flashwright-runner/src/independent/process-worker.ts": "bdb8968eb174f6db1aa57a5160013328ad3a596aabe3e19039346fa8d5656c5b",
+    "packages/flashwright-runner/src/independent/suite-collector.ts": "dd5541283f56d5b6e0bac0092285018c69d180973a4f03577e078460c51ab3d5",
+    "packages/flashwright-runner/src/independent/suite-groups.ts": "d26966c4df79dddaaeed6fc25b6ea62df436f2229cf39a50a1191478b117ea10",
+    "packages/flashwright-runner/src/independent/suite-runtime.ts": "4b7686f3b7f51048f36b68602a113b5f67878305f20be3f7660604f6ee9fcf25"
+  }
+}
