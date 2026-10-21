@@ -33,7 +33,7 @@ export async function preparePackageBuild(packageDirectory, { clean = false } = 
   const configurationPath = resolve(packageDirectory, 'tsconfig.json');
   const buildTools = {};
   for (const file of [compiler, require.resolve('typescript/lib/tsc.js'), require.resolve('typescript/lib/_tsc.js'), require.resolve('typescript'),
-    'tools/build-packages.mjs', 'tools/build-runner-runtime.mjs', 'tools/incremental-package-build.mjs', 'tools/package-compiler.mjs']) {
+    'tools/build-packages.mjs', 'tools/build-runner-runtime.mjs', 'tools/build-independent-expect.mjs', 'compatibility/upstream/independent-expect-provenance.json', 'tools/incremental-package-build.mjs', 'tools/package-compiler.mjs']) {
     buildTools[file] = digest(await readFile(file));
   }
   const buildIdentity = digest(JSON.stringify({ buildTools, runtime: process.execPath, node: process.version, bun: process.versions.bun }));

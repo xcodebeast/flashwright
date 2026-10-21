@@ -46,7 +46,10 @@ async function main(): Promise<void> {
       worker ??= new SuiteWorker(group.workerPool, info, Number(timeout ?? 30000)); workerKey = planned.workerKey;
       const result = await worker.run(selected, {
         retries: attempts,
-        onBegin: (test, current) => send({ type: 'begin', token: request.token, id: test.id, retry: current.retry }),
+        onBegin: async (test, current) => {
+          await send({ type: 'begin', token: request.token, id: test.id, retry: current.retry });
+          await loaded.onBegin?.(test, current);
+        },
         onResult: async result => {
           await send({ type: 'result', token: request.token, result: {
             id: result.test.id, retry: attempts.get(result.test.id), status: result.status, expectedStatus: result.expectedStatus,

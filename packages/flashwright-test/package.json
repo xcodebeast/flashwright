@@ -27,7 +27,17 @@
         "default": "./dist/commonjs/reporter.js"
       }
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./independent": {
+      "import": {
+        "types": "./dist/esm/independent.d.ts",
+        "default": "./dist/esm/independent.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/independent.d.ts",
+        "default": "./dist/commonjs/independent.js"
+      }
+    }
   },
   "bin": {
     "flashwright": "./cli.cjs"

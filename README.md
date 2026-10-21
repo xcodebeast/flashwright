@@ -34,6 +34,12 @@ The [latest broad performance checkpoint](compatibility/evidence/broad-performan
 
 ## R2 Development
 
+An experimental independent runner is available through `@flashwright/test/independent` and `flashwright test --runner=independent --config playwright.config.ts`. Import both `test`/`expect` and configuration helpers from that subpath. It uses Flashwright's scheduler and native fixtures; the default runner entry remains unchanged. The [packed CLI checkpoint](compatibility/evidence/independent-cli-linux-2026-10-21.json) verifies fresh installed packages on Bun 1.4.2 and Node 22.22.0/24.15.0, including 180 original TodoMVC/SVGOMG test executions at one/four workers, retries, steps, attachments and failure diagnostics. This is functional preview evidence, with no new speed claim.
+
+This entry currently supports a single project, default/parallel test groups, fixture extension/options, hooks, retries, deadlines, generic/native assertions and per-attempt output. Its text reporters print final outcomes; JSON uses the experimental `flashwright-independent` schema, not Playwright's reporter schema. Automatic trace/video/screenshot policies, project orchestration, serial retries, custom reporters, soft/poll assertions and snapshot generation remain unsupported. Node uses native erasable TypeScript with relative extensionless helpers; JSX, custom transforms, tsconfig path aliases and top-level asynchronous test modules are outside this preview. Failure documents contain the original stack and a bounded snapshot of the fixture-owned page. The broader default-runner compatibility table does not describe this entry.
+
+To reproduce its packaged checks after building, set `FLASHWRIGHT_BROWSER_PATH` to the pinned Chromium executable and run `bun tools/test-independent-cli.mjs`. For the independent runner's host checks, run `bun run test:independent-entry`.
+
 Bootstrap installs Bun 1.4.2 inside this checkout and verifies its archive against the official SHA-256 manifest. It requires Python 3.12 or later and curl. Rust is pinned by rust-toolchain.toml
 
 For custom Chromium work, [SPECS.md](SPECS.md#s18-distribution-installation-and-version-policy) S18 describes the focused build graph and optional macOS archive policy. Run `bun tools/configure-chromium-build.mjs --help` for the configuration command

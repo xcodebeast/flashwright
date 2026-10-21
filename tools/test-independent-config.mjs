@@ -1,0 +1,101 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { mkdtemp, mkdir, writeFile, symlink, rm, access } from 'node:fs/promises';
+import path from 'node:path';
+import { availableParallelism } from 'node:os';
+import { resolveIndependentConfig, discoverIndependentTests } from '../packages/flashwright-runner/dist/commonjs/independent/config.js';
+
+const workbench = path.resolve('workbench');
+await mkdir(workbench, { recursive: true });
+
+async function fixture(body) {
+  const root = await mkdtemp(path.join(workbench, 'independent-config-'));
+  const configFile = path.join(root, 'flashwright.config.ts');
+  const put = async file => { await mkdir(path.dirname(path.join(root, file)), { recursive: true }); await writeFile(path.join(root, file), 'throw new Error("test modules must never load during discovery");'); };
+  try { await body({ root, configFile, put }); }
+  finally { await rm(root, { recursive: true, force: true }); }
+}
+
+test('single-project defaults and overrides resolve paths without creating outputs', async () => fixture(async ({ root, configFile }) => {
+  const config = resolveIndependentConfig({}, configFile);
+  assert.equal(config.testDir, root);
+  assert.equal(config.outputDir, path.join(root, 'test-results'));
+  assert.equal(config.timeout, 30000);
+  assert.equal(config.expect.timeout, 5000);
+  assert.equal(config.workers, Math.max(1, Math.floor(availableParallelism() / 2)));
+  assert.equal(config.retries, 0);
+  assert.equal(config.fullyParallel, false);
+  assert.equal(config.forbidOnly, false);
+  assert.deepEqual(config.reporter, [{ name: 'list', options: {} }]);
+  const configured = resolveIndependentConfig({ testDir: 'tests', outputDir: 'artifacts', workers: 2, retries: 1, timeout: 0, expect: { timeout: 0 }, fullyParallel: true, forbidOnly: true, use: { custom: { value: 1 } }, reporter: [['dot'], ['json', { outputFile: 'reports/results.json' }]] }, configFile, { workers: 3, retries: 2, grep: 'title.*', files: ['selected.spec.ts'] });
+  assert.equal(configured.testDir, path.join(root, 'tests'));
+  assert.equal(configured.outputDir, path.join(root, 'artifacts'));
+  assert.equal(configured.reporter[1].options.outputFile, path.join(root, 'reports/results.json'));
+  assert.equal(configured.workers, 3);
+  assert.equal(configured.retries, 2);
+  assert.equal(configured.timeout, 0);
+  assert.equal(configured.expect.timeout, 0);
+  assert.equal(configured.grep, 'title.*');
+  assert.deepEqual(configured.files, [path.resolve('selected.spec.ts')]);
+  assert.deepEqual(configured.use.custom, { value: 1 });
+  await assert.rejects(access(configured.outputDir), { code: 'ENOENT' });
+}));
+
+test('unsupported settings reject before discovery or test imports', async () => fixture(async ({ root, configFile, put }) => {
+  await put('never.spec.ts');
+  for (const input of [{ projects: [] }, { globalSetup: './setup.ts' }, { globalTeardown: './cleanup.ts' }, { webServer: {} }, { grep: /title/ }, { shard: { current: 1, total: 2 } }, { expect: { toHaveScreenshot: {} } }, { reporter: 'html' }, { reporter: [['json', { open: true }]] }, { reporter: [['line', { outputFile: 'ignored.json' }]] }]) {
+    assert.throws(() => resolveIndependentConfig(input, configFile), error => error.name === 'UnsupportedFeatureError' && error.details.referenceVersion === '1.60.0');
+  }
+  assert.throws(() => resolveIndependentConfig({}, configFile, { shard: 1 }), { name: 'UnsupportedFeatureError' });
+  assert.equal(resolveIndependentConfig({ projects: undefined }, configFile).testDir, root);
+  await assert.rejects(access(path.join(root, 'test-results')), { code: 'ENOENT' });
+}));
+
+test('invalid config values and overrides fail with typed argument errors', () => {
+  for (const input of [null, [], 'config', { workers: 0 }, { workers: '50%' }, { workers: 1.5 }, { retries: -1 }, { timeout: NaN }, { timeout: Infinity }, { timeout: -1 }, { fullyParallel: 1 }, { forbidOnly: 'false' }, { use: [] }, { expect: null }, { expect: { timeout: -1 } }, { testDir: '' }, { outputDir: 1 }, { testMatch: [1] }, { testIgnore: {} }, { testMatch: '[broken' }, { reporter: [] }, { reporter: [[42]] }, { reporter: [['json', null]] }, { reporter: [['json', { outputFile: '' }]] }]) {
+    assert.throws(() => resolveIndependentConfig(input, '/unused/config.ts'), { name: 'InvalidArgumentError' });
+  }
+  for (const overrides of [{ workers: 0 }, { retries: -1 }, { grep: 1 }, { files: 'file.ts' }, { files: [1] }]) assert.throws(() => resolveIndependentConfig({}, '/unused/config.ts', overrides), { name: 'InvalidArgumentError' });
+  assert.throws(() => resolveIndependentConfig({ testMatch: '**/!(slow).ts' }, '/unused/config.ts'), { name: 'UnsupportedFeatureError' });
+  // A CLI override cannot conceal a malformed supplied config field.
+  assert.throws(() => resolveIndependentConfig({ workers: 0 }, '/unused/config.ts', { workers: 1 }), { name: 'InvalidArgumentError' });
+});
+
+test('default discovery is recursive, sorted and excludes infrastructure, outputs and directory symlinks', async () => fixture(async ({ root, configFile, put }) => {
+  const sourceFiles = ['a.test.js', 'nested/b.spec.tsx', 'nested/c.spec.mts', 'nested/d.test.cjsx', 'z.spec.ts'];
+  for (const file of [...sourceFiles, 'helper.ts', 'a.spec.txt', 'a.tests.ts', 'node_modules/n.spec.ts', '.git/g.spec.ts', 'workbench/w.spec.ts', 'test-results/out.spec.ts', 'test-results/nested/out.spec.ts']) await put(file);
+  await symlink(path.join(root, 'nested'), path.join(root, 'linked'), 'dir');
+  await symlink(root, path.join(root, 'nested', 'cycle'), 'dir');
+  await symlink(path.join(root, 'z.spec.ts'), path.join(root, 'file-link.spec.ts'), 'file');
+  await symlink(path.join(root, 'missing'), path.join(root, 'broken-link.spec.ts'), 'file');
+  const expected = [...sourceFiles, 'file-link.spec.ts'].sort();
+  assert.deepEqual(await discoverIndependentTests(resolveIndependentConfig({}, configFile)), expected.map(file => path.join(root, file)));
+  assert.deepEqual(await discoverIndependentTests(resolveIndependentConfig({ testDir: 'missing' }, configFile)), []);
+}));
+
+test('glob matching covers globstar, alternatives, extglobs, classes and literal dots', async () => fixture(async ({ root, configFile, put }) => {
+  for (const file of ['a.spec.ts', 'a.test.js', 'nested/b.spec.mts', 'nested/c.test.tsx', 'nested/helper.ts', 'nested/aXspecXts', '.hidden.spec.ts']) await put(file);
+  const discover = async pattern => (await discoverIndependentTests(resolveIndependentConfig({ testMatch: pattern }, configFile))).map(file => path.relative(root, file));
+  assert.deepEqual(await discover('**/*.{spec,test}.{ts,js}'), ['.hidden.spec.ts', 'a.spec.ts', 'a.test.js']);
+  assert.deepEqual(await discover('**/*.@(spec|test).?(c|m)[jt]s?(x)'), ['.hidden.spec.ts', 'a.spec.ts', 'a.test.js', 'nested/b.spec.mts', 'nested/c.test.tsx']);
+  assert.deepEqual(await discover('nested/?.spec.[cm]ts'), ['nested/b.spec.mts']);
+  assert.deepEqual(await discover('*.spec.ts'), ['.hidden.spec.ts', 'a.spec.ts']);
+  assert.deepEqual(await discover(path.join(root, 'a.spec.ts')), ['a.spec.ts']);
+  assert.deepEqual(await discover(['**/*.mts', '**/*.tsx']), ['nested/b.spec.mts', 'nested/c.test.tsx']);
+}));
+
+test('regex/glob ignores are repeatable and explicit paths select files or subtrees', async () => fixture(async ({ root, configFile, put }) => {
+  for (const file of ['a.spec.ts', 'nested/b.spec.ts', 'nested/c.spec.ts', 'reports/hidden.spec.ts']) await put(file);
+  const pattern = /\.spec\.ts$/g;
+  pattern.lastIndex = 100;
+  const config = resolveIndependentConfig({ testMatch: pattern, testIgnore: ['**/c.spec.ts', /a\.spec\.ts$/g], outputDir: 'reports' }, configFile);
+  const expected = [path.join(root, 'nested/b.spec.ts')];
+  assert.deepEqual(await discoverIndependentTests(config), expected);
+  assert.deepEqual(await discoverIndependentTests(config), expected);
+  assert.equal(pattern.lastIndex, 100);
+  const select = files => discoverIndependentTests(resolveIndependentConfig({ outputDir: 'reports' }, configFile, { files, grep: 'a title absent from file names' }));
+  assert.deepEqual(await select([path.join(root, 'nested')]), [path.join(root, 'nested/b.spec.ts'), path.join(root, 'nested/c.spec.ts')]);
+  assert.deepEqual(await select([path.join(root, 'a.spec.ts'), path.join(root, 'a.spec.ts')]), [path.join(root, 'a.spec.ts')]);
+  assert.deepEqual(await select([path.join(root, 'nest')]), []);
+  assert.deepEqual(await select([path.join(root, 'missing.spec.ts')]), []);
+}));
