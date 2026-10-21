@@ -625,3 +625,25 @@ The matched screen includes browser/server startup, original test callbacks and 
 All 240 matched test executions pass. Sharing reduces four-worker sampled RSS by roughly 39–43%, but fails the declared speed gate: at least 20% less complete time for both four-worker applications in both orders, without more than 5% regression at one worker. Separate browsers remain selected. This comparison includes transport-bridge overhead; it does not isolate browser count or rule out every native shared-browser architecture.
 
 The evidence also retains 120 preliminary test executions, the initial transport's approximately five-second shutdown delay, and a launch-receipt collision in the first isolation harness. The corrected transport exits after its WebSocket closes; every matched native browser exits normally with no remaining contexts. These are engineering observations, not a Playwright comparison, final resource admission or the nine-scenario performance gate.
+
+
+## Direct shared-browser transport and context-scoped reuse
+
+The [direct shared-browser screen](../benchmarks/results/direct-shared-browser-linux-2026-10-21.json) removes each worker's Bun WebSocket bridge and makes native renderer retention specific to its original context. Inspection of the preceding shared-browser reports found that the browser-global admission guard prevented reuse under concurrent workers: each four-worker TodoMVC run had 23 ineligible contexts and only one transfer. The new runs retain all 24 transfers and 20 successor claims. This is a combined transport and reuse-admission change; the measurements do not isolate either component.
+
+The same native browser and Rust driver serve both Flashwright arms, with lazy VAAPI discovery and normal hardware-decoder policy. Every test still gets a fresh context. The complete clock includes suite-owned browser startup, fixture startup, original tests, shutdown and artifact cleanup. Startup overlaps normal suite discovery. Each cell below contains two reversed-order observations in seconds under the same four-core quota and 8 GiB memory limit.
+
+| Application | Workers | Playwright | Separate browsers | Direct shared browser | Playwright / shared |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TodoMVC | 1 | 3.820 / 3.848 | 1.967 / 1.973 | 1.951 / 1.945 | 1.958× / 1.978× |
+| TodoMVC | 4 | 2.826 / 2.731 | 1.732 / 1.684 | 1.507 / 1.516 | 1.875× / 1.801× |
+| SVGOMG | 1 | 2.009 / 1.992 | 0.894 / 0.967 | 0.880 / 0.898 | 2.283× / 2.219× |
+| SVGOMG | 4 | 2.379 / 2.427 | 1.237 / 1.290 | 1.008 / 1.084 | 2.359× / 2.240× |
+
+All 360 original application test executions pass across 24 captures. Sharing reduces four-worker TodoMVC elapsed time by 10.0–13.0% and SVGOMG by 16.0–18.5%, with sampled RSS about 45% lower. It **fails the predeclared advancement gate** of at least 20% less complete time in both four-worker applications and both orders. One-worker runs do not regress. The candidate is preserved as an experiment; separate browsers remain selected. Two observations per cell do not establish the final confidence or nine-scenario performance gate.
+
+Controls cover distinct Rust workers, fresh storage, same-name downloads with distinct bytes, peer survival after lease closure, abrupt JavaScript/Rust death and client detachment during held native adoption stages. Eight media contexts pass decoded-video and actual screenshot-pixel checks, Canvas/WebGL, moving-target trusted input and post-retirement idle CPU controls. Hardware decoder first use and broader backend coverage remain open.
+
+The transport control initially reproduced a buffered terminal reply being overtaken by WebSocket EOF. The corrected parser drains buffered input before publishing closure; the new 1,000-event terminal-reply control and 23 existing connection tests pass. A separate receipt check initially failed because concurrent stderr writes interleaved. Repeating the worker controls with separate log files verified ten exact context/host/process joins and eight successor claims. Killing a driver leaves one artifact directory that the suite owner removes after native browser exit. Both failures and their corrections remain in the evidence.
+
+Sampled RSS is not charged peak memory. The inner owner's cgroup CPU interval excludes some outer shared-browser startup and shutdown, so this screen makes no complete charged-CPU reduction claim. Source recovery patches and their exact upstream revisions are retained in the [Linux source checkpoint](../tools/chromium/recovered-linux-2026-10-21/README.md); preservation does not make the experimental browser a released default.
