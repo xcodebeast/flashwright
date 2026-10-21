@@ -675,3 +675,28 @@ Only interaction exceeds 2× in both worker counts and both blocks. Backend exce
 Two separate diagnostic library runs each create 15 fresh contexts and add one repeated assertion per context. Across the 14 warm contexts in each run, median context closure is 12.02 / 11.97 ms, first assertion is 8.69 / 8.64 ms, and repeated assertion is 0.68 / 0.63 ms. These API intervals include scheduling and downstream work; they do not isolate browser CPU or prove removable savings. Source inspection finds three sequential CDP calls for first assertion: isolated-world creation, evaluation of a combined 373,154-byte runtime, then the resident assertion. The existing realm is reused on the repeat. Context teardown also performs the serial native renderer-transfer protocol; this measurement does not isolate garbage collection.
 
 Two preflight identity-check failures are retained: the verifier first required the stock browser version for the custom browser, and its first correction selected the stock alternative from the driver admission list. The final verifier freezes the unique exact custom version already accepted by that driver. Two diagnostic import failures occurred before any server/browser work; the completed diagnostic runs use the public facade. None of these attempts contributes to the timing ratios. Complete charged-resource custody, broader diagnostic conformance and final performance admission remain open.
+
+## Locator initializer source-reference experiment
+
+The [source-reference screen](../benchmarks/results/locator-source-reference-linux-2026-10-21.json) targets repeated transmission of the 373,712-byte locator initializer. Separate diagnostics measured about 6.6 ms for the injection command and about 0.6 ms inside native V8 conversion/evaluation. Retaining an unbound compiled script produced 14 cache hits without improving first-assertion time. A refined candidate retains only source text and sends a short content reference; it preserves the ordinary debugger evaluation path and creates fresh state in the original unique context.
+
+The source-reference diagnostic reduced warm first-assertion median from 8.45 to 2.86 ms across one pair of 15-context runs. That local result is distinct from complete-suite improvement. Final-build controls passed 180 controlled outcomes, including 30 intentional failures, 60 original application tests, two realm-control runs and eight graphics/media contexts with verified screenshot pixels. The timed screen then passed all 900 original tests in 60 captures, with the same candidate binaries off/on, stock Playwright, both worker counts and two reversed orders. Audit logging was disabled.
+
+Positive percentages below mean less complete time than the same candidate with source caching disabled. Negative percentages mean regressions.
+
+| Family | Workers | Reduction, block 0 | Reduction, block 1 | Playwright / cached, block 0 | Playwright / cached, block 1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| setup | 1 | 11.10% | 14.50% | 1.635× | 1.616× |
+| setup | 4 | 2.43% | 0.77% | 1.684× | 1.491× |
+| assertion | 1 | 1.19% | 2.43% | 1.444× | 1.480× |
+| assertion | 4 | 3.80% | 3.84% | 1.678× | 1.592× |
+| navigation | 1 | 22.65% | 0.34% | 1.540× | 1.446× |
+| navigation | 4 | 4.17% | 3.88% | 1.683× | 1.494× |
+| todomvc | 1 | 7.61% | 10.90% | 2.045× | 2.264× |
+| todomvc | 4 | 2.00% | 1.07% | 1.699× | 1.663× |
+| svgomg | 1 | 0.27% | 7.48% | 2.237× | 1.804× |
+| svgomg | 4 | -0.06% | -28.15% | 1.811× | 1.440× |
+
+The predeclared gate required at least 10% reduction in setup, assertion and navigation at both worker counts in both orders, with no application regression over 5%. It failed. Single-worker setup improves consistently, but most four-worker savings are small, navigation varies sharply, and the second four-worker SVGOMG observation regresses 28.15%. That observation remains included; its cause is not established. Neither application exceeds 2× at both worker counts in both orders.
+
+The [patches and reconstruction notes](../tools/chromium/locator-source-reference.md) remain experimental. The preceding sources and known baseline executables are restored. The native browser rebuild is byte-identical to its preceding baseline; the Rust rebuild succeeds but has a different digest, so restoration explicitly uses the preserved known baseline driver. No source-cache adoption, larger unchanged campaign, final confidence/resource admission or release claim follows from this screen.
