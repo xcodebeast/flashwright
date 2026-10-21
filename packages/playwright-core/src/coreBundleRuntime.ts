@@ -59,6 +59,7 @@ lazy('utils', () => {
 lazy('clientEventEmitter', () => require('./client/eventEmitter').EventEmitter);
 lazy('libCli', withServer(() => require('./cli/program')));
 lazy('libCliTestStub', withServer(() => require('./cli/programWithTestStub')));
+lazy('runCliClient', () => require('./cli/cliClientEntry').runCliClient);
 lazy('inprocess', () => require('./inprocess'));
 lazy('oop', withServer(() => require('./outofprocess')));
 lazy('remote', withServer(() => require('./remote/playwrightServer')));

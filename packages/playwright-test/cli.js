@@ -31,5 +31,10 @@ if (process.argv[2] === 'test')
 
 // Flashwright: start the first test worker while the CLI loads.
 require('playwright/lib/runner/workerStandby').prespawnWorkerForTestCommand(process.argv);
-const { program } = require('playwright/lib/program');
-program.parse(process.argv);
+// Flashwright: `cli` commands only forward to a browser session; skip loading every command.
+if (process.argv[2] === 'cli') {
+  require('playwright-core/lib/coreBundle').runCliClient();
+} else {
+  const { program } = require('playwright/lib/program');
+  program.parse(process.argv);
+}

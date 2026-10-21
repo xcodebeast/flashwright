@@ -19,6 +19,7 @@ export * as utils from '@utils/index';
 export { EventEmitter as clientEventEmitter } from './client/eventEmitter';
 export * as libCli from './cli/program';
 export * as libCliTestStub from './cli/programWithTestStub';
+export { runCliClient } from './cli/cliClientEntry';
 export * as inprocess from './inprocess';
 export * as oop from './outofprocess';
 export * as remote from './remote/playwrightServer';
