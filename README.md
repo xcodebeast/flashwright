@@ -10,38 +10,38 @@ Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64
 
 | Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC (upstream example suite) | 24 | 1 | 3725 ms | 1175 ms | 3.17× |
-| TodoMVC * | 24 | 4 | 1823 ms | 813 ms | 2.24× |
-| SVGOMG (upstream example suite) | 6 | 1 | 1759 ms | 585 ms | 3.01× |
-| SVGOMG * | 6 | 4 | 1281 ms | 517 ms | 2.48× |
-| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6246 ms | 3035 ms | 2.06× |
-| Shop app * | 18 | 4 | 2623 ms | 1265 ms | 2.07× |
+| TodoMVC (upstream example suite) | 24 | 1 | 3702 ms | 1157 ms | 3.20× |
+| TodoMVC * | 24 | 4 | 1820 ms | 813 ms | 2.24× |
+| SVGOMG (upstream example suite) | 6 | 1 | 1778 ms | 564 ms | 3.15× |
+| SVGOMG * | 6 | 4 | 1271 ms | 498 ms | 2.55× |
+| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6264 ms | 3032 ms | 2.07× |
+| Shop app * | 18 | 4 | 2605 ms | 1273 ms | 2.05× |
 | A single test (an agent re-running one test; measured separately) | 1 | 1 | 613 ms | 197 ms | 3.11× |
-| Trivial test | 15 | 1 | 1065 ms | 360 ms | 2.96× |
-| Click + assertion | 15 | 1 | 1632 ms | 459 ms | 3.56× |
-| Assertion on a delayed update | 15 | 1 | 1223 ms | 504 ms | 2.43× |
-| Navigation | 15 | 1 | 1295 ms | 484 ms | 2.68× |
-| Fixture setup only | 15 | 1 | 1208 ms | 418 ms | 2.89× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 2024 ms | 810 ms | 2.50× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2361 ms | 1019 ms | 2.32× |
-| `page.screenshot()` to a file | 15 | 1 | 1933 ms | 883 ms | 2.19× |
-| Suite with real failures (every third test) | 15 | 1 | 4411 ms | 2206 ms | 2.00× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4782 ms | 4116 ms | 1.16× |
+| Trivial test | 15 | 1 | 1049 ms | 353 ms | 2.97× |
+| Click + assertion | 15 | 1 | 1657 ms | 445 ms | 3.72× |
+| Assertion on a delayed update | 15 | 1 | 1226 ms | 488 ms | 2.51× |
+| Navigation | 15 | 1 | 1284 ms | 473 ms | 2.71× |
+| Fixture setup only | 15 | 1 | 1205 ms | 405 ms | 2.98× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2033 ms | 801 ms | 2.54× |
+| `toHaveScreenshot()` against a baseline | 15 | 1 | 2404 ms | 1017 ms | 2.36× |
+| `page.screenshot()` to a file | 15 | 1 | 1941 ms | 851 ms | 2.28× |
+| Suite with real failures (every third test) | 15 | 1 | 4397 ms | 2021 ms | 2.18× |
+| Expected failures (250 ms timeout each) | 15 | 1 | 4770 ms | 4102 ms | 1.16× |
 
 The single-file workloads run in one worker regardless of the worker setting; their 4-worker numbers match the 1-worker ones.
 
-Some scenarios mostly wait for things no framework can make faster: assertion timeouts that are meant to expire, and the application server's response time. There the wall-clock ratio is capped by the waiting (for the expected failures, at 4782 / (15 × 250) = 1.28×), so the matrix also reports the time each framework adds on top of it (wall time minus the waits the tests ask for; for the shop, minus the time an API request was pending, measured in each framework's own runs):
+Some scenarios mostly wait for things no framework can make faster: assertion timeouts that are meant to expire, and the application server's response time. There the wall-clock ratio is capped by the waiting (for the expected failures, at 4770 / (15 × 250) = 1.27×), so the matrix also reports the time each framework adds on top of it (wall time minus the waits the tests ask for; for the shop, minus the time an API request was pending, measured in each framework's own runs):
 
 | Scenario | Workers | Waits the tests ask for | Playwright adds | Flashwright adds | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Expected failures | 1 | 15 × 250 ms | 1032 ms | 366 ms | 2.82× |
-| Suite with real failures | 1 | 5 × 250 ms | 3161 ms | 956 ms | 3.31× |
-| Form submit to a backend | 1 | 15 × 20 ms | 1724 ms | 510 ms | 3.38× |
-| Assertion on a delayed update | 1 | 15 × 8 ms | 1103 ms | 384 ms | 2.87× |
-| Shop app | 1 | ~2.1 s of API time | 4132 ms | 986 ms | 4.19× |
-| Shop app * | 4 | ~1.15 s (Playwright), ~0.86 s (Flashwright) of API time | 1478 ms | 401 ms | 3.69× |
+| Expected failures | 1 | 15 × 250 ms | 1020 ms | 352 ms | 2.90× |
+| Suite with real failures | 1 | 5 × 250 ms | 3147 ms | 771 ms | 4.08× |
+| Form submit to a backend | 1 | 15 × 20 ms | 1733 ms | 501 ms | 3.46× |
+| Assertion on a delayed update | 1 | 15 × 8 ms | 1106 ms | 368 ms | 3.01× |
+| Shop app | 1 | ~2.1 s of API time | 4149 ms | 985 ms | 4.21× |
+| Shop app * | 4 | ~1.15 s (Playwright), ~0.86 s (Flashwright) of API time | 1457 ms | 409 ms | 3.56× |
 
-SVGOMG with 4 workers used to be bound by the application: once the demo loads, its settings panel waits 50 ms and slides in for 300 ms, and with four browsers rendering the app on 6 CPUs the clicks inside the panel missed that 50 ms window, so the stable check waited for the slide (1.70×). Since clicks no longer wait for animations by default (`waitForAnimations` below), it is 2.48×. The rest of the shop's wall time with 4 workers is its API latency, spread unevenly across workers.
+SVGOMG with 4 workers used to be bound by the application: once the demo loads, its settings panel waits 50 ms and slides in for 300 ms, and with four browsers rendering the app on 6 CPUs the clicks inside the panel missed that 50 ms window, so the stable check waited for the slide (1.70×). Since clicks no longer wait for animations by default (`waitForAnimations` below), it is 2.55×. The rest of the shop's wall time with 4 workers is its API latency, spread unevenly across workers.
 
 ### Speed options
 
@@ -69,7 +69,7 @@ On by default:
 
 | Option | Default | What it does | Effect here |
 | --- | --- | --- | --- |
-| `waitForAnimations` (`use`) | `false` | With `false`, clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish; Playwright's hit-target check still makes sure the element receives the input. Set `true` for an app that ignores input while it animates. | SVGOMG, 4 workers: 739 ms → 517 ms (1.70× → 2.48× vs Playwright) |
+| `waitForAnimations` (`use`) | `false` | With `false`, clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish; Playwright's hit-target check still makes sure the element receives the input. Set `true` for an app that ignores input while it animates. | SVGOMG, 4 workers: 739 ms → 498 ms (1.70× → 2.55× vs Playwright) |
 | `testOrder` (config, `--test-order`) | `'longest-first'` | With more than one worker, the test groups that took longest in the previous run of the config start first, as Jest does, so a long test does not start last and run alone at the end. `'file'` keeps Playwright's order, for suites whose tests depend on what ran before them in the same worker (Playwright's own library suite has such tests). | Shop, 4 workers: 1293 ms → 1234 ms; TodoMVC, 4 workers: 850 ms → 813 ms |
 
 Off by default, because they change what the page does:
@@ -83,6 +83,8 @@ Off by default, because they change what the page does:
 The gallery is `workload:media` in `bench/`: 15 tests that each open a page with 24 product images (served with 30 ms latency), open a details dialog and close it, and wait for the dialog to go away once its 250 ms fade-out ends. Reproduce with `node bench/run.mjs workload:media 1 10 'stock,fork,fork:USE_instantAnimations=true'`.
 
 **The browser.** Flashwright runs Playwright's Chromium builds (the headless shell in headless mode), not a custom browser. Playwright already launches them without what a test never sees: no sandbox, Safe Browsing, background networking, component updates, extensions, sync, translation, crash reporting or first-run screens, and the headless shell does not isolate sites: even cross-site frames run in their page's process. The remaining switches made no suite faster when measured (`--disable-gpu`, `--in-process-gpu`, `--disable-gpu-vsync`, site-isolation switches, an in-process network service); `--disable-gpu` made screenshots about 4% slower. A custom build would mean a browser release for every Playwright release, for no measured gain. `launchOptions.args` still takes any switch.
+
+**Playwright's own listeners.** Request and console tracking stay on. Tracking costs about 37 µs per request (a page with 200 images loads in 40.8 ms instead of 33.4 ms) and at most 16 µs per console message, while turning it off would break `page.goto()` responses, request and response events, routes and `waitForResponse()`, and Playwright's own console-based signals. To save the requests themselves, use `blockResources`.
 
 ## What changed
 
