@@ -10,23 +10,23 @@ Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64
 
 | Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC (upstream example suite) | 24 | 1 | 3686 ms | 1161 ms | 3.17× |
-| TodoMVC | 24 | 4 | 1761 ms | 806 ms | 2.18× |
-| SVGOMG (upstream example suite) | 6 | 1 | 1755 ms | 589 ms | 2.98× |
-| SVGOMG * | 6 | 4 | 1254 ms | 770 ms | 1.63× |
-| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6336 ms | 3076 ms | 2.06× |
-| Shop app * | 18 | 4 | 2585 ms | 1349 ms | 1.92× |
-| A single test (an agent re-running one test; measured separately) | 1 | 1 | 608 ms | 209 ms | 2.91× |
-| Trivial test | 15 | 1 | 1035 ms | 358 ms | 2.89× |
-| Click + assertion | 15 | 1 | 1648 ms | 451 ms | 3.65× |
-| Assertion on a delayed update | 15 | 1 | 1203 ms | 495 ms | 2.43× |
-| Navigation | 15 | 1 | 1271 ms | 484 ms | 2.63× |
-| Fixture setup only | 15 | 1 | 1194 ms | 414 ms | 2.88× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 2001 ms | 817 ms | 2.45× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2394 ms | 1017 ms | 2.35× |
-| `page.screenshot()` to a file | 15 | 1 | 1918 ms | 880 ms | 2.18× |
-| Suite with real failures (every third test) | 15 | 1 | 4344 ms | 2203 ms | 1.97× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4779 ms | 4119 ms | 1.16× |
+| TodoMVC (upstream example suite) | 24 | 1 | 3697 ms | 1167 ms | 3.17× |
+| TodoMVC | 24 | 4 | 1787 ms | 810 ms | 2.21× |
+| SVGOMG (upstream example suite) | 6 | 1 | 1751 ms | 584 ms | 3.00× |
+| SVGOMG * | 6 | 4 | 1257 ms | 750 ms | 1.68× |
+| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6360 ms | 3034 ms | 2.10× |
+| Shop app * | 18 | 4 | 2595 ms | 1295 ms | 2.00× |
+| A single test (an agent re-running one test; measured separately) | 1 | 1 | 609 ms | 196 ms | 3.11× |
+| Trivial test | 15 | 1 | 1040 ms | 349 ms | 2.98× |
+| Click + assertion | 15 | 1 | 1617 ms | 458 ms | 3.53× |
+| Assertion on a delayed update | 15 | 1 | 1223 ms | 481 ms | 2.54× |
+| Navigation | 15 | 1 | 1282 ms | 471 ms | 2.72× |
+| Fixture setup only | 15 | 1 | 1197 ms | 404 ms | 2.96× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2002 ms | 786 ms | 2.55× |
+| `toHaveScreenshot()` against a baseline | 15 | 1 | 2390 ms | 998 ms | 2.39× |
+| `page.screenshot()` to a file | 15 | 1 | 1932 ms | 862 ms | 2.24× |
+| Suite with real failures (every third test) | 15 | 1 | 4384 ms | 2108 ms | 2.08× |
+| Expected failures (250 ms timeout each) | 15 | 1 | 4776 ms | 4114 ms | 1.16× |
 
 The single-file workloads run in one worker regardless of the worker setting; their 4-worker numbers match the 1-worker ones.
 
@@ -34,14 +34,14 @@ Some scenarios mostly wait for things no framework can make faster: assertion ti
 
 | Scenario | Workers | Waits the tests ask for | Playwright adds | Flashwright adds | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Expected failures | 1 | 15 × 250 ms | 1029 ms | 369 ms | 2.79× |
-| Suite with real failures | 1 | 5 × 250 ms | 3094 ms | 953 ms | 3.25× |
-| Form submit to a backend | 1 | 15 × 20 ms | 1701 ms | 517 ms | 3.29× |
-| Assertion on a delayed update | 1 | 15 × 8 ms | 1083 ms | 375 ms | 2.89× |
-| Shop app | 1 | ~2.1 s of API time | 4221 ms | 1020 ms | 4.14× |
-| Shop app * | 4 | ~1.1 s (Playwright), ~0.9 s (Flashwright) of API time | 1440 ms | 472 ms | 3.05× |
+| Expected failures | 1 | 15 × 250 ms | 1026 ms | 364 ms | 2.82× |
+| Suite with real failures | 1 | 5 × 250 ms | 3134 ms | 858 ms | 3.65× |
+| Form submit to a backend | 1 | 15 × 20 ms | 1702 ms | 486 ms | 3.50× |
+| Assertion on a delayed update | 1 | 15 × 8 ms | 1103 ms | 361 ms | 3.06× |
+| Shop app | 1 | ~2.1 s of API time | 4244 ms | 979 ms | 4.34× |
+| Shop app * | 4 | ~1.15 s (Playwright), ~0.86 s (Flashwright) of API time | 1442 ms | 435 ms | 3.31× |
 
-SVGOMG with 4 workers is bound by the application itself: four browsers each load the app and run its in-page SVG optimizer on 6 CPUs, and the optimized SVG arrives late enough that its layout shift lands during a test's click, which every framework has to wait out.
+SVGOMG with 4 workers is bound by the application itself: four browsers each load the app and run its in-page SVG optimizer on 6 CPUs, and its settings panel is still sliding in (a CSS transition) when a test clicks a button inside it, which every framework has to wait out. The same race makes some single-worker runs ~300 ms slower than others.
 
 ## What changed
 
