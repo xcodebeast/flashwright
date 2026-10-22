@@ -314,7 +314,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // In a healthy browser this takes a few milliseconds. If the previous test left something that
     // keeps it from finishing (a hung renderer, a stuck dialog or request), replace the context
     // instead of waiting on it.
-    const reset = this._resetForRecycle(progress);
+    let storageStatePage: Promise<Page | undefined> | undefined;
+    const reset = this._resetForRecycle(progress, page => storageStatePage = page.catch(() => undefined));
     reset.catch(() => {});
     if (!await progress.race(raceWithTimeout(reset, kRecycleTimeout, false)))
       return false;
@@ -325,11 +326,11 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     else
       await this.credentials.dispose(progress);
     if (state)
-      await this.setStorageState(progress, state, 'initial');
+      await this.setStorageState(progress, state, 'initial', await storageStatePage);
     return true;
   }
 
-  private async _resetForRecycle(progress: Progress): Promise<boolean> {
+  private async _resetForRecycle(progress: Progress, onStorageStatePage: (page: Promise<Page>) => void): Promise<boolean> {
     Object.assign(this._options, structuredClone(this._recycleBaseline));
     await this.clock.uninstall(progress);
     await progress.race(this.dialogManager.dismissAllDialogs());
@@ -338,6 +339,10 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // busy (an endless script, a stuck dialog), the tab cannot come up; replace the whole context
     // instead, which kills the renderer just like closing the context would.
     const previousPages = this.possiblyUninitializedPages();
+    // Closing a page is acknowledged by the browser before the renderer tears it down, so its
+    // scripts could still write storage after the clearing below; stop them first.
+    const stopped = this.doStopPages(previousPages.filter(p => !p.isClosedOrClosingOrCrashed()));
+    stopped.catch(() => {});
     this._heldPage = undefined;
     this._preparingRecycledPage = true;
     const newPage = this.newPage(progress);
@@ -353,9 +358,11 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     this._heldPage = page;
     this._heldPageInitScripts = [...this.initScripts];
     this._heldPageEmulation = this._pageEmulationKey();
-    // Closing a page is acknowledged by the browser before the renderer tears it down, so its
-    // scripts could still write storage after the clearing below; stop them first.
-    await progress.race(this.doStopPages(previousPages.filter(p => !p.isClosedOrClosingOrCrashed())));
+    // The page that restores storageState's per-origin storage opens while the previous pages stop
+    // and storage is cleared. Pages are created one at a time: creation marks which kind it is.
+    if (this._options.storageState?.origins?.length)
+      onStorageStatePage(this.newPage(progress, true /* forStorageState */));
+    await progress.race(stopped);
     await progress.race(Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {}))));
 
     await progress.race(Promise.all(Array.from(this._downloads).map(download => download.artifact.deleteOnContextClose())));
@@ -840,8 +847,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     return this._preparingRecycledPage;
   }
 
-  async setStorageState(progress: Progress, state: channels.BrowserNewContextParams['storageState'], mode: 'initial' | 'resetForReuse' | 'api') {
-    let page: Page | undefined;
+  async setStorageState(progress: Progress, state: channels.BrowserNewContextParams['storageState'], mode: 'initial' | 'resetForReuse' | 'api', preparedPage?: Page) {
+    let page: Page | undefined = preparedPage;
     let interceptor: network.RouteHandler | undefined;
     try {
       if (mode !== 'initial') {
@@ -866,7 +873,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       const allOrigins = new Set([...this._origins, ...newOrigins.keys()]);
       if (allOrigins.size) {
         if (mode === 'resetForReuse')
-          page = this.pages()[0];
+          page ??= this.pages()[0];
         if (!page)
           page = await this.newPage(progress, mode !== 'resetForReuse' /* forStorageState */);
 
