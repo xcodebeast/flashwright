@@ -26,7 +26,8 @@ it.skip(({ isElectron }) => isElectron);
 // Only Chromium recycles contexts; other browsers get a new context for every test, as in Playwright.
 it.skip(({ browserName }) => browserName !== 'chromium');
 
-it('leaves storage, permissions and context settings behind', async ({ page, context, server }) => {
+it('leaves storage, permissions and context settings behind', async ({ page, server }) => {
+  const context = page.context();
   await page.goto(server.PREFIX + '/serviceworkers/empty/sw.html');
   await page.evaluate(() => (window as any).registrationPromise);
   await page.evaluate(async () => {
@@ -56,7 +57,8 @@ it('leaves storage, permissions and context settings behind', async ({ page, con
   expect(await page.evaluate(() => localStorage.getItem('local'))).toBe('1');
 });
 
-it('sees a fresh context', async ({ page, context, server }) => {
+it('sees a fresh context', async ({ page, server }) => {
+  const context = page.context();
   expect(context.pages()).toEqual([page]);
   expect(page.url()).toBe('about:blank');
   expect(await context.cookies()).toEqual([]);
@@ -95,8 +97,8 @@ it('sees a fresh context', async ({ page, context, server }) => {
   expect(await page.evaluate(() => fetch('/route-from-previous-test').then(r => r.text()))).toBe('from server');
 });
 
-it('leaves the offline flag on', async ({ context }) => {
-  await context.setOffline(true);
+it('leaves the offline flag on', async ({ page }) => {
+  await page.context().setOffline(true);
 });
 
 it('is online again', async ({ page, server }) => {
@@ -148,7 +150,8 @@ it('leaves a script writing storage', async ({ page, server }) => {
   await page.waitForFunction(() => localStorage.getItem('late') === 'write');
 });
 
-it('sees none of the late writes', async ({ page, context, server }) => {
+it('sees none of the late writes', async ({ page, server }) => {
+  const context = page.context();
   await page.goto(server.EMPTY_PAGE);
   expect(await page.evaluate(() => localStorage.getItem('late'))).toBe(null);
   expect(await context.cookies()).toEqual([]);

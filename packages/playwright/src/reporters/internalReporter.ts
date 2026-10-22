@@ -21,13 +21,14 @@ import { monotonicTime } from '@isomorphic/time';
 import { internalScreen, prepareErrorStack, relativeFilePath } from './base';
 import { Multiplexer } from './multiplexer';
 import { test as testNs } from '../common';
-import type * as BabelBundle from '../transform/babelBundle';
-// Flashwright: Babel loads on first use; most runs never need it here.
-const babel = new Proxy({}, { get: (_, name) => (require('../transform/babelBundle') as any)[name] }) as typeof BabelBundle;
 import { wrapReporterAsV2 } from './reporterV2';
 
 import type { AnyReporter, ReporterPreprocessParams, ReporterV2 } from './reporterV2';
 import type { FullConfig, FullResult, TestCase, TestError, TestResult, TestStep, WorkerInfo } from '../../types/testReporter';
+import type * as BabelBundle from '../transform/babelBundle';
+
+// Flashwright: Babel loads on first use; most runs never need it here.
+const babel = new Proxy({}, { get: (_, name) => (require('../transform/babelBundle') as any)[name] }) as typeof BabelBundle;
 
 export class InternalReporter implements ReporterV2 {
   private _reporter: Multiplexer;

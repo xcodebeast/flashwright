@@ -37,9 +37,6 @@ import { extractZip } from '@utils/third_party/extractZip';
 declare const __PW_HMR__: boolean;
 
 import { CommonReporterOptions, formatError, formatResultFailure, internalScreen } from './base';
-import type * as BabelBundle from '../transform/babelBundle';
-// Flashwright: Babel loads on first use; most runs never need it here.
-const babel = new Proxy({}, { get: (_, name) => (require('../transform/babelBundle') as any)[name] }) as typeof BabelBundle;
 import { resolveReporterOutputPath, stripAnsiEscapes } from '../util';
 
 import type { ReportConfigureParams, ReportEndParams, ReporterV2 } from './reporterV2';
@@ -48,6 +45,10 @@ import type * as api from '../../types/testReporter';
 import type { HTMLReport, HTMLReportOptions, Location, Stats, TestAttachment, TestCase, TestCaseSummary, TestFile, TestFileSummary, TestResult, TestStep } from '@html-reporter/types';
 import type { TransformCallback } from 'stream';
 import type { ZipFile } from 'yazl';
+import type * as BabelBundle from '../transform/babelBundle';
+
+// Flashwright: Babel loads on first use; most runs never need it here.
+const babel = new Proxy({}, { get: (_, name) => (require('../transform/babelBundle') as any)[name] }) as typeof BabelBundle;
 
 type TestEntry = {
   testCase: TestCase;

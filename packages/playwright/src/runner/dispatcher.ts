@@ -175,9 +175,9 @@ export class Dispatcher {
       void worker.stop(true /* didFail */);
       // Flashwright: a failure means a replacement worker; have the next one ready in advance.
       recordWorkerRestart(!!result.remainingJob || !!this._queue.length);
-    }
-    else if (this._isWorkerRedundant(worker))
+    } else if (this._isWorkerRedundant(worker)) {
       void worker.stop();
+    }
 
     // 5. Possibly queue new jobs with leftover tests and/or retries.
     if (!this._isStopped) {

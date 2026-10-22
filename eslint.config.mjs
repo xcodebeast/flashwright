@@ -45,6 +45,9 @@ const ignores = [
   "index.d.ts",
   "node_modules/",
   "output/",
+  "workbench/",
+  // Benchmark corpora: copies of third-party apps and their test suites, kept as their projects have them.
+  "bench/apps/",
   "**/playwright-report/",
   "examples",
   "packages/*/lib/",
