@@ -749,6 +749,9 @@ export class InjectedScript {
     return document.getAnimations().some(animation => {
       if (!animation.pending && animation.playState !== 'running')
         return false;
+      // An animation still in its start delay has not moved anything yet.
+      if (this._animationIsInStartDelay(animation))
+        return false;
       // Anything we cannot inspect counts as possibly moving elements.
       const properties = this._animatedProperties(animation);
       if (!properties)
@@ -771,6 +774,14 @@ export class InjectedScript {
       }
       return ancestors.has(target);
     });
+  }
+
+  private _animationIsInStartDelay(animation: Animation): boolean {
+    const effect = animation.effect;
+    if (!effect || typeof effect.getComputedTiming !== 'function')
+      return false;
+    const { delay = 0, localTime } = effect.getComputedTiming();
+    return delay > 0 && (localTime === null || localTime === undefined || Number(localTime) < delay);
   }
 
   private _animatedProperties(animation: Animation): string[] | undefined {
