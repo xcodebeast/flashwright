@@ -122,6 +122,11 @@ export class FrameManager {
   private _mainFrame: Frame;
   readonly _consoleMessageTags = new Map<string, ConsoleTagHandler>();
   readonly _signalBarriers = new Set<SignalBarrier>();
+  // Flashwright: set when an input action made the page navigate (a link to a download included).
+  // The browser keeps processing such a navigation after Playwright stops waiting for it, and an
+  // input event that arrives within the same frame can be lost (a second download is blocked as
+  // an automatic one), so the next pointer action waits for a frame as Playwright does.
+  inputNavigated = false;
   private _webSockets = new Map<string, network.WebSocket>();
   private _nextFrameSeq = 0;
 
@@ -198,6 +203,8 @@ export class FrameManager {
       const result = await action(progress);
       await progress.race(this._page.delegate.inputActionEpilogue());
       await barrier.waitFor(progress);
+      if (barrier.navigated)
+        this.inputNavigated = true;
       // Resolve in the next task, after all waitForNavigations.
       await new Promise<void>(f => setImmediate(f));
       return result;
@@ -1888,6 +1895,7 @@ class SignalBarrier {
   private _progress: Progress;
   private _protectCount = 0;
   private _promise = new ManualPromise<void>();
+  navigated = false;
 
   constructor(progress: Progress) {
     this._progress = progress;
@@ -1900,6 +1908,7 @@ class SignalBarrier {
   }
 
   addFrameNavigation(frame: Frame) {
+    this.navigated = true;
     // Auto-wait top-level navigations only.
     if (frame.parentFrame())
       return;

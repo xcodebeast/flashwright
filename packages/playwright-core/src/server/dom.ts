@@ -435,9 +435,11 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
     if (!force) {
       const elementStates: ElementState[] = action.waitForEnabled ? ['visible', 'enabled', 'stable'] : ['visible', 'stable'];
       progress.log(`  waiting for element to be ${action.waitForEnabled ? 'visible, enabled and stable' : 'visible and stable'}`);
-      const result = await progress.race(this.evaluateInUtility(async ([injected, node, { elementStates, frameVisible }]) => {
-        return await injected.checkElementStates(node, elementStates, frameVisible, true /* immediateStable */);
-      }, { elementStates, frameVisible }));
+      const immediateStable = !this._page.frameManager.inputNavigated;
+      this._page.frameManager.inputNavigated = false;
+      const result = await progress.race(this.evaluateInUtility(async ([injected, node, { elementStates, frameVisible, immediateStable }]) => {
+        return await injected.checkElementStates(node, elementStates, frameVisible, immediateStable);
+      }, { elementStates, frameVisible, immediateStable }));
       if (result)
         return result;
       progress.log(`  element is ${action.waitForEnabled ? 'visible, enabled and stable' : 'visible and stable'}`);
