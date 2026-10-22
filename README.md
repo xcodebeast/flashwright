@@ -6,29 +6,42 @@ The fork follows upstream closely: Playwright's own test suites are the regressi
 
 ## How much faster
 
-Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64.1, same machine (6 CPUs), same Chromium (headless shell 156), median of 5 alternating runs. Reproduce with `node bench/matrix.mjs 5 1,4`.
+Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64.1, same machine (6 CPUs), same Chromium (headless shell 156), median of 5 alternating runs (15 for the two 4-worker rows marked *, whose runs vary more). Reproduce with `node bench/matrix.mjs 5 1,4`.
 
 | Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC (upstream example suite) | 24 | 1 | 3707 ms | 1466 ms | 2.53× |
-| TodoMVC | 24 | 4 | 1782 ms | 894 ms | 1.99× |
-| SVGOMG (upstream example suite) | 6 | 1 | 1746 ms | 724 ms | 2.41× |
-| SVGOMG | 6 | 4 | 1269 ms | 828 ms | 1.53× |
-| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6279 ms | 3336 ms | 1.88× |
-| Shop app | 18 | 4 | 2598 ms | 1449 ms | 1.79× |
-| A single test (an agent re-running one test; measured separately) | 1 | 1 | 612 ms | 215 ms | 2.85× |
-| Trivial test | 15 | 1 | 1048 ms | 379 ms | 2.77× |
-| Click + assertion | 15 | 1 | 1617 ms | 602 ms | 2.69× |
-| Assertion on a delayed update | 15 | 1 | 1215 ms | 524 ms | 2.32× |
-| Navigation | 15 | 1 | 1278 ms | 503 ms | 2.54× |
-| Fixture setup only | 15 | 1 | 1211 ms | 440 ms | 2.75× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 2003 ms | 995 ms | 2.01× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2445 ms | 1055 ms | 2.32× |
-| `page.screenshot()` to a file | 15 | 1 | 1952 ms | 890 ms | 2.19× |
-| Suite with real failures (every third test) | 15 | 1 | 4383 ms | 2423 ms | 1.81× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4778 ms | 4136 ms | 1.16× |
+| TodoMVC (upstream example suite) | 24 | 1 | 3686 ms | 1161 ms | 3.17× |
+| TodoMVC | 24 | 4 | 1761 ms | 806 ms | 2.18× |
+| SVGOMG (upstream example suite) | 6 | 1 | 1755 ms | 589 ms | 2.98× |
+| SVGOMG * | 6 | 4 | 1254 ms | 770 ms | 1.63× |
+| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6336 ms | 3076 ms | 2.06× |
+| Shop app * | 18 | 4 | 2585 ms | 1349 ms | 1.92× |
+| A single test (an agent re-running one test; measured separately) | 1 | 1 | 608 ms | 209 ms | 2.91× |
+| Trivial test | 15 | 1 | 1035 ms | 358 ms | 2.89× |
+| Click + assertion | 15 | 1 | 1648 ms | 451 ms | 3.65× |
+| Assertion on a delayed update | 15 | 1 | 1203 ms | 495 ms | 2.43× |
+| Navigation | 15 | 1 | 1271 ms | 484 ms | 2.63× |
+| Fixture setup only | 15 | 1 | 1194 ms | 414 ms | 2.88× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2001 ms | 817 ms | 2.45× |
+| `toHaveScreenshot()` against a baseline | 15 | 1 | 2394 ms | 1017 ms | 2.35× |
+| `page.screenshot()` to a file | 15 | 1 | 1918 ms | 880 ms | 2.18× |
+| Suite with real failures (every third test) | 15 | 1 | 4344 ms | 2203 ms | 1.97× |
+| Expected failures (250 ms timeout each) | 15 | 1 | 4779 ms | 4119 ms | 1.16× |
 
-The single-file workloads run in one worker regardless of the worker setting; their 4-worker numbers match the 1-worker ones. Some scenarios are bounded by time the tests themselves ask for: 15 × 250 ms of assertion timeouts, the shop's ~2.1 s of API latency and debounce timers, SVGOMG's own SVG optimization work. Flashwright removes most of the framework time around them.
+The single-file workloads run in one worker regardless of the worker setting; their 4-worker numbers match the 1-worker ones.
+
+Some scenarios mostly wait for things no framework can make faster: assertion timeouts that are meant to expire, and the application server's response time. There the wall-clock ratio is capped by the waiting, so the matrix also reports the time each framework adds on top of it (wall time minus the waits the tests ask for; for the shop, minus the time an API request was pending, measured in each framework's own runs):
+
+| Scenario | Workers | Waits the tests ask for | Playwright adds | Flashwright adds | Speedup |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Expected failures | 1 | 15 × 250 ms | 1029 ms | 369 ms | 2.79× |
+| Suite with real failures | 1 | 5 × 250 ms | 3094 ms | 953 ms | 3.25× |
+| Form submit to a backend | 1 | 15 × 20 ms | 1701 ms | 517 ms | 3.29× |
+| Assertion on a delayed update | 1 | 15 × 8 ms | 1083 ms | 375 ms | 2.89× |
+| Shop app | 1 | ~2.1 s of API time | 4221 ms | 1020 ms | 4.14× |
+| Shop app * | 4 | ~1.1 s (Playwright), ~0.9 s (Flashwright) of API time | 1440 ms | 472 ms | 3.05× |
+
+SVGOMG with 4 workers is bound by the application itself: four browsers each load the app and run its in-page SVG optimizer on 6 CPUs, and the optimized SVG arrives late enough that its layout shift lands during a test's click, which every framework has to wait out.
 
 ## What changed
 
@@ -36,9 +49,9 @@ Each item keeps Playwright's observable behavior; the differences that remain ar
 
 - **Warm renderers through context recycling.** Recompiling the application's JavaScript in a fresh renderer for every test dominates many suites (47 ms of a 60 ms TodoMVC setup). Flashwright keeps one browser context per worker and gives each test a brand-new tab in it, opened next to the old one so it lands in the already-warm renderer. Between tests it resets everything a test can change: context options, permissions, cookies, every visited origin's storage (local, session, IndexedDB, Cache Storage, service workers, ...), the HTTP and memory caches, routes, init scripts, bindings, downloads and clock, then re-applies `storageState`. Before clearing anything it stops the previous test's pages (scripts disabled, documents replaced), so a script still writing storage when a test ends cannot leak into the next test. A renderer left hung or busy by the previous test is detected and the context is replaced. See `tests/page/recycle-isolation.spec.ts`.
 - **Retries react to changes instead of sleeping.** Auto-waiting assertions and actions re-check as soon as the page mutates or fires input/focus/scroll/animation/navigation events, rather than after Playwright's fixed 20–500 ms backoff.
-- **No frame wait before clicks.** Actionability's "stable" check keeps a click from landing on a moving element. When no CSS transition, CSS animation or Web Animation can move the element (ones that only change colors or opacity, or transform some other element, do not count), clicks, hovers, taps and drags no longer wait for animation frames: Playwright already checks, when the input events are dispatched, that they reach the element, and retries otherwise. While such an animation runs, the element's box is compared across frames as before. `waitForElementState('stable')` and element screenshots keep the frame-based check.
+- **No frame wait before clicks.** Actionability's "stable" check keeps a click from landing on a moving element. When no CSS transition, CSS animation or Web Animation can move the element (ones that only change colors or opacity, or transform some other element, do not count), clicks, hovers, taps and drags no longer wait for animation frames: Playwright already checks, when the input events are dispatched, that they reach the element, and retries otherwise. While such an animation runs, the element's box is compared across frames as before, and right after an action that made the page navigate (a download link, for instance) the next one waits a frame, since the browser may still be handling that navigation. `waitForElementState('stable')` and element screenshots keep the frame-based check.
 - **Workers and browsers start before they are needed.** Worker processes, each launching the default browser, start while the CLI is still loading the config and test files; their number is remembered per project, and on a first run (or in CI) the configured number starts as soon as the config is read. Once a run has failing tests, a spare worker is kept ready so replacing a failed worker does not wait for a cold start.
-- **Faster startup.** Node's compile cache is enabled for every process, and Playwright's own bundles additionally use a V8 code cache written after their code has run, so later runs skip compiling the functions they use. The CLI, MCP server, trace tools, vendored packages and the library half of `@playwright/test` load only when used, and test files are imported without an extra event-loop turn each.
+- **Faster startup.** Node's compile cache is enabled for every process, and Playwright's own bundles additionally use a V8 code cache written after their code has run, so later runs skip compiling the functions they use. The CLI, MCP server, trace tools, vendored packages and the library half of `@playwright/test` load only when used, the large bundles are kept ASCII-only so V8 holds them as compact one-byte strings, and test files are imported without an extra event-loop turn each.
 - **Less work per call.** Call-site stacks captured for every step are source-mapped only for test files; error objects kept for rare failure paths format their stacks lazily; the script injected into every new document is minified and kept byte-identical across documents so the browser reuses its compiled code.
 - **Faster screenshots and visual comparisons.** `page.screenshot()` asks Chromium for speed-optimized PNG encoding (same pixels, about half the capture time). `toHaveScreenshot()` compares a fast first capture against the baseline by decoded pixels, returns immediately for identical files, and decodes browser-made PNGs with a native-inflate decoder; every capture that can be written as a baseline keeps Chromium's default encoding, byte-identical to Playwright's.
 
