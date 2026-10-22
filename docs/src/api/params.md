@@ -735,6 +735,12 @@ Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations 
 
 Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster, delays included, so that they end within a frame and fire their end events right away. A test then spends no time waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only; Firefox and WebKit ignore it. Defaults to `false`.
 
+## context-option-failfastwhenidle
+* langs: js
+- `failFastWhenIdle` <[boolean]>
+
+Whether an assertion that does not pass yet fails as soon as nothing can change the page before its timeout, instead of waiting for the timeout. The page counts as idle when, for 50 ms, no timer is due before the timeout, no animation frame, idle callback, message or DOM change happens, no request is in flight, no web socket is open, nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+
 ## context-option-blockresources
 * langs: js
 - `blockResources` <[Array]<[BlockedResourceType]<"image"|"media"|"font"|"stylesheet"|"script">>>
@@ -1171,6 +1177,7 @@ between the same pixel in compared images, between zero (strict) and one (lax), 
 - %%-context-option-javascriptenabled-%%
 - %%-context-option-waitforanimations-%%
 - %%-context-option-instantanimations-%%
+- %%-context-option-failfastwhenidle-%%
 - %%-context-option-blockresources-%%
 - %%-context-option-timezoneid-%%
 - %%-context-option-geolocation-%%

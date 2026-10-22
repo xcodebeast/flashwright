@@ -32,6 +32,7 @@ import { EvaluationStalledError, TimeoutError, isTargetClosedError, rewriteError
 import { prepareFilesForUpload } from './fileUploadUtils';
 import { FrameSelectors } from './frameSelectors';
 import { helper } from './helper';
+import { IdleDetector } from './idleDetector';
 import { SdkObject } from './instrumentation';
 import * as js from './javascript';
 import * as network from './network';
@@ -61,6 +62,9 @@ type DocumentInfo = {
   request: network.Request | undefined,
 };
 
+
+// Flashwright: returned by an assertion's retry that found the page idle (see IdleDetector).
+const kPageIdle = Symbol('pageIdle');
 export type GotoResult = {
   newDocumentId?: string,
 };
@@ -484,6 +488,11 @@ export class FrameManager {
       ws.frameReceived(opcode, data, wallTimeMs);
   }
 
+  // Flashwright: see IdleDetector.
+  hasOpenWebSockets(): boolean {
+    return this._webSockets.size > 0;
+  }
+
   webSocketClosed(requestId: string) {
     const ws = this._webSockets.get(requestId);
     if (ws) {
@@ -606,6 +615,11 @@ export class Frame extends SdkObject<FrameEventMap> {
 
   pendingDocument(): DocumentInfo | undefined {
     return this._pendingDocument;
+  }
+
+  // Flashwright: see IdleDetector.
+  hasPendingNetworkOrNavigation(): boolean {
+    return this._inflightRequests.size > 0 || !!this._pendingDocument;
   }
 
   invalidateNonStallingEvaluations(error: Error) {
@@ -1533,10 +1547,14 @@ export class Frame extends SdkObject<FrameEventMap> {
       }
 
       // Step 3: auto-retry expect with increasing timeouts. Bounded by the total remaining time.
-      await this.retryWithProgressAndBackoff(progress, async (progress, continuePolling) => {
+      const idleDetector = this._page.browserContext._options.failFastWhenIdle ? new IdleDetector(this._page) : undefined;
+      const result = await this.retryWithProgressAndBackoff(progress, async (progress, continuePolling) => {
         await this._page.performActionPreChecks(progress);
         const { matches, received } = await this._expectInternal(progress, selector, options, lastIntermediateResult, false);
         if (matches === options.isNot) {
+          // Flashwright: with failFastWhenIdle, give up once nothing can change the page in time.
+          if (idleDetector && await progress.race(idleDetector.isIdle(progress.deadline)))
+            return kPageIdle;
           // Keep waiting in these cases:
           // expect(locator).conditionThatDoesNotMatch
           // expect(locator).not.conditionThatDoesMatch
@@ -1544,6 +1562,10 @@ export class Frame extends SdkObject<FrameEventMap> {
         }
         return { matches, received };
       });
+      if ((result as unknown) === kPageIdle) {
+        progress.log(`  nothing can change the page before the timeout; failing early (failFastWhenIdle)`);
+        throw new TimeoutError(`Timeout ${progress.timeout}ms exceeded.`);
+      }
     } catch (e) {
       const closedError = isTargetClosedError(e) || isSessionClosedError(e) ? rewriteErrorForClosedTarget(e, this.closeReason()) : undefined;
       if (closedError)

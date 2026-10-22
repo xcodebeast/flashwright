@@ -188,6 +188,8 @@ export class Page extends SdkObject<PageEventMap> {
   readonly highlightController: HighlightController;
   readonly frameManager: frames.FrameManager;
   private _workers = new Map<string, Worker>();
+  // Flashwright: client calls on this page or its frames that have not finished (see IdleDetector).
+  activeClientCalls = 0;
   readonly pdf: ((options: channels.PagePdfParams) => Promise<Buffer>) | undefined;
   readonly coverage: any;
   readonly requestInterceptors: network.RouteHandler[] = [];
@@ -911,6 +913,11 @@ export class Page extends SdkObject<PageEventMap> {
       return;
     worker.didClose();
     this._workers.delete(workerId);
+  }
+
+  // Flashwright: see IdleDetector.
+  hasWorkers(): boolean {
+    return this._workers.size > 0;
   }
 
   clearWorkers() {

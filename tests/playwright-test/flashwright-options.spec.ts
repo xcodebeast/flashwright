@@ -91,3 +91,21 @@ test('should reject webSecurity: false outside Chromium', async ({ runInlineTest
   expect(result.exitCode).toBe(1);
   expect(result.output).toContain('webSecurity: false is only supported in Chromium, not in firefox');
 });
+
+test('should apply failFastWhenIdle from test.use', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      test.use({ failFastWhenIdle: true });
+      test('fails early', async ({ page }) => {
+        await page.setContent('<div>static</div>');
+        const start = Date.now();
+        const error = await expect(page.locator('#missing')).toBeVisible({ timeout: 10000 }).catch(e => e);
+        expect(error.message).toContain('failing early (failFastWhenIdle)');
+        expect(Date.now() - start).toBeLessThan(5000);
+      });
+    `,
+  });
+  expect(result.exitCode).toBe(0);
+  expect(result.passed).toBe(1);
+});

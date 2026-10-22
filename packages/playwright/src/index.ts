@@ -295,6 +295,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   javaScriptEnabled: [({ contextOptions }, use) => use(contextOptions.javaScriptEnabled ?? true), { option: true, box: true }],
   waitForAnimations: [({ contextOptions }, use) => use(contextOptions.waitForAnimations ?? false), { option: true, box: true }],
   instantAnimations: [({ contextOptions }, use) => use(contextOptions.instantAnimations ?? false), { option: true, box: true }],
+  failFastWhenIdle: [({ contextOptions }, use) => use(contextOptions.failFastWhenIdle ?? false), { option: true, box: true }],
   blockResources: [({ contextOptions }, use) => use(contextOptions.blockResources), { option: true, box: true }],
   locale: [({ contextOptions }, use) => use(contextOptions.locale ?? 'en-US'), { option: true, box: true }],
   offline: [({ contextOptions }, use) => use(contextOptions.offline ?? false), { option: true, box: true }],
@@ -331,6 +332,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     javaScriptEnabled,
     waitForAnimations,
     instantAnimations,
+    failFastWhenIdle,
     blockResources,
     locale,
     offline,
@@ -377,6 +379,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       options.waitForAnimations = waitForAnimations;
     if (instantAnimations !== undefined)
       options.instantAnimations = instantAnimations;
+    if (failFastWhenIdle !== undefined)
+      options.failFastWhenIdle = failFastWhenIdle;
     if (blockResources !== undefined)
       options.blockResources = blockResources;
     if (locale !== undefined)

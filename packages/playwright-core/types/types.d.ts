@@ -11428,6 +11428,17 @@ export interface Browser {
     extraHTTPHeaders?: { [key: string]: string; };
 
     /**
+     * Whether an assertion that does not pass yet fails as soon as nothing can change the page before its timeout,
+     * instead of waiting for the timeout. The page counts as idle when, for 50 ms, no timer is due before the timeout, no
+     * animation frame, idle callback, message or DOM change happens, no request is in flight, no web socket is open,
+     * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
+     * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
+     * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
+     * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+     */
+    failFastWhenIdle?: boolean;
+
+    /**
      * Emulates `'forced-colors'` media feature, supported values are `'active'`, `'none'`. See
      * [page.emulateMedia([options])](https://playwright.dev/docs/api/class-page#page-emulate-media) for more details.
      * Passing `null` resets emulation to system defaults. Defaults to `'none'`.
@@ -17824,6 +17835,17 @@ export interface BrowserType<Unused = {}> {
      * An object containing additional HTTP headers to be sent with every request. Defaults to none.
      */
     extraHTTPHeaders?: { [key: string]: string; };
+
+    /**
+     * Whether an assertion that does not pass yet fails as soon as nothing can change the page before its timeout,
+     * instead of waiting for the timeout. The page counts as idle when, for 50 ms, no timer is due before the timeout, no
+     * animation frame, idle callback, message or DOM change happens, no request is in flight, no web socket is open,
+     * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
+     * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
+     * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
+     * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+     */
+    failFastWhenIdle?: boolean;
 
     /**
      * Firefox user preferences. Learn more about the Firefox user preferences at
@@ -25115,6 +25137,17 @@ export interface AndroidDevice {
     extraHTTPHeaders?: { [key: string]: string; };
 
     /**
+     * Whether an assertion that does not pass yet fails as soon as nothing can change the page before its timeout,
+     * instead of waiting for the timeout. The page counts as idle when, for 50 ms, no timer is due before the timeout, no
+     * animation frame, idle callback, message or DOM change happens, no request is in flight, no web socket is open,
+     * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
+     * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
+     * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
+     * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+     */
+    failFastWhenIdle?: boolean;
+
+    /**
      * Emulates `'forced-colors'` media feature, supported values are `'active'`, `'none'`. See
      * [page.emulateMedia([options])](https://playwright.dev/docs/api/class-page#page-emulate-media) for more details.
      * Passing `null` resets emulation to system defaults. Defaults to `'none'`.
@@ -26432,6 +26465,17 @@ export interface BrowserContextOptions {
    * An object containing additional HTTP headers to be sent with every request. Defaults to none.
    */
   extraHTTPHeaders?: { [key: string]: string; };
+
+  /**
+   * Whether an assertion that does not pass yet fails as soon as nothing can change the page before its timeout,
+   * instead of waiting for the timeout. The page counts as idle when, for 50 ms, no timer is due before the timeout, no
+   * animation frame, idle callback, message or DOM change happens, no request is in flight, no web socket is open,
+   * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
+   * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
+   * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
+   * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+   */
+  failFastWhenIdle?: boolean;
 
   /**
    * Emulates `'forced-colors'` media feature, supported values are `'active'`, `'none'`. See

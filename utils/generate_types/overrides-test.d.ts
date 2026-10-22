@@ -297,6 +297,7 @@ export interface PlaywrightTestOptions {
   javaScriptEnabled: boolean;
   waitForAnimations: boolean;
   instantAnimations: boolean;
+  failFastWhenIdle: boolean;
   blockResources: Array<'image' | 'media' | 'font' | 'stylesheet' | 'script'> | undefined;
   locale: string | undefined;
   offline: boolean;

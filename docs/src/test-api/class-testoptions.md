@@ -243,6 +243,18 @@ import { test } from '@playwright/test';
 test.use({ instantAnimations: true });
 ```
 
+## property: TestOptions.failFastWhenIdle = %%-context-option-failfastwhenidle-%%
+* since: v1.64
+
+**Usage**
+
+```js title="example.spec.ts"
+import { test } from '@playwright/test';
+
+// These tests check that some elements never show up.
+test.use({ failFastWhenIdle: true });
+```
+
 ## property: TestOptions.blockResources = %%-context-option-blockresources-%%
 * since: v1.64
 

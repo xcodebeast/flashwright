@@ -7738,6 +7738,27 @@ export interface PlaywrightTestOptions {
    */
   instantAnimations: boolean;
   /**
+   * Whether an assertion that does not pass yet fails as soon as nothing can change the page before its timeout,
+   * instead of waiting for the timeout. The page counts as idle when, for 50 ms, no timer is due before the timeout, no
+   * animation frame, idle callback, message or DOM change happens, no request is in flight, no web socket is open,
+   * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
+   * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
+   * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
+   * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // example.spec.ts
+   * import { test } from '@playwright/test';
+   *
+   * // These tests check that some elements never show up.
+   * test.use({ failFastWhenIdle: true });
+   * ```
+   *
+   */
+  failFastWhenIdle: boolean;
+  /**
    * Resource types that the context does not load: their requests fail, as if a route aborted them with
    * `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering
    * them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context

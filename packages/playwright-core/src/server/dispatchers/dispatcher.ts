@@ -379,6 +379,9 @@ export class DispatcherConnection {
     await beforeController.run(progress => sdkObject.instrumentation.onBeforeCall(progress, sdkObject), 3000).catch(() => {});
 
     const response: any = { id };
+    const page = sdkObject.attribution.page;
+    if (page)
+      page.activeClientCalls++;
     try {
       // If the dispatcher has been disposed while running the instrumentation call, error out.
       if (this._dispatcherByGuid.get(guid) !== dispatcher)
@@ -397,6 +400,8 @@ export class DispatcherConnection {
       // The command handler could have set error in the metadata, do not reset it if there was no exception.
       callMetadata.error = response.error;
     } finally {
+      if (page)
+        page.activeClientCalls--;
       callMetadata.endTime = monotonicTime();
       const afterController = swapProgressController();
       // Be generous with the tracing timeout in case it wants to capture a screenshot, fail silently.

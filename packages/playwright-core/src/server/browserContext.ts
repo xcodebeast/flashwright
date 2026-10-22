@@ -25,6 +25,7 @@ import { Debugger } from './debugger';
 import { DialogManager } from './dialog';
 import { BrowserContextAPIRequestContext } from './fetch';
 import { helper } from './helper';
+import { idleTrackerSource } from './idleDetector';
 import { EventMap, SdkObject } from './instrumentation';
 import * as network from './network';
 import { InitScript } from './page';
@@ -191,6 +192,10 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
     if (this._options.serviceWorkers === 'block')
       await this.addInitScript(nullProgress, `\nif (self.ServiceWorkerContainer) ServiceWorkerContainer.prototype.register = async () => { console.warn('Service Worker registration blocked by Playwright'); };\n`);
+
+    // Flashwright: lets assertions tell when nothing can change the page any more (see IdleDetector).
+    if (this._options.failFastWhenIdle)
+      await this.addInitScript(nullProgress, idleTrackerSource);
 
     if (this._options.permissions)
       await this.grantPermissions(this._options.permissions);
@@ -1066,6 +1071,7 @@ const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {
   javaScriptEnabled: true,
   waitForAnimations: false,
   instantAnimations: false,
+  failFastWhenIdle: false,
   bypassCSP: false,
   offline: false,
   isMobile: false,
