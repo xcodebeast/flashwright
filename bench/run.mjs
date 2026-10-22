@@ -102,8 +102,8 @@ try {
     const order = i % 2 ? [...engines].reverse() : engines;
     for (const engine of order) {
       const r = await runOnce(engine);
-      results[engine].push(r);
       const busy = server.takeBusyTime?.();
+      results[engine].push({ ...r, busy });
       console.log(`${app} w${workers} #${i} ${engine.padEnd(28)} ${r.elapsed.toFixed(0).padStart(6)} ms  exit=${r.code} pass=${r.expected} fail=${r.unexpected}${r.cpu !== undefined ? `  cpu=${r.cpu.toFixed(0)}ms` : ''}${busy !== undefined ? `  api-busy=${busy.toFixed(0)}ms` : ''}`);
     }
   }
@@ -112,5 +112,6 @@ const median = xs => { const s = [...xs].sort((a, b) => a - b); return s.length 
 const reference = median(results[engines[0]].map(r => r.elapsed));
 for (const engine of engines) {
   const m = median(results[engine].map(r => r.elapsed));
-  console.log(`SUMMARY ${app} w${workers} ${engine.padEnd(28)} median ${m.toFixed(0).padStart(6)} ms  ${engines[0]}/this = ${(reference / m).toFixed(3)}x`);
+  const busy = results[engine][0].busy !== undefined ? `  api-busy ${median(results[engine].map(r => r.busy)).toFixed(0)} ms` : '';
+  console.log(`SUMMARY ${app} w${workers} ${engine.padEnd(28)} median ${m.toFixed(0).padStart(6)} ms  ${engines[0]}/this = ${(reference / m).toFixed(3)}x${busy}`);
 }
