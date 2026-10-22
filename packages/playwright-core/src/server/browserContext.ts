@@ -1055,6 +1055,7 @@ const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {
   ignoreHTTPSErrors: false,
   javaScriptEnabled: true,
   waitForAnimations: false,
+  instantAnimations: false,
   bypassCSP: false,
   offline: false,
   isMobile: false,

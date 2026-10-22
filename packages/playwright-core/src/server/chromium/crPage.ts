@@ -57,6 +57,10 @@ const kCrashingWebUIHosts = {
   edge: new Set(['history']),
 };
 
+// Flashwright: instantAnimations runs the document timelines this much faster, so that even
+// a ten-second animation ends within a frame.
+const kInstantAnimationsPlaybackRate = 1000;
+
 // Chromium canonicalizes WebUI urls as standard ones, so "VIEW-SOURCE:Chrome:Settings" ends up
 // being "chrome://settings/".
 function webUIHost(url: string): string {
@@ -565,6 +569,8 @@ class FrameSession {
         promises.push(this._client.send('Emulation.setTouchEmulationEnabled', { enabled: true }));
       if (options.javaScriptEnabled === false)
         promises.push(this._client.send('Emulation.setScriptExecutionDisabled', { value: true }));
+      if (options.instantAnimations)
+        promises.push(this._client.send('Animation.setPlaybackRate', { playbackRate: kInstantAnimationsPlaybackRate }));
       if (options.userAgent || options.locale)
         promises.push(this._updateUserAgent());
       if (options.locale)

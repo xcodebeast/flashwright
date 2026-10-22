@@ -214,12 +214,13 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   headless: [({ launchOptions }, use) => use(launchOptions.headless ?? true), { scope: 'worker', option: true, box: true }],
   channel: [({ launchOptions }, use) => use(launchOptions.channel), { scope: 'worker', option: true, box: true }],
   launchOptions: [{}, { scope: 'worker', option: true, box: true }],
+  webSecurity: [true, { scope: 'worker', option: true, box: true }],
   connectOptions: [async ({ _optionConnectOptions }, use) => {
     await use(connectOptionsFromEnv() || _optionConnectOptions);
   }, { scope: 'worker', option: true, box: true }],
   video: ['off', { scope: 'worker', option: true, box: true }],
 
-  _browserOptions: [async ({ playwright, headless, channel, launchOptions }, use) => {
+  _browserOptions: [async ({ playwright, browserName, headless, channel, launchOptions, webSecurity }, use) => {
     const options: LaunchOptions = {
       handleSIGINT: false,
       ...launchOptions,
@@ -230,6 +231,12 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       options.headless = headless;
     if (channel !== undefined)
       options.channel = channel;
+    if (!webSecurity) {
+      // Firefox and WebKit have no switch for it: Firefox's content.cors.disable fails every cross-origin request.
+      if (browserName !== 'chromium')
+        throw new Error(`webSecurity: false is only supported in Chromium, not in ${browserName}`);
+      options.args = [...(options.args ?? []), '--disable-web-security', '--allow-running-insecure-content'];
+    }
 
     playwright._defaultLaunchOptions = options;
     await use(options);
@@ -287,6 +294,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   isMobile: [({ contextOptions }, use) => use(contextOptions.isMobile ?? false), { option: true, box: true }],
   javaScriptEnabled: [({ contextOptions }, use) => use(contextOptions.javaScriptEnabled ?? true), { option: true, box: true }],
   waitForAnimations: [({ contextOptions }, use) => use(contextOptions.waitForAnimations ?? false), { option: true, box: true }],
+  instantAnimations: [({ contextOptions }, use) => use(contextOptions.instantAnimations ?? false), { option: true, box: true }],
+  blockResources: [({ contextOptions }, use) => use(contextOptions.blockResources), { option: true, box: true }],
   locale: [({ contextOptions }, use) => use(contextOptions.locale ?? 'en-US'), { option: true, box: true }],
   offline: [({ contextOptions }, use) => use(contextOptions.offline ?? false), { option: true, box: true }],
   permissions: [({ contextOptions }, use) => use(contextOptions.permissions), { option: true, box: true }],
@@ -321,6 +330,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     isMobile,
     javaScriptEnabled,
     waitForAnimations,
+    instantAnimations,
+    blockResources,
     locale,
     offline,
     permissions,
@@ -364,6 +375,10 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       options.javaScriptEnabled = javaScriptEnabled;
     if (waitForAnimations !== undefined)
       options.waitForAnimations = waitForAnimations;
+    if (instantAnimations !== undefined)
+      options.instantAnimations = instantAnimations;
+    if (blockResources !== undefined)
+      options.blockResources = blockResources;
     if (locale !== undefined)
       options.locale = locale;
     if (offline !== undefined)

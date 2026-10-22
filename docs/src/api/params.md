@@ -729,6 +729,18 @@ Whether or not to enable JavaScript in the context. Defaults to `true`. Learn mo
 
 Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
 
+## context-option-instantanimations
+* langs: js
+- `instantAnimations` <[boolean]>
+
+Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster, delays included, so that they end within a frame and fire their end events right away. A test then spends no time waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only; Firefox and WebKit ignore it. Defaults to `false`.
+
+## context-option-blockresources
+* langs: js
+- `blockResources` <[Array]<[BlockedResourceType]<"image"|"media"|"font"|"stylesheet"|"script">>>
+
+Resource types that the context does not load: their requests fail, as if a route aborted them with `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off JavaScript. Defaults to none.
+
 ## context-option-timezoneid
 - `timezoneId` <[string]>
 
@@ -1158,6 +1170,8 @@ between the same pixel in compared images, between zero (strict) and one (lax), 
 - %%-context-option-hastouch-%%
 - %%-context-option-javascriptenabled-%%
 - %%-context-option-waitforanimations-%%
+- %%-context-option-instantanimations-%%
+- %%-context-option-blockresources-%%
 - %%-context-option-timezoneid-%%
 - %%-context-option-geolocation-%%
 - %%-context-option-locale-%%

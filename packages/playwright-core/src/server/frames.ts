@@ -345,7 +345,13 @@ export class FrameManager {
     }
     this._page.addNetworkRequest(request);
     this._page.emitOnContext(BrowserContext.Events.Request, request);
-    if (route)
+    if (!route)
+      return;
+    // Flashwright: blocked resource types fail before any route sees them. Chromium fails them in
+    // its network manager instead, so they never get here with a route.
+    if (this._page.browserContext._options.blockResources?.includes(request.resourceType() as any))
+      new network.Route(request, route).abort('blockedbyclient').catch(() => {});
+    else
       new network.Route(request, route).handle([...this._page.requestInterceptors, ...this._page.browserContext.requestInterceptors]);
   }
 

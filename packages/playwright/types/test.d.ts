@@ -7150,6 +7150,26 @@ export interface PlaywrightWorkerOptions {
    */
   launchOptions: Omit<LaunchOptions, 'tracesDir'>;
   /**
+   * Whether the browser enforces the same-origin policy, including CORS, and blocks active mixed content. Flashwright
+   * keeps both on by default, like Playwright. `false` turns them off for every page of the worker's browser, which
+   * then launches with `--disable-web-security` and `--allow-running-insecure-content`. Chromium only: Firefox and
+   * WebKit have no such switch, and fail to launch with `false`. To ignore a page's Content Security Policy instead,
+   * use [testOptions.bypassCSP](https://playwright.dev/docs/api/class-testoptions#test-options-bypass-csp). Defaults to
+   * `true`.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // example.spec.ts
+   * import { test } from '@playwright/test';
+   *
+   * // The front end calls the API on another port, which does not send CORS headers in tests.
+   * test.use({ webSecurity: false });
+   * ```
+   *
+   */
+  webSecurity: boolean;
+  /**
    * **Usage**
    *
    * ```js
@@ -7198,9 +7218,9 @@ export interface PlaywrightWorkerOptions {
    * - The option is ignored when
    *   [testOptions.video](https://playwright.dev/docs/api/class-testoptions#test-options-video) recording is enabled.
    * - Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`,
-   *   `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport` and `testIdAttribute`. Changing any other option
-   *   in [test.use(options)](https://playwright.dev/docs/api/class-test#test-use), for example `locale` or
-   *   `storageState`, silently forces a fresh context and negates the speedup.
+   *   `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute` and `waitForAnimations`.
+   *   Changing any other option in [test.use(options)](https://playwright.dev/docs/api/class-test#test-use), for
+   *   example `locale` or `storageState`, silently forces a fresh context and negates the speedup.
    * - Do not combine with
    *   [testOptions.connectOptions](https://playwright.dev/docs/api/class-testoptions#test-options-connect-options)
    *   pointing multiple workers at a shared browser - workers would compete for the single reusable context.
@@ -7698,6 +7718,43 @@ export interface PlaywrightTestOptions {
    *
    */
   waitForAnimations: boolean;
+  /**
+   * Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster,
+   * delays included, so that they end within a frame and fire their end events right away. A test then spends no time
+   * waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only;
+   * Firefox and WebKit ignore it. Defaults to `false`.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // example.spec.ts
+   * import { test } from '@playwright/test';
+   *
+   * // Dialogs and toasts of this app fade in and out.
+   * test.use({ instantAnimations: true });
+   * ```
+   *
+   */
+  instantAnimations: boolean;
+  /**
+   * Resource types that the context does not load: their requests fail, as if a route aborted them with
+   * `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering
+   * them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context
+   * has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off
+   * JavaScript. Defaults to none.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // example.spec.ts
+   * import { test } from '@playwright/test';
+   *
+   * // These tests check the checkout flow, not how the product photos look.
+   * test.use({ blockResources: ['image', 'media', 'font'] });
+   * ```
+   *
+   */
+  blockResources: Array<'image' | 'media' | 'font' | 'stylesheet' | 'script'> | undefined;
   /**
    * Specify user locale, for example `en-GB`, `de-DE`, etc. Locale will affect `navigator.language` value,
    * `Accept-Language` request header value as well as number and date formatting rules. Defaults to `en-US`. Learn more

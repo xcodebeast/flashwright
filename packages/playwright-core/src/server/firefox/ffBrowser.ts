@@ -196,6 +196,8 @@ export class FFBrowserContext extends BrowserContext {
       promises.push(this._browser.session.send('Browser.setIgnoreHTTPSErrors', { browserContextId, ignoreHTTPSErrors: true }));
     if (this._options.javaScriptEnabled === false)
       promises.push(this._browser.session.send('Browser.setJavaScriptDisabled', { browserContextId, javaScriptDisabled: true }));
+    if (this._options.blockResources?.length)
+      promises.push(this._browser.session.send('Browser.setRequestInterception', { browserContextId, enabled: true }));
     if (this._options.locale)
       promises.push(this._browser.session.send('Browser.setLocaleOverride', { browserContextId, locale: this._options.locale }));
     if (this._options.timezoneId)
@@ -342,7 +344,7 @@ export class FFBrowserContext extends BrowserContext {
 
   async doUpdateRequestInterception(): Promise<void> {
     await Promise.all([
-      this._browser.session.send('Browser.setRequestInterception', { browserContextId: this._browserContextId, enabled: this.requestInterceptors.length > 0 }),
+      this._browser.session.send('Browser.setRequestInterception', { browserContextId: this._browserContextId, enabled: this.requestInterceptors.length > 0 || !!this._options.blockResources?.length }),
       this._browser.session.send('Browser.setCacheDisabled', { browserContextId: this._browserContextId, cacheDisabled: this.requestInterceptors.length > 0 }),
     ]);
   }

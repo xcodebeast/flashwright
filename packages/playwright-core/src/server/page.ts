@@ -721,6 +721,12 @@ export class Page extends SdkObject<PageEventMap> {
     return this.requestInterceptors.length > 0 || this.browserContext.requestInterceptors.length > 0;
   }
 
+  // Flashwright: browsers other than Chromium block the context's blockResources through request
+  // interception (see FrameManager.requestStarted).
+  needsRequestInterceptionOrBlocking(): boolean {
+    return this.needsRequestInterception() || !!this.browserContext._options.blockResources?.length;
+  }
+
   async addRequestInterceptor(progress: Progress, handler: network.RouteHandler, prepend?: 'prepend'): Promise<void> {
     // Note: progress is intentionally ignored, because this operation is not cancellable and should not block in the browser anyway.
     if (prepend)

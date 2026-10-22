@@ -235,7 +235,7 @@ export class WVPage implements PageDelegate {
     const contextOptions = this._browserContext._options;
     if (contextOptions.userAgent)
       await session.sendMayFail('Page.overrideUserAgent', { value: contextOptions.userAgent });
-    if (this._page.needsRequestInterception()) {
+    if (this._page.needsRequestInterceptionOrBlocking()) {
       await Promise.all([
         session.sendMayFail('Network.setInterceptionEnabled', { enabled: true }),
         session.sendMayFail('Network.setResourceCachingDisabled', { disabled: true }),
@@ -661,7 +661,7 @@ export class WVPage implements PageDelegate {
   }
 
   async updateRequestInterception(): Promise<void> {
-    const enabled = this._page.needsRequestInterception();
+    const enabled = this._page.needsRequestInterceptionOrBlocking();
     await Promise.all([
       this._updateState('Network.setInterceptionEnabled', { enabled }),
       this._updateState('Network.setResourceCachingDisabled', { disabled: enabled }),
@@ -1041,7 +1041,7 @@ export class WVPage implements PageDelegate {
       return;
 
     // We do not support intercepting redirects.
-    if (this._page.needsRequestInterception() && !event.redirectResponse)
+    if (this._page.needsRequestInterceptionOrBlocking() && !event.redirectResponse)
       this._requestIdToRequestWillBeSentEvent.set(event.requestId, event);
     else
       this._onRequest(session, event, false);

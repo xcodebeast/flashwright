@@ -11328,6 +11328,15 @@ export interface Browser {
     baseURL?: string;
 
     /**
+     * Resource types that the context does not load: their requests fail, as if a route aborted them with
+     * `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering
+     * them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context
+     * has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off
+     * JavaScript. Defaults to none.
+     */
+    blockResources?: Array<"image"|"media"|"font"|"stylesheet"|"script">;
+
+    /**
      * Toggles bypassing page's Content-Security-Policy. Defaults to `false`.
      */
     bypassCSP?: boolean;
@@ -11497,6 +11506,14 @@ export interface Browser {
      * Whether to ignore HTTPS errors when sending network requests. Defaults to `false`.
      */
     ignoreHTTPSErrors?: boolean;
+
+    /**
+     * Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster,
+     * delays included, so that they end within a frame and fire their end events right away. A test then spends no time
+     * waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only;
+     * Firefox and WebKit ignore it. Defaults to `false`.
+     */
+    instantAnimations?: boolean;
 
     /**
      * Whether the `meta viewport` tag is taken into account and touch events are enabled. isMobile is a part of device,
@@ -17677,6 +17694,15 @@ export interface BrowserType<Unused = {}> {
     baseURL?: string;
 
     /**
+     * Resource types that the context does not load: their requests fail, as if a route aborted them with
+     * `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering
+     * them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context
+     * has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off
+     * JavaScript. Defaults to none.
+     */
+    blockResources?: Array<"image"|"media"|"font"|"stylesheet"|"script">;
+
+    /**
      * Toggles bypassing page's Content-Security-Policy. Defaults to `false`.
      */
     bypassCSP?: boolean;
@@ -17917,6 +17943,14 @@ export interface BrowserType<Unused = {}> {
      * Whether to ignore HTTPS errors when sending network requests. Defaults to `false`.
      */
     ignoreHTTPSErrors?: boolean;
+
+    /**
+     * Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster,
+     * delays included, so that they end within a frame and fire their end events right away. A test then spends no time
+     * waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only;
+     * Firefox and WebKit ignore it. Defaults to `false`.
+     */
+    instantAnimations?: boolean;
 
     /**
      * Whether the `meta viewport` tag is taken into account and touch events are enabled. isMobile is a part of device,
@@ -25041,6 +25075,15 @@ export interface AndroidDevice {
     baseURL?: string;
 
     /**
+     * Resource types that the context does not load: their requests fail, as if a route aborted them with
+     * `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering
+     * them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context
+     * has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off
+     * JavaScript. Defaults to none.
+     */
+    blockResources?: Array<"image"|"media"|"font"|"stylesheet"|"script">;
+
+    /**
      * Toggles bypassing page's Content-Security-Policy. Defaults to `false`.
      */
     bypassCSP?: boolean;
@@ -25150,6 +25193,14 @@ export interface AndroidDevice {
      * Whether to ignore HTTPS errors when sending network requests. Defaults to `false`.
      */
     ignoreHTTPSErrors?: boolean;
+
+    /**
+     * Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster,
+     * delays included, so that they end within a frame and fire their end events right away. A test then spends no time
+     * waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only;
+     * Firefox and WebKit ignore it. Defaults to `false`.
+     */
+    instantAnimations?: boolean;
 
     /**
      * Whether the `meta viewport` tag is taken into account and touch events are enabled. isMobile is a part of device,
@@ -26283,6 +26334,15 @@ export interface BrowserContextOptions {
   baseURL?: string;
 
   /**
+   * Resource types that the context does not load: their requests fail, as if a route aborted them with
+   * `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering
+   * them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context
+   * has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off
+   * JavaScript. Defaults to none.
+   */
+  blockResources?: Array<"image"|"media"|"font"|"stylesheet"|"script">;
+
+  /**
    * Toggles bypassing page's Content-Security-Policy. Defaults to `false`.
    */
   bypassCSP?: boolean;
@@ -26401,6 +26461,14 @@ export interface BrowserContextOptions {
    * Whether to ignore HTTPS errors when sending network requests. Defaults to `false`.
    */
   ignoreHTTPSErrors?: boolean;
+
+  /**
+   * Whether CSS transitions, CSS animations and Web Animations of the context's pages run a thousand times faster,
+   * delays included, so that they end within a frame and fire their end events right away. A test then spends no time
+   * waiting for an app's fades and slides. Animations driven by JavaScript timers are not affected. Chromium only;
+   * Firefox and WebKit ignore it. Defaults to `false`.
+   */
+  instantAnimations?: boolean;
 
   /**
    * Whether the `meta viewport` tag is taken into account and touch events are enabled. isMobile is a part of device,

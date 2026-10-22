@@ -269,6 +269,7 @@ export interface PlaywrightWorkerOptions {
   headless: boolean;
   channel: BrowserChannel | undefined;
   launchOptions: Omit<LaunchOptions, 'tracesDir'>;
+  webSecurity: boolean;
   connectOptions: ConnectOptions | undefined;
   reuseContext: boolean;
   screenshot: ScreenshotMode | { mode: ScreenshotMode } & Pick<PageScreenshotOptions, 'fullPage' | 'omitBackground'>;
@@ -295,6 +296,8 @@ export interface PlaywrightTestOptions {
   isMobile: boolean;
   javaScriptEnabled: boolean;
   waitForAnimations: boolean;
+  instantAnimations: boolean;
+  blockResources: Array<'image' | 'media' | 'font' | 'stylesheet' | 'script'> | undefined;
   locale: string | undefined;
   offline: boolean;
   permissions: string[] | undefined;

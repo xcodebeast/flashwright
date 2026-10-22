@@ -51,6 +51,9 @@ export class CRNetworkManager {
   private _attemptedAuthentications = new Set<string>();
   private _userRequestInterceptionEnabled = false;
   private _protocolRequestInterceptionEnabled = false;
+  // Flashwright: the context's blockResources, as Chromium names resource types. Without routes,
+  // Fetch pauses only these, so every other request keeps the fast path and the cache.
+  private _blockedResourceTypes: Set<string>;
   private _offline = false;
   private _extraHTTPHeaders: types.HeadersArray = [];
   private _requestIdToRequestPausedEvent = new Map<string, { sessionInfo: SessionInfo, event: Protocol.Fetch.requestPausedPayload }>();
@@ -61,6 +64,8 @@ export class CRNetworkManager {
   constructor(page: Page | null, serviceWorker: CRServiceWorker | null) {
     this._page = page;
     this._serviceWorker = serviceWorker;
+    const blockResources = (page || serviceWorker)!.browserContext._options.blockResources ?? [];
+    this._blockedResourceTypes = new Set(blockResources.map(type => type[0].toUpperCase() + type.slice(1)));
   }
 
   async addSession(session: CRSession, workerFrame?: frames.Frame, isMain?: boolean) {
@@ -164,13 +169,16 @@ export class CRNetworkManager {
 
   private async _updateProtocolRequestInterceptionForSession(info: SessionInfo, initial?: boolean) {
     const enabled = this._protocolRequestInterceptionEnabled;
-    if (initial && !enabled)
+    const blocking = this._blockedResourceTypes.size > 0;
+    if (initial && !enabled && !blocking)
       return;
-    const cachePromise = info.session.send('Network.setCacheDisabled', { cacheDisabled: enabled });
+    const cachePromise = initial && !enabled ? undefined : info.session.send('Network.setCacheDisabled', { cacheDisabled: enabled });
     let fetchPromise = Promise.resolve<any>(undefined);
     if (!info.workerFrame) {
       if (enabled)
         fetchPromise = info.session.send('Fetch.enable', { handleAuthRequests: true, patterns: [{ urlPattern: '*', requestStage: 'Request' }] });
+      else if (blocking)
+        fetchPromise = info.session.send('Fetch.enable', { patterns: [...this._blockedResourceTypes].map(resourceType => ({ urlPattern: '*', resourceType: resourceType as Protocol.Network.ResourceType, requestStage: 'Request' as const })) });
       else
         fetchPromise = info.session.send('Fetch.disable');
     }
@@ -253,6 +261,17 @@ export class CRNetworkManager {
 
     const requestId = event.networkId;
     const requestWillBeSentEvent = this._requestIdToRequestWillBeSentEvent.get(requestId);
+    if (this._blockedResourceTypes.has(event.resourceType) && (!this._protocolRequestInterceptionEnabled || this._requestIdToRequest.has(requestId))) {
+      // Without routes, requests are reported without waiting for this event; fail the blocked ones here.
+      // With routes, _onRequest fails them before a route sees them.
+      sessionInfo.session._sendMayFail('Fetch.failRequest', { requestId: event.requestId, errorReason: 'BlockedByClient' });
+      if (requestWillBeSentEvent) {
+        // Routes were removed while this request waited for the pause.
+        this._requestIdToRequestWillBeSentEvent.delete(requestId);
+        this._onRequest(requestWillBeSentEvent.sessionInfo, requestWillBeSentEvent.event, undefined, undefined);
+      }
+      return;
+    }
     if (requestWillBeSentEvent) {
       this._onRequest(requestWillBeSentEvent.sessionInfo, requestWillBeSentEvent.event, sessionInfo, event);
       this._requestIdToRequestWillBeSentEvent.delete(requestId);
@@ -340,8 +359,10 @@ export class CRNetworkManager {
     let route = null;
     let headersOverride: types.HeadersArray | undefined;
     if (requestPausedEvent) {
-      // We do not support intercepting redirects.
-      if (redirectedFrom || (!this._userRequestInterceptionEnabled && this._protocolRequestInterceptionEnabled)) {
+      if (this._blockedResourceTypes.has(requestPausedEvent.resourceType)) {
+        requestPausedSessionInfo!.session._sendMayFail('Fetch.failRequest', { requestId: requestPausedEvent.requestId, errorReason: 'BlockedByClient' });
+      } else if (redirectedFrom || (!this._userRequestInterceptionEnabled && this._protocolRequestInterceptionEnabled)) {
+        // We do not support intercepting redirects.
         // Chromium does not preserve header overrides between redirects, so we have to do it ourselves.
         headersOverride = redirectedFrom?._originalRequestRoute?._alreadyContinuedParams?.headers;
         if (headersOverride) {

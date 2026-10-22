@@ -181,7 +181,7 @@ export class WKPage implements PageDelegate {
       promises.push(session.send('Console.enable'));
     if (this._page.browserContext.needsPlaywrightBinding())
       promises.push(session.send('Runtime.addBinding', { name: PageBinding.kBindingName }));
-    if (this._page.needsRequestInterception()) {
+    if (this._page.needsRequestInterceptionOrBlocking()) {
       promises.push(session.send('Network.setInterceptionEnabled', { enabled: true }));
       promises.push(session.send('Network.setResourceCachingDisabled', { disabled: true }));
       promises.push(session.send('Network.addInterception', { url: '.*', stage: 'request', isRegex: true }));
@@ -746,7 +746,7 @@ export class WKPage implements PageDelegate {
   }
 
   async updateRequestInterception(): Promise<void> {
-    const enabled = this._page.needsRequestInterception();
+    const enabled = this._page.needsRequestInterceptionOrBlocking();
     await Promise.all([
       this._updateState('Network.setInterceptionEnabled', { enabled }),
       this._updateState('Network.setResourceCachingDisabled', { disabled: enabled }),
@@ -1065,7 +1065,7 @@ export class WKPage implements PageDelegate {
       return;
 
     // We do not support intercepting redirects.
-    if (this._page.needsRequestInterception() && !event.redirectResponse)
+    if (this._page.needsRequestInterceptionOrBlocking() && !event.redirectResponse)
       this._requestIdToRequestWillBeSentEvent.set(event.requestId, event);
     else
       this._onRequest(session, event, false);

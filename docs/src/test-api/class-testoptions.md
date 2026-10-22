@@ -231,6 +231,30 @@ import { test } from '@playwright/test';
 test.use({ waitForAnimations: true });
 ```
 
+## property: TestOptions.instantAnimations = %%-context-option-instantanimations-%%
+* since: v1.64
+
+**Usage**
+
+```js title="example.spec.ts"
+import { test } from '@playwright/test';
+
+// Dialogs and toasts of this app fade in and out.
+test.use({ instantAnimations: true });
+```
+
+## property: TestOptions.blockResources = %%-context-option-blockresources-%%
+* since: v1.64
+
+**Usage**
+
+```js title="example.spec.ts"
+import { test } from '@playwright/test';
+
+// These tests check the checkout flow, not how the product photos look.
+test.use({ blockResources: ['image', 'media', 'font'] });
+```
+
 ## property: TestOptions.contrast = %%-context-option-contrast-%%
 * since: v1.50
 
@@ -564,7 +588,7 @@ This reset is best-effort, not a guarantee of isolation. State that is **not** r
 
 Additional restrictions:
 * The option is ignored when [`property: TestOptions.video`] recording is enabled.
-* Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`, `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport` and `testIdAttribute`. Changing any other option in [`method: Test.use`], for example `locale` or `storageState`, silently forces a fresh context and negates the speedup.
+* Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`, `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute` and `waitForAnimations`. Changing any other option in [`method: Test.use`], for example `locale` or `storageState`, silently forces a fresh context and negates the speedup.
 * Do not combine with [`property: TestOptions.connectOptions`] pointing multiple workers at a shared browser - workers would compete for the single reusable context.
 * `recordHar` in [`property: TestOptions.contextOptions`] is not supported and produces no HAR file.
 
@@ -759,6 +783,21 @@ export default defineConfig({
     userAgent: 'some custom ua',
   },
 });
+```
+
+## property: TestOptions.webSecurity
+* since: v1.64
+- type: <[boolean]>
+
+Whether the browser enforces the same-origin policy, including CORS, and blocks active mixed content. Flashwright keeps both on by default, like Playwright. `false` turns them off for every page of the worker's browser, which then launches with `--disable-web-security` and `--allow-running-insecure-content`. Chromium only: Firefox and WebKit have no such switch, and fail to launch with `false`. To ignore a page's Content Security Policy instead, use [`property: TestOptions.bypassCSP`]. Defaults to `true`.
+
+**Usage**
+
+```js title="example.spec.ts"
+import { test } from '@playwright/test';
+
+// The front end calls the API on another port, which does not send CORS headers in tests.
+test.use({ webSecurity: false });
 ```
 
 ## property: TestOptions.video
