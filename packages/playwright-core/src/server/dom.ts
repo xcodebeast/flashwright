@@ -449,12 +449,19 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
       await progress.race((options as any).__testHookAfterStable());
 
     progress.log('  scrolling into view if needed');
-    const scrolled = await doScrollIntoView(progress);
+    // Flashwright: the browser runs the element's commands in order, so the click point is measured
+    // after the scroll without waiting for the scroll's reply first. Retries scroll through an
+    // evaluation that may not be sent right away, so they wait as before.
+    const measure = () => position ? this._offsetPoint(progress, position) : this._clickablePoint(progress);
+    const scrolledPromise = doScrollIntoView(progress);
+    const pointPromise = forceScrollOptions ? undefined : measure();
+    pointPromise?.catch(() => {});
+    const scrolled = await scrolledPromise;
     if (scrolled !== 'done')
       return scrolled;
     progress.log('  done scrolling');
 
-    const maybeResult = position ? await this._offsetPoint(progress, position) : await this._clickablePoint(progress);
+    const maybeResult = await (pointPromise ?? measure());
     if (typeof maybeResult === 'string')
       return maybeResult;
     const point = roundPoint(maybeResult.point);

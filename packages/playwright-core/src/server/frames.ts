@@ -1243,19 +1243,20 @@ export class Frame extends SdkObject<FrameEventMap> {
       if (!resolved)
         return continuePolling;
       const result = resolved.result;
+      // Flashwright: ask for the element along with the result instead of after it, saving a round trip.
+      const elementPromise = result.evaluateHandle(r => r.element) as Promise<dom.ElementHandle<Element>>;
+      elementPromise.catch(() => {});
       const { log, success, box } = await progress.race(result.evaluate(r => ({ log: r.log, success: r.success, box: r.box })));
       if (log)
         progress.log(log);
-      if (!success) {
+      if (!success || (waitForFrameVisible && !resolved.frameVisible)) {
+        if (success)
+          progress.log('  element is inside a hidden frame, retrying');
+        elementPromise.then(element => element.dispose(), () => {});
         result.dispose();
         return continuePolling;
       }
-      if (waitForFrameVisible && !resolved.frameVisible) {
-        progress.log('  element is inside a hidden frame, retrying');
-        result.dispose();
-        return continuePolling;
-      }
-      const element = await progress.race(result.evaluateHandle(r => r.element)) as dom.ElementHandle<Element>;
+      const element = await progress.race(elementPromise);
       result.dispose();
       try {
         const result = await action(progress, element, box, resolved.frameVisible);
