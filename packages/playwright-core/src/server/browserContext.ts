@@ -343,21 +343,11 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // scripts could still write storage after the clearing below; stop them first.
     const stopped = this.doStopPages(previousPages.filter(p => !p.isClosedOrClosingOrCrashed()));
     stopped.catch(() => {});
-    this._heldPage = undefined;
-    this._preparingRecycledPage = true;
-    const newPage = this.newPage(progress);
+    const newPage = this._openHeldPage(progress);
     newPage.catch(() => {});
-    let page: Page | undefined;
-    try {
-      page = await progress.race(raceWithTimeout(newPage, kRecycledPageTimeout, undefined));
-    } finally {
-      this._preparingRecycledPage = false;
-    }
+    const page = await progress.race(raceWithTimeout(newPage, kRecycledPageTimeout, undefined));
     if (!page)
       return false;
-    this._heldPage = page;
-    this._heldPageInitScripts = [...this.initScripts];
-    this._heldPageEmulation = this._pageEmulationKey();
     // The page that restores storageState's per-origin storage opens while the previous pages stop
     // and storage is cleared. Pages are created one at a time: creation marks which kind it is.
     if (this._options.storageState?.origins?.length)
@@ -381,6 +371,29 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       this.clearCache(),
     ]));
     return true;
+  }
+
+  // Called when a recycled context is created: the first test's tab opens before storageState is
+  // restored, so the page restoring it and the test's page share one renderer process.
+  async openFirstHeldPage(progress: Progress) {
+    if (this._recycleMode && this.supportsRecycling())
+      await this._openHeldPage(progress);
+  }
+
+  // Opens the tab the next test gets. Nothing announces it until that test asks for a page.
+  private async _openHeldPage(progress: Progress): Promise<Page> {
+    this._heldPage = undefined;
+    this._preparingRecycledPage = true;
+    let page: Page;
+    try {
+      page = await this.newPage(progress);
+    } finally {
+      this._preparingRecycledPage = false;
+    }
+    this._heldPage = page;
+    this._heldPageInitScripts = [...this.initScripts];
+    this._heldPageEmulation = this._pageEmulationKey();
+    return page;
   }
 
   // Recycling needs a backend that can clear all per-origin storage without navigating.

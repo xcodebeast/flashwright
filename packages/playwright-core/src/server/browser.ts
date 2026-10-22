@@ -104,7 +104,7 @@ export abstract class Browser extends SdkObject {
     return this.options.sdkLanguage || this.attribution.playwright.options.sdkLanguage;
   }
 
-  async newContext(progress: Progress, options: types.BrowserContextOptions): Promise<BrowserContext> {
+  async newContext(progress: Progress, options: types.BrowserContextOptions, recycle = false): Promise<BrowserContext> {
     validateBrowserContextOptions(options, this.options);
     let clientCertificatesProxy: ClientCertificatesProxy | undefined;
     let context: BrowserContext | undefined;
@@ -115,6 +115,10 @@ export abstract class Browser extends SdkObject {
       }
       context = await progress.race(this.doCreateNewContext(options));
       context._clientCertificatesProxy = clientCertificatesProxy;
+      if (recycle) {
+        context.setRecycleMode(true);
+        await context.openFirstHeldPage(progress);
+      }
       if ((options as any).__testHookBeforeSetStorageState)
         await progress.race((options as any).__testHookBeforeSetStorageState());
       await context.setStorageState(progress, options.storageState, 'initial');
@@ -136,8 +140,7 @@ export abstract class Browser extends SdkObject {
     }
     if (this._contextForReuse)
       await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
-    const context = await this.newContext(progress, params);
-    context.setRecycleMode(recycle);
+    const context = await this.newContext(progress, params, recycle);
     this._contextForReuse = { context, hash };
     return context;
   }
