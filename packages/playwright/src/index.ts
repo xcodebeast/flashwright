@@ -286,6 +286,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   ignoreHTTPSErrors: [({ contextOptions }, use) => use(contextOptions.ignoreHTTPSErrors ?? false), { option: true, box: true }],
   isMobile: [({ contextOptions }, use) => use(contextOptions.isMobile ?? false), { option: true, box: true }],
   javaScriptEnabled: [({ contextOptions }, use) => use(contextOptions.javaScriptEnabled ?? true), { option: true, box: true }],
+  waitForAnimations: [({ contextOptions }, use) => use(contextOptions.waitForAnimations ?? false), { option: true, box: true }],
   locale: [({ contextOptions }, use) => use(contextOptions.locale ?? 'en-US'), { option: true, box: true }],
   offline: [({ contextOptions }, use) => use(contextOptions.offline ?? false), { option: true, box: true }],
   permissions: [({ contextOptions }, use) => use(contextOptions.permissions), { option: true, box: true }],
@@ -319,6 +320,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     ignoreHTTPSErrors,
     isMobile,
     javaScriptEnabled,
+    waitForAnimations,
     locale,
     offline,
     permissions,
@@ -360,6 +362,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       options.isMobile = isMobile;
     if (javaScriptEnabled !== undefined)
       options.javaScriptEnabled = javaScriptEnabled;
+    if (waitForAnimations !== undefined)
+      options.waitForAnimations = waitForAnimations;
     if (locale !== undefined)
       options.locale = locale;
     if (offline !== undefined)

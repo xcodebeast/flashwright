@@ -518,25 +518,30 @@ it('should click a button in scrolling container with offset', async ({ page, se
   expect(await page.evaluate('offsetY')).toBe(1910);
 });
 
-it('should wait for stable position', async ({ page, server }) => {
-  await page.goto(server.PREFIX + '/input/button.html');
-  await page.$eval('button', button => {
-    button.style.transition = 'margin 500ms linear 0s';
-    button.style.marginLeft = '200px';
-    button.style.borderWidth = '0';
-    button.style.width = '200px';
-    button.style.height = '20px';
-    // Set display to "block" - otherwise Firefox layouts with non-even
-    // values on Linux.
-    button.style.display = 'block';
-    document.body.style.margin = '0';
+it.describe(() => {
+  // Flashwright: actions do not wait for animations unless asked to; this test checks the wait.
+  it.use({ waitForAnimations: true });
+
+  it('should wait for stable position', async ({ page, server }) => {
+    await page.goto(server.PREFIX + '/input/button.html');
+    await page.$eval('button', button => {
+      button.style.transition = 'margin 500ms linear 0s';
+      button.style.marginLeft = '200px';
+      button.style.borderWidth = '0';
+      button.style.width = '200px';
+      button.style.height = '20px';
+      // Set display to "block" - otherwise Firefox layouts with non-even
+      // values on Linux.
+      button.style.display = 'block';
+      document.body.style.margin = '0';
+    });
+    // rafraf for Firefox to kick in the animation.
+    await rafraf(page);
+    await page.click('button');
+    expect(await page.evaluate(() => window['result'])).toBe('Clicked');
+    expect(await page.evaluate('pageX')).toBe(300);
+    expect(await page.evaluate('pageY')).toBe(10);
   });
-  // rafraf for Firefox to kick in the animation.
-  await rafraf(page);
-  await page.click('button');
-  expect(await page.evaluate(() => window['result'])).toBe('Clicked');
-  expect(await page.evaluate('pageX')).toBe(300);
-  expect(await page.evaluate('pageY')).toBe(10);
 });
 
 it('should wait for becoming hit target', async ({ page, server }) => {
@@ -923,38 +928,43 @@ it('should retry when navigating during the click', async ({ page, server, mode,
   expect(error.message).toContain('element was detached from the DOM, retrying');
 });
 
-it('should not hang when frame is detached', async ({ page, server, mode }) => {
-  it.skip(mode !== 'default');
+it.describe(() => {
+  // Flashwright: actions do not wait for animations unless asked to; this test checks the wait.
+  it.use({ waitForAnimations: true });
 
-  await attachFrame(page, 'frame1', server.EMPTY_PAGE);
-  const frame = page.frames()[1];
-  await frame.goto(server.PREFIX + '/input/button.html');
+  it('should not hang when frame is detached', async ({ page, server, mode }) => {
+    it.skip(mode !== 'default');
 
-  // Start moving the button.
-  await frame.$eval('button', button => {
-    button.style.transition = 'margin 5s linear 0s';
-    button.style.marginLeft = '200px';
+    await attachFrame(page, 'frame1', server.EMPTY_PAGE);
+    const frame = page.frames()[1];
+    await frame.goto(server.PREFIX + '/input/button.html');
+
+    // Start moving the button.
+    await frame.$eval('button', button => {
+      button.style.transition = 'margin 5s linear 0s';
+      button.style.marginLeft = '200px';
+    });
+
+    let resolveDetachPromise;
+    const detachPromise = new Promise(resolve => resolveDetachPromise = resolve);
+    let firstTime = true;
+    const __testHookBeforeStable = () => {
+      // Detach the frame after "waiting for stable" has started.
+      if (!firstTime)
+        return;
+      firstTime = false;
+      setTimeout(async () => {
+        await detachFrame(page, 'frame1');
+        resolveDetachPromise();
+      }, 1000);
+    };
+    const promise = frame.click('button', { __testHookBeforeStable } as any).catch(e => e);
+
+    await detachPromise;
+    const error = await promise;
+    expect(error).toBeTruthy();
+    expect(error.message).toMatch(/frame got detached|Frame was detached/);
   });
-
-  let resolveDetachPromise;
-  const detachPromise = new Promise(resolve => resolveDetachPromise = resolve);
-  let firstTime = true;
-  const __testHookBeforeStable = () => {
-    // Detach the frame after "waiting for stable" has started.
-    if (!firstTime)
-      return;
-    firstTime = false;
-    setTimeout(async () => {
-      await detachFrame(page, 'frame1');
-      resolveDetachPromise();
-    }, 1000);
-  };
-  const promise = frame.click('button', { __testHookBeforeStable } as any).catch(e => e);
-
-  await detachPromise;
-  const error = await promise;
-  expect(error).toBeTruthy();
-  expect(error.message).toMatch(/frame got detached|Frame was detached/);
 });
 
 it('should climb dom for inner label with pointer-events:none', async ({ page }) => {

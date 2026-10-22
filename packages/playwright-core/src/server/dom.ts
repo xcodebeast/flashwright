@@ -437,8 +437,9 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
       progress.log(`  waiting for element to be ${action.waitForEnabled ? 'visible, enabled and stable' : 'visible and stable'}`);
       const immediateStable = !this._page.frameManager.inputNavigated;
       this._page.frameManager.inputNavigated = false;
-      // Flashwright, opt-in: do not wait for animations that move the element either.
-      const ignoreAnimations = !!process.env.FLASHWRIGHT_SKIP_ANIMATION_WAIT;
+      // Flashwright: unless the context asks for Playwright's behavior, do not wait for animations
+      // that move the element either.
+      const ignoreAnimations = !this._page.browserContext._options.waitForAnimations;
       const result = await progress.race(this.evaluateInUtility(async ([injected, node, { elementStates, frameVisible, immediateStable, ignoreAnimations }]) => {
         return await injected.checkElementStates(node, elementStates, frameVisible, immediateStable, ignoreAnimations);
       }, { elementStates, frameVisible, immediateStable, ignoreAnimations }));

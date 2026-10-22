@@ -396,6 +396,24 @@ export default defineConfig({
 });
 ```
 
+## property: TestConfig.testOrder
+* since: v1.64
+- type: ?<[TestOrder]<"longest-first"|"file">>
+
+Order in which tests start when more than one worker runs them. Defaults to `'longest-first'`.
+* `'longest-first'` - start the test groups that took longest in the previous run of this config first, so that a long test does not start last and run alone at the end. Durations are kept in the system temp directory.
+* `'file'` - Playwright's order: test files in order, and tests in a file in order. Use it for suites whose tests depend on what ran before them in the same worker.
+
+**Usage**
+
+```js title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testOrder: 'file',
+});
+```
+
 ## property: TestConfig.projects
 * since: v1.10
 - type: ?<[Array]<[TestProject]>>

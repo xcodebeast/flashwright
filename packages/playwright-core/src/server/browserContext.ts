@@ -1047,12 +1047,14 @@ const paramsThatAllowContextReuse: (keyof channels.BrowserNewContextForReusePara
   'userAgent',
   'viewport',
   'testIdAttributeName',
+  'waitForAnimations',
 ];
 
 const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {
   noDefaultViewport: false,
   ignoreHTTPSErrors: false,
   javaScriptEnabled: true,
+  waitForAnimations: false,
   bypassCSP: false,
   offline: false,
   isMobile: false,

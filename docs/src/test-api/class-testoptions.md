@@ -219,6 +219,18 @@ export default defineConfig({
 });
 ```
 
+## property: TestOptions.waitForAnimations = %%-context-option-waitforanimations-%%
+* since: v1.64
+
+**Usage**
+
+```js title="example.spec.ts"
+import { test } from '@playwright/test';
+
+// This app ignores clicks while its panels slide in.
+test.use({ waitForAnimations: true });
+```
+
 ## property: TestOptions.contrast = %%-context-option-contrast-%%
 * since: v1.50
 

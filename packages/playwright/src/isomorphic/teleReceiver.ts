@@ -824,6 +824,7 @@ export const baseFullConfig: reporterTypes.FullConfig = {
   maxFailures: 0,
   metadata: {},
   preserveOutput: 'always',
+  testOrder: 'longest-first',
   projects: [],
   filteredProjects: [],
   reporter: [[process.env.CI ? 'dot' : 'list']],

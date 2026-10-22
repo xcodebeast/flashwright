@@ -294,6 +294,7 @@ export interface PlaywrightTestOptions {
   ignoreHTTPSErrors: boolean;
   isMobile: boolean;
   javaScriptEnabled: boolean;
+  waitForAnimations: boolean;
   locale: string | undefined;
   offline: boolean;
   permissions: string[] | undefined;

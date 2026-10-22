@@ -17,20 +17,25 @@
 
 import { test as it, expect, rafraf } from './pageTest';
 
-it('should timeout waiting for stable position', async ({ page, server }) => {
-  await page.goto(server.PREFIX + '/input/button.html');
-  const button = await page.$('button');
-  await button.evaluate(button => {
-    button.style.transition = 'margin 5s linear 0s';
-    button.style.marginLeft = '200px';
+it.describe(() => {
+  // Flashwright: actions do not wait for animations unless asked to; this test checks the wait.
+  it.use({ waitForAnimations: true });
+
+  it('should timeout waiting for stable position', async ({ page, server }) => {
+    await page.goto(server.PREFIX + '/input/button.html');
+    const button = await page.$('button');
+    await button.evaluate(button => {
+      button.style.transition = 'margin 5s linear 0s';
+      button.style.marginLeft = '200px';
+    });
+    // rafraf for Firefox to kick in the animation.
+    await rafraf(page);
+    const error = await button.click({ timeout: 3000 }).catch(e => e);
+    expect(error.message).toContain('elementHandle.click: Timeout 3000ms exceeded.');
+    expect(error.message).toContain('waiting for element to be visible, enabled and stable');
+    expect(error.message).toContain('element is not stable');
+    expect(error.message).toContain('retrying click action');
   });
-  // rafraf for Firefox to kick in the animation.
-  await rafraf(page);
-  const error = await button.click({ timeout: 3000 }).catch(e => e);
-  expect(error.message).toContain('elementHandle.click: Timeout 3000ms exceeded.');
-  expect(error.message).toContain('waiting for element to be visible, enabled and stable');
-  expect(error.message).toContain('element is not stable');
-  expect(error.message).toContain('retrying click action');
 });
 
 it('should click for the second time after first timeout', async ({ page, server, mode }) => {

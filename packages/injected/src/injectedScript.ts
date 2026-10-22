@@ -852,8 +852,8 @@ export class InjectedScript {
     // and one on the next frame can coincide; while any may move the element, sample on two
     // frames. Pointer actions pass `immediate`: they check the hit target when their events are
     // dispatched and retry if anything else would receive them, so with no animation that may
-    // move the element they do not wait for a frame at all. With FLASHWRIGHT_SKIP_ANIMATION_WAIT
-    // they do not wait for animations either.
+    // move the element they do not wait for a frame at all, and unless the context sets
+    // waitForAnimations, they do not wait for animations either.
     const element = this.retarget(node, 'no-follow-label');
     if (!element)
       return 'error:notconnected';

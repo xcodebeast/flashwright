@@ -124,6 +124,7 @@ function overridesFromOptions(options: { [key: string]: any }): ipc.ConfigCLIOve
     additionalReporters: resolveReporterOption(options.addReporter),
     shard: resolveShardOption(options.shard),
     shuffle: resolveShuffleOption(options.shuffle),
+    testOrder: options.testOrder,
     timeout: options.timeout ? parseInt(options.timeout, 10) : undefined,
     tsconfig: options.tsconfig ? path.resolve(process.cwd(), options.tsconfig) : undefined,
     ignoreSnapshots: options.ignoreSnapshots ? !!options.ignoreSnapshots : undefined,

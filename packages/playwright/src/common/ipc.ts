@@ -39,6 +39,7 @@ export type ConfigCLIOverrides = {
   additionalReporters?: ReporterDescription[];
   shard?: { current: number, total: number };
   shuffle?: string;
+  testOrder?: 'longest-first' | 'file';
   timeout?: number;
   tsconfig?: string;
   ignoreSnapshots?: boolean;

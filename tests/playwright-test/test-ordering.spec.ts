@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-// Flashwright: with FLASHWRIGHT_TEST_ORDER=longest-first and several workers, test groups start
-// longest first, by the durations of the previous run of the same config.
+// Flashwright: with several workers, test groups start longest first, by the durations of the
+// previous run of the same config, unless testOrder is 'file'.
 
 import fs from 'fs';
 
@@ -26,7 +26,6 @@ test.beforeEach(async ({}, testInfo) => {
   fs.mkdirSync(testInfo.outputPath('tmp'), { recursive: true });
 });
 const env = () => ({ TMPDIR: test.info().outputPath('tmp') });
-const ordered = () => ({ ...env(), FLASHWRIGHT_TEST_ORDER: 'longest-first' });
 
 // With two workers, the first two queued groups start together and the third starts when one of
 // them ends, so the order of the begin lines shows the order of the queue.
@@ -44,23 +43,23 @@ const files = {
 };
 
 test('starts the longest test groups first once their durations are known', async ({ runInlineTest }) => {
-  const first = await runInlineTest(files, { workers: 2 }, ordered());
+  const first = await runInlineTest(files, { workers: 2 }, env());
   expect(first.passed).toBe(3);
   expect(first.outputLines.indexOf('c')).toBe(2);
 
-  const second = await runInlineTest(files, { workers: 2 }, ordered());
+  const second = await runInlineTest(files, { workers: 2 }, env());
   expect(second.passed).toBe(3);
   expect(second.outputLines.indexOf('c')).toBeLessThan(2);
 });
 
 test('keeps the file order with one worker', async ({ runInlineTest }) => {
-  await runInlineTest(files, { workers: 2 }, ordered());
-  const result = await runInlineTest(files, { workers: 1 }, ordered());
+  await runInlineTest(files, { workers: 2 }, env());
+  const result = await runInlineTest(files, { workers: 1 }, env());
   expect(result.outputLines).toEqual(['a', 'b', 'c']);
 });
 
-test('keeps the file order unless enabled', async ({ runInlineTest }) => {
-  await runInlineTest(files, { workers: 2 }, ordered());
-  const result = await runInlineTest(files, { workers: 2 }, env());
+test('keeps the file order with testOrder: file', async ({ runInlineTest }) => {
+  await runInlineTest(files, { workers: 2 }, env());
+  const result = await runInlineTest(files, { 'workers': 2, 'test-order': 'file' }, env());
   expect(result.outputLines.indexOf('c')).toBe(2);
 });

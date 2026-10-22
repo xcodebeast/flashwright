@@ -723,6 +723,12 @@ Specifies if viewport supports touch events. Defaults to false. Learn more about
 
 Whether or not to enable JavaScript in the context. Defaults to `true`. Learn more about [disabling JavaScript](../emulation.md#javascript-enabled).
 
+## context-option-waitforanimations
+* langs: js
+- `waitForAnimations` <[boolean]>
+
+Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
+
 ## context-option-timezoneid
 - `timezoneId` <[string]>
 
@@ -1151,6 +1157,7 @@ between the same pixel in compared images, between zero (strict) and one (lax), 
 - %%-context-option-ismobile-%%
 - %%-context-option-hastouch-%%
 - %%-context-option-javascriptenabled-%%
+- %%-context-option-waitforanimations-%%
 - %%-context-option-timezoneid-%%
 - %%-context-option-geolocation-%%
 - %%-context-option-locale-%%

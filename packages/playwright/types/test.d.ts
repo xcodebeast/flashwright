@@ -1977,6 +1977,27 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
   testMatch?: string|RegExp|Array<string|RegExp>;
 
   /**
+   * Order in which tests start when more than one worker runs them. Defaults to `'longest-first'`.
+   * - `'longest-first'` - start the test groups that took longest in the previous run of this config first, so that a
+   *   long test does not start last and run alone at the end. Durations are kept in the system temp directory.
+   * - `'file'` - Playwright's order: test files in order, and tests in a file in order. Use it for suites whose tests
+   *   depend on what ran before them in the same worker.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // playwright.config.ts
+   * import { defineConfig } from '@playwright/test';
+   *
+   * export default defineConfig({
+   *   testOrder: 'file',
+   * });
+   * ```
+   *
+   */
+  testOrder?: "longest-first"|"file";
+
+  /**
    * Timeout for each test in milliseconds. Defaults to 30 seconds.
    *
    * This is a base timeout for all tests. In addition, each test can configure its own timeout with
@@ -2221,6 +2242,11 @@ export interface FullConfig<TestArgs = {}, WorkerArgs = {}> {
    * Resolved global tags. See [testConfig.tag](https://playwright.dev/docs/api/class-testconfig#test-config-tag).
    */
   tags: Array<string>;
+
+  /**
+   * See [testConfig.testOrder](https://playwright.dev/docs/api/class-testconfig#test-config-test-order).
+   */
+  testOrder: "longest-first"|"file";
 
   /**
    * See [testConfig.updateSnapshots](https://playwright.dev/docs/api/class-testconfig#test-config-update-snapshots).
@@ -7654,6 +7680,24 @@ export interface PlaywrightTestOptions {
    *
    */
   javaScriptEnabled: boolean;
+  /**
+   * Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the
+   * target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched
+   * right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for
+   * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // example.spec.ts
+   * import { test } from '@playwright/test';
+   *
+   * // This app ignores clicks while its panels slide in.
+   * test.use({ waitForAnimations: true });
+   * ```
+   *
+   */
+  waitForAnimations: boolean;
   /**
    * Specify user locale, for example `en-GB`, `de-DE`, etc. Locale will affect `navigator.language` value,
    * `Accept-Language` request header value as well as number and date formatting rules. Defaults to `en-US`. Learn more

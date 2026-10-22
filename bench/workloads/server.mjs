@@ -51,6 +51,13 @@ export async function startWorkloadServer({ backendDelay = 20 } = {}) {
     } else if (request.url.startsWith('/visual')) {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       response.end(visualDocument);
+    } else if (request.url.startsWith('/embed')) {
+      // A page with a cross-site iframe (localhost vs 127.0.0.1), like an embedded widget or payment form.
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      response.end(`<!doctype html><title>Embed</title><h1>Checkout</h1><iframe src="http://localhost:${server.address().port}/widget" width="400" height="200"></iframe>`);
+    } else if (request.url.startsWith('/widget')) {
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      response.end(`<!doctype html><button onclick="this.nextElementSibling.textContent = 'Paid'">Pay</button><span>Unpaid</span>`);
     } else if (request.url.startsWith('/fixture')) {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       response.end(document);
@@ -59,7 +66,8 @@ export async function startWorkloadServer({ backendDelay = 20 } = {}) {
       response.end();
     }
   });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  // Both loopback addresses, so that the iframe on `localhost` is reachable however it resolves.
+  await new Promise(resolve => server.listen(0, '::', resolve));
   return { url: `http://127.0.0.1:${server.address().port}`, close: () => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); }) };
 }
 
@@ -92,12 +100,17 @@ export function workloadSpec(workload, count) {
     screenshot: `await expect(page).toHaveScreenshot('visual.png');`,
     // An agent looking at its work: one viewport capture written to disk.
     capture: `await page.screenshot({ path: test.info().outputPath('capture.png') });`,
+    // A click inside a cross-site iframe.
+    iframe: `const widget = page.frameLocator('iframe');
+    await widget.getByRole('button', { name: 'Pay' }).click();
+    await expect(widget.locator('span')).toHaveText('Paid');`,
   };
   const visual = workload === 'screenshot' || workload === 'capture';
+  const start = visual ? '/visual' : workload === 'iframe' ? '/embed' : '/fixture';
   return `import { test, expect } from '../adapter.mjs';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('${visual ? '/visual' : '/fixture'}');
+  await page.goto('${start}');
 });
 
 for (let index = 0; index < ${count}; index++) {

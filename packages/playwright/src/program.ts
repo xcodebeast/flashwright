@@ -244,6 +244,7 @@ const testOptions: [string, { description: string, choices?: string[], preset?: 
   ['--test-list <file>', { description: `Path to a file containing a list of tests to run. See https://playwright.dev/docs/test-cli for more details.` }],
   ['--test-list-invert <file>', { description: `Path to a file containing a list of tests to skip. See https://playwright.dev/docs/test-cli for more details.` }],
   ['--shuffle [seed]', { description: `Schedule test files, and tests in parallel mode, in a random order; pass a seed to reproduce a previous order` }],
+  ['--test-order <order>', { description: `Order in which tests start: "longest-first" (by the previous run's durations, the default) or "file"`, choices: ['longest-first', 'file'] }],
   ['--timeout <timeout>', { description: `Specify test timeout threshold in milliseconds, zero for unlimited (default: ${config.defaultTimeout})` }],
   ['--trace <mode>', { description: `Force tracing mode`, choices: kTraceModes as string[] }],
   ['--tsconfig <path>', { description: `Path to a single tsconfig applicable to all imported files (default: look up tsconfig for each imported file separately)` }],

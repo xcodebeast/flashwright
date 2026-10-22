@@ -41,16 +41,29 @@ Some scenarios mostly wait for things no framework can make faster: assertion ti
 | Shop app | 1 | ~2.1 s of API time | 4244 ms | 1023 ms | 4.15× |
 | Shop app * | 4 | ~1.14 s (Playwright), ~0.87 s (Flashwright) of API time | 1455 ms | 427 ms | 3.41× |
 
-SVGOMG with 4 workers is bound by the application itself. Once the demo loads, the app's settings panel waits 50 ms and then slides in for 300 ms (`transition: transform .3s ease-out .05s`), and one test clicks two controls inside it right after loading the demo. With four browsers rendering the app on 6 CPUs, the page's main thread is busy rendering the optimized SVG, so even input events take tens of milliseconds to be handled; the clicks miss that 50 ms window and every framework must wait for the slide to finish. Some single-worker runs hit the same wait. The shop with 4 workers is within noise of 2× (3.4× on the time the framework adds); the rest of its wall time is the app's API latency spread unevenly across workers. Both have opt-in speedups below.
+SVGOMG with 4 workers is bound by the application itself. Once the demo loads, the app's settings panel waits 50 ms and then slides in for 300 ms (`transition: transform .3s ease-out .05s`), and one test clicks two controls inside it right after loading the demo. With four browsers rendering the app on 6 CPUs, the page's main thread is busy rendering the optimized SVG, so even input events take tens of milliseconds to be handled; the clicks miss that 50 ms window and every framework must wait for the slide to finish. Some single-worker runs hit the same wait. The shop with 4 workers is within noise of 2× (3.4× on the time the framework adds); the rest of its wall time is the app's API latency spread unevenly across workers. Both get faster with the speed options below, which are on by default.
 
-### Opt-in speedups
+### Speed options
 
-Two behaviors are faster but change what Playwright guarantees, so they are off by default:
+Flashwright defaults to speed. These options trade some of Playwright's guarantees for it; set them per project, per file or per describe block, like any other option:
 
-| Setting | What changes | Effect here |
-| --- | --- | --- |
-| `FLASHWRIGHT_SKIP_ANIMATION_WAIT=1` | Clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish. Playwright's hit-target check still makes sure the element receives the input. Apps that ignore input during transitions can make such tests flaky; three upstream page tests that assert the wait fail with it. | SVGOMG, 4 workers: 739 ms → 481 ms (2.62× vs Playwright) |
-| `FLASHWRIGHT_TEST_ORDER=longest-first` | With more than one worker, the longest test groups start first, by the previous run's durations, as Jest does. Tests then share workers in a different order, which breaks suites whose tests depend on what ran before them in the same worker (Playwright's own library suite has such tests). | Shop, 4 workers: 1293 ms → 1234 ms (2.10× vs Playwright) |
+```ts
+// playwright.config.ts
+export default defineConfig({
+  testOrder: 'file',        // keep Playwright's test order
+  use: {
+    waitForAnimations: true, // wait for elements to stop animating before input, like Playwright
+  },
+});
+
+// a single file or describe block
+test.use({ waitForAnimations: true });
+```
+
+| Option | Default | What it does | Effect here |
+| --- | --- | --- | --- |
+| `waitForAnimations` (`use`) | `false` | With `false`, clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish; Playwright's hit-target check still makes sure the element receives the input. Set `true` for an app that ignores input while it animates. | SVGOMG, 4 workers: 739 ms → 481 ms (2.62× vs Playwright) |
+| `testOrder` (config, `--test-order`) | `'longest-first'` | With more than one worker, the test groups that took longest in the previous run of the config start first, as Jest does, so a long test does not start last and run alone at the end. `'file'` keeps Playwright's order, for suites whose tests depend on what ran before them in the same worker (Playwright's own library suite has such tests). | Shop, 4 workers: 1293 ms → 1234 ms (2.10× vs Playwright) |
 
 ## What changed
 
@@ -58,7 +71,8 @@ Each item keeps Playwright's observable behavior; the differences that remain ar
 
 - **Warm renderers through context recycling.** Recompiling the application's JavaScript in a fresh renderer for every test dominates many suites (47 ms of a 60 ms TodoMVC setup). Flashwright keeps one browser context per worker and gives each test a brand-new tab in it, opened next to the old one so it lands in the already-warm renderer. Between tests it resets everything a test can change: context options, permissions, cookies, every visited origin's storage (local, session, IndexedDB, Cache Storage, service workers, ...), the HTTP and memory caches, routes, init scripts, bindings, downloads and clock, then re-applies `storageState`. Before clearing anything it stops the previous test's pages (scripts disabled, documents replaced), so a script still writing storage when a test ends cannot leak into the next test. A renderer left hung or busy by the previous test is detected and the context is replaced. See `tests/page/recycle-isolation.spec.ts`.
 - **Retries react to changes instead of sleeping.** Auto-waiting assertions and actions re-check as soon as the page mutates or fires input/focus/scroll/animation/navigation events, rather than after Playwright's fixed 20–500 ms backoff.
-- **No frame wait before clicks.** Actionability's "stable" check keeps a click from landing on a moving element. When no CSS transition, CSS animation or Web Animation can move the element (ones that only change colors or opacity, transform some other element, or are still in their start delay do not count), clicks, hovers, taps and drags no longer wait for animation frames: Playwright already checks, when the input events are dispatched, that they reach the element, and retries otherwise. While such an animation runs, the element's box is compared across frames as before, and right after an action that made the page navigate (a download link, for instance) the next one waits a frame, since the browser may still be handling that navigation. `waitForElementState('stable')` and element screenshots keep the frame-based check.
+- **No frame wait before clicks.** Actionability's "stable" check keeps a click from landing on a moving element. Clicks, hovers, taps and drags no longer wait for animation frames: Playwright already checks, when the input events are dispatched, that they reach the element, and retries otherwise. With `waitForAnimations: true`, they wait while a CSS transition, CSS animation or Web Animation can move the element (ones that only change colors or opacity, transform some other element, or are still in their start delay do not count), comparing the element's box across frames. Right after an action that made the page navigate (a download link, for instance) the next one waits a frame, since the browser may still be handling that navigation. `waitForElementState('stable')` and element screenshots keep the frame-based check.
+- **Longest tests first.** With more than one worker, test groups start longest first, by the previous run's durations (see `testOrder` above).
 - **Workers and browsers start before they are needed.** Worker processes, each launching the default browser, start while the CLI is still loading the config and test files; their number is remembered per project, and on a first run (or in CI) the configured number starts as soon as the config is read. Once a run has failing tests, a spare worker is kept ready so replacing a failed worker does not wait for a cold start, and an exiting worker ends its browser right away instead of waiting for a graceful shutdown.
 - **Faster startup.** Node's compile cache is enabled for every process, and Playwright's own bundles additionally use a V8 code cache written after their code has run, so later runs skip compiling the functions they use. The CLI, MCP server, trace tools, vendored packages and the library half of `@playwright/test` load only when used, the large bundles are kept ASCII-only so V8 holds them as compact one-byte strings, and test files are imported without an extra event-loop turn each.
 - **Less work per call.** Call-site stacks captured for every step are source-mapped only for test files; error objects kept for rare failure paths format their stacks lazily; the script injected into every new document is minified and kept byte-identical across documents so the browser reuses its compiled code.
@@ -73,10 +87,11 @@ Each item keeps Playwright's observable behavior; the differences that remain ar
 
 - Contexts are recycled by default (Chromium launched by the test runner; not for browsers reached through `connectOptions`). Tests see a fresh context and reports keep the usual "Create context"/"Close context" steps; a test that leaves a request in flight at its end gets up to 50 ms for it to settle. A context in which the test paused, used the debugger, the recorder or `page.pickLocator()`, or visited a non-http origin is closed instead of recycled. Tests that record video get a new context; with `video: 'on-first-retry'` or `'on-all-retries'` first attempts still recycle. Explicit context reuse (`reuseContext`, VS Code, UI mode) keeps Playwright's own behavior. Set `FLASHWRIGHT_ISOLATION=strict` to create a new context for every test, exactly like Playwright.
 - The browser the test runner launches for recycled contexts runs with `--renderer-process-limit=1` and without script streaming, so a context's same-site pages share one renderer process (cross-site frames still get their own): a renderer crash or a busy script affects all of them. Browsers that tests or scripts launch themselves keep Playwright's defaults.
-- A click, hover, tap or drag on an element that only scripts (not CSS or Web Animations) are moving is dispatched without waiting for the element to stop; the hit-target check still makes sure the element receives it.
+- A click, hover, tap or drag on a moving element is dispatched without waiting for the element to stop, unless `waitForAnimations` is set (and even then for animations only, not for elements that scripts move); the hit-target check still makes sure the element receives it. Three upstream page tests assert the wait and set `waitForAnimations: true`.
+- With more than one worker, tests start longest first unless `testOrder: 'file'` is set.
 - When a worker exits, the browser the test runner launched for it is killed rather than shut down gracefully, once no context is left open (contexts write their traces, videos and HARs when they close); its temporary profile is still removed. If tests left contexts open, it closes gracefully as before.
 - PNGs from `page.screenshot()` and `locator.screenshot()` have identical pixels but are larger files (typically 1.6–1.9×). `toHaveScreenshot()` baselines are unchanged.
-- The CLI may start worker processes and a headless browser before it has read the config; unused ones are closed. Flashwright keeps two things in the system temp directory: `flashwright-worker-hints.json` (worker counts per project) and `flashwright-code-cache/` (a few MB per Node version), plus `flashwright-test-durations/` with `FLASHWRIGHT_TEST_ORDER=longest-first`. Set `PW_DISABLE_WORKER_STANDBY=1` or `FLASHWRIGHT_DISABLE_CODE_CACHE=1` to turn the first two off.
+- The CLI may start worker processes and a headless browser before it has read the config; unused ones are closed. Flashwright keeps three things in the system temp directory: `flashwright-worker-hints.json` (worker counts per project), `flashwright-code-cache/` (a few MB per Node version) and `flashwright-test-durations/` (the last duration of each test, per config, unless `testOrder` is `'file'`). Set `PW_DISABLE_WORKER_STANDBY=1` or `FLASHWRIGHT_DISABLE_CODE_CACHE=1` to turn the first two off.
 - Firefox and WebKit keep Playwright's behavior.
 
 ## Status

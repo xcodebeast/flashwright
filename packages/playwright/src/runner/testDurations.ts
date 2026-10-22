@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-// Flashwright, opt-in with FLASHWRIGHT_TEST_ORDER=longest-first: with several workers, a run ends
-// when its busiest worker does. Starting the longest test groups first, by how long their tests
-// took in the previous run of the same config, keeps a long group from starting last and running
-// alone at the end. It is opt-in because it changes which tests share a worker and in what order,
-// which breaks suites whose tests depend on what ran before them in the same worker.
+// Flashwright: with several workers, a run ends when its busiest worker does. Starting the longest
+// test groups first, by how long their tests took in the previous run of the same config, keeps a
+// long group from starting last and running alone at the end. testOrder: 'file' turns it off for
+// suites whose tests depend on what ran before them in the same worker.
 
 import crypto from 'crypto';
 import fs from 'fs';
@@ -31,10 +30,6 @@ import type * as test from '../common/test';
 const durationsDir = path.join(os.tmpdir(), 'flashwright-test-durations');
 const maxEntries = 20000;
 const maxFiles = 200;
-
-export function testOrderingEnabled() {
-  return process.env.FLASHWRIGHT_TEST_ORDER === 'longest-first';
-}
 
 function durationsFile(configFile: string | undefined) {
   const key = crypto.createHash('sha1').update(configFile ?? process.cwd()).digest('hex').slice(0, 16);

@@ -32,7 +32,7 @@ import { TaskRunner } from './taskRunner';
 import { detectChangedTestFiles } from './vcs';
 import { cc, config as commonConfig, FullConfigInternal, suiteUtils, test as testNs } from '../common';
 import { createTestGroups, shuffleTestGroups } from '../runner/testGroups';
-import { loadTestDurations, orderTestGroupsByDuration, saveTestDurations, testOrderingEnabled } from './testDurations';
+import { loadTestDurations, orderTestGroupsByDuration, saveTestDurations } from './testDurations';
 import { createTitleMatcher, forceRegExp, removeDirAndLogToConsole } from '../util';
 
 import type { TestGroup } from '../runner/testGroups';
@@ -442,7 +442,7 @@ function createRunTestsTask(): Task<TestRun> {
       const extraEnvByProjectId: EnvByProjectId = new Map();
       const teardownToSetups = buildTeardownToSetupsMap(testRun.phases.map(phase => phase.projects.map(p => p.project)).flat());
       const configFile = testRun.config.config.configFile;
-      const durations = testOrderingEnabled() ? loadTestDurations(configFile) : undefined;
+      const durations = testRun.config.config.testOrder === 'longest-first' ? loadTestDurations(configFile) : undefined;
 
       for (const [phaseIndex, { dispatcher, projects }] of testRun.phases.entries()) {
         // Flashwright: workers stop between phases; start the next phase's workers in the meantime,

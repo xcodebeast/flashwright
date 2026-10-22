@@ -93,6 +93,12 @@ See [`property: TestConfig.metadata`].
 
 See [`property: TestConfig.preserveOutput`].
 
+## property: FullConfig.testOrder
+* since: v1.64
+- type: <[TestOrder]<"longest-first"|"file">>
+
+See [`property: TestConfig.testOrder`].
+
 ## property: FullConfig.projects
 * since: v1.10
 - type: <[Array]<[FullProject]>>
