@@ -92,6 +92,9 @@ export type InjectedScriptOptions = {
 // CSS properties (as transition names or camelCase keyframe keys) that never change an element's box.
 const kBoxPreservingProperty = /^(color|opacity|visibility|filter|backdrop-?filter|caret-?color|accent-?color|fill|stroke|stop-?color|flood-?color|lighting-?color|(background|border|outline|text-?decoration|column-?rule)(-?(top|right|bottom|left|inline|block)(-?(start|end))?)?-?color|background-?(image|position|size)?|(box|text)-?shadow)$/i;
 
+// CSS properties that move only the animated element and its descendants, never other elements.
+const kSelfOnlyProperty = /^(transform|translate|rotate|scale|transform-?origin|offset(-?(path|distance|rotate|anchor|position))?)$/i;
+
 export class InjectedScript {
   private _engines: Map<string, SelectorEngine>;
   readonly _evaluator: SelectorEvaluatorImpl;
@@ -697,9 +700,9 @@ export class InjectedScript {
     return element;
   }
 
-  async checkElementStates(node: Node, states: ElementState[], frameVisible: boolean): Promise<'error:notconnected' | { missingState: ElementState } | undefined> {
+  async checkElementStates(node: Node, states: ElementState[], frameVisible: boolean, immediateStable?: boolean): Promise<'error:notconnected' | { missingState: ElementState } | undefined> {
     if (states.includes('stable')) {
-      const stableResult = await this._checkElementIsStable(node);
+      const stableResult = await this._checkElementIsStable(node, !!immediateStable);
       if (stableResult === false)
         return { missingState: 'stable' };
       if (stableResult === 'error:notconnected')
@@ -738,34 +741,55 @@ export class InjectedScript {
     });
   }
 
-  private _hasActiveAnimations(node: Node): boolean {
-    const document = node.ownerDocument;
-    if (!document || typeof document.getAnimations !== 'function')
+  private _hasActiveAnimations(element: Element): boolean {
+    const document = element.ownerDocument;
+    if (typeof document.getAnimations !== 'function')
       return true;
-    return document.getAnimations().some(animation => (animation.pending || animation.playState === 'running') && this._animationMayMoveElements(animation));
+    let ancestors: Set<Element> | undefined;
+    return document.getAnimations().some(animation => {
+      if (!animation.pending && animation.playState !== 'running')
+        return false;
+      // Anything we cannot inspect counts as possibly moving elements.
+      const properties = this._animatedProperties(animation);
+      if (!properties)
+        return true;
+      // Colors, opacity, shadows or filters cannot change any element's box.
+      const moving = properties.filter(property => !kBoxPreservingProperty.test(property));
+      if (!moving.length)
+        return false;
+      if (!moving.every(property => kSelfOnlyProperty.test(property)))
+        return true;
+      // A transform only moves its target and the target's descendants, so a spinner or a
+      // carousel elsewhere on the page does not make this element unstable.
+      const target = (animation.effect as KeyframeEffect | null)?.target;
+      if (!target)
+        return true;
+      if (!ancestors) {
+        ancestors = new Set();
+        for (let e: Element | undefined = element; e; e = e.assignedSlot ?? parentElementOrShadowHost(e))
+          ancestors.add(e);
+      }
+      return ancestors.has(target);
+    });
   }
 
-  // Animations that only change colors, opacity, shadows or filters cannot change any element's
-  // box; anything else (or anything we cannot inspect) counts as possibly moving elements.
-  private _animationMayMoveElements(animation: Animation): boolean {
+  private _animatedProperties(animation: Animation): string[] | undefined {
+    if ('transitionProperty' in animation)
+      return [String((animation as any).transitionProperty)];
+    const effect = animation.effect as KeyframeEffect | null;
+    if (!effect || typeof effect.getKeyframes !== 'function')
+      return undefined;
     const properties: string[] = [];
-    if ('transitionProperty' in animation) {
-      properties.push(String((animation as any).transitionProperty));
-    } else {
-      const effect = animation.effect as KeyframeEffect | null;
-      if (!effect || typeof effect.getKeyframes !== 'function')
-        return true;
-      for (const keyframe of effect.getKeyframes()) {
-        for (const property of Object.keys(keyframe)) {
-          if (!['offset', 'computedOffset', 'easing', 'composite'].includes(property))
-            properties.push(property);
-        }
+    for (const keyframe of effect.getKeyframes()) {
+      for (const property of Object.keys(keyframe)) {
+        if (!['offset', 'computedOffset', 'easing', 'composite'].includes(property))
+          properties.push(property);
       }
     }
-    return properties.some(property => !kBoxPreservingProperty.test(property));
+    return properties;
   }
 
-  private async _checkElementIsStable(node: Node): Promise<'error:notconnected' | boolean> {
+  private async _checkElementIsStable(node: Node, immediate: boolean): Promise<'error:notconnected' | boolean> {
     const continuePolling = Symbol('continuePolling');
     let lastRect: { x: number, y: number, width: number, height: number } | undefined;
     let stableRafCounter = 0;
@@ -814,11 +838,20 @@ export class InjectedScript {
     // move the element do so in animation frame callbacks and smooth scrolling advances per
     // frame, so comparing against the next frame keeps the same guarantee. CSS and Web
     // Animations are different: Blink samples them at a per-task time, so a sample taken now
-    // and one on the next frame can coincide; while any are running, sample on two frames.
-    if (this._stableRafCount === 1 && !this._hasActiveAnimations(node))
+    // and one on the next frame can coincide; while any may move the element, sample on two
+    // frames. Pointer actions pass `immediate`: they check the hit target when their events are
+    // dispatched and retry if anything else would receive them, so with no animation that may
+    // move the element they do not wait for a frame at all.
+    const element = this.retarget(node, 'no-follow-label');
+    if (!element)
+      return 'error:notconnected';
+    if (this._stableRafCount === 1 && !this._hasActiveAnimations(element)) {
+      if (immediate)
+        return true;
       raf();
-    else
+    } else {
       this.utils.builtins.requestAnimationFrame(raf);
+    }
 
     return result;
   }
