@@ -13,9 +13,9 @@ Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64
 | TodoMVC (upstream example suite) | 24 | 1 | 3700 ms | 1165 ms | 3.18× |
 | TodoMVC | 24 | 4 | 1793 ms | 786 ms | 2.28× |
 | SVGOMG (upstream example suite) | 6 | 1 | 1721 ms | 563 ms | 3.06× |
-| SVGOMG * | 6 | 4 | 1255 ms | 758 ms | 1.66× |
+| SVGOMG * | 6 | 4 | 1258 ms | 739 ms | 1.70× |
 | Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6364 ms | 3075 ms | 2.07× |
-| Shop app * | 18 | 4 | 2589 ms | 1314 ms | 1.97× |
+| Shop app * | 18 | 4 | 2597 ms | 1293 ms | 2.01× |
 | A single test (an agent re-running one test; measured separately) | 1 | 1 | 613 ms | 197 ms | 3.11× |
 | Trivial test | 15 | 1 | 1037 ms | 350 ms | 2.96× |
 | Click + assertion | 15 | 1 | 1636 ms | 441 ms | 3.71× |
@@ -39,9 +39,18 @@ Some scenarios mostly wait for things no framework can make faster: assertion ti
 | Form submit to a backend | 1 | 15 × 20 ms | 1715 ms | 486 ms | 3.53× |
 | Assertion on a delayed update | 1 | 15 × 8 ms | 1091 ms | 360 ms | 3.03× |
 | Shop app | 1 | ~2.1 s of API time | 4244 ms | 1023 ms | 4.15× |
-| Shop app * | 4 | ~1.14 s (Playwright), ~0.86 s (Flashwright) of API time | 1453 ms | 452 ms | 3.21× |
+| Shop app * | 4 | ~1.14 s (Playwright), ~0.87 s (Flashwright) of API time | 1455 ms | 427 ms | 3.41× |
 
-SVGOMG with 4 workers is bound by the application itself. Once the demo loads, the app's settings panel waits 50 ms and then slides in for 300 ms (`transition: transform .3s ease-out .05s`), and one test clicks two controls inside it right after loading the demo. With four browsers rendering the app on 6 CPUs, the page's main thread is busy rendering the optimized SVG, so even input events take tens of milliseconds to be handled; the clicks miss that 50 ms window and every framework must wait for the slide to finish. Some single-worker runs hit the same wait. The shop with 4 workers is within noise of 2× (3.2× on the time the framework adds); the rest of its wall time is the app's API latency spread unevenly across workers.
+SVGOMG with 4 workers is bound by the application itself. Once the demo loads, the app's settings panel waits 50 ms and then slides in for 300 ms (`transition: transform .3s ease-out .05s`), and one test clicks two controls inside it right after loading the demo. With four browsers rendering the app on 6 CPUs, the page's main thread is busy rendering the optimized SVG, so even input events take tens of milliseconds to be handled; the clicks miss that 50 ms window and every framework must wait for the slide to finish. Some single-worker runs hit the same wait. The shop with 4 workers is within noise of 2× (3.4× on the time the framework adds); the rest of its wall time is the app's API latency spread unevenly across workers. Both have opt-in speedups below.
+
+### Opt-in speedups
+
+Two behaviors are faster but change what Playwright guarantees, so they are off by default:
+
+| Setting | What changes | Effect here |
+| --- | --- | --- |
+| `FLASHWRIGHT_SKIP_ANIMATION_WAIT=1` | Clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish. Playwright's hit-target check still makes sure the element receives the input. Apps that ignore input during transitions can make such tests flaky; three upstream page tests that assert the wait fail with it. | SVGOMG, 4 workers: 739 ms → 481 ms (2.62× vs Playwright) |
+| `FLASHWRIGHT_TEST_ORDER=longest-first` | With more than one worker, the longest test groups start first, by the previous run's durations, as Jest does. Tests then share workers in a different order, which breaks suites whose tests depend on what ran before them in the same worker (Playwright's own library suite has such tests). | Shop, 4 workers: 1293 ms → 1234 ms (2.10× vs Playwright) |
 
 ## What changed
 
@@ -67,7 +76,7 @@ Each item keeps Playwright's observable behavior; the differences that remain ar
 - A click, hover, tap or drag on an element that only scripts (not CSS or Web Animations) are moving is dispatched without waiting for the element to stop; the hit-target check still makes sure the element receives it.
 - When a worker exits, the browser the test runner launched for it is killed rather than shut down gracefully, once no context is left open (contexts write their traces, videos and HARs when they close); its temporary profile is still removed. If tests left contexts open, it closes gracefully as before.
 - PNGs from `page.screenshot()` and `locator.screenshot()` have identical pixels but are larger files (typically 1.6–1.9×). `toHaveScreenshot()` baselines are unchanged.
-- The CLI may start worker processes and a headless browser before it has read the config; unused ones are closed. Flashwright keeps two things in the system temp directory: `flashwright-worker-hints.json` (worker counts per project) and `flashwright-code-cache/` (a few MB per Node version). Set `PW_DISABLE_WORKER_STANDBY=1` or `FLASHWRIGHT_DISABLE_CODE_CACHE=1` to turn either off.
+- The CLI may start worker processes and a headless browser before it has read the config; unused ones are closed. Flashwright keeps two things in the system temp directory: `flashwright-worker-hints.json` (worker counts per project) and `flashwright-code-cache/` (a few MB per Node version), plus `flashwright-test-durations/` with `FLASHWRIGHT_TEST_ORDER=longest-first`. Set `PW_DISABLE_WORKER_STANDBY=1` or `FLASHWRIGHT_DISABLE_CODE_CACHE=1` to turn the first two off.
 - Firefox and WebKit keep Playwright's behavior.
 
 ## Status

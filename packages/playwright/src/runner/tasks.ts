@@ -32,6 +32,7 @@ import { TaskRunner } from './taskRunner';
 import { detectChangedTestFiles } from './vcs';
 import { cc, config as commonConfig, FullConfigInternal, suiteUtils, test as testNs } from '../common';
 import { createTestGroups, shuffleTestGroups } from '../runner/testGroups';
+import { loadTestDurations, orderTestGroupsByDuration, saveTestDurations, testOrderingEnabled } from './testDurations';
 import { createTitleMatcher, forceRegExp, removeDirAndLogToConsole } from '../util';
 
 import type { TestGroup } from '../runner/testGroups';
@@ -440,6 +441,8 @@ function createRunTestsTask(): Task<TestRun> {
       const successfulProjects = new Set<commonConfig.FullProjectInternal>();
       const extraEnvByProjectId: EnvByProjectId = new Map();
       const teardownToSetups = buildTeardownToSetupsMap(testRun.phases.map(phase => phase.projects.map(p => p.project)).flat());
+      const configFile = testRun.config.config.configFile;
+      const durations = testOrderingEnabled() ? loadTestDurations(configFile) : undefined;
 
       for (const [phaseIndex, { dispatcher, projects }] of testRun.phases.entries()) {
         // Flashwright: workers stop between phases; start the next phase's workers in the meantime,
@@ -467,6 +470,8 @@ function createRunTestsTask(): Task<TestRun> {
 
         if (testRun.config.configCLIOverrides.shuffle)
           shuffleTestGroups(phaseTestGroups, testRun.config.configCLIOverrides.shuffle);
+        else if (durations && testRun.config.config.workers > 1)
+          orderTestGroupsByDuration(phaseTestGroups, durations);
 
         if (phaseTestGroups.length) {
           await dispatcher!.run(phaseTestGroups, extraEnvByProjectId);
@@ -487,6 +492,8 @@ function createRunTestsTask(): Task<TestRun> {
           }
         }
       }
+      if (durations)
+        saveTestDurations(configFile, durations, testRun.rootSuite?.allTests() ?? []);
     },
     teardown: async ({ phases }) => {
       for (const { dispatcher } of phases.reverse())

@@ -700,9 +700,9 @@ export class InjectedScript {
     return element;
   }
 
-  async checkElementStates(node: Node, states: ElementState[], frameVisible: boolean, immediateStable?: boolean): Promise<'error:notconnected' | { missingState: ElementState } | undefined> {
+  async checkElementStates(node: Node, states: ElementState[], frameVisible: boolean, immediateStable?: boolean, ignoreAnimations?: boolean): Promise<'error:notconnected' | { missingState: ElementState } | undefined> {
     if (states.includes('stable')) {
-      const stableResult = await this._checkElementIsStable(node, !!immediateStable);
+      const stableResult = await this._checkElementIsStable(node, !!immediateStable, !!ignoreAnimations);
       if (stableResult === false)
         return { missingState: 'stable' };
       if (stableResult === 'error:notconnected')
@@ -800,7 +800,7 @@ export class InjectedScript {
     return properties;
   }
 
-  private async _checkElementIsStable(node: Node, immediate: boolean): Promise<'error:notconnected' | boolean> {
+  private async _checkElementIsStable(node: Node, immediate: boolean, ignoreAnimations: boolean): Promise<'error:notconnected' | boolean> {
     const continuePolling = Symbol('continuePolling');
     let lastRect: { x: number, y: number, width: number, height: number } | undefined;
     let stableRafCounter = 0;
@@ -852,11 +852,12 @@ export class InjectedScript {
     // and one on the next frame can coincide; while any may move the element, sample on two
     // frames. Pointer actions pass `immediate`: they check the hit target when their events are
     // dispatched and retry if anything else would receive them, so with no animation that may
-    // move the element they do not wait for a frame at all.
+    // move the element they do not wait for a frame at all. With FLASHWRIGHT_SKIP_ANIMATION_WAIT
+    // they do not wait for animations either.
     const element = this.retarget(node, 'no-follow-label');
     if (!element)
       return 'error:notconnected';
-    if (this._stableRafCount === 1 && !this._hasActiveAnimations(element)) {
+    if (this._stableRafCount === 1 && ((immediate && ignoreAnimations) || !this._hasActiveAnimations(element))) {
       if (immediate)
         return true;
       raf();
