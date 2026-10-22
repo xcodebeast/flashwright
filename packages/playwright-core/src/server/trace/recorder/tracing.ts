@@ -141,6 +141,12 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
     return this._context instanceof BrowserContext ? this._context._browser.sdkLanguage() : this._context.attribution.playwright.options.sdkLanguage;
   }
 
+  // Flashwright: see BrowserContext.outputDirsChanged.
+  setTracesDir(tracesDir: string | undefined) {
+    if (!this._state)
+      this._precreatedTracesDir = tracesDir;
+  }
+
   async resetForReuse(progress: Progress) {
     await this.stop(progress);
     if (this._snapshotter)

@@ -28,7 +28,7 @@ import { buildErrorContext } from './errorContext';
 import { config, testType } from './common';
 import * as globals from './globals';
 import { createCustomMessageHandler, runDaemonForContext } from './mcp/test/browserBackend';
-import { takeSpeculativeBrowser } from './speculativeBrowser';
+import { rememberRecycledContext, takeSpeculativeBrowser } from './speculativeBrowser';
 
 import type { Fixtures, PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, ScreenshotMode, TestInfo, TestType, VideoMode } from '../types/test';
 import type { TestInfoImpl, TestStepInternal } from './worker/testInfo';
@@ -536,6 +536,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     // calls are logged, traced and reported like a fresh context.
     throwIfInAllHook(testInfo);
     const context = await browser.newContext({ [kRecycleContext]: true } as BrowserContextOptions) as BrowserContextImpl;
+    rememberRecycledContext(browser);
     await installScreencastTitleUpdater(testInfo, context, show?.test);
     await use(context);
     const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';

@@ -69,6 +69,8 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
     return;
   enabled = true;
   hintKey = workerCountHintKey(argv);
+  // Workers and their browsers started ahead of time look up their config's hints by this key.
+  process.env.FLASHWRIGHT_CONTEXT_HINT_KEY = hintKey;
   cpus = os.availableParallelism?.() ?? os.cpus().length;
   const hint = readWorkerCountHints()[hintKey];
   hadHint = !!hint;
@@ -115,7 +117,8 @@ export function recordWorkerRestart(moreTestsToRun: boolean) {
   if (!moreTestsToRun)
     return;
   keepSpare = keepSpare || workerCount < cpus;
-  ensureStandbys(1);
+  // The replacement is about to take a standby; fork the next one after it has.
+  setImmediate(() => ensureStandbys(1));
 }
 
 // Called while one phase of projects runs: the next phase starts new workers.
@@ -155,8 +158,9 @@ export async function takeStandby(entryScript: string, env: NodeJS.ProcessEnv): 
   const standby = standbys.shift();
   if (!standby)
     return;
-  if (keepSpare && !standbys.length)
-    spawnStandby();
+  // Forking takes milliseconds of this thread; let the adopted worker get its first messages before.
+  if (keepSpare)
+    setImmediate(() => ensureStandbys(1));
   const keys = new Set([...Object.keys(env), ...Object.keys(standby.env)]);
   const compatible = standby.entryScript === entryScript && [...keys].every(key => !loadTimeEnvPattern.test(key) || env[key] === standby.env[key]);
   if (!compatible || !await standby.ready) {

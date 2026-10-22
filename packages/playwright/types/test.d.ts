@@ -7218,9 +7218,10 @@ export interface PlaywrightWorkerOptions {
    * - The option is ignored when
    *   [testOptions.video](https://playwright.dev/docs/api/class-testoptions#test-options-video) recording is enabled.
    * - Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`,
-   *   `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute` and `waitForAnimations`.
-   *   Changing any other option in [test.use(options)](https://playwright.dev/docs/api/class-test#test-use), for
-   *   example `locale` or `storageState`, silently forces a fresh context and negates the speedup.
+   *   `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute`, `waitForAnimations` and
+   *   `baseURL`. Changing any other option in
+   *   [test.use(options)](https://playwright.dev/docs/api/class-test#test-use), for example `locale` or
+   *   `storageState`, silently forces a fresh context and negates the speedup.
    * - Do not combine with
    *   [testOptions.connectOptions](https://playwright.dev/docs/api/class-testoptions#test-options-connect-options)
    *   pointing multiple workers at a shared browser - workers would compete for the single reusable context.

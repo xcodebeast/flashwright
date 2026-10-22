@@ -45,6 +45,8 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
   readonly _browserName: 'chromium' | 'webkit' | 'firefox';
   private _path: string | undefined;
   _closeReason: string | undefined;
+  // Flashwright: the protocol parameters of the last recycled context created in this browser.
+  _lastRecycleParams: channels.BrowserNewContextForRecycleParams | undefined;
 
   static from(browser: channels.BrowserChannel): Browser {
     return (browser as any)._object;
@@ -93,6 +95,8 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
     const options = this._browserType._playwright.selectors._withSelectorOptions(userOptions);
     await this._instrumentation.runBeforeCreateBrowserContext(options);
     const contextOptions = await prepareBrowserContextParams(options);
+    if (recycle)
+      this._lastRecycleParams = contextOptions;
     const response = recycle ? await this._channel.newContextForRecycle(contextOptions, kNoTimeout) : forReuse ? await this._channel.newContextForReuse(contextOptions, kNoTimeout) : await this._channel.newContext(contextOptions, kNoTimeout);
     const context = BrowserContext.from(response.context);
     if (forReuse)

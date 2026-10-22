@@ -396,6 +396,14 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     return page;
   }
 
+  // Flashwright: a browser launched before the test runner knew its output folders gets them when
+  // the runner adopts it (see Browser.setOutputDirs); a context it prepared for the first test
+  // then writes its traces and downloads there too.
+  async outputDirsChanged() {
+    this.tracing.setTracesDir(this._browser.options.tracesDir);
+    this.fetchRequest.tracing().setTracesDir(this._browser.options.tracesDir);
+  }
+
   // Recycling needs a backend that can clear all per-origin storage without navigating.
   supportsRecycling(): boolean {
     return false;
@@ -1048,6 +1056,8 @@ const paramsThatAllowContextReuse: (keyof channels.BrowserNewContextForReusePara
   'viewport',
   'testIdAttributeName',
   'waitForAnimations',
+  // Flashwright: read on every navigation and API request, so it can change between tests.
+  'baseURL',
 ];
 
 const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {

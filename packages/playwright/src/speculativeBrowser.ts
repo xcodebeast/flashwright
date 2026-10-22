@@ -18,6 +18,9 @@
 // waits to be configured. The `browser` fixture adopts it only when the project asks for exactly
 // that browser; anything else closes it and launches as usual.
 
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { isDeepStrictEqual } from 'util';
 
 import type { Browser, LaunchOptions } from 'playwright-core';
@@ -27,9 +30,79 @@ const speculativeOptions = { handleSIGINT: false, headless: true, ...(process.en
 // The fixtures and the worker entry are bundled separately; share the launch through a global.
 const speculativeKey = Symbol.for('flashwright.speculativeBrowser');
 
-export function launchSpeculativeBrowser() {
+export function launchSpeculativeBrowser(): Promise<Browser | undefined> {
   const playwright = require('playwright-core');
-  (globalThis as any)[speculativeKey] = playwright.chromium.launch(speculativeOptions).catch(() => undefined);
+  const launch = playwright.chromium.launch(speculativeOptions).catch(() => undefined);
+  (globalThis as any)[speculativeKey] = launch;
+  return launch;
+}
+
+// Called while the worker is still idle: the `browser` fixture that adopts the browser waits for
+// the context to be ready, so that its first test finds it.
+export function prepareSpeculativeContext() {
+  const launch = (globalThis as any)[speculativeKey] as Promise<Browser | undefined> | undefined;
+  const hint = speculativeOptions.recycleContexts ? readContextHint() : undefined;
+  if (!launch || !hint)
+    return;
+  (globalThis as any)[speculativeKey] = launch.then(async browser => {
+    const serverBrowser = browser && (browser as any)._connection.toImpl?.(browser);
+    await serverBrowser?.prepareRecycledContext(hint).catch(() => {});
+    return browser;
+  });
+}
+
+// The recycled context the tests of a config asked for last time, so that a browser started ahead
+// of time has it ready with a tab open (see the server's Browser.prepareRecycledContext). Hints are kept per
+// config, under the key the CLI computes for its worker hints, in one small file that only this
+// user can read. Contexts with options that can hold secrets (storage state, credentials, headers,
+// a proxy, client certificates) are not remembered.
+const contextHintFile = path.join(os.tmpdir(), 'flashwright-context-hints.json');
+const maxContextHints = 200;
+let rememberedContextHint = false;
+
+type ContextHints = Record<string, { params: any, usedAt: number }>;
+
+function readContextHints(): ContextHints {
+  try {
+    return JSON.parse(fs.readFileSync(contextHintFile, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function readContextHint() {
+  const key = process.env.FLASHWRIGHT_CONTEXT_HINT_KEY;
+  return key ? readContextHints()[key]?.params : undefined;
+}
+
+// Called by the `context` fixture once it has created a recycled context.
+export function rememberRecycledContext(browser: Browser) {
+  const key = process.env.FLASHWRIGHT_CONTEXT_HINT_KEY;
+  const params = (browser as any)._lastRecycleParams;
+  const mayHoldSecrets = params?.storageState || params?.httpCredentials || params?.extraHTTPHeaders?.length || params?.proxy || params?.clientCertificates?.length;
+  if (rememberedContextHint || !key || !params || mayHoldSecrets || !isPlainJSON(params))
+    return;
+  rememberedContextHint = true;
+  try {
+    const hints = readContextHints();
+    if (JSON.stringify(hints[key]?.params) === JSON.stringify(params))
+      return;
+    hints[key] = { params, usedAt: Date.now() };
+    const recent = Object.entries(hints).sort((a, b) => b[1].usedAt - a[1].usedAt).slice(0, maxContextHints);
+    // Write a sibling file and rename it, so concurrent workers never read a partial file.
+    const temporary = `${contextHintFile}.${process.pid}`;
+    fs.writeFileSync(temporary, JSON.stringify(Object.fromEntries(recent)), { mode: 0o600 });
+    fs.renameSync(temporary, contextHintFile);
+  } catch {
+  }
+}
+
+function isPlainJSON(value: unknown): boolean {
+  if (value === null || ['string', 'number', 'boolean', 'undefined'].includes(typeof value))
+    return true;
+  if (Array.isArray(value))
+    return value.every(isPlainJSON);
+  return typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype && Object.values(value as object).every(isPlainJSON);
 }
 
 export async function takeSpeculativeBrowser(browserName: string, options: LaunchOptions): Promise<Browser | undefined> {
@@ -47,10 +120,9 @@ export async function takeSpeculativeBrowser(browserName: string, options: Launc
     (browser as any)._wrapApiCall(() => browser.close(), { internal: true }).catch(() => {});
     return;
   }
-  // The browser was launched before the worker knew its output folders; nothing has used them yet.
-  serverBrowser.options.artifactsDir = artifactsDir;
-  serverBrowser.options.downloadsPath = artifactsDir;
-  serverBrowser.options.tracesDir = tracesDir || artifactsDir;
+  // The browser was launched before the worker knew its output folders, and so was the context it
+  // may have prepared for the first test.
+  await serverBrowser.setOutputDirs(artifactsDir, tracesDir || artifactsDir);
   (browser as any)._connectToBrowserType(browser.browserType(), options, undefined);
   return browser;
 }

@@ -107,7 +107,7 @@ export abstract class Browser extends SdkObject {
     return this.options.sdkLanguage || this.attribution.playwright.options.sdkLanguage;
   }
 
-  async newContext(progress: Progress, options: types.BrowserContextOptions, recycle = false): Promise<BrowserContext> {
+  async newContext(progress: Progress, options: types.BrowserContextOptions, recycle = false, announce = true): Promise<BrowserContext> {
     validateBrowserContextOptions(options, this.options);
     let clientCertificatesProxy: ClientCertificatesProxy | undefined;
     let context: BrowserContext | undefined;
@@ -125,7 +125,8 @@ export abstract class Browser extends SdkObject {
       if ((options as any).__testHookBeforeSetStorageState)
         await progress.race((options as any).__testHookBeforeSetStorageState());
       await context.setStorageState(progress, options.storageState, 'initial');
-      this.emit(Browser.Events.Context, context);
+      if (announce)
+        this.emit(Browser.Events.Context, context);
       return context;
     } catch (error) {
       await context?.close(progress, { reason: 'Failed to create context' }).catch(() => {});
@@ -141,8 +142,14 @@ export abstract class Browser extends SdkObject {
       if (await this._contextForReuse.context.resetForReuse(progress, params))
         return this._contextForReuse.context;
     }
-    if (this._contextForReuse)
-      await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
+    if (this._contextForReuse) {
+      // Flashwright: a recycled context that does not fit this test (prepared ahead of time for other
+      // options, or the previous test's) records nothing, so it closes in the background.
+      if (this._contextForReuse.hash.endsWith(':recycle'))
+        this._contextForReuse.context.close(nullProgress, { reason: 'Context reused' }).catch(() => {});
+      else
+        await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
+    }
     const context = await this.newContext(progress, params, recycle);
     this._contextForReuse = { context, hash };
     return context;
@@ -150,6 +157,26 @@ export abstract class Browser extends SdkObject {
 
   contextForReuse() {
     return this._contextForReuse?.context;
+  }
+
+  // Flashwright: a browser started before the test runner knows what its tests need creates the
+  // recycled context the same tests asked for last time and starts preparing the tab for the first
+  // test. Clients do not see the context until a test asks for it (newContextForReuse); a test
+  // asking for a different one gets a new context and this one closes.
+  async prepareRecycledContext(params: channels.BrowserNewContextForRecycleParams) {
+    if (this._contextForReuse)
+      return;
+    const context = await this.newContext(nullProgress, params, true /* recycle */, false /* announce */);
+    this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle' };
+    context.startRecycle();
+  }
+
+  // Flashwright: see BrowserContext.outputDirsChanged.
+  async setOutputDirs(artifactsDir: string, tracesDir: string) {
+    this.options.artifactsDir = artifactsDir;
+    this.options.downloadsPath = artifactsDir;
+    this.options.tracesDir = tracesDir;
+    await Promise.all(this.contexts().map(context => context.outputDirsChanged()));
   }
 
   downloadCreated(page: Page, uuid: string, url: string, suggestedFilename?: string, downloadFilename?: string) {

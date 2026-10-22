@@ -87,6 +87,8 @@ async function runOnce(engine, extraArgs = []) {
   try { stats = JSON.parse(await readFile(join(project, 'report.json'), 'utf8')).stats ?? {}; } catch {}
   if (code !== 0 && workload !== 'failure' && workload !== 'broken') console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
   if (process.env.BENCH_PROCCPU) console.log(`[${engine}] CPU by process kind:\n${output}`);
+  // BENCH_OUTPUT=1 prints every run's output, for timing logs added while profiling.
+  if (process.env.BENCH_OUTPUT) console.log(`[${engine}] output:\n${output}`);
   const cpu = /CPUTIME ([\d.]+) ([\d.]+)/.exec(output);
   return { elapsed, code, expected: stats.expected, unexpected: stats.unexpected, cpu: cpu ? (Number(cpu[1]) + Number(cpu[2])) * 1000 : undefined };
 }

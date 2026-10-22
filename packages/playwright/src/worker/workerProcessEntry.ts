@@ -16,11 +16,31 @@
 
 // Flashwright: installs the code cache before the bundles below are compiled; keep it first.
 import '../codeCache';
+import path from 'path';
+
 import { startProcessRunner } from '../common';
 import { create } from './workerMain';
-import { launchSpeculativeBrowser } from '../speculativeBrowser';
+import { launchSpeculativeBrowser, prepareSpeculativeContext } from '../speculativeBrowser';
 
-// Flashwright: a worker started ahead of time also starts the default browser right away.
-if (process.env.FLASHWRIGHT_SPECULATIVE_BROWSER)
-  launchSpeculativeBrowser();
+// Flashwright: a worker started ahead of time also starts the default browser right away. A spare
+// that then stays idle (one kept ready to replace a failed worker) also loads the test runner's
+// public module, which every config and test file imports (by path, so that the bundler leaves it
+// out of this bundle), and prepares the context its first test is likely to ask for. A worker that
+// is put to work right away does neither: its first test would wait for them.
+const kSpareIdleTime = 100;
+if (process.env.FLASHWRIGHT_SPECULATIVE_BROWSER) {
+  let initialized = false;
+  process.on('message', (message: any) => initialized ||= message?.method === '__init__');
+  void launchSpeculativeBrowser().then(() => setTimeout(() => {
+    if (initialized)
+      return;
+    try {
+      require(path.join(__dirname, '..', '..', 'test.js'));
+    } catch {
+      // The config or test file that imports it reports the error.
+    }
+    if (!initialized)
+      prepareSpeculativeContext();
+  }, kSpareIdleTime));
+}
 startProcessRunner(create);

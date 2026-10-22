@@ -357,16 +357,24 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
 
   override async initialize() {
     assert(!Array.from(this._browser._crPages.values()).some(page => page._browserContext === this));
-    const promises: Promise<any>[] = [super.initialize()];
+    const promises: Promise<any>[] = [super.initialize(), this._updateDownloadBehavior()];
+    await Promise.all(promises);
+  }
+
+  private async _updateDownloadBehavior() {
     if (this._browser.options.name !== 'clank' && this._options.acceptDownloads !== 'internal-browser-default') {
-      promises.push(this._browser._session.send('Browser.setDownloadBehavior', {
+      await this._browser._session.send('Browser.setDownloadBehavior', {
         behavior: this._options.acceptDownloads === 'accept' ? 'allowAndName' : 'deny',
         browserContextId: this._browserContextId,
         downloadPath: this._browser.options.downloadsPath,
         eventsEnabled: true,
-      }));
+      });
     }
-    await Promise.all(promises);
+  }
+
+  override async outputDirsChanged() {
+    await super.outputDirsChanged();
+    await this._updateDownloadBehavior();
   }
 
   private _crPages() {
