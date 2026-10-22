@@ -21,7 +21,7 @@ import { assert } from '@isomorphic/assert';
 import { createGuid } from '@utils/crypto';
 import { Artifact } from '../artifact';
 import { Browser } from '../browser';
-import { BrowserContext, verifyGeolocation } from '../browserContext';
+import { BrowserContext, raceWithTimeout, verifyGeolocation } from '../browserContext';
 import { Frame } from '../frames';
 import * as network from '../network';
 import { Page } from '../page';
@@ -593,8 +593,8 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
     return !!this._browserContextId;
   }
 
-  protected override async doFreezePages(pages: Page[]): Promise<void> {
-    await Promise.all(pages.map(page => (page.delegate as CRPage)._mainFrameSession._client.send('Page.setWebLifecycleState', { state: 'frozen' }).catch(() => {})));
+  protected override async doStopPages(pages: Page[]): Promise<void> {
+    await Promise.all(pages.map(page => stopPage(page.delegate as CRPage)));
   }
 
   protected override async doClearSiteData(page: Page, origins: string[]): Promise<void> {
@@ -642,3 +642,45 @@ export function shouldProxyLoopback(bypass: string | undefined) {
   const shouldBypassSomeLoopback = ['localhost', '127.0.0.1', '::1', '[::]', '[::1]', '<loopback>', '<-loopback>'].some(host => hosts.includes(host));
   return !shouldBypassSomeLoopback;
 }
+
+// Stops everything a page that is about to close could still do: once this returns, its scripts
+// can no longer write storage or cookies.
+async function stopPage(crPage: CRPage) {
+  // The renderer applies this right away, even in the middle of a running script, and from then on
+  // runs none of the page's timers, event handlers or animation frame callbacks. The evaluation is
+  // answered once the script that was running, if any, has finished.
+  await Promise.all([...crPage._sessions.values()].map(frameSession => Promise.all([
+    frameSession._client.send('Emulation.setScriptExecutionDisabled', { value: true }),
+    frameSession._client.send('Runtime.evaluate', { expression: '0' }),
+  ]).catch(() => {})));
+  // Closing the page detaches DevTools, which enables scripts again until the renderer has torn the
+  // page down, and a pending timer could then still write. Replacing the document drops its timers
+  // and callbacks for good; its unload handlers do not run while scripts are disabled. Closing the
+  // page before that navigation has stopped loading can leave the page open.
+  const session = crPage._mainFrameSession._client;
+  let committed = false;
+  const onNavigated = (event: Protocol.Page.frameNavigatedPayload) => {
+    if (!event.frame.parentId && event.frame.url === 'about:blank')
+      committed = true;
+  };
+  let onStoppedLoading!: (event: Protocol.Page.frameStoppedLoadingPayload) => void;
+  const stoppedLoading = new Promise<void>(f => {
+    onStoppedLoading = event => {
+      if (committed && event.frameId === crPage._targetId)
+        f();
+    };
+  });
+  session.on('Page.frameNavigated', onNavigated);
+  session.on('Page.frameStoppedLoading', onStoppedLoading);
+  try {
+    const { errorText } = await session.send('Page.navigate', { url: 'about:blank' });
+    if (!errorText)
+      await raceWithTimeout(stoppedLoading, kStopPageTimeout, undefined);
+  } catch {
+  } finally {
+    session.off('Page.frameNavigated', onNavigated);
+    session.off('Page.frameStoppedLoading', onStoppedLoading);
+  }
+}
+
+const kStopPageTimeout = 500;

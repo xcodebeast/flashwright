@@ -353,9 +353,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     this._heldPage = page;
     this._heldPageInitScripts = [...this.initScripts];
     this._heldPageEmulation = this._pageEmulationKey();
-    // Pages being closed can still run scripts for a moment and write storage after it was cleared;
-    // stop them first. Writes they already sent reach storage before the clearing below.
-    await progress.race(this.doFreezePages(previousPages));
+    // Closing a page is acknowledged by the browser before the renderer tears it down, so its
+    // scripts could still write storage after the clearing below; stop them first.
+    await progress.race(this.doStopPages(previousPages.filter(p => !p.isClosedOrClosingOrCrashed())));
     await progress.race(Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {}))));
 
     await progress.race(Promise.all(Array.from(this._downloads).map(download => download.artifact.deleteOnContextClose())));
@@ -384,7 +384,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   protected async doClearSiteData(page: Page, origins: string[]): Promise<void> {
   }
 
-  protected async doFreezePages(pages: Page[]): Promise<void> {
+  protected async doStopPages(pages: Page[]): Promise<void> {
   }
 
   browserClosed() {
@@ -1012,7 +1012,7 @@ const kRecycleTimeout = 1500;
 
 // Resolves with `timeoutValue` if `promise` takes longer than `timeout`. The timer is cleared as
 // soon as the promise settles, so it does not keep the recycled context's old pages reachable.
-function raceWithTimeout<T, V>(promise: Promise<T>, timeout: number, timeoutValue: V): Promise<T | V> {
+export function raceWithTimeout<T, V>(promise: Promise<T>, timeout: number, timeoutValue: V): Promise<T | V> {
   let timer: NodeJS.Timeout | undefined;
   const timedOut = new Promise<V>(f => timer = setTimeout(() => f(timeoutValue), timeout));
   return Promise.race([promise, timedOut]).finally(() => clearTimeout(timer));

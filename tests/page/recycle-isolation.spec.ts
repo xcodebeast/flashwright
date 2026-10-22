@@ -23,6 +23,8 @@ import { test as it, expect } from './pageTest';
 it.describe.configure({ mode: 'default' });
 // Electron runs every test in the same application; there is no per-test context to compare with.
 it.skip(({ isElectron }) => isElectron);
+// Only Chromium recycles contexts; other browsers get a new context for every test, as in Playwright.
+it.skip(({ browserName }) => browserName !== 'chromium');
 
 it('leaves storage, permissions and context settings behind', async ({ page, context, server }) => {
   await page.goto(server.PREFIX + '/serviceworkers/empty/sw.html');
