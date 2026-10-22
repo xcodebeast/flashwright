@@ -1,8 +1,10 @@
 // Drop-in check: installs this fork's packed packages into a fresh project in place of
 // @playwright/test and runs the unmodified upstream TodoMVC suite with a TypeScript config.
-// Usage: node bench/consumer-test.mjs
+// Usage: node bench/consumer-test.mjs [--npm]
+// --npm installs the flashwright-* packages that utils/flashwright/pack.mjs made (run it first),
+// under their npm names, the way `npm i -D @playwright/test@npm:flashwright-test@<version>` would.
 import { execFileSync, spawn } from 'node:child_process';
-import { cpSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { applicationCorpusDirectory, loadApplicationCorpus, startApplicationServer } from './application-corpus.mjs';
 
@@ -12,9 +14,16 @@ rmSync(work, { recursive: true, force: true });
 mkdirSync(join(work, 'packs'), { recursive: true });
 
 const packs = {};
-for (const name of ['playwright-core', 'playwright', 'playwright-test']) {
-  const file = execFileSync('npm', ['pack', '--pack-destination', join(work, 'packs')], { cwd: join(root, 'packages', name), encoding: 'utf8' }).trim().split('\n').pop();
-  packs[name] = join(work, 'packs', file);
+if (process.argv.includes('--npm')) {
+  const { tarballs } = JSON.parse(readFileSync(join(root, 'workbench/npm/tarballs.json'), 'utf8'));
+  packs['playwright-core'] = tarballs['flashwright-core'];
+  packs['playwright'] = tarballs['flashwright'];
+  packs['playwright-test'] = tarballs['flashwright-test'];
+} else {
+  for (const name of ['playwright-core', 'playwright', 'playwright-test']) {
+    const file = execFileSync('npm', ['pack', '--pack-destination', join(work, 'packs')], { cwd: join(root, 'packages', name), encoding: 'utf8' }).trim().split('\n').pop();
+    packs[name] = join(work, 'packs', file);
+  }
 }
 
 const project = join(work, 'project');
@@ -31,7 +40,6 @@ cpSync(join(applicationCorpusDirectory('todomvc'), 'tests'), join(project, 'test
 const fixtures = join(project, 'tests', 'fixtures.ts');
 const corpus = await loadApplicationCorpus(applicationCorpusDirectory('todomvc'));
 const server = await startApplicationServer(corpus);
-const { readFileSync } = await import('node:fs');
 writeFileSync(fixtures, readFileSync(fixtures, 'utf8').replace('https://demo.playwright.dev/todomvc', server.url));
 writeFileSync(join(project, 'playwright.config.ts'), `import { defineConfig, devices } from '@playwright/test';
 

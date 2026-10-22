@@ -80,7 +80,13 @@ npm run build
 npx playwright install chromium
 ```
 
-`bench/consumer-test.mjs` packs the packages and runs an unmodified upstream example suite against them in a fresh project, as a drop-in replacement for `@playwright/test`.
+It is packaged as `flashwright-test`, `flashwright` and `flashwright-core` (Playwright's `@playwright/test`, `playwright` and `playwright-core`), which depend on each other through npm aliases. Once published, a project switches by replacing one dependency, keeping its imports and `npx playwright` commands:
+
+```bash
+npm i -D @playwright/test@npm:flashwright-test@1.64.1-flashwright.1
+```
+
+`node utils/flashwright/pack.mjs` builds those packages from a clean build (`npm run clean && npm run build`) into `workbench/npm/` (`--dry-run-publish` checks them with `npm publish --dry-run`), and `bench/consumer-test.mjs --npm` installs them into a fresh project that way and runs an unmodified upstream example suite.
 
 The upstream suites are the compatibility bar, compared against pristine Playwright v1.64.1 on the same machine (Chromium unless noted; WebKit cannot run on this machine):
 
