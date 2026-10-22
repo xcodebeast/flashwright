@@ -128,6 +128,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _heldPage: Page | undefined;
   private _heldPageInitScripts: InitScript[] = [];
   private _heldPageEmulation = '';
+  private _idleTrackerInstalled = false;
   private _recycleMode = false;
   private _pendingRecycle: Promise<boolean> | undefined;
 
@@ -193,9 +194,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     if (this._options.serviceWorkers === 'block')
       await this.addInitScript(nullProgress, `\nif (self.ServiceWorkerContainer) ServiceWorkerContainer.prototype.register = async () => { console.warn('Service Worker registration blocked by Playwright'); };\n`);
 
-    // Flashwright: lets assertions tell when nothing can change the page any more (see IdleDetector).
-    if (this._options.failFastWhenIdle)
-      await this.addInitScript(nullProgress, idleTrackerSource);
+    await this._installIdleTrackerIfNeeded();
 
     if (this._options.permissions)
       await this.grantPermissions(this._options.permissions);
@@ -265,6 +264,15 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   }
 
   // Returns false when the context could not be recycled and should be replaced by a new one.
+  // Flashwright: lets assertions tell when nothing can change the page any more (see IdleDetector).
+  // A reused context may turn the option on later; once installed, the tracker stays.
+  private async _installIdleTrackerIfNeeded() {
+    if (!this._options.failFastWhenIdle || this._idleTrackerInstalled)
+      return;
+    this._idleTrackerInstalled = true;
+    await this.addInitScript(nullProgress, idleTrackerSource);
+  }
+
   async resetForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams | null): Promise<boolean> {
     // A recycle started when the previous test ended must finish before this test's options apply.
     const recycling = this._recycleMode && this.supportsRecycling();
@@ -281,6 +289,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
         (this._options as any)[key] = params[key];
       if (params.testIdAttributeName)
         this.selectors().setTestIdAttributeName(params.testIdAttributeName);
+      await progress.race(this._installIdleTrackerIfNeeded());
     }
 
     if (recycling)
@@ -1063,6 +1072,7 @@ const paramsThatAllowContextReuse: (keyof channels.BrowserNewContextForReusePara
   'waitForAnimations',
   // Flashwright: read on every navigation and API request, so it can change between tests.
   'baseURL',
+  'failFastWhenIdle',
 ];
 
 const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {

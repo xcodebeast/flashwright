@@ -10,38 +10,36 @@ Complete `test` command wall-clock, Flashwright vs stock `@playwright/test` 1.64
 
 | Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC (upstream example suite) | 24 | 1 | 3702 ms | 1157 ms | 3.20× |
-| TodoMVC * | 24 | 4 | 1820 ms | 813 ms | 2.24× |
-| SVGOMG (upstream example suite) | 6 | 1 | 1778 ms | 564 ms | 3.15× |
-| SVGOMG * | 6 | 4 | 1271 ms | 498 ms | 2.55× |
-| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6264 ms | 3032 ms | 2.07× |
-| Shop app * | 18 | 4 | 2605 ms | 1273 ms | 2.05× |
+| TodoMVC (upstream example suite) | 24 | 1 | 3695 ms | 1150 ms | 3.21× |
+| TodoMVC * | 24 | 4 | 1782 ms | 803 ms | 2.22× |
+| SVGOMG (upstream example suite) | 6 | 1 | 1724 ms | 574 ms | 3.00× |
+| SVGOMG * | 6 | 4 | 1256 ms | 506 ms | 2.48× |
+| Shop app (login setup project, 40 ms API latency) | 18 | 1 | 6279 ms | 3102 ms | 2.02× |
+| Shop app * | 18 | 4 | 2592 ms | 1263 ms | 2.05× |
 | A single test (an agent re-running one test; measured separately) | 1 | 1 | 613 ms | 197 ms | 3.11× |
-| Trivial test | 15 | 1 | 1049 ms | 353 ms | 2.97× |
-| Click + assertion | 15 | 1 | 1657 ms | 445 ms | 3.72× |
-| Assertion on a delayed update | 15 | 1 | 1226 ms | 488 ms | 2.51× |
-| Navigation | 15 | 1 | 1284 ms | 473 ms | 2.71× |
-| Fixture setup only | 15 | 1 | 1205 ms | 405 ms | 2.98× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 2033 ms | 801 ms | 2.54× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2404 ms | 1017 ms | 2.36× |
-| `page.screenshot()` to a file | 15 | 1 | 1941 ms | 851 ms | 2.28× |
-| Suite with real failures (every third test) | 15 | 1 | 4397 ms | 2021 ms | 2.18× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4770 ms | 4102 ms | 1.16× |
+| Trivial test | 15 | 1 | 1032 ms | 358 ms | 2.88× |
+| Click + assertion | 15 | 1 | 1627 ms | 465 ms | 3.50× |
+| Assertion on a delayed update | 15 | 1 | 1209 ms | 492 ms | 2.46× |
+| Navigation | 15 | 1 | 1287 ms | 484 ms | 2.66× |
+| Fixture setup only | 15 | 1 | 1185 ms | 414 ms | 2.86× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2013 ms | 813 ms | 2.48× |
+| `toHaveScreenshot()` against a baseline | 15 | 1 | 2380 ms | 998 ms | 2.38× |
+| `page.screenshot()` to a file | 15 | 1 | 1947 ms | 864 ms | 2.25× |
+| Suite with real failures (every third test) | 15 | 1 | 4371 ms | 1283 ms | 3.41× |
+| Expected failures (250 ms timeout each) | 15 | 1 | 4767 ms | 1554 ms | 3.07× |
 
 The single-file workloads run in one worker regardless of the worker setting; their 4-worker numbers match the 1-worker ones.
 
-Some scenarios mostly wait for things no framework can make faster: assertion timeouts that are meant to expire, and the application server's response time. There the wall-clock ratio is capped by the waiting (for the expected failures, at 4770 / (15 × 250) = 1.27×; with the opt-in `failFastWhenIdle` described below they take 1554 ms, 3.07×), so the matrix also reports the time each framework adds on top of it (wall time minus the waits the tests ask for; for the shop, minus the time an API request was pending, measured in each framework's own runs):
+Some scenarios mostly wait for the application: its own delays and its server's response time. The matrix also reports the time each framework adds on top of that (wall time minus the waits the app imposes; for the shop, minus the time an API request was pending, measured in each framework's own runs). Assertions that are meant to fail are not such a wait: Playwright waits out each one's timeout (250 ms in the two failure scenarios), while Flashwright fails it once nothing can change the page (`failFastWhenIdle`, below).
 
 | Scenario | Workers | Waits the tests ask for | Playwright adds | Flashwright adds | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Expected failures | 1 | 15 × 250 ms | 1020 ms | 352 ms | 2.90× |
-| Suite with real failures | 1 | 5 × 250 ms | 3147 ms | 771 ms | 4.08× |
-| Form submit to a backend | 1 | 15 × 20 ms | 1733 ms | 501 ms | 3.46× |
-| Assertion on a delayed update | 1 | 15 × 8 ms | 1106 ms | 368 ms | 3.01× |
-| Shop app | 1 | ~2.1 s of API time | 4149 ms | 985 ms | 4.21× |
-| Shop app * | 4 | ~1.15 s (Playwright), ~0.86 s (Flashwright) of API time | 1457 ms | 409 ms | 3.56× |
+| Form submit to a backend | 1 | 15 × 20 ms | 1713 ms | 513 ms | 3.34× |
+| Assertion on a delayed update | 1 | 15 × 8 ms | 1089 ms | 372 ms | 2.93× |
+| Shop app | 1 | ~2.1 s of API time | 4166 ms | 1017 ms | 4.10× |
+| Shop app * | 4 | ~1.15 s (Playwright), ~0.86 s (Flashwright) of API time | 1447 ms | 405 ms | 3.57× |
 
-SVGOMG with 4 workers used to be bound by the application: once the demo loads, its settings panel waits 50 ms and slides in for 300 ms, and with four browsers rendering the app on 6 CPUs the clicks inside the panel missed that 50 ms window, so the stable check waited for the slide (1.70×). Since clicks no longer wait for animations by default (`waitForAnimations` below), it is 2.55×. The rest of the shop's wall time with 4 workers is its API latency, spread unevenly across workers.
+SVGOMG with 4 workers used to be bound by the application: once the demo loads, its settings panel waits 50 ms and slides in for 300 ms, and with four browsers rendering the app on 6 CPUs the clicks inside the panel missed that 50 ms window, so the stable check waited for the slide (1.70×). Since clicks no longer wait for animations by default (`waitForAnimations` below), it is 2.48×. The rest of the shop's wall time with 4 workers is its API latency, spread unevenly across workers.
 
 ### Speed options
 
@@ -53,6 +51,7 @@ export default defineConfig({
   testOrder: 'file',          // keep Playwright's test order
   use: {
     waitForAnimations: true,  // wait for elements to stop animating before input
+    failFastWhenIdle: false,  // let assertions wait for their timeout even on an idle page
   },
 });
 
@@ -69,7 +68,8 @@ On by default:
 
 | Option | Default | What it does | Effect here |
 | --- | --- | --- | --- |
-| `waitForAnimations` (`use`) | `false` | With `false`, clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish; Playwright's hit-target check still makes sure the element receives the input. Set `true` for an app that ignores input while it animates. | SVGOMG, 4 workers: 739 ms → 498 ms (1.70× → 2.55× vs Playwright) |
+| `waitForAnimations` (`use`) | `false` | With `false`, clicks, hovers, taps and drags do not wait for CSS transitions, CSS animations or Web Animations that move the element to finish; Playwright's hit-target check still makes sure the element receives the input. Set `true` for an app that ignores input while it animates. | SVGOMG, 4 workers: 739 ms → 506 ms (1.70× → 2.48× vs Playwright) |
+| `failFastWhenIdle` (`use`) | `true` | An assertion that does not pass yet fails as soon as nothing can change the page before its timeout, instead of waiting for it: no timer due by then, no animation frame, message or DOM change for 50 ms, no request, socket, navigation, animation, media or worker, and no other call on the page still running. Something that changes the page from a timer in the test itself is invisible to it: such a test sets `false`. Of Playwright's 2610 page tests, the 8 that do this set it (and the suite runs in 69 s instead of 93 s, since many of its tests wait for assertions to time out). `browser.newContext()` outside the test runner keeps it off. | Expected failures: 4108 ms → 1554 ms (1.16× → 3.07× vs Playwright); suite with real failures: 2021 ms → 1283 ms (2.18× → 3.41×) |
 | `testOrder` (config, `--test-order`) | `'longest-first'` | With more than one worker, the test groups that took longest in the previous run of the config start first, as Jest does, so a long test does not start last and run alone at the end. `'file'` keeps Playwright's order, for suites whose tests depend on what ran before them in the same worker (Playwright's own library suite has such tests). | Shop, 4 workers: 1293 ms → 1234 ms; TodoMVC, 4 workers: 850 ms → 813 ms |
 
 Off by default, because they change what the page does:
@@ -78,7 +78,6 @@ Off by default, because they change what the page does:
 | --- | --- | --- |
 | `instantAnimations` (`use`) | The pages' CSS transitions, CSS animations and Web Animations run 1000× faster, delays included, so they end within a frame and fire their end events right away: a dialog removed when its fade-out ends disappears at once. Animations that scripts drive with timers keep their speed. Chromium only; Firefox and WebKit ignore it. | Gallery: 6425 ms → 2774 ms. SVGOMG and the shop: no change, their tests do not wait for animations |
 | `blockResources` (`use`) | Requests for the listed types (`'image'`, `'media'`, `'font'`, `'stylesheet'`, `'script'`) fail before any route sees them. Chromium intercepts only those requests, so all others keep the cache and the usual fast path. | Gallery: 6425 ms → 4665 ms; with `instantAnimations` too, 950 ms (13.6× Playwright's 12882 ms) |
-| `failFastWhenIdle` (`use`) | An assertion that does not pass yet fails as soon as nothing can change the page before its timeout, instead of waiting for it: no timer due by then, no animation frame, message or DOM change for 50 ms, no request, socket, navigation, animation, media or worker, and no other call on the page still running. Something that changes the page from a timer in the test itself is invisible to it; Playwright's page suite with the option on for every test passes except for the 8 tests that do exactly that. | Expected failures: 4108 ms → 1554 ms (3.07× vs Playwright) |
 | `webSecurity` (`use`, per worker) | `false` launches the browser without the same-origin policy (CORS) and without blocking mixed content, for a front end whose API on another origin sends no CORS headers in tests. `bypassCSP` does the same for Content Security Policy, per test. Chromium only. | None: it changes what a test can do, not its speed |
 
 The gallery is `workload:media` in `bench/`: 15 tests that each open a page with 24 product images (served with 30 ms latency), open a details dialog and close it, and wait for the dialog to go away once its 250 ms fade-out ends. Reproduce with `node bench/run.mjs workload:media 1 10 'stock,fork,fork:USE_instantAnimations=true'`.
@@ -111,6 +110,7 @@ Each item keeps Playwright's observable behavior; the differences that remain ar
 - The browser the test runner launches for recycled contexts runs with `--renderer-process-limit=1` and without script streaming, so a context's same-site pages share one renderer process (in the headless shell, cross-site frames run in it too): a renderer crash or a busy script affects all of them. Browsers that tests or scripts launch themselves keep Playwright's defaults.
 - A click, hover, tap or drag on a moving element is dispatched without waiting for the element to stop, unless `waitForAnimations` is set (and even then for animations only, not for elements that scripts move); the hit-target check still makes sure the element receives it. Three upstream page tests assert the wait and set `waitForAnimations: true`.
 - With more than one worker, tests start longest first unless `testOrder: 'file'` is set.
+- An assertion that does not pass yet fails before its timeout once nothing can change the page any more, unless `failFastWhenIdle: false` is set; its call log says so. A test that changes the page from a timer in the test code while an assertion waits needs `false`. The test runner installs a small script in its pages for this, which wraps the timer, animation frame and message functions.
 - A reused context may change `baseURL` between tests (Playwright creates a new context instead); the server reads it on every navigation and API request.
 - When a worker exits, the browser the test runner launched for it is killed rather than shut down gracefully, once no context is left open (contexts write their traces, videos and HARs when they close); its temporary profile is still removed. If tests left contexts open, it closes gracefully as before.
 - PNGs from `page.screenshot()` and `locator.screenshot()` have identical pixels but are larger files (typically 1.6–1.9×). `toHaveScreenshot()` baselines are unchanged.

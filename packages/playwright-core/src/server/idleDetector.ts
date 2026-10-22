@@ -17,8 +17,8 @@
 // Flashwright: the failFastWhenIdle context option. An assertion that does not pass yet fails as
 // soon as nothing can change the page before its timeout: no timer due before then, no animation
 // frame, idle callback, message or DOM change for a while, no request in flight, no open web
-// socket, no navigation, no worker or service worker, no other page that could message it and no
-// other call from the client on the page. Anything this cannot
+// socket, no navigation, no worker or service worker, no other page that could message it, no
+// highlight that Playwright keeps up to date, and no other call from the client on the page. Anything this cannot
 // see (a test that acts on the page later from a concurrent async function, for example) can make
 // an assertion fail that would have passed, which is why the option is off by default.
 
@@ -36,7 +36,10 @@ let activity = 0;
 const timers = new Map();
 const frames = new Set();
 const idleCallbacks = new Set();
-const now = () => performance.now();
+// Playwright's fake clock replaces performance.now() and schedules its own timers through the
+// functions below; keep using the real time.
+const nativeNow = performance.now.bind(performance);
+const now = () => nativeNow();
 const nativeSetTimeout = globalThis.setTimeout;
 const nativeClearTimeout = globalThis.clearTimeout;
 const nativeSetInterval = globalThis.setInterval;
@@ -181,7 +184,7 @@ export class IdleDetector {
   private _serverSideIdle(): boolean {
     // The assertion itself is one call; any other one (a waitForTimeout() the test races against
     // the assertion, for example) may still change the page.
-    if (this._page.activeClientCalls > 1)
+    if (this._page.activeClientCalls > 1 || this._page.highlightController.hasHighlights())
       return false;
     if (this._page.browserContext.pages().length > 1 || this._page.hasWorkers() || this._page.frameManager.hasOpenWebSockets())
       return false;

@@ -553,6 +553,8 @@ test('should print expected/received before timeout', async ({ runInlineTest }) 
   const result = await runInlineTest({
     'a.test.ts': `
       import { test, expect } from '@playwright/test';
+      // Flashwright: the assertion must still be waiting when the test times out.
+      test.use({ failFastWhenIdle: false });
 
       test('times out waiting for text', async ({ page }) => {
         await page.setContent('<div id=node>Text content</div>');
@@ -621,6 +623,8 @@ test('should print expected/received on Ctrl+C', async ({ interactWithTestRunner
   const testProcess = await interactWithTestRunner({
     'a.test.ts': `
       import { test, expect } from '@playwright/test';
+      // Flashwright: the assertion must still be waiting when the run is interrupted.
+      test.use({ failFastWhenIdle: false });
 
       test('times out waiting for text', async ({ page }) => {
         await page.setContent('<div id=node>Text content</div>');
@@ -647,6 +651,8 @@ test('should not print timed out error message when test times out', async ({ ru
   const result = await runInlineTest({
     'a.test.ts': `
       import { test, expect } from '@playwright/test';
+      // Flashwright: the assertion must still be waiting when the test times out.
+      test.use({ failFastWhenIdle: false });
 
       test('fail', async ({ page }) => {
         await page.setContent('<div id=node>Text content</div>');

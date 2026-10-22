@@ -224,15 +224,20 @@ test.describe('toHaveText with array', () => {
     await expect(locator).toHaveText(['tEXT 1', 'TExt 2A'], { ignoreCase: true });
   });
 
-  test('pass lazy', async ({ page }) => {
-    await page.setContent('<div id=div></div>');
-    const locator = page.locator('p');
-    setTimeout(() => {
-      page.evaluate(() => {
-        document.querySelector('div').innerHTML = '<p>Text 1</p><p>Text 2</p>';
-      }).catch(() => {});
-    }, 500);
-    await expect(locator).toHaveText(['Text 1', 'Text 2']);
+  test.describe(() => {
+    // Flashwright: the page changes from a timer in the test while the assertion waits.
+    test.use({ failFastWhenIdle: false });
+
+    test('pass lazy', async ({ page }) => {
+      await page.setContent('<div id=div></div>');
+      const locator = page.locator('p');
+      setTimeout(() => {
+        page.evaluate(() => {
+          document.querySelector('div').innerHTML = '<p>Text 1</p><p>Text 2</p>';
+        }).catch(() => {});
+      }, 500);
+      await expect(locator).toHaveText(['Text 1', 'Text 2']);
+    });
   });
 
   test('pass empty', async ({ page }) => {

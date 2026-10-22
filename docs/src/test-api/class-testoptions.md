@@ -251,8 +251,8 @@ test.use({ instantAnimations: true });
 ```js title="example.spec.ts"
 import { test } from '@playwright/test';
 
-// These tests check that some elements never show up.
-test.use({ failFastWhenIdle: true });
+// These tests change the page from a timer in the test itself.
+test.use({ failFastWhenIdle: false });
 ```
 
 ## property: TestOptions.blockResources = %%-context-option-blockresources-%%

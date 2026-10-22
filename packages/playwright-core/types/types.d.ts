@@ -11434,7 +11434,8 @@ export interface Browser {
      * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
      * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
      * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
-     * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+     * timer in the test itself, may then fail where it would pass with Playwright; such a test sets it to `false`. The
+     * test runner turns it on by default; `browser.newContext()` and the other library methods default to `false`.
      */
     failFastWhenIdle?: boolean;
 
@@ -17843,7 +17844,8 @@ export interface BrowserType<Unused = {}> {
      * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
      * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
      * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
-     * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+     * timer in the test itself, may then fail where it would pass with Playwright; such a test sets it to `false`. The
+     * test runner turns it on by default; `browser.newContext()` and the other library methods default to `false`.
      */
     failFastWhenIdle?: boolean;
 
@@ -25143,7 +25145,8 @@ export interface AndroidDevice {
      * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
      * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
      * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
-     * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+     * timer in the test itself, may then fail where it would pass with Playwright; such a test sets it to `false`. The
+     * test runner turns it on by default; `browser.newContext()` and the other library methods default to `false`.
      */
     failFastWhenIdle?: boolean;
 
@@ -26473,7 +26476,8 @@ export interface BrowserContextOptions {
    * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
    * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
    * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
-   * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+   * timer in the test itself, may then fail where it would pass with Playwright; such a test sets it to `false`. The
+   * test runner turns it on by default; `browser.newContext()` and the other library methods default to `false`.
    */
   failFastWhenIdle?: boolean;
 

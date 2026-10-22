@@ -37,30 +37,45 @@ test.describe('toHaveCount', () => {
     await expect(locator).not.toHaveCount(1);
   });
 
-  test('eventually pass zero', async ({ page }) => {
-    await page.setContent('<div><span>hello</span></div>');
-    const locator = page.locator('span');
-    setTimeout(() => page.evaluate(() => document.querySelector('div').textContent = '').catch(() => {}), 200);
-    await expect(locator).toHaveCount(0);
-    await expect(locator).not.toHaveCount(1);
+  test.describe(() => {
+    // Flashwright: the page changes from a timer in the test while the assertion waits.
+    test.use({ failFastWhenIdle: false });
+
+    test('eventually pass zero', async ({ page }) => {
+      await page.setContent('<div><span>hello</span></div>');
+      const locator = page.locator('span');
+      setTimeout(() => page.evaluate(() => document.querySelector('div').textContent = '').catch(() => {}), 200);
+      await expect(locator).toHaveCount(0);
+      await expect(locator).not.toHaveCount(1);
+    });
   });
 
-  test('eventually pass non-zero', async ({ page }) => {
-    await page.setContent('<ul></ul>');
-    setTimeout(async () => {
-      await page.setContent('<ul><li>one</li><li>two</li></ul>');
-    }, 500);
-    const locator = page.locator('li');
-    await expect(locator).toHaveCount(2);
-  });
+  test.describe(() => {
+    // Flashwright: the page changes from a timer in the test while the assertion waits.
+    test.use({ failFastWhenIdle: false });
 
-  test('eventually pass not non-zero', async ({ page }) => {
-    await page.setContent('<ul><li>one</li><li>two</li></ul>');
-    setTimeout(async () => {
+    test('eventually pass non-zero', async ({ page }) => {
       await page.setContent('<ul></ul>');
-    }, 500);
-    const locator = page.locator('li');
-    await expect(locator).not.toHaveCount(2);
+      setTimeout(async () => {
+        await page.setContent('<ul><li>one</li><li>two</li></ul>');
+      }, 500);
+      const locator = page.locator('li');
+      await expect(locator).toHaveCount(2);
+    });
+  });
+
+  test.describe(() => {
+    // Flashwright: the page changes from a timer in the test while the assertion waits.
+    test.use({ failFastWhenIdle: false });
+
+    test('eventually pass not non-zero', async ({ page }) => {
+      await page.setContent('<ul><li>one</li><li>two</li></ul>');
+      setTimeout(async () => {
+        await page.setContent('<ul></ul>');
+      }, 500);
+      const locator = page.locator('li');
+      await expect(locator).not.toHaveCount(2);
+    });
   });
 
   test('fail zero', async ({ page }) => {

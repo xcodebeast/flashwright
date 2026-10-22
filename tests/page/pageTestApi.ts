@@ -21,8 +21,10 @@ export { expect } from '@playwright/test';
 // Page test does not guarantee an isolated context, just a new page (because Android).
 export type PageTestFixtures = {
   page: Page;
-  // Flashwright's option; a few page tests assert Playwright's wait for animations.
+  // Flashwright's options; a few page tests assert Playwright's wait for animations, and some
+  // change the page from a timer in the test while an assertion waits.
   waitForAnimations: boolean;
+  failFastWhenIdle: boolean;
 };
 
 export type PageWorkerFixtures = {

@@ -111,8 +111,26 @@ it('should keep waiting while a CSS animation runs', async ({ idlePage }) => {
   expect(Date.now() - start).toBeGreaterThanOrEqual(900);
 });
 
-it('should wait for the full timeout by default', async ({ page }) => {
+it('should wait for the full timeout when turned off', async ({ browser }) => {
+  const context = await browser.newContext({ failFastWhenIdle: false });
+  const page = await context.newPage();
   const start = Date.now();
   await expect(page.locator('#missing')).toBeVisible({ timeout: 1000 }).catch(() => {});
   expect(Date.now() - start).toBeGreaterThanOrEqual(900);
+  await context.close();
+});
+
+it('should keep waiting while a highlight is shown', async ({ idlePage }) => {
+  await idlePage.setContent('<button>button</button>');
+  await idlePage.locator('button').highlight();
+  const start = Date.now();
+  await expect(idlePage.locator('#missing')).toBeVisible({ timeout: 1000 }).catch(() => {});
+  expect(Date.now() - start).toBeGreaterThanOrEqual(900);
+});
+
+it('should not break the fake clock', async ({ idlePage }) => {
+  await idlePage.clock.install({ time: 0 });
+  await idlePage.evaluate(() => setTimeout(() => document.body.innerHTML = '<div id=late>late</div>', 1000));
+  await idlePage.clock.runFor(1000);
+  await expect(idlePage.locator('#late')).toBeVisible();
 });

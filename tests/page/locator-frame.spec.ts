@@ -107,13 +107,18 @@ it('should wait for frame 2', async ({ page, server }) => {
   await page.frameLocator('iframe').locator('button').click();
 });
 
-it('should wait for frame to go', async ({ page, server, isAndroid }) => {
-  it.fixme(isAndroid);
+it.describe(() => {
+  // Flashwright: the page changes from a timer in the test while the assertion waits.
+  it.use({ failFastWhenIdle: false });
 
-  await routeIframe(page);
-  await page.goto(server.EMPTY_PAGE);
-  setTimeout(() => page.$eval('iframe', e => e.remove()).catch(() => {}), 300);
-  await expect(page.frameLocator('iframe').locator('button')).toBeHidden();
+  it('should wait for frame to go', async ({ page, server, isAndroid }) => {
+    it.fixme(isAndroid);
+
+    await routeIframe(page);
+    await page.goto(server.EMPTY_PAGE);
+    setTimeout(() => page.$eval('iframe', e => e.remove()).catch(() => {}), 300);
+    await expect(page.frameLocator('iframe').locator('button')).toBeHidden();
+  });
 });
 
 it('should not wait for frame', async ({ page, server }) => {

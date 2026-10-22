@@ -17,12 +17,17 @@
 import { stripAnsi } from '../config/utils';
 import { test as it, expect } from './pageTest';
 
-it('should outlive frame navigation', async ({ page, server }) => {
-  await page.goto(server.EMPTY_PAGE);
-  setTimeout(async () => {
-    await page.goto(server.PREFIX + '/grid.html').catch(() => {});
-  }, 1000);
-  await expect(page.locator('.box').first()).toBeEmpty();
+it.describe(() => {
+  // Flashwright: the page changes from a timer in the test while the assertion waits.
+  it.use({ failFastWhenIdle: false });
+
+  it('should outlive frame navigation', async ({ page, server }) => {
+    await page.goto(server.EMPTY_PAGE);
+    setTimeout(async () => {
+      await page.goto(server.PREFIX + '/grid.html').catch(() => {});
+    }, 1000);
+    await expect(page.locator('.box').first()).toBeEmpty();
+  });
 });
 
 it('should print no-locator-resolved error when locator matcher did not resolve to any element', async ({ page, server }) => {

@@ -5,13 +5,12 @@ import { writeFileSync } from 'node:fs';
 
 const [iterations = '3', workersArg = '1,4', scenariosArg] = process.argv.slice(2);
 const scenarios = scenariosArg?.split(',') ?? ['todomvc', 'svgomg', 'shop', ...['noop', 'interaction', 'assertion', 'navigation', 'setup', 'backend', 'failure', 'broken', 'screenshot', 'capture'].map(w => `workload:${w}`)];
-// Time the tests themselves ask to wait, which no framework can remove: assertion timeouts that
-// are meant to expire and the app server's response time (for the shop, the wall time during which
-// at least one API request was pending, measured in each engine's own runs). For these scenarios
-// the comparison that measures the framework is wall time minus this floor.
+// Time the tests themselves ask to wait, which no framework can remove: the app's own delays and
+// the app server's response time (for the shop, the wall time during which at least one API
+// request was pending, measured in each engine's own runs). For these scenarios the comparison
+// that measures the framework is wall time minus this floor. Assertion timeouts that are meant to
+// expire are not a floor: Flashwright's failFastWhenIdle ends them once nothing can change the page.
 const floors = {
-  'workload:failure': () => 15 * 250,
-  'workload:broken': () => 5 * 250,
   'workload:backend': () => 15 * 20,
   'workload:assertion': () => 15 * 8,
   'shop': busy => busy,

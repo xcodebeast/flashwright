@@ -51,6 +51,11 @@ export class HighlightController {
     });
   }
 
+  // Flashwright: highlights are resolved again as the page changes (see IdleDetector).
+  hasHighlights(): boolean {
+    return this._entries.size > 0;
+  }
+
   async addHighlight(selector: string, options: HighlightOptions = {}) {
     // Validate the selector upfront, so that the caller gets a synchronous error.
     this._page.browserContext.selectors().parseSelector(selector, false);

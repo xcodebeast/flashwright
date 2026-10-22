@@ -230,22 +230,32 @@ test.describe('toBeEnabled', () => {
     expect(error.message).toContain(`locator resolved to <button disabled>Text</button>`);
   });
 
-  test('eventually', async ({ page }) => {
-    await page.setContent('<button disabled>Text</button>');
-    const locator = page.locator('button');
-    setTimeout(() => {
-      locator.evaluate(e => e.removeAttribute('disabled')).catch(() => {});
-    }, 500);
-    await expect(locator).toBeEnabled();
+  test.describe(() => {
+    // Flashwright: the page changes from a timer in the test while the assertion waits.
+    test.use({ failFastWhenIdle: false });
+
+    test('eventually', async ({ page }) => {
+      await page.setContent('<button disabled>Text</button>');
+      const locator = page.locator('button');
+      setTimeout(() => {
+        locator.evaluate(e => e.removeAttribute('disabled')).catch(() => {});
+      }, 500);
+      await expect(locator).toBeEnabled();
+    });
   });
 
-  test('eventually with not', async ({ page }) => {
-    await page.setContent('<button>Text</button>');
-    const locator = page.locator('button');
-    setTimeout(() => {
-      locator.evaluate(e => e.setAttribute('disabled', '')).catch(() => {});
-    }, 500);
-    await expect(locator).not.toBeEnabled();
+  test.describe(() => {
+    // Flashwright: the page changes from a timer in the test while the assertion waits.
+    test.use({ failFastWhenIdle: false });
+
+    test('eventually with not', async ({ page }) => {
+      await page.setContent('<button>Text</button>');
+      const locator = page.locator('button');
+      setTimeout(() => {
+        locator.evaluate(e => e.setAttribute('disabled', '')).catch(() => {});
+      }, 500);
+      await expect(locator).not.toBeEnabled();
+    });
   });
 
   test('with not and enabled:false', async ({ page }) => {

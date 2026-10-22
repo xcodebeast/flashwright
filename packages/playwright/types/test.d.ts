@@ -7744,7 +7744,8 @@ export interface PlaywrightTestOptions {
    * nothing navigates, no animation, video or audio plays, no image or font is loading, the page has no worker, service
    * worker or other page in its context, and no other call on the page (a `waitForTimeout()` raced against the
    * assertion, for example) is still running. A test that changes the page in a way nothing can see coming, from a
-   * timer in the test itself, may then fail where it would pass with Playwright. Defaults to `false`.
+   * timer in the test itself, may then fail where it would pass with Playwright; such a test sets it to `false`. The
+   * test runner turns it on by default; `browser.newContext()` and the other library methods default to `false`.
    *
    * **Usage**
    *
@@ -7752,8 +7753,8 @@ export interface PlaywrightTestOptions {
    * // example.spec.ts
    * import { test } from '@playwright/test';
    *
-   * // These tests check that some elements never show up.
-   * test.use({ failFastWhenIdle: true });
+   * // These tests change the page from a timer in the test itself.
+   * test.use({ failFastWhenIdle: false });
    * ```
    *
    */
