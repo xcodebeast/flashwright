@@ -366,6 +366,7 @@ class EsbuildStep extends Step {
       const start = Date.now();
       const result = await build(this._options);
       await this._writeBundleReport(result);
+      this._escapeNonAsciiComments();
       console.log('==== Done in', Date.now() - start, 'ms');
     }
   }
@@ -402,6 +403,7 @@ class EsbuildStep extends Step {
         const result = await this._context?.rebuild();
         if (result)
           await this._writeBundleReport(result);
+        this._escapeNonAsciiComments();
       } catch (e) {
         // Ignore. Esbuild inherits stderr and already logs nicely formatted errors
         // before throwing.
@@ -409,6 +411,21 @@ class EsbuildStep extends Step {
 
       this._rebuilding = false;
     } while (this._sourcesChanged);
+  }
+
+  // Flashwright: esbuild escapes non-ASCII characters everywhere but in comments. A few of them in
+  // a comment make V8 hold the whole bundle as a two-byte string, which takes several times longer
+  // to read in every process that loads it and twice the memory, so escape them there too.
+  _escapeNonAsciiComments() {
+    const outfile = this._options.outfile;
+    if (!this._options.bundle || !outfile || !fs.existsSync(outfile))
+      return;
+    const source = fs.readFileSync(outfile, 'utf8');
+    if (!/[^\x00-\x7f]/.test(source))
+      return;
+    const escape = line => line.replace(/[^\x00-\x7f]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
+    const lines = source.split('\n').map(line => /^\s*(\/\/|\/?\*)/.test(line) ? escape(line) : line);
+    fs.writeFileSync(outfile, lines.join('\n'));
   }
 
   /**
