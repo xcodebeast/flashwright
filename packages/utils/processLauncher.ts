@@ -49,6 +49,7 @@ type LaunchResult = {
   launchedProcess: childProcess.ChildProcess,
   gracefullyClose: () => Promise<void>,
   kill: () => Promise<void>,
+  killAndCleanup: () => void,
 };
 
 export const gracefullyCloseSet = new Set<() => Promise<void>>();
@@ -266,7 +267,7 @@ export async function launchProcess(options: LaunchProcessOptions): Promise<Laun
     return waitForCleanup;
   }
 
-  return { launchedProcess: spawnedProcess, gracefullyClose, kill: killAndWait };
+  return { launchedProcess: spawnedProcess, gracefullyClose, kill: killAndWait, killAndCleanup: killProcessAndCleanup };
 }
 
 export function killProcessTree(pid: number) {

@@ -447,6 +447,8 @@ scheme.BrowserCloseParams = tObject({
 scheme.BrowserCloseResult = tOptional(tObject({}));
 scheme.BrowserKillForTestsParams = tOptional(tObject({}));
 scheme.BrowserKillForTestsResult = tOptional(tObject({}));
+scheme.BrowserKillForExitParams = tOptional(tObject({}));
+scheme.BrowserKillForExitResult = tOptional(tObject({}));
 scheme.BrowserDefaultUserAgentForTestParams = tOptional(tObject({}));
 scheme.BrowserDefaultUserAgentForTestResult = tObject({
   userAgent: tString,

@@ -70,6 +70,7 @@ export const methodMetainfo = new Map<string, MethodMetainfo>([
   ['Browser.stopServer', { title: 'Stop server', }],
   ['Browser.close', { title: 'Close browser', pause: true, }],
   ['Browser.killForTests', { internal: true, }],
+  ['Browser.killForExit', { internal: true, }],
   ['Browser.defaultUserAgentForTest', { internal: true, }],
   ['Browser.newContext', { title: 'Create context', }],
   ['Browser.newContextForReuse', { internal: true, }],

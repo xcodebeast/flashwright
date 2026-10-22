@@ -43,6 +43,9 @@ export interface BrowserProcess {
   process?: ChildProcess;
   kill(): Promise<void>;
   close(): Promise<void>;
+  // Flashwright: kills the browser and removes its temporary directories without waiting for it
+  // to exit.
+  killAndCleanup?(): void;
 }
 
 export type BrowserOptions = {
@@ -202,6 +205,17 @@ export abstract class Browser extends SdkObject {
     }
     if (this.isConnected())
       await new Promise(x => this.once(Browser.Events.Disconnected, x));
+  }
+
+  // Flashwright: for a browser whose launching process is about to exit. Once its contexts have
+  // closed, nothing in it needs the graceful shutdown, and waiting for it to exit would only delay
+  // the exit; its temporary profile is removed right away.
+  killForExit() {
+    this._startedClosing = true;
+    if (this.options.browserProcess.killAndCleanup)
+      this.options.browserProcess.killAndCleanup();
+    else
+      this.options.browserProcess.kill().catch(() => {});
   }
 
   async killForTests(progress: Progress) {

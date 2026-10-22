@@ -124,6 +124,12 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
     await this._object.close(progress, params);
   }
 
+  async killForExit(params: channels.BrowserKillForExitParams, progress: Progress): Promise<void> {
+    if (this._options.ignoreStopAndKill)
+      return;
+    this._object.killForExit();
+  }
+
   async killForTests(params: channels.BrowserKillForTestsParams, progress: Progress): Promise<void> {
     if (this._options.ignoreStopAndKill)
       return;

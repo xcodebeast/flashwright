@@ -265,7 +265,12 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     if (process.env.PLAYWRIGHT_DASHBOARD)
       await browser.bind(`worker-${workerInfo.parallelIndex}`);
     await use(browser);
-    await browser.close({ reason: 'Test ended.' });
+    // Flashwright: a graceful shutdown would delay the worker's exit, which the next tests wait for
+    // (a failed test's worker is replaced). Contexts that tests left open still close gracefully.
+    if (browser.contexts().length)
+      await browser.close({ reason: 'Test ended.' });
+    else
+      await (browser as BrowserImpl)._killForExit('Test ended.');
   }, { scope: 'worker', timeout: 0 }],
 
   acceptDownloads: [({ contextOptions }, use) => use(contextOptions.acceptDownloads ?? true), { option: true, box: true }],

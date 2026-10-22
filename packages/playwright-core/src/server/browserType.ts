@@ -211,7 +211,7 @@ export abstract class BrowserType extends SdkObject {
     let transport: ConnectionTransport | undefined = undefined;
     let browserProcess: BrowserProcess | undefined = undefined;
     const exitPromise = new ManualPromise();
-    const { launchedProcess, gracefullyClose, kill } = await progress.race(launchProcess({
+    const { launchedProcess, gracefullyClose, kill, killAndCleanup } = await progress.race(launchProcess({
       command: prepared.executable,
       args: prepared.browserArguments,
       env: this.amendEnvironment(env, prepared.userDataDir, isPersistent, options),
@@ -259,7 +259,8 @@ export abstract class BrowserType extends SdkObject {
       onclose: undefined,
       process: launchedProcess,
       close: () => closeOrKill((options as any).__testHookBrowserCloseTimeout || DEFAULT_PLAYWRIGHT_TIMEOUT),
-      kill
+      kill,
+      killAndCleanup,
     };
     try {
       const { wsEndpoint } = await progress.race([

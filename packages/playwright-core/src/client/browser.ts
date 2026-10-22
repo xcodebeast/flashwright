@@ -191,6 +191,16 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
     await this.close();
   }
 
+  // Flashwright: the test runner ends the browser it launched for a worker this way once no context
+  // is left open. Contexts write their traces, videos and HARs when they close, so nothing in the
+  // browser needs its graceful shutdown, which would only delay the worker's exit.
+  async _killForExit(reason: string): Promise<void> {
+    if (this._shouldCloseConnectionOnClose)
+      return await this.close({ reason });
+    this._closeReason = reason;
+    await this._wrapApiCall(() => this._channel.killForExit({}, kNoTimeout), { internal: true });
+  }
+
   async close(options: { reason?: string } = {}): Promise<void> {
     this._closeReason = options.reason;
     try {

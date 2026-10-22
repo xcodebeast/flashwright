@@ -831,6 +831,7 @@ export interface BrowserChannel extends BrowserEventTarget, Channel {
   stopServer(params: BrowserStopServerParams, progress: Progress): Promise<BrowserStopServerResult>;
   close(params: BrowserCloseParams, progress: Progress): Promise<BrowserCloseResult>;
   killForTests(params: BrowserKillForTestsParams, progress: Progress): Promise<BrowserKillForTestsResult>;
+  killForExit(params: BrowserKillForExitParams, progress: Progress): Promise<BrowserKillForExitResult>;
   defaultUserAgentForTest(params: BrowserDefaultUserAgentForTestParams, progress: Progress): Promise<BrowserDefaultUserAgentForTestResult>;
   newContext(params: BrowserNewContextParams, progress: Progress): Promise<BrowserNewContextResult>;
   newContextForReuse(params: BrowserNewContextForReuseParams, progress: Progress): Promise<BrowserNewContextForReuseResult>;
@@ -874,6 +875,9 @@ export type BrowserCloseResult = void;
 export type BrowserKillForTestsParams = {};
 export type BrowserKillForTestsOptions = {};
 export type BrowserKillForTestsResult = void;
+export type BrowserKillForExitParams = {};
+export type BrowserKillForExitOptions = {};
+export type BrowserKillForExitResult = void;
 export type BrowserDefaultUserAgentForTestParams = {};
 export type BrowserDefaultUserAgentForTestOptions = {};
 export type BrowserDefaultUserAgentForTestResult = {
