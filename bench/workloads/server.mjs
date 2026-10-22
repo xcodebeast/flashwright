@@ -39,7 +39,30 @@ main { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding:
 <section class="card"><h2>Service ${i + 1}</h2><p>Latency p95 ${(17 + i * 7) % 90} ms, error rate 0.${i}%, ${120 + i * 13} deploys this quarter.</p>
 <div class="bar" style="width: ${30 + (i * 17) % 70}%"></div></section>`).join('')}</main></body></html>`;
 
-export async function startWorkloadServer({ backendDelay = 20 } = {}) {
+// A product gallery like most shops have: 24 images from a CDN-like server, and a details
+// dialog that fades out and is removed when its transition ends.
+const galleryDocument = `<!doctype html><html><head><title>Flashwright gallery</title>
+<style>
+body { margin: 0; font: 14px/1.4 sans-serif } main { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; padding: 16px }
+img { width: 100%; aspect-ratio: 1; display: block; background: #eee }
+[role=dialog] { position: fixed; inset: 30% 30%; background: white; padding: 24px; box-shadow: 0 4px 24px rgba(0, 0, 0, .3); transition: opacity 250ms ease-out }
+[role=dialog].closing { opacity: 0 }
+</style></head><body><button id="details">Details</button><main>${Array.from({ length: 24 }, (_, i) => `<img src="/images/${i}.svg" alt="Product ${i + 1}">`).join('')}</main>
+<script>
+document.getElementById('details').onclick = () => {
+  const dialog = document.createElement('div');
+  dialog.setAttribute('role', 'dialog');
+  dialog.innerHTML = '<p>Ships in two days.</p><button>Close</button>';
+  dialog.querySelector('button').onclick = () => {
+    dialog.addEventListener('transitionend', () => dialog.remove());
+    dialog.classList.add('closing');
+  };
+  document.body.append(dialog);
+};
+</script></body></html>`;
+const imageSource = index => `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="hsl(${index * 15}, 60%, 70%)"/><circle cx="100" cy="100" r="${40 + index}" fill="white" opacity=".6"/></svg>`;
+
+export async function startWorkloadServer({ backendDelay = 20, imageDelay = 30 } = {}) {
   const server = createServer(async (request, response) => {
     if (request.url === '/api/profile' && request.method === 'POST') {
       const chunks = [];
@@ -58,6 +81,13 @@ export async function startWorkloadServer({ backendDelay = 20 } = {}) {
     } else if (request.url.startsWith('/widget')) {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       response.end(`<!doctype html><button onclick="this.nextElementSibling.textContent = 'Paid'">Pay</button><span>Unpaid</span>`);
+    } else if (request.url.startsWith('/gallery')) {
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      response.end(galleryDocument);
+    } else if (request.url.startsWith('/images/')) {
+      await setTimeout(imageDelay);
+      response.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
+      response.end(imageSource(Number(request.url.slice('/images/'.length).split('.')[0])));
     } else if (request.url.startsWith('/fixture')) {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       response.end(document);
@@ -100,13 +130,17 @@ export function workloadSpec(workload, count) {
     screenshot: `await expect(page).toHaveScreenshot('visual.png');`,
     // An agent looking at its work: one viewport capture written to disk.
     capture: `await page.screenshot({ path: test.info().outputPath('capture.png') });`,
+    // Product details opened and closed on a page full of images.
+    media: `await page.getByRole('button', { name: 'Details' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();`,
     // A click inside a cross-site iframe.
     iframe: `const widget = page.frameLocator('iframe');
     await widget.getByRole('button', { name: 'Pay' }).click();
     await expect(widget.locator('span')).toHaveText('Paid');`,
   };
   const visual = workload === 'screenshot' || workload === 'capture';
-  const start = visual ? '/visual' : workload === 'iframe' ? '/embed' : '/fixture';
+  const start = visual ? '/visual' : workload === 'iframe' ? '/embed' : workload === 'media' ? '/gallery' : '/fixture';
   return `import { test, expect } from '../adapter.mjs';
 
 test.beforeEach(async ({ page }) => {

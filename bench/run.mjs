@@ -1,5 +1,8 @@
 // Complete `test` command wall-clock: stock Playwright vs the Flashwright fork.
 // Usage: node bench/run.mjs <todomvc|svgomg> <workers> <iterations> <engine,...>
+// An engine can carry environment variables: fork:NAME=value+NAME2=value. USE_<option>=<json>
+// sets a test option and CONFIG_<key>=<json> a config property, for example
+// fork:USE_instantAnimations=true or fork:CONFIG_testOrder="file" (values cannot contain commas).
 import { spawn } from 'node:child_process';
 import { mkdir, rm, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -56,7 +59,7 @@ for (const engine of engines) {
   }
   // The config stays byte-identical across runs, like a real project's, so the transform cache
   // hits; the app URL comes from the environment.
-  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); if (process.env.BENCH_BASE_URL) config.use.baseURL = process.env.BENCH_BASE_URL; export default defineConfig(config);\n`);
+  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); if (process.env.BENCH_BASE_URL) config.use.baseURL = process.env.BENCH_BASE_URL; for (const [key, value] of Object.entries(process.env)) { if (key.startsWith('USE_')) config.use[key.slice(4)] = JSON.parse(value); if (key.startsWith('CONFIG_')) config[key.slice(7)] = JSON.parse(value); } export default defineConfig(config);\n`);
   projects[engine] = { project, definition, variant };
 }
 
