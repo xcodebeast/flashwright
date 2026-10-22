@@ -46,7 +46,7 @@ export function prepareSpeculativeContext() {
     return;
   (globalThis as any)[speculativeKey] = launch.then(async browser => {
     const serverBrowser = browser && (browser as any)._connection.toImpl?.(browser);
-    await serverBrowser?.prepareRecycledContext(hint).catch(() => {});
+    await serverBrowser?.prepareRecycledContext(hint.params, { storageState: hint.storageState }).catch(() => {});
     return browser;
   });
 }
@@ -54,13 +54,15 @@ export function prepareSpeculativeContext() {
 // The recycled context the tests of a config asked for last time, so that a browser started ahead
 // of time has it ready with a tab open (see the server's Browser.prepareRecycledContext). Hints are kept per
 // config, under the key the CLI computes for its worker hints, in one small file that only this
-// user can read. Contexts with options that can hold secrets (storage state, credentials, headers,
-// a proxy, client certificates) are not remembered.
+// user can read. The storage state is left out (the test's own is applied when it takes the
+// context), and contexts with other options that can hold secrets (credentials, headers, a proxy,
+// client certificates) are not remembered.
 const contextHintFile = path.join(os.tmpdir(), 'flashwright-context-hints.json');
 const maxContextHints = 200;
 let rememberedContextHint = false;
 
-type ContextHints = Record<string, { params: any, usedAt: number }>;
+// `storageState` tells whether the tests used one, not what it was.
+type ContextHints = Record<string, { params: any, storageState?: boolean, usedAt: number }>;
 
 function readContextHints(): ContextHints {
   try {
@@ -72,22 +74,24 @@ function readContextHints(): ContextHints {
 
 function readContextHint() {
   const key = process.env.FLASHWRIGHT_CONTEXT_HINT_KEY;
-  return key ? readContextHints()[key]?.params : undefined;
+  return key ? readContextHints()[key] : undefined;
 }
 
 // Called by the `context` fixture once it has created a recycled context.
 export function rememberRecycledContext(browser: Browser) {
   const key = process.env.FLASHWRIGHT_CONTEXT_HINT_KEY;
-  const params = (browser as any)._lastRecycleParams;
-  const mayHoldSecrets = params?.storageState || params?.httpCredentials || params?.extraHTTPHeaders?.length || params?.proxy || params?.clientCertificates?.length;
-  if (rememberedContextHint || !key || !params || mayHoldSecrets || !isPlainJSON(params))
+  const params = { ...(browser as any)._lastRecycleParams };
+  const storageState = !!params.storageState;
+  delete params.storageState;
+  const mayHoldSecrets = params.httpCredentials || params.extraHTTPHeaders?.length || params.proxy || params.clientCertificates?.length;
+  if (rememberedContextHint || !key || !Object.keys(params).length || mayHoldSecrets || !isPlainJSON(params))
     return;
   rememberedContextHint = true;
   try {
     const hints = readContextHints();
-    if (JSON.stringify(hints[key]?.params) === JSON.stringify(params))
+    if (JSON.stringify(hints[key]?.params) === JSON.stringify(params) && hints[key]?.storageState === storageState)
       return;
-    hints[key] = { params, usedAt: Date.now() };
+    hints[key] = { params, storageState, usedAt: Date.now() };
     const recent = Object.entries(hints).sort((a, b) => b[1].usedAt - a[1].usedAt).slice(0, maxContextHints);
     // Write a sibling file and rename it, so concurrent workers never read a partial file.
     const temporary = `${contextHintFile}.${process.pid}`;

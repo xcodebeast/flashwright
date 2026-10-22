@@ -94,3 +94,51 @@ test('replacement workers get the context their tests ask for', async ({ runInli
     second.close();
   }
 });
+
+test('prepared contexts take the storage state of the tests', async ({ runInlineTest }) => {
+  const server = await startServer('app');
+  const files = {
+    'playwright.config.js': `
+      module.exports = {
+        workers: 2,
+        use: { baseURL: '${server.url}' },
+        projects: [
+          { name: 'setup', testMatch: /.*\\.setup\\.ts/ },
+          { name: 'app', testMatch: /.*\\.spec\\.ts/, dependencies: ['setup'], use: { storageState: 'state.json' } },
+        ],
+      };
+    `,
+    'state.setup.ts': `
+      import { test } from '@playwright/test';
+      test('setup', async ({ page, context }) => {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.setItem('user', 'ada'));
+        await context.addCookies([{ name: 'session', value: 'ada', url: '${server.url}' }]);
+        await context.storageState({ path: 'state.json' });
+      });
+    `,
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      for (let i = 0; i < 6; i++) {
+        test('test ' + i, async ({ page, context }) => {
+          await page.goto('/');
+          expect(await page.evaluate(() => ({ ...localStorage }))).toEqual({ user: 'ada' });
+          expect((await context.cookies()).map(c => c.name + '=' + c.value)).toEqual(['session=ada']);
+          await page.evaluate(() => localStorage.setItem('previous', 'test'));
+          await context.addCookies([{ name: 'previous', value: 'test', url: page.url() }]);
+          await page.waitForTimeout(300);
+          expect(i % 3).not.toBe(2);
+        });
+      }
+    `,
+  };
+  try {
+    for (let run = 0; run < 2; run++) {
+      const result = await runInlineTest(files, {}, env());
+      expect(result.passed).toBe(5);
+      expect(result.failed).toBe(2);
+    }
+  } finally {
+    server.close();
+  }
+});

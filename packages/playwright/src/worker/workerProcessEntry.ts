@@ -23,14 +23,16 @@ import { create } from './workerMain';
 import { launchSpeculativeBrowser, prepareSpeculativeContext } from '../speculativeBrowser';
 
 // Flashwright: a worker started ahead of time also starts the default browser right away. A spare
-// that then stays idle (one kept ready to replace a failed worker) also loads the test runner's
-// public module, which every config and test file imports (by path, so that the bundler leaves it
-// out of this bundle), and prepares the context its first test is likely to ask for. A worker that
-// is put to work right away does neither: its first test would wait for them.
+// that then stays idle (one kept ready to replace a failed worker, or started for the next phase of
+// projects) also loads the test runner's public module, which every config and test file imports
+// (by path, so that the bundler leaves it out of this bundle), and prepares the context its first
+// test is likely to ask for. A worker that is put to work right away does neither: its first test
+// would wait for them.
 const kSpareIdleTime = 100;
 if (process.env.FLASHWRIGHT_SPECULATIVE_BROWSER) {
   let initialized = false;
   process.on('message', (message: any) => initialized ||= message?.method === '__init__');
+  const idleTime = process.env.FLASHWRIGHT_SPECULATIVE_BROWSER === 'next-phase' ? 0 : kSpareIdleTime;
   void launchSpeculativeBrowser().then(() => setTimeout(() => {
     if (initialized)
       return;
@@ -41,6 +43,6 @@ if (process.env.FLASHWRIGHT_SPECULATIVE_BROWSER) {
     }
     if (!initialized)
       prepareSpeculativeContext();
-  }, kSpareIdleTime));
+  }, idleTime));
 }
 startProcessRunner(create);

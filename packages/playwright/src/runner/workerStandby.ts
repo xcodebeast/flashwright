@@ -84,10 +84,11 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
   });
 }
 
-function spawnStandby() {
+function spawnStandby(waitsForNextPhase = false) {
   const entryScript = workerEntryScript();
-  // The test runner marks its process tree with PLAYWRIGHT_TEST before starting workers.
-  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: '1' };
+  // The test runner marks its process tree with PLAYWRIGHT_TEST before starting workers. A standby
+  // for the next phase of projects knows it will wait, and prepares right away.
+  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1' };
   const child = child_process.fork(entryScript, {
     detached: false,
     env,
@@ -122,11 +123,11 @@ export function recordWorkerRestart(moreTestsToRun: boolean) {
 }
 
 // Called while one phase of projects runs: the next phase starts new workers.
-export function ensureStandbys(count: number) {
+export function ensureStandbys(count: number, forNextPhase = false) {
   if (!enabled)
     return;
   while (standbys.length < count)
-    spawnStandby();
+    spawnStandby(forNextPhase);
 }
 
 // Called once the config is loaded. Without a hint from a previous run (a first run, or CI), start

@@ -84,7 +84,7 @@ export abstract class Browser extends SdkObject {
   private _downloads = new Map<string, Download>();
   _defaultContext: BrowserContext | null = null;
   private _startedClosing = false;
-  private _contextForReuse: { context: BrowserContext, hash: string } | undefined;
+  private _contextForReuse: { context: BrowserContext, hash: string, prepared?: boolean } | undefined;
   _closeReason: string | undefined;
   _isBrowserCollocatedWithServer: boolean = true;
   private _server: BrowserServer;
@@ -138,9 +138,18 @@ export abstract class Browser extends SdkObject {
   async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false): Promise<BrowserContext> {
     // Flashwright: recycled contexts (see BrowserContext.setRecycleMode) never stand in for reused ones.
     const hash = BrowserContext.reusableContextHash(params) + (recycle ? ':recycle' : '');
-    if (this._contextForReuse && hash === this._contextForReuse.hash && this._contextForReuse.context.canResetForReuse()) {
-      if (await this._contextForReuse.context.resetForReuse(progress, params))
-        return this._contextForReuse.context;
+    const reuse = this._contextForReuse;
+    // Flashwright: a context prepared ahead of time has no storage; it takes this test's storage state.
+    const takesStorageState = !!reuse?.prepared && !!params.storageState && reuse.hash === BrowserContext.reusableContextHash({ ...params, storageState: undefined }) + ':recycle';
+    if (reuse && (hash === reuse.hash || takesStorageState) && reuse.context.canResetForReuse()) {
+      if (await reuse.context.resetForReuse(progress, params)) {
+        if (takesStorageState)
+          await reuse.context.applyPreparedStorageState(progress, params.storageState!);
+        else
+          await progress.race(reuse.context.discardPreparedStorageStatePage());
+        this._contextForReuse = { context: reuse.context, hash };
+        return reuse.context;
+      }
     }
     if (this._contextForReuse) {
       // Flashwright: a recycled context that does not fit this test (prepared ahead of time for other
@@ -160,15 +169,19 @@ export abstract class Browser extends SdkObject {
   }
 
   // Flashwright: a browser started before the test runner knows what its tests need creates the
-  // recycled context the same tests asked for last time and starts preparing the tab for the first
-  // test. Clients do not see the context until a test asks for it (newContextForReuse); a test
-  // asking for a different one gets a new context and this one closes.
-  async prepareRecycledContext(params: channels.BrowserNewContextForRecycleParams) {
+  // recycled context the same tests asked for last time, without storage state, and starts preparing
+  // the tab for the first test. Clients do not see the context until a test asks for it
+  // (newContextForReuse), which also applies the test's storage state; a test asking for a different
+  // context gets a new one and this one closes.
+  async prepareRecycledContext(params: channels.BrowserNewContextForRecycleParams, options: { storageState?: boolean } = {}) {
     if (this._contextForReuse)
       return;
     const context = await this.newContext(nullProgress, params, true /* recycle */, false /* announce */);
-    this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle' };
+    this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
     context.startRecycle();
+    // The tests used a storage state last time: also open the page that will restore it.
+    if (options.storageState)
+      context.prepareStorageStatePage();
   }
 
   // Flashwright: see BrowserContext.outputDirsChanged.

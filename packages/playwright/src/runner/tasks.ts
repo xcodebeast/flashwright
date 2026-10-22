@@ -449,7 +449,7 @@ function createRunTestsTask(): Task<TestRun> {
         // on top of the ones this phase is about to take.
         const nextPhase = testRun.phases[phaseIndex + 1];
         if (nextPhase)
-          ensureStandbys(phaseWorkers(testRun, projects) + phaseWorkers(testRun, nextPhase.projects));
+          ensureStandbys(phaseWorkers(testRun, projects) + phaseWorkers(testRun, nextPhase.projects), true /* forNextPhase */);
         // Each phase contains dispatcher and a set of test groups.
         // We don't want to run the test groups belonging to the projects
         // that depend on the projects that failed previously.

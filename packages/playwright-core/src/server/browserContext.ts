@@ -129,6 +129,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _heldPageInitScripts: InitScript[] = [];
   private _heldPageEmulation = '';
   private _idleTrackerInstalled = false;
+  private _preparedStorageStatePage: Promise<Page> | undefined;
   private _recycleMode = false;
   private _pendingRecycle: Promise<boolean> | undefined;
 
@@ -880,6 +881,25 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   isPreparingRecycledPage(): boolean {
     return this._preparingRecycledPage;
+  }
+
+  // Flashwright: see Browser.prepareRecycledContext.
+  prepareStorageStatePage() {
+    this._preparedStorageStatePage = (this._pendingRecycle ?? Promise.resolve()).then(() => this.newPage(nullProgress, true /* forStorageState */));
+    this._preparedStorageStatePage.catch(() => {});
+  }
+
+  async applyPreparedStorageState(progress: Progress, state: NonNullable<channels.BrowserNewContextParams['storageState']>) {
+    this._options.storageState = state;
+    const page = await this._preparedStorageStatePage?.catch(() => undefined);
+    this._preparedStorageStatePage = undefined;
+    await this.setStorageState(progress, state, 'initial', page);
+  }
+
+  async discardPreparedStorageStatePage() {
+    const page = await this._preparedStorageStatePage?.catch(() => undefined);
+    this._preparedStorageStatePage = undefined;
+    await page?.close(nullProgress).catch(() => {});
   }
 
   async setStorageState(progress: Progress, state: channels.BrowserNewContextParams['storageState'], mode: 'initial' | 'resetForReuse' | 'api', preparedPage?: Page) {
