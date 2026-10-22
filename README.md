@@ -82,16 +82,17 @@ npx playwright install chromium
 
 `bench/consumer-test.mjs` packs the packages and runs an unmodified upstream example suite against them in a fresh project, as a drop-in replacement for `@playwright/test`.
 
-The upstream suites are the compatibility bar, compared against pristine Playwright v1.64.1 on the same machine (Chromium):
+The upstream suites are the compatibility bar, compared against pristine Playwright v1.64.1 on the same machine (Chromium unless noted; WebKit cannot run on this machine):
 
 | Suite | Result |
 | --- | --- |
 | `tests/page` | 2610/2610, including the recycling isolation tests |
+| `tests/page` on Firefox | same as pristine (2578 passed); Flashwright does not recycle Firefox contexts, but its click changes apply there too |
 | `tests/playwright-test` | same failures as pristine (branded Chrome and WebKit dependencies are missing here) |
 | `tests/library` | same as pristine, except two checks that read Playwright's internal bookkeeping (the server-side context list and CDP session map, which include the recycled context between tests) |
 | `tests/mcp` | same as pristine |
 | `tests/electron` | same as pristine apart from screenshot tests that are flaky under Electron here in both |
-| `tests/stress` | 1100/1100 (23 s vs 49 s) |
+| `tests/stress` | 1100/1100 (33 s vs 49 s) |
 | `tests/extension` | 41/41 |
 
 A few timing-sensitive tests can differ run to run in both.
