@@ -8,7 +8,7 @@
 
 - **At least 2× faster on every scenario we measure**, 2.74× on average: real example suites, a sign-in app with a setup project, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
 - **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
-- **Made for agents that check their own work.** A single test re-runs in about 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
+- **Made for agents that check their own work.** A single test re-runs in under 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
 
 ## Install
 
@@ -110,7 +110,7 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
 
 ## For agents
 
-- **Re-running one test** takes about 100 ms instead of 602 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 257 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
+- **Re-running one test** takes about 85 ms instead of 602 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 257 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
 - **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
 - **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
 
@@ -120,17 +120,17 @@ Outside CI, the first `playwright test` in a project starts a session in the bac
 
 | Run, 1.5 s after the previous one | Playwright | Flashwright | Flashwright, warm session |
 | --- | ---: | ---: | ---: |
-| One TodoMVC test | 680 ms | 255 ms | 104 ms (6.5×) |
-| TodoMVC suite, 1 worker | 3690 ms | 1152 ms | 999 ms (3.7×) |
-| TodoMVC suite, 4 workers | 1782 ms | 792 ms | 571 ms (3.1×) |
-| SVGOMG suite, 1 worker | 1739 ms | 565 ms | 438 ms (4.0×) |
-| SVGOMG suite, 4 workers | 1249 ms | 490 ms | 304 ms (4.1×) |
-| Shop app, 1 worker | 6265 ms | 3042 ms | 2948 ms (2.1×) |
-| Shop app, 4 workers | 2585 ms | 1244 ms | 1041 ms (2.5×) |
+| One TodoMVC test | 675 ms | 249 ms | 85 ms (7.9×) |
+| TodoMVC suite, 1 worker | 3677 ms | 1115 ms | 993 ms (3.7×) |
+| TodoMVC suite, 4 workers | 1789 ms | 801 ms | 553 ms (3.2×) |
+| SVGOMG suite, 1 worker | 1746 ms | 568 ms | 416 ms (4.2×) |
+| SVGOMG suite, 4 workers | 1247 ms | 484 ms | 277 ms (4.5×) |
+| Shop app, 1 worker | 6374 ms | 3022 ms | 2899 ms (2.2×) |
+| Shop app, 4 workers | 2577 ms | 1219 ms | 1033 ms (2.5×) |
 
 <sub>Medians of 15 (one test) or 9 alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
 
-Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session.
+Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session. A run returns once its results are reported; its workers hand their browsers over afterwards, unless a worker fixture of the project still has to tear down.
 
 - **When it is on:** by default, except when the `CI` environment variable is set, when a debugger is attached, with `PWDEBUG`, `--ui` or `--debug`, and on Windows. A CI job usually runs its tests once, so a session would only hold memory there. `FLASHWRIGHT_SESSION=0` turns it off and `FLASHWRIGHT_SESSION=1` turns it on in CI.
 - **What it holds:** one session per project directory, until 5 minutes after its last run (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) or until Flashwright is reinstalled. While it waits, it keeps a runner, a worker for each kept browser and the browsers: about 0.4 GB after one-test runs and 1 GB after a 4-worker suite. Headed browsers are closed, not kept.
