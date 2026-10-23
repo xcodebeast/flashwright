@@ -28,4 +28,15 @@ npm run flint                # lint, types and docs, before you commit
 - Semantic commit messages: `perf(test): …`, `fix(server): …`, `docs(readme): …`.
 - Bugs that also happen with stock Playwright belong [upstream](https://github.com/microsoft/playwright/issues).
 
+## Releasing
+
+Maintainers publish the next version from a clean, pushed `main`, logged in to npm:
+
+```bash
+npm run release -- --dry-run   # everything except the publish
+npm run release                # asks before publishing
+```
+
+The script picks the next version (`<Playwright version>-flashwright.<n>`), builds from scratch, packs `flashwright-core`, `flashwright` and `flashwright-test`, runs the TodoMVC suite against the packed tarballs, publishes them in dependency order and pushes a `v<version>` tag. Add `--otp <code>` if npm asks for a one-time password; after a failed publish, run it again and it skips what is already on npm.
+
 By contributing, you agree that your contributions are licensed under the Apache License 2.0, like the rest of the project.

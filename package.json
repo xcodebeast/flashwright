@@ -40,6 +40,7 @@
     "lint-tests": "node utils/lint_tests.js",
     "flint": "node utils/concurrently.js \"npm run eslint\" \"npm run tsc\" \"npm run doc\" \"npm run check-deps\" \"node utils/generate_channels.js\" \"npm run lint-tests\" \"npm run test-types\" \"npm run lint-packages\" \"node utils/doclint/linting-code-snippets/cli.js --js-only\"",
     "clean": "node utils/build/clean.js",
+    "release": "node utils/flashwright/release.mjs",
     "build": "node utils/build/build.js",
     "watch": "node utils/build/build.js --watch --lint",
     "test-types": "node utils/generate_types/ && node utils/concurrently.js \"tsc -p utils/generate_types/test/tsconfig.json\" \"tsc -p ./tests/\"",
