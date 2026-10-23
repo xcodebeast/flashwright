@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { parseStackFrame, captureRawStack } from '@utils/stackTrace';
+import { captureFilteredStackTrace, captureRawStack, filteredStackTrace, parseStackFrame } from '@utils/stackTrace';
 import { escapeWithQuotes, isString } from '@isomorphic/stringUtils';
 import { pollAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { currentZone } from '@utils/zones';
@@ -335,7 +335,9 @@ function callMatcherAsStep(matcherName: string, info: ExpectMetaInfo, actual: un
 
   // This looks like it is unnecessary, but it isn't - we need to filter
   // out all the frames that belong to the test runner from caught runtime errors.
-  const stackFrames = expectConfig().filteredStackTrace(captureRawStack());
+  const filter = expectConfig().filteredStackTrace;
+  // Flashwright: the test runner's filter, without formatting the frames that it drops.
+  const stackFrames = filter === filteredStackTrace ? captureFilteredStackTrace() : filter(captureRawStack());
   const params: Record<string, any> = { ...suffixes.params };
   if (args[0])
     params.expected = args[0];

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { rewriteErrorMessage } from '@utils/stackTrace';
-
 export class ProtocolError extends Error {
   type: 'error' | 'closed' | 'crashed';
   method: string | undefined;
@@ -28,8 +26,12 @@ export class ProtocolError extends Error {
     this.logs = logs;
   }
 
+  // Flashwright: called once the browser answered with an error, before anything read this
+  // error's stack. The stack is formatted with the current message when it is read, so it is not
+  // formatted now: most of these errors are expected and never shown, and formatting a stack
+  // through source map support takes milliseconds.
   setMessage(message: string) {
-    rewriteErrorMessage(this, `Protocol error (${this.method}): ${message}`);
+    this.message = `Protocol error (${this.method}): ${message}`;
   }
 
   browserLogMessage() {

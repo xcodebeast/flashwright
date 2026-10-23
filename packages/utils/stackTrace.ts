@@ -222,6 +222,29 @@ export function filteredStackTrace(rawStack: RawStack): StackFrame[] {
   return frames;
 }
 
+// Flashwright: filteredStackTrace(captureRawStack()), without formatting and parsing the frames
+// that it drops. The stacks captured for the steps the test runner creates itself have nothing but
+// such frames: Playwright's own.
+export function captureFilteredStackTrace(): StackFrame[] {
+  const formatter = rawStackFormatter;
+  if (!formatter)
+    return filteredStackTrace(captureRawStack());
+  const stackTraceLimit = Error.stackTraceLimit;
+  Error.stackTraceLimit = 50;
+  const prepareStackTrace = Error.prepareStackTrace;
+  Error.prepareStackTrace = (error, callSites) => {
+    const kept = callSites.filter(callSite => {
+      const fileName = callSite.getFileName();
+      return !fileName || filterStackFile(fileURLToPath(fileName));
+    });
+    return kept.length ? formatter(error, kept) : '';
+  };
+  const stack = new Error().stack || '';
+  Error.prepareStackTrace = prepareStackTrace;
+  Error.stackTraceLimit = stackTraceLimit;
+  return stack ? filteredStackTrace(stack.split('\n')) : [];
+}
+
 const re = new RegExp('^' +
   // Sometimes we strip out the '    at' because it's noisy
   '(?:\\s*at )?' +

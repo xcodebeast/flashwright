@@ -18,7 +18,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { ManualPromise } from '@isomorphic/manualPromise';
-import { captureRawStack, stringifyStackFrames, filteredStackTrace } from '@utils/stackTrace';
+import { captureFilteredStackTrace, stringifyStackFrames } from '@utils/stackTrace';
 import { escapeWithQuotes } from '@isomorphic/stringUtils';
 import { monotonicTime } from '@isomorphic/time';
 import { createCallIdGenerator } from '@isomorphic/trace/traceUtils';
@@ -300,10 +300,10 @@ export class TestInfoImpl implements TestInfo {
     let boxedStack = parentStep?.boxedStack;
     let stack = data.stack;
     if (!boxedStack && data.box) {
-      boxedStack = filteredStackTrace(captureRawStack()).slice(1);
+      boxedStack = captureFilteredStackTrace().slice(1);
       stack ??= boxedStack;
     }
-    stack ??= filteredStackTrace(captureRawStack());
+    stack ??= captureFilteredStackTrace();
 
     const step: TestStepInternal = {
       ...data,

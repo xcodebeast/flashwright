@@ -170,6 +170,8 @@ export function prepareSpeculativeContext() {
 const contextHintFile = path.join(os.tmpdir(), 'flashwright-context-hints.json');
 const maxContextHints = 200;
 let rememberedContextHint = false;
+// The hint this worker read while it waited, which its first test usually just confirms.
+let hintReadAhead: { key: string, hint: ContextHints[string] | undefined } | undefined;
 
 // `storageState` tells whether the tests used one, not what it was.
 type ContextHints = Record<string, { params: any, storageState?: boolean, usedAt: number }>;
@@ -184,7 +186,10 @@ function readContextHints(): ContextHints {
 
 function readContextHint() {
   const key = process.env.FLASHWRIGHT_CONTEXT_HINT_KEY;
-  return key ? readContextHints()[key] : undefined;
+  if (!key)
+    return;
+  hintReadAhead = { key, hint: readContextHints()[key] };
+  return hintReadAhead.hint;
 }
 
 // Called by the `context` fixture once it has created a recycled context.
@@ -197,6 +202,10 @@ export function rememberRecycledContext(browser: Browser) {
   if (rememberedContextHint || !key || !Object.keys(params).length || mayHoldSecrets || !isPlainJSON(params))
     return;
   rememberedContextHint = true;
+  // Reading the file again takes milliseconds of the first test.
+  const hint = hintReadAhead?.key === key ? hintReadAhead.hint : undefined;
+  if (hint && JSON.stringify(hint.params) === JSON.stringify(params) && hint.storageState === storageState)
+    return;
   try {
     const hints = readContextHints();
     if (JSON.stringify(hints[key]?.params) === JSON.stringify(params) && hints[key]?.storageState === storageState)
