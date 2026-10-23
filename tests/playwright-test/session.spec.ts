@@ -40,7 +40,13 @@ test.afterEach(async () => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 const env = () => ({ TMPDIR: tmpDir, FLASHWRIGHT_SESSION: '1', FLASHWRIGHT_SESSION_TIMEOUT: '3' });
-const hasSession = () => fs.readdirSync(tmpDir, { recursive: true }).some(file => String(file).endsWith('.sock'));
+const hasSession = () => {
+  try {
+    return fs.readdirSync(path.join(tmpDir, `fw-${os.userInfo().uid}`)).some(file => file.endsWith('.sock'));
+  } catch {
+    return false;
+  }
+};
 
 async function startServer() {
   const server = http.createServer((req, res) => {

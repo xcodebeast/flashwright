@@ -206,9 +206,10 @@ function warmKey(request: RunRequest): string {
 }
 
 // One session per user, project directory and install, in a directory only this user can use.
+// Socket paths are limited to about a hundred bytes, and macOS's temp directory takes half of that.
 function sessionSocketPath(cwd: string): string | undefined {
   const uid = os.userInfo().uid;
-  const directory = path.join(os.tmpdir(), `flashwright-${uid}`);
+  const directory = path.join(os.tmpdir(), `fw-${uid}`);
   try {
     fs.mkdirSync(directory, { mode: 0o700 });
   } catch {
@@ -221,8 +222,7 @@ function sessionSocketPath(cwd: string): string | undefined {
     return;
   }
   const id = crypto.createHash('sha1').update([path.join(__dirname, '..'), process.execPath, cwd].join('\0')).digest('hex').slice(0, 16);
-  const socketFile = path.join(directory, `session-${id}.sock`);
-  // Socket paths are limited to about a hundred bytes.
+  const socketFile = path.join(directory, `${id}.sock`);
   return Buffer.byteLength(socketFile) < 100 ? socketFile : undefined;
 }
 
