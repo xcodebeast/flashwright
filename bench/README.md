@@ -1,0 +1,32 @@
+# Benchmarks
+
+Complete `test` command runs, stock Playwright vs this checkout, alternating between them on the same machine.
+
+## Setup
+
+```bash
+npm ci && npm run build                     # this checkout, the "fork" engine
+mkdir -p workbench/pw-stock && cd workbench/pw-stock
+npm init -y && npm i @playwright/test@1.64.1   # the "stock" engine
+npx playwright install chromium
+```
+
+## Run
+
+```bash
+node bench/run.mjs todomvc 1 15 stock,fork   # one scenario: <scenario> <workers> <iterations> <engines>
+node bench/matrix.mjs 15                     # every scenario with 1 and 4 workers
+```
+
+Scenarios: `todomvc` and `svgomg` (Playwright's example suites, in `apps/`), `shop` (a single-page app with a sign-in setup project and 40 ms API latency) and `workload:<name>` (15 tests that each exercise one thing; see `workloads/server.mjs`).
+
+An engine can carry environment variables and options: `fork:USE_failFastWhenIdle=false` sets a test option, `fork:CONFIG_testOrder="file"` a config property, `fork:NAME=value` anything else (values cannot contain commas). `BENCH_ARGS` adds arguments to the test command, for example a single test file.
+
+## Media
+
+- `media/chart.mjs` draws `docs/media/benchmarks.svg` from the last matrix run.
+- `media/race.mjs` renders the side-by-side video: record runs with `BENCH_TIMELINE=workbench/race-timeline node bench/run.mjs todomvc 1 7 stock,fork`, then `node bench/media/race.mjs`.
+
+## Profiling
+
+`STEPS=1` writes per-step timings next to the run (`step-reporter.cjs`, `worker-timeline.cjs`), `BENCH_CPU=1` and `BENCH_PROCCPU=1` report CPU time, and `trace.mjs`, `proto-timeline.py` and `cpuprofile.py` help read protocol traces and CPU profiles.

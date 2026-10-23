@@ -37,13 +37,18 @@ const packages = [
 
 const readme = name => `# ${name}
 
-Part of [Flashwright](${homepage}), a faster fork of [Playwright](https://playwright.dev) ${upstreamVersion} with the same API, test runner and browsers.
+Part of [Flashwright](${homepage}), a faster [Playwright](https://playwright.dev): a fork of Playwright ${upstreamVersion} with the same API, test runner and browsers, at least 2× faster on every scenario of its benchmark (2.74× on average).
 
-Use it in place of \`@playwright/test\`, keeping your imports and \`npx playwright\` commands:
+![Playwright and Flashwright running the same 24 tests side by side](https://raw.githubusercontent.com/xcodebeast/flashwright/main/docs/media/race.gif)
+
+Replace \`@playwright/test\` and keep your imports and \`npx playwright\` commands:
 
 \`\`\`bash
-npm i -D @playwright/test@npm:flashwright-test@${version}
+npm i -D @playwright/test@npm:flashwright-test
+npx playwright install chromium
 \`\`\`
+
+Without the test runner, \`playwright\` is \`flashwright\` and \`playwright-core\` is \`flashwright-core\`. See the [project page](${homepage}) for benchmarks, speed options and the differences from Playwright.
 
 Flashwright is an independent fork and is not affiliated with Microsoft. Apache-2.0, like Playwright.
 `;
@@ -76,6 +81,7 @@ for (const pkg of packages) {
   manifest.repository = repository;
   manifest.homepage = homepage;
   manifest.bugs = { url: `${homepage}/issues` };
+  manifest.keywords = ['playwright', 'flashwright', 'e2e', 'testing', 'browser', 'automation', 'test-runner', 'fast'];
   if (manifest.dependencies)
     manifest.dependencies = { ...manifest.dependencies, ...pkg.dependencies };
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');

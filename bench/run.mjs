@@ -71,7 +71,12 @@ async function runOnce(engine, extraArgs = []) {
   env.BENCH_T0 = String(Date.now());
   const started = performance.now();
   // BENCH_CPU=1 reports user+sys CPU of the whole process tree (bash `time` waits for all descendants).
-  const command = [node, definition.cli, 'test', '--config', join(project, 'runner.config.mjs'), ...extraArgs];
+  // BENCH_TIMELINE=<dir> records every run's output lines with the time they arrived, using the
+  // list reporter, for the side-by-side replay (bench/media/race.mjs).
+  const timeline = process.env.BENCH_TIMELINE;
+  // BENCH_ARGS adds arguments to the test command, for example one test file to run.
+  const benchArgs = process.env.BENCH_ARGS ? process.env.BENCH_ARGS.split(' ') : [];
+  const command = [node, definition.cli, 'test', '--config', join(project, 'runner.config.mjs'), ...(timeline ? ['--reporter=list'] : []), ...benchArgs, ...extraArgs];
   // BENCH_PROCCPU=1 prints CPU time by process kind (node main/worker, browser, renderer, ...).
   const child = process.env.BENCH_CPU
     ? spawn('bash', ['-c', `TIMEFORMAT='CPUTIME %U %S'; time ${command.map(a => `'${a}'`).join(' ')}`], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
@@ -79,10 +84,23 @@ async function runOnce(engine, extraArgs = []) {
       ? spawn('python3', [resolve(import.meta.dirname, process.env.BENCH_PROCCPU === 'threads' ? 'thread-cpu.py' : 'proc-cpu.py'), ...command], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
       : spawn(command[0], command.slice(1), { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
-  child.stdout.on('data', c => { output += c; });
+  const lines = [];
+  let pending = '';
+  child.stdout.on('data', c => {
+    output += c;
+    pending += c;
+    const parts = pending.split('\n');
+    pending = parts.pop();
+    for (const line of parts)
+      lines.push({ t: Math.round(performance.now() - started), line });
+  });
   child.stderr.on('data', c => { output += c; });
   const code = await new Promise(r => child.on('close', r));
   const elapsed = performance.now() - started;
+  if (timeline) {
+    await mkdir(timeline, { recursive: true });
+    await writeFile(join(timeline, `${engine.replace(/[^\w-]/g, '_')}-${Date.now()}.json`), JSON.stringify({ engine, elapsed, lines }));
+  }
   let stats = {};
   try { stats = JSON.parse(await readFile(join(project, 'report.json'), 'utf8')).stats ?? {}; } catch {}
   if (code !== 0 && workload !== 'failure' && workload !== 'broken') console.error(`[${engine}] exit ${code}\n${output.slice(-4000)}`);
