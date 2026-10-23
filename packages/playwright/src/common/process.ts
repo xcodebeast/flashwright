@@ -94,8 +94,11 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
       const producedEnv: EnvProducedPayload = [...keys].filter(key => startingEnv[key] !== process.env[key]).map(key => [key, process.env[key] ?? null]);
       sendMessageToParent({ method: '__env_produced__', params: producedEnv });
       // Flashwright: tells the runner that it may finish without waiting for this process.
-      if (processRunner?.canDetachTeardown())
+      if (processRunner?.canDetachTeardown()) {
         sendMessageToParent({ method: '__teardown_detached__' });
+        // Nothing waits for this process to exit: it can bring its compiled code up to date.
+        (globalThis as any)[Symbol.for('flashwright.codeCache')]?.refreshAtExit();
+      }
       await gracefullyCloseAndExit(false);
       return;
     }

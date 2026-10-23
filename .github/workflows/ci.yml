@@ -47,7 +47,7 @@ jobs:
       - name: Flashwright options and context recycling
         run: npx playwright test --config=tests/library/playwright.config.ts --project=chromium-library --test-order=file tests/library/browsercontext-block-resources.spec.ts tests/library/browsercontext-instant-animations.spec.ts tests/library/browsercontext-fail-fast-when-idle.spec.ts
       - name: Test runner changes
-        run: npm run ttest -- flashwright-options prepared-context test-ordering session.spec
+        run: npm run ttest -- flashwright-options prepared-context test-ordering session.spec code-cache.spec
 
   macos:
     name: Warm session and test runner changes (macOS)
@@ -61,4 +61,4 @@ jobs:
       - run: npm run build
       - run: npx playwright install chromium
       - name: Test runner changes
-        run: npm run ttest -- flashwright-options prepared-context test-ordering session.spec
+        run: npm run ttest -- flashwright-options prepared-context test-ordering session.spec code-cache.spec

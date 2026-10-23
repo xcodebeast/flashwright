@@ -32,7 +32,22 @@ type Role = 'runner' | 'worker' | 'cli';
 
 const minimumSize = 32 * 1024;
 const pending: { script: vm.Script, cacheFile: string, staleFiles: string[] }[] = [];
+// Scripts compiled from a cache, with its size.
+const loaded: { script: vm.Script, cacheFile: string, size: number }[] = [];
 let installed = false;
+// A cache is written once, by the first process of its kind that exits. A process that ran tests
+// compiled what the next ones will run; one that only started (a worker started ahead of time that
+// was not needed, a run that listed its tests or failed to load them) would leave a cache that
+// most of that code is missing from, and every later process would compile it again.
+let ranTests = false;
+// A process whose exit nothing waits for also replaces a cache that holds much less than it
+// compiled, so that a cache written by a smaller run does not stay.
+let refreshAtExit = false;
+// Called through a global: the bundles that call these get this module as an external or not at all.
+(globalThis as any)[Symbol.for('flashwright.codeCache')] = {
+  ranTests: () => ranTests = true,
+  refreshAtExit: () => refreshAtExit = true,
+};
 
 export function installCodeCache(role: Role) {
   if (installed || process.env.NODE_DISABLE_COMPILE_CACHE || process.env.FLASHWRIGHT_DISABLE_CODE_CACHE || process.env.NODE_V8_COVERAGE)
@@ -42,6 +57,8 @@ export function installCodeCache(role: Role) {
   if (!importModuleDynamically || typeof originalCompile !== 'function')
     return;
   installed = true;
+  // `playwright cli` and the other commands are short and always the same.
+  ranTests = ranTests || role === 'cli';
   silenceDefaultLoaderWarning(importModuleDynamically);
 
   const roots = packageLibDirs();
@@ -102,6 +119,8 @@ function compileWithCache(content: string, filename: string, cacheDir: string, i
   const script = new vm.Script((Module as any).wrap(content), { filename, cachedData, importModuleDynamically });
   if (!cachedData || script.cachedDataRejected)
     pending.push({ script, cacheFile, staleFiles: staleCacheFiles(cacheDir, fileKey, cacheFile) });
+  else
+    loaded.push({ script, cacheFile, size: cachedData.length });
   return script.runInThisContext({ displayErrors: true });
 }
 
@@ -126,17 +145,29 @@ function makeRequireFunction(mod: any) {
 }
 
 function writeCodeCaches() {
-  for (const { script, cacheFile, staleFiles } of pending.splice(0)) {
-    try {
-      fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
-      // Write a sibling file and rename it, so that concurrent processes never read a partial cache.
-      const temporary = `${cacheFile}.${process.pid}`;
-      fs.writeFileSync(temporary, script.createCachedData());
-      fs.renameSync(temporary, cacheFile);
-      for (const file of staleFiles)
-        fs.rmSync(file, { force: true });
-    } catch {
-    }
+  if (!ranTests)
+    return;
+  for (const { script, cacheFile, staleFiles } of pending.splice(0))
+    writeCodeCache(cacheFile, script.createCachedData(), staleFiles);
+  if (!refreshAtExit)
+    return;
+  for (const { script, cacheFile, size } of loaded.splice(0)) {
+    const data = script.createCachedData();
+    if (data.length > size * 1.1)
+      writeCodeCache(cacheFile, data, []);
+  }
+}
+
+function writeCodeCache(cacheFile: string, data: Buffer, staleFiles: string[]) {
+  try {
+    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+    // Write a sibling file and rename it, so that concurrent processes never read a partial cache.
+    const temporary = `${cacheFile}.${process.pid}`;
+    fs.writeFileSync(temporary, data);
+    fs.renameSync(temporary, cacheFile);
+    for (const file of staleFiles)
+      fs.rmSync(file, { force: true });
+  } catch {
   }
 }
 

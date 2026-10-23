@@ -476,6 +476,8 @@ function createRunTestsTask(): Task<TestRun> {
 
         if (phaseTestGroups.length) {
           await dispatcher!.run(phaseTestGroups, extraEnvByProjectId);
+          // Flashwright: this process ran what the next runs will, worth keeping compiled (see codeCache.ts).
+          (globalThis as any)[Symbol.for('flashwright.codeCache')]?.ranTests();
           // Flashwright: in a warm session, the last phase's workers finish handing their browsers
           // over after the run has reported its outcome (see the worker's canDetachTeardown).
           await dispatcher.stop({ detachTeardown: !nextPhase && isWarmSessionRun() });

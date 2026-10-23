@@ -919,6 +919,8 @@ async function runWarmProcess(hooks: Hooks) {
   if (request.profile.stdinTTY)
     Object.assign(process.stdin, { isTTY: true });
   countOutputBytes();
+  // Nothing waits for this process to exit: it can bring its compiled code up to date.
+  (globalThis as any)[Symbol.for('flashwright.codeCache')]?.refreshAtExit();
   hooks.retargetWorkers(request.argv);
   program.parse(request.argv);
 }

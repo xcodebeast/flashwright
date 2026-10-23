@@ -269,6 +269,9 @@ export class WorkerMain extends ProcessRunner {
         await this._runTest(tests[i], entry.retry, tests[i + 1]);
         debugTest(`test finished "${tests[i].title}"`);
       }
+      // Flashwright: this process ran what the next workers will, worth keeping compiled (see codeCache.ts).
+      if (tests.length)
+        (globalThis as any)[Symbol.for('flashwright.codeCache')]?.ranTests();
     } catch (e) {
       // In theory, we should run above code without any errors.
       // However, in the case we screwed up, or loadTestFile failed in the worker
