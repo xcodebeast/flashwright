@@ -69,7 +69,7 @@ async function runOnce(engine, extraArgs = []) {
   // The warm session keeps working after a run, also during the next engine's run: it is measured
   // on its own, as the engine variant FLASHWRIGHT_SESSION=1.
   const env = { FLASHWRIGHT_SESSION: '0', ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
-  for (const assignment of variant.split('+').filter(Boolean)) { const [k, v = '1'] = assignment.split('='); env[k] = v; }
+  for (const assignment of variant.split('+').filter(Boolean)) { const [k, ...v] = assignment.split('='); env[k] = v.length ? v.join('=') : '1'; }
   // The step reporters read the start time from a file: a variable that changes on every run would
   // keep a warm session (FLASHWRIGHT_SESSION) from matching the next run.
   if (process.env.STEPS)
@@ -82,11 +82,12 @@ async function runOnce(engine, extraArgs = []) {
   // BENCH_ARGS adds arguments to the test command, for example one test file to run.
   const benchArgs = process.env.BENCH_ARGS ? process.env.BENCH_ARGS.split(' ') : [];
   const command = [node, definition.cli, 'test', '--config', join(project, 'runner.config.mjs'), ...(timeline ? ['--reporter=list'] : []), ...benchArgs, ...extraArgs];
-  // BENCH_PROCCPU=1 prints CPU time by process kind (node main/worker, browser, renderer, ...).
+  // BENCH_PROCCPU=1 prints CPU time by process kind (node main/worker, browser, renderer, ...);
+  // BENCH_PROCCPU=system counts every process on the machine, a warm session's included.
   const child = process.env.BENCH_CPU
     ? spawn('bash', ['-c', `TIMEFORMAT='CPUTIME %U %S'; time ${command.map(a => `'${a}'`).join(' ')}`], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
     : process.env.BENCH_PROCCPU
-      ? spawn('python3', [resolve(import.meta.dirname, process.env.BENCH_PROCCPU === 'threads' ? 'thread-cpu.py' : 'proc-cpu.py'), ...command], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
+      ? spawn('python3', [resolve(import.meta.dirname, { threads: 'thread-cpu.py', system: 'system-cpu.py' }[process.env.BENCH_PROCCPU] ?? 'proc-cpu.py'), ...command], { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] })
       : spawn(command[0], command.slice(1), { cwd: project, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   const lines = [];

@@ -31,4 +31,4 @@ The warm session is off unless an engine turns it on (`fork:FLASHWRIGHT_SESSION=
 
 ## Profiling
 
-`STEPS=1` writes per-step timings next to the run (`step-reporter.cjs`, `worker-timeline.cjs`), `BENCH_CPU=1` and `BENCH_PROCCPU=1` report CPU time, and `trace.mjs`, `proto-timeline.py` and `cpuprofile.py` help read protocol traces and CPU profiles.
+`STEPS=1` writes per-step timings next to the run (`step-reporter.cjs`, `worker-timeline.cjs`), `BENCH_CPU=1` and `BENCH_PROCCPU=1` report CPU time (`BENCH_PROCCPU=system` also counts a warm session's processes), and `trace.mjs`, `proto-timeline.py` and `cpuprofile.py` help read protocol traces and CPU profiles.
