@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-// Flashwright: with FLASHWRIGHT_SESSION=1, a background session keeps a runner process ready for
-// the next run and hands the browser of one run's workers to the next run's (see session.ts). Each
-// run must behave exactly like a run without the session.
+// Flashwright: the warm session, a background process that keeps a runner process ready for the
+// next run and hands the browser of one run's workers to the next run's (see session.ts). Each run
+// must behave exactly like a run without the session. It is on by default outside CI; the test
+// fixtures turn it off, and these tests turn it on.
 
 import fs from 'fs';
 import http from 'http';
 import os from 'os';
 import path from 'path';
 
-import { test, expect } from './playwright-test-fixtures';
+import { test, expect, parseTestRunnerOutput } from './playwright-test-fixtures';
 
 import type { AddressInfo } from 'net';
 
@@ -35,10 +36,11 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   // The session removes its socket when it exits.
-  await expect.poll(() => fs.readdirSync(tmpDir, { recursive: true }).some(file => String(file).endsWith('.sock')), { timeout: 20000 }).toBe(false);
+  await expect.poll(hasSession, { timeout: 20000 }).toBe(false);
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 const env = () => ({ TMPDIR: tmpDir, FLASHWRIGHT_SESSION: '1', FLASHWRIGHT_SESSION_TIMEOUT: '3' });
+const hasSession = () => fs.readdirSync(tmpDir, { recursive: true }).some(file => String(file).endsWith('.sock'));
 
 async function startServer() {
   const server = http.createServer((req, res) => {
@@ -111,6 +113,32 @@ test('reports failures and output like a run without the session', async ({ runI
   }
 });
 
+test('reports an interrupted test like a run without the session', async ({ interactWithTestRunner }) => {
+  test.skip(process.platform === 'win32', 'No sending SIGINT on Windows');
+  // The first run hands its browser over before it reports the test, the second runs in the session.
+  for (let i = 0; i < 2; i++) {
+    const testProcess = await interactWithTestRunner({
+      'a.test.ts': `
+        import { test, expect } from '@playwright/test';
+        test('interrupted', async ({ page }) => {
+          await page.setContent('<div>Click me</div>');
+          const promise = page.click('text=Missing');
+          await new Promise(f => setTimeout(f, 100));
+          console.log('\\n%%SEND-SIGINT%%');
+          await promise;
+        });
+      `,
+    }, { workers: 1 }, env());
+    await testProcess.waitForOutput('%%SEND-SIGINT%%');
+    process.kill(-testProcess.process.pid!, 'SIGINT');
+    const { exitCode } = await testProcess.exited;
+    expect(exitCode).toBe(130);
+    const result = parseTestRunnerOutput(testProcess.output);
+    expect(result.interrupted).toBe(1);
+    expect(result.output).toContain(`const promise = page.click('text=Missing');`);
+  }
+});
+
 test('picks up changed tests and configs', async ({ runInlineTest }) => {
   for (const value of ['one', 'two']) {
     const result = await runInlineTest({
@@ -141,4 +169,46 @@ test('a run with a different environment runs on its own', async ({ runInlineTes
     expect(result.exitCode).toBe(0);
     expect(result.outputLines).toEqual([value]);
   }
+});
+
+test('is on by default, except in CI, under a debugger or when turned off', async ({ runInlineTest }) => {
+  const cases = [
+    { env: {}, session: true },
+    { env: { CI: '1' }, session: false },
+    { env: { CI: '1', FLASHWRIGHT_SESSION: '1' }, session: true },
+    { env: { FLASHWRIGHT_SESSION: '0' }, session: false },
+    { env: { NODE_OPTIONS: '--inspect=0' }, session: false },
+  ];
+  for (const { env: caseEnv, session } of cases) {
+    const result = await runInlineTest({
+      'a.spec.ts': `
+        import { test } from '@playwright/test';
+        test('test', async () => {});
+      `,
+    }, { workers: 1 }, { TMPDIR: tmpDir, FLASHWRIGHT_SESSION: undefined, FLASHWRIGHT_SESSION_TIMEOUT: '1', ...caseEnv });
+    expect(result.exitCode).toBe(0);
+    expect(hasSession(), JSON.stringify(caseEnv)).toBe(session);
+    await expect.poll(hasSession, { timeout: 20000 }).toBe(false);
+  }
+});
+
+test('a first run that outlasts the idle timeout keeps its session', async ({ runInlineTest }) => {
+  const browsers: string[] = [];
+  for (const wait of [4000, 0]) {
+    const result = await runInlineTest({
+      'a.spec.ts': `
+        import { test } from '@playwright/test';
+        test('test', async ({ browser, page }) => {
+          const cdp = await browser.newBrowserCDPSession();
+          const { processInfo } = await cdp.send('SystemInfo.getProcessInfo');
+          console.log('%%browser ' + processInfo.find(p => p.type === 'browser').id);
+          await new Promise(f => setTimeout(f, ${wait}));
+        });
+      `,
+    }, { workers: 1 }, { ...env(), FLASHWRIGHT_SESSION_TIMEOUT: '2' });
+    expect(result.exitCode).toBe(0);
+    browsers.push(...result.outputLines);
+  }
+  expect(browsers).toHaveLength(2);
+  expect(new Set(browsers).size).toBe(1);
 });

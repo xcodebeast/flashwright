@@ -231,10 +231,11 @@ export abstract class Browser extends SdkObject {
   // next run instead of closing it (see browserHandoff.ts). Only a browser whose one open context
   // is the recycled one, reset and healthy, is handed over; anything else returns undefined and
   // the caller closes the browser as usual. Afterwards this object is disconnected from it.
+  // A headed browser is not handed over: its window would stay open between runs.
   async handoffForSession(): Promise<BrowserHandoff | undefined> {
     const reuse = this._contextForReuse;
     const release = this.options.browserProcess.release;
-    if (!release || !this.options.launchKey || this.options.persistent || this._startedClosing || !this.isConnected())
+    if (!release || !this.options.launchKey || this.options.persistent || this.options.headful || this._startedClosing || !this.isConnected())
       return;
     if (!reuse || !reuse.hash.endsWith(':recycle') || this.contexts().some(context => context !== reuse.context))
       return;

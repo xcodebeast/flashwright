@@ -65,7 +65,7 @@ function receiveSessionBrowser(): Promise<void> {
     const onMessage = (message: any, handle: any) => {
       if (message?.method === '__init__' && !answered)
         timer = setTimeout(answer, kOfferTimeoutAfterInit);
-      if (message?.method !== kBrowserMessage)
+      if (message?.method !== kBrowserMessage || message.params.sent)
         return;
       if (message.params.none) {
         process.off('message', onMessage);
@@ -123,8 +123,12 @@ async function sendToRunner(browser: { write: any, read: any, metadata: { pid: n
       return resolve(false);
     process.send!({ method: kBrowserMessage, params }, handle, undefined, error => resolve(!error));
   });
-  if (await send({ id, part: 'write', metadata: browser.metadata }, browser.write) && await send({ id, part: 'read' }, browser.read))
+  if (await send({ id, part: 'write', metadata: browser.metadata }, browser.write) && await send({ id, part: 'read' }, browser.read)) {
+    // Node holds back what is sent after a handle until the runner confirms it, and drops it if
+    // the worker exits first, such as an interrupted test's result: this goes out once it did.
+    await send({ id, sent: true }, undefined);
     return;
+  }
   browser.write.destroy();
   browser.read.destroy();
   killHandedOverBrowser(browser.metadata);

@@ -66,7 +66,9 @@ for (const engine of engines) {
 async function runOnce(engine, extraArgs = []) {
   const { project, definition, variant } = projects[engine];
   await rm(join(project, 'report.json'), { force: true });
-  const env = { ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
+  // The warm session keeps working after a run, also during the next engine's run: it is measured
+  // on its own, as the engine variant FLASHWRIGHT_SESSION=1.
+  const env = { FLASHWRIGHT_SESSION: '0', ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
   for (const assignment of variant.split('+').filter(Boolean)) { const [k, v = '1'] = assignment.split('='); env[k] = v; }
   // The step reporters read the start time from a file: a variable that changes on every run would
   // keep a warm session (FLASHWRIGHT_SESSION) from matching the next run.

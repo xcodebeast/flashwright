@@ -8,7 +8,7 @@
 
 - **At least 2× faster on every scenario we measure**, 2.74× on average: real example suites, a sign-in app with a setup project, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
 - **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
-- **Made for agents that check their own work.** A single test re-runs in a quarter of a second instead of 0.6–0.7 s, or in about 0.1 s in a [warm session](#warm-session); screenshots take half the time, and the MCP server can return as soon as the page settles.
+- **Made for agents that check their own work.** A single test re-runs in about 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
 
 ## Install
 
@@ -26,7 +26,7 @@ Projects that use the library without the test runner replace `playwright` the s
 
 ![Bar chart: wall-clock time of 16 scenarios, Playwright vs Flashwright; Flashwright is 2.07× to 3.66× faster in each](docs/media/benchmarks.svg)
 
-Each bar is the complete `test` command, from launch to exit, median of 15 alternating runs on the same machine (6 CPUs, Linux), with Chromium's headless shell. Flashwright runs with its defaults; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
+Each bar is the complete `test` command, from launch to exit, median of 15 alternating runs on the same machine (6 CPUs, Linux), with Chromium's headless shell. Flashwright runs with its defaults apart from the [warm session](#warm-session), which is off, as in CI; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
 
 <details>
 <summary>All 26 runs of the matrix, and how much of each run is the framework</summary>
@@ -110,18 +110,13 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
 
 ## For agents
 
-- **Re-running one test** takes 257 ms instead of 602 ms, and about 100 ms in a [warm session](#warm-session). `playwright cli` commands start in ~45 ms instead of ~260 ms.
+- **Re-running one test** takes about 100 ms instead of 602 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 257 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
 - **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
 - **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
 
 ### Warm session
 
-```bash
-export FLASHWRIGHT_SESSION=1
-npx playwright test tests/todo.spec.ts
-```
-
-With `FLASHWRIGHT_SESSION=1`, the first `playwright test` starts a session in the background, one per project directory. The session keeps the next run's runner process and workers started, and it keeps the browsers: a worker that exits hands its browser to the session instead of closing it, with the context reset as between two tests and with the renderer that has already compiled the application. The next run's first test starts as warm as the second test of a run.
+Outside CI, the first `playwright test` in a project starts a session in the background. The session keeps the next run's runner process and workers started, and it keeps the browsers: a worker that exits hands its browser to the session instead of closing it, with the context reset as between two tests and with the renderer that has already compiled the application. The next run's first test starts as warm as the second test of a run.
 
 | Run, 1.5 s after the previous one | Playwright | Flashwright | Flashwright, warm session |
 | --- | ---: | ---: | ---: |
@@ -135,7 +130,10 @@ With `FLASHWRIGHT_SESSION=1`, the first `playwright test` starts a session in th
 
 <sub>Medians of 15 (one test) or 9 alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
 
-Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session. The session exits after 15 minutes without runs (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) and when Flashwright is reinstalled. It is not available on Windows.
+Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session.
+
+- **When it is on:** by default, except when the `CI` environment variable is set, when a debugger is attached, with `PWDEBUG`, `--ui` or `--debug`, and on Windows. A CI job usually runs its tests once, so a session would only hold memory there. `FLASHWRIGHT_SESSION=0` turns it off and `FLASHWRIGHT_SESSION=1` turns it on in CI.
+- **What it holds:** one session per project directory, until 5 minutes after its last run (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) or until Flashwright is reinstalled. While it waits, it keeps a runner, a worker for each kept browser and the browsers: about 0.4 GB after one-test runs and 1 GB after a 4-worker suite. Headed browsers are closed, not kept.
 
 ## Differences from Playwright
 
@@ -144,7 +142,7 @@ Every run still gets new runner and worker processes, so changed tests, configs 
 - **Assertions on an idle page** fail before their timeout unless `failFastWhenIdle: false`; the call log says so. The test runner adds a small script to its pages for this, which wraps the timer, animation frame and message functions. `browser.newContext()` outside the test runner is unaffected.
 - **Test order**: with several workers, the longest tests start first unless `testOrder: 'file'`.
 - **Process lifecycle**: worker processes and a headless browser may start before the config is read (unused ones close), and a finished worker's browser is killed rather than closed gracefully once no context is left open.
-- **Warm session** (opt-in, `FLASHWRIGHT_SESSION=1`): the session process, the next run's runner and workers, and the browsers of earlier runs stay running between runs. A test can see a browser process that an earlier run used, with its context reset as between two tests of one run.
+- **Warm session** (outside CI; `FLASHWRIGHT_SESSION=0` turns it off): after `playwright test` exits, a session process, the next run's runner and workers, and the run's browsers keep running, for up to 5 minutes after the last run. A test can see a browser process that an earlier run used, with its context reset as between two tests of one run.
 - **Screenshot files** have identical pixels but are 1.6–1.9× larger PNGs. `toHaveScreenshot()` baselines are unchanged.
 - **Temporary files**: worker counts, per-test durations, the context options each config used last (never storage state, credentials, headers, a proxy or certificates; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.
 - **Firefox and WebKit** keep Playwright's behavior, apart from the options above that apply to them, and **Electron** windows keep Playwright's waits for animations and assertion timeouts.

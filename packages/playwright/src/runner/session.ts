@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-// Flashwright: opt-in warm session for repeated `playwright test` runs (FLASHWRIGHT_SESSION=1),
-// such as an agent re-running a test after each change.
+// Flashwright: warm session for repeated `playwright test` runs, such as an agent re-running a test
+// after each change. It is on by default, except in CI, where a job usually runs its tests once,
+// and while a debugger is attached; FLASHWRIGHT_SESSION=1 turns it on anywhere and
+// FLASHWRIGHT_SESSION=0 turns it off.
 //
 // The session is a background process, one per user, project directory and Flashwright install.
 // It keeps a runner process ready, with Node started, the runner's modules and @playwright/test
@@ -34,7 +36,7 @@
 // A ready process is only used when nothing that matters while modules load differs: the
 // environment (apart from a few shell bookkeeping variables), Node binary and flags, the
 // Flashwright build and the terminal (TTY size, stdin TTY). Otherwise the command runs normally
-// and the session prepares a matching process for the next time. The session exits after 15
+// and the session prepares a matching process for the next time. The session exits after 5
 // minutes without runs, or when the Flashwright build it was started from changes.
 //
 // Keep this module free of heavy imports: the CLI loads it before everything else.
@@ -46,6 +48,7 @@
 import child_process from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
+import inspector from 'inspector';
 import net from 'net';
 import os from 'os';
 import path from 'path';
@@ -78,10 +81,12 @@ type Hooks = {
 };
 
 // A browser on its way between processes: playwright-core's BrowserHandoff, with its two pipes
-// sent as separate messages (one handle per message).
+// sent as separate messages (one handle per message), then `sent`, without a handle: Node holds
+// back what is sent after a handle until the receiver confirms it, and drops it if the sender
+// exits first, so a sender waits for `sent` to go out.
 type BrowserMessage = {
   method: typeof kBrowserMessage;
-  params: { id: string, part?: 'write' | 'read', metadata?: BrowserMetadata, none?: boolean };
+  params: { id: string, part?: 'write' | 'read', metadata?: BrowserMetadata, none?: boolean, sent?: boolean };
 };
 
 type BrowserMetadata = { pid: number, tempDirectories: string[], lastUsed?: number };
@@ -93,8 +98,8 @@ type Browser = {
   metadata: BrowserMetadata;
 };
 
-// FLASHWRIGHT_SESSION_TIMEOUT sets it in seconds.
-const kIdleTimeout = (Number(process.env.FLASHWRIGHT_SESSION_TIMEOUT) || 15 * 60) * 1000;
+// Counted from the end of the last run; FLASHWRIGHT_SESSION_TIMEOUT sets it in seconds.
+const kIdleTimeout = (Number(process.env.FLASHWRIGHT_SESSION_TIMEOUT) || 5 * 60) * 1000;
 // Shell bookkeeping that changes between otherwise identical invocations.
 const kVolatileEnv = new Set(['_', 'PWD', 'OLDPWD', 'SHLVL', 'COLUMNS', 'LINES']);
 const kInteractiveArgs = ['--ui', '--ui-host', '--ui-port', '--debug', '--list', '-h', '--help'];
@@ -139,8 +144,13 @@ function runLocally(argv: string[], hooks: Hooks, startSessionWith?: RunRequest)
 }
 
 function sessionRequested() {
+  // A debugger would stay attached to the session's processes; watch mode reads the keyboard.
+  if (process.env.PWDEBUG || process.env.PWTEST_WATCH || inspector.url() || process.platform === 'win32')
+    return false;
   const value = process.env.FLASHWRIGHT_SESSION;
-  return !!value && value !== '0' && value !== 'false' && !process.env.PWDEBUG && process.platform !== 'win32';
+  if (value)
+    return value !== '0' && value !== 'false';
+  return !process.env.CI;
 }
 
 function buildStamp(): string {
@@ -472,7 +482,9 @@ function sendBrowser(channel: Channel, browser: Browser): Promise<void> {
         resolve();
         return;
       }
-      channel.send({ method: kBrowserMessage, params: { id, part: 'read' } }, browser.read, () => resolve());
+      channel.send({ method: kBrowserMessage, params: { id, part: 'read' } }, browser.read, () => {
+        channel.send({ method: kBrowserMessage, params: { id, sent: true } }, undefined, () => resolve());
+      });
     });
   });
 }
@@ -535,7 +547,7 @@ function runSession(socketFile: string, build: string) {
   const resetIdleTimer = () => {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
-      if (!activeRuns)
+      if (!activeRuns && !startingRunKey)
         shutdown();
     }, kIdleTimeout);
   };
@@ -795,6 +807,7 @@ function runSession(socketFile: string, build: string) {
       killBrowser(browser);
     parts.clear();
     startingRunKey = undefined;
+    resetIdleTimer();
     if (lastRequest)
       spawnWarm(lastRequest);
   });

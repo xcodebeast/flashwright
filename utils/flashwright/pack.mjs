@@ -50,7 +50,7 @@ npx playwright install chromium
 
 Without the test runner, \`playwright\` is \`flashwright\` and \`playwright-core\` is \`flashwright-core\`. See the [project page](${homepage}) for benchmarks, speed options and the differences from Playwright.
 
-Re-running tests often, like an agent checking its work? \`FLASHWRIGHT_SESSION=1\` keeps a warm session in the background: one test re-runs in about 0.1 s instead of 0.7 s with Playwright ([warm session](${homepage}#warm-session)).
+Re-running tests, like an agent checking its work? Outside CI, a warm session keeps the browser between runs, so one test re-runs in about 0.1 s instead of 0.7 s with Playwright ([warm session](${homepage}#warm-session); \`FLASHWRIGHT_SESSION=0\` turns it off).
 
 Flashwright is an independent fork and is not affiliated with Microsoft. Apache-2.0, like Playwright.
 `;

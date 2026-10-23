@@ -273,6 +273,8 @@ export function inheritAndCleanEnv(env: NodeJS.ProcessEnv | undefined): NodeJS.P
     TEST_WORKER_INDEX: undefined,
     TEST_PARALLEL_INDEX: undefined,
     NODE_OPTIONS: undefined,
+    // Flashwright: the warm session is on by default outside CI; the tests of it turn it on.
+    FLASHWRIGHT_SESSION: '0',
     ...env,
   };
 }

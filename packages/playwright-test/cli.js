@@ -24,9 +24,8 @@ if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
     process.env.NODE_COMPILE_CACHE = directory;
 }
 
-// Flashwright: runs the command here, or in a runner process that the opt-in warm session
-// prepared ahead of time (FLASHWRIGHT_SESSION=1, see session.ts). `cli` commands only forward to
-// a browser session.
+// Flashwright: runs the command here, or in a runner process that the warm session prepared
+// ahead of time (see session.ts). `cli` commands only forward to a browser session.
 require('playwright/lib/runner/session').runCli(process.argv, {
   // Compiles Playwright's bundles with code caches that include their lazily compiled functions.
   installCodeCache: role => require('playwright/lib/codeCache').installCodeCache(role),

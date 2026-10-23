@@ -22,7 +22,7 @@ Scenarios: `todomvc` and `svgomg` (Playwright's example suites, in `apps/`), `sh
 
 An engine can carry environment variables and options: `fork:USE_failFastWhenIdle=false` sets a test option, `fork:CONFIG_testOrder="file"` a config property, `fork:NAME=value` anything else (values cannot contain commas). `BENCH_ARGS` adds arguments to the test command, for example a single test file.
 
-`BENCH_PAUSE=<ms>` waits before each run, untimed, like an agent editing between runs. Measure the warm session with it, since its next runner gets ready after the previous run: `BENCH_PAUSE=1500 BENCH_ARGS=tests/adding-todos/should-add-single-todo.spec.ts node bench/run.mjs todomvc 1 15 stock,fork,fork:FLASHWRIGHT_SESSION=1`.
+The warm session is off unless an engine turns it on (`fork:FLASHWRIGHT_SESSION=1`): it keeps working after a run, which would slow down the next engine's run. `BENCH_PAUSE=<ms>` waits before each run, untimed, like an agent editing between runs. Measure the warm session with it, since its next runner gets ready after the previous run: `BENCH_PAUSE=1500 BENCH_ARGS=tests/adding-todos/should-add-single-todo.spec.ts node bench/run.mjs todomvc 1 15 stock,fork,fork:FLASHWRIGHT_SESSION=1`.
 
 ## Media
 
