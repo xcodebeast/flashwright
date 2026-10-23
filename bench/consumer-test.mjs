@@ -1,8 +1,9 @@
 // Drop-in check: installs this fork's packed packages into a fresh project in place of
 // @playwright/test and runs the unmodified upstream TodoMVC suite with a TypeScript config.
-// Usage: node bench/consumer-test.mjs [--npm]
+// Usage: node bench/consumer-test.mjs [--npm | --registry]
 // --npm installs the flashwright-* packages that utils/flashwright/pack.mjs made (run it first),
 // under their npm names, the way `npm i -D @playwright/test@npm:flashwright-test@<version>` would.
+// --registry installs the published packages from npm with exactly that command.
 import { execFileSync, spawn } from 'node:child_process';
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -13,8 +14,11 @@ const work = resolve(root, 'workbench/consumer');
 rmSync(work, { recursive: true, force: true });
 mkdirSync(join(work, 'packs'), { recursive: true });
 
+const registry = process.argv.includes('--registry');
 const packs = {};
-if (process.argv.includes('--npm')) {
+if (registry) {
+  // Nothing to pack: the project installs from npm below.
+} else if (process.argv.includes('--npm')) {
   const { tarballs } = JSON.parse(readFileSync(join(root, 'workbench/npm/tarballs.json'), 'utf8'));
   packs['playwright-core'] = tarballs['flashwright-core'];
   packs['playwright'] = tarballs['flashwright'];
@@ -28,12 +32,18 @@ if (process.argv.includes('--npm')) {
 
 const project = join(work, 'project');
 mkdirSync(project, { recursive: true });
-writeFileSync(join(project, 'package.json'), JSON.stringify({
-  name: 'consumer', private: true,
-  devDependencies: { '@playwright/test': `file:${packs['playwright-test']}` },
-  overrides: { 'playwright': `file:${packs['playwright']}`, 'playwright-core': `file:${packs['playwright-core']}` },
-}, null, 2));
-execFileSync('npm', ['install', '--no-audit', '--no-fund', '--offline'], { cwd: project, stdio: 'inherit', env: { ...process.env, PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1' } });
+if (registry) {
+  writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'consumer', private: true }, null, 2));
+  execFileSync('npm', ['install', '-D', '@playwright/test@npm:flashwright-test', '--no-audit', '--no-fund', '--prefer-online'], { cwd: project, stdio: 'inherit', env: { ...process.env, PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1' } });
+  console.log(readFileSync(join(project, 'package.json'), 'utf8'));
+} else {
+  writeFileSync(join(project, 'package.json'), JSON.stringify({
+    name: 'consumer', private: true,
+    devDependencies: { '@playwright/test': `file:${packs['playwright-test']}` },
+    overrides: { 'playwright': `file:${packs['playwright']}`, 'playwright-core': `file:${packs['playwright-core']}` },
+  }, null, 2));
+  execFileSync('npm', ['install', '--no-audit', '--no-fund', '--offline'], { cwd: project, stdio: 'inherit', env: { ...process.env, PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1' } });
+}
 
 // The original upstream example tests import '@playwright/test' and visit the public demo; only the URL changes.
 cpSync(join(applicationCorpusDirectory('todomvc'), 'tests'), join(project, 'tests'), { recursive: true });
