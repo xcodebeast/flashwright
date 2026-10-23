@@ -224,6 +224,7 @@ class FfmpegVideoRecorder {
       command: this._ffmpegPath,
       args,
       stdio: 'stdin',
+      windowsHide: true,
       log: (message: string) => debugLogger.log('browser', message),
       tempDirectories: [],
       attemptToGracefullyClose: async () => {
