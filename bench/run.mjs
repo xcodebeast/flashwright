@@ -68,7 +68,10 @@ async function runOnce(engine, extraArgs = []) {
   await rm(join(project, 'report.json'), { force: true });
   const env = { ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
   for (const assignment of variant.split('+').filter(Boolean)) { const [k, v = '1'] = assignment.split('='); env[k] = v; }
-  env.BENCH_T0 = String(Date.now());
+  // The step reporters read the start time from a file: a variable that changes on every run would
+  // keep a warm session (FLASHWRIGHT_SESSION) from matching the next run.
+  if (process.env.STEPS)
+    await writeFile(join(project, 'steps.txt.t0'), String(Date.now()));
   const started = performance.now();
   // BENCH_CPU=1 reports user+sys CPU of the whole process tree (bash `time` waits for all descendants).
   // BENCH_TIMELINE=<dir> records every run's output lines with the time they arrived, using the
@@ -124,6 +127,9 @@ try {
   for (let i = 0; i < iterations; i++) {
     const order = i % 2 ? [...engines].reverse() : engines;
     for (const engine of order) {
+      // BENCH_PAUSE=<ms> waits before each run, untimed, like an agent that edits between runs.
+      if (process.env.BENCH_PAUSE)
+        await new Promise(resolve => setTimeout(resolve, Number(process.env.BENCH_PAUSE)));
       const r = await runOnce(engine);
       const busy = server.takeBusyTime?.();
       results[engine].push({ ...r, busy });

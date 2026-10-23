@@ -1,6 +1,12 @@
 // Reporter that prints, per worker, when each test began and ended (ms since process start).
 const { writeFileSync } = require('node:fs');
-const t0 = Number(process.env.BENCH_T0 || Date.now());
+const t0 = (() => {
+  try {
+    return Number(require('node:fs').readFileSync(process.env.STEP_OUT + '.t0', 'utf8'));
+  } catch {
+    return Date.now();
+  }
+})();
 class WorkerTimeline {
   constructor() { this.lines = []; }
   onTestBegin(test, result) { this.lines.push({ worker: result.workerIndex, at: Date.now() - t0, kind: 'begin', title: test.title }); }

@@ -1,5 +1,5 @@
 // Prints the full step tree (fixtures included) of one test, for setup attribution.
-const { writeFileSync } = require('node:fs');
+const { appendFileSync, writeFileSync } = require('node:fs');
 class StepTreeReporter {
   constructor() { this.lines = []; }
   onTestEnd(test, result) {
@@ -9,6 +9,7 @@ class StepTreeReporter {
     visit(result.steps, 0);
     this.lines.push(`total ${result.duration}`);
   }
-  onExit() { writeFileSync(process.env.STEP_OUT + '.tree', this.lines.join('\n') + '\n'); }
+  // STEP_TREE_APPEND=1 keeps the trees of every run.
+  onExit() { (process.env.STEP_TREE_APPEND ? appendFileSync : writeFileSync)(process.env.STEP_OUT + '.tree', this.lines.join('\n') + '\n'); }
 }
 module.exports = StepTreeReporter;

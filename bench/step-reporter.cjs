@@ -1,6 +1,12 @@
 // Prints step timings for every test: category, title, duration; plus process-relative milestones.
 const { writeFileSync } = require('node:fs');
-const t0 = Number(process.env.BENCH_T0 || Date.now());
+const t0 = (() => {
+  try {
+    return Number(require('node:fs').readFileSync(process.env.STEP_OUT + '.t0', 'utf8'));
+  } catch {
+    return Date.now();
+  }
+})();
 const since = () => Date.now() - t0;
 class StepReporter {
   constructor() { this.lines = [`reporter constructed +${since()}`]; }
