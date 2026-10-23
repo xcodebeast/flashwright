@@ -1,0 +1,47 @@
+name: Bug report
+description: Something works differently or breaks with Flashwright.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check first whether the problem also happens with stock Playwright of the same version; if it does, report it to Playwright instead.
+  - type: input
+    id: version
+    attributes:
+      label: Flashwright version
+      placeholder: 1.64.1-flashwright.1
+    validations:
+      required: true
+  - type: dropdown
+    id: playwright
+    attributes:
+      label: Does it also happen with Playwright?
+      options:
+        - "No, only with Flashwright"
+        - "I haven't checked"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: A test, config and the command you run. A small repository is ideal.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected and what happened
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Output of `npx envinfo --preset playwright`, or OS, Node.js version and browsers.
+      render: shell
+  - type: markdown
+    attributes:
+      value: |
+        If an option fixes it, say which: `FLASHWRIGHT_ISOLATION=strict`, `failFastWhenIdle: false`, `waitForAnimations: true` or `testOrder: 'file'`. That tells us where to look.
