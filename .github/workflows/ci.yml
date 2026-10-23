@@ -47,4 +47,4 @@ jobs:
       - name: Flashwright options and context recycling
         run: npx playwright test --config=tests/library/playwright.config.ts --project=chromium-library --test-order=file tests/library/browsercontext-block-resources.spec.ts tests/library/browsercontext-instant-animations.spec.ts tests/library/browsercontext-fail-fast-when-idle.spec.ts
       - name: Test runner changes
-        run: npm run ttest -- flashwright-options prepared-context test-ordering
+        run: npm run ttest -- flashwright-options prepared-context test-ordering session.spec

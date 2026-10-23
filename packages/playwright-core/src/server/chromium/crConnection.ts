@@ -99,6 +99,10 @@ export class CRConnection extends SdkObject {
       this._transport.close();
   }
 
+  transport(): ConnectionTransport {
+    return this._transport;
+  }
+
   async createBrowserSession(): Promise<CDPSession> {
     const { sessionId } = await this.rootSession.send('Target.attachToBrowserTarget');
     return new CDPSession(this.rootSession, sessionId);

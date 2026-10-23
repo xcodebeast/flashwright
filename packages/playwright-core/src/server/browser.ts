@@ -37,6 +37,7 @@ import type { ChildProcess } from 'child_process';
 import type { Language } from '@isomorphic/locatorGenerators';
 import type { Progress } from './progress';
 import type * as playwright from '../..';
+import type { BrowserHandoff, BrowserHandoffMetadata } from './browserHandoff';
 
 export interface BrowserProcess {
   onclose?: ((exitCode: number | null, signal: string | null) => void);
@@ -46,6 +47,9 @@ export interface BrowserProcess {
   // Flashwright: kills the browser and removes its temporary directories without waiting for it
   // to exit.
   killAndCleanup?(): void;
+  // Flashwright: stops tracking the process, which another Node process takes over (see
+  // browserHandoff.ts).
+  release?(): { pid: number, tempDirectories: string[] };
 }
 
 export type BrowserOptions = {
@@ -71,6 +75,10 @@ export type BrowserOptions = {
   isWebView?: boolean;
   // Do not send Inspector.enable to detect pages without a renderer while connecting.
   noInspectorEnableOnConnect?: boolean;
+  // Flashwright: what a browser handed over to another process must match (see browserHandoff.ts).
+  launchKey?: string;
+  // Flashwright: the recycled context of a browser handed over by another process.
+  adoptContext?: BrowserHandoffMetadata['context'];
 };
 
 export abstract class Browser extends SdkObject {
@@ -98,6 +106,13 @@ export abstract class Browser extends SdkObject {
   }
 
   abstract doCreateNewContext(options: types.BrowserContextOptions): Promise<BrowserContext>;
+  // Flashwright: see handoffForSession and adoptHandedOverContext.
+  doAdoptContext(contextId: string, options: types.BrowserContextOptions): Promise<BrowserContext> {
+    throw new Error('Not supported');
+  }
+  async doDetachForHandoff(): Promise<{ write: NodeJS.WritableStream, read: NodeJS.ReadableStream } | undefined> {
+    return undefined;
+  }
   abstract contexts(): BrowserContext[];
   abstract isConnected(): boolean;
   abstract version(): string;
@@ -160,6 +175,7 @@ export abstract class Browser extends SdkObject {
         await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
     }
     const context = await this.newContext(progress, params, recycle);
+    context.reuseParams = params;
     this._contextForReuse = { context, hash };
     return context;
   }
@@ -174,14 +190,72 @@ export abstract class Browser extends SdkObject {
   // (newContextForReuse), which also applies the test's storage state; a test asking for a different
   // context gets a new one and this one closes.
   async prepareRecycledContext(params: channels.BrowserNewContextForRecycleParams, options: { storageState?: boolean } = {}) {
-    if (this._contextForReuse)
+    const reuse = this._contextForReuse;
+    if (reuse) {
+      // A context handed over by another process (see adoptHandedOverContext) still needs the tab
+      // that restores the tests' storage state.
+      if (reuse.prepared && options.storageState && reuse.hash === BrowserContext.reusableContextHash(params) + ':recycle')
+        reuse.context.prepareStorageStatePage();
       return;
+    }
     const context = await this.newContext(nullProgress, params, true /* recycle */, false /* announce */);
+    context.reuseParams = params;
     this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
     context.startRecycle();
     // The tests used a storage state last time: also open the page that will restore it.
     if (options.storageState)
       context.prepareStorageStatePage();
+  }
+
+  // Flashwright: a browser handed over by another process brings the context its tests used, with
+  // the tab that keeps the renderer warm. It becomes the prepared recycled context, like
+  // prepareRecycledContext's, and is reset once more before a test takes it.
+  async adoptHandedOverContext(handedOver: BrowserHandoffMetadata['context']) {
+    const params = { ...handedOver.params };
+    const options = { ...params } as types.BrowserContextOptions;
+    validateBrowserContextOptions(options, this.options);
+    const context = await this.doAdoptContext(handedOver.id, options);
+    context.reuseParams = params;
+    context.setRecycleMode(true);
+    context.addVisitedOrigins(handedOver.origins);
+    this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
+  }
+
+  // Called once the handed-over context's existing tab is attached.
+  startAdoptedContextRecycle() {
+    if (this._contextForReuse?.prepared)
+      this._contextForReuse.context.startRecycle();
+  }
+
+  // Flashwright: in a warm test session, the worker that launched this browser hands it to the
+  // next run instead of closing it (see browserHandoff.ts). Only a browser whose one open context
+  // is the recycled one, reset and healthy, is handed over; anything else returns undefined and
+  // the caller closes the browser as usual. Afterwards this object is disconnected from it.
+  async handoffForSession(): Promise<BrowserHandoff | undefined> {
+    const reuse = this._contextForReuse;
+    const release = this.options.browserProcess.release;
+    if (!release || !this.options.launchKey || this.options.persistent || this._startedClosing || !this.isConnected())
+      return;
+    if (!reuse || !reuse.hash.endsWith(':recycle') || this.contexts().some(context => context !== reuse.context))
+      return;
+    const handedOverContext = await reuse.context.prepareForHandoff();
+    if (!handedOverContext)
+      return;
+    const pipes = await this.doDetachForHandoff().catch(() => undefined);
+    if (!pipes)
+      return;
+    const { pid, tempDirectories } = release();
+    this._startedClosing = true;
+    return {
+      ...pipes,
+      metadata: {
+        browserName: this.options.name,
+        launchKey: this.options.launchKey,
+        pid,
+        tempDirectories,
+        context: handedOverContext,
+      },
+    };
   }
 
   // Flashwright: see BrowserContext.outputDirsChanged.

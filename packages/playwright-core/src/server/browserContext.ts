@@ -47,6 +47,7 @@ import type { SerializedStorage } from '@injected/storageScript';
 import type * as types from './types';
 import type * as channels from './channels';
 import type { HttpCredentials } from '@protocol/structs';
+import type { BrowserHandoffMetadata } from './browserHandoff';
 
 const BrowserContextEvent = {
   Console: 'console',
@@ -132,6 +133,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _preparedStorageStatePage: Promise<Page> | undefined;
   private _recycleMode = false;
   private _pendingRecycle: Promise<boolean> | undefined;
+  // Flashwright: the options a recycled or reused context was created with (see Browser.newContextForReuse).
+  reuseParams: channels.BrowserNewContextForReuseParams | undefined;
 
   constructor(browser: Browser, options: types.BrowserContextOptions, browserContextId: string | undefined) {
     super(browser, 'browser-context');
@@ -245,6 +248,34 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   startRecycle() {
     this._pendingRecycle = this._recycle(nullProgress);
     this._pendingRecycle.catch(() => {});
+  }
+
+  // Flashwright: the context of a browser handed over by another process (see browserHandoff.ts)
+  // clears the storage of the origins the previous process's tests used on its next reset.
+  addVisitedOrigins(origins: string[]) {
+    for (const origin of origins)
+      this._origins.add(origin);
+  }
+
+  // Flashwright: called before the browser is handed over to another process. Waits for the reset
+  // that started when the last test ended and describes the context for the process that adopts it,
+  // or returns undefined when it cannot move: it holds state that lives in this process (a client
+  // certificate proxy, a HAR recording, a video) or that a reset cannot clear.
+  async prepareForHandoff(): Promise<BrowserHandoffMetadata['context'] | undefined> {
+    const params = this.reuseParams;
+    if (!this._recycleMode || !this.supportsRecycling() || !params || !this._browserContextId || this._closedStatus !== 'open' || this._recyclingPrevented)
+      return;
+    if (this._clientCertificatesProxy || this.tracing.harRecorders.size || params.recordVideo)
+      return;
+    const pending = this._pendingRecycle;
+    this._pendingRecycle = undefined;
+    if (!await (pending ?? this._recycle(nullProgress)))
+      return;
+    const rest = { ...params };
+    delete rest.storageState;
+    if (!isPlainJSON(rest))
+      return;
+    return { id: this._browserContextId, params: rest, origins: [...this._origins] };
   }
 
   static reusableContextHash(params: channels.BrowserNewContextForReuseParams): string {
@@ -1117,3 +1148,11 @@ const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {
   serviceWorkers: 'allow',
   locale: 'en-US',
 };
+
+function isPlainJSON(value: unknown): boolean {
+  if (value === null || ['string', 'number', 'boolean', 'undefined'].includes(typeof value))
+    return true;
+  if (Array.isArray(value))
+    return value.every(isPlainJSON);
+  return typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype && Object.values(value as object).every(isPlainJSON);
+}

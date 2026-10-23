@@ -20,7 +20,7 @@ import path from 'path';
 
 import { startProcessRunner } from '../common';
 import { create } from './workerMain';
-import { launchSpeculativeBrowser, prepareSpeculativeContext } from '../speculativeBrowser';
+import { launchSpeculativeBrowser, prepareSpeculativeContext, returnSpeculativeBrowser } from '../speculativeBrowser';
 
 // Flashwright: a worker started ahead of time also starts the default browser right away. A spare
 // that then stays idle (one kept ready to replace a failed worker, or started for the next phase of
@@ -33,6 +33,11 @@ if (process.env.FLASHWRIGHT_SPECULATIVE_BROWSER) {
   let initialized = false;
   process.on('message', (message: any) => initialized ||= message?.method === '__init__');
   const idleTime = process.env.FLASHWRIGHT_SPECULATIVE_BROWSER === 'next-phase' ? 0 : kSpareIdleTime;
+  // In a warm session, a runner that exits without using this worker takes its browser back.
+  process.on('message', (message: any) => {
+    if (message?.method === '__flashwright_return_browser__' && !initialized)
+      void returnSpeculativeBrowser().finally(() => process.send?.({ method: '__flashwright_browser_returned__' }));
+  });
   void launchSpeculativeBrowser().then(() => setTimeout(() => {
     if (initialized)
       return;

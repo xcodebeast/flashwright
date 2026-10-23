@@ -21,6 +21,7 @@ import { gracefullyProcessExitDoNotHang } from '@utils/processLauncher';
 
 import { builtInReporters, configLoader, ipc } from '../common';
 import { base, projectUtils, testServer, watchMode, testRunner, runnerReporters } from '../runner';
+import { flushSessionBrowsers } from '../runner/session';
 import type { ReporterDescription } from '../../types/test';
 import type { TestRunOptions } from '../runner/tasks';
 
@@ -84,7 +85,8 @@ export async function runTests(args: string[], opts: { [key: string]: any }) {
 
   const status = await testRunner.runAllTestsWithConfig(config, options);
   const exitCode = status === 'interrupted' ? 130 : (status === 'passed' ? 0 : 1);
-  gracefullyProcessExitDoNotHang(exitCode);
+  // Flashwright: in a warm session, the workers' browsers go to the session before this exits.
+  gracefullyProcessExitDoNotHang(exitCode, () => flushSessionBrowsers(exitCode));
 }
 
 export async function runTestServerAction(opts: { [key: string]: any }) {

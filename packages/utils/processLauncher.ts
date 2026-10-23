@@ -50,6 +50,9 @@ type LaunchResult = {
   gracefullyClose: () => Promise<void>,
   kill: () => Promise<void>,
   killAndCleanup: () => void,
+  // Flashwright: hands the process over to another Node process (see adoptProcess): this one
+  // stops tracking it and no longer kills it or removes its directories when it exits.
+  release: () => { pid: number, tempDirectories: string[] },
 };
 
 export const gracefullyCloseSet = new Set<() => Promise<void>>();
@@ -184,9 +187,12 @@ export async function launchProcess(options: LaunchProcessOptions): Promise<Laun
   });
 
   let processClosed = false;
+  let released = false;
   let fulfillCleanup = () => {};
   const waitForCleanup = new Promise<void>(f => fulfillCleanup = f);
   spawnedProcess.once('close', (exitCode, signal) => {
+    if (released)
+      return;
     options.log(`[pid=${spawnedProcess.pid}] <process did exit: exitCode=${exitCode}, signal=${signal}>`);
     processClosed = true;
     gracefullyCloseSet.delete(gracefullyClose);
@@ -267,7 +273,128 @@ export async function launchProcess(options: LaunchProcessOptions): Promise<Laun
     return waitForCleanup;
   }
 
-  return { launchedProcess: spawnedProcess, gracefullyClose, kill: killAndWait, killAndCleanup: killProcessAndCleanup };
+  function release() {
+    released = true;
+    gracefullyCloseSet.delete(gracefullyClose);
+    killSet.delete(killProcessAndCleanup);
+    removeProcessHandlersIfNeeded();
+    stdout.close();
+    stderr.close();
+    spawnedProcess.unref();
+    options.log(`[pid=${spawnedProcess.pid}] <released>`);
+    return { pid: spawnedProcess.pid!, tempDirectories: options.tempDirectories };
+  }
+
+  return { launchedProcess: spawnedProcess, gracefullyClose, kill: killAndWait, killAndCleanup: killProcessAndCleanup, release };
+}
+
+export type AdoptProcessOptions = {
+  pid: number,
+  tempDirectories: string[],
+  // Resolves when the process is gone; for a browser, when its DevTools pipe closes.
+  exited: Promise<void>,
+  handleSIGINT?: boolean,
+  handleSIGTERM?: boolean,
+  handleSIGHUP?: boolean,
+  attemptToGracefullyClose: () => Promise<any>,
+  onExit: () => void,
+  log: (message: string) => void,
+};
+
+// Flashwright: tracks a process that another Node process launched and released, like
+// launchProcess tracks its own: it is closed or killed with this process and its temporary
+// directories are removed once it exits. It must lead its own process group (launchProcess starts
+// processes detached).
+export function adoptProcess(options: AdoptProcessOptions): Omit<LaunchResult, 'launchedProcess'> {
+  const { pid } = options;
+  let processClosed = false;
+  let released = false;
+  let fulfillCleanup = () => {};
+  const waitForCleanup = new Promise<void>(f => fulfillCleanup = f);
+  options.log(`<adopted> pid=${pid}`);
+  void options.exited.then(async () => {
+    if (released)
+      return;
+    options.log(`[pid=${pid}] <process did exit>`);
+    processClosed = true;
+    gracefullyCloseSet.delete(gracefullyClose);
+    killSet.delete(killProcessAndCleanup);
+    removeProcessHandlersIfNeeded();
+    options.onExit();
+    const errors = await removeFolders(options.tempDirectories);
+    for (let i = 0; i < options.tempDirectories.length; ++i) {
+      if (errors[i])
+        options.log(`[pid=${pid}] exception while removing ${options.tempDirectories[i]}: ${errors[i]}`);
+    }
+    fulfillCleanup();
+  });
+
+  addProcessHandlerIfNeeded('exit');
+  if (options.handleSIGINT)
+    addProcessHandlerIfNeeded('SIGINT');
+  if (options.handleSIGTERM)
+    addProcessHandlerIfNeeded('SIGTERM');
+  if (options.handleSIGHUP)
+    addProcessHandlerIfNeeded('SIGHUP');
+  gracefullyCloseSet.add(gracefullyClose);
+  killSet.add(killProcessAndCleanup);
+
+  let gracefullyClosing = false;
+  async function gracefullyClose(): Promise<void> {
+    if (gracefullyClosing) {
+      killProcess();
+      await waitForCleanup;
+      return;
+    }
+    gracefullyClosing = true;
+    await options.attemptToGracefullyClose().catch(() => killProcess());
+    await waitForCleanup;
+  }
+
+  // Sync, for the 'exit' event handler.
+  function killProcess() {
+    gracefullyCloseSet.delete(gracefullyClose);
+    killSet.delete(killProcessAndCleanup);
+    removeProcessHandlersIfNeeded();
+    if (processClosed)
+      return;
+    options.log(`[pid=${pid}] <will force kill>`);
+    try {
+      process.kill(-pid, 'SIGKILL');
+    } catch (e) {
+      options.log(`[pid=${pid}] exception while trying to kill process: ${e}`);
+    }
+  }
+
+  function killProcessAndCleanup() {
+    killProcess();
+    for (const dir of options.tempDirectories) {
+      try {
+        fs.rmSync(dir, { force: true, recursive: true, maxRetries: 5 });
+      } catch (e) {
+        options.log(`[pid=${pid}] exception while removing ${dir}: ${e}`);
+      }
+    }
+  }
+
+  function release() {
+    released = true;
+    gracefullyCloseSet.delete(gracefullyClose);
+    killSet.delete(killProcessAndCleanup);
+    removeProcessHandlersIfNeeded();
+    options.log(`[pid=${pid}] <released>`);
+    return { pid, tempDirectories: options.tempDirectories };
+  }
+
+  return {
+    gracefullyClose,
+    kill: () => {
+      killProcess();
+      return waitForCleanup;
+    },
+    killAndCleanup: killProcessAndCleanup,
+    release,
+  };
 }
 
 export function killProcessTree(pid: number) {

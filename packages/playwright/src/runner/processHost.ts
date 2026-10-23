@@ -23,6 +23,7 @@ import { monotonicTime, timeOrigin } from '@isomorphic/time';
 import { raceAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { killProcessTree } from '@utils/processLauncher';
 import { takeStandby } from './workerStandby';
+import { receiveWorkerMessage, trackSessionWorker } from './session';
 
 import type { ipc, processRunner } from '../common';
 
@@ -81,7 +82,11 @@ export class ProcessHost extends EventEmitter {
       this.emit('exit', { unexpectedly: !this._didSendStop, code, signal } as ProcessExitData);
     });
     this.process.on('error', e => {});  // do not yell at a send to dead process.
-    this.process.on('message', (message: any) => {
+    // Flashwright: in a warm session, workers hand their browsers over through this process.
+    trackSessionWorker(this.process);
+    this.process.on('message', (message: any, handle: any) => {
+      if (receiveWorkerMessage(this.process!, message, handle))
+        return;
       if (debug.enabled('pw:test:protocol'))
         debug('pw:test:protocol')('◀ RECV ' + JSON.stringify(message));
       if (message.method === '__env_produced__') {

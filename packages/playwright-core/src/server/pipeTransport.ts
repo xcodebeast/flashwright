@@ -63,6 +63,19 @@ export class PipeTransport implements ConnectionTransport {
     throw new Error('unimplemented');
   }
 
+  // Flashwright: stops reading and gives the pipes to another owner, who continues the stream of
+  // messages (see browserHandoff.ts). Only possible between two messages: returns undefined when
+  // part of one has already been read.
+  release(): { write: NodeJS.WritableStream, read: NodeJS.ReadableStream } | undefined {
+    if (this._closed || this._pendingBuffers.some(buffer => buffer.length))
+      return;
+    this._closed = true;
+    this._pipeRead.removeAllListeners('data');
+    this._pipeRead.removeAllListeners('close');
+    this._pipeRead.pause();
+    return { write: this._pipeWrite, read: this._pipeRead };
+  }
+
   _dispatch(buffer: Buffer) {
     let end = buffer.indexOf('\0');
     if (end === -1) {

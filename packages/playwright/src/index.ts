@@ -28,7 +28,7 @@ import { buildErrorContext } from './errorContext';
 import { config, testType } from './common';
 import * as globals from './globals';
 import { createCustomMessageHandler, runDaemonForContext } from './mcp/test/browserBackend';
-import { rememberRecycledContext, takeSpeculativeBrowser } from './speculativeBrowser';
+import { handBrowsersToSession, rememberRecycledContext, returnSpeculativeBrowser, takeSpeculativeBrowser } from './speculativeBrowser';
 
 import type { Fixtures, PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, ScreenshotMode, TestInfo, TestType, VideoMode } from '../types/test';
 import type { TestInfoImpl, TestStepInternal } from './worker/testInfo';
@@ -241,6 +241,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     playwright._defaultLaunchOptions = options;
     await use(options);
     playwright._defaultLaunchOptions = undefined;
+    // Flashwright: in a warm session, a browser started ahead of time that no test used goes back.
+    await returnSpeculativeBrowser();
   }, { scope: 'worker', auto: true, box: true }],
 
   browser: [async ({ playwright, browserName, _browserOptions, connectOptions, _recycleContext }, use, workerInfo) => {
@@ -272,6 +274,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     if (process.env.PLAYWRIGHT_DASHBOARD)
       await browser.bind(`worker-${workerInfo.parallelIndex}`);
     await use(browser);
+    // Flashwright: in a warm session, the next run's workers take the browser over (see session.ts).
+    if (await handBrowsersToSession(browser, true))
+      return;
     // Flashwright: a graceful shutdown would delay the worker's exit, which the next tests wait for
     // (a failed test's worker is replaced). Contexts that tests left open still close gracefully.
     if (browser.contexts().length)

@@ -24,16 +24,15 @@ if (nodeModule.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {
     process.env.NODE_COMPILE_CACHE = directory;
 }
 
-// Flashwright: compile Playwright's bundles with code caches that include their lazily compiled
-// functions (see codeCache.ts).
-require('./lib/codeCache').installCodeCache(process.argv[2] === 'test' ? 'runner' : 'cli');
-
-// Flashwright: start the first test worker while the CLI loads.
-require('./lib/runner/workerStandby').prespawnWorkerForTestCommand(process.argv);
-// Flashwright: `cli` commands only forward to a browser session; skip loading every command.
-if (process.argv[2] === 'cli') {
-  require('playwright-core/lib/coreBundle').runCliClient();
-} else {
-  const { program } = require('./lib/program');
-  program.parse(process.argv);
-}
+// Flashwright: runs the command here, or in a runner process that the opt-in warm session
+// prepared ahead of time (FLASHWRIGHT_SESSION=1, see session.ts). `cli` commands only forward to
+// a browser session.
+require('./lib/runner/session').runCli(process.argv, {
+  // Compiles Playwright's bundles with code caches that include their lazily compiled functions.
+  installCodeCache: role => require('./lib/codeCache').installCodeCache(role),
+  // Starts the first test workers while the CLI loads.
+  prespawnWorkers: argv => require('./lib/runner/workerStandby').prespawnWorkerForTestCommand(argv),
+  retargetWorkers: argv => require('./lib/runner/workerStandby').retargetStandbys(argv),
+  loadProgram: () => require('./lib/program').program,
+  runCliClient: () => require('playwright-core/lib/coreBundle').runCliClient(),
+});

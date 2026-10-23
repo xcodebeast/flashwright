@@ -23,9 +23,10 @@ import { ManualPromise } from '@isomorphic/manualPromise';
 import { DEFAULT_PLAYWRIGHT_TIMEOUT } from '@isomorphic/time';
 import { debugMode } from '@utils/debug';
 import { existsAsync } from '@utils/fileUtils';
-import { envArrayToObject, launchProcess } from '@utils/processLauncher';
+import { adoptProcess, envArrayToObject, launchProcess } from '@utils/processLauncher';
 import { RecentLogsCollector } from '@utils/debugLogger';
 import { normalizeProxySettings, validateBrowserContextOptions } from './browserContext';
+import { browserLaunchKey, takeBrowserOffer } from './browserHandoff';
 import { helper } from './helper';
 import { SdkObject } from './instrumentation';
 import { PipeTransport } from './pipeTransport';
@@ -35,6 +36,7 @@ import { ClientCertificatesProxy } from './socksClientCertificatesInterceptor';
 import { WebSocketTransport } from './transport';
 
 import type { Browser, BrowserOptions, BrowserProcess } from './browser';
+import type { BrowserHandoff } from './browserHandoff';
 import type { BrowserContext } from './browserContext';
 import type { Worker } from './page';
 import type { Progress } from './progress';
@@ -109,7 +111,12 @@ export abstract class BrowserType extends SdkObject {
   private async _innerLaunch(progress: Progress, options: types.LaunchOptions, persistent: types.BrowserContextOptions | undefined, protocolLogger: types.ProtocolLogger, maybeUserDataDir?: string): Promise<Browser> {
     options.proxy = options.proxy ? normalizeProxySettings(options.proxy) : undefined;
     const browserLogsCollector = new RecentLogsCollector();
-    const { browserProcess, userDataDir, artifactsDir, transport, wsEndpoint } = await this._launchProcess(progress, options, !!persistent, browserLogsCollector, maybeUserDataDir);
+    // Flashwright: a warm test session may have handed this worker a running browser that was
+    // launched with the same options (see browserHandoff.ts).
+    const offer = persistent ? undefined : takeBrowserOffer(this._name, options);
+    const { browserProcess, userDataDir, artifactsDir, transport, wsEndpoint } = offer
+      ? await this._adoptProcess(progress, offer, options, browserLogsCollector)
+      : await this._launchProcess(progress, options, !!persistent, browserLogsCollector, maybeUserDataDir);
     try {
       if ((options as any).__testHookBeforeCreateBrowser)
         await progress.race((options as any).__testHookBeforeCreateBrowser());
@@ -131,6 +138,8 @@ export abstract class BrowserType extends SdkObject {
         wsEndpoint,
         originalLaunchOptions: options,
         userDataDir: persistent ? userDataDir : undefined,
+        launchKey: browserLaunchKey(this._name, options),
+        adoptContext: offer?.metadata.context,
       };
       if (persistent)
         validateBrowserContextOptions(persistent, browserOptions);
@@ -211,7 +220,7 @@ export abstract class BrowserType extends SdkObject {
     let transport: ConnectionTransport | undefined = undefined;
     let browserProcess: BrowserProcess | undefined = undefined;
     const exitPromise = new ManualPromise();
-    const { launchedProcess, gracefullyClose, kill, killAndCleanup } = await progress.race(launchProcess({
+    const { launchedProcess, gracefullyClose, kill, killAndCleanup, release } = await progress.race(launchProcess({
       command: prepared.executable,
       args: prepared.browserArguments,
       env: this.amendEnvironment(env, prepared.userDataDir, isPersistent, options),
@@ -242,25 +251,14 @@ export abstract class BrowserType extends SdkObject {
       },
     }));
 
-    async function closeOrKill(timeout: number): Promise<void> {
-      let timer: NodeJS.Timeout;
-      try {
-        await Promise.race([
-          gracefullyClose(),
-          new Promise((resolve, reject) => timer = setTimeout(reject, timeout)),
-        ]);
-      } catch (ignored) {
-        await kill().catch(ignored => {}); // Make sure to await actual process exit.
-      } finally {
-        clearTimeout(timer!);
-      }
-    }
+    const closeOrKill = (timeout: number) => closeOrKillProcess(gracefullyClose, kill, timeout);
     browserProcess = {
       onclose: undefined,
       process: launchedProcess,
       close: () => closeOrKill((options as any).__testHookBrowserCloseTimeout || DEFAULT_PLAYWRIGHT_TIMEOUT),
       kill,
       killAndCleanup,
+      release,
     };
     try {
       const { wsEndpoint } = await progress.race([
@@ -283,6 +281,47 @@ export abstract class BrowserType extends SdkObject {
       await progress.race(closeOrKill(DEFAULT_PLAYWRIGHT_TIMEOUT).catch(() => {}));
       throw error;
     }
+  }
+
+  // Flashwright: takes over a running browser that another process launched with the same options
+  // and handed over (see browserHandoff.ts), instead of launching one.
+  private async _adoptProcess(progress: Progress, offer: BrowserHandoff, options: types.LaunchOptions, browserLogsCollector: RecentLogsCollector): Promise<{ browserProcess: BrowserProcess, artifactsDir: string, userDataDir: string, transport: ConnectionTransport, wsEndpoint?: string }> {
+    const { metadata } = offer;
+    const tempDirectories = [...metadata.tempDirectories];
+    let artifactsDir = options.artifactsDir;
+    if (!artifactsDir) {
+      artifactsDir = await progress.race(fs.promises.mkdtemp(path.join(os.tmpdir(), 'playwright-artifacts-')));
+      tempDirectories.push(artifactsDir);
+    }
+    const transport = new PipeTransport(offer.write, offer.read);
+    const exited = new Promise<void>(resolve => {
+      if (!offer.read.readable)
+        resolve();
+      offer.read.once('close', () => resolve());
+    });
+    let browserProcess: BrowserProcess | undefined = undefined;
+    const { gracefullyClose, kill, killAndCleanup, release } = adoptProcess({
+      pid: metadata.pid,
+      tempDirectories,
+      exited,
+      handleSIGINT: options.handleSIGINT ?? true,
+      handleSIGTERM: options.handleSIGTERM ?? true,
+      handleSIGHUP: options.handleSIGHUP ?? true,
+      attemptToGracefullyClose: async () => this.attemptToGracefullyCloseBrowser(transport),
+      onExit: () => browserProcess?.onclose?.(0, null),
+      log: (message: string) => {
+        progress.log(message);
+        browserLogsCollector.log(message);
+      },
+    });
+    browserProcess = {
+      onclose: undefined,
+      close: () => closeOrKillProcess(gracefullyClose, kill, (options as any).__testHookBrowserCloseTimeout || DEFAULT_PLAYWRIGHT_TIMEOUT),
+      kill,
+      killAndCleanup,
+      release,
+    };
+    return { browserProcess, artifactsDir, userDataDir: '', transport };
   }
 
   async connectOverCDP(progress: Progress, params: channels.BrowserTypeConnectOverCDPParams): Promise<Browser> {
@@ -367,5 +406,19 @@ function copyTestHooks(from: object, to: object) {
   for (const [key, value] of Object.entries(from)) {
     if (key.startsWith('__testHook'))
       (to as any)[key] = value;
+  }
+}
+
+async function closeOrKillProcess(gracefullyClose: () => Promise<void>, kill: () => Promise<void>, timeout: number): Promise<void> {
+  let timer: NodeJS.Timeout;
+  try {
+    await Promise.race([
+      gracefullyClose(),
+      new Promise((resolve, reject) => timer = setTimeout(reject, timeout)),
+    ]);
+  } catch (ignored) {
+    await kill().catch(ignored => {}); // Make sure to await actual process exit.
+  } finally {
+    clearTimeout(timer!);
   }
 }

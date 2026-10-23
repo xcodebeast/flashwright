@@ -8,7 +8,7 @@
 
 - **At least 2× faster on every scenario we measure**, 2.74× on average: real example suites, a sign-in app with a setup project, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
 - **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
-- **Made for agents that check their own work.** A single test re-runs in a quarter of a second instead of 0.6 s, screenshots take half the time, and the MCP server can return as soon as the page settles.
+- **Made for agents that check their own work.** A single test re-runs in a quarter of a second instead of 0.6–0.7 s, or in about 0.1 s in a [warm session](#warm-session); screenshots take half the time, and the MCP server can return as soon as the page settles.
 
 ## Install
 
@@ -110,9 +110,32 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
 
 ## For agents
 
-- **Re-running one test** takes 257 ms instead of 602 ms, and `playwright cli` commands start in ~45 ms instead of ~260 ms.
+- **Re-running one test** takes 257 ms instead of 602 ms, and about 100 ms in a [warm session](#warm-session). `playwright cli` commands start in ~45 ms instead of ~260 ms.
 - **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
 - **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
+
+### Warm session
+
+```bash
+export FLASHWRIGHT_SESSION=1
+npx playwright test tests/todo.spec.ts
+```
+
+With `FLASHWRIGHT_SESSION=1`, the first `playwright test` starts a session in the background, one per project directory. The session keeps the next run's runner process and workers started, and it keeps the browsers: a worker that exits hands its browser to the session instead of closing it, with the context reset as between two tests and with the renderer that has already compiled the application. The next run's first test starts as warm as the second test of a run.
+
+| Run, 1.5 s after the previous one | Playwright | Flashwright | Flashwright, warm session |
+| --- | ---: | ---: | ---: |
+| One TodoMVC test | 680 ms | 255 ms | 104 ms (6.5×) |
+| TodoMVC suite, 1 worker | 3690 ms | 1152 ms | 999 ms (3.7×) |
+| TodoMVC suite, 4 workers | 1782 ms | 792 ms | 571 ms (3.1×) |
+| SVGOMG suite, 1 worker | 1739 ms | 565 ms | 438 ms (4.0×) |
+| SVGOMG suite, 4 workers | 1249 ms | 490 ms | 304 ms (4.1×) |
+| Shop app, 1 worker | 6265 ms | 3042 ms | 2948 ms (2.1×) |
+| Shop app, 4 workers | 2585 ms | 1244 ms | 1041 ms (2.5×) |
+
+<sub>Medians of 15 (one test) or 9 alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
+
+Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session. The session exits after 15 minutes without runs (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) and when Flashwright is reinstalled. It is not available on Windows.
 
 ## Differences from Playwright
 
@@ -121,6 +144,7 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
 - **Assertions on an idle page** fail before their timeout unless `failFastWhenIdle: false`; the call log says so. The test runner adds a small script to its pages for this, which wraps the timer, animation frame and message functions. `browser.newContext()` outside the test runner is unaffected.
 - **Test order**: with several workers, the longest tests start first unless `testOrder: 'file'`.
 - **Process lifecycle**: worker processes and a headless browser may start before the config is read (unused ones close), and a finished worker's browser is killed rather than closed gracefully once no context is left open.
+- **Warm session** (opt-in, `FLASHWRIGHT_SESSION=1`): the session process, the next run's runner and workers, and the browsers of earlier runs stay running between runs. A test can see a browser process that an earlier run used, with its context reset as between two tests of one run.
 - **Screenshot files** have identical pixels but are 1.6–1.9× larger PNGs. `toHaveScreenshot()` baselines are unchanged.
 - **Temporary files**: worker counts, per-test durations, the context options each config used last (never storage state, credentials, headers, a proxy or certificates; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.
 - **Firefox and WebKit** keep Playwright's behavior, apart from the options above that apply to them, and **Electron** windows keep Playwright's waits for animations and assertion timeouts.

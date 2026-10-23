@@ -31,10 +31,116 @@ const speculativeOptions = { handleSIGINT: false, headless: true, ...(process.en
 const speculativeKey = Symbol.for('flashwright.speculativeBrowser');
 
 export function launchSpeculativeBrowser(): Promise<Browser | undefined> {
-  const playwright = require('playwright-core');
-  const launch = playwright.chromium.launch(speculativeOptions).catch(() => undefined);
+  // In a warm session, a browser of the previous run may be on its way; launching takes it over.
+  const offered = process.env.FLASHWRIGHT_SESSION_OFFER ? receiveSessionBrowser() : Promise.resolve();
+  const launch = offered.then(() => require('playwright-core').chromium.launch(speculativeOptions)).catch(() => undefined);
   (globalThis as any)[speculativeKey] = launch;
   return launch;
+}
+
+// Flashwright: a warm session (see the runner's session.ts) moves browsers between the workers of
+// consecutive runs. Each one travels as two messages, one per pipe, with what playwright-core
+// needs to take it over (see its browserHandoff.ts).
+const kBrowserMessage = '__flashwright_browser__';
+// Where playwright-core's BrowserType looks for a browser to take over instead of launching one.
+const offerKey = Symbol.for('flashwright.browserOffer');
+// When the browser this worker was offered last ran tests: the session hands out the browsers that
+// ran tests most recently first, since their renderers have the application compiled.
+let offeredLastUsed = 0;
+
+// The session answers before the run starts. Should the answer not come, the first test does not
+// wait for it for long, and a browser that arrives after that goes back.
+const kOfferTimeoutAfterInit = 500;
+
+function receiveSessionBrowser(): Promise<void> {
+  return new Promise(resolve => {
+    let answered = false;
+    let timer: NodeJS.Timeout | undefined;
+    const answer = () => {
+      answered = true;
+      clearTimeout(timer);
+      resolve();
+    };
+    const parts: any = {};
+    const onMessage = (message: any, handle: any) => {
+      if (message?.method === '__init__' && !answered)
+        timer = setTimeout(answer, kOfferTimeoutAfterInit);
+      if (message?.method !== kBrowserMessage)
+        return;
+      if (message.params.none) {
+        process.off('message', onMessage);
+        answer();
+        return;
+      }
+      parts[message.params.part] = handle;
+      parts.metadata ??= message.params.metadata;
+      if (!parts.write || !parts.read || !parts.metadata)
+        return;
+      process.off('message', onMessage);
+      if (answered) {
+        void sendToRunner(parts);
+        return;
+      }
+      (globalThis as any)[offerKey] = parts;
+      offeredLastUsed = parts.metadata.lastUsed ?? 0;
+      // A browser that nothing took over goes with this process.
+      process.once('exit', () => {
+        if ((globalThis as any)[offerKey] === parts)
+          killHandedOverBrowser(parts.metadata);
+      });
+      answer();
+    };
+    process.on('message', onMessage);
+  });
+}
+
+// Called by the `browser` fixture instead of closing the browser. In a warm session, it goes to the
+// runner, which passes it on to the session, along with a browser that was offered to this worker
+// but not taken.
+export async function handBrowsersToSession(browser: Browser | undefined, ranTests: boolean): Promise<boolean> {
+  if (!process.env.FLASHWRIGHT_SESSION_HANDOFF || !process.send)
+    return false;
+  const offer = (globalThis as any)[offerKey];
+  if (offer) {
+    delete (globalThis as any)[offerKey];
+    await sendToRunner(offer);
+  }
+  if (!browser)
+    return false;
+  const serverBrowser = (browser as any)._connection.toImpl?.(browser);
+  const handoff = await serverBrowser?.handoffForSession?.().catch(() => undefined);
+  if (!handoff)
+    return false;
+  handoff.metadata.lastUsed = ranTests ? Date.now() : offeredLastUsed;
+  await sendToRunner(handoff);
+  return true;
+}
+
+async function sendToRunner(browser: { write: any, read: any, metadata: { pid: number, tempDirectories: string[] } }) {
+  const id = `${process.pid}-${browser.metadata.pid}`;
+  const send = (params: object, handle: any) => new Promise<boolean>(resolve => {
+    if (!process.connected)
+      return resolve(false);
+    process.send!({ method: kBrowserMessage, params }, handle, undefined, error => resolve(!error));
+  });
+  if (await send({ id, part: 'write', metadata: browser.metadata }, browser.write) && await send({ id, part: 'read' }, browser.read))
+    return;
+  browser.write.destroy();
+  browser.read.destroy();
+  killHandedOverBrowser(browser.metadata);
+}
+
+function killHandedOverBrowser(metadata: { pid: number, tempDirectories: string[] }) {
+  try {
+    process.kill(-metadata.pid, 'SIGKILL');
+  } catch {
+  }
+  for (const directory of metadata.tempDirectories) {
+    try {
+      fs.rmSync(directory, { recursive: true, force: true, maxRetries: 5 });
+    } catch {
+    }
+  }
 }
 
 // Called while the worker is still idle: the `browser` fixture that adopts the browser waits for
@@ -107,6 +213,16 @@ function isPlainJSON(value: unknown): boolean {
   if (Array.isArray(value))
     return value.every(isPlainJSON);
   return typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype && Object.values(value as object).every(isPlainJSON);
+}
+
+// Called when the runner of a warm session exits without having used this worker: the browser
+// it started or was offered goes back to the session (see the runner's session.ts).
+export async function returnSpeculativeBrowser() {
+  const launch = (globalThis as any)[speculativeKey] as Promise<Browser | undefined> | undefined;
+  if (!launch || !process.env.FLASHWRIGHT_SESSION_HANDOFF)
+    return;
+  delete (globalThis as any)[speculativeKey];
+  await handBrowsersToSession(await launch, false);
 }
 
 export async function takeSpeculativeBrowser(browserName: string, options: LaunchOptions): Promise<Browser | undefined> {

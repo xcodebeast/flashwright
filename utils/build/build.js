@@ -875,6 +875,7 @@ steps.push(new EsbuildStep({
     '../transform/babelBundle',
     '../transform/esmLoader',
     './workerStandby',
+    './session',
   ],
   // HMR: same flag as coreBundle; enables the html-reporter Vite dev server
   // in watch builds (reporters/html.ts lives in this bundle).
@@ -890,7 +891,17 @@ steps.push(new EsbuildStep({
   bundle: true,
   entryPoints: [filePath('packages/playwright/src/runner/workerStandby.ts')],
   outfile: filePath('packages/playwright/lib/runner/workerStandby.js'),
+  external: ['./session'],
 }, [filePath('packages/playwright/src/runner/workerStandby.ts')]));
+
+// playwright/lib/runner/session.js — Flashwright CLI entry and opt-in warm session, loaded by the
+// CLI before anything else and shared with the runner bundle, so it must stay a separate,
+// dependency-free file.
+steps.push(new EsbuildStep({
+  bundle: true,
+  entryPoints: [filePath('packages/playwright/src/runner/session.ts')],
+  outfile: filePath('packages/playwright/lib/runner/session.js'),
+}, [filePath('packages/playwright/src/runner/session.ts')]));
 
 // playwright/lib/codeCache.js — Flashwright code cache for the bundles below, loaded first by the
 // test CLI and the worker entry, so it must stay a separate, dependency-free file.

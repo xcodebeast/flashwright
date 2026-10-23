@@ -25,6 +25,7 @@ import { BrowserContext, raceWithTimeout, verifyGeolocation } from '../browserCo
 import { Frame } from '../frames';
 import * as network from '../network';
 import { Page } from '../page';
+import { PipeTransport } from '../pipeTransport';
 import { CRConnection, ConnectionEvents } from './crConnection';
 import { CRPage } from './crPage';
 import { saveProtocolStream } from './crProtocolHelper';
@@ -50,6 +51,7 @@ export class CRBrowser extends Browser {
   _serviceWorkers = new Map<string, CRServiceWorker>();
   _devtools?: CRDevTools;
   _isConnecting = false;
+  private _handingOff = false;
   private _version = '';
   private _majorVersion = 0;
   _revision = '';
@@ -82,7 +84,18 @@ export class CRBrowser extends Browser {
     // may have been launched with different options.
     browser.options.headful = !version.userAgent.includes('Headless');
     if (!options.persistent) {
+      // Flashwright: a browser handed over by another process (see browserHandoff.ts) brings its
+      // recycled context; it must be known before attaching to the tab it kept open.
+      const adopted = options.adoptContext && await browser.adoptHandedOverContext(options.adoptContext).then(() => true, () => false);
+      if (options.adoptContext && !adopted)
+        await session.send('Target.disposeBrowserContext', { browserContextId: options.adoptContext.id }).catch(() => {});
       await session.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
+      if (adopted) {
+        // Target.setAutoAttach does not wait for existing targets to attach; a call afterwards does.
+        await session.send('Target.getTargetInfo');
+        await browser._waitForAllPagesToBeInitialized();
+        browser.startAdoptedContextRecycle();
+      }
       return browser;
     }
     browser._defaultContext = new CRBrowserContext(browser, undefined, options.persistent);
@@ -134,6 +147,32 @@ export class CRBrowser extends Browser {
     await context.initialize();
     this._contexts.set(browserContextId, context);
     return context;
+  }
+
+  override async doAdoptContext(browserContextId: string, options: types.BrowserContextOptions): Promise<BrowserContext> {
+    const context = new CRBrowserContext(this, browserContextId, options);
+    await context.initialize();
+    this._contexts.set(browserContextId, context);
+    return context;
+  }
+
+  // Flashwright: leaves the browser as a new DevTools client would find it, attached to nothing,
+  // and gives up its pipe (see Browser.handoffForSession).
+  override async doDetachForHandoff(): Promise<{ write: NodeJS.WritableStream, read: NodeJS.ReadableStream } | undefined> {
+    const transport = this._connection.transport();
+    if (!(transport instanceof PipeTransport))
+      return;
+    this._handingOff = true;
+    // The browser handles these in order, so they go out together. Every reply and event up to
+    // the last one has arrived once it has.
+    const sessionIds = [...this._connection._sessions.keys()].filter(sessionId => !!sessionId);
+    const stopAttaching = this._session.send('Target.setAutoAttach', { autoAttach: false, waitForDebuggerOnStart: false, flatten: true });
+    const detached = sessionIds.map(sessionId => this._session.send('Target.detachFromTarget', { sessionId }).catch(() => {}));
+    const lastReply = this._session.send('Browser.getVersion');
+    await Promise.all([stopAttaching, ...detached, lastReply]);
+    const pipes = transport.release();
+    this._connection._onClose('Browser handed over');
+    return pipes;
   }
 
   contexts(): BrowserContext[] {
@@ -218,6 +257,9 @@ export class CRBrowser extends Browser {
   }
 
   _onDetachedFromTarget(payload: Protocol.Target.detachedFromTargetPayload) {
+    // Detaching to hand the browser over: its pages stay open, and close here on disconnect.
+    if (this._handingOff)
+      return;
     const targetId = payload.targetId!;
     const crPage = this._crPages.get(targetId);
     if (crPage) {
