@@ -79,10 +79,10 @@ export class WorkerHost extends ProcessHost {
     await removeFolders([this._params.artifactsDir]);
   }
 
-  override async stop(didFail?: boolean) {
-    if (didFail)
+  override async stop(options: { didFail?: boolean, detachTeardown?: boolean } = {}) {
+    if (options.didFail)
       this._didFail = true;
-    await super.stop();
+    await super.stop(options);
   }
 
   runTestGroup(runPayload: ipc.RunPayload) {

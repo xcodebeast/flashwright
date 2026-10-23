@@ -45,14 +45,14 @@
 // with it.
 /* eslint-disable no-restricted-properties */
 
-import child_process from 'child_process';
-import crypto from 'crypto';
 import fs from 'fs';
-import inspector from 'inspector';
 import net from 'net';
 import os from 'os';
 import path from 'path';
 import url from 'url';
+
+import type child_process from 'child_process';
+import type crypto from 'crypto';
 
 type Profile = {
   // `${columns}x${rows}` when stdout is a terminal, 'false' otherwise.
@@ -145,7 +145,7 @@ function runLocally(argv: string[], hooks: Hooks, startSessionWith?: RunRequest)
 
 function sessionRequested() {
   // A debugger would stay attached to the session's processes; watch mode reads the keyboard.
-  if (process.env.PWDEBUG || process.env.PWTEST_WATCH || inspector.url() || process.platform === 'win32')
+  if (process.env.PWDEBUG || process.env.PWTEST_WATCH || debuggerAttached() || process.platform === 'win32')
     return false;
   const value = process.env.FLASHWRIGHT_SESSION;
   if (value)
@@ -153,11 +153,27 @@ function sessionRequested() {
   return !process.env.CI;
 }
 
+// Modules that take a millisecond or more to load, which the `playwright test` process of a run
+// in the session does not need.
+function debuggerAttached(): boolean {
+  // A debugger attaches through Node's options: --inspect, or a module they load first, like VS
+  // Code's debug terminal does.
+  if (!process.execArgv.length && !process.env.NODE_OPTIONS)
+    return false;
+  return !!require('inspector').url();
+}
+
+function childProcess(): typeof child_process {
+  return require('child_process');
+}
+
 function buildStamp(): string {
   // The bundles a runner process loads; a rebuild or reinstall changes their size or time.
   const files = ['program.js', 'common/index.js', 'runner/index.js', 'runner/session.js', 'worker/workerProcessEntry.js'].map(file => path.join(__dirname, '..', file));
+  // playwright-core is usually installed next to this package, which is quicker to check than to resolve.
+  const coreBundle = path.join(__dirname, '..', '..', '..', 'playwright-core', 'lib', 'coreBundle.js');
   try {
-    files.push(require.resolve('playwright-core/lib/coreBundle'));
+    files.push(fs.existsSync(coreBundle) ? coreBundle : require.resolve('playwright-core/lib/coreBundle'));
   } catch {
   }
   return files.map(file => {
@@ -202,7 +218,7 @@ function createRequest(argv: string[]): RunRequest {
 
 function warmKey(request: RunRequest): string {
   const env = Object.entries(stableEnv(request.env)).sort(([a], [b]) => a < b ? -1 : 1);
-  return crypto.createHash('sha1').update(JSON.stringify([env, request.execPath, request.execArgv, request.cliPath, request.build, request.profile])).digest('hex');
+  return (require('crypto') as typeof crypto).createHash('sha1').update(JSON.stringify([env, request.execPath, request.execArgv, request.cliPath, request.build, request.profile])).digest('hex');
 }
 
 // One session per user, project directory and install, in a directory only this user can use.
@@ -221,9 +237,17 @@ function sessionSocketPath(cwd: string): string | undefined {
   } catch {
     return;
   }
-  const id = crypto.createHash('sha1').update([path.join(__dirname, '..'), process.execPath, cwd].join('\0')).digest('hex').slice(0, 16);
+  const id = fnv1a64([path.join(__dirname, '..'), process.execPath, cwd].join('\0'));
   const socketFile = path.join(directory, `${id}.sock`);
   return Buffer.byteLength(socketFile) < 100 ? socketFile : undefined;
+}
+
+// A name, not a secret: the `playwright test` process does not load the crypto module for it.
+function fnv1a64(text: string): string {
+  let hash = 0xcbf29ce484222325n;
+  for (const byte of Buffer.from(text))
+    hash = BigInt.asUintN(64, (hash ^ BigInt(byte)) * 0x100000001b3n);
+  return hash.toString(16).padStart(16, '0');
 }
 
 // --- The `playwright test` process that asks for a run. ---
@@ -297,7 +321,7 @@ function startSession(request: RunRequest) {
   const socketFile = sessionSocketPath(request.cwd);
   if (!socketFile)
     return;
-  const child = child_process.spawn(process.execPath, [__filename, '--flashwright-session', socketFile, request.build], {
+  const child = childProcess().spawn(process.execPath, [__filename, '--flashwright-session', socketFile, request.build], {
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
     env: { ...process.env, FLASHWRIGHT_SESSION_ROLE: 'session' },
@@ -381,24 +405,39 @@ function forwardBrowser(browser: Browser) {
   pendingSends.add(sendBrowser(sessionChannel, browser));
 }
 
+// A run in a runner process that the session prepared, whose `playwright test` process exits as
+// soon as this one tells it the exit code (see flushSessionBrowsers).
+export function isWarmSessionRun() {
+  return !!outputBytes;
+}
+
+// Workers that the run no longer waits for, which still hand their browsers over (see the
+// worker's canDetachTeardown).
+const detachedTeardowns = new Set<Promise<unknown>>();
+
+export function trackDetachedTeardown(exited: Promise<unknown>) {
+  detachedTeardowns.add(exited);
+  void exited.finally(() => detachedTeardowns.delete(exited));
+}
+
 // Called before the runner exits: its workers' browsers must reach the session first. A worker
 // sends its browser before it exits, so everything it sent has arrived once its channel closed.
-// A warm runner also tells the session its exit code, so that the `playwright test` process can
+// A warm runner first tells the session its exit code, so that the `playwright test` process can
 // exit without waiting for this one to be torn down.
 export async function flushSessionBrowsers(exitCode?: number) {
   if (!sessionChannel)
     return;
+  if (outputBytes && exitCode !== undefined && sessionChannel.connected)
+    await new Promise(resolve => sessionChannel!.send({ type: 'exiting', code: exitCode, ...outputBytes }, undefined, resolve));
   // Workers started ahead of time that no test used hold a browser too.
   await Promise.all([...sessionStandbys].map(returnStandbyBrowser));
   const deadline = Date.now() + 2000;
-  while (sessionWorkers.size && Date.now() < deadline)
-    await new Promise(resolve => setTimeout(resolve, 5));
+  while ((sessionWorkers.size || detachedTeardowns.size) && Date.now() < deadline)
+    await Promise.race([...detachedTeardowns, new Promise(resolve => setTimeout(resolve, 5))]);
   await Promise.all(pendingSends);
   for (const parts of workerParts.values())
     killBrowser(parts);
   workerParts.clear();
-  if (outputBytes && exitCode !== undefined && sessionChannel.connected)
-    await new Promise(resolve => sessionChannel!.send({ type: 'exiting', code: exitCode, ...outputBytes }, undefined, resolve));
   if (sessionChannel.connected)
     sessionChannel.disconnect();
 }
@@ -633,7 +672,7 @@ function runSession(socketFile: string, build: string) {
     // Prepare it as if for the same command, so that its workers match the project.
     // It starts a worker for each browser the session holds, so that none of them waits unused.
     const standbys = browsers.filter(browser => browser.key === key).length;
-    const child = child_process.spawn(request.execPath, [...request.execArgv, request.cliPath, ...request.argv.slice(2)], {
+    const child = childProcess().spawn(request.execPath, [...request.execArgv, request.cliPath, ...request.argv.slice(2)], {
       cwd: request.cwd,
       env: { ...warmEnv(request), FLASHWRIGHT_SESSION_ROLE: 'warm', FLASHWRIGHT_SESSION_STANDBYS: String(standbys) },
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
@@ -711,6 +750,9 @@ function runSession(socketFile: string, build: string) {
       finished = true;
       send({ type: 'exit', code, signal });
       socket.end();
+      // Prepare the next one now that this run no longer needs the CPU: its runner may still be
+      // handing its browsers over, which the next run waits for.
+      spawnWarm(lastRequest ?? request);
     };
     const finishIfRelayed = () => {
       if (exiting && relayed.stdout >= exiting.stdout && relayed.stderr >= exiting.stderr)
@@ -738,9 +780,10 @@ function runSession(socketFile: string, build: string) {
           warm.child.kill(message.signal);
       }
     });
-    // The client went away (killed, terminal closed): stop its run like Ctrl+C would.
+    // The client went away (killed, terminal closed): stop its run like Ctrl+C would. Once the run
+    // has finished, its runner is still handing its browsers over.
     socket.on('close', () => {
-      if (warm.child.exitCode === null && warm.child.signalCode === null)
+      if (!finished && warm.child.exitCode === null && warm.child.signalCode === null)
         warm.child.kill('SIGINT');
     });
     warm.child.once('exit', (code, signal) => {
@@ -751,8 +794,6 @@ function runSession(socketFile: string, build: string) {
         finish(code, signal);
       else
         warm.child.once('close', () => finish(code, signal));
-      // Prepare the next one now that this run no longer needs the CPU.
-      spawnWarm(lastRequest ?? request);
     });
     warm.child.send(request);
   };

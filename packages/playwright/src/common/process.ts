@@ -42,6 +42,11 @@ export type ProtocolResponse = {
 export class ProcessRunner {
   async gracefullyClose(): Promise<void> { }
 
+  // Flashwright: see WorkerMain.canDetachTeardown.
+  canDetachTeardown(): boolean {
+    return false;
+  }
+
   protected dispatchEvent(method: string, params: any) {
     const response: ProtocolResponse = { method, params };
     sendMessageToParent({ method: '__dispatch__', params: response });
@@ -61,6 +66,9 @@ let forceExitInitiated = false;
 
 let processRunner: ProcessRunner | undefined;
 let startingEnv = { ...process.env };
+// Flashwright: a process whose process.exit was replaced may never exit (see canDetachTeardown).
+// eslint-disable-next-line no-restricted-properties
+export const originalProcessExit = process.exit;
 setBoxedStackPrefixes([packageRoot]);
 
 export function startProcessRunner(create: (params: any) => ProcessRunner) {
@@ -85,6 +93,9 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
       const keys = new Set([...Object.keys(process.env), ...Object.keys(startingEnv)]);
       const producedEnv: EnvProducedPayload = [...keys].filter(key => startingEnv[key] !== process.env[key]).map(key => [key, process.env[key] ?? null]);
       sendMessageToParent({ method: '__env_produced__', params: producedEnv });
+      // Flashwright: tells the runner that it may finish without waiting for this process.
+      if (processRunner?.canDetachTeardown())
+        sendMessageToParent({ method: '__teardown_detached__' });
       await gracefullyCloseAndExit(false);
       return;
     }

@@ -172,7 +172,7 @@ export class Dispatcher {
     // 4. When worker encounters error, we stop it and create a new one.
     //    We also do not keep the worker alive if it cannot serve any more jobs.
     if (result.didFail) {
-      void worker.stop(true /* didFail */);
+      void worker.stop({ didFail: true });
       // Flashwright: a failure means a replacement worker; have the next one ready in advance.
       recordWorkerRestart(!!result.remainingJob || !!this._queue.length);
     } else if (this._isWorkerRedundant(worker)) {
@@ -302,11 +302,11 @@ export class Dispatcher {
     return this._producedEnvByProjectId;
   }
 
-  async stop() {
+  async stop(options?: { detachTeardown?: boolean }) {
     if (this._isStopped)
       return;
     this._isStopped = true;
-    await Promise.all(this._workerSlots.map(({ worker }) => worker?.stop()));
+    await Promise.all(this._workerSlots.map(({ worker }) => worker?.stop(options)));
     this._checkFinished();
   }
 }

@@ -145,6 +145,48 @@ test('reports an interrupted test like a run without the session', async ({ inte
   }
 });
 
+test('reports what a worker fixture does in its teardown like a run without the session', async ({ runInlineTest }) => {
+  // A run in the session ends without waiting for its workers when nothing they have left to do
+  // can change its outcome; a worker fixture of the project's own can.
+  for (let i = 0; i < 2; i++) {
+    const result = await runInlineTest({
+      'a.spec.ts': `
+        import { test as base, expect } from '@playwright/test';
+        const test = base.extend<{}, { workerFixture: void }>({
+          workerFixture: [async ({}, use) => {
+            await use();
+            await new Promise(f => setTimeout(f, 100));
+            console.log('%%teardown');
+            throw new Error('teardown failed');
+          }, { scope: 'worker' }],
+        });
+        test('passes', async ({ page, workerFixture }) => {});
+      `,
+    }, { workers: 1 }, env());
+    expect(result.exitCode).toBe(1);
+    expect(result.passed).toBe(1);
+    expect(result.outputLines).toEqual(['teardown']);
+    expect(result.output).toContain('teardown failed');
+  }
+});
+
+test('force-kills a worker that replaced process.exit like a run without the session', async ({ runInlineTest }) => {
+  for (let i = 0; i < 2; i++) {
+    const result = await runInlineTest({
+      'a.spec.ts': `
+        import { test, expect } from '@playwright/test';
+        test('passes', async ({ page }) => {
+          process.exit = (() => {}) as any;
+          setInterval(() => {}, 1000);
+        });
+      `,
+    }, { workers: 1 }, { ...env(), PWTEST_CHILD_PROCESS_TIMEOUT: '2000' });
+    expect(result.exitCode).toBe(1);
+    expect(result.passed).toBe(1);
+    expect(result.output).toContain('process did not exit within 2000ms after stop, force-killed it');
+  }
+});
+
 test('picks up changed tests and configs', async ({ runInlineTest }) => {
   for (const value of ['one', 'two']) {
     const result = await runInlineTest({

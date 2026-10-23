@@ -25,6 +25,7 @@ import { removeFolders } from '@utils/fileUtils';
 
 import { Dispatcher  } from './dispatcher';
 import { ensureStandbys, ensureStandbysForConfig, recordWorkerCount } from './workerStandby';
+import { isWarmSessionRun } from './session';
 import { collectProjectsAndTestFiles, createRootSuite, loadFileSuites, loadGlobalHook, loadTestList } from './loadUtils';
 import { buildDependentProjects, buildTeardownToSetupsMap, filterProjects } from './projectUtils';
 import { applySuggestedRebaselines, clearSuggestedRebaselines } from './rebase';
@@ -475,7 +476,9 @@ function createRunTestsTask(): Task<TestRun> {
 
         if (phaseTestGroups.length) {
           await dispatcher!.run(phaseTestGroups, extraEnvByProjectId);
-          await dispatcher.stop();
+          // Flashwright: in a warm session, the last phase's workers finish handing their browsers
+          // over after the run has reported its outcome (see the worker's canDetachTeardown).
+          await dispatcher.stop({ detachTeardown: !nextPhase && isWarmSessionRun() });
           for (const [projectId, envProduced] of dispatcher.producedEnvByProjectId()) {
             const extraEnv = extraEnvByProjectId.get(projectId) || {};
             extraEnvByProjectId.set(projectId, { ...extraEnv, ...envProduced });

@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
+import path from 'path';
+
 import colors from 'colors/safe';
 import { ManualPromise } from '@isomorphic/manualPromise';
 import { removeFolders } from '@utils/fileUtils';
 import { gracefullyCloseAll } from '@utils/processLauncher';
 import { filteredStackTrace } from '@utils/stackTrace';
 
-import { configLoader, fixtures, ipc, poolBuilder, ProcessRunner, suiteUtils, testLoader } from '../common';
+import { configLoader, fixtures, ipc, originalProcessExit, poolBuilder, ProcessRunner, suiteUtils, testLoader } from '../common';
 import * as globals from '../globals';
+import { packageRoot } from '../package';
 import { setExpectConfig } from '../matchers/expect';
 import { debugTest, relativeFilePath } from '../util';
 import { FixtureRunner } from './fixtureRunner';
@@ -105,6 +108,22 @@ export class WorkerMain extends ProcessRunner {
       this._currentTest?._interrupt();
     }
     return this._runFinished;
+  }
+
+  // Flashwright: in a warm session, the runner reports a run's outcome without waiting for its
+  // workers to exit, when what a stopping worker has left to do cannot change it: no test is
+  // running, no error is waiting to be reported, and only Playwright's own worker fixtures remain,
+  // which hand the browser over to the session (see the runner's session.ts). A worker whose
+  // process.exit was replaced may never exit, which the runner reports after a timeout.
+  override canDetachTeardown(): boolean {
+    // eslint-disable-next-line no-restricted-properties
+    if (!process.env.FLASHWRIGHT_SESSION_HANDOFF || process.env.DEBUG || process.exit !== originalProcessExit)
+      return false;
+    if (!this._runFinished.isDone() || this._currentTest || this._fatalErrors.length)
+      return false;
+    return [...this._fixtureRunner.instanceForId.values()].every(({ registration }) => {
+      return registration.scope !== 'worker' || typeof registration.fn !== 'function' || registration.location.file.startsWith(packageRoot + path.sep);
+    });
   }
 
   override async gracefullyClose() {

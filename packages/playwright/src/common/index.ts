@@ -27,7 +27,7 @@ export * as testLoader from './testLoader';
 export * as testType from './testType';
 export * as transform from '../transform/transform';
 export { FullConfigInternal, builtInReporters } from './config';
-export { ProcessRunner, startProcessRunner } from './process';
+export { ProcessRunner, startProcessRunner, originalProcessExit } from './process';
 export { defineConfig } from './configLoader';
 export { mergeTests } from './testType';
 export type { ConfigLocation } from './config';

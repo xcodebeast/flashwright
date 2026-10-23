@@ -21,9 +21,10 @@ import debug from 'debug';
 import { assert } from '@isomorphic/assert';
 import { monotonicTime, timeOrigin } from '@isomorphic/time';
 import { raceAgainstDeadline } from '@isomorphic/timeoutRunner';
+import { ManualPromise } from '@isomorphic/manualPromise';
 import { killProcessTree } from '@utils/processLauncher';
 import { takeStandby } from './workerStandby';
-import { receiveWorkerMessage, trackSessionWorker } from './session';
+import { receiveWorkerMessage, trackDetachedTeardown, trackSessionWorker } from './session';
 
 import type { ipc, processRunner } from '../common';
 
@@ -45,6 +46,8 @@ export class ProcessHost extends EventEmitter {
   private _producedEnv: Record<string, string | undefined> = {};
   private _extraEnv: Record<string, string | undefined>;
   private _requestHandlers = new Map<string, (params: any) => Promise<any>>();
+  // Flashwright: resolved when a stopping worker says that it can finish on its own (see stop).
+  private _teardownDetached = new ManualPromise<boolean>();
 
   constructor(entryScript: string, processName: string, env: Record<string, string | undefined>) {
     super();
@@ -89,7 +92,9 @@ export class ProcessHost extends EventEmitter {
         return;
       if (debug.enabled('pw:test:protocol'))
         debug('pw:test:protocol')('◀ RECV ' + JSON.stringify(message));
-      if (message.method === '__env_produced__') {
+      if (message.method === '__teardown_detached__') {
+        this._teardownDetached.resolve(true);
+      } else if (message.method === '__env_produced__') {
         const producedEnv: ipc.EnvProducedPayload = message.params;
         this._producedEnv = Object.fromEntries(producedEnv.map(e => [e[0], e[1] ?? undefined]));
       } else if (message.method === '__dispatch__') {
@@ -174,14 +179,18 @@ export class ProcessHost extends EventEmitter {
     this._requestHandlers.set(method, handler);
   }
 
-  async stop() {
+  // Flashwright: with `detachTeardown`, also returns once the process says that what it has left to
+  // do cannot change the run's outcome (see WorkerMain.canDetachTeardown); the warm session's
+  // runner waits for it to exit before it exits itself.
+  async stop(options: { detachTeardown?: boolean } = {}) {
     if (!this._processDidExit && !this._didSendStop) {
       this.send({ method: '__stop__' });
       this._didSendStop = true;
     }
     if (this._didExitAndRanOnExit)
       return;
-    const exitPromise = new Promise<void>(f => this.once('exit', () => f()));
+    const exited = new Promise<boolean>(f => this.once('exit', () => f(false)));
+    const exitPromise = options.detachTeardown ? Promise.race([exited, this._teardownDetached]) : exited;
     const timeout = +(process.env.PWTEST_CHILD_PROCESS_TIMEOUT || 5 * 60 * 1000);
     // Child sends heartbeats while gracefully closing, e.g. running a slow fixture
     // teardown with "timeout: 0". Only force-kill when heartbeats stop coming.
@@ -191,8 +200,11 @@ export class ProcessHost extends EventEmitter {
     try {
       while (true) {
         const result = await raceAgainstDeadline(() => exitPromise, lastHeartbeat + timeout);
-        if (!result.timedOut)
+        if (!result.timedOut) {
+          if (result.result)
+            trackDetachedTeardown(exited);
           return;
+        }
         if (monotonicTime() < lastHeartbeat + timeout)
           continue;
         this.emit('processError', { message: `Error: ${this._processName} process did not exit within ${timeout}ms after stop, force-killed it` });
