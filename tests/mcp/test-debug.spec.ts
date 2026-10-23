@@ -66,6 +66,7 @@ Error: element(s) not found
 Call log:
   - Expect "toBeVisible" getByRole('button', { name: 'Missing' }) with timeout 1000ms
   - waiting for getByRole('button', { name: 'Missing' })
+    - nothing can change the page before the timeout; failing early (failFastWhenIdle)
 
 
 ### Page state
@@ -185,6 +186,7 @@ Error: element(s) not found
 Call log:
   - Expect "toBeVisible" getByRole('button', { name: 'Missing' }) with timeout 1000ms
   - waiting for getByRole('button', { name: 'Missing' })
+    - nothing can change the page before the timeout; failing early (failFastWhenIdle)
 
 
 ### Page state

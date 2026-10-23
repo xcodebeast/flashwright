@@ -439,7 +439,7 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
       this._page.frameManager.inputNavigated = false;
       // Flashwright: unless the context asks for Playwright's behavior, do not wait for animations
       // that move the element either.
-      const ignoreAnimations = !this._page.browserContext._options.waitForAnimations;
+      const ignoreAnimations = !this._page.browserContext.waitsForAnimations();
       const result = await progress.race(this.evaluateInUtility(async ([injected, node, { elementStates, frameVisible, immediateStable, ignoreAnimations }]) => {
         return await injected.checkElementStates(node, elementStates, frameVisible, immediateStable, ignoreAnimations);
       }, { elementStates, frameVisible, immediateStable, ignoreAnimations }));

@@ -883,6 +883,12 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     return this._preparingRecycledPage;
   }
 
+  // Flashwright: whether pointer actions wait for animations that move their target. Electron
+  // windows, whose context takes no test options, keep Playwright's behavior.
+  waitsForAnimations(): boolean {
+    return this._options.waitForAnimations ?? this._browser.options.name === 'electron';
+  }
+
   // Flashwright: see Browser.prepareRecycledContext.
   prepareStorageStatePage() {
     this._preparedStorageStatePage = (this._pendingRecycle ?? Promise.resolve()).then(() => this.newPage(nullProgress, true /* forStorageState */));

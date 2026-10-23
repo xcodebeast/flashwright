@@ -11848,7 +11848,8 @@ export interface Browser {
      * Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the
      * target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched
      * right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for
-     * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
+     * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`, and to
+     * `true` in Electron windows.
      */
     waitForAnimations?: boolean;
   }): Promise<Page>;
@@ -18259,7 +18260,8 @@ export interface BrowserType<Unused = {}> {
      * Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the
      * target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched
      * right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for
-     * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
+     * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`, and to
+     * `true` in Electron windows.
      */
     waitForAnimations?: boolean;
   }): Promise<BrowserContext>;
@@ -25509,7 +25511,8 @@ export interface AndroidDevice {
      * Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the
      * target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched
      * right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for
-     * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
+     * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`, and to
+     * `true` in Electron windows.
      */
     waitForAnimations?: boolean;
   }): Promise<BrowserContext>;
@@ -26829,7 +26832,8 @@ export interface BrowserContextOptions {
    * Whether clicks, hovers, taps and drags wait for CSS transitions, CSS animations and Web Animations that move the
    * target element to finish, so that the element is stable. Flashwright's default is `false`: the input is dispatched
    * right away, and Playwright's hit-target check still makes sure the element receives it. Set to `true` for
-   * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`.
+   * Playwright's behavior, for example for an app that ignores input while it animates. Defaults to `false`, and to
+   * `true` in Electron windows.
    */
   waitForAnimations?: boolean;
 }
