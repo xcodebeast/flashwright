@@ -3,6 +3,7 @@
 // An engine can carry environment variables: fork:NAME=value+NAME2=value. USE_<option>=<json>
 // sets a test option and CONFIG_<key>=<json> a config property, for example
 // fork:USE_instantAnimations=true or fork:CONFIG_testOrder="file" (values cannot contain commas).
+// EXTRA_ARGS=<arg arg> adds browser launch arguments, for example fork:EXTRA_ARGS=--single-process.
 import { spawn } from 'node:child_process';
 import { mkdir, rm, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -32,13 +33,29 @@ const server = shop ? await startShopServer() : workload ? await startWorkloadSe
 
 const projects = {};
 for (const engine of engines) {
-  const [name, variant = ''] = engine.split(':');
+  const [name, ...variantParts] = engine.split(':');
+  const variant = variantParts.join(':');
   const definition = engineDefinitions[name];
   const project = join(base, engine.replace(':', '-'));
   await mkdir(project, { recursive: true });
   const adapter = join(project, 'adapter.mjs');
   await writeFile(join(project, 'package.json'), JSON.stringify({ type: 'module' }));
-  await writeFile(adapter, `export { test, expect, defineConfig } from ${JSON.stringify(definition.pkg)};\n`);
+  // BENCH_CHROME_TRACE=<dir> records a Chromium trace of each worker's browser into <dir> (read it
+  // with chrome-trace.py); BENCH_CHROME_TRACE_CATEGORIES=<a,b> replaces the default categories.
+  const chromeTrace = process.env.BENCH_CHROME_TRACE;
+  const traceCategories = process.env.BENCH_CHROME_TRACE_CATEGORIES?.split(',') ?? ['toplevel', 'mojom', 'devtools', 'v8', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'blink', 'cc', 'viz', 'gpu', 'loading', 'navigation', 'ipc', 'net'];
+  await writeFile(adapter, chromeTrace ? `import { test as base } from ${JSON.stringify(definition.pkg)};
+import fs from 'node:fs';
+export { expect, defineConfig } from ${JSON.stringify(definition.pkg)};
+export const test = base.extend({
+  _chromeTrace: [async ({ browser }, use, workerInfo) => {
+    await browser.startTracing(undefined, { categories: ${JSON.stringify(traceCategories)} });
+    await use();
+    fs.mkdirSync(${JSON.stringify(resolve(chromeTrace))}, { recursive: true });
+    fs.writeFileSync(${JSON.stringify(resolve(chromeTrace))} + '/' + Date.now() + '-w' + workerInfo.workerIndex + '.json', await browser.stopTracing());
+  }, { scope: 'worker', auto: true }],
+});
+` : `export { test, expect, defineConfig } from ${JSON.stringify(definition.pkg)};\n`);
   if (shop) {
     await cp(join(import.meta.dirname, 'apps/shop/tests'), join(project, 'tests'), { recursive: true });
   } else if (workload) {
@@ -50,7 +67,7 @@ for (const engine of engines) {
   const config = { testDir: './tests', workers, retries: 0, fullyParallel: false, timeout: 30000, expect: { timeout: 5000 },
     reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.HTML_REPORT ? [['html', { open: 'never', outputFolder: join(project, 'html-report') }]] : []), ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')], [resolve(import.meta.dirname, 'worker-timeline.cjs')]] : [])],
     outputDir: join(project, 'results'),
-    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off', ...(process.env.EXTRA_ARGS ? { launchOptions: { args: process.env.EXTRA_ARGS.split(' ') } } : {}) } };
+    use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off' } };
   if (shop) {
     Object.assign(config, { fullyParallel: true, projects: [
       { name: 'setup', testMatch: /.*\.setup\.ts/.source },
@@ -59,7 +76,7 @@ for (const engine of engines) {
   }
   // The config stays byte-identical across runs, like a real project's, so the transform cache
   // hits; the app URL comes from the environment.
-  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); if (process.env.BENCH_BASE_URL) config.use.baseURL = process.env.BENCH_BASE_URL; for (const [key, value] of Object.entries(process.env)) { if (key.startsWith('USE_')) config.use[key.slice(4)] = JSON.parse(value); if (key.startsWith('CONFIG_')) config[key.slice(7)] = JSON.parse(value); } export default defineConfig(config);\n`);
+  await writeFile(join(project, 'runner.config.mjs'), `import { defineConfig } from './adapter.mjs'; const config = ${JSON.stringify(config)}; if (config.projects) config.projects[0].testMatch = new RegExp(config.projects[0].testMatch); if (process.env.BENCH_BASE_URL) config.use.baseURL = process.env.BENCH_BASE_URL; if (process.env.EXTRA_ARGS) config.use.launchOptions = { args: process.env.EXTRA_ARGS.split(' ') }; for (const [key, value] of Object.entries(process.env)) { if (key.startsWith('USE_')) config.use[key.slice(4)] = JSON.parse(value); if (key.startsWith('CONFIG_')) config[key.slice(7)] = JSON.parse(value); } export default defineConfig(config);\n`);
   projects[engine] = { project, definition, variant };
 }
 

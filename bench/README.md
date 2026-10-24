@@ -32,3 +32,5 @@ The warm session is off unless an engine turns it on (`fork:FLASHWRIGHT_SESSION=
 ## Profiling
 
 `STEPS=1` writes per-step timings next to the run (`step-reporter.cjs`, `worker-timeline.cjs`), `BENCH_CPU=1` and `BENCH_PROCCPU=1` report CPU time (`BENCH_PROCCPU=system` also counts a warm session's processes), and `trace.mjs`, `proto-timeline.py` and `cpuprofile.py` help read protocol traces and CPU profiles.
+
+`BENCH_PROCCPU=threads` breaks CPU time down by thread. `BENCH_CHROME_TRACE=<dir>` records a Chromium trace of each worker's browser (`BENCH_CHROME_TRACE_CATEGORIES` picks the categories), and `python3 bench/chrome-trace.py <dir>` attributes its thread time to DevTools commands, mojo interfaces and posted tasks, or with `--self` to event names. Tracing slows Chromium down several times: compare shares, and take absolute CPU from `BENCH_PROCCPU=threads`. `EXTRA_ARGS` adds browser arguments, also per engine variant: `fork,fork:EXTRA_ARGS=--single-process`.
