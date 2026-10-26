@@ -643,8 +643,21 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
     return !!this._browserContextId;
   }
 
-  protected override async doStopPages(pages: Page[]): Promise<void> {
-    await Promise.all(pages.map(page => stopPage(page.delegate as CRPage)));
+  // Stops everything pages that are about to close could still do: once this returns, their
+  // scripts can no longer write storage or cookies.
+  protected override async doStopPages(pages: Page[], onScriptsStopped: () => void): Promise<void> {
+    const crPages = pages.map(page => page.delegate as CRPage);
+    try {
+      await Promise.all(crPages.map(disableScripts));
+    } finally {
+      onScriptsStopped();
+    }
+    await Promise.all(crPages.map(replaceDocument));
+  }
+
+  protected override async doClearCacheThrough(page: Page): Promise<void> {
+    // The previous pages of a recycled context are closing: clearCache() would reach them too.
+    await (page.delegate as CRPage)._networkManager.clearCache();
   }
 
   protected override async doClearSiteData(page: Page, origins: string[]): Promise<void> {
@@ -693,9 +706,7 @@ export function shouldProxyLoopback(bypass: string | undefined) {
   return !shouldBypassSomeLoopback;
 }
 
-// Stops everything a page that is about to close could still do: once this returns, its scripts
-// can no longer write storage or cookies.
-async function stopPage(crPage: CRPage) {
+async function disableScripts(crPage: CRPage) {
   // The renderer applies this right away, even in the middle of a running script, and from then on
   // runs none of the page's timers, event handlers or animation frame callbacks. The evaluation is
   // answered once the script that was running, if any, has finished.
@@ -703,6 +714,9 @@ async function stopPage(crPage: CRPage) {
     frameSession._client.send('Emulation.setScriptExecutionDisabled', { value: true }),
     frameSession._client.send('Runtime.evaluate', { expression: '0' }),
   ]).catch(() => {})));
+}
+
+async function replaceDocument(crPage: CRPage) {
   // Closing the page detaches DevTools, which enables scripts again until the renderer has torn the
   // page down, and a pending timer could then still write. Replacing the document drops its timers
   // and callbacks for good; its unload handlers do not run while scripts are disabled. Closing the

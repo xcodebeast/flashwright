@@ -201,11 +201,14 @@ export class CRNetworkManager {
   async clearCache() {
     await this._forEachSession(async info => {
       // Sending 'Network.setCacheDisabled' with 'cacheDisabled = true' will clear the MemoryCache.
-      await info.session.send('Network.setCacheDisabled', { cacheDisabled: true });
+      // Flashwright: a session runs its commands in order, so each is sent without waiting for the
+      // answer to the one before.
+      const commands = [info.session.send('Network.setCacheDisabled', { cacheDisabled: true })];
       if (!this._protocolRequestInterceptionEnabled)
-        await info.session.send('Network.setCacheDisabled', { cacheDisabled: false });
+        commands.push(info.session.send('Network.setCacheDisabled', { cacheDisabled: false }));
       if (!info.workerFrame)
-        await info.session.send('Network.clearBrowserCache');
+        commands.push(info.session.send('Network.clearBrowserCache'));
+      await Promise.all(commands);
     });
   }
 

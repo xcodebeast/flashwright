@@ -773,6 +773,11 @@ export class Frame extends SdkObject<FrameEventMap> {
         event = await helper.waitForEvent(progress, this, Frame.Events.InternalNavigation, predicate).promise;
     }
 
+    // Flashwright: the new document's injected script is created while the document loads, not by
+    // the first action or assertion after the navigation.
+    if (event.newDocument && url !== 'about:blank')
+      this.utilityContext().then(context => context.injectedScript()).catch(() => {});
+
     if (!this._firedLifecycleEvents.has(waitUntil))
       await helper.waitForEvent(progress, this, Frame.Events.AddLifecycle, (e: types.LifecycleEvent) => e === waitUntil).promise;
 

@@ -387,10 +387,32 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     const previousPages = this.possiblyUninitializedPages();
     // Closing a page is acknowledged by the browser before the renderer tears it down, so its
     // scripts could still write storage after the clearing below; stop them first.
-    const stopped = this.doStopPages(previousPages.filter(p => !p.isClosedOrClosingOrCrashed()));
+    let scriptsStopped!: () => void;
+    const scriptsStoppedPromise = new Promise<void>(f => scriptsStopped = f);
+    const stopped = this.doStopPages(previousPages.filter(p => !p.isClosedOrClosingOrCrashed()), scriptsStopped);
     stopped.catch(() => {});
-    const newPage = this._openHeldPage(progress);
+    // Opening a tab keeps the browser busy for a while, also from relaying the answers that tell
+    // the previous pages run no scripts anymore: it waits for them.
+    const newPage = scriptsStoppedPromise.then(() => this._openHeldPage(progress));
     newPage.catch(() => {});
+    // Stopped pages run no scripts: they close while everything they could have changed is put
+    // back. What needs no page starts right away, the rest once the new tab is up.
+    const reset = stopped.then(() => {
+      const downloads = [...this._downloads];
+      this._downloads.clear();
+      this._permissions.clear();
+      const origins = [...this._origins];
+      this._origins = new Set();
+      const closed = Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {})));
+      const done = Promise.all([
+        closed.then(() => Promise.all(downloads.map(download => download.artifact.deleteOnContextClose()))),
+        this.doClearPermissions().then(() => this._options.permissions ? this.grantPermissions(this._options.permissions) : undefined),
+        this.doClearCookies(),
+      ]);
+      done.catch(() => {});
+      return { origins, closed, done };
+    });
+    reset.catch(() => {});
     const page = await progress.race(raceWithTimeout(newPage, kRecycledPageTimeout, undefined));
     if (!page)
       return false;
@@ -398,23 +420,12 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // and storage is cleared. Pages are created one at a time: creation marks which kind it is.
     if (this._options.storageState?.origins?.length)
       onStorageStatePage(this.newPage(progress, true /* forStorageState */));
-    await progress.race(stopped);
-    await progress.race(Promise.all(previousPages.map(p => p.close(progress, { reason: 'Context recycled' }).catch(() => {}))));
-
-    await progress.race(Promise.all(Array.from(this._downloads).map(download => download.artifact.deleteOnContextClose())));
-    this._downloads.clear();
-
-    this._permissions.clear();
-    await progress.race(this.doClearPermissions());
-    if (this._options.permissions)
-      await progress.race(this.grantPermissions(this._options.permissions));
-
-    const origins = [...this._origins];
-    this._origins = new Set();
+    const { origins, closed, done } = await progress.race(reset);
     await progress.race(Promise.all([
-      this.doClearCookies(),
-      this.doClearSiteData(page, origins),
-      this.clearCache(),
+      done,
+      // A service worker survives the clearing of its origin's data while a page it controls is open.
+      closed.then(() => this.doClearSiteData(page, origins)),
+      this.doClearCacheThrough(page),
     ]));
     return true;
   }
@@ -458,7 +469,14 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   protected async doClearSiteData(page: Page, origins: string[]): Promise<void> {
   }
 
-  protected async doStopPages(pages: Page[]): Promise<void> {
+  // Stops the pages' scripts and replaces their documents, calling onScriptsStopped in between.
+  protected async doStopPages(pages: Page[], onScriptsStopped: () => void): Promise<void> {
+    onScriptsStopped();
+  }
+
+  // Clears the caches as clearCache() does, through one page while the others may be closing.
+  protected async doClearCacheThrough(page: Page): Promise<void> {
+    await this.clearCache();
   }
 
   browserClosed() {
