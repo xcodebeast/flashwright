@@ -101,6 +101,9 @@ export class TestInfoImpl implements TestInfo {
   readonly _projectInternal: commonConfig.FullProjectInternal;
   readonly _configInternal: FullConfigInternal;
   private readonly _steps: TestStepInternal[] = [];
+  // Flashwright: hook and fixture steps that have not finished. When there are none, as in the test
+  // body, looking for one does not walk all steps of the test for every API call.
+  private _unfinishedPredefinedSteps = 0;
   private readonly _stepMap = new Map<string, TestStepInternal>();
   _onDidFinishTestFunctionCallbacks = new Set<() => Promise<void>>();
   _onCustomMessageCallback?: (data: any) => Promise<any>;
@@ -272,6 +275,8 @@ export class TestInfoImpl implements TestInfo {
   }
 
   private _findLastPredefinedStep(steps: TestStepInternal[]): TestStepInternal | undefined {
+    if (!this._unfinishedPredefinedSteps)
+      return undefined;
     // Find the deepest predefined step that has not finished yet.
     for (let i = steps.length - 1; i >= 0; i--) {
       const child = this._findLastPredefinedStep(steps[i].steps);
@@ -319,6 +324,8 @@ export class TestInfoImpl implements TestInfo {
           return;
 
         step.endWallTime = Date.now();
+        if (step.category === 'hook' || step.category === 'fixture')
+          this._unfinishedPredefinedSteps--;
         if (result.attachments) {
           for (const attachment of result.attachments)
             this._attach(attachment, stepId);
@@ -371,6 +378,8 @@ export class TestInfoImpl implements TestInfo {
     };
     const parentStepList = parentStep ? parentStep.steps : this._steps;
     parentStepList.push(step);
+    if (step.category === 'hook' || step.category === 'fixture')
+      this._unfinishedPredefinedSteps++;
     this._stepMap.set(stepId, step);
 
     if (!step.group) {

@@ -18,8 +18,19 @@ import crypto from 'crypto';
 
 import { assert } from '@isomorphic/assert';
 
+// Flashwright: GUIDs take their random bytes from a pool refilled for 256 GUIDs at a time. Every
+// server object gets one (each element handle of an action), and a call into the random generator
+// for each was a visible part of an action's cost.
+let guidPool: Buffer | undefined;
+let guidPoolOffset = 0;
+
 export function createGuid(): string {
-  return crypto.randomBytes(16).toString('hex');
+  if (!guidPool || guidPoolOffset === guidPool.length) {
+    guidPool = crypto.randomBytes(4096);
+    guidPoolOffset = 0;
+  }
+  guidPoolOffset += 16;
+  return guidPool.toString('hex', guidPoolOffset - 16, guidPoolOffset);
 }
 
 export function calculateSha1(buffer: Buffer | string): string {

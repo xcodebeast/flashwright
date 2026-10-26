@@ -307,7 +307,25 @@ export function parseUnserializableValue(unserializableValue: string): any {
     return -0;
 }
 
+// Flashwright: the same functions are evaluated again and again (Playwright's own on every action, a
+// test's in its loops). Their normal form is remembered instead of compiling them again to find it.
+const normalizedFunctions = new Map<string, string>();
+
 export function normalizeEvaluationExpression(expression: string, isFunction: boolean | undefined): string {
+  if (!isFunction)
+    return normalizeExpression(expression, isFunction);
+  let normalized = normalizedFunctions.get(expression);
+  if (normalized === undefined) {
+    normalized = normalizeExpression(expression, isFunction);
+    if (normalizedFunctions.size >= 500)
+      normalizedFunctions.clear();
+    if (expression.length <= 10_000)
+      normalizedFunctions.set(expression, normalized);
+  }
+  return normalized;
+}
+
+function normalizeExpression(expression: string, isFunction: boolean | undefined): string {
   expression = expression.trim();
 
   if (isFunction) {

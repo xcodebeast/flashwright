@@ -21,6 +21,8 @@
 
 import path from 'path';
 
+import { setRaceCallSiteCapture } from '@isomorphic/manualPromise';
+
 import { getAsBooleanFromENV } from './env';
 import { isUnderTest } from './debug';
 
@@ -43,18 +45,49 @@ export function setRawStackFormatter(formatter: typeof rawStackFormatter) {
 }
 
 // Flashwright: errors created ahead of time for calls that rarely fail (a pending protocol call,
-// an operation's timeout) only record where the call was made, for debugging. Node's default
-// depth is enough for that, and much cheaper than the deep stacks the test runner enables.
+// an operation's timeout, a race against a closing scope) only record where the call was made, to
+// debug Playwright itself: a failed API call shows the stack of its caller instead. They keep Node's
+// default depth where internal stack frames are shown (PWDEBUGIMPL, Playwright's own tests) and
+// have no frames elsewhere, since even a shallow stack on every protocol call adds up.
 export function withShallowStack<T>(create: () => T): T {
   const stackTraceLimit = Error.stackTraceLimit;
-  if (stackTraceLimit <= 10)
+  const limit = showInternalStackFrames() || isUnderTest() ? 10 : 0;
+  if (stackTraceLimit <= limit)
     return create();
-  Error.stackTraceLimit = 10;
+  Error.stackTraceLimit = limit;
   try {
     return create();
   } finally {
     Error.stackTraceLimit = stackTraceLimit;
   }
+}
+
+setRaceCallSiteCapture(() => withShallowStack(() => new Error()));
+
+export type CallSiteFormatter = (error: Error, callSites: NodeJS.CallSite[]) => string;
+
+const nodeCallSiteFormatter: CallSiteFormatter = (error, callSites) => [String(error), ...callSites.map(callSite => `    at ${callSite}`)].join('\n');
+
+// Flashwright: formats call sites as captureRawStack() would, for code that formats only some
+// frames of a stack. Undefined when frames can only be formatted with the whole stack: another
+// prepareStackTrace is installed, or Node maps frames with source maps.
+export function callSiteFormatter(): CallSiteFormatter | undefined {
+  if (rawStackFormatter)
+    return rawStackFormatter;
+  if (!Error.prepareStackTrace && !process.sourceMapsEnabled)
+    return nodeCallSiteFormatter;
+}
+
+// The file parseStackFrame() reads from a formatted call site, or undefined if it drops the frame.
+export function callSiteFile(error: Error, callSite: NodeJS.CallSite, format: CallSiteFormatter): string | undefined {
+  const fileName = callSite.getFileName();
+  if (!fileName) {
+    // Native code and eval are rare: parse them as formatted.
+    return parseStackFrame(format(error, [callSite]).split('\n')[1] ?? '')?.file || undefined;
+  }
+  if (!showInternalStackFrames() && (fileName.startsWith('internal') || fileName.startsWith('node:')))
+    return undefined;
+  return fileURLToPath(fileName);
 }
 
 export function captureRawStack(): RawStack {
@@ -143,8 +176,12 @@ export function rewriteErrorMessage<E extends Error>(e: E, newMessage: string): 
   const lines: string[] = (e.stack?.split('\n') || []).filter(l => l.startsWith('    at '));
   e.message = newMessage;
   const errorTitle = `${e.name}: ${e.message}`;
+  // Flashwright: a stack without frames, as errors made ahead of time often have (see
+  // withShallowStack), gets the new message too.
   if (lines.length)
     e.stack = `${errorTitle}\n${lines.join('\n')}`;
+  else if (e.stack)
+    e.stack = errorTitle;
   return e;
 }
 

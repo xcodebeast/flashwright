@@ -74,6 +74,10 @@ export function installSourceMapSupport() {
   // whose function names name the API call, out of this prefix.)
   const runnerFramePrefix = packageRoot + path.sep;
   const formatRunnerFrames = showInternalStackFrames();
+  // Frames of transformed files are mapped once: the same lines of a test call the API again and
+  // again, and mapping a frame costs more than the rest of an API call's stack. The key names the
+  // source map, which is named after the compiled content, and the frame as V8 formats it.
+  const mappedFrames = new Map<string, string>();
   setRawStackFormatter((error, callSites) => {
     const lines = [String(error)];
     for (const callSite of callSites) {
@@ -82,9 +86,21 @@ export function installSourceMapSupport() {
         lines.push(`    at ${fileName}:${callSite.getLineNumber()}:${callSite.getColumnNumber()}`);
         continue;
       }
-      const mapped = fileName && sourceMaps.has(fileName) ? sourceMapSupport.wrapCallSite(callSite as any) : callSite;
-      // Match source-map-support's formatting, which has no "async " prefix.
-      lines.push('    at ' + String(mapped).replace(/^async /, ''));
+      const sourceMap = fileName ? sourceMaps.get(fileName) : undefined;
+      if (!sourceMap) {
+        // Match source-map-support's formatting, which has no "async " prefix.
+        lines.push('    at ' + String(callSite).replace(/^async /, ''));
+        continue;
+      }
+      const key = sourceMap + '\n' + String(callSite);
+      let line = mappedFrames.get(key);
+      if (line === undefined) {
+        line = '    at ' + String(sourceMapSupport.wrapCallSite(callSite as any)).replace(/^async /, '');
+        if (mappedFrames.size >= 10_000)
+          mappedFrames.clear();
+        mappedFrames.set(key, line);
+      }
+      lines.push(line);
     }
     return lines.join('\n');
   });

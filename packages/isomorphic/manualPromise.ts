@@ -54,6 +54,14 @@ export class ManualPromise<T = void> extends Promise<T> {
   }
 }
 
+// Flashwright: records where a race started, for the error a closing scope rejects it with. Node
+// code installs a capture that skips the stack where nobody can see it (see withShallowStack).
+let captureRaceCallSite = () => new Error();
+
+export function setRaceCallSiteCapture(capture: () => Error) {
+  captureRaceCallSite = capture;
+}
+
 export class LongStandingScope {
   private _terminateError: Error | undefined;
   private _closeError: Error | undefined;
@@ -96,7 +104,7 @@ export class LongStandingScope {
 
   private async _race(promises: Promise<any>[], safe: boolean, defaultValue?: any): Promise<any> {
     const terminatePromise = new ManualPromise<Error>();
-    const callSite = new Error();
+    const callSite = captureRaceCallSite();
     if (this._terminateError)
       terminatePromise.resolve(this._terminateError);
     if (this._closeError)
