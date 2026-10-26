@@ -18,9 +18,12 @@ const root = resolve('.');
 const node = process.env.NODE_BIN ?? join(root, '.tools/node-v24.15.0-linux-x64/bin/node');
 const stockTest = resolve('workbench/pw-stock/node_modules/@playwright/test');
 const forkTest = resolve(process.env.FORK_DIR ?? '.', 'packages/playwright-test');
+// BASE_DIR=<checkout> adds the engine `base`: the fork as built in another checkout, for A/B runs.
+const baseTest = process.env.BASE_DIR && resolve(process.env.BASE_DIR, 'packages/playwright-test');
 const engineDefinitions = {
   stock: { pkg: join(stockTest, 'index.mjs'), cli: join(stockTest, 'cli.js') },
   fork: { pkg: join(forkTest, 'index.mjs'), cli: join(forkTest, 'cli.js') },
+  ...(baseTest ? { base: { pkg: join(baseTest, 'index.mjs'), cli: join(baseTest, 'cli.js') } } : {}),
 };
 const base = resolve('workbench/bench-runs', `${app.replace(':', '-')}-w${workers}`);
 await rm(base, { recursive: true, force: true });
@@ -162,5 +165,8 @@ const reference = median(results[engines[0]].map(r => r.elapsed));
 for (const engine of engines) {
   const m = median(results[engine].map(r => r.elapsed));
   const busy = results[engine][0].busy !== undefined ? `  api-busy ${median(results[engine].map(r => r.busy)).toFixed(0)} ms` : '';
-  console.log(`SUMMARY ${app} w${workers} ${engine.padEnd(28)} median ${m.toFixed(0).padStart(6)} ms  ${engines[0]}/this = ${(reference / m).toFixed(3)}x${busy}`);
+  // Runs with failed tests are not comparable: the summary says so, except for workloads that fail.
+  const failed = workload === 'failure' || workload === 'broken' ? 0 : results[engine].filter(r => r.code || r.unexpected).length;
+  const failures = failed ? `  FAILED ${failed}/${results[engine].length} runs` : '';
+  console.log(`SUMMARY ${app} w${workers} ${engine.padEnd(28)} median ${m.toFixed(0).padStart(6)} ms  ${engines[0]}/this = ${(reference / m).toFixed(3)}x${busy}${failures}`);
 }
