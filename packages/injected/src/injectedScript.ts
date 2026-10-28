@@ -113,6 +113,7 @@ export class InjectedScript {
   readonly document: Document;
   readonly consoleApi: ConsoleAPI;
   private _lastAriaSnapshotForQuery: AriaSnapshot | undefined;
+  private _stashedResults = new Map<number, unknown>();
 
   // Recorder must use any external dependencies through InjectedScript.
   // Otherwise it will end up with a copy of all modules it uses, and any
@@ -1550,6 +1551,21 @@ export class InjectedScript {
       this._highlight.uninstall();
       delete this._highlight;
     }
+  }
+
+  // Flashwright: a result kept for the command sent right behind the one that produced it, so that
+  // both answers come back in one round trip.
+  stashResult(token: number, result: unknown) {
+    // A result that is never taken must not accumulate.
+    if (this._stashedResults.size > 100)
+      this._stashedResults.clear();
+    this._stashedResults.set(token, result);
+  }
+
+  takeStashedResult(token: number): unknown {
+    const result = this._stashedResults.get(token);
+    this._stashedResults.delete(token);
+    return result;
   }
 
   markTargetElements(markedElements: Set<Element>) {

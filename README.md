@@ -73,7 +73,7 @@ Flashwright keeps Playwright's observable behavior; [Differences from Playwright
 - **Waits that react to the page.** Auto-waiting actions and assertions re-check as soon as the page changes instead of after a 20–500 ms backoff. An assertion that cannot pass any more, because nothing can change the page before its timeout, fails right away.
 - **No frame waits before input.** Clicks, hovers, taps and drags don't wait for animation frames or for moving elements to stop. Playwright's hit-target check still makes sure the element receives the input.
 - **Workers and browsers ready before they're needed.** Worker processes and their browsers start while the CLI is still reading the config, a spare stands by once tests fail, and an idle spare already holds the context its first test will ask for. The longest tests start first.
-- **A faster start.** A V8 code cache for Playwright's own bundles, lazy loading of everything a run doesn't use, and less work per call: lazy stack formatting, a minified injected script the browser compiles once.
+- **A faster start.** A V8 code cache for Playwright's own bundles, lazy loading of everything a run doesn't use, and less work per call: lazy stack formatting, fewer browser round trips per action, minified page scripts the browser compiles once.
 - **Faster screenshots.** Speed-optimized PNG encoding for `page.screenshot()` (same pixels), and pixel comparison with fast paths for `toHaveScreenshot()`, whose baselines stay byte-identical to Playwright's.
 
 ## Speed options

@@ -129,6 +129,9 @@ export class FrameExecutionContext extends js.ExecutionContext {
               await handle.evaluate((injected, frameSeq) => injected.setFrameSeq(frameSeq), frameSeq);
             return handle;
           });
+      // Flashwright: every call into the injected script goes through the utility script, so both
+      // are created in one round trip rather than the second one by the first call.
+      this.utilityScript().catch(() => {});
     }
     return this._injectedScriptPromise;
   }
@@ -145,7 +148,16 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
     super(context, 'node', undefined, objectId);
     this._page = context.frame._page;
     this._frame = context.frame;
-    this._initializePreview().catch(e => {});
+    // Flashwright: the utility world's handles are Playwright's own (the element of every action);
+    // their preview is only made once a client gets one.
+    if (context.world !== 'utility')
+      this._initializePreview().catch(e => {});
+  }
+
+  override _setPreviewCallback(callback: (preview: string) => void) {
+    super._setPreviewCallback(callback);
+    if (this._context.world === 'utility')
+      this._initializePreview().catch(e => {});
   }
 
   async _initializePreview() {
@@ -494,7 +506,7 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
       hitTargetInterceptionHandle = handle as any;
     }
 
-    const actionResult = await this._page.frameManager.waitForSignalsCreatedBy(progress, action.waitAfter === true, async progress => {
+    const actionResult = await this._page.frameManager.waitForSignalsCreatedBy(progress, action.waitAfter === true, async (progress, inputDone) => {
       if ((options as any).__testHookBeforePointerAction)
         await progress.race((options as any).__testHookBeforePointerAction());
       let restoreModifiers: types.KeyboardModifier[] | undefined;
@@ -505,6 +517,7 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
       if (restoreModifiers)
         await this._page.keyboard.ensureModifiers(progress, restoreModifiers);
       if (hitTargetInterceptionHandle) {
+        inputDone();
         const stopHitTargetInterception = this._frame.raceAgainstEvaluationStallingEvents(() => {
           return hitTargetInterceptionHandle.evaluate(h => h.stop());
         }).catch(e => 'done' as const).finally(() => {

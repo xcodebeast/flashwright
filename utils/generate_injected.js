@@ -159,11 +159,16 @@ const inlineCSSPlugin = {
     const baseName = path.basename(injected);
     const outFileJs = path.join(outdir, baseName.replace('.ts', '.js'));
     let content = await replaceEsbuildHeader(await fs.promises.readFile(outFileJs, 'utf-8'), outFileJs);
-    // Flashwright: the injected script is sent to every new document, so its size is paid on
-    // each navigation. Minifying it as a script keeps top-level names (InjectedScript and the
-    // bundled modules) and only shortens locals and whitespace.
-    if (baseName === 'injectedScript.ts')
-      content = (await esbuild.transform(content, { minify: true, target: 'ES2019' })).code;
+    // Flashwright: the injected and utility scripts are sent to every new document, so their size
+    // is paid on each navigation. They are evaluated inside a function (see dom.ts and
+    // javascript.ts), so they are minified as a function body: top-level names are shortened too,
+    // while `module` and the globals stay free variables.
+    if (baseName === 'injectedScript.ts' || baseName === 'utilityScript.ts') {
+      const minified = (await esbuild.transform(`(()=>{${content}\n})();`, { minify: true, target: 'ES2019' })).code;
+      if (!minified.startsWith('(()=>{') || !minified.endsWith('})();\n'))
+        throw new Error(`Unexpected minified form of ${baseName}`);
+      content = minified.slice('(()=>{'.length, -'})();\n'.length);
+    }
     const newContent = `export const source = ${JSON.stringify(content)};`;
     await fs.promises.writeFile(path.join(generatedFolder, baseName.replace('.ts', 'Source.ts')), newContent);
   }

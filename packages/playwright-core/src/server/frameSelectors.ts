@@ -235,6 +235,7 @@ export class FrameSelectors {
     pageFunction: MatchedElementsCallback<Arg, R>,
     arg: Arg,
     returnByValue: boolean,
+    pipeline?: (injected: JSHandle<InjectedScript>) => void,
   ): Promise<{ frame: Frame, info: SelectorInfo, frameVisible: boolean, result: R | SmartHandle<R> } | null> {
     const resolved = await this.resolveFramesForSelector(target);
     let aggregatedResult: { frame: Frame, info: SelectorInfo, frameVisible: boolean, result: R | SmartHandle<R> } | null = null;
@@ -247,7 +248,7 @@ export class FrameSelectors {
       const getResult = async () => {
         const injected = await context.injectedScript();
         const method = returnByValue ? 'evaluate' : 'evaluateHandle';
-        const evalResult = await injected[method]((injected, params) => {
+        const evalPromise = injected[method]((injected, params) => {
           const elements = injected.querySelectorAll(params.info.parsed, params.scope || document);
           if (params.markTargets === 'all')
             injected.markTargetElements(new Set(elements));
@@ -263,6 +264,11 @@ export class FrameSelectors {
           const func = injected.eval('(' + params.functionText + ')') as MatchedElementsCallback<Arg, R>;
           return func({ injected, elements, info: params.info, frameVisible: params.frameVisible }, params.arg);
         }, { info, scope, frameVisible, functionText: String(pageFunction), arg, callWithoutMatches: target.callWithoutMatches, markTargets: target.markTargets, returnByValue });
+        // Flashwright: an evaluation started now takes the same path to the browser as this one, so
+        // it is sent right after it and runs after it in the page, before this one's answer arrives.
+        if (!noStall)
+          pipeline?.(injected);
+        const evalResult = await evalPromise;
         if (returnByValue && evalResult === '--playwright--no--result--value--')
           return;
         if (!returnByValue && (evalResult as JSHandle)._value === '--playwright--no--result--value--') {
@@ -298,8 +304,9 @@ export class FrameSelectors {
     target: types.SelectorTarget & { mainWorld?: boolean, markTargets?: 'all' | 'first' | 'none' },
     pageFunction: MatchedElementsCallback<Arg, R>,
     arg: Arg,
+    pipeline?: (injected: JSHandle<InjectedScript>) => void,
   ): Promise<{ frame: Frame, info: SelectorInfo, frameVisible: boolean, result: SmartHandle<R> } | null> {
-    const result = await this._callOnSelectorInternal({ ...target, callWithoutMatches: false }, pageFunction, arg, false /* returnByValue */);
+    const result = await this._callOnSelectorInternal({ ...target, callWithoutMatches: false }, pageFunction, arg, false /* returnByValue */, pipeline);
     return result as { frame: Frame, info: SelectorInfo, frameVisible: boolean, result: SmartHandle<R> } | null;
   }
 }

@@ -120,6 +120,10 @@ export class ExpectError extends Error {
 
 const kDummyFrameId = '<dummy>';
 
+// Flashwright: names what an element lookup left in the page for the command sent behind it.
+let resolvedElementToken = 0;
+type ResolvedElementInfo = { log: string, box: types.Rect };
+
 export class FrameManager {
   private _page: Page;
   private _frames = new Map<string, Frame>();
@@ -198,14 +202,20 @@ export class FrameManager {
     }
   }
 
-  async waitForSignalsCreatedBy<T>(progress: Progress, waitAfter: boolean, action: (progress: Progress) => Promise<T>): Promise<T> {
+  async waitForSignalsCreatedBy<T>(progress: Progress, waitAfter: boolean, action: (progress: Progress, inputDone: () => void) => Promise<T>): Promise<T> {
     if (!waitAfter)
-      return action(progress);
+      return action(progress, () => {});
     const barrier = new SignalBarrier(progress);
     this._signalBarriers.add(barrier);
     try {
-      const result = await action(progress);
-      await progress.race(this._page.delegate.inputActionEpilogue());
+      // Flashwright: an action that still calls into the page after its input says when the input
+      // is done, so that the epilogue's round trip runs alongside those calls.
+      let epilogue: Promise<void> | undefined;
+      const result = await action(progress, () => {
+        epilogue ??= this._page.delegate.inputActionEpilogue();
+        epilogue.catch(() => {});
+      });
+      await progress.race(epilogue ?? this._page.delegate.inputActionEpilogue());
       await barrier.waitFor(progress);
       if (barrier.navigated)
         this.inputNavigated = true;
@@ -1255,43 +1265,44 @@ export class Frame extends SdkObject<FrameEventMap> {
       if (performActionPreChecks)
         await this._page.performActionPreChecks(progress);
 
-      const resolved = await progress.race(this.selectors.callOnSelectorHandle({ ...target, markTargets: 'all' }, ({ injected, elements }) => {
-        const element = elements[0] as Element | undefined;
-        let log = '';
-        if (elements.length > 1)
-          log = `  locator resolved to ${elements.length} elements. Proceeding with the first one: ${injected.previewNode(elements[0])}`;
-        else if (element)
-          log = `  locator resolved to ${injected.previewNode(element)}`;
-        const rect = element?.getBoundingClientRect();
-        return { log, success: !!element, element, box: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : undefined };
-      }, {}));
+      // Flashwright: the element comes back as the answer, and what is only logged and traced about
+      // it is read by a command sent right behind, so that both arrive in one round trip.
+      const token = ++resolvedElementToken;
+      let resolvedInfo: Promise<ResolvedElementInfo | undefined> | undefined;
+      const resolved = await progress.race(this.selectors.callOnSelectorHandle({ ...target, markTargets: 'all' }, ({ injected, elements }, token) => {
+        const element = elements[0] as Element;
+        const log = elements.length > 1
+          ? `  locator resolved to ${elements.length} elements. Proceeding with the first one: ${injected.previewNode(element)}`
+          : `  locator resolved to ${injected.previewNode(element)}`;
+        const rect = element.getBoundingClientRect();
+        injected.stashResult(token, { log, box: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } });
+        return element;
+      }, token, injected => {
+        resolvedInfo = injected.evaluate((injected, token) => injected.takeStashedResult(token) as ResolvedElementInfo | undefined, token);
+        resolvedInfo.catch(() => {});
+      }));
       if (!resolved)
         return continuePolling;
-      const result = resolved.result;
-      // Flashwright: ask for the element along with the result instead of after it, saving a round trip.
-      const elementPromise = result.evaluateHandle(r => r.element) as Promise<dom.ElementHandle<Element>>;
-      elementPromise.catch(() => {});
-      const { log, success, box } = await progress.race(result.evaluate(r => ({ log: r.log, success: r.success, box: r.box })));
-      if (log)
-        progress.log(log);
-      if (!success || (waitForFrameVisible && !resolved.frameVisible)) {
-        if (success)
-          progress.log('  element is inside a hidden frame, retrying');
-        elementPromise.then(element => element.dispose(), () => {});
-        result.dispose();
-        return continuePolling;
-      }
-      const element = await progress.race(elementPromise);
-      result.dispose();
+      const element = resolved.result as dom.ElementHandle<Element>;
       try {
-        const result = await action(progress, element, box, resolved.frameVisible);
+        // Taken after the answer when the command behind was not sent (several frames matched) or
+        // ran first.
+        const info = (resolvedInfo && await progress.race(resolvedInfo)) ?? await progress.race(element._context.injectedScript().then(injected => injected.evaluate((injected, token) => injected.takeStashedResult(token) as ResolvedElementInfo | undefined, token)));
+        if (!info)
+          return continuePolling;
+        progress.log(info.log);
+        if (waitForFrameVisible && !resolved.frameVisible) {
+          progress.log('  element is inside a hidden frame, retrying');
+          return continuePolling;
+        }
+        const result = await action(progress, element, info.box, resolved.frameVisible);
         if (result === 'error:notconnected') {
           progress.log('element was detached from the DOM, retrying');
           return continuePolling;
         }
         return result;
       } finally {
-        element?.dispose();
+        element.dispose();
       }
     });
   }
